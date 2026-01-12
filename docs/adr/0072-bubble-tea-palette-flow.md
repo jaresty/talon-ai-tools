@@ -8,12 +8,28 @@ In Progress — Bubble Tea TUI palette and grammar-aligned palette flow (2026-01
 
 ## Decision
 - Treat the primary workspace as a single-page form: subject textarea, inline token rows, destination controls, preview, and command/status panes stacked with minimal context switching.
-- Collapse empty token categories into single-line “+ Add …” affordances while keeping active categories expanded as chip rows that can be edited in place so chip density stays readable across themes.
+- Collapse empty token categories into single-line "+ Add …" affordances while keeping active categories expanded as chip rows that can be edited in place so chip density stays readable across themes.
 - Replace the modal palette picker with a docked *grammar composer* that behaves like `bar build`: the input always shows `category=value`, Tab/Shift+Tab cycle completions in the same order as the CLI, and Enter commits staged changes. Mirror CLI hints inline so operators learn the grammar cadence.
 - Keep the palette docked in a right-side viewport that stays visible while editing, staged tokens remain visible until applied, and keyboard-first flows stay primary. Pointer support is optional; when implemented it must reinforce the CLI command being learned.
 - Add focus breadcrumbs, transient feedback, and a single-step undo stack tailored to token changes so pilots can experiment quickly without losing context. Favor simple Lip Gloss styling unless a Charm “skill” directly reinforces the learning objective.
 - Expose a palette history toggle (`Ctrl+H`) for recent token adjustments and command invocations, echoing shell history search patterns and aiding recall. History entries should show the exact CLI command that would reproduce the action.
 
+### Relevant Charm skills
+- `lipgloss-theme-foundations` — establish text/background/hover styles for chips, status strip, and the grammar composer.
+- `lipgloss-status-chips` — render inline chip rows and focus states for token categories.
+- `lipgloss-layout-utilities` — assemble main + sidebar columns, manage widths, and place sticky status strips.
+- `lipgloss-table-rendering` — format palette history or shortcut summaries as tabular views when needed.
+- `lipgloss-list-rendering` — present recent command/token actions as bullet lists mirroring CLI history.
+- `lipgloss-tree-rendering` — visualise grammar/category hierarchies or preset structures inside the sidebar.
+- `bubbletea-layout-composition` — manage Bubble Tea model/state split and viewport resizing in tandem with Lip Gloss joins.
+- `bubbletea-dialog-stacking` / `bubbles-select-dialog` / `bubbles-form-inputs` — reuse modal/select/input patterns if the grammar composer needs dialogs or staged forms.
+
+### Typography & information architecture recommendations
+- Use `lipgloss-theme-foundations` to define a consistent text scale: body copy (~11–12 cols), small meta text for status strip, and bold/uppercase for section headers. Keep max line length ~70 columns in the main pane to avoid wrapping.
+- Apply `Inline(true)` for chip rows so categories read as single lines with clear spacing; reserve double-line chips for multi-token explanations.
+- Group related controls with subtle borders (`lipgloss.RoundedBorder` in the theme palette) so subject, tokens, preview, and history read as distinct sections.
+- Provide a dedicated typography style for CLI hints (monospaced font or distinct color) to reinforce the learning context.
+- Ensure breadcrumb/status text uses consistent casing and spacing; align breadcrumbs above the composer, status strip beneath, and preserve a single baseline grid (2-cell vertical rhythm) across sections.
 
 ## Rationale
 - Inline tokens and a single-page flow keep subject, tokens, and preview aligned, reducing scroll churn and maintaining context during edits.

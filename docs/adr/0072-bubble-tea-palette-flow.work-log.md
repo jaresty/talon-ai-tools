@@ -123,3 +123,40 @@ assets:
 - Expect case: `tests/integration/tui/cases/sticky-summary.exp`
 - Evidence bundle: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-003.md`
 - Transcripts: `loop-003-sticky-summary-red.log`, `loop-003-sticky-summary-green.log`
+
+## loop-004 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0072 Follow-up section → reference the accepted CLI coordination layer from ADR 0075 so palette workflows track the canonical CLI contracts (salient follow-up bullet alignment).
+
+active_constraint: Follow-up guidance omitted ADR 0075, risking divergence between the docked omnibox shortcuts and the now-accepted `internal/barcli/cli` configuration layer; doc review showed contributors lacked a pointer to the coordination package (validated via ADR comparison).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Linking to ADR 0075 keeps palette work aligned with the canonical CLI contract |
+| Probability | High | Updating the follow-up bullet directly resolves the missing guidance |
+| Time Sensitivity | Medium | Needed before future loops expand the omnibox so they reuse the accepted coordination layer |
+| Uncertainty note | Low | Documentation change is deterministic |
+
+validation_targets:
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-004.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0072-bubble-tea-palette-flow.md docs/adr/0072-bubble-tea-palette-flow.work-log.md`; rerun `go test ./internal/bartui` to confirm behaviour unchanged after revert.
+
+delta_summary: helper:diff-snapshot=docs/adr/0072-bubble-tea-palette-flow.md | docs/adr/0072-bubble-tea-palette-flow.work-log.md — added a follow-up bullet linking ADR 0072 palette work to ADR 0075 and logged the completion entry.
+
+loops_remaining_forecast: 2 loops (dock omnibox layout/telemetry and extend palette history with clipboard/undo events). Confidence: medium — layout refactors and telemetry enrichment remain.
+
+residual_constraints:
+- Medium — Palette history still omits clipboard/undo events; mitigation remains extending history logging with expect coverage.
+- Medium — Docked omnibox layout refactor is still pending; mitigation: rework Lip Gloss/Bubbles layout with updated snapshots.
+
+next_work:
+- Behaviour: Implement docked omnibox layout refactor using Bubbles components (validation: updated snapshots + `go test ./cmd/bar/...`).
+- Behaviour: Extend palette history for clipboard/undo events (validation: new expect cases + `go test ./internal/bartui`).
+
+assets:
+- Updated ADR reference: `docs/adr/0072-bubble-tea-palette-flow.md`
+- Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-004.md`

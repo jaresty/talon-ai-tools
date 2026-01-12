@@ -196,3 +196,43 @@ next_work:
 assets:
 - Follow-up guidance: `docs/adr/0072-bubble-tea-palette-flow.md`
 - Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-005.md`
+
+## loop-006 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0072 Decision bullets 5/6 (palette history + undo affordances) → extend history logging to clipboard inserts, undo operations, and command copy destinations.
+
+active_constraint: Palette history only captured token toggles and command executions; clipboard copies (`Ctrl+B`/`Ctrl+O`) and subject/token undo operations produced no history entries, leaving operators without audit trail (observed via unit tests and manual review).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | History now reflects clipboard/undo actions aligned with ADR guidance |
+| Probability | High | Directly wiring logging into the existing handlers deterministically records the events |
+| Time Sensitivity | Medium | Needed before further omnibox refactors stack additional history behaviour |
+| Uncertainty note | Low | Behaviour exercised by unit tests and expect harness |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-006.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0072-bubble-tea-palette-flow.md docs/adr/0072-bubble-tea-palette-flow.work-log.md`; rerun `go test ./internal/bartui` to confirm the history regression returns.
+
+delta_summary: helper:diff-snapshot=internal/bartui/program.go | internal/bartui/program_test.go | docs/adr/0072-bubble-tea-palette-flow.md — logged clipboard/undo/destination events to palette history, added unit coverage, and updated follow-ups to track remaining expect coverage work.
+
+loops_remaining_forecast: 1 loop (dock omnibox layout with Bubbles/Lip Gloss components and add expect coverage). Confidence: medium.
+
+residual_constraints:
+- Medium — Docked omnibox layout refactor still pending; mitigation: restructure viewports with Lip Gloss/Bubbles components and snapshot coverage (`go test ./cmd/bar/...`).
+- Low — Expect harness still needs dedicated coverage for clipboard/undo history; mitigation: add once omnibox refactor stabilises (`scripts/tools/run-tui-expect.sh <new-case>`).
+
+next_work:
+- Behaviour: Rework docked omnibox layout and add expect coverage for clipboard/undo history (validation: `go test ./cmd/bar/...`, `scripts/tools/run-tui-expect.sh --all`).
+
+assets:
+- Updated palette history logging: `internal/bartui/program.go`
+- Unit tests: `internal/bartui/program_test.go`
+- Follow-up guidance: `docs/adr/0072-bubble-tea-palette-flow.md`
+- Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-006.md`

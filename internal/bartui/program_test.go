@@ -91,6 +91,9 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 	if !m.subjectUndoAvailable {
 		t.Fatalf("expected undo to be available after replacement")
 	}
+	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Subject replaced via clipboard text" {
+		t.Fatalf("expected history to record clipboard replacement, got %v", m.paletteHistory)
+	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
 	if got := m.subject.Value(); got != "existing subject" {
@@ -98,6 +101,12 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 	}
 	if m.subjectUndoAvailable {
 		t.Fatalf("expected undo to be cleared after use")
+	}
+	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Subject undo (clipboard text)" {
+		t.Fatalf("expected history to record subject undo, got %v", m.paletteHistory)
+	}
+	if len(m.paletteHistory) < 2 || m.paletteHistory[1] != "Subject replaced via clipboard text" {
+		t.Fatalf("expected replacement entry to stay in history, got %v", m.paletteHistory)
 	}
 }
 
@@ -127,6 +136,9 @@ func TestCancelSubjectReplacement(t *testing.T) {
 	}
 	if got := m.subject.Value(); got != "keep me" {
 		t.Fatalf("expected subject to remain unchanged, got %q", got)
+	}
+	if len(m.paletteHistory) != 0 {
+		t.Fatalf("expected no history entry when replacement is cancelled, got %v", m.paletteHistory)
 	}
 }
 
@@ -653,6 +665,9 @@ func TestTokenKeyboardToggle(t *testing.T) {
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
 		t.Fatalf("expected undo to restore breadth, got %v", m.tokenStates[1].selected)
 	}
+	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Tokens undo restored" {
+		t.Fatalf("expected history to record token undo, got %v", m.paletteHistory)
+	}
 }
 
 func TestTokenPaletteToggle(t *testing.T) {
@@ -755,6 +770,9 @@ func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
 	if len(m.tokens) != 0 {
 		t.Fatalf("expected undo to restore empty token selection, got %v", m.tokens)
 	}
+	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Tokens undo restored" {
+		t.Fatalf("expected history to record token undo, got %v", m.paletteHistory)
+	}
 }
 
 func TestInitialFocusBreadcrumbs(t *testing.T) {
@@ -820,11 +838,20 @@ func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
 	if !strings.Contains(view, "Destination: clipboard — CLI command copied") {
 		t.Fatalf("expected summary to note CLI copy, got view:\n%s", view)
 	}
+	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Clipboard → CLI command copied" {
+		t.Fatalf("expected history to record CLI copy, got %v", m.paletteHistory)
+	}
 
 	m.copyPreviewToClipboard()
 	view = m.View()
 	if !strings.Contains(view, "Destination: clipboard — Preview copied") {
 		t.Fatalf("expected summary to note preview copy, got view:\n%s", view)
+	}
+	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Clipboard → preview copied" {
+		t.Fatalf("expected history to record preview copy, got %v", m.paletteHistory)
+	}
+	if len(m.paletteHistory) < 2 || m.paletteHistory[1] != "Clipboard → CLI command copied" {
+		t.Fatalf("expected CLI copy entry to remain in history, got %v", m.paletteHistory)
 	}
 }
 

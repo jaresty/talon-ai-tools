@@ -1330,6 +1330,7 @@ func (m *model) undoTokenChange() {
 	m.lastTokenSnapshot = nil
 	m.setTokens(snapshot)
 	m.statusMessage = "Token selection restored."
+	m.recordPaletteHistory("Tokens undo restored")
 }
 
 func (m *model) openTokenPalette() tea.Cmd {
@@ -2465,6 +2466,7 @@ func (m *model) applyPendingSubjectReplacement() {
 	m.updateSubjectViewportContent()
 	m.refreshPreview()
 	m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject replaced with %s. Press Ctrl+Z to undo.", prompt.source))
+	m.recordPaletteHistory(fmt.Sprintf("Subject replaced via %s", prompt.source))
 }
 
 func (m *model) cancelPendingSubjectReplacement() {
@@ -2493,6 +2495,7 @@ func (m *model) undoSubjectReplacement() {
 		source = "recent"
 	}
 	m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject restored after %s replacement.", source))
+	m.recordPaletteHistory(fmt.Sprintf("Subject undo (%s)", source))
 }
 
 func (m model) View() string {
@@ -2809,6 +2812,7 @@ func (m *model) copyPreviewToClipboard() {
 	}
 	m.destinationSummary = "clipboard — Preview copied"
 	m.statusMessage = "Copied preview to clipboard."
+	m.recordPaletteHistory("Clipboard → preview copied")
 }
 
 func (m *model) copyBuildCommandToClipboard() {
@@ -2819,6 +2823,7 @@ func (m *model) copyBuildCommandToClipboard() {
 	}
 	m.destinationSummary = "clipboard — CLI command copied"
 	m.statusMessage = "Copied bar build command to clipboard."
+	m.recordPaletteHistory("Clipboard → CLI command copied")
 }
 
 func (m *model) buildCommandArgs() []string {

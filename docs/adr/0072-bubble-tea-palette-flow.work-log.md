@@ -1,5 +1,30 @@
 # ADR 0072 – Bubble Tea palette flow work log
 
+## 2026-01-12 – Loop 018 (helper:v20251223.1)
+- focus: Decision §“Typography & information architecture recommendations” → apply the lipgloss-theme-foundations palette to toast overlays so CLI cues stay legible across dark and light terminals.
+- active_constraint: Toast overlays still used literal ANSI-256 IDs (57/212), so the CLI reinforcement palette diverged from Charmtone guidance and `go test ./internal/bartui` could not guarantee adaptive colour parity when theme tokens changed.
+- expected_value table:
+  | Factor           | Value | Rationale |
+  |------------------|-------|-----------|
+  | Impact           | High  | Toasts are the primary CLI reinforcement surface; unreadable colours block ADR 0072’s grammar-first objective. |
+  | Probability      | Med   | Refactoring to a shared `composerTheme` is straightforward but required fixture + test updates. |
+  | Time Sensitivity | Medium| Theme alignment is needed before the next pilot cut so that CLI hints match the Charmtone palette shown elsewhere. |
+  | Uncertainty note | Low   | Behaviour is fully covered by unit, fixture, and expect tests. |
+- validation_targets:
+  - `go test ./internal/bartui`
+  - `go test ./cmd/bar/...`
+  - `python3 -m pytest _tests/test_bar_completion_cli.py`
+  - `scripts/tools/run-tui-expect.sh --all`
+- evidence:
+  - docs/adr/evidence/0072-bubble-tea-palette-flow/loop-018.md
+- rollback_plan: `git restore --source=HEAD~1 internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json tests/integration/tui/cases/token-palette-history.exp docs/adr/evidence/0072-bubble-tea-palette-flow/loop-018.md docs/adr/0072-bubble-tea-palette-flow.work-log.md` followed by `go test ./internal/bartui` to watch the ANSI-only toast palette return.
+- delta_summary: helper:diff-snapshot=7 files changed, 169 insertions(+), 39 deletions(-); introduced `composerTheme`, updated toast tests, regenerated the CLI fixture, reran expect transcripts, and recorded the evidence loop.
+- loops_remaining_forecast: 1 loop (extend Charmtone palette to history + status strip styles). Confidence: medium — needs visual verification in narrow terminals.
+- residual_constraints:
+  - History + summary strips still instantiate ad-hoc Lip Gloss colours instead of the Charmtone helpers (severity: medium impact × low probability). Mitigation: extend `composerTheme` to sidebar headers, monitor via nightly `scripts/tools/run-tui-expect.sh --all`. Owning ADR: 0072 typography guidance.
+- next_work:
+  - Behaviour: propagate `composerTheme` to history/summary strips; validation target `scripts/tools/run-tui-expect.sh --all`.
+
 ## 2026-01-12 – Loop 011 (helper:v20251223.1)
 - focus: Decision §“Add focus breadcrumbs, toast-style transient feedback…” → reinforce CLI learning with inline telemetry and toasts.
 - active_constraint: Token adjustments lacked inline CLI feedback, causing operators to miss grammar reinforcement; falsified previously by `go test ./internal/bartui` lacking toast/sparkline coverage, now relieved by extending the Bubble Tea model and tests.

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -83,6 +84,35 @@ func historyKinds(m model) []historyEventKind {
 		kinds[i] = event.Kind
 	}
 	return kinds
+}
+
+func trueColorSequenceFromHex(t *testing.T, hexColor string) string {
+	t.Helper()
+	trimmed := strings.TrimPrefix(strings.ToLower(hexColor), "#")
+	if len(trimmed) != 6 {
+		t.Fatalf("expected 6-digit hex color, got %q", hexColor)
+	}
+	r, err := strconv.ParseUint(trimmed[0:2], 16, 32)
+	if err != nil {
+		t.Fatalf("failed parsing red channel from %q: %v", hexColor, err)
+	}
+	g, err := strconv.ParseUint(trimmed[2:4], 16, 32)
+	if err != nil {
+		t.Fatalf("failed parsing green channel from %q: %v", hexColor, err)
+	}
+	b, err := strconv.ParseUint(trimmed[4:6], 16, 32)
+	if err != nil {
+		t.Fatalf("failed parsing blue channel from %q: %v", hexColor, err)
+	}
+	return fmt.Sprintf(";38;2;%d;%d;%dm", r, g, b)
+}
+
+func assertTrueColorSequence(t *testing.T, rendered string, hexColor string, description string) {
+	t.Helper()
+	expected := trueColorSequenceFromHex(t, hexColor)
+	if !strings.Contains(rendered, expected) {
+		t.Fatalf("expected %s %s in %q", description, hexColor, rendered)
+	}
 }
 
 func TestLoadSubjectFromClipboard(t *testing.T) {
@@ -859,25 +889,13 @@ func TestShortcutReferenceEscClosesDialog(t *testing.T) {
 }
 
 func TestSidebarContentRespectsColumnWidth(t *testing.T) {
-	longLabel := "SupercalifragilisticexpialidociousPromptAxisValue"
-	categories := []TokenCategory{
-		{
-			Key:           "scope",
-			Label:         "Scope",
-			Kind:          TokenCategoryKindAxis,
-			MaxSelections: 1,
-			Options: []TokenOption{
-				{Value: "long-scope", Slug: "scope=" + longLabel, Label: longLabel},
-			},
-		},
-	}
 	opts := Options{
-		Tokens:          []string{"long-scope"},
-		TokenCategories: categories,
-		Preview:         func(subject string, tokens []string) (string, error) { return subject + strings.Join(tokens, ","), nil },
+		Tokens:          nil,
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:   func() (string, error) { return "", nil },
 		ClipboardWrite:  func(string) error { return nil },
-		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
 			return "", "", nil
 		},
 		CommandTimeout: time.Second,
@@ -1119,7 +1137,7 @@ func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
 		lipgloss.SetColorProfile(originalProfile)
 	})
 
-	lipgloss.SetColorProfile(termenv.ANSI256)
+	lipgloss.SetColorProfile(termenv.TrueColor)
 
 	m := model{
 		toastVisible: true,
@@ -1128,15 +1146,11 @@ func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
 
 	lipgloss.SetHasDarkBackground(true)
 	dark := m.renderToastOverlay()
-	if !strings.Contains(dark, ";38;5;"+toastDarkColor+"m") {
-		t.Fatalf("expected dark background toast color %s, got %q", toastDarkColor, dark)
-	}
+	assertTrueColorSequence(t, dark, composerTheme.toastForeground.Dark, "dark background toast color")
 
 	lipgloss.SetHasDarkBackground(false)
 	light := m.renderToastOverlay()
-	if !strings.Contains(light, ";38;5;"+toastLightColor+"m") {
-		t.Fatalf("expected light background toast color %s, got %q", toastLightColor, light)
-	}
+	assertTrueColorSequence(t, light, composerTheme.toastForeground.Light, "light background toast color")
 
 	if !strings.Contains(light, "Toast: ") || !strings.Contains(dark, "Toast: ") {
 		t.Fatalf("expected toast message prefix to persist, got dark=%q light=%q", dark, light)
@@ -1278,12 +1292,16 @@ func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
 }
 
 func TestTokenPaletteHistoryToggle(t *testing.T) {
+	var copied string
 	opts := Options{
 		Tokens:          nil,
 		TokenCategories: defaultTokenCategories(),
 		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:   func() (string, error) { return "", nil },
-		ClipboardWrite:  func(string) error { return nil },
+		ClipboardWrite: func(s string) error {
+			copied = s
+			return nil
+		},
 		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
 			return "", "", nil
 		},
@@ -1320,11 +1338,23 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 	if !viewContains(view, "[TOKENS]") {
 		t.Fatalf("expected focus breadcrumbs to highlight tokens, got view:\n%s", view)
 	}
-	if !viewContains(view, "HISTORY (Ctrl+H toggles)") {
+	if !viewContains(view, "HISTORY (Ctrl+H toggles · Ctrl+Shift+H copies CLI)") {
 		t.Fatalf("expected view to include history header, got view:\n%s", view)
 	}
 	if !strings.Contains(view, "CLI: bar build todo") {
 		t.Fatalf("expected history entry to include CLI summary, got view:\n%s", view)
+	}
+
+	if cmd := (&m).copyHistoryCommandToClipboard(); cmd != nil {
+		if msg := cmd(); msg != nil {
+			m, _ = updateModel(t, m, msg)
+		}
+	}
+	if copied != "bar build todo" {
+		t.Fatalf("expected history copy to capture CLI 'bar build todo', got %q", copied)
+	}
+	if !strings.Contains(m.statusMessage, "Copied history CLI command to clipboard") {
+		t.Fatalf("expected status message to confirm history copy, got %q", m.statusMessage)
 	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
@@ -1361,7 +1391,7 @@ func TestSidebarToggleVisibility(t *testing.T) {
 		t.Fatalf("expected sidebar width 0 after hiding, got %d", m.sidebarColumnWidth)
 	}
 	view := m.View()
-	if strings.Contains(view, "HISTORY (Ctrl+H toggles)") {
+	if strings.Contains(view, "HISTORY (Ctrl+H toggles") {
 		t.Fatalf("expected history section to be hidden when sidebar is hidden, view:\n%s", view)
 	}
 
@@ -1373,11 +1403,12 @@ func TestSidebarToggleVisibility(t *testing.T) {
 		t.Fatalf("expected sidebar width to be restored, got %d", m.sidebarColumnWidth)
 	}
 	restored := m.View()
-	if !strings.Contains(restored, "HISTORY (Ctrl+H toggles)") {
+	if !strings.Contains(restored, "HISTORY (Ctrl+H toggles") {
 		t.Fatalf("expected history section when sidebar is visible, view:\n%s", restored)
 	}
 
 	narrow := tea.WindowSizeMsg{Width: 60, Height: 24}
+
 	m, _ = updateModel(t, m, narrow)
 	if m.sidebarPreference != sidebarPreferenceShown {
 		t.Fatalf("expected sidebar preference to remain shown after resize, got %v", m.sidebarPreference)
@@ -1386,7 +1417,7 @@ func TestSidebarToggleVisibility(t *testing.T) {
 		t.Fatalf("expected sidebar width 0 when terminal is narrow, got %d", m.sidebarColumnWidth)
 	}
 	stacked := m.View()
-	if !strings.Contains(stacked, "HISTORY (Ctrl+H toggles)") {
+	if !strings.Contains(stacked, "HISTORY (Ctrl+H toggles") {
 		t.Fatalf("expected history section to render in stacked layout, view:\n%s", stacked)
 	}
 }

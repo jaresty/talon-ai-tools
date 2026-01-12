@@ -41,7 +41,7 @@ expect {
 
 send "\u0008" ;# Ctrl+H toggles history (backspace code point)
 expect {
-    -re {History expanded\. Press Ctrl\+H to collapse\.} {}
+    -re {History expanded\. Press Ctrl\+H to collapse\. Press Ctrl\+Shift\+H to copy the latest CLI command\.} {}
     timeout { send_error "missing history toggle status"; exit 1 }
 }
 expect {

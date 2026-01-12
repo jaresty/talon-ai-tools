@@ -352,8 +352,28 @@ const (
 
 const tokenSparklineWindow = 12
 const toastLifetime = 1500 * time.Millisecond
-const toastDarkColor = "212"
-const toastLightColor = "57"
+
+// composerTheme centralizes the Lip Gloss palette for ADR 0072 so toast overlays
+// reinforce the CLI grammar cues across dark and light terminals.
+var composerTheme = newGrammarComposerTheme()
+
+type grammarComposerTheme struct {
+	toastForeground lipgloss.AdaptiveColor
+	toastStyle      lipgloss.Style
+}
+
+func newGrammarComposerTheme() grammarComposerTheme {
+	toastForeground := lipgloss.AdaptiveColor{
+		Light: "#3C1053", // Charmtone plum on light backgrounds
+		Dark:  "#F3D57C", // Charmtone amber on dark backgrounds
+	}
+	return grammarComposerTheme{
+		toastForeground: toastForeground,
+		toastStyle: lipgloss.NewStyle().
+			Foreground(toastForeground).
+			Bold(true),
+	}
+}
 
 type toastExpiredMsg struct {
 	sequence int
@@ -1527,7 +1547,7 @@ func (m *model) togglePaletteHistory() {
 	}
 	m.paletteHistoryVisible = !m.paletteHistoryVisible
 	if m.paletteHistoryVisible {
-		m.statusMessage = "History expanded. Press Ctrl+H to collapse."
+		m.statusMessage = "History expanded. Press Ctrl+H to collapse. Press Ctrl+Shift+H to copy the latest CLI command."
 	} else {
 		m.statusMessage = "History collapsed. Press Ctrl+H to expand."
 	}
@@ -1879,6 +1899,11 @@ func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
 		return true, m.openTokenPalette()
 	case "ctrl+h":
 		m.togglePaletteHistory()
+		return true, nil
+	case "ctrl+shift+h", "ctrl+H":
+		if cmd := m.copyHistoryCommandToClipboard(); cmd != nil {
+			return true, cmd
+		}
 		return true, nil
 	case "ctrl+g":
 		m.toggleSidebarVisibility()
@@ -3143,7 +3168,7 @@ func (m *model) renderComposeSection() string {
 func (m *model) renderHistorySection() string {
 	var builder strings.Builder
 	builder.WriteString(renderSidebarSectionHeader("History"))
-	hint := renderSidebarSectionHint("(Ctrl+H toggles)")
+	hint := renderSidebarSectionHint("(Ctrl+H toggles · Ctrl+Shift+H copies CLI)")
 	if hint != "" {
 		builder.WriteString(" ")
 		builder.WriteString(hint)
@@ -3424,6 +3449,7 @@ func (m *model) shortcutReferenceSections() []shortcutSection {
 			Title: "History & Presets",
 			Entries: []shortcutEntry{
 				{Keys: "Ctrl+H", Description: "Toggle history section"},
+				{Keys: "Ctrl+Shift+H", Description: "Copy latest history CLI to clipboard"},
 				{Keys: "Ctrl+S", Description: "Toggle preset pane"},
 				{Keys: "Ctrl+N", Description: "Start preset save"},
 				{Keys: "Delete", Description: "Delete selected preset"},
@@ -3886,10 +3912,7 @@ func (m *model) renderToastOverlay() string {
 	if message == "" {
 		return ""
 	}
-	style := lipgloss.NewStyle().
-		Foreground(lipgloss.AdaptiveColor{Light: toastLightColor, Dark: toastDarkColor}).
-		Bold(true)
-	return style.Render("Toast: " + message)
+	return composerTheme.toastStyle.Render("Toast: " + message)
 }
 
 func (m *model) refreshPreview() {
@@ -3940,6 +3963,33 @@ func (m *model) copyBuildCommandToClipboard() {
 	m.destinationSummary = "clipboard — CLI command copied"
 	m.statusMessage = "Copied bar build command to clipboard."
 	m.recordPaletteHistory(historyEventKindClipboard, "Clipboard → CLI command copied")
+}
+
+func (m *model) copyHistoryCommandToClipboard() tea.Cmd {
+	if !m.paletteHistoryVisible {
+		m.statusMessage = "History collapsed. Press Ctrl+H to expand before copying."
+		return nil
+	}
+	if len(m.paletteHistory) == 0 {
+		m.statusMessage = "No history entries to copy."
+		return nil
+	}
+	for _, event := range m.paletteHistory {
+		command := strings.TrimSpace(event.Command)
+		if command == "" {
+			continue
+		}
+		if err := m.clipboardWrite(command); err != nil {
+			m.statusMessage = fmt.Sprintf("Clipboard write failed: %v", err)
+			return nil
+		}
+		m.destinationSummary = "clipboard — CLI command copied"
+		m.statusMessage = "Copied history CLI command to clipboard."
+		m.recordPaletteHistory(historyEventKindClipboard, "Clipboard → history CLI command copied")
+		return m.showToast(fmt.Sprintf("History CLI copied · CLI: %s", shortenString(command, 48)))
+	}
+	m.statusMessage = "History entries do not include CLI commands yet."
+	return nil
 }
 
 func (m *model) buildCommandArgs() []string {

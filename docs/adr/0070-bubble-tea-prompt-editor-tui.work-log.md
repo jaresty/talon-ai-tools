@@ -1595,6 +1595,28 @@
 - next_work:
   - Behaviour: Prototype shorter status messages and evaluate dynamic wrapping; rerun `go test ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight`, `go test ./cmd/bar/...`, and `python3 -m pytest _tests/test_bar_completion_cli.py` after adjustments.
 
+## 2026-01-12 — loop 087
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — restore multi-line subject editing so preview/stdout reinsertion preserves formatting
+- active_constraint: The subject editor’s textinput sanitizer collapsed newlines, so fallback-to-preview and stdout reinsertion delivered single-line subjects, violating ADR 0070’s requirement that Ctrl+Y keep the authored transcript intact.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-087.md#loop-087-green--helper-diff-snapshot-git-diff--stat-head
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-087.md#loop-087-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-087.md#loop-087-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-087.md#loop-087-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-087.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (swap subject textinput for textarea + viewport sizing) · internal/bartui/program_test.go (newline-preserving regression coverage) · cmd/bar/testdata/tui_smoke.json (snapshot aligns with multi-line view)
+- loops_remaining_forecast: 1 loop (status message length trim) — medium confidence while UX messaging work remains.
+- residual_constraints:
+  - Status line still exceeds comfortable length when commands/palette emit long guidance (severity: medium; mitigation: explore contextual status truncation; monitoring trigger: pilot feedback that status messages wrap or obscure viewport content).
+  - Help overlay remains the sole location for full shortcut documentation (severity: low; mitigation: leave as-is but monitor onboarding feedback).
+- next_work:
+  - Behaviour: Prototype shorter status messages and evaluate dynamic wrapping; rerun `go test ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight`, `go test ./cmd/bar/...`, and `python3 -m pytest _tests/test_bar_completion_cli.py` after adjustments.
+
 ## 2026-01-12 — loop 086
 - helper_version: helper:v20251223.1
 - focus: Decision § subject import/export — fall back to preview text when stdout is empty so Ctrl+Y still satisfies ADR behaviour

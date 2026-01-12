@@ -14,6 +14,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	textarea "github.com/charmbracelet/bubbles/textarea"
 	textinput "github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -662,7 +663,7 @@ type model struct {
 	resultViewport     viewport.Model
 	condensedPreview   bool
 
-	subject                textinput.Model
+	subject                textarea.Model
 	command                textinput.Model
 	focus                  focusArea
 	preview                string
@@ -705,10 +706,14 @@ type model struct {
 }
 
 func newModel(opts Options) model {
-	subject := textinput.New()
+	subject := textarea.New()
 	subject.Placeholder = "Describe the subject to update the preview"
 	subject.Prompt = ""
 	subject.CharLimit = 0
+	subject.EndOfBufferCharacter = ' '
+	subject.ShowLineNumbers = false
+	subject.SetWidth(defaultViewportWidth)
+	subject.SetHeight(minSubjectViewport)
 	subject.Focus()
 
 	command := textinput.New()
@@ -777,6 +782,7 @@ func newModel(opts Options) model {
 		tokens:                 append([]string(nil), opts.Tokens...),
 		tokenCategories:        cloneTokenCategories(opts.TokenCategories),
 		tokenPaletteFilter:     tokenPaletteFilter,
+		tokenViewport:          tokenViewport,
 		focusBeforePalette:     focusSubject,
 		subject:                subject,
 		command:                command,
@@ -796,7 +802,6 @@ func newModel(opts Options) model {
 		width:                  initialWidth,
 		height:                 initialHeight,
 		subjectViewport:        subjectViewport,
-		tokenViewport:          tokenViewport,
 		resultViewport:         resultViewport,
 		listPresets:            opts.ListPresets,
 		loadPreset:             opts.LoadPreset,
@@ -897,6 +902,9 @@ func (m *model) layoutViewports() {
 	m.tokenViewport.Height = maxInt(1, tokenHeight)
 	m.subjectViewport.Height = maxInt(minSubjectViewport, subjectHeight)
 	m.resultViewport.Height = maxInt(minResultViewport, resultHeight)
+
+	m.subject.SetWidth(m.subjectViewport.Width)
+	m.subject.SetHeight(m.subjectViewport.Height)
 }
 
 func computeColumnLayout(width int) (mainWidth int, gap int, sidebarWidth int) {
@@ -935,12 +943,14 @@ func computeColumnLayout(width int) (mainWidth int, gap int, sidebarWidth int) {
 }
 
 func (m *model) updateSubjectViewportContent() {
-	var builder strings.Builder
-	builder.WriteString(m.subject.View())
+	content := m.subject.View()
 	if m.focus == focusSubject {
-		builder.WriteString("  ← editing")
+		if !strings.HasSuffix(content, "\n") {
+			content += "\n"
+		}
+		content += "  ← editing"
 	}
-	m.subjectViewport.SetContent(builder.String())
+	m.subjectViewport.SetContent(content)
 }
 
 func (m *model) renderResultViewportContent() string {

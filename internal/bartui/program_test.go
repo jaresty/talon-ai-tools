@@ -218,8 +218,10 @@ func TestReinsertLastResultAppliesImmediately(t *testing.T) {
 
 func TestReinsertLastResultFallsBackToPreview(t *testing.T) {
 	opts := Options{
-		Tokens:         []string{"todo"},
-		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		Tokens: []string{"todo"},
+		Preview: func(subject string, tokens []string) (string, error) {
+			return "preview line one\npreview line two\n", nil
+		},
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
@@ -236,7 +238,7 @@ func TestReinsertLastResultFallsBackToPreview(t *testing.T) {
 	if m.pendingSubject != nil {
 		t.Fatalf("expected subject replacement to apply immediately")
 	}
-	expected := "preview:original"
+	expected := "preview line one\npreview line two"
 	if got := m.subject.Value(); got != expected {
 		t.Fatalf("expected subject replaced with preview, got %q", got)
 	}
@@ -250,6 +252,36 @@ func TestReinsertLastResultFallsBackToPreview(t *testing.T) {
 	}
 	if m.subjectUndoAvailable {
 		t.Fatalf("expected undo to clear after restoring original subject")
+	}
+}
+
+func TestSubjectInputAcceptsNewlines(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	type keySeq []tea.KeyMsg
+	seq := keySeq{
+		{Type: tea.KeyRunes, Runes: []rune{'H'}},
+		{Type: tea.KeyEnter},
+		{Type: tea.KeyRunes, Runes: []rune{'i'}},
+	}
+
+	for _, key := range seq {
+		m, _ = updateModel(t, m, key)
+	}
+
+	expected := "H\ni"
+	if got := m.subject.Value(); got != expected {
+		t.Fatalf("expected subject to include newline, got %q", got)
 	}
 }
 

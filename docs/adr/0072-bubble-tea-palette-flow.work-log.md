@@ -167,3 +167,39 @@
   - Palette theming is still hard-coded to ANSI 256 values; future theme work may introduce configurable colour tokens (severity: low impact × medium probability). Mitigation: revisit once consolidated theme palette lands (tracked in ADR 0077). Monitor design sync notes for updates.
 - next_work:
   - Behaviour: Monitor toast palette against future theme tokens; validation target `scripts/tools/run-tui-expect.sh --all` (rerun when theme assets change).
+
+## 2026-01-12 – Loop 016 (helper:v20251223.1)
+- focus: Decision §“Keep CLI summaries focused on grammar tokens…” → hide raw subject prompts from all Bubble Tea CLI summaries and toasts.
+- active_constraint: Status strips, summary strips, and toast notifications still echoed the entire `--prompt` argument (`bar build … --prompt '<subject>'`), overwhelming pilots and violating ADR guidance; validated by existing smoke snapshot and toast output.
+- expected_value table:
+  | Factor           | Value | Rationale |
+  |------------------|-------|-----------|
+  | Impact           | High  | Prevents subject leakage in UI summaries and keeps CLI reinforcement focused on grammar tokens. |
+  | Probability      | High  | A dedicated display-command helper guarantees prompt filtering across all summary surfaces. |
+  | Time Sensitivity | Medium| Needed before broader pilot rollout so transcripts and toasts stay concise. |
+  | Uncertainty note | Low   | Behaviour confirmed via unit, fixture, and expect updates. |
+- validation_targets:
+  - `go test ./internal/bartui`
+  - `go test ./cmd/bar/...`
+  - `python3 -m pytest _tests/test_bar_completion_cli.py`
+  - `scripts/tools/run-tui-expect.sh --all`
+- evidence:
+  - green | 2026-01-12T21:42:02Z | exit 0 | `go test ./internal/bartui`
+    helper:diff-snapshot=3 files changed, 68 insertions(+), 7 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-016.md
+  - green | 2026-01-12T21:42:02Z | exit 0 | `go test ./cmd/bar/...`
+    helper:diff-snapshot=3 files changed, 68 insertions(+), 7 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-016.md
+  - green | 2026-01-12T21:42:02Z | exit 0 | `python3 -m pytest _tests/test_bar_completion_cli.py`
+    helper:diff-snapshot=3 files changed, 68 insertions(+), 7 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-016.md
+  - green | 2026-01-12T21:42:02Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
+    helper:diff-snapshot=3 files changed, 68 insertions(+), 7 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-016.md
+- rollback_plan: `git restore --source=HEAD~1 internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json` then rerun `go test ./internal/bartui` to confirm CLI summaries revert to raw prompts.
+- delta_summary: helper:diff-snapshot=3 files changed, 68 insertions(+), 7 deletions(-); added display-command helper, prompt-free status/summary/toast rendering, regression tests, and updated smoke snapshot.
+- loops_remaining_forecast: 0 loops; confidence high — pending items are limited to future theming work tracked in residual constraints.
+- residual_constraints:
+  - Palette theming remains hard-coded to ANSI 256 values (severity: low impact × medium probability). Mitigation: revisit once consolidated theme palette lands per ADR 0077; monitor design sync updates and rerun `scripts/tools/run-tui-expect.sh --all` after theme changes.
+- next_work:
+  - Behaviour: Monitor toast palette against future theme tokens; validation target `scripts/tools/run-tui-expect.sh --all` (rerun when theme assets change).

@@ -2430,8 +2430,7 @@ func (m *model) renderStatusStrip() string {
 	}
 	parts = append(parts, fmt.Sprintf("Preset: %s", preset))
 
-	commandForClipboard := joinShellArgs(m.buildCommandArgs())
-	displayCommand := sanitizeShellCommand(commandForClipboard)
+	displayCommand := m.displayCommandString()
 	if displayCommand == "" {
 		displayCommand = "bar build"
 	}
@@ -2471,8 +2470,7 @@ func (m *model) renderSummaryStrip() string {
 		tokenSummary = shortenString(strings.Join(m.tokens, ", "), 40)
 	}
 
-	commandForClipboard := joinShellArgs(m.buildCommandArgs())
-	displayCommand := sanitizeShellCommand(commandForClipboard)
+	displayCommand := m.displayCommandString()
 	if displayCommand == "" {
 		displayCommand = "bar build"
 	}
@@ -3808,8 +3806,10 @@ func tokenToastFragment(category TokenCategory, option TokenOption) string {
 }
 
 func (m *model) toastCommandSummary() string {
-	command := joinShellArgs(m.buildCommandArgs())
-	command = sanitizeShellCommand(command)
+	command := m.displayCommandString()
+	if command == "" {
+		command = "bar build"
+	}
 	return shortenString(command, 48)
 }
 
@@ -3944,6 +3944,35 @@ func (m *model) buildCommandArgs() []string {
 		args = append(args, "--prompt", subject)
 	}
 	return args
+}
+
+func filterPromptArgs(args []string) []string {
+	if len(args) == 0 {
+		return args
+	}
+	filtered := make([]string, 0, len(args))
+	skipNext := false
+	for i := 0; i < len(args); i++ {
+		if skipNext {
+			skipNext = false
+			continue
+		}
+		if args[i] == "--prompt" {
+			skipNext = true
+			continue
+		}
+		filtered = append(filtered, args[i])
+	}
+	return filtered
+}
+
+func (m *model) displayCommandArgs() []string {
+	return filterPromptArgs(m.buildCommandArgs())
+}
+
+func (m *model) displayCommandString() string {
+	command := joinShellArgs(m.displayCommandArgs())
+	return sanitizeShellCommand(command)
 }
 
 func joinShellArgs(args []string) string {

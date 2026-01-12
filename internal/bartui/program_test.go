@@ -1143,6 +1143,38 @@ func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
 	}
 }
 
+func TestDisplayCommandOmitsPromptFromSummaries(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.subject.SetValue("Write grammar-first summary")
+	m.refreshPreview()
+
+	status := m.renderStatusStrip()
+	if strings.Contains(status, "--prompt") {
+		t.Fatalf("expected status strip CLI summary to omit prompt, got %q", status)
+	}
+
+	summary := m.renderSummaryStrip()
+	if strings.Contains(summary, "--prompt") {
+		t.Fatalf("expected summary strip CLI summary to omit prompt, got %q", summary)
+	}
+
+	toast := m.toastCommandSummary()
+	if strings.Contains(toast, "--prompt") {
+		t.Fatalf("expected toast command summary to omit prompt, got %q", toast)
+	}
+}
+
 func TestComposeSectionShowsTelemetrySparkline(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo"},

@@ -1836,12 +1836,48 @@ func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
 	}
 }
 
-func ensureCopyHint(status string) string {
+const copyHint = "Type \"copy command\" to focus the copy action."
+const statusLimit = 180
 
+func ensureCopyHint(status string) string {
+	status = strings.TrimSpace(status)
+	if status == "" {
+		return limitStatusMessage(copyHint)
+	}
 	if strings.Contains(status, "copy command") {
+		return limitStatusMessage(status)
+	}
+	return limitStatusMessage(status + " " + copyHint)
+}
+
+func limitStatusMessage(status string) string {
+	status = strings.TrimSpace(status)
+	if status == "" {
+		return ""
+	}
+	runes := []rune(status)
+	if len(runes) <= statusLimit {
 		return status
 	}
-	return status + " Type \"copy command\" to focus the copy action."
+	cut := statusLimit - 1
+	if cut <= 0 {
+		return "…"
+	}
+	for i := cut; i >= 0; i-- {
+		switch runes[i] {
+		case ' ', '|', '·', '•', '—', '-', '.', ',', ';':
+			cut = i
+			goto done
+		}
+	}
+	cut = statusLimit - 1
+
+done:
+	trimmed := strings.TrimSpace(string(runes[:cut]))
+	if trimmed == "" {
+		trimmed = strings.TrimSpace(string(runes[:statusLimit-1]))
+	}
+	return trimmed + "…"
 }
 
 func (m *model) restoreStatusAfterShortcutReference() {
@@ -2281,7 +2317,7 @@ func (m *model) renderFocusBreadcrumbs() string {
 }
 
 func (m *model) renderStatusStrip() string {
-	status := strings.TrimSpace(m.statusMessage)
+	status := limitStatusMessage(strings.TrimSpace(m.statusMessage))
 	if status == "" {
 		status = "Ready"
 	}
@@ -2315,6 +2351,14 @@ func (m *model) renderStatusStrip() string {
 		}
 	}
 	parts = append(parts, fmt.Sprintf("Env: %s", env))
+
+	if len(m.missingEnv) > 0 {
+		missing := strings.Join(m.missingEnv, ", ")
+		if len(missing) > 32 {
+			missing = fmt.Sprintf("%d missing", len(m.missingEnv))
+		}
+		parts = append(parts, fmt.Sprintf("Missing: %s", missing))
+	}
 
 	return strings.Join(parts, " | ")
 }

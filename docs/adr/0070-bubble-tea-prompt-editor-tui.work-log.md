@@ -1617,6 +1617,27 @@
 - next_work:
   - Behaviour: Prototype shorter status messages and evaluate dynamic wrapping; rerun `go test ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight`, `go test ./cmd/bar/...`, and `python3 -m pytest _tests/test_bar_completion_cli.py` after adjustments.
 
+## 2026-01-12 — loop 088
+- helper_version: helper:v20251223.1
+- focus: Residual constraint — status strip guardrail from Decision § subject import/export keeps guidance readable within the summary line
+- active_constraint: The status strip could exceed 180 characters, truncating environment guidance (e.g., missing env alerts) so the copy-hint appendage displaced the informative portion during `go test ./cmd/bar/...`
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-088.md#loop-088-green--helper-diff-snapshot-git-diff--stat-head
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-088.md#loop-088-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-088.md#loop-088-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-088.md#loop-088-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-088.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (status message limiter + summary missing-env bucket) · internal/bartui/program_test.go (view assertions updated for ellipsis & missing summary) · cmd/bar/testdata/tui_smoke.json (snapshot reflects truncated status string)
+- loops_remaining_forecast: 0 loops — status guidance now bounded with summary backstops; monitor pilot telemetry for regressions.
+- residual_constraints:
+  - Help overlay remains the sole location for full shortcut documentation (severity: low; mitigation: keep onboarding snippets handy; monitoring trigger: pilot feedback requesting inline shortcut refreshers).
+- next_work:
+  - Behaviour: Observe pilot feedback on truncated statuses and shortcut discoverability; rerun `go test ./internal/bartui`, `go test ./cmd/bar/...`, and `python3 -m pytest _tests/test_bar_completion_cli.py` if changes are required.
+
 ## 2026-01-12 — loop 086
 - helper_version: helper:v20251223.1
 - focus: Decision § subject import/export — fall back to preview text when stdout is empty so Ctrl+Y still satisfies ADR behaviour

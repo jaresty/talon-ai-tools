@@ -558,11 +558,14 @@ func TestEnvironmentAllowlistVisible(t *testing.T) {
 	}
 
 	view := m.View()
-	if !strings.Contains(view, "Environment allowlist: CHATGPT_API_KEY, ORG_ID") {
-		t.Fatalf("expected view to include allowlist, got:\n%s", view)
+	if !strings.Contains(view, "Environment allowlist:") {
+		t.Fatalf("expected view to mention environment allowlist, got:\n%s", view)
 	}
-	if !strings.Contains(view, "Missing environment variables: NOT_SET") {
-		t.Fatalf("expected view to include missing env, got:\n%s", view)
+	if !strings.Contains(view, "Env: CHATGPT_API_KEY, ORG_ID") {
+		t.Fatalf("expected summary to include allowlist envs, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Missing: NOT_SET") {
+		t.Fatalf("expected status summary to include missing env, got:\n%s", view)
 	}
 
 	m.command.SetValue("echo")

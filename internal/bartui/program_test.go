@@ -952,6 +952,64 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 	}
 }
 
+func TestSidebarToggleVisibility(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+		InitialWidth:   120,
+		InitialHeight:  40,
+	}
+	m := newModel(opts)
+
+	if m.sidebarColumnWidth == 0 {
+		t.Fatalf("expected sidebar to be visible initially, got width %d", m.sidebarColumnWidth)
+	}
+
+	toggle := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{''}}
+	m, _ = updateModel(t, m, toggle)
+	if m.sidebarPreference != sidebarPreferenceHidden {
+		t.Fatalf("expected sidebar preference hidden after toggle, got %v", m.sidebarPreference)
+	}
+	if m.sidebarColumnWidth != 0 {
+		t.Fatalf("expected sidebar width 0 after hiding, got %d", m.sidebarColumnWidth)
+	}
+	view := m.View()
+	if strings.Contains(view, "HISTORY (Ctrl+H toggles)") {
+		t.Fatalf("expected history section to be hidden when sidebar is hidden, view:\n%s", view)
+	}
+
+	m, _ = updateModel(t, m, toggle)
+	if m.sidebarPreference != sidebarPreferenceShown {
+		t.Fatalf("expected sidebar preference shown after second toggle, got %v", m.sidebarPreference)
+	}
+	if m.sidebarColumnWidth == 0 {
+		t.Fatalf("expected sidebar width to be restored, got %d", m.sidebarColumnWidth)
+	}
+	restored := m.View()
+	if !strings.Contains(restored, "HISTORY (Ctrl+H toggles)") {
+		t.Fatalf("expected history section when sidebar is visible, view:\n%s", restored)
+	}
+
+	narrow := tea.WindowSizeMsg{Width: 60, Height: 24}
+	m, _ = updateModel(t, m, narrow)
+	if m.sidebarPreference != sidebarPreferenceShown {
+		t.Fatalf("expected sidebar preference to remain shown after resize, got %v", m.sidebarPreference)
+	}
+	if m.sidebarColumnWidth != 0 {
+		t.Fatalf("expected sidebar width 0 when terminal is narrow, got %d", m.sidebarColumnWidth)
+	}
+	stacked := m.View()
+	if !strings.Contains(stacked, "HISTORY (Ctrl+H toggles)") {
+		t.Fatalf("expected history section to render in stacked layout, view:\n%s", stacked)
+	}
+}
+
 func TestCommandHistoryRecordsSuccess(t *testing.T) {
 	opts := Options{
 		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },

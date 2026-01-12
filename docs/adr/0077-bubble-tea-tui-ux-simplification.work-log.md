@@ -69,3 +69,36 @@ residual_constraints:
 next_work:
 - Behaviour: Implement sidebar visibility toggle with persisted preference (validation: `go test ./internal/bartui`, `cmd/bar/testdata/tui_smoke.json`, `scripts/tools/run-tui-expect.sh --all`).
 - Behaviour: Add in-app shortcut reference overlay with typography adjustments (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`, `python3 -m pytest _tests/test_bar_completion_cli.py`).
+
+## loop-003 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Decision bullet 3 → introduce a keyboard-controlled sidebar toggle with persisted preference so operators can collapse the sidebar independently of auto layout.
+
+active_constraint: Sidebar visibility remains width-driven with no operator override, forcing operators to endure cramped columns even when they prefer a single-column experience (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Manual toggle unlocks ADR 0077 layout goals, reducing distraction in constrained terminals. |
+| Probability | High | Updating bartui state, layout, and help text directly addresses the missing control. |
+| Time Sensitivity | Medium | Needed before layering shortcut overlays so future loops inherit the final layout behaviour. |
+| Uncertainty note | Low | Behaviour fully exercised via unit checks and expect harness. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `scripts/tools/run-tui-expect.sh --all`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-003.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json tests/integration/tui/cases/launch-status.exp`; rerun `scripts/tools/run-tui-expect.sh --all` to confirm the sidebar toggle disappears before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=4 files changed, 117 insertions(+), 3 deletions(-) — adds sidebar preference state, Ctrl+G toggle handling, status/help updates, unit coverage, and refreshed fixtures for the new status messaging.
+
+loops_remaining_forecast: 1 loop (in-app shortcut reference overlay and typography polish). Confidence: medium — remaining work spans overlay rendering plus expect coverage updates.
+
+residual_constraints:
+- Medium — In-app shortcut cheat sheet (`Ctrl+?`) still absent, leaving ADR 0077 Decision bullet 5 unmet. Mitigation: add overlay plus documentation updates, validate via `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`, and CLI snapshot refresh; monitor operator feedback about shortcut discoverability.
+
+next_work:
+- Behaviour: Add in-app shortcut reference overlay with typography adjustments (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`, `python3 -m pytest _tests/test_bar_completion_cli.py`).

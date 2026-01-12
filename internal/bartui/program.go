@@ -60,6 +60,13 @@ type historyEvent struct {
 	Timestamp time.Time
 }
 
+type sidebarPreference int
+
+const (
+	sidebarPreferenceShown sidebarPreference = iota
+	sidebarPreferenceHidden
+)
+
 const (
 	historyEventKindTokens    historyEventKind = "Tokens"
 	historyEventKindClipboard historyEventKind = "Clipboard"
@@ -473,6 +480,9 @@ type model struct {
 
 	destinationSummary string
 
+	sidebarPreference sidebarPreference
+	sidebarAutoHidden bool
+
 	now func() time.Time
 
 	pendingSubject       *subjectReplacementPrompt
@@ -577,7 +587,7 @@ func newModel(opts Options) model {
 	tokenPaletteFilter.CharLimit = 64
 	tokenPaletteFilter.Blur()
 
-	status := "Subject input focused. Use Ctrl+L to load from clipboard. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI."
+	status := "Subject input focused. Use Ctrl+L to load from clipboard. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI · Ctrl+G toggle sidebar."
 	if len(envNames) > 0 {
 		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + ". Tab again to focus the allowlist and press Ctrl+E to toggle entries."
 	} else {
@@ -642,6 +652,7 @@ func newModel(opts Options) model {
 		focusBeforePane:        focusSubject,
 		lastDeletedPreset:      nil,
 		lastDeletedDescription: "",
+		sidebarPreference:      sidebarPreferenceShown,
 		now:                    time.Now,
 	}
 	m.destinationSummary = "clipboard — Ctrl+B copies CLI"
@@ -698,6 +709,15 @@ func (m *model) layoutViewports() {
 	}
 
 	mainWidth, gap, sidebarWidth := computeColumnLayout(width)
+
+	if m.sidebarPreference == sidebarPreferenceHidden {
+		mainWidth = width
+		gap = 0
+		sidebarWidth = 0
+	}
+
+	autoHidden := m.sidebarPreference == sidebarPreferenceShown && sidebarWidth == 0
+	m.sidebarAutoHidden = autoHidden
 	m.mainColumnWidth = mainWidth
 	m.sidebarColumnWidth = sidebarWidth
 	m.columnGap = gap
@@ -847,9 +867,18 @@ func (m *model) handleWindowSize(msg tea.WindowSizeMsg) {
 	if msg.Width <= 0 {
 		return
 	}
+	prevAutoHidden := m.sidebarAutoHidden
 	m.width = msg.Width
 	m.height = msg.Height
 	m.layoutViewports()
+	if m.sidebarPreference == sidebarPreferenceShown {
+		switch {
+		case m.sidebarAutoHidden && !prevAutoHidden:
+			m.statusMessage = "Sidebar hidden automatically because the terminal is too narrow. Press Ctrl+G to hide manually or widen the window."
+		case !m.sidebarAutoHidden && prevAutoHidden:
+			m.statusMessage = "Sidebar visible again. Press Ctrl+G to hide."
+		}
+	}
 	m.updateTokenViewportContent()
 	m.updateSubjectViewportContent()
 	m.updateResultViewportContent()
@@ -1263,6 +1292,25 @@ func (m *model) togglePaletteHistory() {
 	}
 }
 
+func (m *model) toggleSidebarVisibility() {
+	if m.sidebarPreference == sidebarPreferenceHidden {
+		m.sidebarPreference = sidebarPreferenceShown
+		m.layoutViewports()
+		if m.sidebarAutoHidden {
+			m.statusMessage = "Sidebar expanded, but the terminal is too narrow to render it. Resize or press Ctrl+G to hide."
+		} else {
+			m.statusMessage = "Sidebar expanded. Press Ctrl+G to hide."
+		}
+	} else {
+		m.sidebarPreference = sidebarPreferenceHidden
+		m.layoutViewports()
+		m.statusMessage = "Sidebar hidden. Press Ctrl+G to show."
+	}
+	m.updateTokenViewportContent()
+	m.updateSubjectViewportContent()
+	m.updateResultViewportContent()
+}
+
 func (m *model) rebuildTokensFromStates() {
 	total := len(m.unassignedTokens)
 	for _, state := range m.tokenStates {
@@ -1546,6 +1594,9 @@ func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
 		return true, m.openTokenPalette()
 	case "ctrl+h":
 		m.togglePaletteHistory()
+		return true, nil
+	case "ctrl+g":
+		m.toggleSidebarVisibility()
 		return true, nil
 	case "ctrl+e":
 		if m.focus == focusEnvironment {
@@ -2726,6 +2777,9 @@ func (m *model) renderPresetsSection() string {
 }
 
 func (m *model) renderSidebarContent() string {
+	if m.sidebarPreference == sidebarPreferenceHidden {
+		return ""
+	}
 	sections := []string{
 		m.renderComposeSection(),
 		m.renderHistorySection(),
@@ -2788,6 +2842,8 @@ func (m model) View() string {
 		b.WriteString("    • Type category=value to filter/apply; Tab cycles columns; Shift+Tab reverses; Enter applies staged edits; Ctrl+W clears filter.\n")
 		b.WriteString("  Presets:\n")
 		b.WriteString("    • Ctrl+S toggles pane; Ctrl+N starts save; Delete removes; Ctrl+Z undoes last preset change.\n")
+		b.WriteString("  Layout:\n")
+		b.WriteString("    • Ctrl+G toggles sidebar visibility.\n")
 		b.WriteString("  Environment:\n")
 		b.WriteString("    • Tab focuses list; Up/Down move; Ctrl+E toggles; Ctrl+A enables all; Ctrl+X clears allowlist.\n")
 		b.WriteString("  Command lifecycle:\n")

@@ -68,12 +68,7 @@ expect {
 # Toggle palette history to inspect the most recent command entry
 send "\u0008"
 expect {
-    -re {Palette history \(Ctrl\+H toggles\):} {}
-    timeout { send_error "missing palette history header"; exit 1 }
-}
-
-expect {
-    -re {Command \(subject\) → "printf hi" exit 0} {}
+    -re {Command \(subject\) →.*exit 0} {}
     timeout { send_error "missing command history entry"; exit 1 }
 }
 

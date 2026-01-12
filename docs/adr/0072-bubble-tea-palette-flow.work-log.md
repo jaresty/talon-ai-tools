@@ -278,3 +278,44 @@ assets:
 - `internal/barcli/completion_test.go`
 - `tests/integration/tui/cases/clipboard-history.exp`
 - Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-007.md`
+
+## loop-008 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0072 Decision bullets 10 and 13 → refactor the Bubble Tea TUI into a deterministic two-column layout that keeps the omnibox, summary strip, and palette visible side-by-side on sufficiently wide terminals.
+
+active_constraint: Operators reported the palette and clipboard history disappearing when the omnibox expanded, and `scripts/tools/run-tui-expect.sh --all` snapshots showed the single-column viewport still collapsing the palette in wider layouts.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Meeting the ADR layout requirement keeps palette tooling visible while editing omnibox inputs |
+| Probability | High | Updating `internal/bartui` layout logic and fixtures deterministically resolves the collapse |
+| Time Sensitivity | Medium | Needed before follow-on palette polish so future loops inherit the stable layout |
+| Uncertainty note | Low | Tests and expect fixtures fully exercise the layout paths |
+
+validation_targets:
+- `go test ./...`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-008.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json tests/integration/tui/cases/clipboard-history.args tests/integration/tui/cases/clipboard-history.exp tests/integration/tui/cases/token-command-history.exp`; rerun `scripts/tools/run-tui-expect.sh --all` to confirm the palette collapse returns.
+
+delta_summary: helper:diff-snapshot=internal/bartui/program.go | internal/bartui/program_test.go | cmd/bar/testdata/tui_smoke.json | tests/integration/tui/cases/clipboard-history.args | tests/integration/tui/cases/clipboard-history.exp | tests/integration/tui/cases/token-command-history.exp — restructures the TUI into main/sidebar columns, updates tests to normalise whitespace, and refreshes expect fixtures for the docked layout.
+
+loops_remaining_forecast: 0 loops (ADR 0072 layout constraints satisfied; prepare closure review). Confidence: high.
+
+residual_constraints:
+- None — omnibox layout parity requirement is satisfied and expect harness keeps palette history visible.
+
+next_work:
+- Documentation: Finalise ADR 0072 closure once team signs off on the docked layout (validation: doc review + `scripts/tools/run-tui-expect.sh --all`).
+
+assets:
+- `internal/bartui/program.go`
+- `internal/bartui/program_test.go`
+- `cmd/bar/testdata/tui_smoke.json`
+- `tests/integration/tui/cases/clipboard-history.args`
+- `tests/integration/tui/cases/clipboard-history.exp`
+- `tests/integration/tui/cases/token-command-history.exp`
+- Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-008.md`

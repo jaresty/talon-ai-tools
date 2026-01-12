@@ -17,6 +17,7 @@ import (
 	textinput "github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	lipgloss "github.com/charmbracelet/lipgloss"
 )
 
 // PreviewFunc produces the preview text for the given subject and tokens.
@@ -461,11 +462,14 @@ type model struct {
 	subjectUndoSource    string
 	subjectUndoAvailable bool
 
-	width            int
-	height           int
-	subjectViewport  viewport.Model
-	resultViewport   viewport.Model
-	condensedPreview bool
+	width              int
+	height             int
+	mainColumnWidth    int
+	sidebarColumnWidth int
+	columnGap          int
+	subjectViewport    viewport.Model
+	resultViewport     viewport.Model
+	condensedPreview   bool
 
 	subject                textinput.Model
 	command                textinput.Model
@@ -674,12 +678,59 @@ func (m *model) layoutViewports() {
 		}
 	}
 
-	m.tokenViewport.Width = maxInt(1, width)
+	mainWidth, gap, sidebarWidth := computeColumnLayout(width)
+	m.mainColumnWidth = mainWidth
+	m.sidebarColumnWidth = sidebarWidth
+	m.columnGap = gap
+
+	if sidebarWidth == 0 {
+		m.subjectViewport.Width = maxInt(1, width)
+		m.resultViewport.Width = maxInt(1, width)
+		m.tokenViewport.Width = maxInt(1, width)
+	} else {
+		m.subjectViewport.Width = maxInt(1, mainWidth)
+		m.resultViewport.Width = maxInt(1, mainWidth)
+		m.tokenViewport.Width = maxInt(1, sidebarWidth)
+	}
+
 	m.tokenViewport.Height = maxInt(1, tokenHeight)
-	m.subjectViewport.Width = maxInt(1, width)
 	m.subjectViewport.Height = maxInt(minSubjectViewport, subjectHeight)
-	m.resultViewport.Width = maxInt(1, width)
 	m.resultViewport.Height = maxInt(minResultViewport, resultHeight)
+}
+
+func computeColumnLayout(width int) (mainWidth int, gap int, sidebarWidth int) {
+	const (
+		minMainWidth    = 44
+		minSidebarWidth = 30
+		minGap          = 2
+	)
+
+	if width <= 0 {
+		width = defaultViewportWidth
+	}
+
+	if width < minMainWidth+minSidebarWidth+minGap {
+		return width, 0, 0
+	}
+
+	gap = 4
+	if width < 90 {
+		gap = 2
+	}
+
+	available := width - gap
+	maxSidebar := available - minMainWidth
+	if maxSidebar < minSidebarWidth {
+		return width, 0, 0
+	}
+
+	sidebarWidth = clampInt(width/3, minSidebarWidth, maxSidebar)
+	mainWidth = available - sidebarWidth
+	if mainWidth < minMainWidth {
+		return width, 0, 0
+	}
+
+	return mainWidth, gap, sidebarWidth
 }
 
 func (m *model) updateSubjectViewportContent() {
@@ -2498,6 +2549,63 @@ func (m *model) undoSubjectReplacement() {
 	m.recordPaletteHistory(fmt.Sprintf("Subject undo (%s)", source))
 }
 
+func (m *model) renderMainColumnContent() string {
+	var builder strings.Builder
+
+	builder.WriteString("Subject (PgUp/PgDn scroll · Home/End jump):\n")
+	builder.WriteString(m.subjectViewport.View())
+	builder.WriteString("\n\n")
+
+	builder.WriteString("Command (Enter runs without preview):\n")
+	builder.WriteString(m.command.View())
+	builder.WriteString("\n\n")
+
+	builder.WriteString("Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.\n\n")
+
+	builder.WriteString("Result summary:\n")
+	builder.WriteString(m.renderResultSummaryLine())
+	builder.WriteString("\n\n")
+
+	builder.WriteString("Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):\n")
+	builder.WriteString(m.resultViewport.View())
+	builder.WriteString("\n")
+
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m *model) renderSidebarContent() string {
+	var builder strings.Builder
+
+	localTokenViewport := m.tokenViewport
+	localTokenViewport.SetContent(m.renderTokenViewportContent())
+	tokenSection := strings.TrimRight(localTokenViewport.View(), "\n")
+	if tokenSection != "" {
+		builder.WriteString(tokenSection)
+		builder.WriteString("\n\n")
+	}
+
+	if m.paletteHistoryVisible {
+		builder.WriteString("Palette history (Ctrl+H toggles):\n")
+		if len(m.paletteHistory) == 0 {
+			builder.WriteString("  (empty)\n\n")
+		} else {
+			for _, entry := range m.paletteHistory {
+				builder.WriteString(fmt.Sprintf("  • %s\n", entry))
+			}
+			builder.WriteString("\n")
+		}
+	}
+
+	if m.presetPaneVisible {
+		var presetBuilder strings.Builder
+		m.renderPresetPane(&presetBuilder)
+		builder.WriteString(strings.TrimRight(presetBuilder.String(), "\n"))
+		builder.WriteString("\n")
+	}
+
+	return strings.TrimRight(builder.String(), "\n")
+}
+
 func (m model) View() string {
 	paletteDebugLog(&m, "View", "")
 	var b strings.Builder
@@ -2547,49 +2655,26 @@ func (m model) View() string {
 		b.WriteString("    • Esc closes overlays (help → palette → prompts) then exits; press ? anytime to toggle this reference.\n\n")
 	}
 
-	b.WriteString("Subject (PgUp/PgDn scroll · Home/End jump):\n")
-	b.WriteString(m.subjectViewport.View())
-	b.WriteString("\n\n")
+	mainContent := m.renderMainColumnContent()
+	sidebarContent := m.renderSidebarContent()
 
-	b.WriteString("Command (Enter runs without preview):\n")
-	b.WriteString(m.command.View())
-	b.WriteString("\n\n")
-
-	b.WriteString("Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.\n\n")
-
-	b.WriteString("Result summary:\n")
-	b.WriteString(m.renderResultSummaryLine())
-	b.WriteString("\n\n")
-
-	b.WriteString("Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):\n")
-	b.WriteString(m.resultViewport.View())
-	b.WriteString("\n")
-
-	localTokenViewport := m.tokenViewport
-	localTokenViewport.SetContent(m.renderTokenViewportContent())
-	tokenSection := localTokenViewport.View()
-	b.WriteString(tokenSection)
-	if tokenSection != "" && !strings.HasSuffix(tokenSection, "\n") {
+	if m.sidebarColumnWidth > 0 && m.mainColumnWidth > 0 {
+		mainRendered := lipgloss.NewStyle().Width(m.mainColumnWidth).Render(mainContent)
+		sideRendered := lipgloss.NewStyle().Width(m.sidebarColumnWidth).Render(sidebarContent)
+		gap := ""
+		if m.columnGap > 0 {
+			gap = strings.Repeat(" ", m.columnGap)
+		}
+		joined := lipgloss.JoinHorizontal(lipgloss.Top, mainRendered, gap, sideRendered)
+		b.WriteString(joined)
 		b.WriteString("\n")
-	}
-	if tokenSection != "" {
-		b.WriteString("\n")
-	}
-
-	if m.paletteHistoryVisible {
-		b.WriteString("Palette history (Ctrl+H toggles):\n")
-		if len(m.paletteHistory) == 0 {
-			b.WriteString("  (empty)\n\n")
-		} else {
-			for _, entry := range m.paletteHistory {
-				b.WriteString(fmt.Sprintf("  • %s\n", entry))
-			}
+	} else {
+		b.WriteString(mainContent)
+		if sidebarContent != "" {
+			b.WriteString("\n\n")
+			b.WriteString(sidebarContent)
 			b.WriteString("\n")
 		}
-	}
-
-	if m.presetPaneVisible {
-		m.renderPresetPane(&b)
 	}
 
 	b.WriteString("Press Ctrl+C or Esc to exit.\n")

@@ -1,4 +1,4 @@
-Proposed — Bubble Tea TUI palette and inline editing refinements (2026-01-11)
+Accepted — Bubble Tea TUI palette and inline editing refinements (2026-01-11)
 
 ## Context
 - ADR 0070 introduced the Bubble Tea prompt editor overlaying the existing `bar` CLI, while ADR 0071 compacted the layout for 24–30 row terminals.
@@ -36,11 +36,11 @@ Proposed — Bubble Tea TUI palette and inline editing refinements (2026-01-11)
 - Run `python3 -m pytest _tests/test_bar_completion_cli.py` to keep CLI hints synchronized with the exposed palette shortcuts and command summaries.
 
 ## Follow-up
-- Implement viewport refactors to house the docked palette and ensure PgUp/PgDn/Home/End map to the appropriate scroll targets.
 - Refresh docs, quickstart transcripts, and pilot playbook sections with the new palette flow and inline token editing guidance.
 - Coordinate with ADR 0075 (CLI coordination layer refactor) so the docked omnibox shortcuts and palette history stay in sync with the accepted `internal/barcli/cli` contracts.
-- Finalize the docked omnibox layout; expect case `clipboard-history` now exercises clipboard/undo/destination history entries.
+- Monitor the two-column layout via `scripts/tools/run-tui-expect.sh --all` after palette or preset tweaks to catch regressions early.
 - Gather pilot feedback after release to tune omnibox defaults (e.g., staged apply behavior, history length, category hinting).
+- Pursue interaction simplification and typography cues outlined in ADR 0077.
 
 ## Anti-goals
 - Do not re-litigate the core Bubble Tea architecture established in ADR 0070.

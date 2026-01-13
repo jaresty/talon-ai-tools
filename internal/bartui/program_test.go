@@ -2694,6 +2694,77 @@ func TestPositionAwareTabCompletion(t *testing.T) {
 	if len(scopeCompletions) != 2 { // scope=focus, scope=breadth
 		t.Fatalf("expected 2 completions for 'scope=', got %d: %v", len(scopeCompletions), scopeCompletions)
 	}
+
+	// Test 6: Verify completion order matches CLI order (static=11 > scope=8)
+	// With defaultTokenCategories, static should come before scope
+	if allCompletions[0] != "todo" && allCompletions[0] != "summary" {
+		t.Fatalf("expected first completion from static category (todo/summary), got %q", allCompletions[0])
+	}
+	if allCompletions[2] != "focus" && allCompletions[2] != "breadth" {
+		t.Fatalf("expected third completion from scope category (focus/breadth), got %q", allCompletions[2])
+	}
+}
+
+func TestCompletionOrderMatchesCLI(t *testing.T) {
+	// Create categories in "wrong" order (scope first, then intent, then static)
+	// to verify sorting puts them in CLI order: intent (16) > static (11) > scope (8)
+	categories := []TokenCategory{
+		{
+			Key:           "scope",
+			Label:         "Scope",
+			Kind:          TokenCategoryKindAxis,
+			MaxSelections: 2,
+			Options: []TokenOption{
+				{Value: "focus", Slug: "focus", Label: "Focus"},
+			},
+		},
+		{
+			Key:           "intent",
+			Label:         "Intent",
+			Kind:          TokenCategoryKindPersona,
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "explain", Slug: "explain", Label: "Explain"},
+			},
+		},
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			Kind:          TokenCategoryKindStatic,
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "todo", Slug: "todo", Label: "Todo"},
+			},
+		},
+	}
+
+	opts := Options{
+		Tokens:          []string{},
+		TokenCategories: categories,
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview", nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	completions := m.getCompletionsForPartial("")
+
+	if len(completions) != 3 {
+		t.Fatalf("expected 3 completions, got %d: %v", len(completions), completions)
+	}
+
+	// CLI order: intent (16) > static (11) > scope (8)
+	// So expected order: explain (intent), todo (static), focus (scope)
+	expected := []string{"explain", "todo", "focus"}
+	for i, exp := range expected {
+		if completions[i] != exp {
+			t.Fatalf("expected completions[%d]=%q, got %q (full: %v)", i, exp, completions[i], completions)
+		}
+	}
 }
 
 func TestTokenSummaryNoHighlightWhenSubjectFocused(t *testing.T) {

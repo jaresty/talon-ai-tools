@@ -525,3 +525,35 @@ residual_constraints:
 
 next_work:
 - Behaviour: Monitor position-aware completion usage and gather feedback (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+## loop-017 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0077 Consequences → fix TUI completion order to match CLI completion order (intent, persona, static, then axes).
+
+active_constraint: TUI completion order differed from CLI; Static tokens appeared before Intent tokens, while CLI shows Intent first (validation: `go test ./internal/bartui -run TestCompletionOrderMatchesCLI`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Matching CLI order enables consistent learning transfer between TUI and terminal. |
+| Probability | High | Adding a completion order map and sorting categories directly addresses the mismatch. |
+| Time Sensitivity | Low | Consistency enhancement; not blocking other work. |
+| Uncertainty note | Low | Behaviour fully covered by new unit test. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-017.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui/program.go internal/bartui/program_test.go`; rerun `go test ./internal/bartui -run TestCompletionOrderMatchesCLI` to confirm the test fails before reapplying.
+
+delta_summary: helper:diff-snapshot=2 files changed, ~45 insertions(+) — adds `completionCategoryOrder` map mirroring CLI's `stageOrder` constants, modifies `getCompletionsForPartial` to sort categories by order before collecting completions, adds `TestCompletionOrderMatchesCLI` unit test.
+
+loops_remaining_forecast: 0 loops. Confidence: high — TUI completions now match CLI order; ADR 0077 CLI command input mode is complete.
+
+residual_constraints:
+- Low — Status message could be enhanced to indicate when completions are category-scoped vs all-categories. Mitigation: monitor operator feedback; owner: ADR 0077 follow-up.
+
+next_work:
+- Behaviour: Monitor CLI command input mode usage and gather feedback (validation: `scripts/tools/run-tui-expect.sh --all`).

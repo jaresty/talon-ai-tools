@@ -1562,9 +1562,25 @@ func (m *model) extractCompletionContext(filterValue string) (partial, prefix st
 	return filterValue[lastSpace+1:], filterValue[:lastSpace+1]
 }
 
+// completionCategoryOrder defines the order for Tab completions to match CLI completion order.
+// Higher values appear first (same as CLI's stageOrder in completion.go).
+var completionCategoryOrder = map[string]int{
+	"intent":       16,
+	"voice":        14,
+	"audience":     13,
+	"tone":         12,
+	"static":       11,
+	"completeness": 9,
+	"scope":        8,
+	"method":       7,
+	"form":         6,
+	"channel":      5,
+	"directional":  4,
+}
+
 // getCompletionsForPartial returns token options matching the partial string.
 // If partial contains "=" (e.g., "static=inf"), it completes values for that category only.
-// Otherwise, it completes from all categories.
+// Otherwise, it completes from all categories in CLI-matching order.
 func (m *model) getCompletionsForPartial(partial string) []string {
 	partial = strings.TrimSpace(partial)
 
@@ -1575,13 +1591,22 @@ func (m *model) getCompletionsForPartial(partial string) []string {
 		return m.getCompletionsForCategory(categorySlug, valuePartial)
 	}
 
-	// No "=" found - complete from all categories
+	// No "=" found - complete from all categories in CLI order
 	partialLower := strings.ToLower(partial)
 	var completions []string
 	seen := make(map[string]bool)
 
-	// Collect all matching token options across categories
-	for _, state := range m.tokenStates {
+	// Sort categories by CLI completion order (higher order first)
+	sortedStates := make([]tokenCategoryState, len(m.tokenStates))
+	copy(sortedStates, m.tokenStates)
+	sort.SliceStable(sortedStates, func(i, j int) bool {
+		orderI := completionCategoryOrder[strings.ToLower(sortedStates[i].category.Key)]
+		orderJ := completionCategoryOrder[strings.ToLower(sortedStates[j].category.Key)]
+		return orderI > orderJ // Higher order first
+	})
+
+	// Collect all matching token options across categories in sorted order
+	for _, state := range sortedStates {
 		for _, opt := range state.category.Options {
 			value := opt.Value
 			if seen[value] {

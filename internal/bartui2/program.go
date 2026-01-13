@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/tree"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
@@ -300,6 +301,20 @@ func truncate(s string, maxLen int) string {
 	return s[:maxLen-3] + "..."
 }
 
+// getCategoryForToken returns the category label for a given token value.
+// Returns empty string if the token is not found in any category.
+func (m model) getCategoryForToken(token string) string {
+	tokenLower := strings.ToLower(token)
+	for _, category := range m.tokenCategories {
+		for _, opt := range category.Options {
+			if strings.ToLower(opt.Value) == tokenLower || strings.ToLower(opt.Slug) == tokenLower {
+				return category.Label
+			}
+		}
+	}
+	return ""
+}
+
 // View implements tea.Model.
 func (m model) View() string {
 	if !m.ready {
@@ -343,6 +358,9 @@ var (
 	tokenStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("78"))
 
+	categoryStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("244"))
+
 	completionSelectedStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("212")).
 				Bold(true)
@@ -372,7 +390,12 @@ func (m model) renderTokensPane() string {
 	}
 
 	var left strings.Builder
-	left.WriteString(headerStyle.Render("TOKENS"))
+	// Header with count
+	if len(m.tokens) == 0 {
+		left.WriteString(headerStyle.Render("TOKENS"))
+	} else {
+		left.WriteString(headerStyle.Render(fmt.Sprintf("TOKENS (%d)", len(m.tokens))))
+	}
 	left.WriteString("\n")
 
 	if len(m.tokens) == 0 {
@@ -380,9 +403,22 @@ func (m model) renderTokensPane() string {
 		left.WriteString("\n")
 		left.WriteString(dimStyle.Render("Type to search, Enter to select"))
 	} else {
+		// Build tree with lipgloss/tree
+		tokenTree := tree.New()
 		for _, token := range m.tokens {
-			left.WriteString(fmt.Sprintf("└─ %s\n", tokenStyle.Render(token)))
+			category := m.getCategoryForToken(token)
+			if category != "" {
+				// Show "Category: value" format
+				tokenTree = tokenTree.Child(fmt.Sprintf("%s: %s",
+					categoryStyle.Render(category),
+					tokenStyle.Render(token)))
+			} else {
+				// Fallback for unknown tokens
+				tokenTree = tokenTree.Child(tokenStyle.Render(token))
+			}
 		}
+		tokenTree = tokenTree.Enumerator(tree.RoundedEnumerator)
+		left.WriteString(tokenTree.String())
 	}
 
 	var right strings.Builder

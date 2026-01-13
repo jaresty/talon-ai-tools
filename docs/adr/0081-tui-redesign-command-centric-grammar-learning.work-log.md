@@ -70,3 +70,38 @@ residual_constraints:
 next_work:
 - Behaviour: Add token tree visualization with category labels (validation: `go test ./internal/bartui2`).
 - Behaviour: Implement subject input modal (Ctrl+L) (validation: `go test ./internal/bartui2`).
+
+## loop-003 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0081 Decision → implement token tree visualization with category labels using lipgloss/tree component.
+
+active_constraint: Tokens displayed as flat list without category context; operators cannot see which grammar axis each selected token belongs to (validation: `go test ./internal/bartui2 -run TestTokenTree`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Category labels help users understand token relationships and grammar structure. |
+| Probability | High | Using established lipgloss/tree component with clear API. |
+| Time Sensitivity | Medium | Improves UX but not blocking core functionality. |
+| Uncertainty note | Low | Tree rendering pattern well-documented in skill references. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-003.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go go.mod go.sum`; rerun `go test ./internal/bartui2 -run TestTokenTree` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=4 files changed — upgrades lipgloss to v1.1.0 for tree package, adds `getCategoryForToken()` for category lookup, replaces manual tree rendering with `lipgloss/tree` using `RoundedEnumerator`, header shows "TOKENS (N)" count, adds 3 new tests for category features.
+
+loops_remaining_forecast: 3-4 loops. Confidence: medium — remaining work includes subject input modal (Ctrl+L), command execution, clipboard copy, and polish.
+
+residual_constraints:
+- Medium — Preview pane truncates without scroll. Mitigation: add bubbles viewport component.
+- Low — No clipboard integration (Ctrl+B placeholder). Mitigation: wire up after core interaction.
+- Low — Subject input not yet implemented (Ctrl+L). Mitigation: next loop priority.
+
+next_work:
+- Behaviour: Implement subject input modal (Ctrl+L) (validation: `go test ./internal/bartui2`).
+- Behaviour: Wire clipboard copy (Ctrl+B) (validation: `go test ./internal/bartui2`).

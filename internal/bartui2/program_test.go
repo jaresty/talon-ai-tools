@@ -310,3 +310,91 @@ func TestSnapshotWithCompletions(t *testing.T) {
 		t.Error("expected completion selection indicator '▸' in view")
 	}
 }
+
+func TestGetCategoryForToken(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+
+	// Test known token
+	category := m.getCategoryForToken("todo")
+	if category != "Static Prompt" {
+		t.Errorf("expected category 'Static Prompt' for 'todo', got %q", category)
+	}
+
+	// Test another category
+	category = m.getCategoryForToken("focus")
+	if category != "Scope" {
+		t.Errorf("expected category 'Scope' for 'focus', got %q", category)
+	}
+
+	// Test case-insensitive matching
+	category = m.getCategoryForToken("TODO")
+	if category != "Static Prompt" {
+		t.Errorf("expected category 'Static Prompt' for 'TODO' (case-insensitive), got %q", category)
+	}
+
+	// Test unknown token
+	category = m.getCategoryForToken("unknown")
+	if category != "" {
+		t.Errorf("expected empty category for unknown token, got %q", category)
+	}
+}
+
+func TestTokenTreeWithCategoryLabels(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo", "focus"},
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+
+	view, err := Snapshot(opts)
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	// Should show token count in header
+	if !strings.Contains(view, "TOKENS (2)") {
+		t.Error("expected 'TOKENS (2)' header showing token count")
+	}
+
+	// Should show category labels with tokens
+	if !strings.Contains(view, "Static Prompt") {
+		t.Error("expected 'Static Prompt' category label for 'todo' token")
+	}
+
+	if !strings.Contains(view, "Scope") {
+		t.Error("expected 'Scope' category label for 'focus' token")
+	}
+
+	// Should use tree notation (rounded enumerator uses ╰─)
+	if !strings.Contains(view, "╰─") {
+		t.Error("expected tree notation '╰─' in token display")
+	}
+}
+
+func TestTokenTreeEmptyShowsNoCount(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   nil,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+
+	view, err := Snapshot(opts)
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	// Should show just "TOKENS" without count when empty
+	if strings.Contains(view, "TOKENS (") {
+		t.Error("expected 'TOKENS' without count when no tokens selected")
+	}
+
+	if !strings.Contains(view, "TOKENS") {
+		t.Error("expected 'TOKENS' header")
+	}
+}

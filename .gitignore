@@ -12,3 +12,4 @@ tests/integration/tui/tmp/
 artifacts/
 .venv/
 GPT/lists/*.talon-list
+.envrc

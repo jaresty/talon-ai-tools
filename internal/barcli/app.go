@@ -14,7 +14,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|help|completion|preset|tui]"
+	topUsage   = "usage: bar [build|help|completion|preset|tui|tui2]"
 )
 
 var generalHelpText = strings.TrimSpace(`USAGE
@@ -144,6 +144,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	if options.Command == "tui" {
 		return runTUI(options, stdin, stdout, stderr)
+	}
+
+	if options.Command == "tui2" {
+		return runTUI2(options, stdin, stdout, stderr)
 	}
 
 	if options.Command != "build" {

@@ -43,6 +43,7 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	tokenCategories := BuildTokenCategories(grammar)
 	tokens := append([]string(nil), opts.Tokens...)
 
 	preview := func(subject string, tokenSet []string) (string, error) {
@@ -56,11 +57,12 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	tuiOpts := bartui2.Options{
-		InitialTokens: tokens,
-		Preview:       preview,
-		InitialWidth:  opts.FixtureWidth,
-		InitialHeight: opts.FixtureHeight,
-		NoAltScreen:   opts.NoAltScreen,
+		InitialTokens:   tokens,
+		TokenCategories: tokenCategories,
+		Preview:         preview,
+		InitialWidth:    opts.FixtureWidth,
+		InitialHeight:   opts.FixtureHeight,
+		NoAltScreen:     opts.NoAltScreen,
 	}
 
 	if err := startTUI2(tuiOpts); err != nil {

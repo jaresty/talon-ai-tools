@@ -3,6 +3,8 @@ package bartui2
 import (
 	"strings"
 	"testing"
+
+	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
 func TestSnapshotBasicLayout(t *testing.T) {
@@ -116,5 +118,195 @@ func TestParseTokensFromCommandEmpty(t *testing.T) {
 
 	if len(tokens) != 0 {
 		t.Fatalf("expected 0 tokens for empty command, got %d: %v", len(tokens), tokens)
+	}
+}
+
+func testCategories() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:   "static",
+			Label: "Static Prompt",
+			Options: []bartui.TokenOption{
+				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Return a todo list"},
+				{Value: "infer", Slug: "infer", Label: "Infer", Description: "Infer the task"},
+			},
+		},
+		{
+			Key:   "scope",
+			Label: "Scope",
+			Options: []bartui.TokenOption{
+				{Value: "focus", Slug: "focus", Label: "Focus", Description: "Concentrate on single topic"},
+				{Value: "system", Slug: "system", Label: "System", Description: "Examine connected system"},
+			},
+		},
+		{
+			Key:   "completeness",
+			Label: "Completeness",
+			Options: []bartui.TokenOption{
+				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer"},
+				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Concise summary"},
+			},
+		},
+	}
+}
+
+func TestFuzzyCompletionAllOptions(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+
+	// With no filter, should show all 6 options
+	m.commandInput.SetValue("bar build ")
+	m.updateCompletions()
+
+	if len(m.completions) != 6 {
+		t.Fatalf("expected 6 completions with no filter, got %d: %v", len(m.completions), m.completions)
+	}
+}
+
+func TestFuzzyCompletionFiltering(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+
+	// Filter by "fo" should match "focus", "infer" (contains "f" but not "fo")
+	// Actually "fo" should match "focus" and possibly "info" but we only have focus
+	m.commandInput.SetValue("bar build fo")
+	m.updateCompletions()
+
+	// Should find "focus" (contains "fo")
+	found := false
+	for _, c := range m.completions {
+		if c.Value == "focus" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected 'focus' in completions for filter 'fo', got: %v", m.completions)
+	}
+
+	// Should NOT find "todo" (doesn't contain "fo")
+	for _, c := range m.completions {
+		if c.Value == "todo" {
+			t.Errorf("did not expect 'todo' in completions for filter 'fo'")
+		}
+	}
+}
+
+func TestFuzzyCompletionExcludesSelected(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo"},
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+
+	// "todo" is already selected, should not appear in completions
+	m.commandInput.SetValue("bar build todo ")
+	m.tokens = m.parseTokensFromCommand()
+	m.updateCompletions()
+
+	for _, c := range m.completions {
+		if c.Value == "todo" {
+			t.Errorf("selected token 'todo' should not appear in completions")
+		}
+	}
+
+	// Should have 5 remaining options
+	if len(m.completions) != 5 {
+		t.Errorf("expected 5 completions (6 - 1 selected), got %d", len(m.completions))
+	}
+}
+
+func TestCompletionSelection(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+
+	m.commandInput.SetValue("bar build ")
+	m.updateCompletions()
+
+	// Select the first completion
+	if len(m.completions) == 0 {
+		t.Fatal("expected completions to be available")
+	}
+
+	firstCompletion := m.completions[0]
+	m.selectCompletion(firstCompletion)
+
+	// Verify the token was added to the command
+	if !strings.Contains(m.commandInput.Value(), firstCompletion.Value) {
+		t.Errorf("expected command to contain %q, got %q", firstCompletion.Value, m.commandInput.Value())
+	}
+
+	// Verify tokens were updated
+	found := false
+	for _, token := range m.tokens {
+		if token == firstCompletion.Value {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected tokens to contain %q", firstCompletion.Value)
+	}
+}
+
+func TestCompletionSelectionWithPartial(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+
+	// Type partial "fo" then select "focus"
+	m.commandInput.SetValue("bar build fo")
+	m.updateCompletions()
+
+	// Find and select "focus"
+	var focusCompletion completion
+	for _, c := range m.completions {
+		if c.Value == "focus" {
+			focusCompletion = c
+			break
+		}
+	}
+
+	m.selectCompletion(focusCompletion)
+
+	// Should have "bar build focus " (partial replaced)
+	expected := "bar build focus "
+	if m.commandInput.Value() != expected {
+		t.Errorf("expected command %q, got %q", expected, m.commandInput.Value())
+	}
+}
+
+func TestSnapshotWithCompletions(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+
+	view, err := Snapshot(opts)
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	// Should show completions in the view
+	if !strings.Contains(view, "todo") || !strings.Contains(view, "Static Prompt") {
+		t.Error("expected completions to show token values and categories")
+	}
+
+	// Should show the selection indicator
+	if !strings.Contains(view, "▸") {
+		t.Error("expected completion selection indicator '▸' in view")
 	}
 }

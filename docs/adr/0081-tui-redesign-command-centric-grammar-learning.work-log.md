@@ -34,3 +34,39 @@ residual_constraints:
 next_work:
 - Behaviour: Implement fuzzy completion matching across all token categories (validation: `go test ./internal/bartui2`).
 - Behaviour: Add token tree visualization with category labels (validation: `go test ./internal/bartui2`).
+
+## loop-002 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0081 Decision → implement fuzzy completion matching across all token categories with live filtering.
+
+active_constraint: Completions pane shows placeholder text only; operators cannot discover available tokens by typing partial matches (validation: `go test ./internal/bartui2 -run TestFuzzyCompletion`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Fuzzy completion is core to the command-centric design; without it, token discovery is impossible. |
+| Probability | High | Pattern matching and list filtering are well-understood implementations. |
+| Time Sensitivity | Medium | Required before user testing can begin. |
+| Uncertainty note | Low | Reuses bartui.TokenCategory structure; no new abstractions needed. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-002.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go internal/barcli/tui2.go`; rerun `go test ./internal/bartui2 -run TestFuzzyCompletion` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=3 files changed — adds `completion` type, `updateCompletions()` fuzzy matcher, `selectCompletion()` for applying selections, `getFilterPartial()` for extracting typed partial, renders completions with category labels and selection indicator, wires TokenCategories through tui2.go, adds 6 new tests for completion functionality.
+
+loops_remaining_forecast: 4-5 loops. Confidence: medium — remaining work includes token tree with category labels, subject input modal, command execution, clipboard copy, and polish.
+
+residual_constraints:
+- Medium — Token tree shows flat list without category grouping. Mitigation: enhance tree rendering to show `Category: value` format in next loop.
+- Medium — Preview pane truncates without scroll. Mitigation: add bubbles viewport component.
+- Low — No clipboard integration (Ctrl+B placeholder). Mitigation: wire up after core interaction.
+- Low — Fuzzy matching is simple substring; could enhance with proper fuzzy algorithm. Mitigation: monitor usability feedback.
+
+next_work:
+- Behaviour: Add token tree visualization with category labels (validation: `go test ./internal/bartui2`).
+- Behaviour: Implement subject input modal (Ctrl+L) (validation: `go test ./internal/bartui2`).

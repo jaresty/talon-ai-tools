@@ -10,12 +10,16 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
 // Options configures the TUI behavior.
 type Options struct {
 	// InitialTokens are pre-selected tokens to start with.
 	InitialTokens []string
+
+	// TokenCategories defines available tokens grouped by category.
+	TokenCategories []bartui.TokenCategory
 
 	// Preview generates prompt text from subject and tokens.
 	Preview func(subject string, tokens []string) (string, error)
@@ -30,6 +34,13 @@ type Options struct {
 	NoAltScreen bool
 }
 
+// completion represents a single completion option with metadata.
+type completion struct {
+	Value       string
+	Category    string
+	Description string
+}
+
 // model is the Bubble Tea model for the redesigned TUI.
 type model struct {
 	// Layout
@@ -39,6 +50,13 @@ type model struct {
 	// Command input (pane 1)
 	commandInput textinput.Model
 	tokens       []string
+
+	// Token categories (for completion)
+	tokenCategories []bartui.TokenCategory
+
+	// Completions (pane 2 right side)
+	completions     []completion
+	completionIndex int
 
 	// Preview (pane 3)
 	previewText string
@@ -75,16 +93,20 @@ func newModel(opts Options) model {
 	ti.CursorEnd()
 
 	m := model{
-		commandInput: ti,
-		tokens:       opts.InitialTokens,
-		preview:      opts.Preview,
-		width:        opts.InitialWidth,
-		height:       opts.InitialHeight,
+		commandInput:    ti,
+		tokens:          opts.InitialTokens,
+		tokenCategories: opts.TokenCategories,
+		preview:         opts.Preview,
+		width:           opts.InitialWidth,
+		height:          opts.InitialHeight,
 	}
 
 	if m.width > 0 && m.height > 0 {
 		m.ready = true
 	}
+
+	// Generate initial completions (all options when no filter)
+	m.updateCompletions()
 
 	// Generate initial preview
 	if m.preview != nil {
@@ -114,6 +136,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+b":
 			// Copy CLI to clipboard (placeholder)
 			return m, nil
+		case "up":
+			// Navigate completions up
+			if m.completionIndex > 0 {
+				m.completionIndex--
+			}
+			return m, nil
+		case "down":
+			// Navigate completions down
+			if m.completionIndex < len(m.completions)-1 {
+				m.completionIndex++
+			}
+			return m, nil
+		case "tab", "enter":
+			// Select current completion
+			if len(m.completions) > 0 && m.completionIndex < len(m.completions) {
+				m.selectCompletion(m.completions[m.completionIndex])
+			}
+			return m, nil
 		}
 
 	case tea.WindowSizeMsg:
@@ -128,8 +168,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.commandInput, cmd = m.commandInput.Update(msg)
 	cmds = append(cmds, cmd)
 
-	// Parse tokens from command input and update preview
+	// Parse tokens from command input and update completions
 	m.tokens = m.parseTokensFromCommand()
+	m.updateCompletions()
+
+	// Update preview
 	if m.preview != nil {
 		text, err := m.preview("", m.tokens)
 		if err == nil {
@@ -153,6 +196,108 @@ func (m model) parseTokensFromCommand() []string {
 
 	fields := strings.Fields(value)
 	return fields
+}
+
+// getFilterPartial returns the partial word being typed (for filtering completions).
+func (m model) getFilterPartial() string {
+	value := m.commandInput.Value()
+	value = strings.TrimPrefix(value, "bar build ")
+	value = strings.TrimPrefix(value, "bar build")
+
+	// If ends with space, no partial - ready for new token
+	if strings.HasSuffix(value, " ") || value == "" {
+		return ""
+	}
+
+	// Find the last word (the partial being typed)
+	fields := strings.Fields(value)
+	if len(fields) == 0 {
+		return ""
+	}
+	return fields[len(fields)-1]
+}
+
+// updateCompletions rebuilds the completions list based on current input.
+func (m *model) updateCompletions() {
+	partial := strings.ToLower(m.getFilterPartial())
+	selectedSet := make(map[string]bool)
+	for _, t := range m.tokens {
+		selectedSet[strings.ToLower(t)] = true
+	}
+
+	var results []completion
+	for _, category := range m.tokenCategories {
+		for _, opt := range category.Options {
+			// Skip already-selected tokens
+			if selectedSet[strings.ToLower(opt.Value)] {
+				continue
+			}
+
+			// Fuzzy match against partial
+			if partial == "" || fuzzyMatch(strings.ToLower(opt.Value), partial) ||
+				fuzzyMatch(strings.ToLower(opt.Slug), partial) {
+				results = append(results, completion{
+					Value:       opt.Value,
+					Category:    category.Label,
+					Description: truncate(opt.Description, 40),
+				})
+			}
+		}
+	}
+
+	m.completions = results
+
+	// Reset index if out of bounds
+	if m.completionIndex >= len(m.completions) {
+		m.completionIndex = 0
+	}
+}
+
+// selectCompletion adds the selected completion to the command.
+func (m *model) selectCompletion(c completion) {
+	value := m.commandInput.Value()
+
+	// Remove any partial being typed
+	partial := m.getFilterPartial()
+	if partial != "" {
+		// Remove the partial from the end
+		value = strings.TrimSuffix(value, partial)
+	}
+
+	// Ensure there's a space before the new token
+	if !strings.HasSuffix(value, " ") {
+		value += " "
+	}
+
+	// Add the selected token
+	value += c.Value + " "
+
+	m.commandInput.SetValue(value)
+	m.commandInput.CursorEnd()
+
+	// Update tokens and completions
+	m.tokens = m.parseTokensFromCommand()
+	m.updateCompletions()
+}
+
+// fuzzyMatch returns true if the pattern matches the target using simple substring matching.
+// For now, this is a basic contains check; can be enhanced with proper fuzzy matching later.
+func fuzzyMatch(target, pattern string) bool {
+	if pattern == "" {
+		return true
+	}
+	return strings.Contains(target, pattern)
+}
+
+// truncate shortens a string to maxLen, adding "..." if truncated.
+func truncate(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	if maxLen <= 3 {
+		return s[:maxLen]
+	}
+	return s[:maxLen-3] + "..."
 }
 
 // View implements tea.Model.
@@ -197,6 +342,10 @@ var (
 
 	tokenStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("78"))
+
+	completionSelectedStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("212")).
+				Bold(true)
 )
 
 func (m model) renderCommandPane() string {
@@ -239,7 +388,32 @@ func (m model) renderTokensPane() string {
 	var right strings.Builder
 	right.WriteString(headerStyle.Render("COMPLETIONS"))
 	right.WriteString("\n")
-	right.WriteString(dimStyle.Render("(type to filter)"))
+
+	if len(m.completions) == 0 {
+		right.WriteString(dimStyle.Render("(no matches)"))
+	} else {
+		// Show completions with current selection highlighted
+		maxShow := paneHeight - 2
+		if maxShow < 1 {
+			maxShow = 1
+		}
+		for i, c := range m.completions {
+			if i >= maxShow {
+				right.WriteString(dimStyle.Render(fmt.Sprintf("... +%d more", len(m.completions)-maxShow)))
+				break
+			}
+			prefix := "  "
+			style := dimStyle
+			if i == m.completionIndex {
+				prefix = "▸ "
+				style = completionSelectedStyle
+			}
+			// Format: "▸ todo        Static Prompt"
+			entry := fmt.Sprintf("%s%-12s %s", prefix, c.Value, c.Category)
+			right.WriteString(style.Render(entry))
+			right.WriteString("\n")
+		}
+	}
 
 	// Split horizontally
 	leftWidth := width / 2

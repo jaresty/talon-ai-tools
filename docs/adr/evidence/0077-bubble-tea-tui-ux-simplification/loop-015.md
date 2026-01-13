@@ -4,7 +4,9 @@ Implement CLI command input mode for the token palette, showing live `bar build`
 ## Commands executed
 
 ### Tests
-- green | 2026-01-13T17:25:00Z | scripts/tools/run-tui-expect.sh --all
+- green | 2026-01-13T17:30:00Z | go test ./internal/bartui -count=1
+  - All unit tests pass including TestTokenPaletteCopyCommandAction
+- green | 2026-01-13T17:30:00Z | scripts/tools/run-tui-expect.sh --all
   - 8 tests passed: clipboard-history, environment-allowlist, focus-cycle, launch-status, sticky-summary, token-command-history, token-palette-history, token-palette-workflow
 
 ## Implementation notes
@@ -12,6 +14,9 @@ Implement CLI command input mode for the token palette, showing live `bar build`
 - Updated status guidance: "type a value, press Tab to cycle completions, Enter applies an option"
 - Added "copy command" instruction in status for discoverability of CLI copy action
 - Ctrl+W now shows "CLI command reset" status confirming filter cleared
+- Fixed `extractFilterFromInput` to skip already-selected tokens when parsing CLI command format
+  - Bug: When tokens were selected (e.g., "bar build todo focus "), the last word "focus" was treated as filter
+  - Fix: Build a set of selected tokens and skip them when finding the filter partial
 - Updated expect tests to match new CLI command input mode behavior:
   - token-palette-history.exp: Uses "infer" token instead of "todo", expects CLI syntax in status
   - token-palette-workflow.exp: Updated all status expectations for new CLI-focused messaging

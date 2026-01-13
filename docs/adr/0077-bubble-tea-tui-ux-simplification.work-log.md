@@ -461,3 +461,35 @@ residual_constraints:
 
 next_work:
 - Behaviour: Implement CLI command input mode — refactor palette filter to show live `bar build` command, add cursor-aware Tab completion (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).
+
+## loop-015 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0077 Decision bullet 2 (CLI command input mode) → implement palette filter with live `bar build` command prefix and update status messaging to guide Tab completion workflow.
+
+active_constraint: Palette filter used legacy grammar format instead of live CLI command syntax, preventing operators from learning the `bar build` grammar directly (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | CLI command input mode enables direct learning transfer between TUI and terminal usage. |
+| Probability | High | Refactoring palette filter and status messaging directly addresses the grammar visibility gap. |
+| Time Sensitivity | Medium | Needed to fulfill ADR 0077's learning transfer promise before further UX iterations. |
+| Uncertainty note | Low | Behaviour covered by unit tests and expect harness. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-015.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui/program.go internal/bartui/program_test.go tests/integration/tui/cases/token-palette-history.exp tests/integration/tui/cases/token-palette-workflow.exp`; rerun `go test ./internal/bartui` and `scripts/tools/run-tui-expect.sh --all` to confirm the old grammar format returns before reapplying.
+
+delta_summary: helper:diff-snapshot=5 files changed, 319 insertions(+), 114 deletions(-) — adds `seedCLICommand()` and `extractFilterFromInput()` for CLI command format, refactors palette status messaging, fixes filter parsing to skip selected tokens, updates expect tests for new CLI-focused status patterns.
+
+loops_remaining_forecast: 0 loops for CLI command input mode. Confidence: high — palette now shows live `bar build` command, Tab cycles completions at cursor position, status guides the workflow. Monitor for usability feedback.
+
+residual_constraints:
+- Low — Tab completion cycles through all matching tokens; future work could add position-aware completion after `=` for category-specific values. Mitigation: monitor operator feedback for confusion at the `=` boundary; owner: ADR 0077 follow-up.
+
+next_work:
+- Behaviour: Monitor CLI command input mode usage and gather feedback on Tab completion behavior (validation: `scripts/tools/run-tui-expect.sh --all`).

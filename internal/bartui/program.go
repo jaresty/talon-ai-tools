@@ -689,12 +689,25 @@ func (m *model) extractFilterFromInput(input string) string {
 		if rest == "" {
 			return ""
 		}
-		// Get the last word as the filter (what's being typed)
+		// Get the fields after "bar build" and skip already-selected tokens
 		fields := strings.Fields(rest)
 		if len(fields) == 0 {
 			return ""
 		}
-		return strings.ToLower(fields[len(fields)-1])
+		// Build a set of selected tokens for fast lookup
+		selectedTokens := make(map[string]bool)
+		for _, token := range m.tokens {
+			selectedTokens[strings.ToLower(token)] = true
+		}
+		// Find the last field that is not an already-selected token
+		for i := len(fields) - 1; i >= 0; i-- {
+			fieldLower := strings.ToLower(fields[i])
+			if !selectedTokens[fieldLower] {
+				return fieldLower
+			}
+		}
+		// All fields are selected tokens, no filter
+		return ""
 	}
 
 	// Legacy grammar format (category=value)

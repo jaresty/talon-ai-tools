@@ -671,6 +671,48 @@ func splitGrammarFilter(input string) (slug string, value string) {
 	return slug, value
 }
 
+// extractFilterFromInput extracts the filter string from either CLI command format
+// ("bar build token1 token2 partial") or legacy grammar format ("category=value").
+// For CLI command format, it returns the last word being typed (the partial).
+// For grammar format, it returns the value part after the "=".
+func (m *model) extractFilterFromInput(input string) string {
+	trimmed := strings.TrimSpace(input)
+	if trimmed == "" {
+		return ""
+	}
+
+	// Check for CLI command format (starts with "bar build")
+	if strings.HasPrefix(trimmed, "bar build") {
+		// Strip the "bar build" prefix
+		rest := strings.TrimPrefix(trimmed, "bar build")
+		rest = strings.TrimSpace(rest)
+		if rest == "" {
+			return ""
+		}
+		// Get the last word as the filter (what's being typed)
+		fields := strings.Fields(rest)
+		if len(fields) == 0 {
+			return ""
+		}
+		return strings.ToLower(fields[len(fields)-1])
+	}
+
+	// Legacy grammar format (category=value)
+	slugPart, valuePart := splitGrammarFilter(trimmed)
+	slugPartLower := strings.ToLower(strings.TrimSpace(slugPart))
+	if slugPartLower != "" {
+		if idx, ok := m.findCategoryIndexBySlug(slugPartLower); ok && idx != m.tokenCategoryIndex {
+			m.tokenCategoryIndex = idx
+			m.clampTokenOptionIndex()
+		}
+	}
+	filter := strings.ToLower(strings.TrimSpace(valuePart))
+	if slugPartLower == "" {
+		filter = strings.ToLower(strings.TrimSpace(trimmed))
+	}
+	return filter
+}
+
 func (m *model) currentCategorySlug() string {
 	if m.tokenCategoryIndex < 0 || m.tokenCategoryIndex >= len(m.tokenStates) {
 		return ""
@@ -714,6 +756,19 @@ func (m *model) seedGrammarFilter(preserveValue bool) {
 		value = existing
 	}
 	m.setGrammarFilter("", value)
+}
+
+// seedCLICommand populates the palette filter with the current CLI command.
+// This enables the CLI command input mode where operators edit the live command
+// and Tab cycles through completions, teaching the bar build grammar directly.
+func (m *model) seedCLICommand() {
+	command := m.displayCommandString()
+	if command == "" {
+		command = "bar build"
+	}
+	// Add trailing space to allow immediate completion typing
+	m.tokenPaletteFilter.SetValue(command + " ")
+	m.tokenPaletteFilter.CursorEnd()
 }
 
 type model struct {
@@ -1359,22 +1414,11 @@ func (m *model) updatePaletteOptions() {
 	}
 
 	rawFilter := m.tokenPaletteFilter.Value()
-	slugPart, valuePart := splitGrammarFilter(rawFilter)
-	slugPartLower := strings.ToLower(strings.TrimSpace(slugPart))
-	if slugPartLower != "" {
-		if idx, ok := m.findCategoryIndexBySlug(slugPartLower); ok && idx != m.tokenCategoryIndex {
-			m.tokenCategoryIndex = idx
-			m.clampTokenOptionIndex()
-			hadPrev = false
-		}
-	}
+
+	// Extract filter from CLI command format or grammar format
+	filter := m.extractFilterFromInput(rawFilter)
 
 	state := m.tokenStates[m.tokenCategoryIndex]
-	filter := strings.ToLower(strings.TrimSpace(valuePart))
-	if slugPartLower == "" {
-		filter = strings.ToLower(strings.TrimSpace(rawFilter))
-	}
-
 	options := make([]int, 0, len(state.category.Options)+2)
 	if m.shouldShowCopyCommandAction(filter) {
 		options = append(options, tokenPaletteCopyCommandOption)
@@ -1435,11 +1479,100 @@ func (m *model) clearPaletteFilter() bool {
 		return false
 	}
 
-	m.seedGrammarFilter(false)
+	m.seedCLICommand()
 	m.updatePaletteOptions()
 	m.refreshPaletteStatus()
-	m.statusMessage = ensureCopyHint("Grammar composer reset to the current category. Type a value or press Tab to cycle completions.")
+	m.statusMessage = ensureCopyHint("CLI command reset. Type to add tokens, Tab cycles completions.")
 	return true
+}
+
+// applyNextCompletion cycles through token completions in the CLI command input.
+// It finds the partial word at the end of the filter and replaces it with a matching
+// token option, or appends a token if the filter ends with a space.
+func (m *model) applyNextCompletion(delta int) {
+	filterValue := m.tokenPaletteFilter.Value()
+
+	// Find the partial word at the end for completion
+	partial, prefix := m.extractCompletionContext(filterValue)
+
+	// Get matching completions
+	completions := m.getCompletionsForPartial(partial)
+	if len(completions) == 0 {
+		m.statusMessage = "No completions match. Try a different prefix."
+		return
+	}
+
+	// Find the current completion index (if partial matches one)
+	currentIdx := -1
+	for i, c := range completions {
+		if c == partial {
+			currentIdx = i
+			break
+		}
+	}
+
+	// Calculate next index
+	nextIdx := (currentIdx + delta) % len(completions)
+	if nextIdx < 0 {
+		nextIdx += len(completions)
+	}
+
+	// Apply the completion
+	newValue := prefix + completions[nextIdx] + " "
+	m.tokenPaletteFilter.SetValue(newValue)
+	m.tokenPaletteFilter.CursorEnd()
+	m.updatePaletteOptions()
+	m.refreshPaletteStatus()
+}
+
+// extractCompletionContext parses the filter value to find the partial word
+// being typed and the prefix before it.
+func (m *model) extractCompletionContext(filterValue string) (partial, prefix string) {
+	// Strip "bar build " prefix if present for parsing
+	trimmed := filterValue
+	if strings.HasPrefix(trimmed, "bar build ") {
+		trimmed = strings.TrimPrefix(trimmed, "bar build ")
+	} else if strings.HasPrefix(trimmed, "bar build") {
+		trimmed = strings.TrimPrefix(trimmed, "bar build")
+	}
+
+	// If filter ends with space, no partial - ready for new token
+	if strings.HasSuffix(filterValue, " ") || trimmed == "" {
+		return "", filterValue
+	}
+
+	// Find the last word (the partial being typed)
+	lastSpace := strings.LastIndex(filterValue, " ")
+	if lastSpace == -1 {
+		return filterValue, ""
+	}
+	return filterValue[lastSpace+1:], filterValue[:lastSpace+1]
+}
+
+// getCompletionsForPartial returns token options matching the partial string.
+func (m *model) getCompletionsForPartial(partial string) []string {
+	partial = strings.ToLower(strings.TrimSpace(partial))
+	var completions []string
+	seen := make(map[string]bool)
+
+	// Collect all matching token options across categories
+	for _, state := range m.tokenStates {
+		for _, opt := range state.category.Options {
+			value := opt.Value
+			if seen[value] {
+				continue
+			}
+
+			// Match if partial is empty or value starts with/contains partial
+			valueLower := strings.ToLower(value)
+			if partial == "" || strings.HasPrefix(valueLower, partial) || strings.Contains(valueLower, partial) {
+				completions = append(completions, value)
+				seen[value] = true
+			}
+		}
+	}
+
+	return completions
 }
 
 func (m *model) shouldShowCopyCommandAction(filter string) bool {
@@ -1843,7 +1976,7 @@ func (m *model) openTokenPalette() tea.Cmd {
 	m.tokenPaletteVisible = true
 	m.paletteHistoryVisible = false
 	m.tokenPaletteFocus = tokenPaletteFocusFilter
-	m.seedGrammarFilter(false)
+	m.seedCLICommand()
 	cmd := m.tokenPaletteFilter.Focus()
 	m.updatePaletteOptions()
 	m.refreshPaletteStatus()
@@ -2314,9 +2447,19 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		cmd := m.closeTokenPalette()
 		return true, cmd
 	case tea.KeyTab:
+		if m.tokenPaletteFocus == tokenPaletteFocusFilter {
+			// Tab cycles through completions when in filter mode (CLI command input)
+			m.applyNextCompletion(1)
+			return true, nil
+		}
 		cmd := m.advancePaletteFocus(1)
 		return true, cmd
 	case tea.KeyShiftTab:
+		if m.tokenPaletteFocus == tokenPaletteFocusFilter {
+			// Shift+Tab cycles backwards through completions
+			m.applyNextCompletion(-1)
+			return true, nil
+		}
 		cmd := m.advancePaletteFocus(-1)
 		return true, cmd
 	case tea.KeyUp:

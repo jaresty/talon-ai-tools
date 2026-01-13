@@ -13,25 +13,25 @@ expect {
 
 send "\u0010" ;# Ctrl+P opens palette
 expect {
-    -re {Token palette open\. Type to filter \(try "copy command"\), Tab cycles focus, Enter applies or copies, Ctrl\+W clears the filter, Esc closes\.} {}
+    -re {bar build.*Tab.*cycle.*copy command} {}
     timeout { send_error "expected palette open status"; exit 1 }
 }
 
-send "todo"
+send "infer"
 expect {
-    -re {Token palette open \(filter="todo"\)\. Enter applies or copies; type "copy command" to focus the copy action\. Tab cycles focus, Ctrl\+W clears the filter, Esc closes\.} {}
+    -re {bar build.*infer} {}
     timeout { send_error "expected filtered status"; exit 1 }
 }
 
 send "\r"
 expect {
-    -re {Static Prompt → todo \(Return a todo list\)\. Press Enter to toggle, Ctrl\+W clears the filter, Esc closes\. Type "copy command" to focus the copy action\.} {}
+    -re {infer.*toggle} {}
     timeout { send_error "expected palette option focus status"; exit 1 }
 }
 
 send "\r"
 expect {
-    -re {Static Prompt → todo applied\.} {}
+    -re {infer applied} {}
     timeout { send_error "expected token applied status"; exit 1 }
 }
 
@@ -43,7 +43,7 @@ expect {
 
 send "\u0017" ;# Ctrl+W clear filter
 expect {
-    -re {Token filter cleared\..*Ctrl\+W clears the filter, Esc closes\.} {}
+    -re {CLI command reset.*Tab.*cycle} {}
     timeout { send_error "expected filter cleared status"; exit 1 }
 }
 

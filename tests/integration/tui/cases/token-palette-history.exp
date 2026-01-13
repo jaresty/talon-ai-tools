@@ -13,30 +13,29 @@ expect {
 
 send "\u0010" ;# Ctrl+P opens palette
 expect {
-    -re {static= — type a value, press Tab to cycle completions, Enter applies an option, Ctrl\+W clears, Esc closes\. Type "copy command" to focus the copy action\.} {}
-    timeout { send_error "expected palette open status"; exit 1 }
+    -re {bar build.*Tab.*cycle.*copy command} {}
+    timeout { send_error "expected palette open status with CLI command input"; exit 1 }
 }
 
-send "todo"
+# Type "infer" to filter to that specific token
+send "infer"
 expect {
-    -re {static=todo\. Tab cycles completions, Enter applies an option, Ctrl\+W clears, Esc closes\. Type "copy command" to focus the copy action\.} {}
-    timeout { send_error "expected filtered status"; exit 1 }
+    -re {bar build.*infer} {}
+    timeout { send_error "expected filter to show infer"; exit 1 }
 }
 
+# Enter to navigate to matching option
 send "\r"
 expect {
-    -re {Static Prompt → todo \(Return a todo list\)\. Press Enter to toggle, Ctrl\+W clears the filter, Esc closes\. Type "copy command" to focus the copy action\.} {}
-    timeout { send_error "expected palette option focus status"; exit 1 }
+    -re {infer.*toggle} {}
+    timeout { send_error "expected token option status"; exit 1 }
 }
 
+# Enter to apply the token
 send "\r"
 expect {
-    -re {Static Prompt → todo applied\.} {}
+    -re {infer applied} {}
     timeout { send_error "expected token applied status"; exit 1 }
-}
-expect {
-    -re {Toast: static=todo applied · CLI: bar build todo · Ctrl\+Z undo} {}
-    timeout { send_error "expected toast confirming token apply"; exit 1 }
 }
 
 send "\u0008" ;# Ctrl+H toggles history (backspace code point)

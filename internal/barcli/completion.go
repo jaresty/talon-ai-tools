@@ -147,6 +147,28 @@ complete -k -c bar -f -a '(__fish_bar_completions)'
 
 const skipSectionPrefix = "//next"
 
+const (
+	orderDefault         = 1
+	orderCommand         = 20
+	orderHelpTopic       = 18
+	orderCompletionShell = 17
+	orderPersonaIntent   = 16
+	orderPersonaPreset   = 15
+	orderPersonaVoice    = 14
+	orderPersonaAudience = 13
+	orderPersonaTone     = 12
+	orderStatic          = 11
+	orderOverride        = 10
+	orderCompleteness    = 9
+	orderScope           = 8
+	orderMethod          = 7
+	orderForm            = 6
+	orderChannel         = 5
+	orderDirectional     = 4
+	orderPresetName      = 3
+	orderFlag            = 2
+)
+
 type completionCatalog struct {
 	static          []string
 	completeness    []string
@@ -192,6 +214,82 @@ type completionSuggestion struct {
 	Category     string
 	Description  string
 	AppendSpace  bool
+	Order        int
+}
+
+func assignOrderIfUnset(list []completionSuggestion, order int) []completionSuggestion {
+	if order < 1 {
+		order = orderDefault
+	}
+	for i := range list {
+		if list[i].Order == 0 {
+			list[i].Order = order
+		}
+	}
+	return list
+}
+
+func sortSuggestionsForShell(shell string, suggestions []completionSuggestion) []completionSuggestion {
+	if len(suggestions) < 2 {
+		return suggestions
+	}
+	if !strings.EqualFold(shell, "fish") {
+		return suggestions
+	}
+	indexed := make([]struct {
+		suggestion completionSuggestion
+		index      int
+	}, len(suggestions))
+	for i, suggestion := range suggestions {
+		indexed[i] = struct {
+			suggestion completionSuggestion
+			index      int
+		}{
+			suggestion: suggestion,
+			index:      i,
+		}
+	}
+	sort.SliceStable(indexed, func(i, j int) bool {
+		left := indexed[i].suggestion.Order
+		right := indexed[j].suggestion.Order
+		if left < 1 {
+			left = orderDefault
+		}
+		if right < 1 {
+			right = orderDefault
+		}
+		if left == right {
+			return indexed[i].index < indexed[j].index
+		}
+		return left > right
+	})
+	for i, entry := range indexed {
+		suggestions[i] = entry.suggestion
+	}
+	return suggestions
+}
+
+func stageOrder(stage string) int {
+	switch stage {
+	case "persona":
+		return orderPersonaIntent
+	case "static":
+		return orderStatic
+	case "completeness":
+		return orderCompleteness
+	case "method":
+		return orderMethod
+	case "scope":
+		return orderScope
+	case "form":
+		return orderForm
+	case "channel":
+		return orderChannel
+	case "directional":
+		return orderDirectional
+	default:
+		return orderDefault
+	}
 }
 
 func newSuggestion(grammar *Grammar, value, category, description string, appendSpace bool, useSlug bool) completionSuggestion {
@@ -218,6 +316,7 @@ func newSuggestion(grammar *Grammar, value, category, description string, append
 		Category:     sanitizedCategory,
 		Description:  sanitizedDescription,
 		AppendSpace:  appendSpace,
+		Order:        0,
 	}
 }
 
@@ -489,49 +588,54 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 	results := make([]completionSuggestion, 0)
 
 	if !state.personaIntent {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaIntent, "Why (intent)", func(token string) string {
+		intentSuggestions := assignOrderIfUnset(suggestionsWithDescriptions(grammar, catalog.personaIntent, "Why (intent)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
 			if desc == "" {
 				return token
 			}
 			return desc
-		}, false, true))
+		}, false, true), orderPersonaIntent)
+		results = appendUniqueSuggestions(results, seen, intentSuggestions)
 	}
 
 	if !state.personaPreset {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaPreset, "Who (persona preset)", func(token string) string {
+		presetSuggestions := assignOrderIfUnset(suggestionsWithDescriptions(grammar, catalog.personaPreset, "Who (persona preset)", func(token string) string {
 			return personaPresetDescription(grammar, token)
-		}, false, true))
+		}, false, true), orderPersonaPreset)
+		results = appendUniqueSuggestions(results, seen, presetSuggestions)
 	}
 
 	if !state.personaPreset && !state.personaVoice {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaVoice, "Who (voice)", func(token string) string {
+		voiceSuggestions := assignOrderIfUnset(suggestionsWithDescriptions(grammar, catalog.personaVoice, "Who (voice)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("voice", token))
 			if desc == "" {
 				return token
 			}
 			return desc
-		}, false, true))
+		}, false, true), orderPersonaVoice)
+		results = appendUniqueSuggestions(results, seen, voiceSuggestions)
 	}
 
 	if !state.personaPreset && !state.personaAudience {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaAudience, "Who (audience)", func(token string) string {
+		audienceSuggestions := assignOrderIfUnset(suggestionsWithDescriptions(grammar, catalog.personaAudience, "Who (audience)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("audience", token))
 			if desc == "" {
 				return token
 			}
 			return desc
-		}, false, true))
+		}, false, true), orderPersonaAudience)
+		results = appendUniqueSuggestions(results, seen, audienceSuggestions)
 	}
 
 	if !state.personaPreset && !state.personaTone {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaTone, "How (tone)", func(token string) string {
+		toneSuggestions := assignOrderIfUnset(suggestionsWithDescriptions(grammar, catalog.personaTone, "How (tone)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("tone", token))
 			if desc == "" {
 				return token
 			}
 			return desc
-		}, false, true))
+		}, false, true), orderPersonaTone)
+		results = appendUniqueSuggestions(results, seen, toneSuggestions)
 	}
 
 	return results
@@ -557,6 +661,7 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 				desc = token
 			}
 			suggestion := newSuggestion(grammar, value, category, desc, false, false)
+			suggestion.Order = orderOverride
 			results = appendUniqueSuggestion(results, seen, suggestion)
 		}
 
@@ -655,36 +760,44 @@ func Complete(grammar *Grammar, shell string, words []string, index int) ([]comp
 	prefix := strings.TrimSpace(current)
 
 	if index <= 1 {
-		return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, completionCommands, "command", "", false, true), prefix), nil
+		suggestions := assignOrderIfUnset(suggestionsFromTokens(grammar, completionCommands, "command", "", false, true), orderCommand)
+		suggestions = sortSuggestionsForShell(shell, suggestions)
+		return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
 	}
 
 	command := words[1]
 	switch command {
 	case "help":
 		if index == 2 {
-			return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, helpTopics, "help", "", false, true), prefix), nil
+			suggestions := assignOrderIfUnset(suggestionsFromTokens(grammar, helpTopics, "help", "", false, true), orderHelpTopic)
+			suggestions = sortSuggestionsForShell(shell, suggestions)
+			return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
 		}
 		return nil, nil
 	case "completion":
 		if index == 2 {
-			return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, completionShells, "completion.shell", "", false, true), prefix), nil
+			suggestions := assignOrderIfUnset(suggestionsFromTokens(grammar, completionShells, "completion.shell", "", false, true), orderCompletionShell)
+			suggestions = sortSuggestionsForShell(shell, suggestions)
+			return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
 		}
 		return nil, nil
 	case "build":
-		return completeRecipe(grammar, catalog, words, index, current, buildFlags)
+		return completeRecipe(grammar, catalog, shell, words, index, current, buildFlags)
 	case "tui":
-		return completeRecipe(grammar, catalog, words, index, current, tuiFlags)
+		return completeRecipe(grammar, catalog, shell, words, index, current, tuiFlags)
 	case "preset":
-		return completePreset(grammar, words, index, current)
+		return completePreset(grammar, shell, words, index, current)
 	default:
 		if index == 2 {
-			return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, completionCommands, "command", "", false, true), prefix), nil
+			suggestions := assignOrderIfUnset(suggestionsFromTokens(grammar, completionCommands, "command", "", false, true), orderCommand)
+			suggestions = sortSuggestionsForShell(shell, suggestions)
+			return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
 		}
 		return nil, nil
 	}
 }
 
-func completeRecipe(grammar *Grammar, catalog completionCatalog, words []string, index int, current string, allowedFlags []string) ([]completionSuggestion, error) {
+func completeRecipe(grammar *Grammar, catalog completionCatalog, shell string, words []string, index int, current string, allowedFlags []string) ([]completionSuggestion, error) {
 	if index > 2 {
 		prev := words[index-1]
 		if _, expect := flagExpectingValue[prev]; expect {
@@ -697,7 +810,9 @@ func completeRecipe(grammar *Grammar, catalog completionCatalog, words []string,
 	canonicalCurrent, canonicalOK := grammar.canonicalForInput(current)
 
 	if strings.HasPrefix(current, "-") {
-		return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, allowedFlags, "flag", "", false, false), prefix), nil
+		suggestions := assignOrderIfUnset(suggestionsFromTokens(grammar, allowedFlags, "flag", "", false, false), orderFlag)
+		suggestions = sortSuggestionsForShell(shell, suggestions)
+		return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
 	}
 
 	prior := []string{}
@@ -715,26 +830,29 @@ func completeRecipe(grammar *Grammar, catalog completionCatalog, words []string,
 	seen := make(map[string]struct{})
 	results := make([]completionSuggestion, 0)
 
-	appendSection := func(stage, label string, items []completionSuggestion) {
+	appendSection := func(stage, label string, order int, items []completionSuggestion) {
 		if len(items) == 0 {
 			return
 		}
 		skip := skipSectionSuggestion(stage, label)
+		skip.Order = order
 		results = appendUniqueSuggestion(results, seen, skip)
+		items = assignOrderIfUnset(items, order)
 		results = appendUniqueSuggestions(results, seen, items)
 	}
 
 	if state.override {
-		results = appendUniqueSuggestions(results, seen, buildOverrideSuggestions(grammar, catalog))
-		return filterSuggestionsByPrefix(grammar, results, prefix), nil
+		overrideSuggestions := assignOrderIfUnset(buildOverrideSuggestions(grammar, catalog), orderOverride)
+		overrideSuggestions = sortSuggestionsForShell(shell, overrideSuggestions)
+		return filterSuggestionsByPrefix(grammar, overrideSuggestions, prefix), nil
 	}
 
 	if personaSuggestions := buildPersonaSuggestions(grammar, catalog, state); len(personaSuggestions) > 0 {
-		appendSection("persona", "persona (Why/Who)", personaSuggestions)
+		appendSection("persona", "persona (Why/Who)", orderPersonaIntent, personaSuggestions)
 	}
 
 	if !state.static && !state.staticClosed {
-		appendSection("static", "What prompts", buildStaticSuggestions(grammar, catalog))
+		appendSection("static", "What prompts", orderStatic, buildStaticSuggestions(grammar, catalog))
 	}
 
 	axisOrder := make(map[string]int, len(grammar.axisPriority))
@@ -754,34 +872,35 @@ func completeRecipe(grammar *Grammar, catalog completionCatalog, words []string,
 		}
 
 		label := fmt.Sprintf("How – %s", axis)
+		order := stageOrder(axis)
 		switch axis {
 		case "completeness":
 			if state.completeness {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.completeness))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.completeness))
 		case "scope":
-			appendSection(axis, label, buildScopeSuggestions(grammar, catalog, state))
+			appendSection(axis, label, order, buildScopeSuggestions(grammar, catalog, state))
 		case "method":
-			appendSection(axis, label, buildMethodSuggestions(grammar, catalog, state))
+			appendSection(axis, label, order, buildMethodSuggestions(grammar, catalog, state))
 		case "form":
 			if state.form {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.form))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.form))
 		case "channel":
 			if state.channel {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.channel))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.channel))
 		case "directional":
 			if state.directional {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.directional))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.directional))
 		default:
 			tokens := sortedAxisTokens(grammar, axis)
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, tokens))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, tokens))
 		}
 	}
 
@@ -801,41 +920,43 @@ func completeRecipe(grammar *Grammar, catalog completionCatalog, words []string,
 		axisIncluded[axis] = true
 
 		label := fmt.Sprintf("How – %s", axis)
+		order := stageOrder(axis)
 		switch axis {
 		case "completeness":
 			if state.completeness {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.completeness))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.completeness))
 		case "scope":
-			appendSection(axis, label, buildScopeSuggestions(grammar, catalog, state))
+			appendSection(axis, label, order, buildScopeSuggestions(grammar, catalog, state))
 		case "method":
-			appendSection(axis, label, buildMethodSuggestions(grammar, catalog, state))
+			appendSection(axis, label, order, buildMethodSuggestions(grammar, catalog, state))
 		case "form":
 			if state.form {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.form))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.form))
 		case "channel":
 			if state.channel {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.channel))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.channel))
 		case "directional":
 			if state.directional {
 				continue
 			}
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.directional))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, catalog.directional))
 		default:
 			tokens := sortedAxisTokens(grammar, axis)
-			appendSection(axis, label, buildAxisSuggestions(grammar, axis, tokens))
+			appendSection(axis, label, order, buildAxisSuggestions(grammar, axis, tokens))
 		}
 	}
 
+	results = sortSuggestionsForShell(shell, results)
 	return filterSuggestionsByPrefix(grammar, results, prefix), nil
 }
 
-func completePreset(grammar *Grammar, words []string, index int, current string) ([]completionSuggestion, error) {
+func completePreset(grammar *Grammar, shell string, words []string, index int, current string) ([]completionSuggestion, error) {
 	prefix := strings.TrimSpace(current)
 	flagSeen := make(map[string]bool)
 	for _, word := range words {
@@ -849,7 +970,8 @@ func completePreset(grammar *Grammar, words []string, index int, current string)
 	}
 
 	if index == 2 {
-		suggestions := suggestionsFromTokens(grammar, presetSubcommands, "preset.subcommand", "", false, false)
+		suggestions := assignOrderIfUnset(suggestionsFromTokens(grammar, presetSubcommands, "preset.subcommand", "", false, false), orderCommand)
+		suggestions = sortSuggestionsForShell(shell, suggestions)
 		return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
 	}
 
@@ -862,7 +984,7 @@ func completePreset(grammar *Grammar, words []string, index int, current string)
 	suggestions := make([]completionSuggestion, 0)
 
 	appendPresetNames := func() {
-		nameSuggestions := presetNameSuggestions(grammar)
+		nameSuggestions := assignOrderIfUnset(presetNameSuggestions(grammar), orderPresetName)
 		suggestions = appendUniqueSuggestions(suggestions, seen, nameSuggestions)
 	}
 
@@ -870,7 +992,7 @@ func completePreset(grammar *Grammar, words []string, index int, current string)
 		if flagSeen[flag] {
 			return
 		}
-		flagSuggestions := suggestionsFromTokens(grammar, []string{flag}, "flag", "", false, false)
+		flagSuggestions := assignOrderIfUnset(suggestionsFromTokens(grammar, []string{flag}, "flag", "", false, false), orderFlag)
 		suggestions = appendUniqueSuggestions(suggestions, seen, flagSuggestions)
 	}
 
@@ -892,6 +1014,7 @@ func completePreset(grammar *Grammar, words []string, index int, current string)
 		return nil, nil
 	}
 
+	suggestions = sortSuggestionsForShell(shell, suggestions)
 	return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
 }
 

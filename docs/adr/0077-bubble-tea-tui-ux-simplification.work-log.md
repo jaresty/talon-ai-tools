@@ -398,3 +398,35 @@ residual_constraints:
 
 next_work:
 - Behaviour: When new history categories ship, rerun the expect harness to ensure highlight styling remains legible (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+## loop-013 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0077 Decision bullet 5 → ensure ALL token changes record history entries, not just palette-based changes, so keyboard shortcut workflows also populate the history sidebar.
+
+active_constraint: Token changes made via keyboard shortcuts (`toggleCurrentTokenOption`, `removeCurrentTokenOption`) did not call `recordPaletteHistory`, leaving the history sidebar empty when operators used Enter/Delete keys on focused tokens instead of the palette (validation: `go test ./internal/bartui`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Keyboard shortcuts are a primary workflow; missing history entries break ADR 0077's auditability promise. |
+| Probability | High | Adding `recordPaletteHistory` calls to the two functions directly addresses the gap. |
+| Time Sensitivity | High | Operators reported empty history despite applying tokens, causing confusion. |
+| Uncertainty note | Low | Fix is straightforward and exercised by existing test coverage. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-013.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui/program.go`; rerun `go test ./internal/bartui` to confirm tests still pass (the fix adds coverage, doesn't break existing tests).
+
+delta_summary: helper:diff-snapshot=1 file changed, 14 insertions(+) — adds `recordPaletteHistory` calls to `toggleCurrentTokenOption` and `removeCurrentTokenOption` so keyboard shortcut token changes appear in history.
+
+loops_remaining_forecast: 0 loops. Confidence: high — all ADR 0077 behaviours now have complete history coverage across both palette and keyboard workflows.
+
+residual_constraints:
+- Low — Future token manipulation functions must remember to call `recordPaletteHistory`. Mitigation: add a code comment noting the requirement; review new token functions during PR review; owner: ADR 0077 follow-up.
+
+next_work:
+- Behaviour: Monitor for new token manipulation code paths and ensure they record history (validation: `go test ./internal/bartui`).

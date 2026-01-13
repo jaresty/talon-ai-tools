@@ -43,10 +43,17 @@ Accepted — Bubble Tea TUI interaction simplification and typography cues (2026
 - `scripts/tools/run-tui-expect.sh --all` with updated cases verifying default collapsed sections, metadata-rich history entries, sidebar toggle behavior, and cheat sheet overlay.
 - `python3 -m pytest _tests/test_bar_completion_cli.py` if new shortcuts or flags affect CLI coordination layers referenced by ADR 0075.
 
+## Residuals (2026-01-13 audit)
+The following gaps were identified during adversarial audit and are intentionally deferred:
+
+- **Compose section not collapsible**: History (Ctrl+H) and Presets (Ctrl+S) support collapse toggles, but the Compose section remains always-visible with no equivalent toggle. This is acceptable because Compose contains the primary token state operators need during editing; hiding it would remove essential context. Add a toggle only if operators report the section creates noise during non-token workflows.
+- **Focus breadcrumbs omit sidebar visibility state**: The status strip shows `Focus: Subject ▸ [TOKENS] ▸ Command ▸ Result` but does not indicate whether the sidebar is visible or hidden. Operators can infer sidebar state from the layout itself; adding explicit text (e.g., `· Sidebar hidden`) would clutter the already-dense status line. Revisit if operators report confusion about why token categories aren't visible.
+- **Last-focused column not persisted across sessions**: `focusBeforePalette` tracks runtime focus for palette close restoration, but focus state does not persist to disk. Session-to-session focus persistence was not an ADR requirement; the TUI resets to Subject focus on launch, which matches expected behavior. Add persistence only if operators request "resume where I left off" functionality.
+
 ## Follow-up
-- Implement the CLI command input mode: refactor the palette filter to display and edit the live `bar build` command, add cursor-position-aware Tab completion, and keep category/option panes as visual scaffolding for discoverability.
-- Implement the interaction simplification and typography updates across Bubble Tea models and views in upcoming loops, referencing ADR 0072 as the baseline.
-- Apply the Bubble Tea dialog stacking helper to any additional overlays or modals introduced after the shortcut reference ships.
+- ~~Implement the CLI command input mode: refactor the palette filter to display and edit the live `bar build` command, add cursor-position-aware Tab completion, and keep category/option panes as visual scaffolding for discoverability.~~ (Done: loops 014-017)
+- ~~Implement the interaction simplification and typography updates across Bubble Tea models and views in upcoming loops, referencing ADR 0072 as the baseline.~~ (Done: loops 001-013)
+- ~~Apply the Bubble Tea dialog stacking helper to any additional overlays or modals introduced after the shortcut reference ships.~~ (Done: loop-009)
 - Refresh operator documentation and quickstart guides once the simplified layout ships, keeping screenshots and shortcut summaries in sync.
 - Monitor expect harness output for regression drift in section order or typography cues, expanding tests as additional sidebar sections are introduced.
 - Evaluate the need for further accessibility refinements (contrast, focus indicators) after the initial simplification lands.

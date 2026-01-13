@@ -187,25 +187,24 @@ type completionCatalog struct {
 }
 
 type completionState struct {
-	override         bool
-	static           bool
-	staticClosed     bool
-	highestAxisIndex int
-	completeness     bool
-	scope            map[string]struct{}
-	scopeClosed      bool
-	method           map[string]struct{}
-	form             bool
-	channel          bool
-	directional      bool
-	personaPreset    bool
-	personaVoice     bool
-	personaAudience  bool
-	personaTone      bool
-	personaIntent    bool
-	scopeCap         int
-	methodCap        int
-	skippedAxes      map[string]bool
+	override        bool
+	static          bool
+	staticClosed    bool
+	completeness    bool
+	scope           map[string]struct{}
+	scopeClosed     bool
+	method          map[string]struct{}
+	form            bool
+	channel         bool
+	directional     bool
+	personaPreset   bool
+	personaVoice    bool
+	personaAudience bool
+	personaTone     bool
+	personaIntent   bool
+	scopeCap        int
+	methodCap       int
+	skippedAxes     map[string]bool
 }
 
 type completionSuggestion struct {
@@ -292,7 +291,58 @@ func stageOrder(stage string) int {
 	}
 }
 
+func normalizedAxisPriority(grammar *Grammar) []string {
+	if grammar == nil {
+		return nil
+	}
+	seen := make(map[string]bool, len(grammar.axisPriority))
+	ordered := make([]string, 0, len(grammar.axisPriority))
+	for _, rawAxis := range grammar.axisPriority {
+		axisKey := normalizeAxis(rawAxis)
+		if axisKey == "" || seen[axisKey] {
+			continue
+		}
+		seen[axisKey] = true
+		ordered = append(ordered, axisKey)
+	}
+	return ordered
+}
+
+func completionAxisOrder(grammar *Grammar) []string {
+	base := normalizedAxisPriority(grammar)
+	entries := make([]struct {
+		name          string
+		priority      int
+		originalIndex int
+	}, 0, len(base))
+	for idx, axis := range base {
+		entries = append(entries, struct {
+			name          string
+			priority      int
+			originalIndex int
+		}{
+			name:          axis,
+			priority:      stageOrder(axis),
+			originalIndex: idx,
+		})
+	}
+
+	sort.SliceStable(entries, func(i, j int) bool {
+		if entries[i].priority == entries[j].priority {
+			return entries[i].originalIndex < entries[j].originalIndex
+		}
+		return entries[i].priority > entries[j].priority
+	})
+
+	ordered := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		ordered = append(ordered, entry.name)
+	}
+	return ordered
+}
+
 func newSuggestion(grammar *Grammar, value, category, description string, appendSpace bool, useSlug bool) completionSuggestion {
+
 	canonicalValue := strings.TrimSpace(value)
 	displayValue := canonicalValue
 	if useSlug && grammar != nil {
@@ -342,7 +392,7 @@ func parseSkipStage(token string) (string, bool) {
 	return strings.ToLower(stage), true
 }
 
-func (state *completionState) markStageSkipped(stage string, axisOrder map[string]int, axisPriorityLen int) {
+func (state *completionState) markStageSkipped(stage string) {
 	if state == nil {
 		return
 	}
@@ -361,13 +411,6 @@ func (state *completionState) markStageSkipped(stage string, axisOrder map[strin
 	}
 
 	state.skippedAxes[stage] = true
-	if idx, ok := axisOrder[stage]; ok {
-		if idx > state.highestAxisIndex {
-			state.highestAxisIndex = idx
-		}
-	} else if stage != "" && state.highestAxisIndex < axisPriorityLen {
-		state.highestAxisIndex = axisPriorityLen
-	}
 
 	switch stage {
 	case "completeness":
@@ -855,18 +898,11 @@ func completeRecipe(grammar *Grammar, catalog completionCatalog, shell string, w
 		appendSection("static", "What prompts", orderStatic, buildStaticSuggestions(grammar, catalog))
 	}
 
-	axisOrder := make(map[string]int, len(grammar.axisPriority))
-	for idx, axis := range grammar.axisPriority {
-		axisOrder[axis] = idx
-	}
+	orderedAxes := completionAxisOrder(grammar)
+	axisIncluded := make(map[string]bool, len(orderedAxes))
 
-	axisIncluded := make(map[string]bool)
-
-	for idx, axis := range grammar.axisPriority {
+	for _, axis := range orderedAxes {
 		axisIncluded[axis] = true
-		if idx < state.highestAxisIndex {
-			continue
-		}
 		if state.skippedAxes[axis] {
 			continue
 		}
@@ -1112,18 +1148,12 @@ func setToSortedSlice(set map[string]struct{}) []string {
 }
 
 func collectShorthandState(grammar *Grammar, tokens []string) completionState {
-	axisOrder := make(map[string]int, len(grammar.axisPriority))
-	for idx, axis := range grammar.axisPriority {
-		axisOrder[axis] = idx
-	}
-
 	state := completionState{
-		scope:            make(map[string]struct{}),
-		method:           make(map[string]struct{}),
-		scopeCap:         grammar.Hierarchy.AxisSoftCaps["scope"],
-		methodCap:        grammar.Hierarchy.AxisSoftCaps["method"],
-		highestAxisIndex: -1,
-		skippedAxes:      make(map[string]bool),
+		scope:       make(map[string]struct{}),
+		method:      make(map[string]struct{}),
+		scopeCap:    grammar.Hierarchy.AxisSoftCaps["scope"],
+		methodCap:   grammar.Hierarchy.AxisSoftCaps["method"],
+		skippedAxes: make(map[string]bool),
 	}
 
 	normalized := grammar.NormalizeTokens(tokens)
@@ -1133,7 +1163,7 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		if stage, ok := parseSkipStage(token); ok {
-			state.markStageSkipped(stage, axisOrder, len(grammar.axisPriority))
+			state.markStageSkipped(stage)
 			continue
 		}
 		lower := strings.ToLower(token)
@@ -1161,20 +1191,10 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		axis := detectAxis(grammar, token)
-		if idx, ok := axisOrder[axis]; ok {
-			if idx > state.highestAxisIndex {
-				state.highestAxisIndex = idx
-			}
-		} else if axis != "" {
-			if state.highestAxisIndex < len(grammar.axisPriority) {
-				state.highestAxisIndex = len(grammar.axisPriority)
-			}
-		}
 		if axis != "" && !state.static && !state.staticClosed {
 			state.staticClosed = true
 		}
 		switch axis {
-
 		case "completeness":
 			state.completeness = true
 			continue

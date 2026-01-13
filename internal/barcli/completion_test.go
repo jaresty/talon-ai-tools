@@ -828,7 +828,7 @@ func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
 		personaOrder = append(personaOrder, token)
 	}
 
-	for _, axis := range grammar.axisPriority {
+	for _, axis := range completionAxisOrder(grammar) {
 		var tokens []string
 		switch axis {
 		case "completeness":
@@ -905,5 +905,152 @@ func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
 		if first > second {
 			t.Fatalf("expected %q to appear before %q", axisOrder[i], axisOrder[i+1])
 		}
+	}
+}
+
+func TestCompleteFishProgressionKeepsLaterAxesAvailable(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	slug := func(token string) string {
+		trimmed := strings.TrimSpace(grammar.slugForToken(token))
+		if trimmed != "" {
+			return trimmed
+		}
+		return token
+	}
+
+	catalog := newCompletionCatalog(grammar)
+	firstToken := func(name string, tokens []string) string {
+		if len(tokens) == 0 {
+			t.Fatalf("expected tokens for axis %s", name)
+		}
+		return slug(tokens[0])
+	}
+
+	completenessToken := firstToken("completeness", catalog.completeness)
+	scopeToken := firstToken("scope", catalog.scope)
+	methodToken := firstToken("method", catalog.method)
+	formToken := firstToken("form", catalog.form)
+	channelToken := firstToken("channel", catalog.channel)
+	directionalToken := firstToken("directional", catalog.directional)
+
+	type stage struct {
+		name          string
+		words         []string
+		expectPresent []string
+		expectOrder   []string
+	}
+
+	stages := []stage{
+		{
+			name:  "after_static",
+			words: []string{"bar", "build", "todo", ""},
+			expectPresent: []string{
+				completenessToken,
+				scopeToken,
+				methodToken,
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+			expectOrder: []string{
+				completenessToken,
+				scopeToken,
+				methodToken,
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+		},
+		{
+			name:  "after_completeness",
+			words: []string{"bar", "build", "todo", completenessToken, ""},
+			expectPresent: []string{
+				scopeToken,
+				methodToken,
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+			expectOrder: []string{
+				scopeToken,
+				methodToken,
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+		},
+		{
+			name:  "after_scope",
+			words: []string{"bar", "build", "todo", completenessToken, scopeToken, ""},
+			expectPresent: []string{
+				methodToken,
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+			expectOrder: []string{
+				methodToken,
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+		},
+		{
+			name:  "after_method",
+			words: []string{"bar", "build", "todo", completenessToken, scopeToken, methodToken, ""},
+			expectPresent: []string{
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+			expectOrder: []string{
+				formToken,
+				channelToken,
+				directionalToken,
+			},
+		},
+		{
+			name:  "after_form",
+			words: []string{"bar", "build", "todo", completenessToken, scopeToken, methodToken, formToken, ""},
+			expectPresent: []string{
+				channelToken,
+				directionalToken,
+			},
+			expectOrder: []string{
+				channelToken,
+				directionalToken,
+			},
+		},
+	}
+
+	for _, stage := range stages {
+		stage := stage
+		t.Run(stage.name, func(t *testing.T) {
+			suggestions, err := Complete(grammar, "fish", stage.words, len(stage.words)-1)
+			if err != nil {
+				t.Fatalf("unexpected error completing %s: %v", stage.name, err)
+			}
+
+			for _, value := range stage.expectPresent {
+				if !containsSuggestionValue(suggestions, value) {
+					t.Fatalf("expected suggestion %q for stage %s, got %v", value, stage.name, suggestions)
+				}
+			}
+
+			if len(stage.expectOrder) > 0 {
+				prevIdx := -1
+				for _, value := range stage.expectOrder {
+					idx := indexOfSuggestion(suggestions, value)
+					if idx == -1 {
+						t.Fatalf("expected suggestion %q when checking order for stage %s", value, stage.name)
+					}
+					if prevIdx != -1 && idx <= prevIdx {
+						t.Fatalf("expected %q to appear after prior tokens in stage %s (prev idx %d, idx %d)", value, stage.name, prevIdx, idx)
+					}
+					prevIdx = idx
+				}
+			}
+		})
 	}
 }

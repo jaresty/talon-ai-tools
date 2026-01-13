@@ -1563,8 +1563,20 @@ func (m *model) extractCompletionContext(filterValue string) (partial, prefix st
 }
 
 // getCompletionsForPartial returns token options matching the partial string.
+// If partial contains "=" (e.g., "static=inf"), it completes values for that category only.
+// Otherwise, it completes from all categories.
 func (m *model) getCompletionsForPartial(partial string) []string {
-	partial = strings.ToLower(strings.TrimSpace(partial))
+	partial = strings.TrimSpace(partial)
+
+	// Check for position-aware completion: category=partial format
+	if idx := strings.Index(partial, "="); idx > 0 {
+		categorySlug := strings.ToLower(partial[:idx])
+		valuePartial := strings.ToLower(partial[idx+1:])
+		return m.getCompletionsForCategory(categorySlug, valuePartial)
+	}
+
+	// No "=" found - complete from all categories
+	partialLower := strings.ToLower(partial)
 	var completions []string
 	seen := make(map[string]bool)
 
@@ -1578,7 +1590,7 @@ func (m *model) getCompletionsForPartial(partial string) []string {
 
 			// Match if partial is empty or value starts with/contains partial
 			valueLower := strings.ToLower(value)
-			if partial == "" || strings.HasPrefix(valueLower, partial) || strings.Contains(valueLower, partial) {
+			if partialLower == "" || strings.HasPrefix(valueLower, partialLower) || strings.Contains(valueLower, partialLower) {
 				completions = append(completions, value)
 				seen[value] = true
 			}
@@ -1586,6 +1598,42 @@ func (m *model) getCompletionsForPartial(partial string) []string {
 	}
 
 	return completions
+}
+
+// getCompletionsForCategory returns token options for a specific category matching the partial.
+func (m *model) getCompletionsForCategory(categorySlug, valuePartial string) []string {
+	var completions []string
+
+	for _, state := range m.tokenStates {
+		slug := categorySlug
+		catSlug := strings.ToLower(categorySlugFromCategory(state.category))
+		catKey := strings.ToLower(state.category.Key)
+
+		// Match category by slug or key
+		if catSlug != slug && catKey != slug {
+			continue
+		}
+
+		// Found the category - collect matching options
+		for _, opt := range state.category.Options {
+			valueLower := strings.ToLower(opt.Value)
+			if valuePartial == "" || strings.HasPrefix(valueLower, valuePartial) || strings.Contains(valueLower, valuePartial) {
+				// Return in category=value format for position-aware completion
+				completions = append(completions, categorySlug+"="+opt.Value)
+			}
+		}
+		break
+	}
+
+	return completions
+}
+
+// categorySlugFromCategory extracts the slug from a token category.
+func categorySlugFromCategory(cat TokenCategory) string {
+	if cat.Key != "" {
+		return cat.Key
+	}
+	return strings.ToLower(strings.ReplaceAll(cat.Label, " ", "-"))
 }
 
 func (m *model) shouldShowCopyCommandAction(filter string) bool {

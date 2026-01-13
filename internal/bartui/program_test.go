@@ -2646,6 +2646,56 @@ func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	}
 }
 
+func TestPositionAwareTabCompletion(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	// Test 1: Partial without "=" completes from all categories
+	completions := m.getCompletionsForPartial("to")
+	if len(completions) != 1 || completions[0] != "todo" {
+		t.Fatalf("expected [todo] for partial 'to', got %v", completions)
+	}
+
+	// Test 2: Empty partial returns all options
+	allCompletions := m.getCompletionsForPartial("")
+	if len(allCompletions) != 4 { // todo, summary, focus, breadth from defaultTokenCategories
+		t.Fatalf("expected 4 completions for empty partial, got %d: %v", len(allCompletions), allCompletions)
+	}
+
+	// Test 3: Position-aware completion with "static=" prefix
+	staticCompletions := m.getCompletionsForPartial("static=")
+	if len(staticCompletions) != 2 { // static=todo, static=summary
+		t.Fatalf("expected 2 completions for 'static=', got %d: %v", len(staticCompletions), staticCompletions)
+	}
+	for _, c := range staticCompletions {
+		if !strings.HasPrefix(c, "static=") {
+			t.Fatalf("expected completion to have 'static=' prefix, got %q", c)
+		}
+	}
+
+	// Test 4: Position-aware completion with partial value
+	staticTodoCompletions := m.getCompletionsForPartial("static=to")
+	if len(staticTodoCompletions) != 1 || staticTodoCompletions[0] != "static=todo" {
+		t.Fatalf("expected [static=todo] for 'static=to', got %v", staticTodoCompletions)
+	}
+
+	// Test 5: Scope category completions
+	scopeCompletions := m.getCompletionsForPartial("scope=")
+	if len(scopeCompletions) != 2 { // scope=focus, scope=breadth
+		t.Fatalf("expected 2 completions for 'scope=', got %d: %v", len(scopeCompletions), scopeCompletions)
+	}
+}
+
 func TestTokenSummaryNoHighlightWhenSubjectFocused(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo", "focus"},

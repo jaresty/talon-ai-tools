@@ -493,3 +493,35 @@ residual_constraints:
 
 next_work:
 - Behaviour: Monitor CLI command input mode usage and gather feedback on Tab completion behavior (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+## loop-016 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0077 Consequences → implement cursor-position-aware Tab completion where `category=partial` completes category-specific values.
+
+active_constraint: Tab completion cycled through all matching tokens regardless of position, not providing category-scoped completions when typing `category=value` format (validation: `go test ./internal/bartui -run TestPositionAwareTabCompletion`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Position-aware completion matches shell behavior, enabling faster category-specific token selection. |
+| Probability | High | Parsing `=` in the partial and filtering to the specified category directly addresses the gap. |
+| Time Sensitivity | Low | Enhancement to existing CLI command input mode; not blocking other work. |
+| Uncertainty note | Low | Behaviour fully covered by new unit test. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-016.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui/program.go internal/bartui/program_test.go`; rerun `go test ./internal/bartui -run TestPositionAwareTabCompletion` to confirm the test fails before reapplying.
+
+delta_summary: helper:diff-snapshot=2 files changed, ~80 insertions(+) — adds `getCompletionsForCategory` and `categorySlugFromCategory` helpers, extends `getCompletionsForPartial` with `=` detection for position-aware completion, adds `TestPositionAwareTabCompletion` unit test.
+
+loops_remaining_forecast: 0 loops. Confidence: high — CLI command input mode now fully implements ADR 0077's cursor-position-aware Tab completion specification.
+
+residual_constraints:
+- Low — Status message could be enhanced to indicate when completions are category-scoped vs all-categories. Mitigation: monitor operator feedback; owner: ADR 0077 follow-up.
+
+next_work:
+- Behaviour: Monitor position-aware completion usage and gather feedback (validation: `scripts/tools/run-tui-expect.sh --all`).

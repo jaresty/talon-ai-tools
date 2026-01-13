@@ -430,3 +430,34 @@ residual_constraints:
 
 next_work:
 - Behaviour: Monitor for new token manipulation code paths and ensure they record history (validation: `go test ./internal/bartui`).
+
+## loop-014 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0077 amendment → add CLI command input mode design direction to replace the "select from list" palette interaction with Tab-to-complete behavior that teaches the CLI grammar.
+
+active_constraint: User reported that Tab claimed to "cycle completions" but actually cycled focus. Investigation revealed a deeper issue: the palette's "select from list" interaction model abstracts the CLI grammar, preventing learning transfer to terminal usage.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | CLI command input mode enables direct learning transfer; operators build commands using exact `category=value` syntax. |
+| Probability | High | Amending the ADR now captures the design direction before implementation begins. |
+| Time Sensitivity | Medium | Clarifies intent for future loops implementing the new interaction model. |
+| Uncertainty note | Low | Design direction is documented; implementation details will be refined in subsequent loops. |
+
+validation_targets:
+- ADR 0077 review for clarity and completeness
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-014.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- docs/adr/0077-bubble-tea-tui-ux-simplification.md`; rerun ADR review.
+
+delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+), 0 deletions(-) — amends ADR 0077 with CLI command input mode: Context bullet on learning gap, Decision bullet on Tab completion design, Rationale bullet on learning transfer, Consequences bullet on implementation, Follow-up bullet on execution.
+
+loops_remaining_forecast: 1+ loops. Confidence: medium — CLI command input mode requires palette refactoring, cursor-position-aware Tab completion, and updated status messaging.
+
+residual_constraints:
+- High — Current Tab behavior cycles focus, but status messages claim Tab cycles completions. This mismatch is intentional pending the CLI command input mode implementation. Mitigation: implement the new interaction model in subsequent loops.
+
+next_work:
+- Behaviour: Implement CLI command input mode — refactor palette filter to show live `bar build` command, add cursor-aware Tab completion (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).

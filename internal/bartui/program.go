@@ -352,6 +352,7 @@ const (
 
 const tokenSparklineWindow = 12
 const toastLifetime = 1500 * time.Millisecond
+const historyHighlightLifetime = 2 * time.Second
 
 // composerTheme centralizes the Lip Gloss palette for ADR 0072 so toast overlays
 // and sidebar typography reinforce the CLI grammar cues across dark and light
@@ -367,6 +368,9 @@ type grammarComposerTheme struct {
 	sectionHintStyle        lipgloss.Style
 	summaryStripForeground  lipgloss.AdaptiveColor
 	summaryStripStyle       lipgloss.Style
+	historyActiveForeground lipgloss.AdaptiveColor
+	historyActiveBackground lipgloss.AdaptiveColor
+	historyActiveStyle      lipgloss.Style
 }
 
 func newGrammarComposerTheme() grammarComposerTheme {
@@ -386,6 +390,14 @@ func newGrammarComposerTheme() grammarComposerTheme {
 		Light: "#1E1633", // Charmtone ink for summary emphasis on light backgrounds
 		Dark:  "#F5F1FF", // Charmtone pearl for summary emphasis on dark backgrounds
 	}
+	historyActiveForeground := lipgloss.AdaptiveColor{
+		Light: "#1C1333", // Charmtone ink accent for highlighted history rows on light backgrounds
+		Dark:  "#F6EFFF", // Charmtone pearl accent for highlighted history rows on dark backgrounds
+	}
+	historyActiveBackground := lipgloss.AdaptiveColor{
+		Light: "#F2E8FF", // Charmtone lilac wash for highlighted history rows on light backgrounds
+		Dark:  "#352040", // Charmtone plum wash for highlighted history rows on dark backgrounds
+	}
 
 	return grammarComposerTheme{
 		toastForeground: toastForeground,
@@ -403,6 +415,12 @@ func newGrammarComposerTheme() grammarComposerTheme {
 		summaryStripForeground: summaryStripForeground,
 		summaryStripStyle: lipgloss.NewStyle().
 			Foreground(summaryStripForeground).
+			Bold(true),
+		historyActiveForeground: historyActiveForeground,
+		historyActiveBackground: historyActiveBackground,
+		historyActiveStyle: lipgloss.NewStyle().
+			Foreground(historyActiveForeground).
+			Background(historyActiveBackground).
 			Bold(true),
 	}
 }
@@ -3224,12 +3242,35 @@ func (m *model) renderHistorySection() string {
 	if len(m.paletteHistory) == 0 {
 		builder.WriteString("  (empty)\n")
 	} else {
-		for _, entry := range m.paletteHistory {
-			builder.WriteString(fmt.Sprintf("  • %s\n", formatHistoryEvent(entry)))
+		for idx, entry := range m.paletteHistory {
+			line := fmt.Sprintf("  • %s", formatHistoryEvent(entry))
+			if m.shouldHighlightHistoryEntry(idx, entry) {
+				line = composerTheme.historyActiveStyle.Render(line)
+			}
+			builder.WriteString(line)
+			builder.WriteString("\n")
 		}
 	}
 
 	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m *model) shouldHighlightHistoryEntry(index int, event historyEvent) bool {
+	if index != 0 {
+		return false
+	}
+	if event.Timestamp.IsZero() {
+		return true
+	}
+	now := m.historyTimestamp()
+	if now.IsZero() {
+		return true
+	}
+	age := now.Sub(event.Timestamp)
+	if age < 0 {
+		return true
+	}
+	return age <= historyHighlightLifetime
 }
 
 func historyEventIcon(kind historyEventKind) string {

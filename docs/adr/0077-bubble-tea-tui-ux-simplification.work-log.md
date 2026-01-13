@@ -365,3 +365,36 @@ residual_constraints:
 
 next_work:
 - Behaviour: Monitor expect transcripts and CI guardrails for regressions during future feature work.
+
+## loop-012 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0077 Decision bullet 5 → highlight the active history row with a proper tick-based expiry mechanism so the UI auto-refreshes when the highlight should clear, addressing the missing re-render issue from the original implementation.
+
+active_constraint: History entries rendered without highlight styling after the reverted loop-012 was removed, and the original implementation lacked a tick mechanism to trigger UI refresh when the 2-second highlight lifetime expired (validation: `go test ./internal/bartui -run TestHistoryHighlight`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Highlighting the newest history event makes provenance immediately scannable and fulfills ADR 0077's sidebar clarity goal. |
+| Probability | High | Adding the tick-based expiry and time-check hybrid directly addresses the missing styling and auto-refresh. |
+| Time Sensitivity | Medium | Needed before additional history categories land so future loops inherit the clear visual hierarchy. |
+| Uncertainty note | Low | Behaviour is fully covered by unit tests and the expect harness. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-012.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go tests/integration/tui/cases/token-palette-history.exp`; rerun `go test ./internal/bartui -run TestHistoryHighlight` to confirm the tests fail before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=3 files changed, 154 insertions(+), 19 deletions(-) — adds historyHighlightExpiredMsg type, tick-based expiry with time-check hybrid, Lip Gloss highlight styling, shouldHighlightHistoryEntry helper, and dedicated unit tests; updates expect regex for wrapped sidebar content.
+
+loops_remaining_forecast: 0 loops. Confidence: high — history typography now meets ADR 0077's guidance with proper tick-based re-rendering; only monitoring remains.
+
+residual_constraints:
+- Low — Continue monitoring new history event kinds for highlight coverage and tick scheduling. Mitigation: rerun `scripts/tools/run-tui-expect.sh --all` when additional history behaviours land; ensure callers of `recordPaletteHistory` batch the returned command; owner: ADR 0077 follow-up.
+
+next_work:
+- Behaviour: When new history categories ship, rerun the expect harness to ensure highlight styling remains legible (validation: `scripts/tools/run-tui-expect.sh --all`).

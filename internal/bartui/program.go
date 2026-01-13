@@ -352,6 +352,7 @@ const (
 
 const tokenSparklineWindow = 12
 const toastLifetime = 1500 * time.Millisecond
+const historyHighlightLifetime = 2 * time.Second
 
 // composerTheme centralizes the Lip Gloss palette for ADR 0072 so toast overlays
 // and sidebar typography reinforce the CLI grammar cues across dark and light
@@ -359,14 +360,17 @@ const toastLifetime = 1500 * time.Millisecond
 var composerTheme = newGrammarComposerTheme()
 
 type grammarComposerTheme struct {
-	toastForeground         lipgloss.AdaptiveColor
-	toastStyle              lipgloss.Style
-	sectionHeaderForeground lipgloss.AdaptiveColor
-	sectionHeaderStyle      lipgloss.Style
-	sectionHintForeground   lipgloss.AdaptiveColor
-	sectionHintStyle        lipgloss.Style
-	summaryStripForeground  lipgloss.AdaptiveColor
-	summaryStripStyle       lipgloss.Style
+	toastForeground           lipgloss.AdaptiveColor
+	toastStyle                lipgloss.Style
+	sectionHeaderForeground   lipgloss.AdaptiveColor
+	sectionHeaderStyle        lipgloss.Style
+	sectionHintForeground     lipgloss.AdaptiveColor
+	sectionHintStyle          lipgloss.Style
+	summaryStripForeground    lipgloss.AdaptiveColor
+	summaryStripStyle         lipgloss.Style
+	historyActiveForeground   lipgloss.AdaptiveColor
+	historyActiveBackground   lipgloss.AdaptiveColor
+	historyActiveStyle        lipgloss.Style
 }
 
 func newGrammarComposerTheme() grammarComposerTheme {
@@ -386,6 +390,14 @@ func newGrammarComposerTheme() grammarComposerTheme {
 		Light: "#1E1633", // Charmtone ink for summary emphasis on light backgrounds
 		Dark:  "#F5F1FF", // Charmtone pearl for summary emphasis on dark backgrounds
 	}
+	historyActiveForeground := lipgloss.AdaptiveColor{
+		Light: "#1C1333", // Charmtone ink accent for highlighted history rows on light backgrounds
+		Dark:  "#F6EFFF", // Charmtone pearl accent for highlighted history rows on dark backgrounds
+	}
+	historyActiveBackground := lipgloss.AdaptiveColor{
+		Light: "#F2E8FF", // Charmtone lilac wash for highlighted history rows on light backgrounds
+		Dark:  "#352040", // Charmtone plum wash for highlighted history rows on dark backgrounds
+	}
 
 	return grammarComposerTheme{
 		toastForeground: toastForeground,
@@ -404,10 +416,20 @@ func newGrammarComposerTheme() grammarComposerTheme {
 		summaryStripStyle: lipgloss.NewStyle().
 			Foreground(summaryStripForeground).
 			Bold(true),
+		historyActiveForeground: historyActiveForeground,
+		historyActiveBackground: historyActiveBackground,
+		historyActiveStyle: lipgloss.NewStyle().
+			Foreground(historyActiveForeground).
+			Background(historyActiveBackground).
+			Bold(true),
 	}
 }
 
 type toastExpiredMsg struct {
+	sequence int
+}
+
+type historyHighlightExpiredMsg struct {
 	sequence int
 }
 
@@ -705,9 +727,11 @@ type model struct {
 	tokenPaletteFocus        tokenPaletteFocus
 	tokenPaletteOptions      []int
 	tokenPaletteOptionIndex  int
-	paletteHistory           []historyEvent
-	paletteHistoryVisible    bool
-	lastPaletteCategoryIndex int
+	paletteHistory             []historyEvent
+	paletteHistoryVisible      bool
+	historyHighlightActive     bool
+	historyHighlightSequence   int
+	lastPaletteCategoryIndex   int
 	tokenPaletteFilter       textinput.Model
 	tokenViewport            viewport.Model
 	focusBeforePalette       focusArea
@@ -1509,10 +1533,10 @@ func (m *model) historyTimestamp() time.Time {
 	return time.Now().UTC()
 }
 
-func (m *model) recordPaletteHistory(kind historyEventKind, entry string) {
+func (m *model) recordPaletteHistory(kind historyEventKind, entry string) tea.Cmd {
 	trimmed := strings.TrimSpace(entry)
 	if trimmed == "" {
-		return
+		return nil
 	}
 	command := strings.TrimSpace(m.displayCommandString())
 	event := historyEvent{
@@ -1525,14 +1549,20 @@ func (m *model) recordPaletteHistory(kind historyEventKind, entry string) {
 	if len(m.paletteHistory) > paletteHistoryLimit {
 		m.paletteHistory = m.paletteHistory[:paletteHistoryLimit]
 	}
+	m.historyHighlightActive = true
+	m.historyHighlightSequence++
+	sequence := m.historyHighlightSequence
+	return tea.Tick(historyHighlightLifetime, func(time.Time) tea.Msg {
+		return historyHighlightExpiredMsg{sequence: sequence}
+	})
 }
 
-func (m *model) recordCommandHistory(result commandResult, mode commandMode) {
+func (m *model) recordCommandHistory(result commandResult, mode commandMode) tea.Cmd {
 	entry := formatCommandHistoryEntry(result, mode)
 	if entry == "" {
-		return
+		return nil
 	}
-	m.recordPaletteHistory(historyEventKindCommand, entry)
+	return m.recordPaletteHistory(historyEventKindCommand, entry)
 }
 
 func formatCommandHistoryEntry(result commandResult, mode commandMode) string {
@@ -1728,10 +1758,16 @@ func (m *model) toggleCurrentTokenOption() tea.Cmd {
 	if slug == "" {
 		slug = option.Value
 	}
+	categoryLabel := state.category.Label
+	if categoryLabel == "" {
+		categoryLabel = state.category.Key
+	}
 	if state.has(option.Value) {
 		m.recordTokenUndo()
 		state.remove(option.Value)
 		m.rebuildTokensFromStates()
+		historyEntry := fmt.Sprintf("%s → %s removed", categoryLabel, slug)
+		m.recordPaletteHistory(historyEventKindTokens, historyEntry)
 		m.statusMessage = fmt.Sprintf("%s → %s removed.", state.category.Label, slug)
 		return m.toastTokenChange(state.category, option, "removed")
 	}
@@ -1747,6 +1783,8 @@ func (m *model) toggleCurrentTokenOption() tea.Cmd {
 	m.recordTokenUndo()
 	state.add(option.Value, max)
 	m.rebuildTokensFromStates()
+	historyEntry := fmt.Sprintf("%s → %s applied", categoryLabel, slug)
+	m.recordPaletteHistory(historyEventKindTokens, historyEntry)
 	m.statusMessage = fmt.Sprintf("%s → %s applied.", state.category.Label, slug)
 	return m.toastTokenChange(state.category, option, "applied")
 }
@@ -1770,9 +1808,15 @@ func (m *model) removeCurrentTokenOption() tea.Cmd {
 	if slug == "" {
 		slug = option.Value
 	}
+	categoryLabel := state.category.Label
+	if categoryLabel == "" {
+		categoryLabel = state.category.Key
+	}
 	m.recordTokenUndo()
 	state.remove(option.Value)
 	m.rebuildTokensFromStates()
+	historyEntry := fmt.Sprintf("%s → %s removed", categoryLabel, slug)
+	m.recordPaletteHistory(historyEventKindTokens, historyEntry)
 	m.statusMessage = fmt.Sprintf("%s → %s removed.", state.category.Label, slug)
 	return m.toastTokenChange(state.category, option, "removed")
 }
@@ -2829,6 +2873,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.toastMessage = ""
 		}
 		return m, nil
+	case historyHighlightExpiredMsg:
+		if typed.sequence == m.historyHighlightSequence {
+			m.historyHighlightActive = false
+		}
+		return m, nil
 	case commandFinishedMsg:
 		m.commandRunning = false
 		m.runningCommand = ""
@@ -3224,12 +3273,38 @@ func (m *model) renderHistorySection() string {
 	if len(m.paletteHistory) == 0 {
 		builder.WriteString("  (empty)\n")
 	} else {
-		for _, entry := range m.paletteHistory {
-			builder.WriteString(fmt.Sprintf("  • %s\n", formatHistoryEvent(entry)))
+		for idx, entry := range m.paletteHistory {
+			line := fmt.Sprintf("  • %s", formatHistoryEvent(entry))
+			if m.shouldHighlightHistoryEntry(idx, entry) {
+				line = composerTheme.historyActiveStyle.Render(line)
+			}
+			builder.WriteString(line)
+			builder.WriteString("\n")
 		}
 	}
 
 	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m *model) shouldHighlightHistoryEntry(index int, event historyEvent) bool {
+	if index != 0 {
+		return false
+	}
+	if !m.historyHighlightActive {
+		return false
+	}
+	if event.Timestamp.IsZero() {
+		return true
+	}
+	now := m.historyTimestamp()
+	if now.IsZero() {
+		return true
+	}
+	age := now.Sub(event.Timestamp)
+	if age < 0 {
+		return true
+	}
+	return age <= historyHighlightLifetime
 }
 
 func historyEventIcon(kind historyEventKind) string {

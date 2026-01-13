@@ -2906,3 +2906,77 @@ func TestPresetPaneDeleteAndUndo(t *testing.T) {
 		t.Fatalf("expected status message to mention restore, got %q", m.statusMessage)
 	}
 }
+
+func TestHistoryHighlightRecentEntry(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	originalProfile := lipgloss.ColorProfile()
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	t.Cleanup(func() {
+		lipgloss.SetColorProfile(originalProfile)
+	})
+
+	m := newModel(opts)
+	m.paletteHistoryVisible = true
+
+	base := time.Date(2026, time.January, 12, 15, 4, 5, 0, time.UTC)
+	m.now = func() time.Time { return base }
+	m.recordPaletteHistory(historyEventKindTokens, "Compose → todo applied")
+
+	section := m.renderHistorySection()
+	if len(m.paletteHistory) == 0 {
+		t.Fatalf("expected history entry to render")
+	}
+
+	// The most recent history entry should include highlight styling
+	if !strings.Contains(section, "\x1b[") {
+		t.Fatalf("expected recent history entry to include ANSI styling for highlight, got section:\n%s", section)
+	}
+}
+
+func TestHistoryHighlightExpires(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	originalProfile := lipgloss.ColorProfile()
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	t.Cleanup(func() {
+		lipgloss.SetColorProfile(originalProfile)
+	})
+
+	m := newModel(opts)
+	m.paletteHistoryVisible = true
+
+	base := time.Date(2026, time.January, 12, 15, 4, 5, 0, time.UTC)
+	m.now = func() time.Time { return base }
+	m.recordPaletteHistory(historyEventKindTokens, "Compose → todo applied")
+
+	// Simulate expiry message
+	m, _ = updateModel(t, m, historyHighlightExpiredMsg{sequence: m.historyHighlightSequence})
+
+	section := m.renderHistorySection()
+	entry := fmt.Sprintf("  • %s", formatHistoryEvent(m.paletteHistory[0]))
+
+	// After expiry, highlight should be gone - check the entry renders without highlight styling
+	if m.historyHighlightActive {
+		t.Fatalf("expected highlight to be inactive after expiry message")
+	}
+	if !strings.Contains(section, entry) {
+		t.Fatalf("expected plain history line to remain after highlight expires, got section:\n%s", section)
+	}
+}

@@ -1,6 +1,7 @@
 Proposed — TUI redesign: command-centric interface for grammar learning (2026-01-13)
 
 ## Context
+- **Supersedes ADR 0077** (Bubble Tea TUI interaction simplification). After 17 loops of incremental improvement, the fundamental interaction model proved difficult to learn; this ADR proposes a clean-slate redesign.
 - The current TUI evolved from a palette-based token selector into a complex multi-pane layout with Subject, Tokens, Command, and Result zones, each competing for attention.
 - Operators report difficulty learning the `bar build` grammar because the interface abstracts the command syntax behind modal interactions and focus management.
 - The sidebar displays 11 token categories vertically, overwhelming new users and requiring mental mapping between UI elements and CLI tokens.

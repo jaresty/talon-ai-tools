@@ -557,3 +557,15 @@ residual_constraints:
 
 next_work:
 - Behaviour: Monitor CLI command input mode usage and gather feedback (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+## Supersession Notice | 2026-01-13
+
+ADR 0077 is superseded by ADR 0081 (TUI redesign: command-centric interface for grammar learning).
+
+**Reason for pivot**: Despite completing 17 loops of incremental improvement, the fundamental interaction model (multi-zone layout with sidebar, palette modal, focus management) remained difficult to use. User feedback indicated the TUI was hard to learn and didn't effectively teach the `bar build` grammar.
+
+**ADR 0081 approach**: Complete redesign with three-pane vertical layout, command-line-first interaction, fuzzy search completions, and token tree visualization. Removes sidebar, palette modal, focus zones, and status bar complexity.
+
+**Code disposition**: Current implementation remains functional. ADR 0081 will build the new TUI as a separate path (`bar tui2` or feature flag) before replacing the default.
+
+**Abandoned work**: Loop-018 (category-scoped completion status messages) was in progress but is abandoned; the entire completion UI will be redesigned.

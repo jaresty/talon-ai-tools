@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -59,6 +60,11 @@ type model struct {
 	completions     []completion
 	completionIndex int
 
+	// Subject input (modal)
+	subject          string
+	subjectInput     textarea.Model
+	showSubjectModal bool
+
 	// Preview (pane 3)
 	previewText string
 	preview     func(subject string, tokens []string) (string, error)
@@ -93,10 +99,18 @@ func newModel(opts Options) model {
 	ti.SetValue("bar build ")
 	ti.CursorEnd()
 
+	// Subject textarea for modal
+	ta := textarea.New()
+	ta.Placeholder = "Enter subject text (paste content here)..."
+	ta.SetWidth(60)
+	ta.SetHeight(8)
+	ta.ShowLineNumbers = false
+
 	m := model{
 		commandInput:    ti,
 		tokens:          opts.InitialTokens,
 		tokenCategories: opts.TokenCategories,
+		subjectInput:    ta,
 		preview:         opts.Preview,
 		width:           opts.InitialWidth,
 		height:          opts.InitialHeight,
@@ -129,14 +143,39 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
+	// Handle window size for all modes
+	if wsm, ok := msg.(tea.WindowSizeMsg); ok {
+		m.width = wsm.Width
+		m.height = wsm.Height
+		m.ready = true
+		m.commandInput.Width = m.width - 4
+		// Resize subject textarea to fit modal
+		m.subjectInput.SetWidth(m.width - 10)
+		m.subjectInput.SetHeight((m.height - 10) / 2)
+	}
+
+	// Route input based on modal state
+	if m.showSubjectModal {
+		return m.updateSubjectModal(msg)
+	}
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "esc":
+		case "ctrl+c":
+			return m, tea.Quit
+		case "esc":
 			return m, tea.Quit
 		case "ctrl+b":
 			// Copy CLI to clipboard (placeholder)
 			return m, nil
+		case "ctrl+l":
+			// Open subject input modal
+			m.showSubjectModal = true
+			m.subjectInput.SetValue(m.subject)
+			m.subjectInput.Focus()
+			m.commandInput.Blur()
+			return m, textarea.Blink
 		case "up":
 			// Navigate completions up
 			if m.completionIndex > 0 {
@@ -156,12 +195,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
-
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		m.ready = true
-		m.commandInput.Width = m.width - 4
 	}
 
 	// Update text input
@@ -173,15 +206,51 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.tokens = m.parseTokensFromCommand()
 	m.updateCompletions()
 
-	// Update preview
+	// Update preview with subject
 	if m.preview != nil {
-		text, err := m.preview("", m.tokens)
+		text, err := m.preview(m.subject, m.tokens)
 		if err == nil {
 			m.previewText = text
 		}
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+// updateSubjectModal handles input when the subject modal is open.
+func (m model) updateSubjectModal(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
+		case "esc":
+			// Close modal without saving
+			m.showSubjectModal = false
+			m.subjectInput.Blur()
+			m.commandInput.Focus()
+			return m, textinput.Blink
+		case "ctrl+s":
+			// Save and close modal
+			m.subject = m.subjectInput.Value()
+			m.showSubjectModal = false
+			m.subjectInput.Blur()
+			m.commandInput.Focus()
+			// Update preview with new subject
+			if m.preview != nil {
+				text, err := m.preview(m.subject, m.tokens)
+				if err == nil {
+					m.previewText = text
+				}
+			}
+			return m, textinput.Blink
+		}
+	}
+
+	// Update textarea
+	var cmd tea.Cmd
+	m.subjectInput, cmd = m.subjectInput.Update(msg)
+	return m, cmd
 }
 
 // parseTokensFromCommand extracts tokens from the command input.
@@ -321,6 +390,11 @@ func (m model) View() string {
 		return "Initializing..."
 	}
 
+	// Show subject modal if active
+	if m.showSubjectModal {
+		return m.renderSubjectModal()
+	}
+
 	var b strings.Builder
 
 	// Pane 1: Command input
@@ -347,6 +421,11 @@ var (
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("240")).
 			Padding(0, 1)
+
+	modalStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("212")).
+			Padding(1, 2)
 
 	headerStyle = lipgloss.NewStyle().
 			Bold(true).
@@ -503,12 +582,38 @@ func (m model) renderHotkeyBar() string {
 
 	keys := []string{
 		"Enter: select",
-		"Backspace: remove",
-		"Ctrl+B: copy CLI",
+		"BS: remove",
+		"^L: subject",
+		"^B: copy",
 		"Esc: exit",
 	}
 
 	return dimStyle.Width(width).Render(strings.Join(keys, " | "))
+}
+
+func (m model) renderSubjectModal() string {
+	width := m.width - 4
+	if width < 40 {
+		width = 40
+	}
+
+	var content strings.Builder
+	content.WriteString(headerStyle.Render("SUBJECT INPUT"))
+	content.WriteString("\n\n")
+	content.WriteString(m.subjectInput.View())
+	content.WriteString("\n\n")
+
+	// Show subject indicator
+	if m.subject != "" {
+		lines := strings.Count(m.subject, "\n") + 1
+		chars := len(m.subject)
+		content.WriteString(dimStyle.Render(fmt.Sprintf("Current: %d lines, %d chars", lines, chars)))
+		content.WriteString("\n")
+	}
+
+	content.WriteString(dimStyle.Render("Ctrl+S: save | Esc: cancel"))
+
+	return modalStyle.Width(width).Render(content.String())
 }
 
 // Snapshot renders a single frame for testing.

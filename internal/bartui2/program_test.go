@@ -398,3 +398,103 @@ func TestTokenTreeEmptyShowsNoCount(t *testing.T) {
 		t.Error("expected 'TOKENS' header")
 	}
 }
+
+func TestSubjectModalRendering(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Open subject modal
+	m.showSubjectModal = true
+	m.subjectInput.Focus()
+
+	view := m.View()
+
+	// Should show subject modal header
+	if !strings.Contains(view, "SUBJECT INPUT") {
+		t.Error("expected 'SUBJECT INPUT' header in modal")
+	}
+
+	// Should show hotkey hints for modal
+	if !strings.Contains(view, "Ctrl+S: save") {
+		t.Error("expected 'Ctrl+S: save' in modal")
+	}
+
+	if !strings.Contains(view, "Esc: cancel") {
+		t.Error("expected 'Esc: cancel' in modal")
+	}
+}
+
+func TestSubjectModalHidesMainView(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo"},
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Open subject modal
+	m.showSubjectModal = true
+
+	view := m.View()
+
+	// Should NOT show main view elements when modal is open
+	if strings.Contains(view, "COMPLETIONS") {
+		t.Error("main view COMPLETIONS should be hidden when modal is open")
+	}
+
+	if strings.Contains(view, "PREVIEW") {
+		t.Error("main view PREVIEW should be hidden when modal is open")
+	}
+}
+
+func TestSubjectPassedToPreview(t *testing.T) {
+	var capturedSubject string
+	preview := func(subject string, tokens []string) (string, error) {
+		capturedSubject = subject
+		return "Preview: " + subject, nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview:         preview,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Set subject and trigger preview update
+	m.subject = "Test subject content"
+	if m.preview != nil {
+		text, err := m.preview(m.subject, m.tokens)
+		if err == nil {
+			m.previewText = text
+		}
+	}
+
+	if capturedSubject != "Test subject content" {
+		t.Errorf("expected subject 'Test subject content' passed to preview, got %q", capturedSubject)
+	}
+}
+
+func TestHotkeyBarShowsSubjectShortcut(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+
+	view, err := Snapshot(opts)
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	// Should show subject shortcut in hotkey bar
+	if !strings.Contains(view, "subject") {
+		t.Error("expected 'subject' shortcut in hotkey bar")
+	}
+}

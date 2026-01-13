@@ -105,3 +105,38 @@ residual_constraints:
 next_work:
 - Behaviour: Implement subject input modal (Ctrl+L) (validation: `go test ./internal/bartui2`).
 - Behaviour: Wire clipboard copy (Ctrl+B) (validation: `go test ./internal/bartui2`).
+
+## loop-004 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0081 Decision → implement subject input modal (Ctrl+L) for entering subject text that gets passed to preview.
+
+active_constraint: No way to enter subject content; operators cannot provide context for prompt generation (validation: `go test ./internal/bartui2 -run TestSubject`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Subject input is essential for real-world prompt building; without it, prompts lack context. |
+| Probability | High | Modal pattern well-documented in bubbles-inputs and bubbletea-overlays skills. |
+| Time Sensitivity | Medium | Core functionality needed before user testing. |
+| Uncertainty note | Low | Uses standard bubbles/textarea component with established patterns. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-004.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go`; rerun `go test ./internal/bartui2 -run TestSubject` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=2 files changed — adds bubbles/textarea for subject input, adds subject/subjectInput/showSubjectModal fields, implements updateSubjectModal() for modal input routing, adds renderSubjectModal() with distinct styling, updates hotkey bar with ^L shortcut, adds 4 new tests for modal functionality.
+
+loops_remaining_forecast: 2-3 loops. Confidence: medium — remaining work includes clipboard copy (Ctrl+B), command execution (Ctrl+Enter), and polish.
+
+residual_constraints:
+- Medium — Preview pane truncates without scroll. Mitigation: add bubbles viewport component.
+- Low — No clipboard integration (Ctrl+B placeholder). Mitigation: next loop priority.
+- Low — No command execution (Ctrl+Enter). Mitigation: subsequent loop.
+
+next_work:
+- Behaviour: Wire clipboard copy (Ctrl+B) to copy bar build command (validation: `go test ./internal/bartui2`).
+- Behaviour: Implement command execution (Ctrl+Enter) (validation: `go test ./internal/bartui2`).

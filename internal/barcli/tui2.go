@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/atotto/clipboard"
 	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
 )
@@ -60,6 +61,7 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		InitialTokens:   tokens,
 		TokenCategories: tokenCategories,
 		Preview:         preview,
+		ClipboardWrite:  clipboard.WriteAll,
 		InitialWidth:    opts.FixtureWidth,
 		InitialHeight:   opts.FixtureHeight,
 		NoAltScreen:     opts.NoAltScreen,

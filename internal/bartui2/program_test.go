@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
@@ -496,5 +497,117 @@ func TestHotkeyBarShowsSubjectShortcut(t *testing.T) {
 	// Should show subject shortcut in hotkey bar
 	if !strings.Contains(view, "subject") {
 		t.Error("expected 'subject' shortcut in hotkey bar")
+	}
+}
+
+func TestClipboardCopyCommand(t *testing.T) {
+	var copiedText string
+	clipboardWrite := func(text string) error {
+		copiedText = text
+		return nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		ClipboardWrite:  clipboardWrite,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Copy command to clipboard
+	m.copyCommandToClipboard()
+
+	// Should have copied the command
+	if copiedText != "bar build " {
+		t.Errorf("expected clipboard to contain 'bar build ', got %q", copiedText)
+	}
+
+	// Should show toast
+	if m.toastMessage != "Copied to clipboard!" {
+		t.Errorf("expected toast 'Copied to clipboard!', got %q", m.toastMessage)
+	}
+}
+
+func TestClipboardCopyWithTokens(t *testing.T) {
+	var copiedText string
+	clipboardWrite := func(text string) error {
+		copiedText = text
+		return nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		ClipboardWrite:  clipboardWrite,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Add tokens to command
+	m.commandInput.SetValue("bar build todo focus ")
+
+	// Copy command to clipboard
+	m.copyCommandToClipboard()
+
+	// Should have copied the command with tokens
+	if copiedText != "bar build todo focus " {
+		t.Errorf("expected clipboard to contain 'bar build todo focus ', got %q", copiedText)
+	}
+}
+
+func TestClipboardUnavailable(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		ClipboardWrite:  nil, // No clipboard
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Try to copy command
+	m.copyCommandToClipboard()
+
+	// Should show error toast
+	if m.toastMessage != "Clipboard not available" {
+		t.Errorf("expected toast 'Clipboard not available', got %q", m.toastMessage)
+	}
+}
+
+func TestToastDisplaysInHotkeyBar(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Set toast message
+	m.toastMessage = "Test toast!"
+
+	view := m.View()
+
+	// Should show toast instead of hotkeys
+	if !strings.Contains(view, "Test toast!") {
+		t.Error("expected toast message in view")
+	}
+}
+
+func TestToastClearedOnKeyPress(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+	m.toastMessage = "Test toast!"
+
+	// Simulate a key press (down arrow) and capture returned model
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m2 := updated.(model)
+
+	// Toast should be cleared
+	if m2.toastMessage != "" {
+		t.Errorf("expected toast to be cleared, got %q", m2.toastMessage)
 	}
 }

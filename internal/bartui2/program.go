@@ -26,6 +26,9 @@ type Options struct {
 	// Preview generates prompt text from subject and tokens.
 	Preview func(subject string, tokens []string) (string, error)
 
+	// ClipboardWrite writes text to the system clipboard.
+	ClipboardWrite func(string) error
+
 	// InitialWidth overrides terminal width detection (for testing).
 	InitialWidth int
 
@@ -68,6 +71,12 @@ type model struct {
 	// Preview (pane 3)
 	previewText string
 	preview     func(subject string, tokens []string) (string, error)
+
+	// Clipboard
+	clipboardWrite func(string) error
+
+	// Toast/status message
+	toastMessage string
 
 	// State
 	ready bool
@@ -112,6 +121,7 @@ func newModel(opts Options) model {
 		tokenCategories: opts.TokenCategories,
 		subjectInput:    ta,
 		preview:         opts.Preview,
+		clipboardWrite:  opts.ClipboardWrite,
 		width:           opts.InitialWidth,
 		height:          opts.InitialHeight,
 	}
@@ -161,13 +171,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		// Clear toast on any key press
+		m.toastMessage = ""
+
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "esc":
 			return m, tea.Quit
 		case "ctrl+b":
-			// Copy CLI to clipboard (placeholder)
+			// Copy CLI to clipboard
+			m.copyCommandToClipboard()
 			return m, nil
 		case "ctrl+l":
 			// Open subject input modal
@@ -251,6 +265,20 @@ func (m model) updateSubjectModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.subjectInput, cmd = m.subjectInput.Update(msg)
 	return m, cmd
+}
+
+// copyCommandToClipboard copies the current bar build command to clipboard.
+func (m *model) copyCommandToClipboard() {
+	command := m.commandInput.Value()
+	if m.clipboardWrite == nil {
+		m.toastMessage = "Clipboard not available"
+		return
+	}
+	if err := m.clipboardWrite(command); err != nil {
+		m.toastMessage = fmt.Sprintf("Clipboard error: %v", err)
+		return
+	}
+	m.toastMessage = "Copied to clipboard!"
 }
 
 // parseTokensFromCommand extracts tokens from the command input.
@@ -443,6 +471,10 @@ var (
 	completionSelectedStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("212")).
 				Bold(true)
+
+	toastStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("78")).
+			Bold(true)
 )
 
 func (m model) renderCommandPane() string {
@@ -578,6 +610,11 @@ func (m model) renderHotkeyBar() string {
 	width := m.width - 2
 	if width < 20 {
 		width = 20
+	}
+
+	// Show toast message if present
+	if m.toastMessage != "" {
+		return toastStyle.Width(width).Render(m.toastMessage)
 	}
 
 	keys := []string{

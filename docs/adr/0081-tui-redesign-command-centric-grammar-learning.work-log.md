@@ -140,3 +140,37 @@ residual_constraints:
 next_work:
 - Behaviour: Wire clipboard copy (Ctrl+B) to copy bar build command (validation: `go test ./internal/bartui2`).
 - Behaviour: Implement command execution (Ctrl+Enter) (validation: `go test ./internal/bartui2`).
+
+## loop-005 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0081 Decision → implement clipboard copy (Ctrl+B) to copy bar build command with toast feedback.
+
+active_constraint: No way to export the constructed command; operators cannot share or reuse their built commands outside the TUI (validation: `go test ./internal/bartui2 -run TestClipboard`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Clipboard copy enables workflow integration; users can paste commands into scripts or terminals. |
+| Probability | High | Uses existing atotto/clipboard package already in project. |
+| Time Sensitivity | Medium | Essential for real-world usage but not blocking other features. |
+| Uncertainty note | Low | Standard clipboard integration pattern. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-005.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go internal/barcli/tui2.go`; rerun `go test ./internal/bartui2 -run TestClipboard` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=3 files changed — adds ClipboardWrite option and clipboardWrite/toastMessage fields, implements copyCommandToClipboard() with toast feedback, adds toastStyle (green), toast replaces hotkey bar when present and clears on key press, wires clipboard.WriteAll in tui2.go, adds 5 tests for clipboard/toast.
+
+loops_remaining_forecast: 1-2 loops. Confidence: medium — remaining work includes command execution (Ctrl+Enter) and polish/viewport scroll.
+
+residual_constraints:
+- Medium — Preview pane truncates without scroll. Mitigation: add bubbles viewport component.
+- Low — No command execution (Ctrl+Enter). Mitigation: next loop priority.
+
+next_work:
+- Behaviour: Implement command execution (Ctrl+Enter) with output display (validation: `go test ./internal/bartui2`).
+- Behaviour: Add viewport scroll to preview pane (validation: `go test ./internal/bartui2`).

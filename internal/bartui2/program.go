@@ -910,7 +910,8 @@ func (m model) getCompletionMaxShow() int {
 	if paneHeight < 4 {
 		paneHeight = 4
 	}
-	maxShow := paneHeight - 5 // Leave room for "Then:" hint and selected description
+	// Reserve space for: header, "more above", completions, "more below", "Then:" hint, selected desc
+	maxShow := paneHeight - 7
 	if maxShow < 1 {
 		maxShow = 1
 	}
@@ -1259,7 +1260,8 @@ func (m model) renderTokensPane() string {
 		right.WriteString(dimStyle.Render("(no matches)"))
 	} else {
 		// Show completions with current selection highlighted
-		maxShow := paneHeight - 5 // Leave room for "Then:" hint and selected description
+		// Reserve space for: header, "more above", completions, "more below", "Then:" hint, selected desc
+		maxShow := paneHeight - 7 // -1 header, -2 scroll indicators, -2 Then+desc, -2 padding
 		if maxShow < 1 {
 			maxShow = 1
 		}
@@ -1271,11 +1273,11 @@ func (m model) renderTokensPane() string {
 			endIdx = len(m.completions)
 		}
 
-		// Show "N more above..." indicator if scrolled down
+		// Always show "more above" line (empty if at top) to keep layout stable
 		if startIdx > 0 {
 			right.WriteString(dimStyle.Render(fmt.Sprintf("... %d more above", startIdx)))
-			right.WriteString("\n")
 		}
+		right.WriteString("\n")
 
 		for i := startIdx; i < endIdx; i++ {
 			c := m.completions[i]
@@ -1292,11 +1294,11 @@ func (m model) renderTokensPane() string {
 			right.WriteString("\n")
 		}
 
-		// Show "N more below..." indicator if there are more items
+		// Always show "more below" line (empty if at bottom) to keep layout stable
 		if endIdx < len(m.completions) {
 			right.WriteString(dimStyle.Render(fmt.Sprintf("... %d more below", len(m.completions)-endIdx)))
-			right.WriteString("\n")
 		}
+		right.WriteString("\n")
 	}
 
 	// Add "Then:" hint for remaining stages

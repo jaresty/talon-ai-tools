@@ -156,7 +156,9 @@ Completion entries show:
 ```
 ▸ focus          concentrates on a single focal topic
 ```
-Value and description (category is implicit from stage header).
+Value and description (category is implicit from stage header). Descriptions use available width to avoid truncation.
+
+**Selected item description**: Below the completion list, a 1-2 line area shows the full description of the currently highlighted completion. This ensures users can read complete descriptions even when the list is compact.
 
 **Power user escape hatch**: Typing `category=value` (e.g., `scope=focus`) bypasses stage progression and allows direct override syntax, matching CLI behavior. This works at any time, including after all stages are complete.
 

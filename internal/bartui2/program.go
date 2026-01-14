@@ -672,7 +672,7 @@ func (m *model) updateCompletions() {
 			results = append(results, completion{
 				Value:       opt.Value,
 				Category:    category.Label,
-				Description: truncate(opt.Description, 40),
+				Description: opt.Description, // Store full description; truncate during display
 				Fills:       opt.Fills,
 			})
 		}
@@ -833,6 +833,33 @@ func truncate(s string, maxLen int) string {
 		return s[:maxLen]
 	}
 	return s[:maxLen-3] + "..."
+}
+
+// wrapText wraps text to fit within maxWidth characters per line.
+func wrapText(s string, maxWidth int) string {
+	if maxWidth <= 0 {
+		return s
+	}
+	var result strings.Builder
+	words := strings.Fields(s)
+	lineLen := 0
+	for i, word := range words {
+		wordLen := len(word)
+		if lineLen > 0 && lineLen+1+wordLen > maxWidth {
+			// Start a new line
+			result.WriteString("\n")
+			lineLen = 0
+		}
+		if lineLen > 0 {
+			result.WriteString(" ")
+			lineLen++
+		}
+		result.WriteString(word)
+		lineLen += wordLen
+		// Avoid trailing space check
+		_ = i
+	}
+	return result.String()
 }
 
 // getPreviewPaneHeight returns the calculated height for the preview/result pane.
@@ -1113,9 +1140,11 @@ func (m model) renderCommandPane() string {
 }
 
 func (m model) renderTokensPane() string {
-	width := m.width - 2
-	if width < 20 {
-		width = 20
+	// paneStyle has border (2 chars) and padding (2 chars), so content area is width - 4
+	boxWidth := m.width - 2 // width for the pane box itself
+	contentWidth := boxWidth - 4 // subtract border (2) + padding (2) for content area
+	if contentWidth < 20 {
+		contentWidth = 20
 	}
 
 	// Calculate available height for this pane
@@ -1168,13 +1197,22 @@ func (m model) renderTokensPane() string {
 	}
 	right.WriteString("\n")
 
+	// Calculate description width based on available space
+	// Right pane gets more space; use dynamic description truncation
+	rightWidth := contentWidth - (contentWidth / 3) - 3 // Give 2/3 to completions
+	descWidth := rightWidth - 16                         // Account for prefix and value column
+	if descWidth < 20 {
+		descWidth = 20
+	}
+	var selectedDesc string // Store full description of selected item
+
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
 	} else if len(m.completions) == 0 {
 		right.WriteString(dimStyle.Render("(no matches)"))
 	} else {
 		// Show completions with current selection highlighted
-		maxShow := paneHeight - 3 // Leave room for "Then:" hint
+		maxShow := paneHeight - 5 // Leave room for "Then:" hint and selected description
 		if maxShow < 1 {
 			maxShow = 1
 		}
@@ -1189,9 +1227,10 @@ func (m model) renderTokensPane() string {
 			if i == m.completionIndex {
 				prefix = "▸ "
 				style = completionSelectedStyle
+				selectedDesc = c.Description // Capture full description
 			}
-			// Format: "▸ focus       single topic"
-			entry := fmt.Sprintf("%s%-12s %s", prefix, c.Value, truncate(c.Description, 25))
+			// Format: "▸ focus       single topic..."
+			entry := fmt.Sprintf("%s%-12s %s", prefix, c.Value, truncate(c.Description, descWidth))
 			right.WriteString(style.Render(entry))
 			right.WriteString("\n")
 		}
@@ -1201,22 +1240,37 @@ func (m model) renderTokensPane() string {
 	remaining := m.getRemainingStages()
 	if len(remaining) > 0 && currentStage != "" {
 		hint := "Then: " + strings.Join(remaining, ", ")
-		if len(hint) > 35 {
-			hint = hint[:32] + "..."
+		hintMaxLen := rightWidth - 2
+		if hintMaxLen < 20 {
+			hintMaxLen = 20
+		}
+		if len(hint) > hintMaxLen {
+			hint = hint[:hintMaxLen-3] + "..."
 		}
 		right.WriteString(dimStyle.Render(hint))
+		right.WriteString("\n")
 	}
 
-	// Split horizontally
-	leftWidth := width / 2
-	rightWidth := width - leftWidth - 3
+	// Add selected item description area (full description)
+	if selectedDesc != "" {
+		right.WriteString("\n")
+		right.WriteString(dimStyle.Render("─"))
+		right.WriteString("\n")
+		// Wrap description to fit width
+		wrappedDesc := wrapText(selectedDesc, rightWidth-2)
+		right.WriteString(dimStyle.Render(wrappedDesc))
+	}
+
+	// Split horizontally - give 1/3 to token tree, 2/3 to completions
+	leftWidth := contentWidth / 3
+	rightLayoutWidth := contentWidth - leftWidth - 1 // subtract 1 for space separator
 
 	leftContent := lipgloss.NewStyle().Width(leftWidth).Render(left.String())
-	rightContent := lipgloss.NewStyle().Width(rightWidth).Render(right.String())
+	rightContent := lipgloss.NewStyle().Width(rightLayoutWidth).Render(right.String())
 
 	combined := lipgloss.JoinHorizontal(lipgloss.Top, leftContent, " ", rightContent)
 
-	return paneStyle.Width(width).Height(paneHeight).Render(combined)
+	return paneStyle.Width(boxWidth).Height(paneHeight).Render(combined)
 }
 
 func (m model) renderPreviewPane() string {

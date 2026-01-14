@@ -340,3 +340,36 @@ residual_constraints:
 
 next_work:
 - ADR 0081 implementation complete. Follow-up work (Ctrl+P preset save/load, syntax highlighting) can be tracked in new ADRs if requested.
+
+## loop-011 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 Decision → fix truncated descriptions in completions pane by storing full descriptions and adding selected item description area.
+
+active_constraint: Descriptions were pre-truncated to 40 chars when creating completions; operators could not read full token descriptions even with available space (validation: `go test ./internal/bartui2 -run TestSelectedItemDescriptionArea`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Full descriptions help users understand token meanings and make informed choices. |
+| Probability | High | Simple fix to remove pre-truncation and add wrapping. |
+| Time Sensitivity | Low | Usability improvement; core functionality unaffected. |
+| Uncertainty note | Low | Layout calculations already handle width constraints. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-011.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go`; rerun `go test ./internal/bartui2 -run TestSelectedItemDescriptionArea` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=2 files changed — removes pre-truncation of descriptions in updateCompletions() (was truncate(opt.Description, 40)), adds wrapText() helper for word-wrapping, adds selected item description area below completions with separator, fixes layout calculations (boxWidth vs contentWidth for borders/padding), adds 1 new test.
+
+loops_remaining_forecast: 0 loops. Confidence: high — ADR 0081 features complete with full descriptions and selected item area.
+
+residual_constraints:
+- Low — Fuzzy matching is simple substring; could enhance with proper fuzzy algorithm. Mitigation: monitor usability feedback.
+- Low — Saved preset management (Ctrl+P save/load) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 implementation complete. Follow-up work (Ctrl+P preset save/load, syntax highlighting) can be tracked in new ADRs if requested.

@@ -1315,3 +1315,51 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 		t.Errorf("expected tone to be auto-filled with 'encouraging', got %v", tone)
 	}
 }
+
+func TestSelectedItemDescriptionArea(t *testing.T) {
+	// Create categories with detailed descriptions
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{
+					Value:       "todo",
+					Label:       "Todo",
+					Description: "Returns a comprehensive todo list with prioritized action items",
+				},
+				{
+					Value:       "describe",
+					Label:       "Describe",
+					Description: "Provides a detailed description of the subject matter",
+				},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    120,
+		InitialHeight:   30,
+	})
+	m.ready = true
+
+	// Update completions to populate the list
+	m.updateCompletions()
+
+	// Should have completions
+	if len(m.completions) == 0 {
+		t.Fatal("expected completions")
+	}
+
+	// Get the view
+	view := m.View()
+
+	// Should show the full description of the selected item (first completion)
+	// The selected item description should appear in the view
+	expectedDesc := "Returns a comprehensive todo list with prioritized action items"
+	if !strings.Contains(view, expectedDesc) {
+		t.Errorf("expected view to contain full description %q", expectedDesc)
+	}
+}

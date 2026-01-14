@@ -1095,16 +1095,49 @@ func (m model) getCategoryKeyForToken(token string) string {
 
 // getAllTokensInOrder returns all selected tokens in grammar order.
 // Persona preset tokens are prefixed with "persona=" as required by Build.
+// Auto-filled tokens are skipped since their source (e.g., a preset) already provides them.
 func (m model) getAllTokensInOrder() []string {
 	var result []string
 	for _, stage := range stageOrder {
 		if tokens, ok := m.tokensByCategory[stage]; ok {
 			for _, token := range tokens {
+				// Skip auto-filled tokens - they're provided by their source (e.g., preset)
+				if m.isAutoFilled(stage, token) {
+					continue
+				}
 				if stage == "persona_preset" {
 					result = append(result, "persona="+token)
 				} else {
 					result = append(result, token)
 				}
+			}
+		}
+	}
+	return result
+}
+
+// getDisplayTokens returns tokens for display purposes (without Build-specific prefixes).
+// Auto-filled tokens are included for display but marked appropriately.
+func (m model) getDisplayTokens() []struct {
+	Category string
+	Value    string
+} {
+	var result []struct {
+		Category string
+		Value    string
+	}
+	for _, stage := range stageOrder {
+		if tokens, ok := m.tokensByCategory[stage]; ok {
+			for _, token := range tokens {
+				category := m.getCategoryByKey(stage)
+				categoryLabel := ""
+				if category != nil {
+					categoryLabel = category.Label
+				}
+				result = append(result, struct {
+					Category string
+					Value    string
+				}{categoryLabel, token})
 			}
 		}
 	}
@@ -1460,34 +1493,33 @@ func (m model) renderTokensPane() string {
 		paneHeight = 4
 	}
 
-	allTokens := m.getAllTokensInOrder()
+	displayTokens := m.getDisplayTokens()
 
 	var left strings.Builder
 	// Header with count
-	if len(allTokens) == 0 {
+	if len(displayTokens) == 0 {
 		left.WriteString(headerStyle.Render("TOKENS"))
 	} else {
-		left.WriteString(headerStyle.Render(fmt.Sprintf("TOKENS (%d)", len(allTokens))))
+		left.WriteString(headerStyle.Render(fmt.Sprintf("TOKENS (%d)", len(displayTokens))))
 	}
 	left.WriteString("\n")
 
-	if len(allTokens) == 0 {
+	if len(displayTokens) == 0 {
 		left.WriteString(dimStyle.Render("(none selected)"))
 		left.WriteString("\n")
 		left.WriteString(dimStyle.Render("Type to search, Enter to select"))
 	} else {
 		// Build tree with lipgloss/tree
 		tokenTree := tree.New()
-		for _, token := range allTokens {
-			category := m.getCategoryForToken(token)
-			if category != "" {
+		for _, dt := range displayTokens {
+			if dt.Category != "" {
 				// Show "Category: value" format
 				tokenTree = tokenTree.Child(fmt.Sprintf("%s: %s",
-					categoryStyle.Render(category),
-					tokenStyle.Render(token)))
+					categoryStyle.Render(dt.Category),
+					tokenStyle.Render(dt.Value)))
 			} else {
 				// Fallback for unknown tokens
-				tokenTree = tokenTree.Child(tokenStyle.Render(token))
+				tokenTree = tokenTree.Child(tokenStyle.Render(dt.Value))
 			}
 		}
 		tokenTree = tokenTree.Enumerator(tree.RoundedEnumerator)

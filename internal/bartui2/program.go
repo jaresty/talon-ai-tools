@@ -15,6 +15,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
+	"github.com/mattn/go-runewidth"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
@@ -126,8 +127,9 @@ type model struct {
 	currentStageIndex int // index into stageOrder
 
 	// Completions (pane 2 right side) - filtered to current stage
-	completions     []completion
-	completionIndex int
+	completions           []completion
+	completionIndex       int
+	completionScrollOffset int // scroll offset for completion list
 
 	// Subject input (modal)
 	subject          string
@@ -206,7 +208,7 @@ func newModel(opts Options) model {
 
 	// Initialize viewports for preview and result scrolling
 	previewVP := viewport.New(60, 10)
-	previewVP.Style = lipgloss.NewStyle()
+	previewVP.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("252")) // Light gray for readability
 
 	resultVP := viewport.New(60, 10)
 	resultVP.Style = lipgloss.NewStyle()
@@ -325,6 +327,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Copy CLI to clipboard
 			m.copyCommandToClipboard()
 			return m, nil
+		case "ctrl+g":
+			// Copy prompt to clipboard
+			m.copyPromptToClipboard()
+			return m, nil
 		case "ctrl+l":
 			// Open subject input modal
 			m.showSubjectModal = true
@@ -332,8 +338,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.subjectInput.Focus()
 			m.commandInput.Blur()
 			return m, textarea.Blink
-		case "ctrl+enter":
-			// Open command execution modal
+		case "ctrl+enter", "ctrl+x":
+			// Open command execution modal (ctrl+x as fallback since ctrl+enter doesn't work in all terminals)
 			m.showCommandModal = true
 			m.shellCommandInput.SetValue(m.lastShellCommand)
 			m.shellCommandInput.Focus()
@@ -372,12 +378,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Navigate completions up
 			if m.completionIndex > 0 {
 				m.completionIndex--
+				// Adjust scroll offset if selection moved above visible window
+				if m.completionIndex < m.completionScrollOffset {
+					m.completionScrollOffset = m.completionIndex
+				}
 			}
 			return m, nil
 		case "down":
 			// Navigate completions down
 			if m.completionIndex < len(m.completions)-1 {
 				m.completionIndex++
+				// Adjust scroll offset if selection moved below visible window
+				maxShow := m.getCompletionMaxShow()
+				if m.completionIndex >= m.completionScrollOffset+maxShow {
+					m.completionScrollOffset = m.completionIndex - maxShow + 1
+				}
 			}
 			return m, nil
 		case "tab":
@@ -495,7 +510,24 @@ func (m *model) copyCommandToClipboard() {
 		m.toastMessage = fmt.Sprintf("Clipboard error: %v", err)
 		return
 	}
-	m.toastMessage = "Copied to clipboard!"
+	m.toastMessage = "Copied command to clipboard!"
+}
+
+// copyPromptToClipboard copies the generated prompt to clipboard.
+func (m *model) copyPromptToClipboard() {
+	if m.clipboardWrite == nil {
+		m.toastMessage = "Clipboard not available"
+		return
+	}
+	if m.previewText == "" {
+		m.toastMessage = "No prompt to copy"
+		return
+	}
+	if err := m.clipboardWrite(m.previewText); err != nil {
+		m.toastMessage = fmt.Sprintf("Clipboard error: %v", err)
+		return
+	}
+	m.toastMessage = "Copied prompt to clipboard!"
 }
 
 // copyResultToClipboard copies the command result to clipboard.
@@ -680,9 +712,10 @@ func (m *model) updateCompletions() {
 
 	m.completions = results
 
-	// Reset index if out of bounds
+	// Reset index and scroll offset if out of bounds
 	if m.completionIndex >= len(m.completions) {
 		m.completionIndex = 0
+		m.completionScrollOffset = 0
 	}
 }
 
@@ -869,6 +902,19 @@ func (m model) getPreviewPaneHeight() int {
 		paneHeight = 6
 	}
 	return paneHeight
+}
+
+// getCompletionMaxShow returns the maximum number of completions that can be shown.
+func (m model) getCompletionMaxShow() int {
+	paneHeight := (m.height - 10) / 3
+	if paneHeight < 4 {
+		paneHeight = 4
+	}
+	maxShow := paneHeight - 5 // Leave room for "Then:" hint and selected description
+	if maxShow < 1 {
+		maxShow = 1
+	}
+	return maxShow
 }
 
 // getCategoryForToken returns the category label for a given token value.
@@ -1109,23 +1155,24 @@ func (m model) renderCommandPane() string {
 
 	// Build annotation line showing category for each token
 	var annotations strings.Builder
-	annotations.WriteString("  ") // Indent to align with "> bar build"
-	prefixLen := len("bar build")
+	// Indent to align with tokens after "> bar build "
+	prefixLen := runewidth.StringWidth("> bar build")
 	annotations.WriteString(strings.Repeat(" ", prefixLen))
 
 	for _, token := range tokens {
 		category := m.getCategoryForToken(token)
-		// Pad to align under the token
-		tokenLen := len(token) + 1 // +1 for space
+		// Space for the leading space before token + token width
+		tokenWidth := 1 + runewidth.StringWidth(token)
 		if category != "" {
 			annotation := fmt.Sprintf("╰─%s", category)
+			annotationWidth := runewidth.StringWidth(annotation)
 			annotations.WriteString(annotationStyle.Render(annotation))
-			// Pad remaining space
-			if len(annotation) < tokenLen {
-				annotations.WriteString(strings.Repeat(" ", tokenLen-len(annotation)))
+			// Pad remaining space if annotation is shorter than token
+			if annotationWidth < tokenWidth {
+				annotations.WriteString(strings.Repeat(" ", tokenWidth-annotationWidth))
 			}
 		} else {
-			annotations.WriteString(strings.Repeat(" ", tokenLen))
+			annotations.WriteString(strings.Repeat(" ", tokenWidth))
 		}
 	}
 
@@ -1216,12 +1263,22 @@ func (m model) renderTokensPane() string {
 		if maxShow < 1 {
 			maxShow = 1
 		}
-		for i, c := range m.completions {
-			if i >= maxShow {
-				right.WriteString(dimStyle.Render(fmt.Sprintf("... +%d more", len(m.completions)-maxShow)))
-				right.WriteString("\n")
-				break
-			}
+
+		// Calculate visible range based on scroll offset
+		startIdx := m.completionScrollOffset
+		endIdx := startIdx + maxShow
+		if endIdx > len(m.completions) {
+			endIdx = len(m.completions)
+		}
+
+		// Show "N more above..." indicator if scrolled down
+		if startIdx > 0 {
+			right.WriteString(dimStyle.Render(fmt.Sprintf("... %d more above", startIdx)))
+			right.WriteString("\n")
+		}
+
+		for i := startIdx; i < endIdx; i++ {
+			c := m.completions[i]
 			prefix := "  "
 			style := dimStyle
 			if i == m.completionIndex {
@@ -1232,6 +1289,12 @@ func (m model) renderTokensPane() string {
 			// Format: "▸ focus       single topic..."
 			entry := fmt.Sprintf("%s%-12s %s", prefix, c.Value, truncate(c.Description, descWidth))
 			right.WriteString(style.Render(entry))
+			right.WriteString("\n")
+		}
+
+		// Show "N more below..." indicator if there are more items
+		if endIdx < len(m.completions) {
+			right.WriteString(dimStyle.Render(fmt.Sprintf("... %d more below", len(m.completions)-endIdx)))
 			right.WriteString("\n")
 		}
 	}
@@ -1294,6 +1357,7 @@ func (m model) renderPreviewPane() string {
 	if m.previewText == "" {
 		content.WriteString(dimStyle.Render("(select tokens to see preview)"))
 	} else {
+		// Use default style (not dimmed) for better readability
 		content.WriteString(m.previewViewport.View())
 	}
 
@@ -1326,8 +1390,9 @@ func (m model) renderHotkeyBar() string {
 			"BS: remove",
 			"^U/^D: scroll",
 			"^L: subject",
-			"^Enter: run",
-			"^B: copy",
+			"^X: run",
+			"^B: copy cmd",
+			"^G: copy prompt",
 			"Esc: exit",
 		}
 	}

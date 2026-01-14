@@ -2,6 +2,7 @@ package bartui2
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -551,8 +552,8 @@ func TestClipboardCopyCommand(t *testing.T) {
 	}
 
 	// Should show toast
-	if m.toastMessage != "Copied to clipboard!" {
-		t.Errorf("expected toast 'Copied to clipboard!', got %q", m.toastMessage)
+	if m.toastMessage != "Copied command to clipboard!" {
+		t.Errorf("expected toast 'Copied command to clipboard!', got %q", m.toastMessage)
 	}
 }
 
@@ -1361,5 +1362,83 @@ func TestSelectedItemDescriptionArea(t *testing.T) {
 	expectedDesc := "Returns a comprehensive todo list with prioritized action items"
 	if !strings.Contains(view, expectedDesc) {
 		t.Errorf("expected view to contain full description %q", expectedDesc)
+	}
+}
+
+func TestCompletionListScrolling(t *testing.T) {
+	// Create categories with many options to test scrolling
+	var options []bartui.TokenOption
+	for i := 1; i <= 20; i++ {
+		options = append(options, bartui.TokenOption{
+			Value:       fmt.Sprintf("option%d", i),
+			Label:       fmt.Sprintf("Option %d", i),
+			Description: fmt.Sprintf("Description for option %d", i),
+		})
+	}
+
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options:       options,
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    120,
+		InitialHeight:   30,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	// Should have many completions
+	if len(m.completions) != 20 {
+		t.Fatalf("expected 20 completions, got %d", len(m.completions))
+	}
+
+	// Initial state: first item selected, no scroll offset
+	if m.completionIndex != 0 {
+		t.Errorf("expected initial completionIndex 0, got %d", m.completionIndex)
+	}
+	if m.completionScrollOffset != 0 {
+		t.Errorf("expected initial scroll offset 0, got %d", m.completionScrollOffset)
+	}
+
+	// Navigate down past visible area
+	maxShow := m.getCompletionMaxShow()
+	for i := 0; i < maxShow+2; i++ {
+		newM, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+		m = newM.(model)
+	}
+
+	// Should have scrolled to keep selection visible
+	if m.completionIndex != maxShow+2 {
+		t.Errorf("expected completionIndex %d, got %d", maxShow+2, m.completionIndex)
+	}
+	if m.completionScrollOffset == 0 {
+		t.Error("expected scroll offset to increase after navigating past visible area")
+	}
+
+	// The selected item should still be visible in the view
+	view := m.View()
+	expectedOption := fmt.Sprintf("option%d", maxShow+3) // 1-indexed
+	if !strings.Contains(view, expectedOption) {
+		t.Errorf("expected view to contain selected option %q after scrolling", expectedOption)
+	}
+
+	// Navigate back up
+	for i := 0; i < maxShow+2; i++ {
+		newM, _ := m.Update(tea.KeyMsg{Type: tea.KeyUp})
+		m = newM.(model)
+	}
+
+	// Should be back at the top
+	if m.completionIndex != 0 {
+		t.Errorf("expected completionIndex 0 after navigating back up, got %d", m.completionIndex)
+	}
+	if m.completionScrollOffset != 0 {
+		t.Errorf("expected scroll offset 0 after navigating back up, got %d", m.completionScrollOffset)
 	}
 }

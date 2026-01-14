@@ -109,7 +109,7 @@ Users can skip any stage with Tab and go back with Shift+Tab, enabling free navi
 - Can also load from clipboard with a secondary shortcut
 - Subject appears in preview's SUBJECT section when set
 
-**Command Execution (Ctrl+Enter)**:
+**Command Execution (Ctrl+X)**:
 - Opens a modal input for the shell command (pre-filled if previously used)
 - Runs the command with the generated prompt piped to stdin
 - Result replaces the preview pane content
@@ -117,6 +117,10 @@ Users can skip any stage with Tab and go back with Shift+Tab, enabling free navi
 
 **Copy CLI (Ctrl+B)**:
 - Copies the current `bar build ...` command to clipboard
+- Brief toast confirmation, no modal
+
+**Copy Prompt (Ctrl+G)**:
+- Copies the generated prompt text to clipboard
 - Brief toast confirmation, no modal
 
 **Preset Selection (Ctrl+P)**:
@@ -230,10 +234,39 @@ The following features from the current TUI are explicitly removed or deferred:
 - Manual usability testing: can a new user build `bar build todo focus full` within 30 seconds?
 - Grammar learning validation: after 5 minutes, can the user type the command from memory?
 
+## Known Issues and Planned Improvements
+
+### Bugs (High Priority)
+
+1. ~~**Completion list doesn't scroll**~~: Fixed — list now scrolls to keep highlighted item visible with "N more above/below" indicators.
+
+2. ~~**Annotation alignment**~~: Fixed — now uses runewidth for proper Unicode character width calculation.
+
+3. ~~**Ctrl+Enter command execution**~~: Fixed — changed to Ctrl+X which works in all terminals.
+
+### Usability Improvements (Medium Priority)
+
+4. ~~**Preview readability**~~: Fixed — preview viewport now uses explicit light foreground color.
+
+5. ~~**Copy prompt to clipboard**~~: Fixed — Ctrl+G copies the generated prompt text.
+
+6. **Hide preset-filled tokens in copied command**: When a preset auto-fills voice/audience/tone, those tokens should not appear in the copied command since the preset already includes them. Requires tracking which tokens came from preset auto-fill.
+
+### Features (Lower Priority)
+
+7. **Load command response into subject**: After running a command (e.g., asking Claude), allow loading the response into the subject field for iterative refinement workflows.
+
+8. **Undo/redo**: Track state history to allow undoing/redoing token selections, similar to the original TUI implementation.
+
+9. **Preset save/load (Ctrl+P)**: Full preset management:
+   - Save current token selections as a named preset
+   - Load existing presets from a filterable list
+   - Persist presets to file/config
+
 ## Follow-up
-- Prototype the three-pane layout to validate screen space allocation
-- Evaluate fuzzy matching libraries vs. custom implementation
-- Design preset management workflow (save/load/edit)
+- ~~Prototype the three-pane layout to validate screen space allocation~~ (done)
+- ~~Evaluate fuzzy matching libraries vs. custom implementation~~ (using simple substring match)
+- Design preset management workflow (save/load/edit) — see Known Issues #9
 - Consider fish-style autosuggestions (ghost text showing most likely completion)
 - Investigate syntax highlighting for the command input (category colors)
 - Plan migration from current TUI to new design

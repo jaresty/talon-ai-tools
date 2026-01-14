@@ -1365,6 +1365,155 @@ func TestSelectedItemDescriptionArea(t *testing.T) {
 	}
 }
 
+func TestCtrlRQuickRerun(t *testing.T) {
+	var runCount int
+	runCommand := func(ctx context.Context, cmd string, stdin string) (string, string, error) {
+		runCount++
+		return fmt.Sprintf("run %d", runCount), "", nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		RunCommand:      runCommand,
+		Preview: func(subject string, tokens []string) (string, error) {
+			return "preview text", nil
+		},
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+	m.previewText = "preview text"
+
+	// First, configure a command via modal
+	m.lastShellCommand = "echo test"
+
+	// Now press Ctrl+R (not in result mode) - should run the last command immediately
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlR})
+	m2 := updated.(model)
+
+	// Should have run the command
+	if runCount != 1 {
+		t.Errorf("expected command to run once, ran %d times", runCount)
+	}
+
+	// Should be showing result
+	if !m2.showingResult {
+		t.Error("expected to be showing result after Ctrl+R quick rerun")
+	}
+
+	// Should have result
+	if m2.commandResult != "run 1" {
+		t.Errorf("expected result 'run 1', got %q", m2.commandResult)
+	}
+}
+
+func TestCtrlROpensModalWhenNoLastCommand(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		RunCommand: func(ctx context.Context, cmd string, stdin string) (string, string, error) {
+			return "output", "", nil
+		},
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+
+	// No last command set
+	m.lastShellCommand = ""
+
+	// Press Ctrl+R - should open modal instead of running
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlR})
+	m2 := updated.(model)
+
+	// Should show command modal
+	if !m2.showCommandModal {
+		t.Error("expected command modal to open when no last command")
+	}
+}
+
+func TestCtrlSPipelinesResultToSubject(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview: func(subject string, tokens []string) (string, error) {
+			return "Preview with subject: " + subject, nil
+		},
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+
+	// Set up result mode with command output
+	m.showingResult = true
+	m.commandResult = "This is the command output that should become the subject"
+
+	// Press Ctrl+S to pipeline result into subject
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlS})
+	m2 := updated.(model)
+
+	// Should no longer be showing result
+	if m2.showingResult {
+		t.Error("expected to exit result mode after Ctrl+S")
+	}
+
+	// Subject should now contain the command result
+	if m2.subject != "This is the command output that should become the subject" {
+		t.Errorf("expected subject to contain command result, got %q", m2.subject)
+	}
+
+	// Preview should be updated with the new subject
+	if !strings.Contains(m2.previewText, "command output") {
+		t.Errorf("expected preview to contain new subject content, got %q", m2.previewText)
+	}
+}
+
+func TestCtrlSShowsToastConfirmation(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview: func(subject string, tokens []string) (string, error) {
+			return "preview", nil
+		},
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+
+	// Set up result mode
+	m.showingResult = true
+	m.commandResult = "result"
+
+	// Press Ctrl+S
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlS})
+	m2 := updated.(model)
+
+	// Should show toast confirmation
+	if m2.toastMessage == "" {
+		t.Error("expected toast message after pipelining result to subject")
+	}
+	if !strings.Contains(m2.toastMessage, "subject") {
+		t.Errorf("expected toast to mention subject, got %q", m2.toastMessage)
+	}
+}
+
+func TestHotkeyBarShowsPipelineShortcut(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Set up result mode
+	m.showingResult = true
+	m.commandResult = "result"
+
+	view := m.View()
+
+	// Should show Ctrl+S pipeline shortcut in result mode hotkey bar
+	if !strings.Contains(view, "^S") {
+		t.Error("expected '^S' shortcut in hotkey bar during result mode")
+	}
+}
+
 func TestCompletionListScrolling(t *testing.T) {
 	// Create categories with many options to test scrolling
 	var options []bartui.TokenOption

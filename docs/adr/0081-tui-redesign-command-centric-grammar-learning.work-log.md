@@ -373,3 +373,38 @@ residual_constraints:
 
 next_work:
 - ADR 0081 implementation complete. Follow-up work (Ctrl+P preset save/load, syntax highlighting) can be tracked in new ADRs if requested.
+
+## loop-012 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 Known Issues #7 → implement command execution workflow with Ctrl+R quick re-run and Ctrl+S pipeline to subject.
+
+active_constraint: Command execution workflow incomplete; operators cannot quickly re-run commands or pipeline results to subject for iterative refinement (validation: `go test ./internal/bartui2`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Enables iterative workflow: run command → refine with response → run again. |
+| Probability | High | Straightforward additions to existing command execution infrastructure. |
+| Time Sensitivity | Medium | Key usability feature for real-world workflows. |
+| Uncertainty note | Low | Uses existing patterns and methods. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-012.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go`; rerun `go test ./internal/bartui2 -run TestCtrlRQuickRerun` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=2 files changed — adds Ctrl+R quick re-run (runs lastShellCommand immediately or opens modal if none), adds Ctrl+S pipeline (loads result into subject and returns to preview), adds pipelineResultToSubject() method, updates hotkey bar with "^S: to subject", adds 5 new tests.
+
+loops_remaining_forecast: 0 loops for core features. Confidence: high — ADR 0081 command execution workflow complete. Remaining items (preset-filled token hiding, undo/redo, preset save/load) are lower priority enhancements.
+
+residual_constraints:
+- Low — Hide preset-filled tokens in copied command not yet implemented. Mitigation: defer to follow-up work if requested.
+- Low — Undo/redo not yet implemented. Mitigation: defer to follow-up ADR if needed.
+- Low — Saved preset management (Ctrl+P save/load) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 core implementation complete with full command execution workflow. Remaining enhancements (preset token hiding, undo/redo, Ctrl+P save/load) can be tracked in new ADRs if requested.

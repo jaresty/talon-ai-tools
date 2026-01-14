@@ -352,10 +352,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		case "ctrl+r":
-			// Return to preview (if showing result)
+			// Quick re-run last command (or open modal if no command)
 			if m.showingResult {
+				// If showing result, return to preview first
 				m.showingResult = false
 				m.commandResult = ""
+				return m, nil
+			}
+			// If we have a last command, run it immediately
+			if m.lastShellCommand != "" {
+				m.executeCommand(m.lastShellCommand)
+				return m, nil
+			}
+			// Otherwise open the command modal
+			m.showCommandModal = true
+			m.shellCommandInput.SetValue("")
+			m.shellCommandInput.Focus()
+			m.commandInput.Blur()
+			return m, textinput.Blink
+		case "ctrl+s":
+			// Pipeline result into subject (when showing result)
+			if m.showingResult && m.commandResult != "" {
+				m.pipelineResultToSubject()
 			}
 			return m, nil
 		case "pgup", "ctrl+u":
@@ -541,6 +559,15 @@ func (m *model) copyResultToClipboard() {
 		return
 	}
 	m.toastMessage = "Result copied to clipboard!"
+}
+
+// pipelineResultToSubject loads the command result into the subject field.
+func (m *model) pipelineResultToSubject() {
+	m.subject = m.commandResult
+	m.showingResult = false
+	m.commandResult = ""
+	m.updatePreview()
+	m.toastMessage = "Result loaded into subject"
 }
 
 // updateCommandModal handles input when the command execution modal is open.
@@ -1382,6 +1409,7 @@ func (m model) renderHotkeyBar() string {
 		keys = []string{
 			"^U/^D: scroll",
 			"^Y: copy",
+			"^S: to subject",
 			"^R: back",
 			"Esc: exit",
 		}

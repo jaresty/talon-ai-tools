@@ -275,11 +275,7 @@ The following features from the current TUI are explicitly removed or deferred:
 
 ### Features (Lower Priority)
 
-7. **Command execution workflow**: Implement the full iterative workflow described in the Command Execution section:
-   - Ctrl+X to configure command
-   - Ctrl+R for quick re-run
-   - Ctrl+S to pipeline result into subject
-   - Show command header in result view
+7. ~~**Command execution workflow**~~: Fixed — Ctrl+X configures command, Ctrl+R quick re-runs last command, Ctrl+S pipelines result into subject, command header shows in result view.
 
 8. **Undo/redo**: Track state history to allow undoing/redoing token selections, similar to the original TUI implementation.
 

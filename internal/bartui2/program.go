@@ -11,6 +11,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
@@ -76,17 +77,19 @@ type model struct {
 	subjectInput     textarea.Model
 	showSubjectModal bool
 
-	// Preview (pane 3)
-	previewText string
-	preview     func(subject string, tokens []string) (string, error)
+	// Preview (pane 3) with viewport for scrolling
+	previewText     string
+	previewViewport viewport.Model
+	preview         func(subject string, tokens []string) (string, error)
 
-	// Command execution
+	// Command execution with viewport for scrolling result
 	shellCommandInput  textinput.Model
 	showCommandModal   bool
 	lastShellCommand   string
 	runCommand         func(ctx context.Context, command string, stdin string) (string, string, error)
 	commandTimeout     time.Duration
 	commandResult      string
+	resultViewport     viewport.Model
 	showingResult      bool
 
 	// Clipboard
@@ -144,12 +147,21 @@ func newModel(opts Options) model {
 		timeout = 30 * time.Second
 	}
 
+	// Initialize viewports for preview and result scrolling
+	previewVP := viewport.New(60, 10)
+	previewVP.Style = lipgloss.NewStyle()
+
+	resultVP := viewport.New(60, 10)
+	resultVP.Style = lipgloss.NewStyle()
+
 	m := model{
 		commandInput:      ti,
 		tokens:            opts.InitialTokens,
 		tokenCategories:   opts.TokenCategories,
 		subjectInput:      ta,
 		shellCommandInput: sci,
+		previewViewport:   previewVP,
+		resultViewport:    resultVP,
 		preview:           opts.Preview,
 		runCommand:        opts.RunCommand,
 		commandTimeout:    timeout,
@@ -170,6 +182,7 @@ func newModel(opts Options) model {
 		text, err := m.preview("", m.tokens)
 		if err == nil {
 			m.previewText = text
+			m.previewViewport.SetContent(text)
 		}
 	}
 
@@ -194,6 +207,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Resize subject textarea to fit modal
 		m.subjectInput.SetWidth(m.width - 10)
 		m.subjectInput.SetHeight((m.height - 10) / 2)
+		// Resize viewports
+		vpWidth := m.width - 6 // Account for pane border and padding
+		vpHeight := m.getPreviewPaneHeight() - 2
+		if vpWidth < 20 {
+			vpWidth = 20
+		}
+		if vpHeight < 4 {
+			vpHeight = 4
+		}
+		m.previewViewport.Width = vpWidth
+		m.previewViewport.Height = vpHeight
+		m.resultViewport.Width = vpWidth
+		m.resultViewport.Height = vpHeight
 	}
 
 	// Route input based on modal state
@@ -251,6 +277,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.commandResult = ""
 			}
 			return m, nil
+		case "pgup", "ctrl+u":
+			// Scroll up in preview/result viewport
+			if m.showingResult {
+				m.resultViewport.HalfViewUp()
+			} else {
+				m.previewViewport.HalfViewUp()
+			}
+			return m, nil
+		case "pgdown", "ctrl+d":
+			// Scroll down in preview/result viewport
+			if m.showingResult {
+				m.resultViewport.HalfViewDown()
+			} else {
+				m.previewViewport.HalfViewDown()
+			}
+			return m, nil
 		case "up":
 			// Navigate completions up
 			if m.completionIndex > 0 {
@@ -286,6 +328,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		text, err := m.preview(m.subject, m.tokens)
 		if err == nil {
 			m.previewText = text
+			m.previewViewport.SetContent(text)
 		}
 	}
 
@@ -316,6 +359,7 @@ func (m model) updateSubjectModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 				text, err := m.preview(m.subject, m.tokens)
 				if err == nil {
 					m.previewText = text
+					m.previewViewport.SetContent(text)
 				}
 			}
 			return m, textinput.Blink
@@ -435,6 +479,8 @@ func (m *model) executeCommand(shellCmd string) {
 	}
 
 	m.commandResult = result.String()
+	m.resultViewport.SetContent(m.commandResult)
+	m.resultViewport.GotoTop()
 	m.showingResult = true
 }
 
@@ -553,6 +599,15 @@ func truncate(s string, maxLen int) string {
 		return s[:maxLen]
 	}
 	return s[:maxLen-3] + "..."
+}
+
+// getPreviewPaneHeight returns the calculated height for the preview/result pane.
+func (m model) getPreviewPaneHeight() int {
+	paneHeight := (m.height - 10) / 2
+	if paneHeight < 6 {
+		paneHeight = 6
+	}
+	return paneHeight
 }
 
 // getCategoryForToken returns the category label for a given token value.
@@ -750,27 +805,22 @@ func (m model) renderPreviewPane() string {
 		width = 20
 	}
 
-	// Calculate available height for this pane
-	paneHeight := (m.height - 10) / 2
-	if paneHeight < 6 {
-		paneHeight = 6
-	}
+	paneHeight := m.getPreviewPaneHeight()
 
 	var content strings.Builder
 	content.WriteString(headerStyle.Render("PREVIEW"))
+
+	// Show scroll indicator if content is scrollable
+	if m.previewViewport.TotalLineCount() > m.previewViewport.Height {
+		scrollPct := int(m.previewViewport.ScrollPercent() * 100)
+		content.WriteString(dimStyle.Render(fmt.Sprintf(" (%d%%)", scrollPct)))
+	}
 	content.WriteString("\n")
 
 	if m.previewText == "" {
 		content.WriteString(dimStyle.Render("(select tokens to see preview)"))
 	} else {
-		// Truncate preview to fit
-		lines := strings.Split(m.previewText, "\n")
-		maxLines := paneHeight - 2
-		if len(lines) > maxLines {
-			lines = lines[:maxLines]
-			lines = append(lines, dimStyle.Render("..."))
-		}
-		content.WriteString(strings.Join(lines, "\n"))
+		content.WriteString(m.previewViewport.View())
 	}
 
 	return paneStyle.Width(width).Height(paneHeight).Render(content.String())
@@ -790,14 +840,16 @@ func (m model) renderHotkeyBar() string {
 	var keys []string
 	if m.showingResult {
 		keys = []string{
-			"^Y: copy result",
-			"^R: back to preview",
-			"Esc: back",
+			"^U/^D: scroll",
+			"^Y: copy",
+			"^R: back",
+			"Esc: exit",
 		}
 	} else {
 		keys = []string{
 			"Enter: select",
 			"BS: remove",
+			"^U/^D: scroll",
 			"^L: subject",
 			"^Enter: run",
 			"^B: copy",
@@ -862,28 +914,23 @@ func (m model) renderResultPane() string {
 		width = 20
 	}
 
-	// Calculate available height for this pane
-	paneHeight := (m.height - 10) / 2
-	if paneHeight < 6 {
-		paneHeight = 6
-	}
+	paneHeight := m.getPreviewPaneHeight()
 
 	var content strings.Builder
 	content.WriteString(resultHeaderStyle.Render("RESULT"))
 	content.WriteString(dimStyle.Render(fmt.Sprintf(" (%s)", m.lastShellCommand)))
+
+	// Show scroll indicator if content is scrollable
+	if m.resultViewport.TotalLineCount() > m.resultViewport.Height {
+		scrollPct := int(m.resultViewport.ScrollPercent() * 100)
+		content.WriteString(dimStyle.Render(fmt.Sprintf(" %d%%", scrollPct)))
+	}
 	content.WriteString("\n")
 
 	if m.commandResult == "" {
 		content.WriteString(dimStyle.Render("(no output)"))
 	} else {
-		// Truncate result to fit
-		lines := strings.Split(m.commandResult, "\n")
-		maxLines := paneHeight - 2
-		if len(lines) > maxLines {
-			lines = lines[:maxLines]
-			lines = append(lines, dimStyle.Render("..."))
-		}
-		content.WriteString(strings.Join(lines, "\n"))
+		content.WriteString(m.resultViewport.View())
 	}
 
 	return paneStyle.Width(width).Height(paneHeight).Render(content.String())

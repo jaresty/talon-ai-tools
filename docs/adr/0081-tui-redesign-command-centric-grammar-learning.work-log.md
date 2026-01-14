@@ -206,3 +206,36 @@ residual_constraints:
 
 next_work:
 - Behaviour: Add viewport scroll to preview and result panes (validation: `go test ./internal/bartui2`).
+
+## loop-007 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0081 Decision → add viewport scroll to preview and result panes using bubbles/viewport component.
+
+active_constraint: Preview and result panes truncate long content with "..." instead of allowing scroll; operators cannot view full prompt or command output (validation: `go test ./internal/bartui2 -run TestViewport`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Scroll enables viewing full content; important for long prompts and command output. |
+| Probability | High | Using established bubbles/viewport component with clear API. |
+| Time Sensitivity | Low | Polish feature; core functionality complete. |
+| Uncertainty note | Low | Standard viewport integration pattern. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-007.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go`; rerun `go test ./internal/bartui2 -run TestViewport` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=2 files changed — adds bubbles/viewport import, adds previewViewport/resultViewport fields, implements Ctrl+U/Ctrl+D/PgUp/PgDown scroll handlers, adds getPreviewPaneHeight() helper, updates render functions to use viewport.View() with scroll percentage indicator, updates hotkey bar with scroll hints, adds 4 tests for viewport scrolling.
+
+loops_remaining_forecast: 0 loops. Confidence: high — all ADR 0081 core features implemented (three-pane layout, fuzzy completion, token tree, subject input, clipboard copy, command execution, viewport scroll).
+
+residual_constraints:
+- Low — Fuzzy matching is simple substring; could enhance with proper fuzzy algorithm. Mitigation: monitor usability feedback.
+- Low — Preset management (Ctrl+P) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 core implementation complete. Follow-up work (presets, syntax highlighting) can be tracked in new ADRs if requested.

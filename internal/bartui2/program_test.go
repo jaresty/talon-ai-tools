@@ -752,9 +752,10 @@ func TestResultPaneRendering(t *testing.T) {
 	})
 	m.ready = true
 
-	// Set up result state
+	// Set up result state (must also set viewport content)
 	m.showingResult = true
 	m.commandResult = "test output"
+	m.resultViewport.SetContent("test output")
 	m.lastShellCommand = "echo test"
 
 	view := m.View()
@@ -790,12 +791,17 @@ func TestResultModeHotkeyBar(t *testing.T) {
 	view := m.View()
 
 	// Should show result-specific shortcuts
-	if !strings.Contains(view, "copy result") {
-		t.Error("expected 'copy result' in hotkey bar during result mode")
+	if !strings.Contains(view, "^Y: copy") {
+		t.Error("expected '^Y: copy' in hotkey bar during result mode")
 	}
 
-	if !strings.Contains(view, "back to preview") {
-		t.Error("expected 'back to preview' in hotkey bar during result mode")
+	if !strings.Contains(view, "^R: back") {
+		t.Error("expected '^R: back' in hotkey bar during result mode")
+	}
+
+	// Should show scroll shortcut
+	if !strings.Contains(view, "scroll") {
+		t.Error("expected 'scroll' in hotkey bar during result mode")
 	}
 }
 
@@ -884,5 +890,116 @@ func TestHotkeyBarShowsRunShortcut(t *testing.T) {
 	// Should show run shortcut in hotkey bar
 	if !strings.Contains(view, "run") {
 		t.Error("expected 'run' shortcut in hotkey bar")
+	}
+}
+
+func TestPreviewViewportScrolling(t *testing.T) {
+	// Create long preview content that exceeds viewport height
+	longContent := strings.Repeat("Line of preview content\n", 50)
+
+	preview := func(subject string, tokens []string) (string, error) {
+		return longContent, nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview:         preview,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Initial position should be at top
+	if m.previewViewport.YOffset != 0 {
+		t.Errorf("expected viewport at top, got offset %d", m.previewViewport.YOffset)
+	}
+
+	// Scroll down with Ctrl+D
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+	m2 := updated.(model)
+
+	// Should have scrolled down
+	if m2.previewViewport.YOffset == 0 {
+		t.Error("expected viewport to scroll down after Ctrl+D")
+	}
+
+	// Scroll back up with Ctrl+U
+	updated, _ = m2.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
+	m3 := updated.(model)
+
+	// Should have scrolled up
+	if m3.previewViewport.YOffset >= m2.previewViewport.YOffset {
+		t.Error("expected viewport to scroll up after Ctrl+U")
+	}
+}
+
+func TestResultViewportScrolling(t *testing.T) {
+	// Create long result content
+	longResult := strings.Repeat("Result line\n", 50)
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+	m.showingResult = true
+	m.commandResult = longResult
+	m.resultViewport.SetContent(longResult)
+
+	// Scroll down with Ctrl+D
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+	m2 := updated.(model)
+
+	// Should have scrolled down
+	if m2.resultViewport.YOffset == 0 {
+		t.Error("expected result viewport to scroll down after Ctrl+D")
+	}
+}
+
+func TestHotkeyBarShowsScrollShortcut(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+
+	view, err := Snapshot(opts)
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	// Should show scroll shortcut in hotkey bar
+	if !strings.Contains(view, "scroll") {
+		t.Error("expected 'scroll' shortcut in hotkey bar")
+	}
+}
+
+func TestPreviewShowsScrollPercentage(t *testing.T) {
+	// Create long preview content
+	longContent := strings.Repeat("Line of content\n", 100)
+
+	preview := func(subject string, tokens []string) (string, error) {
+		return longContent, nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview:         preview,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Set viewport dimensions to make content scrollable
+	m.previewViewport.Width = 70
+	m.previewViewport.Height = 10
+	m.previewViewport.SetContent(longContent)
+
+	view := m.View()
+
+	// Should show scroll percentage when content is scrollable
+	if !strings.Contains(view, "%") {
+		t.Error("expected scroll percentage indicator in preview pane")
 	}
 }

@@ -1,0 +1,83 @@
+#!/usr/bin/expect -f
+# Test that selecting tokens updates the preview correctly
+set timeout 20
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+
+# Wait for initial render - starts at Intent stage
+expect {
+    "Intent" {}
+    timeout { send_error "failed to render Intent stage"; exit 1 }
+}
+
+# Skip Intent stage with Tab
+send "\t"
+after 300
+
+# Skip Preset stage with Tab
+send "\t"
+after 300
+
+# Skip Voice stage with Tab
+send "\t"
+after 300
+
+# Skip Audience stage with Tab
+send "\t"
+after 300
+
+# Skip Tone stage with Tab
+send "\t"
+after 300
+
+# Now should be at Static stage
+expect {
+    "STATIC" {}
+    timeout { send_error "failed to reach Static stage"; exit 1 }
+}
+
+# Type "todo" to filter
+send "todo"
+after 300
+
+# Press Enter to select
+send "\r"
+after 500
+
+# Should see "todo" in the command line
+expect {
+    "todo" {}
+    timeout { send_error "failed to show 'todo' in command line"; exit 1 }
+}
+
+# Now should be at Completeness stage - skip it
+send "\t"
+after 300
+
+# Now at Scope stage - type "focus"
+send "focus"
+after 300
+send "\r"
+after 500
+
+# Should see "focus" in command
+expect {
+    "focus" {}
+    timeout { send_error "failed to show 'focus' in command"; exit 1 }
+}
+
+# Check that the preview shows the Scope constraint
+expect {
+    -re {Scope.*focus} {}
+    timeout { send_error "missing Scope constraint in preview"; exit 1 }
+}
+
+# Exit
+after 200
+send "\033"
+after 200
+expect eof
+exit 0

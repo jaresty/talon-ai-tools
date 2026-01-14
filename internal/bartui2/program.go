@@ -1415,9 +1415,11 @@ func (m model) renderCommandPane() string {
 	annotations.WriteString(strings.Repeat(" ", prefixLen))
 
 	for _, token := range tokens {
+		// Add space that precedes this token on the command line
+		annotations.WriteString(" ")
+
 		category := m.getCategoryForToken(token)
-		// Space for the leading space before token + token width
-		tokenWidth := 1 + runewidth.StringWidth(token)
+		tokenWidth := runewidth.StringWidth(token)
 		if category != "" {
 			annotation := fmt.Sprintf("╰─%s", category)
 			annotationWidth := runewidth.StringWidth(annotation)

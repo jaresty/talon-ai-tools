@@ -12,7 +12,7 @@ Proposed — TUI redesign: command-centric interface for grammar learning (2026-
 ## Design Principles
 1. **Command as interface**: The `bar build` command line IS the primary interaction surface, not a representation of it.
 2. **Grammar through structure**: Selected tokens render as a visual tree that mirrors the command structure, teaching the grammar through direct observation.
-3. **Fuzzy search, not navigation**: Type to filter completions across all categories simultaneously; no category browsing required.
+3. **Stage-based progression**: Tokens are presented in grammar order (Static → Scope → Completeness → Method → Form → Channel → Directional), with inline hints showing where each token belongs in the command.
 4. **Live preview**: The generated prompt updates immediately as tokens change, providing constant feedback.
 5. **Progressive disclosure**: Advanced features (command execution, subject input, presets) are accessible but not always visible.
 6. **Terminal-native**: The interface should feel like a modern CLI tool (fzf, fish, lazygit) rather than a GUI application.
@@ -23,40 +23,45 @@ Proposed — TUI redesign: command-centric interface for grammar learning (2026-
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ > bar build todo focus_                                         │
+│ > bar build todo focus [Completeness?] _                        │
+│             ╰─Static ╰─Scope                                    │
 ├─────────────────────────────────────────────────────────────────┤
-│ TOKENS                            COMPLETIONS                   │
-│ └─ Static: todo                   ▸ breadth      Scope          │
-│ └─ Scope: focus                   ▸ full         Completeness   │
-│                                   ▸ gist         Completeness   │
-│                                   ▸ steps        Method         │
-│                                   ▸ inform       Intent         │
-│                                                                 │
+│ TOKENS (2)                  COMPLETENESS                        │
+│ ├─ Static: todo             ▸ full         thorough answer      │
+│ └─ Scope: focus               gist         concise summary      │
+│                               essential    key points only      │
+│                             ─────────────────────────────────   │
+│                             Tab: skip  │  Then: Method, Form... │
 ├─────────────────────────────────────────────────────────────────┤
 │ PREVIEW                                                         │
-│ ═══════                                                         │
 │ === TASK (DO THIS) ===                                          │
 │ Return a todo list                                              │
 │                                                                 │
 │ === CONSTRAINTS (GUARDRAILS) ===                                │
 │ 1. Scope (focus): The response concentrates on a single focal   │
 │    topic without drifting into tangents.                        │
-│                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
-│ Enter: select ▪ Backspace: remove last ▪ Ctrl+L: subject        │
-│ Ctrl+Enter: run command ▪ Ctrl+B: copy CLI ▪ Esc: exit          │
+│ Enter: select ▪ Tab: skip stage ▪ Backspace: remove             │
+│ Ctrl+L: subject ▪ Ctrl+Enter: run ▪ Ctrl+B: copy ▪ Esc: exit    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Pane 1 - Command Input (fixed height, ~1 line)**:
-- Single text input showing the live `bar build` command
-- Cursor position determines where the next token inserts
-- Typing filters the completions pane instantly
+The command line shows inline stage markers:
+- `todo` and `focus` have small annotations (`╰─Static`, `╰─Scope`) showing their category
+- `[Completeness?]` indicates the current stage being completed
+- Tokens are positioned in grammar order, not append order
+
+**Pane 1 - Command Input (fixed height, 2 lines)**:
+- Line 1: The live `bar build` command with inline stage marker (e.g., `[Completeness?]`)
+- Line 2: Small annotations below tokens showing their category (e.g., `╰─Static ╰─Scope`)
+- Tokens are always positioned in grammar order, teaching the correct CLI syntax
+- Typing filters completions within the current stage
 
 **Pane 2 - Tokens & Completions (split horizontally, flexible height)**:
-- Left side: Selected tokens as a simple tree structure showing `Category: value`
-- Right side: Filtered completions grouped by category, fuzzy-matched to input
-- Up/Down arrows navigate completions; Enter selects; Backspace removes last token
+- Left side: Selected tokens as a tree structure showing `Category: value` in grammar order
+- Right side: Completions for the **current stage only**, with stage name as header
+- Shows "Then: Method, Form..." hint indicating remaining stages
+- Up/Down arrows navigate completions; Enter selects; Tab skips stage; Backspace removes last token
 
 **Pane 3 - Preview (scrollable, takes remaining space)**:
 - Live-rendered prompt that updates as tokens change
@@ -69,12 +74,26 @@ Proposed — TUI redesign: command-centric interface for grammar learning (2026-
 
 ### Interaction Model
 
-**Token Selection (primary workflow)**:
-1. Type in the command input to fuzzy-filter completions
-2. Arrow keys highlight a completion; Enter adds it to the command
-3. Selected token appears in the tree and the command line updates
-4. Backspace removes the last token (or deletes characters if mid-word)
-5. Preview updates immediately after each change
+**Stage-Based Token Selection (primary workflow)**:
+1. The TUI starts at the first stage (Static) and shows only tokens for that stage
+2. Type to fuzzy-filter within the current stage's completions
+3. Arrow keys highlight a completion; Enter adds it to the command at the correct position
+4. After selecting, the TUI advances to the next stage (or stays if the stage allows multiple selections)
+5. Tab skips the current stage without selecting; Backspace removes the last token
+6. Preview updates immediately after each change
+7. The command line shows `[StageName?]` to indicate what's being asked
+
+**Stage Order** (matches CLI grammar):
+1. **Persona** — Intent, Preset, Voice, Audience, Tone (optional, can skip)
+2. **Static** — The main prompt type (e.g., "todo", "code-comment")
+3. **Completeness** — How thorough (full, gist, essential)
+4. **Scope** — How focused (focus, breadth, system) — up to 2 selections
+5. **Method** — How to approach (steps, compare, etc.) — up to 3 selections
+6. **Form** — Output format (prose, bullets, etc.)
+7. **Channel** — Communication style (direct, formal, etc.)
+8. **Directional** — Emphasis direction (forward, backward, etc.)
+
+Users can skip any stage with Tab, and the command always shows tokens in this order regardless of selection sequence.
 
 **Subject Input (Ctrl+L)**:
 - Opens a modal text area for entering/pasting subject content
@@ -117,17 +136,20 @@ The tree uses minimal indentation (single level) because tokens are flat in the 
 
 ### Completion Filtering
 
-Completions use fuzzy matching (like fzf) across all categories:
+Completions are **stage-scoped**: only tokens for the current stage appear.
 
-- `fo` matches: `focus` (Scope), `form` (Form), `fog` (Directional), `inform` (Intent)
-- `scope:fo` narrows to Scope category only (colon syntax for power users)
-- Empty input shows all available options, prioritized by: recently used, then category order
+- When at Scope stage, typing `fo` shows only `focus` (not `form` from Form stage)
+- Empty input shows all options for the current stage
+- The completion header shows the stage name (e.g., "SCOPE" or "COMPLETENESS")
+- A "Then:" hint shows upcoming stages so users understand the progression
 
 Completion entries show:
 ```
-▸ focus          Scope — concentrates on a single focal topic
+▸ focus          concentrates on a single focal topic
 ```
-Value, category, and brief description (truncated to fit).
+Value and description (category is implicit from stage header).
+
+**Power user escape hatch**: Typing `axis=value` (e.g., `scope=focus`) bypasses stage progression and allows direct override syntax, matching CLI behavior.
 
 ### Narrow Terminal Adaptation
 
@@ -151,8 +173,10 @@ The following features from the current TUI are explicitly removed or deferred:
 
 ## Rationale
 - **Command-centric teaches the grammar**: By typing `bar build todo focus`, operators learn the exact syntax they'll use in terminal scripts and aliases.
-- **Fuzzy search eliminates navigation overhead**: No need to browse 11 categories; type what you want and it appears.
-- **Tree visualization shows structure**: The selected tokens tree provides a mental model of what's been built without requiring category knowledge.
+- **Stage progression teaches token order**: By presenting tokens in grammar order (Static → Scope → Completeness → ...), users internalize that "todo" comes before "focus" which comes before "full". The inline `[StageName?]` marker shows exactly where each token belongs.
+- **Inline annotations reinforce categories**: The small `╰─Static ╰─Scope` markers below tokens provide continuous reinforcement of which category each token belongs to, without cluttering the command.
+- **Constrained choices reduce overwhelm**: Showing only current-stage completions (not all 50+ tokens) makes each decision manageable while teaching the grammar's structure.
+- **Tree visualization shows structure**: The selected tokens tree provides a mental model of what's been built, always in grammar order.
 - **Live preview creates tight feedback loop**: Changes are visible immediately, encouraging experimentation.
 - **Minimal chrome reduces cognitive load**: Fewer UI elements means attention focuses on the task.
 - **Terminal-native feel**: Operators familiar with fzf, fish, or lazygit will find the interaction model intuitive.
@@ -199,10 +223,10 @@ The following features from the current TUI are explicitly removed or deferred:
 
 ## Alternatives Considered
 
-### Wizard-style Progressive Disclosure
-Walk users through categories one at a time: "What task?" → "How thorough?" → "What scope?"
+### Pure Wizard-style (Modal Questions)
+Walk users through categories with modal dialogs: "What task?" → "How thorough?" → "What scope?"
 
-Rejected: Too slow for experts; doesn't teach the grammar because it hides the command structure.
+Rejected: Too slow for experts; hides the command structure behind modals. Our stage-based approach differs by keeping the command visible at all times with inline stage markers, so users see exactly how their choices build the CLI command.
 
 ### Chat-style Interface
 Type commands as messages, see prompt as response, history scrolls above.
@@ -218,3 +242,8 @@ Rejected: The fundamental problem is the layout itself, not just the controls. S
 Single filterable list of all options, full screen, no preview.
 
 Rejected: Loses the live preview feedback that makes the grammar learnable. Preview is essential.
+
+### Flat Fuzzy Search Across All Categories
+Show all 50+ tokens in a single filterable list, append selections in any order.
+
+Rejected after initial implementation: While convenient for power users who already know the grammar, this approach fails to teach token ordering. Users select tokens in random order and the command doesn't reflect the canonical grammar structure. New users never learn that "todo" (Static) should come before "focus" (Scope) which should come before "full" (Completeness).

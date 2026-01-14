@@ -239,3 +239,37 @@ residual_constraints:
 
 next_work:
 - ADR 0081 core implementation complete. Follow-up work (presets, syntax highlighting) can be tracked in new ADRs if requested.
+
+## loop-008 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 Decision → implement stage-based token progression where tokens are presented in grammar order with inline stage markers.
+
+active_constraint: Tokens are treated as a flat, unordered set; operators cannot see where tokens belong in the CLI grammar structure (validation: `go test ./internal/bartui2`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Stage progression is core to teaching the grammar; users learn token order through interaction. |
+| Probability | High | Uses existing token categories with stage ordering. |
+| Time Sensitivity | High | Critical for learning-oriented design. |
+| Uncertainty note | Medium | Requires significant refactoring of token storage and completion filtering. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-008.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go docs/adr/0081-tui-redesign-command-centric-grammar-learning.md`; rerun `go test ./internal/bartui2` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=3 files changed — adds stageOrder slice for grammar progression, changes tokens from flat list to tokensByCategory map, adds currentStageIndex for stage tracking, adds 11 helper methods for stage management, updates completions to filter by current stage, adds inline stage marker [Stage?] in command pane, shows stage name as completion header with "Then:" hint, updates Tab to skip stage, updates 7 tests for stage-based behavior.
+
+loops_remaining_forecast: 0 loops. Confidence: high — ADR 0081 stage-based progression implemented; all core features complete.
+
+residual_constraints:
+- Low — Fuzzy matching is simple substring; could enhance with proper fuzzy algorithm. Mitigation: monitor usability feedback.
+- Low — Preset management (Ctrl+P) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+- Low — Persona stage not included in stageOrder. Mitigation: add if requested.
+
+next_work:
+- ADR 0081 implementation complete with stage-based progression. Follow-up work (presets, persona stage, syntax highlighting) can be tracked in new ADRs if requested.

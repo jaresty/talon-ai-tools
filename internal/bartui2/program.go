@@ -55,6 +55,41 @@ type completion struct {
 	Description string
 }
 
+// Stage order for grammar progression (matches CLI completion order).
+// Each stage corresponds to a token category key.
+var stageOrder = []string{
+	"static",       // Static Prompt (what)
+	"completeness", // How thorough
+	"scope",        // How focused
+	"method",       // How to approach
+	"form",         // Output format
+	"channel",      // Communication style
+	"directional",  // Emphasis direction
+	// Persona stages could be added here if needed
+}
+
+// stageDisplayName returns the display name for a stage.
+func stageDisplayName(stage string) string {
+	switch stage {
+	case "static":
+		return "Static"
+	case "completeness":
+		return "Completeness"
+	case "scope":
+		return "Scope"
+	case "method":
+		return "Method"
+	case "form":
+		return "Form"
+	case "channel":
+		return "Channel"
+	case "directional":
+		return "Directional"
+	default:
+		return strings.Title(stage)
+	}
+}
+
 // model is the Bubble Tea model for the redesigned TUI.
 type model struct {
 	// Layout
@@ -63,12 +98,17 @@ type model struct {
 
 	// Command input (pane 1)
 	commandInput textinput.Model
-	tokens       []string
+
+	// Tokens organized by category (maintains grammar order)
+	tokensByCategory map[string][]string // key: category key, value: selected tokens
 
 	// Token categories (for completion)
 	tokenCategories []bartui.TokenCategory
 
-	// Completions (pane 2 right side)
+	// Stage-based progression
+	currentStageIndex int // index into stageOrder
+
+	// Completions (pane 2 right side) - filtered to current stage
 	completions     []completion
 	completionIndex int
 
@@ -156,7 +196,7 @@ func newModel(opts Options) model {
 
 	m := model{
 		commandInput:      ti,
-		tokens:            opts.InitialTokens,
+		tokensByCategory:  make(map[string][]string),
 		tokenCategories:   opts.TokenCategories,
 		subjectInput:      ta,
 		shellCommandInput: sci,
@@ -170,16 +210,34 @@ func newModel(opts Options) model {
 		height:            opts.InitialHeight,
 	}
 
+	// Categorize initial tokens
+	for _, token := range opts.InitialTokens {
+		category := m.getCategoryForToken(token)
+		if category != "" {
+			categoryKey := m.getCategoryKeyForToken(token)
+			m.tokensByCategory[categoryKey] = append(m.tokensByCategory[categoryKey], token)
+		}
+	}
+
 	if m.width > 0 && m.height > 0 {
 		m.ready = true
 	}
 
-	// Generate initial completions (all options when no filter)
+	// Advance stage index past any already-selected stages
+	m.advanceToNextIncompleteStage()
+
+	// Rebuild command line with initial tokens
+	if len(opts.InitialTokens) > 0 {
+		m.rebuildCommandLine()
+	}
+
+	// Generate initial completions (for current stage)
 	m.updateCompletions()
 
 	// Generate initial preview
 	if m.preview != nil {
-		text, err := m.preview("", m.tokens)
+		tokens := m.getAllTokensInOrder()
+		text, err := m.preview("", tokens)
 		if err == nil {
 			m.previewText = text
 			m.previewViewport.SetContent(text)
@@ -305,7 +363,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.completionIndex++
 			}
 			return m, nil
-		case "tab", "enter":
+		case "tab":
+			// Skip current stage
+			m.skipCurrentStage()
+			m.updateCompletions()
+			return m, nil
+		case "enter":
 			// Select current completion
 			if len(m.completions) > 0 && m.completionIndex < len(m.completions) {
 				m.selectCompletion(m.completions[m.completionIndex])
@@ -314,23 +377,39 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// Update text input
-	var cmd tea.Cmd
-	m.commandInput, cmd = m.commandInput.Update(msg)
-	cmds = append(cmds, cmd)
-
-	// Parse tokens from command input and update completions
-	m.tokens = m.parseTokensFromCommand()
-	m.updateCompletions()
-
-	// Update preview with subject
-	if m.preview != nil {
-		text, err := m.preview(m.subject, m.tokens)
-		if err == nil {
-			m.previewText = text
-			m.previewViewport.SetContent(text)
+	// For stage-based mode, we don't parse the command input - we manage tokens via stages
+	// But we still need to handle text input for filtering
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyBackspace:
+			// Check if there's a filter partial to delete first
+			partial := m.getFilterPartial()
+			if partial != "" {
+				// Let the textinput handle deleting the partial
+				var cmd tea.Cmd
+				m.commandInput, cmd = m.commandInput.Update(msg)
+				cmds = append(cmds, cmd)
+				m.updateCompletions()
+			} else {
+				// Remove last token
+				m.removeLastToken()
+				m.updateCompletions()
+			}
+			m.updatePreview()
+			return m, tea.Batch(cmds...)
+		case tea.KeyRunes:
+			// Handle typing for filter
+			var cmd tea.Cmd
+			m.commandInput, cmd = m.commandInput.Update(msg)
+			cmds = append(cmds, cmd)
+			m.updateCompletions()
+			return m, tea.Batch(cmds...)
 		}
 	}
+
+	// Update preview
+	m.updatePreview()
 
 	return m, tea.Batch(cmds...)
 }
@@ -355,13 +434,7 @@ func (m model) updateSubjectModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.subjectInput.Blur()
 			m.commandInput.Focus()
 			// Update preview with new subject
-			if m.preview != nil {
-				text, err := m.preview(m.subject, m.tokens)
-				if err == nil {
-					m.previewText = text
-					m.previewViewport.SetContent(text)
-				}
-			}
+			m.updatePreview()
 			return m, textinput.Blink
 		}
 	}
@@ -518,31 +591,50 @@ func (m model) getFilterPartial() string {
 	return fields[len(fields)-1]
 }
 
-// updateCompletions rebuilds the completions list based on current input.
+// updateCompletions rebuilds the completions list for the current stage only.
 func (m *model) updateCompletions() {
 	partial := strings.ToLower(m.getFilterPartial())
+
+	// Build set of already-selected tokens
 	selectedSet := make(map[string]bool)
-	for _, t := range m.tokens {
-		selectedSet[strings.ToLower(t)] = true
+	for _, tokens := range m.tokensByCategory {
+		for _, t := range tokens {
+			selectedSet[strings.ToLower(t)] = true
+		}
 	}
 
 	var results []completion
-	for _, category := range m.tokenCategories {
-		for _, opt := range category.Options {
-			// Skip already-selected tokens
-			if selectedSet[strings.ToLower(opt.Value)] {
-				continue
-			}
 
-			// Fuzzy match against partial
-			if partial == "" || fuzzyMatch(strings.ToLower(opt.Value), partial) ||
-				fuzzyMatch(strings.ToLower(opt.Slug), partial) {
-				results = append(results, completion{
-					Value:       opt.Value,
-					Category:    category.Label,
-					Description: truncate(opt.Description, 40),
-				})
-			}
+	// Only show completions for the current stage
+	currentStage := m.getCurrentStage()
+	if currentStage == "" {
+		// All stages complete
+		m.completions = nil
+		m.completionIndex = 0
+		return
+	}
+
+	category := m.getCategoryByKey(currentStage)
+	if category == nil {
+		m.completions = nil
+		m.completionIndex = 0
+		return
+	}
+
+	for _, opt := range category.Options {
+		// Skip already-selected tokens
+		if selectedSet[strings.ToLower(opt.Value)] {
+			continue
+		}
+
+		// Fuzzy match against partial
+		if partial == "" || fuzzyMatch(strings.ToLower(opt.Value), partial) ||
+			fuzzyMatch(strings.ToLower(opt.Slug), partial) {
+			results = append(results, completion{
+				Value:       opt.Value,
+				Category:    category.Label,
+				Description: truncate(opt.Description, 40),
+			})
 		}
 	}
 
@@ -554,31 +646,66 @@ func (m *model) updateCompletions() {
 	}
 }
 
-// selectCompletion adds the selected completion to the command.
+// selectCompletion adds the selected completion to the current stage.
 func (m *model) selectCompletion(c completion) {
-	value := m.commandInput.Value()
-
-	// Remove any partial being typed
-	partial := m.getFilterPartial()
-	if partial != "" {
-		// Remove the partial from the end
-		value = strings.TrimSuffix(value, partial)
+	// Add token to current stage
+	currentStage := m.getCurrentStage()
+	if currentStage == "" {
+		return // No stage to add to
 	}
 
-	// Ensure there's a space before the new token
-	if !strings.HasSuffix(value, " ") {
-		value += " "
-	}
+	m.tokensByCategory[currentStage] = append(m.tokensByCategory[currentStage], c.Value)
 
-	// Add the selected token
-	value += c.Value + " "
+	// Rebuild command line in grammar order
+	m.rebuildCommandLine()
 
-	m.commandInput.SetValue(value)
-	m.commandInput.CursorEnd()
+	// Advance to next stage if current is complete
+	m.advanceToNextIncompleteStage()
 
-	// Update tokens and completions
-	m.tokens = m.parseTokensFromCommand()
+	// Update completions for new stage
 	m.updateCompletions()
+}
+
+// rebuildCommandLine reconstructs the command from tokens in grammar order.
+func (m *model) rebuildCommandLine() {
+	tokens := m.getAllTokensInOrder()
+	var cmd strings.Builder
+	cmd.WriteString("bar build")
+	for _, token := range tokens {
+		cmd.WriteString(" ")
+		cmd.WriteString(token)
+	}
+	cmd.WriteString(" ")
+	m.commandInput.SetValue(cmd.String())
+	m.commandInput.CursorEnd()
+}
+
+// removeLastToken removes the last token from any stage (in reverse order).
+func (m *model) removeLastToken() {
+	// Find the last stage that has tokens
+	for i := len(stageOrder) - 1; i >= 0; i-- {
+		stage := stageOrder[i]
+		if tokens, ok := m.tokensByCategory[stage]; ok && len(tokens) > 0 {
+			// Remove last token from this stage
+			m.tokensByCategory[stage] = tokens[:len(tokens)-1]
+			// Update current stage index to this stage (since it now has room)
+			m.currentStageIndex = i
+			m.rebuildCommandLine()
+			return
+		}
+	}
+}
+
+// updatePreview regenerates the preview from current tokens.
+func (m *model) updatePreview() {
+	if m.preview != nil {
+		tokens := m.getAllTokensInOrder()
+		text, err := m.preview(m.subject, tokens)
+		if err == nil {
+			m.previewText = text
+			m.previewViewport.SetContent(text)
+		}
+	}
 }
 
 // fuzzyMatch returns true if the pattern matches the target using simple substring matching.
@@ -622,6 +749,87 @@ func (m model) getCategoryForToken(token string) string {
 		}
 	}
 	return ""
+}
+
+// getCategoryKeyForToken returns the category key for a given token value.
+// Returns empty string if the token is not found in any category.
+func (m model) getCategoryKeyForToken(token string) string {
+	tokenLower := strings.ToLower(token)
+	for _, category := range m.tokenCategories {
+		for _, opt := range category.Options {
+			if strings.ToLower(opt.Value) == tokenLower || strings.ToLower(opt.Slug) == tokenLower {
+				return category.Key
+			}
+		}
+	}
+	return ""
+}
+
+// getAllTokensInOrder returns all selected tokens in grammar order.
+func (m model) getAllTokensInOrder() []string {
+	var result []string
+	for _, stage := range stageOrder {
+		if tokens, ok := m.tokensByCategory[stage]; ok {
+			result = append(result, tokens...)
+		}
+	}
+	return result
+}
+
+// getCurrentStage returns the current stage key based on what's been selected.
+func (m model) getCurrentStage() string {
+	if m.currentStageIndex >= len(stageOrder) {
+		return "" // All stages complete
+	}
+	return stageOrder[m.currentStageIndex]
+}
+
+// getCategoryByKey returns the category with the given key.
+func (m model) getCategoryByKey(key string) *bartui.TokenCategory {
+	for i := range m.tokenCategories {
+		if m.tokenCategories[i].Key == key {
+			return &m.tokenCategories[i]
+		}
+	}
+	return nil
+}
+
+// isStageComplete returns true if the current stage has max selections.
+func (m model) isStageComplete(stage string) bool {
+	category := m.getCategoryByKey(stage)
+	if category == nil {
+		return true // Unknown stage is complete
+	}
+	tokens := m.tokensByCategory[stage]
+	return len(tokens) >= category.MaxSelections
+}
+
+// advanceToNextIncompleteStage moves to the next stage that needs selection.
+func (m *model) advanceToNextIncompleteStage() {
+	for m.currentStageIndex < len(stageOrder) {
+		stage := stageOrder[m.currentStageIndex]
+		if !m.isStageComplete(stage) {
+			return // Stay at this stage
+		}
+		m.currentStageIndex++
+	}
+}
+
+// skipCurrentStage moves to the next stage without selecting anything.
+func (m *model) skipCurrentStage() {
+	if m.currentStageIndex < len(stageOrder) {
+		m.currentStageIndex++
+		m.advanceToNextIncompleteStage()
+	}
+}
+
+// getRemainingStages returns the names of stages after the current one.
+func (m model) getRemainingStages() []string {
+	var remaining []string
+	for i := m.currentStageIndex + 1; i < len(stageOrder); i++ {
+		remaining = append(remaining, stageDisplayName(stageOrder[i]))
+	}
+	return remaining
 }
 
 // View implements tea.Model.
@@ -702,15 +910,76 @@ var (
 				Foreground(lipgloss.Color("214"))
 )
 
+// stageMarkerStyle for the [Stage?] marker
+var stageMarkerStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("214")).
+	Bold(true)
+
+// annotationStyle for the ╰─Category annotations
+var annotationStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("240"))
+
 func (m model) renderCommandPane() string {
 	width := m.width - 2
 	if width < 20 {
 		width = 20
 	}
 
-	content := fmt.Sprintf("> %s", m.commandInput.View())
+	// Build command line with stage marker
+	var cmdLine strings.Builder
+	cmdLine.WriteString("> bar build")
 
-	return paneStyle.Width(width).Render(content)
+	tokens := m.getAllTokensInOrder()
+	for _, token := range tokens {
+		cmdLine.WriteString(" ")
+		cmdLine.WriteString(token)
+	}
+
+	// Add stage marker if there's a current stage
+	currentStage := m.getCurrentStage()
+	if currentStage != "" {
+		cmdLine.WriteString(" ")
+		cmdLine.WriteString(stageMarkerStyle.Render(fmt.Sprintf("[%s?]", stageDisplayName(currentStage))))
+	}
+
+	// Show cursor/filter partial
+	partial := m.getFilterPartial()
+	if partial != "" {
+		cmdLine.WriteString(" ")
+		cmdLine.WriteString(partial)
+	}
+	cmdLine.WriteString("_")
+
+	// Build annotation line showing category for each token
+	var annotations strings.Builder
+	annotations.WriteString("  ") // Indent to align with "> bar build"
+	prefixLen := len("bar build")
+	annotations.WriteString(strings.Repeat(" ", prefixLen))
+
+	for _, token := range tokens {
+		category := m.getCategoryForToken(token)
+		// Pad to align under the token
+		tokenLen := len(token) + 1 // +1 for space
+		if category != "" {
+			annotation := fmt.Sprintf("╰─%s", category)
+			annotations.WriteString(annotationStyle.Render(annotation))
+			// Pad remaining space
+			if len(annotation) < tokenLen {
+				annotations.WriteString(strings.Repeat(" ", tokenLen-len(annotation)))
+			}
+		} else {
+			annotations.WriteString(strings.Repeat(" ", tokenLen))
+		}
+	}
+
+	var content strings.Builder
+	content.WriteString(cmdLine.String())
+	if len(tokens) > 0 {
+		content.WriteString("\n")
+		content.WriteString(annotations.String())
+	}
+
+	return paneStyle.Width(width).Render(content.String())
 }
 
 func (m model) renderTokensPane() string {
@@ -725,23 +994,25 @@ func (m model) renderTokensPane() string {
 		paneHeight = 4
 	}
 
+	allTokens := m.getAllTokensInOrder()
+
 	var left strings.Builder
 	// Header with count
-	if len(m.tokens) == 0 {
+	if len(allTokens) == 0 {
 		left.WriteString(headerStyle.Render("TOKENS"))
 	} else {
-		left.WriteString(headerStyle.Render(fmt.Sprintf("TOKENS (%d)", len(m.tokens))))
+		left.WriteString(headerStyle.Render(fmt.Sprintf("TOKENS (%d)", len(allTokens))))
 	}
 	left.WriteString("\n")
 
-	if len(m.tokens) == 0 {
+	if len(allTokens) == 0 {
 		left.WriteString(dimStyle.Render("(none selected)"))
 		left.WriteString("\n")
 		left.WriteString(dimStyle.Render("Type to search, Enter to select"))
 	} else {
 		// Build tree with lipgloss/tree
 		tokenTree := tree.New()
-		for _, token := range m.tokens {
+		for _, token := range allTokens {
 			category := m.getCategoryForToken(token)
 			if category != "" {
 				// Show "Category: value" format
@@ -758,20 +1029,29 @@ func (m model) renderTokensPane() string {
 	}
 
 	var right strings.Builder
-	right.WriteString(headerStyle.Render("COMPLETIONS"))
+	// Show current stage as header instead of generic "COMPLETIONS"
+	currentStage := m.getCurrentStage()
+	if currentStage != "" {
+		right.WriteString(headerStyle.Render(strings.ToUpper(stageDisplayName(currentStage))))
+	} else {
+		right.WriteString(headerStyle.Render("COMPLETE"))
+	}
 	right.WriteString("\n")
 
-	if len(m.completions) == 0 {
+	if currentStage == "" {
+		right.WriteString(dimStyle.Render("All stages complete!"))
+	} else if len(m.completions) == 0 {
 		right.WriteString(dimStyle.Render("(no matches)"))
 	} else {
 		// Show completions with current selection highlighted
-		maxShow := paneHeight - 2
+		maxShow := paneHeight - 3 // Leave room for "Then:" hint
 		if maxShow < 1 {
 			maxShow = 1
 		}
 		for i, c := range m.completions {
 			if i >= maxShow {
 				right.WriteString(dimStyle.Render(fmt.Sprintf("... +%d more", len(m.completions)-maxShow)))
+				right.WriteString("\n")
 				break
 			}
 			prefix := "  "
@@ -780,11 +1060,21 @@ func (m model) renderTokensPane() string {
 				prefix = "▸ "
 				style = completionSelectedStyle
 			}
-			// Format: "▸ todo        Static Prompt"
-			entry := fmt.Sprintf("%s%-12s %s", prefix, c.Value, c.Category)
+			// Format: "▸ focus       single topic"
+			entry := fmt.Sprintf("%s%-12s %s", prefix, c.Value, truncate(c.Description, 25))
 			right.WriteString(style.Render(entry))
 			right.WriteString("\n")
 		}
+	}
+
+	// Add "Then:" hint for remaining stages
+	remaining := m.getRemainingStages()
+	if len(remaining) > 0 && currentStage != "" {
+		hint := "Then: " + strings.Join(remaining, ", ")
+		if len(hint) > 35 {
+			hint = hint[:32] + "..."
+		}
+		right.WriteString(dimStyle.Render(hint))
 	}
 
 	// Split horizontally
@@ -848,6 +1138,7 @@ func (m model) renderHotkeyBar() string {
 	} else {
 		keys = []string{
 			"Enter: select",
+			"Tab: skip",
 			"BS: remove",
 			"^U/^D: scroll",
 			"^L: subject",

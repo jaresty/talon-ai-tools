@@ -15,10 +15,11 @@ func TestSnapshotBasicLayout(t *testing.T) {
 	}
 
 	opts := Options{
-		InitialTokens: []string{"todo", "focus"},
-		Preview:       preview,
-		InitialWidth:  80,
-		InitialHeight: 24,
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo", "focus"},
+		Preview:         preview,
+		InitialWidth:    80,
+		InitialHeight:   24,
 	}
 
 	view, err := Snapshot(opts)
@@ -35,21 +36,23 @@ func TestSnapshotBasicLayout(t *testing.T) {
 		t.Error("expected TOKENS header in view")
 	}
 
-	if !strings.Contains(view, "COMPLETIONS") {
-		t.Error("expected COMPLETIONS header in view")
+	// Stage-based: shows current stage name as header (not "COMPLETIONS")
+	// With todo (static) and focus (scope) selected, should be at completeness stage
+	if !strings.Contains(view, "COMPLETENESS") {
+		t.Error("expected COMPLETENESS stage header in view")
 	}
 
 	if !strings.Contains(view, "PREVIEW") {
 		t.Error("expected PREVIEW header in view")
 	}
 
-	// Verify tokens are displayed
-	if !strings.Contains(view, "todo") {
-		t.Error("expected 'todo' token in view")
+	// Verify tokens are displayed in the TOKENS section
+	if !strings.Contains(view, "Static Prompt") {
+		t.Error("expected 'Static Prompt' category label in view")
 	}
 
-	if !strings.Contains(view, "focus") {
-		t.Error("expected 'focus' token in view")
+	if !strings.Contains(view, "Scope") {
+		t.Error("expected 'Scope' category label in view")
 	}
 
 	// Verify hotkey bar
@@ -126,24 +129,27 @@ func TestParseTokensFromCommandEmpty(t *testing.T) {
 func testCategories() []bartui.TokenCategory {
 	return []bartui.TokenCategory{
 		{
-			Key:   "static",
-			Label: "Static Prompt",
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Return a todo list"},
 				{Value: "infer", Slug: "infer", Label: "Infer", Description: "Infer the task"},
 			},
 		},
 		{
-			Key:   "scope",
-			Label: "Scope",
+			Key:           "scope",
+			Label:         "Scope",
+			MaxSelections: 2,
 			Options: []bartui.TokenOption{
 				{Value: "focus", Slug: "focus", Label: "Focus", Description: "Concentrate on single topic"},
 				{Value: "system", Slug: "system", Label: "System", Description: "Examine connected system"},
 			},
 		},
 		{
-			Key:   "completeness",
-			Label: "Completeness",
+			Key:           "completeness",
+			Label:         "Completeness",
+			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer"},
 				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Concise summary"},
@@ -159,12 +165,13 @@ func TestFuzzyCompletionAllOptions(t *testing.T) {
 		InitialHeight:   24,
 	})
 
-	// With no filter, should show all 6 options
+	// With no filter, should show all options for current stage (static has 2 options)
 	m.commandInput.SetValue("bar build ")
 	m.updateCompletions()
 
-	if len(m.completions) != 6 {
-		t.Fatalf("expected 6 completions with no filter, got %d: %v", len(m.completions), m.completions)
+	// First stage is "static" which has 2 options in testCategories
+	if len(m.completions) != 2 {
+		t.Fatalf("expected 2 completions for static stage, got %d: %v", len(m.completions), m.completions)
 	}
 }
 
@@ -175,27 +182,26 @@ func TestFuzzyCompletionFiltering(t *testing.T) {
 		InitialHeight:   24,
 	})
 
-	// Filter by "fo" should match "focus", "infer" (contains "f" but not "fo")
-	// Actually "fo" should match "focus" and possibly "info" but we only have focus
-	m.commandInput.SetValue("bar build fo")
+	// In static stage, filter by "to" should match "todo"
+	m.commandInput.SetValue("bar build to")
 	m.updateCompletions()
 
-	// Should find "focus" (contains "fo")
+	// Should find "todo" (contains "to")
 	found := false
 	for _, c := range m.completions {
-		if c.Value == "focus" {
+		if c.Value == "todo" {
 			found = true
 			break
 		}
 	}
 	if !found {
-		t.Errorf("expected 'focus' in completions for filter 'fo', got: %v", m.completions)
+		t.Errorf("expected 'todo' in completions for filter 'to', got: %v", m.completions)
 	}
 
-	// Should NOT find "todo" (doesn't contain "fo")
+	// Should NOT find "infer" (doesn't contain "to")
 	for _, c := range m.completions {
-		if c.Value == "todo" {
-			t.Errorf("did not expect 'todo' in completions for filter 'fo'")
+		if c.Value == "infer" {
+			t.Errorf("did not expect 'infer' in completions for filter 'to'")
 		}
 	}
 }
@@ -208,20 +214,26 @@ func TestFuzzyCompletionExcludesSelected(t *testing.T) {
 		InitialHeight:   24,
 	})
 
-	// "todo" is already selected, should not appear in completions
-	m.commandInput.SetValue("bar build todo ")
-	m.tokens = m.parseTokensFromCommand()
+	// "todo" is already selected, so we're now at completeness stage
+	// The completeness stage has 2 options: full, gist
 	m.updateCompletions()
 
+	// Should be at completeness stage (static is complete with "todo")
+	currentStage := m.getCurrentStage()
+	if currentStage != "completeness" {
+		t.Errorf("expected to be at completeness stage, got %s", currentStage)
+	}
+
+	// Should have 2 completeness options
+	if len(m.completions) != 2 {
+		t.Errorf("expected 2 completeness options, got %d: %v", len(m.completions), m.completions)
+	}
+
+	// Verify "todo" is not in completions (it's from a different stage anyway)
 	for _, c := range m.completions {
 		if c.Value == "todo" {
 			t.Errorf("selected token 'todo' should not appear in completions")
 		}
-	}
-
-	// Should have 5 remaining options
-	if len(m.completions) != 5 {
-		t.Errorf("expected 5 completions (6 - 1 selected), got %d", len(m.completions))
 	}
 }
 
@@ -235,7 +247,7 @@ func TestCompletionSelection(t *testing.T) {
 	m.commandInput.SetValue("bar build ")
 	m.updateCompletions()
 
-	// Select the first completion
+	// Select the first completion (from static stage)
 	if len(m.completions) == 0 {
 		t.Fatal("expected completions to be available")
 	}
@@ -250,7 +262,7 @@ func TestCompletionSelection(t *testing.T) {
 
 	// Verify tokens were updated
 	found := false
-	for _, token := range m.tokens {
+	for _, token := range m.getAllTokensInOrder() {
 		if token == firstCompletion.Value {
 			found = true
 			break
@@ -258,6 +270,11 @@ func TestCompletionSelection(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("expected tokens to contain %q", firstCompletion.Value)
+	}
+
+	// After selecting a static token, should advance to completeness stage
+	if m.getCurrentStage() != "completeness" {
+		t.Errorf("expected to advance to completeness stage, got %s", m.getCurrentStage())
 	}
 }
 
@@ -268,23 +285,27 @@ func TestCompletionSelectionWithPartial(t *testing.T) {
 		InitialHeight:   24,
 	})
 
-	// Type partial "fo" then select "focus"
-	m.commandInput.SetValue("bar build fo")
+	// Type partial "to" then select "todo" (from static stage)
+	m.commandInput.SetValue("bar build to")
 	m.updateCompletions()
 
-	// Find and select "focus"
-	var focusCompletion completion
+	// Find and select "todo"
+	var todoCompletion completion
 	for _, c := range m.completions {
-		if c.Value == "focus" {
-			focusCompletion = c
+		if c.Value == "todo" {
+			todoCompletion = c
 			break
 		}
 	}
 
-	m.selectCompletion(focusCompletion)
+	if todoCompletion.Value == "" {
+		t.Fatal("expected to find 'todo' in completions")
+	}
 
-	// Should have "bar build focus " (partial replaced)
-	expected := "bar build focus "
+	m.selectCompletion(todoCompletion)
+
+	// Should have "bar build todo " (partial replaced, token added in grammar order)
+	expected := "bar build todo "
 	if m.commandInput.Value() != expected {
 		t.Errorf("expected command %q, got %q", expected, m.commandInput.Value())
 	}
@@ -302,9 +323,14 @@ func TestSnapshotWithCompletions(t *testing.T) {
 		t.Fatalf("Snapshot failed: %v", err)
 	}
 
-	// Should show completions in the view
-	if !strings.Contains(view, "todo") || !strings.Contains(view, "Static Prompt") {
-		t.Error("expected completions to show token values and categories")
+	// Should show stage header (first stage is "static" -> "STATIC")
+	if !strings.Contains(view, "STATIC") {
+		t.Error("expected STATIC stage header in view")
+	}
+
+	// Should show static stage completions (todo, infer)
+	if !strings.Contains(view, "todo") {
+		t.Error("expected 'todo' completion in view")
 	}
 
 	// Should show the selection indicator
@@ -472,7 +498,7 @@ func TestSubjectPassedToPreview(t *testing.T) {
 	// Set subject and trigger preview update
 	m.subject = "Test subject content"
 	if m.preview != nil {
-		text, err := m.preview(m.subject, m.tokens)
+		text, err := m.preview(m.subject, m.getAllTokensInOrder())
 		if err == nil {
 			m.previewText = text
 		}

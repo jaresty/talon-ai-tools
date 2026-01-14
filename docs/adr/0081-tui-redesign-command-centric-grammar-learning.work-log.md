@@ -442,3 +442,37 @@ residual_constraints:
 
 next_work:
 - ADR 0081 implementation complete with preset token hiding. Remaining lower-priority features (undo/redo, Ctrl+P save/load) can be tracked in new ADRs if requested.
+
+## loop-014 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 UX improvement → cascade-remove auto-filled tokens when preset is removed via Backspace.
+
+active_constraint: After selecting a preset, removing it requires manually deleting each auto-filled token first; poor UX for switching presets (validation: `go test ./internal/bartui2`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Significantly improves preset switching workflow. |
+| Probability | High | Straightforward tracking and cascade removal. |
+| Time Sensitivity | Medium | User-reported friction point. |
+| Uncertainty note | Low | Builds on existing auto-fill tracking. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-014.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go`; rerun `go test ./internal/bartui2 -run TestRemovingPresetRemovesAutoFilledTokens` to confirm test fails.
+
+delta_summary: helper:diff-snapshot=2 files changed — adds autoFillSource map to track auto-fill provenance, modifies removeLastToken() to skip auto-filled tokens and cascade-remove, adds removeAutoFilledBy() helper, updates clearAllTokens() to clear source tracking, adds 1 new test.
+
+loops_remaining_forecast: 0 loops for reported issues. Confidence: high — preset cascade removal complete. Remaining items (undo/redo, preset save/load) are lower priority.
+
+residual_constraints:
+- Low — Undo/redo not yet implemented. Mitigation: defer to follow-up ADR if needed.
+- Low — Saved preset management (Ctrl+P save/load) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 implementation complete with improved preset UX. Remaining lower-priority features (undo/redo, Ctrl+P save/load) can be tracked in new ADRs if requested.

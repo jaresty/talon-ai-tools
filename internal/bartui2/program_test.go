@@ -1830,6 +1830,118 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 	}
 }
 
+func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
+	// Create categories with a preset that has Fills
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{
+					Value: "coach",
+					Label: "Coach",
+					Fills: map[string]string{
+						"voice":    "supportive",
+						"audience": "beginner",
+						"tone":     "encouraging",
+					},
+				},
+				{
+					Value: "expert",
+					Label: "Expert",
+					Fills: map[string]string{
+						"voice":    "authoritative",
+						"audience": "professional",
+						"tone":     "confident",
+					},
+				},
+			},
+		},
+		{
+			Key:           "voice",
+			Label:         "Voice",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "supportive", Label: "Supportive"},
+				{Value: "authoritative", Label: "Authoritative"},
+			},
+		},
+		{
+			Key:           "audience",
+			Label:         "Audience",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "beginner", Label: "Beginner"},
+				{Value: "professional", Label: "Professional"},
+			},
+		},
+		{
+			Key:           "tone",
+			Label:         "Tone",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "encouraging", Label: "Encouraging"},
+				{Value: "confident", Label: "Confident"},
+			},
+		},
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "todo", Label: "Todo"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select the coach preset (auto-fills voice/audience/tone)
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0]) // coach
+
+	// Verify auto-filled tokens exist
+	if len(m.tokensByCategory["voice"]) != 1 {
+		t.Fatal("expected voice to be auto-filled")
+	}
+	if len(m.tokensByCategory["audience"]) != 1 {
+		t.Fatal("expected audience to be auto-filled")
+	}
+	if len(m.tokensByCategory["tone"]) != 1 {
+		t.Fatal("expected tone to be auto-filled")
+	}
+
+	// Remove the preset via Backspace (go back and remove last token)
+	m.removeLastToken()
+
+	// Auto-filled tokens should also be removed
+	if len(m.tokensByCategory["voice"]) != 0 {
+		t.Errorf("expected voice to be removed with preset, got %v", m.tokensByCategory["voice"])
+	}
+	if len(m.tokensByCategory["audience"]) != 0 {
+		t.Errorf("expected audience to be removed with preset, got %v", m.tokensByCategory["audience"])
+	}
+	if len(m.tokensByCategory["tone"]) != 0 {
+		t.Errorf("expected tone to be removed with preset, got %v", m.tokensByCategory["tone"])
+	}
+
+	// Preset should also be removed
+	if len(m.tokensByCategory["persona_preset"]) != 0 {
+		t.Errorf("expected preset to be removed, got %v", m.tokensByCategory["persona_preset"])
+	}
+
+	// Should be back at preset stage
+	if m.getCurrentStage() != "persona_preset" {
+		t.Errorf("expected to be back at persona_preset stage, got %s", m.getCurrentStage())
+	}
+}
+
 func TestClearAllTokensClearsAutoFillTracking(t *testing.T) {
 	// Create categories with a preset that has Fills
 	categories := []bartui.TokenCategory{

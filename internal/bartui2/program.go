@@ -123,6 +123,9 @@ type model struct {
 	// Track which tokens were auto-filled by presets (for excluding from copied command)
 	autoFilledTokens map[string]bool // key: "category:value"
 
+	// Track which token caused each auto-fill (for cascade removal)
+	autoFillSource map[string]string // key: "category:value" of filled token, value: "category:value" of source
+
 	// Token categories (for completion)
 	tokenCategories []bartui.TokenCategory
 
@@ -220,6 +223,7 @@ func newModel(opts Options) model {
 		commandInput:      ti,
 		tokensByCategory:  make(map[string][]string),
 		autoFilledTokens:  make(map[string]bool),
+		autoFillSource:    make(map[string]string),
 		tokenCategories:   opts.TokenCategories,
 		subjectInput:      ta,
 		shellCommandInput: sci,
@@ -789,12 +793,16 @@ func (m *model) selectCompletion(c completion) {
 
 	// Apply auto-fills (e.g., persona presets fill voice/audience/tone)
 	if len(c.Fills) > 0 {
+		sourceKey := currentStage + ":" + c.Value
 		for category, value := range c.Fills {
 			// Only fill if not already set
 			if _, exists := m.tokensByCategory[category]; !exists || len(m.tokensByCategory[category]) == 0 {
 				m.tokensByCategory[category] = []string{value}
 				// Mark as auto-filled so it's excluded from copied command
-				m.autoFilledTokens[category+":"+value] = true
+				filledKey := category + ":" + value
+				m.autoFilledTokens[filledKey] = true
+				// Track source so we can cascade-remove when source is removed
+				m.autoFillSource[filledKey] = sourceKey
 			}
 		}
 	}
@@ -823,18 +831,64 @@ func (m *model) rebuildCommandLine() {
 	m.commandInput.CursorEnd()
 }
 
-// removeLastToken removes the last token from any stage (in reverse order).
+// removeLastToken removes the last manually-selected token (skipping auto-filled tokens).
+// If the removed token caused any auto-fills, those are also removed.
 func (m *model) removeLastToken() {
-	// Find the last stage that has tokens
+	// Find the last stage that has a manually-selected token (not auto-filled)
 	for i := len(stageOrder) - 1; i >= 0; i-- {
 		stage := stageOrder[i]
-		if tokens, ok := m.tokensByCategory[stage]; ok && len(tokens) > 0 {
-			// Remove last token from this stage
-			m.tokensByCategory[stage] = tokens[:len(tokens)-1]
-			// Update current stage index to this stage (since it now has room)
-			m.currentStageIndex = i
-			m.rebuildCommandLine()
-			return
+		tokens, ok := m.tokensByCategory[stage]
+		if !ok || len(tokens) == 0 {
+			continue
+		}
+
+		// Check if the last token in this stage is auto-filled
+		lastToken := tokens[len(tokens)-1]
+		tokenKey := stage + ":" + lastToken
+		if m.autoFilledTokens[tokenKey] {
+			// This token is auto-filled, skip to earlier stage
+			continue
+		}
+
+		// Found a manually-selected token - remove it
+		m.tokensByCategory[stage] = tokens[:len(tokens)-1]
+
+		// Cascade-remove any tokens that this token auto-filled
+		m.removeAutoFilledBy(tokenKey)
+
+		// Update current stage index to this stage (since it now has room)
+		m.currentStageIndex = i
+		m.rebuildCommandLine()
+		return
+	}
+}
+
+// removeAutoFilledBy removes all tokens that were auto-filled by the given source token.
+func (m *model) removeAutoFilledBy(sourceKey string) {
+	// Find all auto-filled tokens with this source and remove them
+	for filledKey, source := range m.autoFillSource {
+		if source == sourceKey {
+			// Parse category:value from key
+			parts := strings.SplitN(filledKey, ":", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			category, value := parts[0], parts[1]
+
+			// Remove from tokensByCategory
+			if tokens, ok := m.tokensByCategory[category]; ok {
+				var newTokens []string
+				for _, t := range tokens {
+					if t != value {
+						newTokens = append(newTokens, t)
+					}
+				}
+				m.tokensByCategory[category] = newTokens
+			}
+
+			// Clean up tracking
+			delete(m.autoFilledTokens, filledKey)
+			delete(m.autoFillSource, filledKey)
 		}
 	}
 }
@@ -1083,6 +1137,7 @@ func (m *model) goToPreviousStage() {
 func (m *model) clearAllTokens() {
 	m.tokensByCategory = make(map[string][]string)
 	m.autoFilledTokens = make(map[string]bool)
+	m.autoFillSource = make(map[string]string)
 	m.currentStageIndex = 0
 	m.advanceToNextIncompleteStage()
 	m.rebuildCommandLine()

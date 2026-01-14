@@ -1091,11 +1091,18 @@ func (m model) getCategoryKeyForToken(token string) string {
 }
 
 // getAllTokensInOrder returns all selected tokens in grammar order.
+// Persona preset tokens are prefixed with "persona=" as required by Build.
 func (m model) getAllTokensInOrder() []string {
 	var result []string
 	for _, stage := range stageOrder {
 		if tokens, ok := m.tokensByCategory[stage]; ok {
-			result = append(result, tokens...)
+			for _, token := range tokens {
+				if stage == "persona_preset" {
+					result = append(result, "persona="+token)
+				} else {
+					result = append(result, token)
+				}
+			}
 		}
 	}
 	return result

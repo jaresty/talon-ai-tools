@@ -2131,3 +2131,58 @@ func TestUndoNothingToUndo(t *testing.T) {
 		t.Errorf("expected toast about nothing to undo, got %q", m2.toastMessage)
 	}
 }
+
+func TestPersonaPresetTokenPrefixed(t *testing.T) {
+	// Create categories with a persona_preset category
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "coach_junior", Label: "Coach Junior"},
+			},
+		},
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "todo", Label: "Todo"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select the preset
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0]) // coach_junior
+
+	// Skip to static and select todo
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0]) // todo
+
+	// Get all tokens - persona_preset should be prefixed with "persona="
+	tokens := m.getAllTokensInOrder()
+
+	// Should have 2 tokens
+	if len(tokens) != 2 {
+		t.Fatalf("expected 2 tokens, got %d: %v", len(tokens), tokens)
+	}
+
+	// First token should be "persona=coach_junior" (prefixed)
+	if tokens[0] != "persona=coach_junior" {
+		t.Errorf("expected first token to be 'persona=coach_junior', got %q", tokens[0])
+	}
+
+	// Second token should be "todo" (not prefixed)
+	if tokens[1] != "todo" {
+		t.Errorf("expected second token to be 'todo', got %q", tokens[1])
+	}
+}

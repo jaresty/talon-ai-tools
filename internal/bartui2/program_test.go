@@ -1167,3 +1167,151 @@ func TestStageDisplayNameForPersonaStages(t *testing.T) {
 		}
 	}
 }
+
+func TestShiftTabGoesToPreviousStage(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo"},
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// After selecting "todo" (static), should be at completeness stage
+	if m.getCurrentStage() != "completeness" {
+		t.Fatalf("expected to be at completeness stage, got %s", m.getCurrentStage())
+	}
+
+	// Press Shift+Tab - should go back to static stage
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyShiftTab})
+	m2 := updated.(model)
+
+	// Should be back at static stage
+	if m2.getCurrentStage() != "static" {
+		t.Errorf("expected to go back to static stage, got %s", m2.getCurrentStage())
+	}
+
+	// Token should NOT be removed (unlike Backspace)
+	if len(m2.getAllTokensInOrder()) != 1 {
+		t.Errorf("expected token to remain after Shift+Tab, got %v", m2.getAllTokensInOrder())
+	}
+}
+
+func TestCtrlKClearsAllTokens(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo", "full"},
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Should have tokens
+	if len(m.getAllTokensInOrder()) != 2 {
+		t.Fatalf("expected 2 tokens, got %d", len(m.getAllTokensInOrder()))
+	}
+
+	// Press Ctrl+K - should clear all tokens
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlK})
+	m2 := updated.(model)
+
+	// Should have no tokens
+	if len(m2.getAllTokensInOrder()) != 0 {
+		t.Errorf("expected no tokens after Ctrl+K, got %v", m2.getAllTokensInOrder())
+	}
+
+	// Should be at first stage (static, since test categories don't have persona stages)
+	if m2.getCurrentStage() != "static" {
+		t.Errorf("expected to be at static stage after clear, got %s", m2.getCurrentStage())
+	}
+
+	// Should show toast
+	if m2.toastMessage != "Cleared all tokens" {
+		t.Errorf("expected toast message, got %q", m2.toastMessage)
+	}
+}
+
+func TestPresetAutoFillsOtherCategories(t *testing.T) {
+	// Create categories with a preset that has Fills
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{
+					Value:       "coach",
+					Label:       "Coach",
+					Description: "Coach preset",
+					Fills: map[string]string{
+						"voice":    "supportive",
+						"audience": "beginner",
+						"tone":     "encouraging",
+					},
+				},
+			},
+		},
+		{
+			Key:           "voice",
+			Label:         "Voice",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "supportive", Label: "Supportive"},
+			},
+		},
+		{
+			Key:           "audience",
+			Label:         "Audience",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "beginner", Label: "Beginner"},
+			},
+		},
+		{
+			Key:           "tone",
+			Label:         "Tone",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "encouraging", Label: "Encouraging"},
+			},
+		},
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "todo", Label: "Todo"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Should be at persona_preset stage
+	if m.getCurrentStage() != "persona_preset" {
+		t.Fatalf("expected to start at persona_preset stage, got %s", m.getCurrentStage())
+	}
+
+	// Select the preset
+	m.updateCompletions()
+	if len(m.completions) == 0 {
+		t.Fatal("expected preset completions")
+	}
+	m.selectCompletion(m.completions[0])
+
+	// Check auto-filled values
+	if voice := m.tokensByCategory["voice"]; len(voice) != 1 || voice[0] != "supportive" {
+		t.Errorf("expected voice to be auto-filled with 'supportive', got %v", voice)
+	}
+	if audience := m.tokensByCategory["audience"]; len(audience) != 1 || audience[0] != "beginner" {
+		t.Errorf("expected audience to be auto-filled with 'beginner', got %v", audience)
+	}
+	if tone := m.tokensByCategory["tone"]; len(tone) != 1 || tone[0] != "encouraging" {
+		t.Errorf("expected tone to be auto-filled with 'encouraging', got %v", tone)
+	}
+}

@@ -306,3 +306,37 @@ residual_constraints:
 
 next_work:
 - ADR 0081 implementation complete. Follow-up work (saved presets Ctrl+P, syntax highlighting) can be tracked in new ADRs if requested.
+
+## loop-010 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 Decision → implement Shift+Tab backward navigation, Ctrl+K clear all, persona_preset category, and preset auto-fill.
+
+active_constraint: No backward navigation without removing tokens; missing persona_preset category; presets don't auto-fill voice/audience/tone (validation: `go test ./internal/bartui2`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Bidirectional navigation enables exploration; preset auto-fill reduces repetition. |
+| Probability | High | Straightforward additions to existing stage infrastructure. |
+| Time Sensitivity | Medium | Important for usability but not blocking core workflow. |
+| Uncertainty note | Low | Uses existing patterns. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-010.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go internal/bartui/tokens.go internal/barcli/tui_tokens.go docs/adr/0081-tui-redesign-command-centric-grammar-learning.md`; rerun `go test ./internal/bartui2` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=5 files changed — adds Fills field to TokenOption and completion structs, adds buildPersonaPresetOptions with Fills for voice/audience/tone, adds goToPreviousStage() for Shift+Tab, adds clearAllTokens() for Ctrl+K, updates selectCompletion to apply Fills auto-fill, adds 4 new tests.
+
+loops_remaining_forecast: 0 loops. Confidence: high — ADR 0081 features complete with full navigation and preset support.
+
+residual_constraints:
+- Low — Fuzzy matching is simple substring; could enhance with proper fuzzy algorithm. Mitigation: monitor usability feedback.
+- Low — Saved preset management (Ctrl+P save/load) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 implementation complete. Follow-up work (Ctrl+P preset save/load, syntax highlighting) can be tracked in new ADRs if requested.

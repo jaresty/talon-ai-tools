@@ -53,6 +53,8 @@ type completion struct {
 	Value       string
 	Category    string
 	Description string
+	// Fills specifies other categories that get auto-filled when this option is selected.
+	Fills map[string]string
 }
 
 // Stage order for grammar progression (matches CLI completion order).
@@ -383,6 +385,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.skipCurrentStage()
 			m.updateCompletions()
 			return m, nil
+		case "shift+tab":
+			// Go to previous stage
+			m.goToPreviousStage()
+			m.updateCompletions()
+			return m, nil
+		case "ctrl+k":
+			// Clear all tokens and restart
+			m.clearAllTokens()
+			m.updateCompletions()
+			m.updatePreview()
+			m.toastMessage = "Cleared all tokens"
+			return m, nil
 		case "enter":
 			// Check for escape hatch syntax (category=value)
 			partial := m.getFilterPartial()
@@ -659,6 +673,7 @@ func (m *model) updateCompletions() {
 				Value:       opt.Value,
 				Category:    category.Label,
 				Description: truncate(opt.Description, 40),
+				Fills:       opt.Fills,
 			})
 		}
 	}
@@ -680,6 +695,16 @@ func (m *model) selectCompletion(c completion) {
 	}
 
 	m.tokensByCategory[currentStage] = append(m.tokensByCategory[currentStage], c.Value)
+
+	// Apply auto-fills (e.g., persona presets fill voice/audience/tone)
+	if len(c.Fills) > 0 {
+		for category, value := range c.Fills {
+			// Only fill if not already set
+			if _, exists := m.tokensByCategory[category]; !exists || len(m.tokensByCategory[category]) == 0 {
+				m.tokensByCategory[category] = []string{value}
+			}
+		}
+	}
 
 	// Rebuild command line in grammar order
 	m.rebuildCommandLine()
@@ -903,6 +928,29 @@ func (m *model) skipCurrentStage() {
 		m.currentStageIndex++
 		m.advanceToNextIncompleteStage()
 	}
+}
+
+// goToPreviousStage moves to the previous stage (for Shift+Tab navigation).
+func (m *model) goToPreviousStage() {
+	if m.currentStageIndex > 0 {
+		m.currentStageIndex--
+		// Skip back over stages that don't have categories
+		for m.currentStageIndex > 0 {
+			stage := stageOrder[m.currentStageIndex]
+			if m.getCategoryByKey(stage) != nil {
+				break
+			}
+			m.currentStageIndex--
+		}
+	}
+}
+
+// clearAllTokens removes all tokens and resets to the first stage.
+func (m *model) clearAllTokens() {
+	m.tokensByCategory = make(map[string][]string)
+	m.currentStageIndex = 0
+	m.advanceToNextIncompleteStage()
+	m.rebuildCommandLine()
 }
 
 // getRemainingStages returns the names of stages after the current one.

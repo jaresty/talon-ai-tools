@@ -82,7 +82,64 @@ func BuildTokenCategories(grammar *Grammar) []bartui.TokenCategory {
 		})
 	}
 
+	// Add persona presets category
+	if presetOptions := buildPersonaPresetOptions(grammar); len(presetOptions) > 0 {
+		categories = append(categories, bartui.TokenCategory{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			Kind:          bartui.TokenCategoryKindPersona,
+			MaxSelections: 1,
+			Options:       presetOptions,
+		})
+	}
+
 	return categories
+}
+
+// buildPersonaPresetOptions builds options for persona presets.
+func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
+	if grammar.Persona.Presets == nil || len(grammar.Persona.Presets) == 0 {
+		return nil
+	}
+
+	values := make([]string, 0, len(grammar.Persona.Presets))
+	for key := range grammar.Persona.Presets {
+		trimmed := strings.TrimSpace(key)
+		if trimmed != "" {
+			values = append(values, trimmed)
+		}
+	}
+	sort.Strings(values)
+
+	options := make([]bartui.TokenOption, 0, len(values))
+	for _, value := range values {
+		preset := grammar.Persona.Presets[value]
+		label := preset.Label
+		if label == "" {
+			label = displayLabel(value, "")
+		}
+
+		// Build fills map from preset's voice, audience, tone
+		fills := make(map[string]string)
+		if preset.Voice != nil && *preset.Voice != "" {
+			fills["voice"] = *preset.Voice
+		}
+		if preset.Audience != nil && *preset.Audience != "" {
+			fills["audience"] = *preset.Audience
+		}
+		if preset.Tone != nil && *preset.Tone != "" {
+			fills["tone"] = *preset.Tone
+		}
+
+		options = append(options, bartui.TokenOption{
+			Value:       value,
+			Slug:        grammar.slugForToken(value),
+			Label:       label,
+			Description: label,
+			Fills:       fills,
+		})
+	}
+	return options
 }
 
 func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {

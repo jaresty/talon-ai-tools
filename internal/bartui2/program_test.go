@@ -543,12 +543,12 @@ func TestClipboardCopyCommand(t *testing.T) {
 	})
 	m.ready = true
 
-	// Copy command to clipboard
+	// Copy command to clipboard (no tokens selected)
 	m.copyCommandToClipboard()
 
-	// Should have copied the command
-	if copiedText != "bar build " {
-		t.Errorf("expected clipboard to contain 'bar build ', got %q", copiedText)
+	// Should have copied the command (no trailing space in copied command)
+	if copiedText != "bar build" {
+		t.Errorf("expected clipboard to contain 'bar build', got %q", copiedText)
 	}
 
 	// Should show toast
@@ -566,21 +566,19 @@ func TestClipboardCopyWithTokens(t *testing.T) {
 
 	m := newModel(Options{
 		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo", "focus"}, // Add tokens properly via InitialTokens
 		ClipboardWrite:  clipboardWrite,
 		InitialWidth:    80,
 		InitialHeight:   24,
 	})
 	m.ready = true
 
-	// Add tokens to command
-	m.commandInput.SetValue("bar build todo focus ")
-
 	// Copy command to clipboard
 	m.copyCommandToClipboard()
 
-	// Should have copied the command with tokens
-	if copiedText != "bar build todo focus " {
-		t.Errorf("expected clipboard to contain 'bar build todo focus ', got %q", copiedText)
+	// Should have copied the command with tokens (no trailing space)
+	if copiedText != "bar build todo focus" {
+		t.Errorf("expected clipboard to contain 'bar build todo focus', got %q", copiedText)
 	}
 }
 
@@ -1589,5 +1587,297 @@ func TestCompletionListScrolling(t *testing.T) {
 	}
 	if m.completionScrollOffset != 0 {
 		t.Errorf("expected scroll offset 0 after navigating back up, got %d", m.completionScrollOffset)
+	}
+}
+
+func TestAutoFilledTokensTracked(t *testing.T) {
+	// Create categories with a preset that has Fills
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{
+					Value:       "coach",
+					Label:       "Coach",
+					Description: "Coach preset",
+					Fills: map[string]string{
+						"voice":    "supportive",
+						"audience": "beginner",
+						"tone":     "encouraging",
+					},
+				},
+			},
+		},
+		{
+			Key:           "voice",
+			Label:         "Voice",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "supportive", Label: "Supportive"},
+			},
+		},
+		{
+			Key:           "audience",
+			Label:         "Audience",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "beginner", Label: "Beginner"},
+			},
+		},
+		{
+			Key:           "tone",
+			Label:         "Tone",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "encouraging", Label: "Encouraging"},
+			},
+		},
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "todo", Label: "Todo"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select the preset (which auto-fills voice/audience/tone)
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0])
+
+	// Auto-filled tokens should be tracked
+	if !m.isAutoFilled("voice", "supportive") {
+		t.Error("expected voice:supportive to be marked as auto-filled")
+	}
+	if !m.isAutoFilled("audience", "beginner") {
+		t.Error("expected audience:beginner to be marked as auto-filled")
+	}
+	if !m.isAutoFilled("tone", "encouraging") {
+		t.Error("expected tone:encouraging to be marked as auto-filled")
+	}
+
+	// The preset itself should NOT be auto-filled (it was manually selected)
+	if m.isAutoFilled("persona_preset", "coach") {
+		t.Error("expected persona_preset:coach to NOT be marked as auto-filled")
+	}
+}
+
+func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
+	var copiedText string
+	clipboardWrite := func(text string) error {
+		copiedText = text
+		return nil
+	}
+
+	// Create categories with a preset that has Fills
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{
+					Value:       "coach",
+					Label:       "Coach",
+					Description: "Coach preset",
+					Fills: map[string]string{
+						"voice":    "supportive",
+						"audience": "beginner",
+					},
+				},
+			},
+		},
+		{
+			Key:           "voice",
+			Label:         "Voice",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "supportive", Label: "Supportive"},
+			},
+		},
+		{
+			Key:           "audience",
+			Label:         "Audience",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "beginner", Label: "Beginner"},
+			},
+		},
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "todo", Label: "Todo"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		ClipboardWrite:  clipboardWrite,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select the preset (auto-fills voice and audience)
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0]) // coach preset
+
+	// After preset selection, voice and audience are auto-filled.
+	// Since test doesn't have tone/completeness/etc categories, we advance directly to static.
+	m.updateCompletions()
+
+	// Should now be at static stage
+	currentStage := m.getCurrentStage()
+	if currentStage != "static" {
+		t.Fatalf("expected to be at static stage after preset selection, got %q (completions: %d)", currentStage, len(m.completions))
+	}
+
+	if len(m.completions) == 0 {
+		t.Fatal("expected completions at static stage")
+	}
+	m.selectCompletion(m.completions[0]) // todo
+
+	// Copy command to clipboard
+	m.copyCommandToClipboard()
+
+	// Copied command should include preset and manually selected tokens
+	// but NOT the auto-filled tokens (voice, audience)
+	if !strings.Contains(copiedText, "coach") {
+		t.Errorf("expected copied command to contain 'coach', got %q", copiedText)
+	}
+	if !strings.Contains(copiedText, "todo") {
+		t.Errorf("expected copied command to contain 'todo', got %q", copiedText)
+	}
+
+	// Auto-filled tokens should NOT be in the copied command
+	if strings.Contains(copiedText, "supportive") {
+		t.Errorf("expected copied command to NOT contain auto-filled 'supportive', got %q", copiedText)
+	}
+	if strings.Contains(copiedText, "beginner") {
+		t.Errorf("expected copied command to NOT contain auto-filled 'beginner', got %q", copiedText)
+	}
+}
+
+func TestDisplayCommandIncludesAllTokens(t *testing.T) {
+	// Create categories with a preset that has Fills
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{
+					Value:       "coach",
+					Label:       "Coach",
+					Description: "Coach preset",
+					Fills: map[string]string{
+						"voice": "supportive",
+					},
+				},
+			},
+		},
+		{
+			Key:           "voice",
+			Label:         "Voice",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "supportive", Label: "Supportive"},
+			},
+		},
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "todo", Label: "Todo"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select the preset (auto-fills voice)
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0])
+
+	// The display (View) should show ALL tokens including auto-filled ones
+	view := m.View()
+
+	// Both preset and auto-filled token should appear in the display
+	if !strings.Contains(view, "coach") {
+		t.Error("expected display to contain 'coach'")
+	}
+	if !strings.Contains(view, "supportive") {
+		t.Error("expected display to contain auto-filled 'supportive'")
+	}
+}
+
+func TestClearAllTokensClearsAutoFillTracking(t *testing.T) {
+	// Create categories with a preset that has Fills
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{
+					Value: "coach",
+					Label: "Coach",
+					Fills: map[string]string{
+						"voice": "supportive",
+					},
+				},
+			},
+		},
+		{
+			Key:           "voice",
+			Label:         "Voice",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "supportive", Label: "Supportive"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select preset (auto-fills voice)
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0])
+
+	// Verify auto-fill is tracked
+	if !m.isAutoFilled("voice", "supportive") {
+		t.Fatal("expected voice:supportive to be auto-filled before clear")
+	}
+
+	// Clear all tokens
+	m.clearAllTokens()
+
+	// Auto-fill tracking should be cleared
+	if m.isAutoFilled("voice", "supportive") {
+		t.Error("expected auto-fill tracking to be cleared after clearAllTokens")
 	}
 }

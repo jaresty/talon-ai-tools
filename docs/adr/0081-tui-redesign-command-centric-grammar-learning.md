@@ -271,7 +271,7 @@ The following features from the current TUI are explicitly removed or deferred:
 
 5. ~~**Copy prompt to clipboard**~~: Fixed — Ctrl+G copies the generated prompt text.
 
-6. **Hide preset-filled tokens in copied command**: When a preset auto-fills voice/audience/tone, those tokens should not appear in the copied command since the preset already includes them. Requires tracking which tokens came from preset auto-fill.
+6. ~~**Hide preset-filled tokens in copied command**~~: Fixed — auto-filled tokens are tracked and excluded from copied command via `buildCommandForClipboard()` while still appearing in display and preview.
 
 ### Features (Lower Priority)
 

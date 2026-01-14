@@ -408,3 +408,37 @@ residual_constraints:
 
 next_work:
 - ADR 0081 core implementation complete with full command execution workflow. Remaining enhancements (preset token hiding, undo/redo, Ctrl+P save/load) can be tracked in new ADRs if requested.
+
+## loop-013 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 Known Issues #6 → hide preset-filled tokens in copied command by tracking auto-fill state.
+
+active_constraint: When copying command to clipboard, auto-filled tokens (from preset selection) appear in the copied command even though the preset already includes them; this creates redundant/incorrect commands (validation: `go test ./internal/bartui2`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Improves usability; copied commands are cleaner and semantically correct. |
+| Probability | High | Straightforward tracking mechanism using map. |
+| Time Sensitivity | Low | Usability polish; core functionality unaffected. |
+| Uncertainty note | Low | Uses established patterns for tracking state. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-013.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go`; rerun `go test ./internal/bartui2 -run TestAutoFilledTokensTracked` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=2 files changed — adds autoFilledTokens map to model, marks tokens as auto-filled in selectCompletion(), adds isAutoFilled() helper, adds buildCommandForClipboard() that excludes auto-filled tokens, updates clearAllTokens() to reset tracking, adds 4 new tests, updates 2 existing tests.
+
+loops_remaining_forecast: 0 loops for medium/high priority features. Confidence: high — all Known Issues #1-7 complete. Remaining items (undo/redo, preset save/load) are lower priority enhancements.
+
+residual_constraints:
+- Low — Undo/redo not yet implemented. Mitigation: defer to follow-up ADR if needed.
+- Low — Saved preset management (Ctrl+P save/load) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 implementation complete with preset token hiding. Remaining lower-priority features (undo/redo, Ctrl+P save/load) can be tracked in new ADRs if requested.

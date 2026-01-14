@@ -120,6 +120,9 @@ type model struct {
 	// Tokens organized by category (maintains grammar order)
 	tokensByCategory map[string][]string // key: category key, value: selected tokens
 
+	// Track which tokens were auto-filled by presets (for excluding from copied command)
+	autoFilledTokens map[string]bool // key: "category:value"
+
 	// Token categories (for completion)
 	tokenCategories []bartui.TokenCategory
 
@@ -216,6 +219,7 @@ func newModel(opts Options) model {
 	m := model{
 		commandInput:      ti,
 		tokensByCategory:  make(map[string][]string),
+		autoFilledTokens:  make(map[string]bool),
 		tokenCategories:   opts.TokenCategories,
 		subjectInput:      ta,
 		shellCommandInput: sci,
@@ -518,17 +522,44 @@ func (m model) updateSubjectModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // copyCommandToClipboard copies the current bar build command to clipboard.
+// Auto-filled tokens (from presets) are excluded from the copied command.
 func (m *model) copyCommandToClipboard() {
-	command := m.commandInput.Value()
 	if m.clipboardWrite == nil {
 		m.toastMessage = "Clipboard not available"
 		return
 	}
+
+	// Build command excluding auto-filled tokens
+	command := m.buildCommandForClipboard()
+
 	if err := m.clipboardWrite(command); err != nil {
 		m.toastMessage = fmt.Sprintf("Clipboard error: %v", err)
 		return
 	}
 	m.toastMessage = "Copied command to clipboard!"
+}
+
+// buildCommandForClipboard builds the bar build command excluding auto-filled tokens.
+func (m model) buildCommandForClipboard() string {
+	var cmd strings.Builder
+	cmd.WriteString("bar build")
+
+	for _, stage := range stageOrder {
+		tokens, ok := m.tokensByCategory[stage]
+		if !ok {
+			continue
+		}
+		for _, token := range tokens {
+			// Skip auto-filled tokens
+			if m.isAutoFilled(stage, token) {
+				continue
+			}
+			cmd.WriteString(" ")
+			cmd.WriteString(token)
+		}
+	}
+
+	return cmd.String()
 }
 
 // copyPromptToClipboard copies the generated prompt to clipboard.
@@ -762,6 +793,8 @@ func (m *model) selectCompletion(c completion) {
 			// Only fill if not already set
 			if _, exists := m.tokensByCategory[category]; !exists || len(m.tokensByCategory[category]) == 0 {
 				m.tokensByCategory[category] = []string{value}
+				// Mark as auto-filled so it's excluded from copied command
+				m.autoFilledTokens[category+":"+value] = true
 			}
 		}
 	}
@@ -1049,9 +1082,15 @@ func (m *model) goToPreviousStage() {
 // clearAllTokens removes all tokens and resets to the first stage.
 func (m *model) clearAllTokens() {
 	m.tokensByCategory = make(map[string][]string)
+	m.autoFilledTokens = make(map[string]bool)
 	m.currentStageIndex = 0
 	m.advanceToNextIncompleteStage()
 	m.rebuildCommandLine()
+}
+
+// isAutoFilled returns true if the given category:value was auto-filled by a preset.
+func (m model) isAutoFilled(category, value string) bool {
+	return m.autoFilledTokens[category+":"+value]
 }
 
 // getRemainingStages returns the names of stages after the current one.

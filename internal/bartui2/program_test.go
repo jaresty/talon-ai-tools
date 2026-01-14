@@ -1,6 +1,7 @@
 package bartui2
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -609,5 +610,279 @@ func TestToastClearedOnKeyPress(t *testing.T) {
 	// Toast should be cleared
 	if m2.toastMessage != "" {
 		t.Errorf("expected toast to be cleared, got %q", m2.toastMessage)
+	}
+}
+
+func TestCommandModalRendering(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Open command modal
+	m.showCommandModal = true
+	m.shellCommandInput.Focus()
+
+	view := m.View()
+
+	// Should show command modal header
+	if !strings.Contains(view, "RUN COMMAND") {
+		t.Error("expected 'RUN COMMAND' header in modal")
+	}
+
+	// Should show hotkey hints for modal
+	if !strings.Contains(view, "Enter: run") {
+		t.Error("expected 'Enter: run' in modal")
+	}
+
+	if !strings.Contains(view, "Esc: cancel") {
+		t.Error("expected 'Esc: cancel' in modal")
+	}
+}
+
+func TestCommandModalHidesMainView(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo"},
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Open command modal
+	m.showCommandModal = true
+
+	view := m.View()
+
+	// Should NOT show main view elements when modal is open
+	if strings.Contains(view, "COMPLETIONS") {
+		t.Error("main view COMPLETIONS should be hidden when modal is open")
+	}
+
+	if strings.Contains(view, "PREVIEW") {
+		t.Error("main view PREVIEW should be hidden when modal is open")
+	}
+}
+
+func TestCommandExecution(t *testing.T) {
+	var capturedCmd, capturedStdin string
+	runCommand := func(ctx context.Context, cmd string, stdin string) (string, string, error) {
+		capturedCmd = cmd
+		capturedStdin = stdin
+		return "output result", "", nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		RunCommand:      runCommand,
+		Preview: func(subject string, tokens []string) (string, error) {
+			return "preview text", nil
+		},
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+	m.previewText = "preview text"
+
+	// Execute a command
+	m.executeCommand("echo test")
+
+	if capturedCmd != "echo test" {
+		t.Errorf("expected command 'echo test', got %q", capturedCmd)
+	}
+
+	if capturedStdin != "preview text" {
+		t.Errorf("expected stdin 'preview text', got %q", capturedStdin)
+	}
+
+	if m.commandResult != "output result" {
+		t.Errorf("expected result 'output result', got %q", m.commandResult)
+	}
+
+	if !m.showingResult {
+		t.Error("expected showingResult to be true after command execution")
+	}
+}
+
+func TestCommandExecutionWithStderr(t *testing.T) {
+	runCommand := func(ctx context.Context, cmd string, stdin string) (string, string, error) {
+		return "stdout", "stderr", nil
+	}
+
+	m := newModel(Options{
+		RunCommand:    runCommand,
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+
+	m.executeCommand("test")
+
+	// Should contain both stdout and stderr
+	if !strings.Contains(m.commandResult, "stdout") {
+		t.Error("expected result to contain stdout")
+	}
+	if !strings.Contains(m.commandResult, "stderr") {
+		t.Error("expected result to contain stderr")
+	}
+}
+
+func TestCommandExecutionUnavailable(t *testing.T) {
+	m := newModel(Options{
+		RunCommand:    nil, // No command runner
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+
+	m.executeCommand("test")
+
+	if m.toastMessage != "Command execution not available" {
+		t.Errorf("expected toast 'Command execution not available', got %q", m.toastMessage)
+	}
+}
+
+func TestResultPaneRendering(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Set up result state
+	m.showingResult = true
+	m.commandResult = "test output"
+	m.lastShellCommand = "echo test"
+
+	view := m.View()
+
+	// Should show result header
+	if !strings.Contains(view, "RESULT") {
+		t.Error("expected 'RESULT' header in view")
+	}
+
+	// Should show command that was run
+	if !strings.Contains(view, "echo test") {
+		t.Error("expected command name in result header")
+	}
+
+	// Should show result content
+	if !strings.Contains(view, "test output") {
+		t.Error("expected result content in view")
+	}
+}
+
+func TestResultModeHotkeyBar(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Set up result mode
+	m.showingResult = true
+	m.commandResult = "test"
+
+	view := m.View()
+
+	// Should show result-specific shortcuts
+	if !strings.Contains(view, "copy result") {
+		t.Error("expected 'copy result' in hotkey bar during result mode")
+	}
+
+	if !strings.Contains(view, "back to preview") {
+		t.Error("expected 'back to preview' in hotkey bar during result mode")
+	}
+}
+
+func TestCopyResultToClipboard(t *testing.T) {
+	var copiedText string
+	clipboardWrite := func(text string) error {
+		copiedText = text
+		return nil
+	}
+
+	m := newModel(Options{
+		ClipboardWrite: clipboardWrite,
+		InitialWidth:   80,
+		InitialHeight:  24,
+	})
+	m.ready = true
+	m.commandResult = "result to copy"
+
+	m.copyResultToClipboard()
+
+	if copiedText != "result to copy" {
+		t.Errorf("expected clipboard to contain 'result to copy', got %q", copiedText)
+	}
+
+	if m.toastMessage != "Result copied to clipboard!" {
+		t.Errorf("expected toast 'Result copied to clipboard!', got %q", m.toastMessage)
+	}
+}
+
+func TestEscReturnFromResult(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+	m.showingResult = true
+	m.commandResult = "some result"
+
+	// Press Esc to return to preview
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	m2 := updated.(model)
+
+	if m2.showingResult {
+		t.Error("expected showingResult to be false after Esc")
+	}
+
+	if m2.commandResult != "" {
+		t.Error("expected commandResult to be cleared after Esc")
+	}
+}
+
+func TestCtrlRReturnFromResult(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+	m.showingResult = true
+	m.commandResult = "some result"
+
+	// Press Ctrl+R to return to preview
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}, Alt: false})
+	// Actually need to simulate ctrl+r properly
+	updated, _ = m.Update(tea.KeyMsg{Type: tea.KeyCtrlR})
+	m2 := updated.(model)
+
+	if m2.showingResult {
+		t.Error("expected showingResult to be false after Ctrl+R")
+	}
+}
+
+func TestHotkeyBarShowsRunShortcut(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+
+	view, err := Snapshot(opts)
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	// Should show run shortcut in hotkey bar
+	if !strings.Contains(view, "run") {
+		t.Error("expected 'run' shortcut in hotkey bar")
 	}
 }

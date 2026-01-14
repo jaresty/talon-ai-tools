@@ -174,3 +174,35 @@ residual_constraints:
 next_work:
 - Behaviour: Implement command execution (Ctrl+Enter) with output display (validation: `go test ./internal/bartui2`).
 - Behaviour: Add viewport scroll to preview pane (validation: `go test ./internal/bartui2`).
+
+## loop-006 | helper:v20251223.1 | 2026-01-13
+
+focus: ADR 0081 Decision → implement command execution (Ctrl+Enter) to run shell commands with preview piped as stdin.
+
+active_constraint: No way to execute commands with the generated prompt; operators cannot test their prompts against tools like `pbcopy` or `claude` (validation: `go test ./internal/bartui2 -run TestCommand`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Command execution completes the workflow: build prompt → run command → see result. |
+| Probability | High | Shell execution via exec.CommandContext is standard Go pattern. |
+| Time Sensitivity | Medium | Core workflow feature needed for real-world usage. |
+| Uncertainty note | Low | Uses context timeout and stdin piping, well-established patterns. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-006.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go internal/barcli/tui2.go`; rerun `go test ./internal/bartui2 -run TestCommand` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=3 files changed — adds RunCommand/CommandTimeout options, adds command modal with textinput, implements executeCommand() with stdin piping and timeout, adds renderCommandModal()/renderResultPane(), adds result mode with ^Y copy result and ^R return to preview, wires exec.CommandContext runner in tui2.go, adds 12 tests for command execution.
+
+loops_remaining_forecast: 1 loop. Confidence: high — remaining work is polish (viewport scroll for preview/result).
+
+residual_constraints:
+- Medium — Preview/result panes truncate without scroll. Mitigation: add bubbles viewport component in next loop.
+
+next_work:
+- Behaviour: Add viewport scroll to preview and result panes (validation: `go test ./internal/bartui2`).

@@ -4,8 +4,10 @@
 package bartui2
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -28,6 +30,12 @@ type Options struct {
 
 	// ClipboardWrite writes text to the system clipboard.
 	ClipboardWrite func(string) error
+
+	// RunCommand executes a shell command with stdin and returns stdout/stderr.
+	RunCommand func(ctx context.Context, command string, stdin string) (stdout string, stderr string, err error)
+
+	// CommandTimeout limits how long a command can run.
+	CommandTimeout time.Duration
 
 	// InitialWidth overrides terminal width detection (for testing).
 	InitialWidth int
@@ -72,6 +80,15 @@ type model struct {
 	previewText string
 	preview     func(subject string, tokens []string) (string, error)
 
+	// Command execution
+	shellCommandInput  textinput.Model
+	showCommandModal   bool
+	lastShellCommand   string
+	runCommand         func(ctx context.Context, command string, stdin string) (string, string, error)
+	commandTimeout     time.Duration
+	commandResult      string
+	showingResult      bool
+
 	// Clipboard
 	clipboardWrite func(string) error
 
@@ -115,15 +132,30 @@ func newModel(opts Options) model {
 	ta.SetHeight(8)
 	ta.ShowLineNumbers = false
 
+	// Shell command input for execution modal
+	sci := textinput.New()
+	sci.Placeholder = "Enter shell command (e.g., pbcopy, claude)"
+	sci.CharLimit = 512
+	sci.Width = 60
+
+	// Default timeout
+	timeout := opts.CommandTimeout
+	if timeout == 0 {
+		timeout = 30 * time.Second
+	}
+
 	m := model{
-		commandInput:    ti,
-		tokens:          opts.InitialTokens,
-		tokenCategories: opts.TokenCategories,
-		subjectInput:    ta,
-		preview:         opts.Preview,
-		clipboardWrite:  opts.ClipboardWrite,
-		width:           opts.InitialWidth,
-		height:          opts.InitialHeight,
+		commandInput:      ti,
+		tokens:            opts.InitialTokens,
+		tokenCategories:   opts.TokenCategories,
+		subjectInput:      ta,
+		shellCommandInput: sci,
+		preview:           opts.Preview,
+		runCommand:        opts.RunCommand,
+		commandTimeout:    timeout,
+		clipboardWrite:    opts.ClipboardWrite,
+		width:             opts.InitialWidth,
+		height:            opts.InitialHeight,
 	}
 
 	if m.width > 0 && m.height > 0 {
@@ -168,6 +200,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.showSubjectModal {
 		return m.updateSubjectModal(msg)
 	}
+	if m.showCommandModal {
+		return m.updateCommandModal(msg)
+	}
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -178,6 +213,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "esc":
+			// If showing result, return to preview
+			if m.showingResult {
+				m.showingResult = false
+				m.commandResult = ""
+				return m, nil
+			}
 			return m, tea.Quit
 		case "ctrl+b":
 			// Copy CLI to clipboard
@@ -190,6 +231,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.subjectInput.Focus()
 			m.commandInput.Blur()
 			return m, textarea.Blink
+		case "ctrl+enter":
+			// Open command execution modal
+			m.showCommandModal = true
+			m.shellCommandInput.SetValue(m.lastShellCommand)
+			m.shellCommandInput.Focus()
+			m.commandInput.Blur()
+			return m, textinput.Blink
+		case "ctrl+y":
+			// Copy result to clipboard (if showing result)
+			if m.showingResult && m.commandResult != "" {
+				m.copyResultToClipboard()
+			}
+			return m, nil
+		case "ctrl+r":
+			// Return to preview (if showing result)
+			if m.showingResult {
+				m.showingResult = false
+				m.commandResult = ""
+			}
+			return m, nil
 		case "up":
 			// Navigate completions up
 			if m.completionIndex > 0 {
@@ -279,6 +340,102 @@ func (m *model) copyCommandToClipboard() {
 		return
 	}
 	m.toastMessage = "Copied to clipboard!"
+}
+
+// copyResultToClipboard copies the command result to clipboard.
+func (m *model) copyResultToClipboard() {
+	if m.clipboardWrite == nil {
+		m.toastMessage = "Clipboard not available"
+		return
+	}
+	if err := m.clipboardWrite(m.commandResult); err != nil {
+		m.toastMessage = fmt.Sprintf("Clipboard error: %v", err)
+		return
+	}
+	m.toastMessage = "Result copied to clipboard!"
+}
+
+// updateCommandModal handles input when the command execution modal is open.
+func (m model) updateCommandModal(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
+		case "esc":
+			// Close modal without executing
+			m.showCommandModal = false
+			m.shellCommandInput.Blur()
+			m.commandInput.Focus()
+			return m, textinput.Blink
+		case "enter":
+			// Execute command and close modal
+			shellCmd := m.shellCommandInput.Value()
+			if shellCmd == "" {
+				m.toastMessage = "No command entered"
+				m.showCommandModal = false
+				m.shellCommandInput.Blur()
+				m.commandInput.Focus()
+				return m, textinput.Blink
+			}
+
+			m.lastShellCommand = shellCmd
+			m.showCommandModal = false
+			m.shellCommandInput.Blur()
+			m.commandInput.Focus()
+
+			// Execute the command
+			m.executeCommand(shellCmd)
+			return m, textinput.Blink
+		}
+	}
+
+	// Update text input
+	var cmd tea.Cmd
+	m.shellCommandInput, cmd = m.shellCommandInput.Update(msg)
+	return m, cmd
+}
+
+// executeCommand runs the shell command with the preview as stdin.
+func (m *model) executeCommand(shellCmd string) {
+	if m.runCommand == nil {
+		m.toastMessage = "Command execution not available"
+		return
+	}
+
+	// Get the preview text to pipe to the command
+	stdin := m.previewText
+
+	// Execute with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), m.commandTimeout)
+	defer cancel()
+
+	stdout, stderr, err := m.runCommand(ctx, shellCmd, stdin)
+
+	// Build result
+	var result strings.Builder
+	if stdout != "" {
+		result.WriteString(stdout)
+	}
+	if stderr != "" {
+		if result.Len() > 0 {
+			result.WriteString("\n--- stderr ---\n")
+		}
+		result.WriteString(stderr)
+	}
+	if err != nil {
+		if result.Len() > 0 {
+			result.WriteString("\n")
+		}
+		result.WriteString(fmt.Sprintf("Error: %v", err))
+	}
+
+	if result.Len() == 0 {
+		result.WriteString("(no output)")
+	}
+
+	m.commandResult = result.String()
+	m.showingResult = true
 }
 
 // parseTokensFromCommand extracts tokens from the command input.
@@ -423,6 +580,11 @@ func (m model) View() string {
 		return m.renderSubjectModal()
 	}
 
+	// Show command modal if active
+	if m.showCommandModal {
+		return m.renderCommandModal()
+	}
+
 	var b strings.Builder
 
 	// Pane 1: Command input
@@ -433,8 +595,12 @@ func (m model) View() string {
 	b.WriteString(m.renderTokensPane())
 	b.WriteString("\n")
 
-	// Pane 3: Preview
-	b.WriteString(m.renderPreviewPane())
+	// Pane 3: Preview or Result
+	if m.showingResult {
+		b.WriteString(m.renderResultPane())
+	} else {
+		b.WriteString(m.renderPreviewPane())
+	}
 	b.WriteString("\n")
 
 	// Pane 4: Hotkey bar
@@ -475,6 +641,10 @@ var (
 	toastStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("78")).
 			Bold(true)
+
+	resultHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("214"))
 )
 
 func (m model) renderCommandPane() string {
@@ -617,12 +787,22 @@ func (m model) renderHotkeyBar() string {
 		return toastStyle.Width(width).Render(m.toastMessage)
 	}
 
-	keys := []string{
-		"Enter: select",
-		"BS: remove",
-		"^L: subject",
-		"^B: copy",
-		"Esc: exit",
+	var keys []string
+	if m.showingResult {
+		keys = []string{
+			"^Y: copy result",
+			"^R: back to preview",
+			"Esc: back",
+		}
+	} else {
+		keys = []string{
+			"Enter: select",
+			"BS: remove",
+			"^L: subject",
+			"^Enter: run",
+			"^B: copy",
+			"Esc: exit",
+		}
 	}
 
 	return dimStyle.Width(width).Render(strings.Join(keys, " | "))
@@ -651,6 +831,62 @@ func (m model) renderSubjectModal() string {
 	content.WriteString(dimStyle.Render("Ctrl+S: save | Esc: cancel"))
 
 	return modalStyle.Width(width).Render(content.String())
+}
+
+func (m model) renderCommandModal() string {
+	width := m.width - 4
+	if width < 40 {
+		width = 40
+	}
+
+	var content strings.Builder
+	content.WriteString(headerStyle.Render("RUN COMMAND"))
+	content.WriteString("\n\n")
+	content.WriteString(m.shellCommandInput.View())
+	content.WriteString("\n\n")
+
+	// Show last command if different
+	if m.lastShellCommand != "" && m.lastShellCommand != m.shellCommandInput.Value() {
+		content.WriteString(dimStyle.Render(fmt.Sprintf("Last: %s", m.lastShellCommand)))
+		content.WriteString("\n")
+	}
+
+	content.WriteString(dimStyle.Render("Enter: run | Esc: cancel"))
+
+	return modalStyle.Width(width).Render(content.String())
+}
+
+func (m model) renderResultPane() string {
+	width := m.width - 2
+	if width < 20 {
+		width = 20
+	}
+
+	// Calculate available height for this pane
+	paneHeight := (m.height - 10) / 2
+	if paneHeight < 6 {
+		paneHeight = 6
+	}
+
+	var content strings.Builder
+	content.WriteString(resultHeaderStyle.Render("RESULT"))
+	content.WriteString(dimStyle.Render(fmt.Sprintf(" (%s)", m.lastShellCommand)))
+	content.WriteString("\n")
+
+	if m.commandResult == "" {
+		content.WriteString(dimStyle.Render("(no output)"))
+	} else {
+		// Truncate result to fit
+		lines := strings.Split(m.commandResult, "\n")
+		maxLines := paneHeight - 2
+		if len(lines) > maxLines {
+			lines = lines[:maxLines]
+			lines = append(lines, dimStyle.Render("..."))
+		}
+		content.WriteString(strings.Join(lines, "\n"))
+	}
+
+	return paneStyle.Width(width).Height(paneHeight).Render(content.String())
 }
 
 // Snapshot renders a single frame for testing.

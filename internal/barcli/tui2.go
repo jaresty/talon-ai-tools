@@ -1,8 +1,12 @@
 package barcli
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
+	"os/exec"
+	"time"
 
 	"github.com/atotto/clipboard"
 	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
@@ -57,11 +61,25 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		return result.PlainText, nil
 	}
 
+	runCommand := func(ctx context.Context, command string, stdin string) (string, string, error) {
+		cmd := exec.CommandContext(ctx, "sh", "-c", command)
+		cmd.Stdin = bytes.NewBufferString(stdin)
+
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		err := cmd.Run()
+		return stdout.String(), stderr.String(), err
+	}
+
 	tuiOpts := bartui2.Options{
 		InitialTokens:   tokens,
 		TokenCategories: tokenCategories,
 		Preview:         preview,
 		ClipboardWrite:  clipboard.WriteAll,
+		RunCommand:      runCommand,
+		CommandTimeout:  30 * time.Second,
 		InitialWidth:    opts.FixtureWidth,
 		InitialHeight:   opts.FixtureHeight,
 		NoAltScreen:     opts.NoAltScreen,

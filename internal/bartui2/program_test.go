@@ -2186,3 +2186,74 @@ func TestPersonaPresetTokenPrefixed(t *testing.T) {
 		t.Errorf("expected second token to be 'todo', got %q", tokens[1])
 	}
 }
+
+func TestPreviewReceivesSelectedTokens(t *testing.T) {
+	var capturedTokens []string
+	preview := func(subject string, tokens []string) (string, error) {
+		capturedTokens = append([]string{}, tokens...)
+		return "Preview with tokens: " + strings.Join(tokens, ", "), nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview:         preview,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select "todo" from static stage
+	m.updateCompletions()
+	var todoCompletion completion
+	for _, c := range m.completions {
+		if c.Value == "todo" {
+			todoCompletion = c
+			break
+		}
+	}
+	if todoCompletion.Value == "" {
+		t.Fatal("expected 'todo' completion to be available")
+	}
+	m.selectCompletion(todoCompletion)
+
+	// Verify token was captured by preview
+	if len(capturedTokens) != 1 {
+		t.Fatalf("expected 1 token captured, got %d: %v", len(capturedTokens), capturedTokens)
+	}
+	if capturedTokens[0] != "todo" {
+		t.Errorf("expected token 'todo', got %q", capturedTokens[0])
+	}
+
+	// Now select "focus" from scope stage
+	// First skip completeness stage
+	m.skipCurrentStage()
+	m.updateCompletions()
+
+	var focusCompletion completion
+	for _, c := range m.completions {
+		if c.Value == "focus" {
+			focusCompletion = c
+			break
+		}
+	}
+	if focusCompletion.Value == "" {
+		t.Fatal("expected 'focus' completion to be available")
+	}
+	m.selectCompletion(focusCompletion)
+
+	// Verify both tokens captured
+	if len(capturedTokens) != 2 {
+		t.Fatalf("expected 2 tokens captured, got %d: %v", len(capturedTokens), capturedTokens)
+	}
+	if capturedTokens[0] != "todo" {
+		t.Errorf("expected first token 'todo', got %q", capturedTokens[0])
+	}
+	if capturedTokens[1] != "focus" {
+		t.Errorf("expected second token 'focus', got %q", capturedTokens[1])
+	}
+
+	// Verify preview text was updated
+	if !strings.Contains(m.previewText, "todo") || !strings.Contains(m.previewText, "focus") {
+		t.Errorf("expected previewText to contain 'todo' and 'focus', got %q", m.previewText)
+	}
+}

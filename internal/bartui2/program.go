@@ -845,6 +845,9 @@ func (m *model) selectCompletion(c completion) {
 
 	// Update completions for new stage
 	m.updateCompletions()
+
+	// Update preview with new token selection
+	m.updatePreview()
 }
 
 // rebuildCommandLine reconstructs the command from tokens in grammar order.

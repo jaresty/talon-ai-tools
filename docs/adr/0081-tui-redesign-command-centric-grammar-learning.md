@@ -12,7 +12,7 @@ Proposed — TUI redesign: command-centric interface for grammar learning (2026-
 ## Design Principles
 1. **Command as interface**: The `bar build` command line IS the primary interaction surface, not a representation of it.
 2. **Grammar through structure**: Selected tokens render as a visual tree that mirrors the command structure, teaching the grammar through direct observation.
-3. **Stage-based progression**: Tokens are presented in grammar order (Static → Scope → Completeness → Method → Form → Channel → Directional), with inline hints showing where each token belongs in the command.
+3. **Stage-based progression**: Tokens are presented in grammar order (Intent → Preset → Voice → Audience → Tone → Static → Completeness → Scope → Method → Form → Channel → Directional), with inline hints showing where each token belongs in the command. Navigation is bidirectional—Backspace removes the last token and returns to that stage.
 4. **Live preview**: The generated prompt updates immediately as tokens change, providing constant feedback.
 5. **Progressive disclosure**: Advanced features (command execution, subject input, presets) are accessible but not always visible.
 6. **Terminal-native**: The interface should feel like a modern CLI tool (fzf, fish, lazygit) rather than a GUI application.
@@ -61,7 +61,8 @@ The command line shows inline stage markers:
 - Left side: Selected tokens as a tree structure showing `Category: value` in grammar order
 - Right side: Completions for the **current stage only**, with stage name as header
 - Shows "Then: Method, Form..." hint indicating remaining stages
-- Up/Down arrows navigate completions; Enter selects; Tab skips stage; Backspace removes last token
+- Up/Down arrows navigate completions; Enter selects; Tab skips stage
+- Backspace (with no filter) removes last token and returns to that stage
 
 **Pane 3 - Preview (scrollable, takes remaining space)**:
 - Live-rendered prompt that updates as tokens change
@@ -75,25 +76,32 @@ The command line shows inline stage markers:
 ### Interaction Model
 
 **Stage-Based Token Selection (primary workflow)**:
-1. The TUI starts at the first stage (Static) and shows only tokens for that stage
+1. The TUI starts at the first stage (Intent) and shows only tokens for that stage
 2. Type to fuzzy-filter within the current stage's completions
 3. Arrow keys highlight a completion; Enter adds it to the command at the correct position
 4. After selecting, the TUI advances to the next stage (or stays if the stage allows multiple selections)
-5. Tab skips the current stage without selecting; Backspace removes the last token
-6. Preview updates immediately after each change
-7. The command line shows `[StageName?]` to indicate what's being asked
+5. Tab skips the current stage without selecting
+6. Backspace behavior depends on context:
+   - If there's filter text, Backspace deletes characters from the filter
+   - If there's no filter text, Backspace removes the last token AND returns to that token's stage
+7. Preview updates immediately after each change
+8. The command line shows `[StageName?]` to indicate what's being asked
 
 **Stage Order** (matches CLI grammar):
-1. **Persona** — Intent, Preset, Voice, Audience, Tone (optional, can skip)
-2. **Static** — The main prompt type (e.g., "todo", "code-comment")
-3. **Completeness** — How thorough (full, gist, essential)
-4. **Scope** — How focused (focus, breadth, system) — up to 2 selections
-5. **Method** — How to approach (steps, compare, etc.) — up to 3 selections
-6. **Form** — Output format (prose, bullets, etc.)
-7. **Channel** — Communication style (direct, formal, etc.)
-8. **Directional** — Emphasis direction (forward, backward, etc.)
+1. **Intent** — What the user wants to accomplish (optional, can skip)
+2. **Preset** — Saved persona configuration (optional, can skip)
+3. **Voice** — Speaking style or persona voice (optional, can skip)
+4. **Audience** — Target audience for the response (optional, can skip)
+5. **Tone** — Emotional tone of the response (optional, can skip)
+6. **Static** — The main prompt type (e.g., "todo", "code-comment")
+7. **Completeness** — How thorough (full, gist, essential)
+8. **Scope** — How focused (focus, breadth, system) — up to 2 selections
+9. **Method** — How to approach (steps, compare, etc.) — up to 3 selections
+10. **Form** — Output format (prose, bullets, etc.)
+11. **Channel** — Communication style (direct, formal, etc.)
+12. **Directional** — Emphasis direction (forward, backward, etc.)
 
-Users can skip any stage with Tab, and the command always shows tokens in this order regardless of selection sequence.
+Users can skip any stage with Tab, and the command always shows tokens in this order regardless of selection sequence. Backspace on an empty filter removes the last token and returns to that token's stage, enabling bidirectional navigation through the grammar.
 
 **Subject Input (Ctrl+L)**:
 - Opens a modal text area for entering/pasting subject content
@@ -149,7 +157,13 @@ Completion entries show:
 ```
 Value and description (category is implicit from stage header).
 
-**Power user escape hatch**: Typing `axis=value` (e.g., `scope=focus`) bypasses stage progression and allows direct override syntax, matching CLI behavior.
+**Power user escape hatch**: Typing `category=value` (e.g., `scope=focus`) bypasses stage progression and allows direct override syntax, matching CLI behavior. This works at any time, including after all stages are complete.
+
+**After all stages complete**:
+- The completions pane shows "All stages complete" with available actions
+- Typing `category=value` syntax allows overriding any previous selection
+- Backspace removes the last token and returns to that stage for modification
+- The command input becomes effectively read-only for normal typing (no stage to filter)
 
 ### Narrow Terminal Adaptation
 

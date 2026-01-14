@@ -41,8 +41,8 @@ Proposed — TUI redesign: command-centric interface for grammar learning (2026-
 │ 1. Scope (focus): The response concentrates on a single focal   │
 │    topic without drifting into tangents.                        │
 ├─────────────────────────────────────────────────────────────────┤
-│ Enter: select ▪ Tab: skip stage ▪ Backspace: remove             │
-│ Ctrl+L: subject ▪ Ctrl+Enter: run ▪ Ctrl+B: copy ▪ Esc: exit    │
+│ Enter: select ▪ Tab/S-Tab: next/prev ▪ BS: remove ▪ ^K: clear   │
+│ ^L: subject ▪ ^Enter: run ▪ ^B: copy ▪ Esc: exit                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -80,12 +80,13 @@ The command line shows inline stage markers:
 2. Type to fuzzy-filter within the current stage's completions
 3. Arrow keys highlight a completion; Enter adds it to the command at the correct position
 4. After selecting, the TUI advances to the next stage (or stays if the stage allows multiple selections)
-5. Tab skips the current stage without selecting
+5. Tab skips the current stage without selecting; Shift+Tab goes to the previous stage
 6. Backspace behavior depends on context:
    - If there's filter text, Backspace deletes characters from the filter
    - If there's no filter text, Backspace removes the last token AND returns to that token's stage
-7. Preview updates immediately after each change
-8. The command line shows `[StageName?]` to indicate what's being asked
+7. Ctrl+K clears all tokens and restarts from the first stage
+8. Preview updates immediately after each change
+9. The command line shows `[StageName?]` to indicate what's being asked
 
 **Stage Order** (matches CLI grammar):
 1. **Intent** — What the user wants to accomplish (optional, can skip)
@@ -101,7 +102,7 @@ The command line shows inline stage markers:
 11. **Channel** — Communication style (direct, formal, etc.)
 12. **Directional** — Emphasis direction (forward, backward, etc.)
 
-Users can skip any stage with Tab, and the command always shows tokens in this order regardless of selection sequence. Backspace on an empty filter removes the last token and returns to that token's stage, enabling bidirectional navigation through the grammar.
+Users can skip any stage with Tab and go back with Shift+Tab, enabling free navigation between stages. The command always shows tokens in grammar order regardless of selection sequence. Backspace on an empty filter removes the last token and returns to that token's stage. Ctrl+K clears all tokens and restarts from the first stage.
 
 **Subject Input (Ctrl+L)**:
 - Opens a modal text area for entering/pasting subject content

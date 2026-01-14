@@ -277,7 +277,7 @@ The following features from the current TUI are explicitly removed or deferred:
 
 7. ~~**Command execution workflow**~~: Fixed — Ctrl+X configures command, Ctrl+R quick re-runs last command, Ctrl+S pipelines result into subject, command header shows in result view.
 
-8. **Undo/redo**: Track state history to allow undoing/redoing token selections, similar to the original TUI implementation.
+8. ~~**Undo/redo**~~: Fixed — Ctrl+Z undoes token selections, Ctrl+Y redoes (or copies result if in result mode). History limited to 50 entries.
 
 9. **Preset save/load (Ctrl+P)**: Full preset management:
    - Save current token selections as a named preset

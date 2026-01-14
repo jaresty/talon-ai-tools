@@ -1993,3 +1993,141 @@ func TestClearAllTokensClearsAutoFillTracking(t *testing.T) {
 		t.Error("expected auto-fill tracking to be cleared after clearAllTokens")
 	}
 }
+
+func TestUndoTokenSelection(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select a token
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0]) // select "todo"
+
+	// Verify token was added
+	if len(m.getAllTokensInOrder()) != 1 {
+		t.Fatal("expected 1 token after selection")
+	}
+
+	// Undo with Ctrl+Z
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m2 := updated.(model)
+
+	// Token should be removed
+	if len(m2.getAllTokensInOrder()) != 0 {
+		t.Errorf("expected 0 tokens after undo, got %d", len(m2.getAllTokensInOrder()))
+	}
+}
+
+func TestRedoTokenSelection(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select a token
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0]) // select "todo"
+
+	// Undo
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m2 := updated.(model)
+
+	// Verify undone
+	if len(m2.getAllTokensInOrder()) != 0 {
+		t.Fatal("expected 0 tokens after undo")
+	}
+
+	// Redo with Ctrl+Y
+	updated, _ = m2.Update(tea.KeyMsg{Type: tea.KeyCtrlY})
+	m3 := updated.(model)
+
+	// Token should be restored
+	if len(m3.getAllTokensInOrder()) != 1 {
+		t.Errorf("expected 1 token after redo, got %d", len(m3.getAllTokensInOrder()))
+	}
+}
+
+func TestUndoMultipleSelections(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select first token
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0]) // select "todo"
+
+	// Select second token (at completeness stage now)
+	m.updateCompletions()
+	if len(m.completions) > 0 {
+		m.selectCompletion(m.completions[0]) // select "full"
+	}
+
+	// Verify 2 tokens
+	if len(m.getAllTokensInOrder()) != 2 {
+		t.Fatalf("expected 2 tokens, got %d", len(m.getAllTokensInOrder()))
+	}
+
+	// Undo once - should remove second token
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m2 := updated.(model)
+
+	if len(m2.getAllTokensInOrder()) != 1 {
+		t.Errorf("expected 1 token after first undo, got %d", len(m2.getAllTokensInOrder()))
+	}
+
+	// Undo again - should remove first token
+	updated, _ = m2.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m3 := updated.(model)
+
+	if len(m3.getAllTokensInOrder()) != 0 {
+		t.Errorf("expected 0 tokens after second undo, got %d", len(m3.getAllTokensInOrder()))
+	}
+}
+
+func TestUndoShowsToast(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Select a token
+	m.updateCompletions()
+	m.selectCompletion(m.completions[0])
+
+	// Undo
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m2 := updated.(model)
+
+	// Should show toast
+	if m2.toastMessage == "" {
+		t.Error("expected toast message after undo")
+	}
+}
+
+func TestUndoNothingToUndo(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Try to undo with no history
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m2 := updated.(model)
+
+	// Should show "nothing to undo" toast
+	if !strings.Contains(m2.toastMessage, "undo") {
+		t.Errorf("expected toast about nothing to undo, got %q", m2.toastMessage)
+	}
+}

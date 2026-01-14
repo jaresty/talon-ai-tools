@@ -476,3 +476,36 @@ residual_constraints:
 
 next_work:
 - ADR 0081 implementation complete with improved preset UX. Remaining lower-priority features (undo/redo, Ctrl+P save/load) can be tracked in new ADRs if requested.
+
+## loop-015 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 Known Issues #8 → implement undo/redo for token selections.
+
+active_constraint: No way to undo accidental token selections; users must manually remove tokens one by one (validation: `go test ./internal/bartui2`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Standard editing feature; reduces friction from mistakes. |
+| Probability | High | Well-understood state snapshot pattern. |
+| Time Sensitivity | Low | Quality-of-life improvement. |
+| Uncertainty note | Low | Uses standard undo/redo stack approach. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-015.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go`; rerun `go test ./internal/bartui2 -run TestUndoTokenSelection` to confirm test fails.
+
+delta_summary: helper:diff-snapshot=2 files changed — adds stateSnapshot struct, undoStack/redoStack to model, saveStateForUndo() before selectCompletion(), undo()/redo() methods, Ctrl+Z/Ctrl+Y handlers, helper functions for map copying, adds 5 new tests.
+
+loops_remaining_forecast: 0 loops for known issues. Confidence: high — all Known Issues #1-8 complete. Only remaining item is preset save/load (#9).
+
+residual_constraints:
+- Low — Saved preset management (Ctrl+P save/load) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 implementation complete with undo/redo. Only remaining feature is Ctrl+P preset save/load (#9), which can be tracked in a follow-up ADR if requested.

@@ -163,9 +163,21 @@ type model struct {
 	// Toast/status message
 	toastMessage string
 
+	// Undo/redo history
+	undoStack []stateSnapshot
+	redoStack []stateSnapshot
+
 	// State
 	ready bool
 	err   error
+}
+
+// stateSnapshot captures token state for undo/redo.
+type stateSnapshot struct {
+	tokensByCategory map[string][]string
+	autoFilledTokens map[string]bool
+	autoFillSource   map[string]string
+	currentStageIndex int
 }
 
 // NewProgram creates a new Bubble Tea program for the redesigned TUI.
@@ -354,9 +366,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.commandInput.Blur()
 			return m, textinput.Blink
 		case "ctrl+y":
-			// Copy result to clipboard (if showing result)
+			// In result mode: copy result; otherwise: redo
 			if m.showingResult && m.commandResult != "" {
 				m.copyResultToClipboard()
+			} else {
+				if m.redo() {
+					m.toastMessage = "Redo"
+				} else {
+					m.toastMessage = "Nothing to redo"
+				}
 			}
 			return m, nil
 		case "ctrl+r":
@@ -433,10 +451,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "ctrl+k":
 			// Clear all tokens and restart
+			m.saveStateForUndo()
 			m.clearAllTokens()
 			m.updateCompletions()
 			m.updatePreview()
 			m.toastMessage = "Cleared all tokens"
+			return m, nil
+		case "ctrl+z":
+			// Undo
+			if m.undo() {
+				m.toastMessage = "Undo"
+			} else {
+				m.toastMessage = "Nothing to undo"
+			}
 			return m, nil
 		case "enter":
 			// Check for escape hatch syntax (category=value)
@@ -788,6 +815,9 @@ func (m *model) selectCompletion(c completion) {
 	if currentStage == "" {
 		return // No stage to add to
 	}
+
+	// Save state for undo before modifying
+	m.saveStateForUndo()
 
 	m.tokensByCategory[currentStage] = append(m.tokensByCategory[currentStage], c.Value)
 
@@ -1146,6 +1176,102 @@ func (m *model) clearAllTokens() {
 // isAutoFilled returns true if the given category:value was auto-filled by a preset.
 func (m model) isAutoFilled(category, value string) bool {
 	return m.autoFilledTokens[category+":"+value]
+}
+
+// saveStateForUndo saves the current token state to the undo stack.
+func (m *model) saveStateForUndo() {
+	snapshot := stateSnapshot{
+		tokensByCategory:  copyStringSliceMap(m.tokensByCategory),
+		autoFilledTokens:  copyBoolMap(m.autoFilledTokens),
+		autoFillSource:    copyStringMap(m.autoFillSource),
+		currentStageIndex: m.currentStageIndex,
+	}
+	m.undoStack = append(m.undoStack, snapshot)
+	// Clear redo stack when new action is taken
+	m.redoStack = nil
+	// Limit history size
+	if len(m.undoStack) > 50 {
+		m.undoStack = m.undoStack[1:]
+	}
+}
+
+// undo restores the previous state from the undo stack.
+func (m *model) undo() bool {
+	if len(m.undoStack) == 0 {
+		return false
+	}
+	// Save current state to redo stack
+	redoSnapshot := stateSnapshot{
+		tokensByCategory:  copyStringSliceMap(m.tokensByCategory),
+		autoFilledTokens:  copyBoolMap(m.autoFilledTokens),
+		autoFillSource:    copyStringMap(m.autoFillSource),
+		currentStageIndex: m.currentStageIndex,
+	}
+	m.redoStack = append(m.redoStack, redoSnapshot)
+
+	// Pop and restore from undo stack
+	snapshot := m.undoStack[len(m.undoStack)-1]
+	m.undoStack = m.undoStack[:len(m.undoStack)-1]
+	m.tokensByCategory = snapshot.tokensByCategory
+	m.autoFilledTokens = snapshot.autoFilledTokens
+	m.autoFillSource = snapshot.autoFillSource
+	m.currentStageIndex = snapshot.currentStageIndex
+	m.rebuildCommandLine()
+	m.updateCompletions()
+	m.updatePreview()
+	return true
+}
+
+// redo restores the next state from the redo stack.
+func (m *model) redo() bool {
+	if len(m.redoStack) == 0 {
+		return false
+	}
+	// Save current state to undo stack
+	undoSnapshot := stateSnapshot{
+		tokensByCategory:  copyStringSliceMap(m.tokensByCategory),
+		autoFilledTokens:  copyBoolMap(m.autoFilledTokens),
+		autoFillSource:    copyStringMap(m.autoFillSource),
+		currentStageIndex: m.currentStageIndex,
+	}
+	m.undoStack = append(m.undoStack, undoSnapshot)
+
+	// Pop and restore from redo stack
+	snapshot := m.redoStack[len(m.redoStack)-1]
+	m.redoStack = m.redoStack[:len(m.redoStack)-1]
+	m.tokensByCategory = snapshot.tokensByCategory
+	m.autoFilledTokens = snapshot.autoFilledTokens
+	m.autoFillSource = snapshot.autoFillSource
+	m.currentStageIndex = snapshot.currentStageIndex
+	m.rebuildCommandLine()
+	m.updateCompletions()
+	m.updatePreview()
+	return true
+}
+
+// Helper functions for copying maps
+func copyStringSliceMap(m map[string][]string) map[string][]string {
+	result := make(map[string][]string)
+	for k, v := range m {
+		result[k] = append([]string{}, v...)
+	}
+	return result
+}
+
+func copyBoolMap(m map[string]bool) map[string]bool {
+	result := make(map[string]bool)
+	for k, v := range m {
+		result[k] = v
+	}
+	return result
+}
+
+func copyStringMap(m map[string]string) map[string]string {
+	result := make(map[string]string)
+	for k, v := range m {
+		result[k] = v
+	}
+	return result
 }
 
 // getRemainingStages returns the names of stages after the current one.

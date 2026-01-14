@@ -109,11 +109,32 @@ Users can skip any stage with Tab and go back with Shift+Tab, enabling free navi
 - Can also load from clipboard with a secondary shortcut
 - Subject appears in preview's SUBJECT section when set
 
-**Command Execution (Ctrl+X)**:
-- Opens a modal input for the shell command (pre-filled if previously used)
-- Runs the command with the generated prompt piped to stdin
-- Result replaces the preview pane content
-- Ctrl+Y yanks result to clipboard; Ctrl+R returns to preview
+**Command Execution**:
+
+The TUI supports an iterative workflow for running commands (like `claude`, `llm`, etc.) with the generated prompt and pipelining results back as subject for refinement.
+
+*Configuration (Ctrl+X)*:
+- Opens a modal to configure the shell command
+- Command is remembered for the session (pre-filled on subsequent opens)
+- Environment variables can be included inline (e.g., `ANTHROPIC_API_KEY=$KEY claude`)
+- Press Enter to save and run, Esc to save without running
+
+*Quick Run (Ctrl+R)*:
+- Immediately runs the last configured command without opening the modal
+- If no command is configured, opens the configuration modal instead
+- Useful for iterative refinement workflows
+
+*Result View*:
+- After running, the result pane replaces the preview pane
+- Shows the command that was run as a header
+- Result content is scrollable (Ctrl+U/Ctrl+D)
+- Ctrl+Y copies result to clipboard
+- Esc returns to preview
+
+*Pipeline to Subject (Ctrl+S in result view)*:
+- Loads the command result into the subject field
+- Returns to preview with the new subject applied
+- Enables iterative workflows: run command → refine with response → run again
 
 **Copy CLI (Ctrl+B)**:
 - Copies the current `bar build ...` command to clipboard
@@ -254,7 +275,11 @@ The following features from the current TUI are explicitly removed or deferred:
 
 ### Features (Lower Priority)
 
-7. **Load command response into subject**: After running a command (e.g., asking Claude), allow loading the response into the subject field for iterative refinement workflows.
+7. **Command execution workflow**: Implement the full iterative workflow described in the Command Execution section:
+   - Ctrl+X to configure command
+   - Ctrl+R for quick re-run
+   - Ctrl+S to pipeline result into subject
+   - Show command header in result view
 
 8. **Undo/redo**: Track state history to allow undoing/redoing token selections, similar to the original TUI implementation.
 

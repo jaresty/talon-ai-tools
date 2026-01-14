@@ -153,7 +153,7 @@ The structure is meant to do three things:
 
 Cues applied when recording red evidence:
 
-- The canonical `<VALIDATION_TARGET>` (or the smallest reproducible command introduced in the loop) runs unchanged so the constraint is observed exactly as it stands today. CI-ready paths remain preferred when available; exploratory loops document the manual seed that recreates the failure.
+- The canonical `<VALIDATION_TARGET>` (or the smallest reproducible command introduced in the loop) runs unchanged—same arguments, environment, tooling, and fixtures—so the constraint is observed exactly as it stands today. CI-ready paths remain preferred when available; exploratory loops document the manual seed that recreates the failure. When that surface changes, capture a new red/green pair for the refreshed validation process.
 - The impact is stated succinctly—naming the behaviour, invariant, or customer promise that is broken—and accompanied by the failure excerpt that proves it (stack trace, expectation delta, guardrail output, telemetry snippet, etc.).
 - The scenario is summarised in a short hypothesis (Given/When/Then, bullet narrative, or equivalent) making it obvious what should flip to green once the constraint is relieved.
 - Reproducibility requirements (fixture seed, environment flag, data snapshot) remain scriptable or clearly documented; hidden local state is treated as a signal to shore up the evidence.

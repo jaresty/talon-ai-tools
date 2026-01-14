@@ -57,20 +57,35 @@ type completion struct {
 
 // Stage order for grammar progression (matches CLI completion order).
 // Each stage corresponds to a token category key.
+// Persona stages come first (optional), then static and modifiers.
 var stageOrder = []string{
-	"static",       // Static Prompt (what)
-	"completeness", // How thorough
-	"scope",        // How focused
-	"method",       // How to approach
-	"form",         // Output format
-	"channel",      // Communication style
-	"directional",  // Emphasis direction
-	// Persona stages could be added here if needed
+	"intent",         // What the user wants to accomplish (optional)
+	"persona_preset", // Saved persona configuration (optional)
+	"voice",          // Speaking style or persona voice (optional)
+	"audience",       // Target audience for the response (optional)
+	"tone",           // Emotional tone of the response (optional)
+	"static",         // Static Prompt - the main prompt type
+	"completeness",   // How thorough
+	"scope",          // How focused
+	"method",         // How to approach
+	"form",           // Output format
+	"channel",        // Communication style
+	"directional",    // Emphasis direction
 }
 
 // stageDisplayName returns the display name for a stage.
 func stageDisplayName(stage string) string {
 	switch stage {
+	case "intent":
+		return "Intent"
+	case "persona_preset":
+		return "Preset"
+	case "voice":
+		return "Voice"
+	case "audience":
+		return "Audience"
+	case "tone":
+		return "Tone"
 	case "static":
 		return "Static"
 	case "completeness":
@@ -369,6 +384,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.updateCompletions()
 			return m, nil
 		case "enter":
+			// Check for escape hatch syntax (category=value)
+			partial := m.getFilterPartial()
+			if category, value, ok := m.parseEscapeHatch(partial); ok {
+				if m.applyEscapeHatch(category, value) {
+					m.toastMessage = fmt.Sprintf("Added %s=%s", category, value)
+				} else {
+					m.toastMessage = fmt.Sprintf("Invalid: %s=%s", category, value)
+				}
+				return m, nil
+			}
 			// Select current completion
 			if len(m.completions) > 0 && m.completionIndex < len(m.completions) {
 				m.selectCompletion(m.completions[m.completionIndex])
@@ -706,6 +731,63 @@ func (m *model) updatePreview() {
 			m.previewViewport.SetContent(text)
 		}
 	}
+}
+
+// parseEscapeHatch checks if the filter partial contains category=value syntax.
+// Returns (category, value, true) if found, or ("", "", false) if not.
+func (m model) parseEscapeHatch(partial string) (string, string, bool) {
+	if !strings.Contains(partial, "=") {
+		return "", "", false
+	}
+	parts := strings.SplitN(partial, "=", 2)
+	if len(parts) != 2 {
+		return "", "", false
+	}
+	category := strings.ToLower(strings.TrimSpace(parts[0]))
+	value := strings.TrimSpace(parts[1])
+	if category == "" || value == "" {
+		return "", "", false
+	}
+	// Verify this is a valid category
+	if m.getCategoryByKey(category) == nil {
+		return "", "", false
+	}
+	return category, value, true
+}
+
+// applyEscapeHatch applies the category=value override, adding the token to the specified category.
+func (m *model) applyEscapeHatch(category, value string) bool {
+	cat := m.getCategoryByKey(category)
+	if cat == nil {
+		return false
+	}
+
+	// Find the token in the category
+	var foundToken string
+	valueLower := strings.ToLower(value)
+	for _, opt := range cat.Options {
+		if strings.ToLower(opt.Value) == valueLower || strings.ToLower(opt.Slug) == valueLower {
+			foundToken = opt.Value
+			break
+		}
+	}
+	if foundToken == "" {
+		return false
+	}
+
+	// Check if already selected
+	for _, t := range m.tokensByCategory[category] {
+		if strings.ToLower(t) == strings.ToLower(foundToken) {
+			return false // Already selected
+		}
+	}
+
+	// Add the token
+	m.tokensByCategory[category] = append(m.tokensByCategory[category], foundToken)
+	m.rebuildCommandLine()
+	m.updateCompletions()
+	m.updatePreview()
+	return true
 }
 
 // fuzzyMatch returns true if the pattern matches the target using simple substring matching.

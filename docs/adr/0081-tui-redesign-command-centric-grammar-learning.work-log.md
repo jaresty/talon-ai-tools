@@ -273,3 +273,36 @@ residual_constraints:
 
 next_work:
 - ADR 0081 implementation complete with stage-based progression. Follow-up work (presets, persona stage, syntax highlighting) can be tracked in new ADRs if requested.
+
+## loop-009 | helper:v20251223.1 | 2026-01-14
+
+focus: ADR 0081 Decision → implement backward navigation via Backspace, add persona stages to stage order, and add category=value escape hatch.
+
+active_constraint: Stage progression is one-directional and missing persona stages; operators cannot go back to modify earlier selections or use power-user escape hatch (validation: `go test ./internal/bartui2`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Backward navigation enables error correction; persona stages complete the grammar; escape hatch enables power users. |
+| Probability | High | Uses existing stage infrastructure with minimal changes. |
+| Time Sensitivity | Medium | Important for usability but not blocking core workflow. |
+| Uncertainty note | Low | Backspace backward navigation already partially implemented. |
+
+validation_targets:
+- `go test ./internal/bartui2`
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0081-tui-redesign-command-centric-grammar-learning/loop-009.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD~1 -- internal/bartui2/program.go internal/bartui2/program_test.go docs/adr/0081-tui-redesign-command-centric-grammar-learning.md`; rerun `go test ./internal/bartui2` to confirm tests fail.
+
+delta_summary: helper:diff-snapshot=3 files changed — expands stageOrder to include persona stages (intent, persona_preset, voice, audience, tone), adds stageDisplayName cases for persona stages, adds parseEscapeHatch() and applyEscapeHatch() for category=value syntax, updates Enter handler to check escape hatch before completion selection, adds 6 new tests.
+
+loops_remaining_forecast: 0 loops. Confidence: high — ADR 0081 features complete with backward navigation, full stage order, and escape hatch.
+
+residual_constraints:
+- Low — Fuzzy matching is simple substring; could enhance with proper fuzzy algorithm. Mitigation: monitor usability feedback.
+- Low — Saved preset management (Ctrl+P) not yet implemented. Mitigation: defer to follow-up ADR if needed.
+
+next_work:
+- ADR 0081 implementation complete. Follow-up work (saved presets Ctrl+P, syntax highlighting) can be tracked in new ADRs if requested.

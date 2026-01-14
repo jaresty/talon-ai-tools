@@ -1029,3 +1029,141 @@ func TestPreviewShowsScrollPercentage(t *testing.T) {
 		t.Error("expected scroll percentage indicator in preview pane")
 	}
 }
+
+func TestBackspaceNavigatesBackward(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialTokens:   []string{"todo"},
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// After selecting "todo" (static), should be at completeness stage
+	if m.getCurrentStage() != "completeness" {
+		t.Fatalf("expected to be at completeness stage, got %s", m.getCurrentStage())
+	}
+
+	// Press Backspace with no filter - should remove "todo" and go back to static stage
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+	m2 := updated.(model)
+
+	// Should be back at static stage
+	if m2.getCurrentStage() != "static" {
+		t.Errorf("expected to go back to static stage, got %s", m2.getCurrentStage())
+	}
+
+	// Should have no tokens
+	if len(m2.getAllTokensInOrder()) != 0 {
+		t.Errorf("expected no tokens after backspace, got %v", m2.getAllTokensInOrder())
+	}
+}
+
+func TestParseEscapeHatch(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+
+	// Valid escape hatch
+	category, value, ok := m.parseEscapeHatch("scope=focus")
+	if !ok {
+		t.Error("expected escape hatch to parse successfully")
+	}
+	if category != "scope" {
+		t.Errorf("expected category 'scope', got %q", category)
+	}
+	if value != "focus" {
+		t.Errorf("expected value 'focus', got %q", value)
+	}
+
+	// Invalid - no equals
+	_, _, ok = m.parseEscapeHatch("focus")
+	if ok {
+		t.Error("expected escape hatch without = to fail")
+	}
+
+	// Invalid - unknown category
+	_, _, ok = m.parseEscapeHatch("unknown=value")
+	if ok {
+		t.Error("expected escape hatch with unknown category to fail")
+	}
+
+	// Invalid - empty value
+	_, _, ok = m.parseEscapeHatch("scope=")
+	if ok {
+		t.Error("expected escape hatch with empty value to fail")
+	}
+}
+
+func TestApplyEscapeHatch(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	// Apply escape hatch to add a token directly
+	ok := m.applyEscapeHatch("scope", "focus")
+	if !ok {
+		t.Error("expected escape hatch to apply successfully")
+	}
+
+	// Check token was added
+	tokens := m.tokensByCategory["scope"]
+	if len(tokens) != 1 || tokens[0] != "focus" {
+		t.Errorf("expected scope to have 'focus', got %v", tokens)
+	}
+
+	// Try to add duplicate - should fail
+	ok = m.applyEscapeHatch("scope", "focus")
+	if ok {
+		t.Error("expected duplicate escape hatch to fail")
+	}
+
+	// Invalid value - should fail
+	ok = m.applyEscapeHatch("scope", "nonexistent")
+	if ok {
+		t.Error("expected invalid value escape hatch to fail")
+	}
+}
+
+func TestStageOrderIncludesPersonaStages(t *testing.T) {
+	// Verify persona stages are at the beginning
+	expectedPersonaStages := []string{"intent", "persona_preset", "voice", "audience", "tone"}
+	for i, stage := range expectedPersonaStages {
+		if i >= len(stageOrder) {
+			t.Fatalf("stageOrder too short, missing %s", stage)
+		}
+		if stageOrder[i] != stage {
+			t.Errorf("expected stageOrder[%d] to be %q, got %q", i, stage, stageOrder[i])
+		}
+	}
+
+	// Verify static comes after persona stages
+	if stageOrder[5] != "static" {
+		t.Errorf("expected stageOrder[5] to be 'static', got %q", stageOrder[5])
+	}
+}
+
+func TestStageDisplayNameForPersonaStages(t *testing.T) {
+	tests := []struct {
+		stage    string
+		expected string
+	}{
+		{"intent", "Intent"},
+		{"persona_preset", "Preset"},
+		{"voice", "Voice"},
+		{"audience", "Audience"},
+		{"tone", "Tone"},
+	}
+
+	for _, tt := range tests {
+		result := stageDisplayName(tt.stage)
+		if result != tt.expected {
+			t.Errorf("stageDisplayName(%q) = %q, expected %q", tt.stage, result, tt.expected)
+		}
+	}
+}

@@ -1117,6 +1117,33 @@ class Paste(ModelDestination):
 class ForcePaste(ModelDestination):
     kind = "forcePaste"
 
+    def _ensure_textarea_and_maybe_fallback(self, result: PromptResult) -> bool:
+        _trace_canvas_flow(
+            "force_paste_override",
+            dest=getattr(self, "kind", "forcePaste"),
+            canvas_showing=_response_canvas_showing(),
+            initial_promoted=getattr(self, "_initial_promoted_to_window", False),
+        )
+        for attr in (
+            "_initial_promoted_to_window",
+            "_promoted_to_window",
+            "_completed_via_window",
+        ):
+            try:
+                setattr(self, attr, False)
+            except Exception:
+                pass
+        try:
+            setattr(self, "_effective_destination_kind", "forcepaste")
+        except Exception:
+            pass
+        _set_destination_kind("forcePaste")
+        try:
+            GPTState.current_destination_kind = "forcepaste"
+        except Exception:
+            pass
+        return True
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
 

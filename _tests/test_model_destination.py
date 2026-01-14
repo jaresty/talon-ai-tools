@@ -448,6 +448,52 @@ if bootstrap is not None:
             paste_action.assert_called_once()
             self.assertEqual(getattr(GPTState, "current_destination_kind", ""), "paste")
 
+        def test_force_paste_never_promotes_when_detection_fails(self):
+            GPTState.reset_all()
+            destination = model_destination_module.ForcePaste()
+            result = PromptResult.from_messages([format_message("response")])
+
+            with patch.object(destination, "inside_textarea", return_value=False):
+                surface = prepare_destination_surface(destination)
+                with (
+                    patch.object(actions.user, "confirmation_gui_append") as gui_append,
+                    patch.object(actions.user, "paste") as paste_action,
+                ):
+                    destination.insert(result)
+
+            self.assertFalse(surface["promoted_to_window"])
+            self.assertEqual(surface["kind"], "forcepaste")
+            gui_append.assert_not_called()
+            paste_action.assert_called_once()
+            self.assertEqual(
+                getattr(GPTState, "current_destination_kind", ""),
+                "forcepaste",
+            )
+
+        def test_force_paste_overrides_canvas_open_state(self):
+            GPTState.reset_all()
+            destination = model_destination_module.ForcePaste()
+            result = PromptResult.from_messages([format_message("response")])
+            GPTState.response_canvas_showing = True
+            self.addCleanup(lambda: setattr(GPTState, "response_canvas_showing", False))
+
+            with patch.object(destination, "inside_textarea", return_value=True):
+                surface = prepare_destination_surface(destination)
+                with (
+                    patch.object(actions.user, "confirmation_gui_append") as gui_append,
+                    patch.object(actions.user, "paste") as paste_action,
+                ):
+                    destination.insert(result)
+
+            self.assertFalse(surface["promoted_to_window"])
+            self.assertEqual(surface["kind"], "forcepaste")
+            gui_append.assert_not_called()
+            paste_action.assert_called_once()
+            self.assertEqual(
+                getattr(GPTState, "current_destination_kind", ""),
+                "forcepaste",
+            )
+
         @patch.object(model_destination_module, "Builder")
         def test_browser_renders_bulleted_response_as_list(self, builder_cls):
             # Ensure rich answer rendering recognises simple bullets.

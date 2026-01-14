@@ -168,12 +168,16 @@ def prepare_destination_surface(destination: object) -> dict[str, object]:
 
     canvas_open = bool(getattr(GPTState, "response_canvas_showing", False))
     paste_like = original_kind in _PASTE_DESTINATIONS
+    force_override = original_kind == "forcepaste"
     promoted = False
     expects_textarea_insert = False
 
     final_kind = original_kind or ""
     if paste_like:
-        if canvas_open or not inside_textarea:
+        if force_override:
+            final_kind = original_kind or "forcepaste"
+            expects_textarea_insert = True
+        elif canvas_open or not inside_textarea:
             promoted = True
             final_kind = "window"
         else:

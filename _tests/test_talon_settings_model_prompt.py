@@ -341,9 +341,9 @@ if bootstrap is not None:
 
                 _ = modelPrompt(m)
 
-                # Method outranks scope, so the ambiguous token should land on method.
-                self.assertEqual(GPTState.system_prompt.method, "ambig")
-                self.assertEqual(GPTState.system_prompt.scope, "")
+                # Scope outranks method, so the ambiguous token should land on scope.
+                self.assertEqual(GPTState.system_prompt.scope, "ambig")
+                self.assertEqual(GPTState.system_prompt.method, "")
             finally:
                 if original_scope is None:
                     scope_map.pop("ambig", None)

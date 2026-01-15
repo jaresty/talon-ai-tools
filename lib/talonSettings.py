@@ -319,7 +319,7 @@ def _resolve_axis_for_token(
 def _apply_constraint_hierarchy(
     axis_values: AxisValues,
 ) -> tuple[AxisValues, AxisValues]:
-    """Reassign and normalise axis tokens using the completeness>method>scope>form>channel hierarchy.
+    """Reassign and normalise axis tokens using the completeness>scope>method>form>channel hierarchy.
 
     Returns a pair: (resolved_axes_preserving_order, canonical_axes) where:
     - Resolved axes keep ingestion order while applying caps/conflicts.

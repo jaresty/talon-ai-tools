@@ -951,13 +951,15 @@ if bootstrap is not None:
 
         def test_persona_preset_spoken_map_includes_aliases(self) -> None:
             mapping = gpt_module._persona_preset_spoken_map()
-            self.assertEqual(mapping.get("teach_junior_dev"), "teach_junior_dev")
+            self.assertIsNone(mapping.get("teach_junior_dev"))
             self.assertEqual(mapping.get("mentor"), "teach_junior_dev")
             self.assertEqual(mapping.get("teach junior dev"), "teach_junior_dev")
 
         def test_intent_preset_spoken_map_exposes_canonical_tokens(self) -> None:
             mapping = gpt_module._intent_preset_spoken_map()
             self.assertEqual(mapping.get("decide"), "decide")
+            self.assertEqual(mapping.get("teach explain"), "teach")
+            self.assertIsNone(mapping.get("teach / explain"))
             self.assertIsNone(mapping.get("for deciding"))
 
         def test_persona_and_intent_reset_restore_defaults(self) -> None:

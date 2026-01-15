@@ -52,6 +52,7 @@ if not TYPE_CHECKING:
 
                 intent_text = intent_list.read_text(encoding="utf-8").lower()
                 self.assertIn("decide: decide", intent_text)
+                self.assertNotIn("teach / explain:", intent_text)
                 self.assertNotIn("for deciding:", intent_text)
 
         def test_generate_lists_prefers_orchestrator_metadata(self) -> None:

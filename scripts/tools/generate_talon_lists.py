@@ -9,6 +9,7 @@ Existing files in the output directory will be overwritten.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -21,6 +22,18 @@ from lib.axisCatalog import axis_catalog  # type: ignore  # noqa: E402
 from lib.staticPromptConfig import static_prompt_catalog  # type: ignore  # noqa: E402
 from lib.personaConfig import persona_intent_maps  # type: ignore  # noqa: E402
 from lib.personaOrchestrator import get_persona_intent_orchestrator  # type: ignore  # noqa: E402
+
+
+_ALIAS_NORMALISE_PATTERN = re.compile(r"[^a-z0-9]+")
+
+
+def _normalise_alias(alias: object) -> str:
+    alias_str = str(alias or "").strip().lower()
+    if not alias_str:
+        return ""
+    alias_str = _ALIAS_NORMALISE_PATTERN.sub(" ", alias_str)
+    alias_str = re.sub(r"\s+", " ", alias_str)
+    return alias_str.strip()
 
 
 LIST_NAMES = [
@@ -87,16 +100,16 @@ def generate(out_dir: Path) -> None:
     intent_mapping: dict[str, str] = {}
 
     def _record_persona(alias: object, canonical: object) -> None:
-        alias_str = str(alias or "").strip()
         canonical_str = str(canonical or "").strip()
-        if alias_str and canonical_str:
-            persona_mapping.setdefault(alias_str, canonical_str)
+        alias_norm = _normalise_alias(alias)
+        if alias_norm and canonical_str:
+            persona_mapping.setdefault(alias_norm, canonical_str)
 
     def _record_intent(alias: object, canonical: object) -> None:
-        alias_str = str(alias or "").strip()
         canonical_str = str(canonical or "").strip()
-        if alias_str and canonical_str:
-            intent_mapping.setdefault(alias_str, canonical_str)
+        alias_norm = _normalise_alias(alias)
+        if alias_norm and canonical_str:
+            intent_mapping.setdefault(alias_norm, canonical_str)
 
     try:
         orchestrator = get_persona_intent_orchestrator()

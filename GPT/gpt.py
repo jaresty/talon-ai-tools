@@ -589,15 +589,21 @@ def _persona_preset_spoken_map() -> dict[str, str]:
 
     orchestrator = _persona_orchestrator()
     if orchestrator and orchestrator.persona_aliases:
-        return {
-            alias: key for alias, key in orchestrator.persona_aliases.items() if key
-        }
+        mapping: dict[str, str] = {}
+        for alias, key in orchestrator.persona_aliases.items():
+            alias_norm = _normalise_persona_alias_token(alias)
+            if not alias_norm or not key:
+                continue
+            mapping.setdefault(alias_norm, key)
+        if mapping:
+            return mapping
     mapping: dict[str, str] = {}
     for preset in _persona_presets():
         spoken = (preset.spoken or preset.label or preset.key).strip()
-        if not spoken:
+        alias_norm = _normalise_persona_alias_token(spoken)
+        if not alias_norm:
             continue
-        mapping[spoken.lower()] = preset.key
+        mapping.setdefault(alias_norm, preset.key)
     return mapping
 
 
@@ -606,13 +612,21 @@ def _intent_preset_spoken_map() -> dict[str, str]:
 
     orchestrator = _persona_orchestrator()
     if orchestrator and orchestrator.intent_aliases:
-        return {alias: key for alias, key in orchestrator.intent_aliases.items() if key}
+        mapping: dict[str, str] = {}
+        for alias, key in orchestrator.intent_aliases.items():
+            alias_norm = _normalise_persona_alias_token(alias)
+            if not alias_norm or not key:
+                continue
+            mapping.setdefault(alias_norm, key)
+        if mapping:
+            return mapping
     mapping: dict[str, str] = {}
     for preset in _intent_presets():
         spoken = (preset.key or "").strip()
-        if not spoken:
+        alias_norm = _normalise_persona_alias_token(spoken)
+        if not alias_norm:
             continue
-        mapping[spoken.lower()] = preset.key
+        mapping.setdefault(alias_norm, preset.key)
     return mapping
 
 

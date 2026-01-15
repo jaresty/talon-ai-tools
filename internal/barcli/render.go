@@ -8,11 +8,32 @@ import (
 
 const (
 	subjectPlaceholder = "(none provided)"
+	sectionReference   = "=== REFERENCE KEY ==="
 	sectionTask        = "=== TASK (DO THIS) ==="
 	sectionConstraints = "=== CONSTRAINTS (GUARDRAILS) ==="
 	sectionPersona     = "=== PERSONA (STANCE) ==="
 	sectionSubject     = "=== SUBJECT (CONTEXT) ==="
 	sectionPromptlets  = "Promptlets"
+
+	referenceKeyText = `This prompt uses structured tokens. Interpret each section as follows:
+
+TASK: The primary action to perform. Execute this goal directly.
+
+CONSTRAINTS: Independent guardrails that shape HOW to complete the task.
+  • Completeness — coverage depth: how thoroughly to fill the territory
+  • Scope — boundary fence: which conceptual territory is in-bounds
+  • Method — reasoning tool: which approach to use for thinking
+  • Form — output shape: structural format of the response
+  • Channel — delivery context: format conventions for the platform
+  • Directional — thinking lens: perspective filter for reasoning
+
+PERSONA: Communication identity that shapes delivery.
+  • Voice — speaker identity: who is speaking
+  • Audience — recipient identity: who the message is for
+  • Tone — relational register: emotional modulation
+  • Intent — interaction purpose: why this response is needed
+
+SUBJECT: The content to work with. Apply task and constraints to this material.`
 )
 
 // RenderPlainText builds the human-readable output for the CLI.
@@ -42,6 +63,10 @@ func RenderPlainText(result *BuildResult) string {
 	} else {
 		writeSection(&b, sectionPersona, "(none)")
 	}
+
+	// Add reference key before subject to help LLMs interpret the structure
+	// (placed here so users see their task/constraints/persona first in previews)
+	writeSection(&b, sectionReference, referenceKeyText)
 
 	subject := subjectPlaceholder
 	if strings.TrimSpace(result.Subject) != "" {

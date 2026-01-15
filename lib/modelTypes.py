@@ -8,7 +8,7 @@ from .personaConfig import (
     persona_hydrate_tokens,
 )
 
-from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
+from .metaPromptConfig import META_INTERPRETATION_GUIDANCE, PROMPT_REFERENCE_KEY
 from dataclasses import dataclass, field
 from typing import Any, List, Literal, TypedDict, Union
 
@@ -300,10 +300,15 @@ class GPTSystemPrompt:
             return desc or raw
 
         lines = [
+            # Reference key explains how to interpret the structured tokens
+            PROMPT_REFERENCE_KEY.strip(),
+            "",
+            # Persona axes (who is speaking and to whom)
             f"Voice: Act {_voice_phrase()}",
             f"Tone: {_tone_phrase()}",
             f"Audience: {_audience_phrase()}",
             f"Intent: {_intent_phrase()}",
+            # Constraint axes (how to complete the task)
             f"Completeness: {hydrate('completeness', self.get_completeness())}",
             f"Scope: {hydrate('scope', self.get_scope())}",
             f"Method: {hydrate('method', self.get_method())}",

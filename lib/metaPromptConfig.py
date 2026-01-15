@@ -4,6 +4,30 @@ Helpers and shared guidance for the structured meta-interpretation section.
 `META_INTERPRETATION_GUIDANCE` is used both by the global model_system_prompt
 default and by the axis-driven GPTSystemPrompt so that meta instructions stay
 consistent.
+
+`PROMPT_REFERENCE_KEY` explains how to interpret the structured token types
+in the system prompt (Persona axes and Constraint axes).
+"""
+
+PROMPT_REFERENCE_KEY: str = """This prompt uses structured tokens. Interpret each category as follows:
+
+PERSONA (system prompt): Communication identity that shapes delivery.
+  • Voice — speaker identity: who is speaking
+  • Audience — recipient identity: who the message is for
+  • Tone — relational register: emotional modulation
+  • Intent — interaction purpose: why this response is needed
+
+CONSTRAINTS (system prompt and user prompt): Independent guardrails that shape HOW to complete the task.
+  • Completeness — coverage depth: how thoroughly to fill the territory
+  • Scope — boundary fence: which conceptual territory is in-bounds
+  • Method — reasoning tool: which approach to use for thinking
+  • Form — output shape: structural format of the response
+  • Channel — delivery context: format conventions for the platform
+  • Directional — thinking lens: perspective filter for reasoning
+
+TASK (user prompt): The primary action to perform. Execute this goal directly.
+
+SUBJECT (user prompt): The content to work with. Apply task and constraints to this material.
 """
 
 META_INTERPRETATION_GUIDANCE: str = (

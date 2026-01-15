@@ -51,6 +51,7 @@ type Options struct {
 // completion represents a single completion option with metadata.
 type completion struct {
 	Value       string
+	Display     string
 	Category    string
 	Description string
 	// Fills specifies other categories that get auto-filled when this option is selected.
@@ -132,8 +133,8 @@ type model struct {
 	currentStageIndex int // index into stageOrder
 
 	// Completions (pane 2 right side) - filtered to current stage
-	completions           []completion
-	completionIndex       int
+	completions            []completion
+	completionIndex        int
 	completionScrollOffset int // scroll offset for completion list
 
 	// Subject input (modal)
@@ -147,14 +148,14 @@ type model struct {
 	preview         func(subject string, tokens []string) (string, error)
 
 	// Command execution with viewport for scrolling result
-	shellCommandInput  textinput.Model
-	showCommandModal   bool
-	lastShellCommand   string
-	runCommand         func(ctx context.Context, command string, stdin string) (string, string, error)
-	commandTimeout     time.Duration
-	commandResult      string
-	resultViewport     viewport.Model
-	showingResult      bool
+	shellCommandInput textinput.Model
+	showCommandModal  bool
+	lastShellCommand  string
+	runCommand        func(ctx context.Context, command string, stdin string) (string, string, error)
+	commandTimeout    time.Duration
+	commandResult     string
+	resultViewport    viewport.Model
+	showingResult     bool
 
 	// Clipboard
 	clipboardWrite func(string) error
@@ -173,9 +174,9 @@ type model struct {
 
 // stateSnapshot captures token state for undo/redo.
 type stateSnapshot struct {
-	tokensByCategory map[string][]string
-	autoFilledTokens map[string]bool
-	autoFillSource   map[string]string
+	tokensByCategory  map[string][]string
+	autoFilledTokens  map[string]bool
+	autoFillSource    map[string]string
 	currentStageIndex int
 }
 
@@ -250,11 +251,12 @@ func newModel(opts Options) model {
 
 	// Categorize initial tokens
 	for _, token := range opts.InitialTokens {
-		category := m.getCategoryForToken(token)
-		if category != "" {
-			categoryKey := m.getCategoryKeyForToken(token)
-			m.tokensByCategory[categoryKey] = append(m.tokensByCategory[categoryKey], token)
+		categoryKey := m.getCategoryKeyForToken(token)
+		if categoryKey == "" {
+			continue
 		}
+		normalized := m.normalizeTokenValue(categoryKey, token)
+		m.tokensByCategory[categoryKey] = append(m.tokensByCategory[categoryKey], normalized)
 	}
 
 	if m.width > 0 && m.height > 0 {
@@ -274,7 +276,7 @@ func newModel(opts Options) model {
 
 	// Generate initial preview
 	if m.preview != nil {
-		tokens := m.getAllTokensInOrder()
+		tokens := m.getCommandTokens()
 		text, err := m.preview("", tokens)
 		if err == nil {
 			m.previewText = text
@@ -571,25 +573,12 @@ func (m *model) copyCommandToClipboard() {
 
 // buildCommandForClipboard builds the bar build command excluding auto-filled tokens.
 func (m model) buildCommandForClipboard() string {
-	var cmd strings.Builder
-	cmd.WriteString("bar build")
-
-	for _, stage := range stageOrder {
-		tokens, ok := m.tokensByCategory[stage]
-		if !ok {
-			continue
-		}
-		for _, token := range tokens {
-			// Skip auto-filled tokens
-			if m.isAutoFilled(stage, token) {
-				continue
-			}
-			cmd.WriteString(" ")
-			cmd.WriteString(token)
-		}
+	tokens := m.getCommandTokens()
+	if len(tokens) == 0 {
+		return "bar build"
 	}
 
-	return cmd.String()
+	return "bar build " + strings.Join(tokens, " ")
 }
 
 // copyPromptToClipboard copies the generated prompt to clipboard.
@@ -789,8 +778,10 @@ func (m *model) updateCompletions() {
 		// Fuzzy match against partial
 		if partial == "" || fuzzyMatch(strings.ToLower(opt.Value), partial) ||
 			fuzzyMatch(strings.ToLower(opt.Slug), partial) {
+			display := m.formatCompletionDisplay(category.Key, opt.Value, opt.Slug)
 			results = append(results, completion{
 				Value:       opt.Value,
+				Display:     display,
 				Category:    category.Label,
 				Description: opt.Description, // Store full description; truncate during display
 				Fills:       opt.Fills,
@@ -851,7 +842,7 @@ func (m *model) selectCompletion(c completion) {
 
 // rebuildCommandLine reconstructs the command from tokens in grammar order.
 func (m *model) rebuildCommandLine() {
-	tokens := m.getAllTokensInOrder()
+	tokens := m.getCommandTokens()
 	var cmd strings.Builder
 	cmd.WriteString("bar build")
 	for _, token := range tokens {
@@ -928,13 +919,24 @@ func (m *model) removeAutoFilledBy(sourceKey string) {
 // updatePreview regenerates the preview from current tokens.
 func (m *model) updatePreview() {
 	if m.preview != nil {
-		tokens := m.getAllTokensInOrder()
+		tokens := m.getCommandTokens()
 		text, err := m.preview(m.subject, tokens)
 		if err == nil {
 			m.previewText = text
 			m.previewViewport.SetContent(text)
 		}
 	}
+}
+
+func (m model) formatCompletionDisplay(stage, value, slug string) string {
+	trimmed := strings.TrimSpace(value)
+	slug = strings.TrimSpace(slug)
+	if slug != "" {
+		if stage == "persona_preset" || stage == "directional" || !strings.EqualFold(trimmed, slug) {
+			return slug
+		}
+	}
+	return trimmed
 }
 
 // parseEscapeHatch checks if the filter partial contains category=value syntax.
@@ -1067,11 +1069,17 @@ func (m model) getCompletionMaxShow() int {
 // getCategoryForToken returns the category label for a given token value.
 // Returns empty string if the token is not found in any category.
 func (m model) getCategoryForToken(token string) string {
-	tokenLower := strings.ToLower(token)
+	tokenLower := strings.ToLower(strings.TrimSpace(token))
 	for _, category := range m.tokenCategories {
 		for _, opt := range category.Options {
-			if strings.ToLower(opt.Value) == tokenLower || strings.ToLower(opt.Slug) == tokenLower {
+			if strings.EqualFold(opt.Value, token) || strings.EqualFold(opt.Slug, token) {
 				return category.Label
+			}
+			if category.Key == "persona_preset" && strings.HasPrefix(tokenLower, "persona=") {
+				suffix := strings.TrimSpace(tokenLower[len("persona="):])
+				if suffix == strings.ToLower(strings.TrimSpace(opt.Slug)) || suffix == strings.ToLower(strings.TrimSpace(opt.Value)) {
+					return category.Label
+				}
 			}
 		}
 	}
@@ -1081,11 +1089,17 @@ func (m model) getCategoryForToken(token string) string {
 // getCategoryKeyForToken returns the category key for a given token value.
 // Returns empty string if the token is not found in any category.
 func (m model) getCategoryKeyForToken(token string) string {
-	tokenLower := strings.ToLower(token)
+	tokenLower := strings.ToLower(strings.TrimSpace(token))
 	for _, category := range m.tokenCategories {
 		for _, opt := range category.Options {
-			if strings.ToLower(opt.Value) == tokenLower || strings.ToLower(opt.Slug) == tokenLower {
+			if strings.EqualFold(opt.Value, token) || strings.EqualFold(opt.Slug, token) {
 				return category.Key
+			}
+			if category.Key == "persona_preset" && strings.HasPrefix(tokenLower, "persona=") {
+				suffix := strings.TrimSpace(tokenLower[len("persona="):])
+				if suffix == strings.ToLower(strings.TrimSpace(opt.Slug)) || suffix == strings.ToLower(strings.TrimSpace(opt.Value)) {
+					return category.Key
+				}
 			}
 		}
 	}
@@ -1115,6 +1129,91 @@ func (m model) getAllTokensInOrder() []string {
 	return result
 }
 
+func (m model) getCommandTokens() []string {
+	var result []string
+	for _, stage := range stageOrder {
+		tokens, ok := m.tokensByCategory[stage]
+		if !ok {
+			continue
+		}
+		for _, token := range tokens {
+			if m.isAutoFilled(stage, token) {
+				continue
+			}
+			cliToken := m.formatTokenForCLI(stage, token)
+			if strings.TrimSpace(cliToken) != "" {
+				result = append(result, cliToken)
+			}
+		}
+	}
+	return result
+}
+
+func (m model) formatTokenForCLI(stage, token string) string {
+	slug := strings.TrimSpace(m.getTokenSlug(stage, token))
+	if stage == "persona_preset" {
+		if slug == "" {
+			slug = strings.TrimSpace(token)
+		}
+		return "persona=" + slug
+	}
+	if slug != "" {
+		return slug
+	}
+	return strings.TrimSpace(token)
+}
+
+func (m model) normalizeTokenValue(stage, token string) string {
+	trimmed := strings.TrimSpace(token)
+	if stage == "" {
+		return trimmed
+	}
+	tokenLower := strings.ToLower(trimmed)
+	for _, category := range m.tokenCategories {
+		if category.Key != stage {
+			continue
+		}
+		for _, opt := range category.Options {
+			if strings.EqualFold(opt.Value, trimmed) {
+				return opt.Value
+			}
+			if strings.EqualFold(opt.Slug, trimmed) {
+				return opt.Value
+			}
+			if stage == "persona_preset" && strings.HasPrefix(tokenLower, "persona=") {
+				suffix := strings.TrimSpace(tokenLower[len("persona="):])
+				if suffix == strings.ToLower(strings.TrimSpace(opt.Slug)) || suffix == strings.ToLower(strings.TrimSpace(opt.Value)) {
+					return opt.Value
+				}
+			}
+		}
+		break
+	}
+	return trimmed
+}
+
+func (m model) getTokenSlug(stage, token string) string {
+	tokenLower := strings.ToLower(strings.TrimSpace(token))
+	for _, category := range m.tokenCategories {
+		if category.Key != stage {
+			continue
+		}
+		for _, opt := range category.Options {
+			if strings.EqualFold(opt.Value, token) || strings.EqualFold(opt.Slug, token) {
+				return opt.Slug
+			}
+			if category.Key == "persona_preset" && strings.HasPrefix(tokenLower, "persona=") {
+				suffix := strings.TrimSpace(tokenLower[len("persona="):])
+				if suffix == strings.ToLower(strings.TrimSpace(opt.Slug)) || suffix == strings.ToLower(strings.TrimSpace(opt.Value)) {
+					return opt.Slug
+				}
+			}
+		}
+		break
+	}
+	return ""
+}
+
 // getDisplayTokens returns tokens for display purposes (without Build-specific prefixes).
 // Auto-filled tokens are included for display but marked appropriately.
 func (m model) getDisplayTokens() []struct {
@@ -1127,20 +1226,39 @@ func (m model) getDisplayTokens() []struct {
 	}
 	for _, stage := range stageOrder {
 		if tokens, ok := m.tokensByCategory[stage]; ok {
+			category := m.getCategoryByKey(stage)
+			categoryLabel := ""
+			if category != nil {
+				categoryLabel = category.Label
+			}
 			for _, token := range tokens {
-				category := m.getCategoryByKey(stage)
-				categoryLabel := ""
-				if category != nil {
-					categoryLabel = category.Label
-				}
+				display := m.formatTokenForDisplay(stage, token)
 				result = append(result, struct {
 					Category string
 					Value    string
-				}{categoryLabel, token})
+				}{categoryLabel, display})
 			}
 		}
 	}
 	return result
+}
+
+func (m model) formatTokenForDisplay(stage, token string) string {
+	trimmed := strings.TrimSpace(token)
+	if stage == "" {
+		return trimmed
+	}
+	slug := strings.TrimSpace(m.getTokenSlug(stage, token))
+	if stage == "persona_preset" {
+		if slug != "" {
+			return slug
+		}
+		return trimmed
+	}
+	if slug != "" {
+		return slug
+	}
+	return trimmed
 }
 
 // getCurrentStage returns the current stage key based on what's been selected.
@@ -1408,7 +1526,6 @@ var stageMarkerStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("214")).
 	Bold(true)
 
-
 func (m model) renderCommandPane() string {
 	width := m.width - 2
 	if width < 20 {
@@ -1419,7 +1536,7 @@ func (m model) renderCommandPane() string {
 	var cmdLine strings.Builder
 	cmdLine.WriteString("> bar build")
 
-	tokens := m.getAllTokensInOrder()
+	tokens := m.getCommandTokens()
 	for _, token := range tokens {
 		cmdLine.WriteString(" ")
 		cmdLine.WriteString(token)
@@ -1445,7 +1562,7 @@ func (m model) renderCommandPane() string {
 
 func (m model) renderTokensPane() string {
 	// paneStyle has border (2 chars) and padding (2 chars), so content area is width - 4
-	boxWidth := m.width - 2 // width for the pane box itself
+	boxWidth := m.width - 2      // width for the pane box itself
 	contentWidth := boxWidth - 4 // subtract border (2) + padding (2) for content area
 	if contentWidth < 20 {
 		contentWidth = 20
@@ -1503,7 +1620,7 @@ func (m model) renderTokensPane() string {
 	// Calculate description width based on available space
 	// Right pane gets more space; use dynamic description truncation
 	rightWidth := contentWidth - (contentWidth / 3) - 3 // Give 2/3 to completions
-	descWidth := rightWidth - 16                         // Account for prefix and value column
+	descWidth := rightWidth - 16                        // Account for prefix and value column
 	if descWidth < 20 {
 		descWidth = 20
 	}
@@ -1543,8 +1660,12 @@ func (m model) renderTokensPane() string {
 				style = completionSelectedStyle
 				selectedDesc = c.Description // Capture full description
 			}
+			display := c.Display
+			if strings.TrimSpace(display) == "" {
+				display = c.Value
+			}
 			// Format: "▸ focus       single topic..."
-			entry := fmt.Sprintf("%s%-12s %s", prefix, c.Value, truncate(c.Description, descWidth))
+			entry := fmt.Sprintf("%s%-12s %s", prefix, display, truncate(c.Description, descWidth))
 			right.WriteString(style.Render(entry))
 			right.WriteString("\n")
 		}

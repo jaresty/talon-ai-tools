@@ -582,6 +582,89 @@ func TestClipboardCopyWithTokens(t *testing.T) {
 	}
 }
 
+func TestPersonaPresetUsesSpokenSlugInCommand(t *testing.T) {
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Preset",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "coach_junior", Slug: "coach", Label: "Coach junior", Description: "Coach junior"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+	m.tokensByCategory["persona_preset"] = []string{"coach_junior"}
+
+	m.rebuildCommandLine()
+
+	command := strings.TrimSpace(strings.TrimPrefix(m.commandInput.Value(), "bar build"))
+	if command != "persona=coach" {
+		t.Fatalf("expected command input to use spoken slug, got %q", command)
+	}
+
+	clipboard := m.buildCommandForClipboard()
+	if clipboard != "bar build persona=coach" {
+		t.Fatalf("expected clipboard command to use spoken slug, got %q", clipboard)
+	}
+
+	display := m.getDisplayTokens()
+	if len(display) != 1 {
+		t.Fatalf("expected display list with one entry, got %d", len(display))
+	}
+	if display[0].Value != "coach" {
+		t.Fatalf("expected display to show spoken slug, got %q", display[0].Value)
+	}
+}
+
+func TestDirectionalTokenUsesSlugInCommand(t *testing.T) {
+	categories := []bartui.TokenCategory{
+		{
+			Key:           "static",
+			Label:         "Static",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Todo"},
+			},
+		},
+		{
+			Key:           "directional",
+			Label:         "Directional",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "fly rog", Slug: "fly-rog", Label: "Fly rog", Description: "Fly rog"},
+			},
+		},
+	}
+
+	m := newModel(Options{
+		TokenCategories: categories,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+	m.tokensByCategory["static"] = []string{"todo"}
+	m.tokensByCategory["directional"] = []string{"fly rog"}
+
+	m.rebuildCommandLine()
+
+	command := strings.TrimSpace(strings.TrimPrefix(m.commandInput.Value(), "bar build"))
+	if !strings.Contains(command, "fly-rog") {
+		t.Fatalf("expected command input to contain slug 'fly-rog', got %q", command)
+	}
+
+	clipboard := m.buildCommandForClipboard()
+	if !strings.Contains(clipboard, "fly-rog") {
+		t.Fatalf("expected clipboard command to contain slug 'fly-rog', got %q", clipboard)
+	}
+}
+
 func TestClipboardUnavailable(t *testing.T) {
 	m := newModel(Options{
 		TokenCategories: testCategories(),

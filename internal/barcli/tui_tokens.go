@@ -131,9 +131,17 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 			fills["tone"] = *preset.Tone
 		}
 
+		personaSlug := ""
+		if preset.Spoken != nil {
+			personaSlug = strings.TrimSpace(*preset.Spoken)
+		}
+		if personaSlug == "" {
+			personaSlug = strings.TrimSpace(grammar.slugForToken(value))
+		}
+
 		options = append(options, bartui.TokenOption{
 			Value:       value,
-			Slug:        grammar.slugForToken(value),
+			Slug:        personaSlug,
 			Label:       label,
 			Description: label,
 			Fills:       fills,

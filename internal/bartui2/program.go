@@ -15,7 +15,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
-	"github.com/mattn/go-runewidth"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
@@ -1409,9 +1408,6 @@ var stageMarkerStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("214")).
 	Bold(true)
 
-// annotationStyle for the ╰─Category annotations
-var annotationStyle = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("240"))
 
 func (m model) renderCommandPane() string {
 	width := m.width - 2
@@ -1444,39 +1440,7 @@ func (m model) renderCommandPane() string {
 	}
 	cmdLine.WriteString("_")
 
-	// Build annotation line showing category for each token
-	var annotations strings.Builder
-	// Indent to align with tokens after "> bar build "
-	prefixLen := runewidth.StringWidth("> bar build")
-	annotations.WriteString(strings.Repeat(" ", prefixLen))
-
-	for _, token := range tokens {
-		// Add space that precedes this token on the command line
-		annotations.WriteString(" ")
-
-		category := m.getCategoryForToken(token)
-		tokenWidth := runewidth.StringWidth(token)
-		if category != "" {
-			annotation := fmt.Sprintf("╰─%s", category)
-			annotationWidth := runewidth.StringWidth(annotation)
-			annotations.WriteString(annotationStyle.Render(annotation))
-			// Pad remaining space if annotation is shorter than token
-			if annotationWidth < tokenWidth {
-				annotations.WriteString(strings.Repeat(" ", tokenWidth-annotationWidth))
-			}
-		} else {
-			annotations.WriteString(strings.Repeat(" ", tokenWidth))
-		}
-	}
-
-	var content strings.Builder
-	content.WriteString(cmdLine.String())
-	if len(tokens) > 0 {
-		content.WriteString("\n")
-		content.WriteString(annotations.String())
-	}
-
-	return paneStyle.Width(width).Render(content.String())
+	return paneStyle.Width(width).Render(cmdLine.String())
 }
 
 func (m model) renderTokensPane() string {

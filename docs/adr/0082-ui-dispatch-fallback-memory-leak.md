@@ -9,17 +9,20 @@ Proposed
 - `run_on_ui_thread` enqueues work into an in-process deque and uses `cron.after("0ms", _drain_queue)` to hand control back to Talon.
 - When Talon rejects the `cron.after` call (for example during sleep or when the engine is pausing), `_schedule_failed` flips to `True`, but the implementation only logs a debug message and returns without draining.
 - Subsequent background activity keeps appending to `_queue` even though the drain never runs again; the deque accumulates closures indefinitely and leaks memory.
+- Help canvases and other axis-driven surfaces keep calling `axis_catalog()`, which reloads `axisConfig` on every invocation; that reload cascades through resource loaders that keep Skia-backed objects alive, so even inline drains leave the process retaining fresh images and dataclass metadata per frame.
 - ADR 029 moved pill management to the main thread assuming this dispatcher would stay bounded; losing the drain breaks that guarantee and cascades into every caller that relies on it.
 
 ## Decision
 - Treat a failed `cron.after` as a signal to run queued work inline instead of abandoning it: immediately drain `_queue` synchronously inside the `except` block.
 - Short-circuit future enqueues while `_schedule_failed` is set: new `run_on_ui_thread` calls drain inline rather than growing the deque until the dispatcher successfully schedules again.
 - Surface a one-time warning (debug log + optional telemetry counter) so operators can see that Talon refused main-thread scheduling and that the dispatcher fell back to inline execution.
+- Cache axis configuration reloads (keyed by module path and mtime) so help surfaces stop re-importing heavyweight resources on every draw and the dispatcher’s inline fallback no longer amplifies memory usage.
 - Expose a helper (`ui_dispatch_fallback_active()`) for tests and diagnostics so callers can assert whether they are on the degraded path.
 
 ## Rationale
 - Inline draining preserves correctness with bounded memory use—the queue cannot grow without limit because every enqueue either schedules a drain or performs it immediately.
 - Guarding against repeated scheduling attempts prevents thrashing the Talon cron API when it is already rejecting calls.
+- Memoizing the axis config map stops degraded canvases from reloading Talon resources every frame, aligning heap usage with the dispatcher’s bounded queue while still respecting on-disk edits via mtime checks.
 - A visible warning helps correlate degraded UI responsiveness with Talon runtime state and guides operators toward restarting Talon when necessary.
 - Tests can assert the degraded mode without depending on private globals, keeping the dispatcher observable and maintainable.
 
@@ -27,11 +30,13 @@ Proposed
 - Update `_schedule_drain` to call `_drain_queue_inline()` inside the failure path, set `_schedule_failed = True`, and skip the early return that currently leaks work.
 - In `run_on_ui_thread`, detect `_schedule_failed` before appending; if the flag is set, execute `_safe_run` (respecting `delay_ms`) inline under the queue lock instead of enqueuing.
 - Reset `_schedule_failed` to `False` once a `cron.after` succeeds so future calls re-use the scheduled drain path.
+- Memoize `_axis_config_map()` in `axisCatalog` using the module path and mtime so canvases reuse the same axis token map without triggering Talon resource reloads unless the file actually changes.
 - Add a lightweight counter or debug print that fires only the first time per session we enter fallback mode to avoid log spam.
 - Extend dispatcher unit tests to simulate `cron.after` raising and confirm that queued work drains, `_queue` stays empty, and future calls run inline until scheduling recovers.
 
 ## Consequences
 - Inline fallback may make UI callbacks run on background threads during Talon downtime, trading thread isolation for stability; callers already handle best-effort execution, and the alternative was an unbounded leak.
 - Operators may experience brief jitter when Talon resumes, but they gain better visibility into dispatcher degradation.
+- Axis config caching keeps canvas rebuilds cheap during fallback; operators editing axisConfig can still force reloads by touching the file so the mtime advances.
 - Future surfaces should treat degraded mode as a signal to prefer toast notifications or defer non-critical UI work; the helper makes that gate explicit.
 - The ADR closes the memory leak while keeping ADR 029’s main-thread guarantees intact whenever Talon cron scheduling is available.

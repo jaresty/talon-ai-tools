@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from importlib import reload
 from pathlib import Path
 from typing import Dict, List
@@ -28,18 +29,51 @@ _AXIS_LIST_FILES: Dict[str, str] = {
 _LEGACY_STYLE_LIST = "styleModifier.talon-list"
 
 
-def _axis_config_map() -> Dict[str, Dict[str, str]]:
-    """Return the latest axis config map, reloading axisConfig if needed."""
+_axis_config_cache: Dict[str, Dict[str, str]] | None = None
+_axis_config_source: str | None = None
+_axis_config_mtime: float | None = None
+_axis_config_lock = threading.Lock()
 
-    try:
-        reload(axisConfig)
-    except Exception:
-        # Best effort: fall back to whatever is already loaded.
-        pass
-    try:
-        return getattr(axisConfig, "AXIS_KEY_TO_VALUE", {})
-    except Exception:
-        return {}
+
+def _axis_config_map() -> Dict[str, Dict[str, str]]:
+    """Return the latest axis config map, reloading axisConfig when it changes."""
+
+    global _axis_config_cache, _axis_config_source, _axis_config_mtime
+
+    module_file = getattr(axisConfig, "__file__", None)
+    resolved_path: str | None = None
+    mtime: float | None = None
+    if module_file:
+        try:
+            resolved_path = str(Path(module_file).resolve())
+        except Exception:
+            resolved_path = str(module_file)
+        try:
+            mtime = Path(module_file).stat().st_mtime
+        except OSError:
+            mtime = None
+
+    with _axis_config_lock:
+        needs_reload = _axis_config_cache is None
+        if not needs_reload and resolved_path and resolved_path != _axis_config_source:
+            needs_reload = True
+        if not needs_reload and mtime is not None and mtime != _axis_config_mtime:
+            needs_reload = True
+
+        if needs_reload:
+            try:
+                reload(axisConfig)
+            except Exception:
+                if _axis_config_cache is None:
+                    return getattr(axisConfig, "AXIS_KEY_TO_VALUE", {}) or {}
+            else:
+                _axis_config_cache = getattr(axisConfig, "AXIS_KEY_TO_VALUE", {}) or {}
+                _axis_config_source = resolved_path
+                _axis_config_mtime = mtime
+
+        cache = _axis_config_cache
+
+    return cache or getattr(axisConfig, "AXIS_KEY_TO_VALUE", {}) or {}
 
 
 def _read_list_tokens(path: Path) -> List[str]:
@@ -138,7 +172,9 @@ def axis_catalog(
 
     axis_map = _axis_config_map()
     if "style" in axis_map:
-        raise ValueError("style axis is removed; drop legacy style before building the axis catalog.")
+        raise ValueError(
+            "style axis is removed; drop legacy style before building the axis catalog."
+        )
 
     axis_lists: Dict[str, List[str]] = {}
     for axis_name in _AXIS_LIST_FILES:
@@ -158,7 +194,9 @@ def axis_catalog(
     return {
         "axes": axis_map,
         "axis_list_tokens": axis_lists,
-        "static_prompts": static_prompt_catalog(static_prompt_list_path if lists_dir else ""),
+        "static_prompts": static_prompt_catalog(
+            static_prompt_list_path if lists_dir else ""
+        ),
         "static_prompt_descriptions": static_prompt_description_overrides(),
         "static_prompt_profiles": STATIC_PROMPT_CONFIG,
     }

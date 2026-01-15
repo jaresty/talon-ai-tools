@@ -40,3 +40,41 @@ residual_constraints:
 
 next_work:
 - Behaviour: Wire degraded-mode telemetry/logging and update ADR guidance after soak; Validation: python3 -m pytest _tests/test_ui_dispatch.py
+
+## 2026-01-15 – Loop 2: axis catalog cache (kind: behaviour+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 Context + Implementation Notes – stop axisCatalog reload churn so dispatcher fallback remains bounded during canvas repaints.
+active_constraint: Axis catalog reloads on every help canvas draw import `axisConfig` repeatedly, causing Skia resources to accumulate and heap usage to grow even when `_schedule_failed` drains inline; the constraint is red when `python3 -m pytest _tests/test_axis_catalog_reload.py` fails because `_axis_config_cache` is absent.
+expected_value:
+  Impact: High – removes the lingering memory growth driver that persisted after the dispatcher patch and keeps UI fallback bounded.
+  Probability: Medium – caching by module path/mtime is local but depends on Talon loader semantics; the new regression test secures behaviour.
+  Time Sensitivity: Medium – operators are still seeing overnight growth today, so eliminating the immediate churn is time-sensitive but not a hard deadline.
+  Uncertainty note: Low – the code path is deterministic and covered by the regression harness.
+validation_targets:
+  - python3 -m pytest _tests/test_axis_catalog_reload.py
+
+evidence:
+- red | 2026-01-15T21:22:21Z | exit 1 | python3 -m pytest _tests/test_axis_catalog_reload.py
+    helper:diff-snapshot captured in docs/adr/evidence/0082/loop-2.md#helper:diff-snapshot
+    pointer: docs/adr/evidence/0082/loop-2.md#red
+- green | 2026-01-15T21:22:49Z | exit 0 | python3 -m pytest _tests/test_axis_catalog_reload.py
+    helper:diff-snapshot captured in docs/adr/evidence/0082/loop-2.md#helper:diff-snapshot
+    pointer: docs/adr/evidence/0082/loop-2.md#green
+- removal | 2026-01-15T21:23:03Z | exit 1 | git checkout -- lib/axisCatalog.py && python3 -m pytest _tests/test_axis_catalog_reload.py
+    helper:diff-snapshot captured in docs/adr/evidence/0082/loop-2.md#helper:diff-snapshot
+    pointer: docs/adr/evidence/0082/loop-2.md#removal
+
+rollback_plan: git restore --source=HEAD -- lib/axisCatalog.py docs/adr/0082-ui-dispatch-fallback-memory-leak.md _tests/test_axis_catalog_reload.py
+
+delta_summary: helper:diff-snapshot=docs/adr/0082-ui-dispatch-fallback-memory-leak.md | context/decision clarified with axisCatalog caching; lib/axisCatalog.py | +64 −13 adds path/mtime cache with lock + probe logic; _tests/test_axis_catalog_reload.py | +56 introduces regression ensuring reloads only occur on file changes.
+
+loops_remaining_forecast: 1 (confidence medium) – wire degraded-mode telemetry counter and soak validation, then update ADR status to Accepted once logs stay bounded overnight.
+
+residual_constraints:
+- severity: Medium | constraint: Degraded-mode telemetry/alert still missing, so operators may not notice prolonged fallback; mitigation: add counter + Help Hub surface notice; monitor trigger: next consolidated Talon log review; owning ADR: 0082.
+- severity: Low | constraint: Overnight soak (>=12h) with axis cache enabled still pending to confirm heap stability; mitigation: schedule pilot soak; monitor trigger: first overnight session; owning ADR: 0082.
+
+next_work:
+- Behaviour: Add telemetry counter + operator guidance for degraded mode; Validation: python3 -m pytest _tests/test_axis_catalog_reload.py && python3 -m pytest _tests/test_ui_dispatch.py
+- Behaviour: Run overnight soak and capture memory telemetry; Validation: manual soak log with helper:rerun once data collected

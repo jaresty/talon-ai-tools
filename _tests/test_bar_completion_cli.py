@@ -273,8 +273,8 @@ if bootstrap is not None:
 
             ordered = [
                 "full",
-                "analysis",
                 "focus",
+                "analysis",
                 "checklist",
                 "slack",
                 "fly-rog",

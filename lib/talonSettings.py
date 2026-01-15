@@ -259,8 +259,8 @@ def _normalise_directional(raw_value) -> str:
 
 _AXIS_PRIORITY: tuple[str, ...] = (
     "completeness",
-    "method",
     "scope",
+    "method",
     "form",
     "channel",
 )

@@ -68,7 +68,7 @@
     }
   },
   "hierarchy": {
-    "axis_priority": ["completeness", "method", "scope", "form", "channel", "directional"],
+    "axis_priority": ["completeness", "scope", "method", "form", "channel", "directional"],
     "axis_soft_caps": {
       "scope": 2,
       "method": 3,

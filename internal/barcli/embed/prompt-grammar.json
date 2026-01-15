@@ -1369,8 +1369,8 @@
   "hierarchy": {
     "axis_priority": [
       "completeness",
-      "method",
       "scope",
+      "method",
       "form",
       "channel"
     ],
@@ -2339,7 +2339,7 @@
     "axes": "1ddc698dc214dedbac379be2bb54c1242559a05232e92f66d999ee71df16d4a2",
     "static_prompts": "ce96407da230668e6eae5b9e315bb98f8823979c067692d3d278d803299f3274",
     "persona": "2923ebb09cf58ca7a65dcad87e187e2cd5d7d515837942ea7907cf8ec7ba6cef",
-    "hierarchy": "dcb9d8fbf23ea7dde8c5bfb1e2da66d3413001b2e058a7f0fcaf93fdfe5d6f80",
+    "hierarchy": "34fe23d4a1deb179e69883140897f4bd52d730c880982fb547dfc470b41c76d5",
     "slugs": "8de367d818ca790b896d14f12fff7429d88c55e7d47a318c343c54267bae9c7c"
   }
 }

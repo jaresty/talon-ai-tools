@@ -191,6 +191,7 @@ def _drain_queue_inline() -> None:
                 fn, delay_ms = _queue.popleft()
             except IndexError:
                 break
+            _record_inline(delay_ms)
             _run_inline(fn, delay_ms)
     finally:
         with _queue_lock:

@@ -78,3 +78,34 @@ residual_constraints:
 next_work:
 - Behaviour: Add telemetry counter + operator guidance for degraded mode; Validation: python3 -m pytest _tests/test_axis_catalog_reload.py && python3 -m pytest _tests/test_ui_dispatch.py
 - Behaviour: Run overnight soak and capture memory telemetry; Validation: manual soak log with helper:rerun once data collected
+
+## 2026-01-16 – Loop 3: degraded-mode telemetry (kind: behaviour+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 residual constraint “Degraded-mode telemetry/alert still missing” – expose dispatcher fallback metrics, surface operator notification, and add regression coverage.
+active_constraint: Inline fallback counters were tracked privately and operators had no visibility when Talon cron rejected UI scheduling, so degraded sessions could persist silently and memory regressions were hard to diagnose. `_tests/test_ui_dispatch.py` lacked assertions to guarantee telemetry reset semantics.
+expected_value:
+  Impact: Medium – operators get immediate notification plus structured counters for guardrails.
+  Probability: Medium – changes reuse existing dispatcher scaffolding and add focused unit coverage.
+  Time Sensitivity: High – degraded-mode ops remain blind until telemetry lands.
+  Uncertainty note: Low – scope is isolated to dispatcher helpers.
+validation_targets:
+  - python3 -m pytest _tests/test_ui_dispatch.py
+
+evidence:
+- blocked | 2026-01-16T08:36:12Z | exit 1 | python3 -m pytest _tests/test_ui_dispatch.py
+    pointer: python3.14 environment lacks pytest module; rerun once dependencies restored.
+
+rollback_plan: git restore --source=HEAD -- lib/uiDispatch.py _tests/test_ui_dispatch.py docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md
+
+delta_summary: helper:diff-snapshot=lib/uiDispatch.py | +146 −13 adds operator notification, inline telemetry snapshot helper, and fallback reset plumbing; _tests/test_ui_dispatch.py | +74 −2 resets inline counters in harness and covers `ui_dispatch_inline_stats`; docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md | +24 documents telemetry loop and blocked test run.
+
+loops_remaining_forecast: 1 (confidence medium) – schedule overnight soak once pytest environment restored so telemetry/export paths can be validated end-to-end.
+
+residual_constraints:
+- severity: Medium | constraint: Guardrail telemetry export not yet validated; mitigation: rerun `_tests/test_ui_dispatch.py` after pytest restoration and add history telemetry snapshot smoke once environment permits.
+- severity: Medium | constraint: Operator guidance still needs Help Hub copy post-soak; mitigation: draft Help Hub notice after telemetry soak completes; monitor trigger: first overnight session using new counters.
+
+next_work:
+- Behaviour: Restore pytest environment and rerun `_tests/test_ui_dispatch.py`; Validation: python3 -m pytest _tests/test_ui_dispatch.py
+- Behaviour: Capture overnight soak metrics with new telemetry; Validation: manual soak log with helper:rerun once data collected

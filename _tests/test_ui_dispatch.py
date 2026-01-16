@@ -27,6 +27,11 @@ class UIDispatchTests(unittest.TestCase):
         self.ui_dispatch._fallback_warned = False
         self.ui_dispatch._fallback_next_probe = 0.0
         self.ui_dispatch._draining = False
+        with self.ui_dispatch._inline_counts_lock:
+            self.ui_dispatch._inline_fallback_counts.clear()
+            self.ui_dispatch._inline_fallback_last_timestamp = 0.0
+            self.ui_dispatch._inline_fallback_last_wallclock = 0.0
+        self.ui_dispatch._fallback_notified = False
 
     def test_dispatch_uses_cron_after(self):
         called = []
@@ -113,3 +118,45 @@ class UIDispatchTests(unittest.TestCase):
             lambda: (_ for _ in ()).throw(Exception("kaboom"))
         )
         self.ui_dispatch._drain_for_tests()
+
+    def test_inline_stats_tracks_fallback_usage(self):
+        fake_monotonic = [10.0]
+        fake_wallclock = [1_700_000_000.0]
+
+        def monotonic_stub():
+            return fake_monotonic[0]
+
+        def time_stub():
+            return fake_wallclock[0]
+
+        with (
+            patch.object(self.ui_dispatch, "_notify_inline_fallback") as notify,
+            patch.object(self.ui_dispatch.time, "monotonic", monotonic_stub),
+            patch.object(self.ui_dispatch.time, "time", time_stub),
+            patch.object(
+                self.ui_dispatch.cron, "after", side_effect=Exception("boom")
+            ) as after_fail,
+        ):
+            self.ui_dispatch.run_on_ui_thread(lambda: None)
+
+        notify.assert_called_once()
+        self.assertTrue(self.ui_dispatch.ui_dispatch_fallback_active())
+        self.assertEqual(after_fail.call_count, 1)
+
+        fake_monotonic[0] = 22.5
+
+        stats = self.ui_dispatch.ui_dispatch_inline_stats()
+        self.assertEqual(stats["counts"], {"0": 1})
+        self.assertEqual(stats["total"], 1)
+        self.assertAlmostEqual(stats["last_monotonic"], 10.0)
+        self.assertEqual(stats["active"], True)
+        self.assertIsNotNone(stats["seconds_since_last"])
+        self.assertGreater(stats["seconds_since_last"], 0)
+        self.assertEqual(stats["last_wall_time"], "2023-11-14T22:13:20Z")
+
+        reset_stats = self.ui_dispatch.ui_dispatch_inline_stats(reset=True)
+        self.assertEqual(reset_stats["counts"], {"0": 1})
+
+        post_reset = self.ui_dispatch.ui_dispatch_inline_stats()
+        self.assertEqual(post_reset["counts"], {})
+        self.assertEqual(post_reset["total"], 0)

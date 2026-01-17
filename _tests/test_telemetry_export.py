@@ -36,42 +36,61 @@ class TelemetryExportTests(unittest.TestCase):
         )
         GPTState.last_suggest_skip_counts = {"unknown_persona": 2, "unknown_intent": 1}
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output = snapshot_telemetry(output_dir=tmpdir, reset_gating=True)
+        inline_fixture = {
+            "counts": {"0": 2, "25": 1},
+            "total": 3,
+            "last_monotonic": 12.5,
+            "last_wall_time": "2026-01-17T14:20:00Z",
+            "seconds_since_last": 4.0,
+            "active": True,
+        }
 
-            history_path = Path(output["history"])
-            streaming_path = Path(output["streaming"])
-            telemetry_path = Path(output["telemetry"])
-            skip_path = Path(output["suggestion_skip"])
+        with patch.object(
+            telemetry_module,
+            "_fetch_ui_dispatch_inline_stats",
+            return_value=inline_fixture,
+        ):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                output = snapshot_telemetry(output_dir=tmpdir, reset_gating=True)
 
-            self.assertTrue(history_path.exists())
-            self.assertTrue(streaming_path.exists())
-            self.assertTrue(telemetry_path.exists())
-            self.assertTrue(skip_path.exists())
+                history_path = Path(output["history"])
+                streaming_path = Path(output["streaming"])
+                telemetry_path = Path(output["telemetry"])
+                skip_path = Path(output["suggestion_skip"])
 
-            history_data = json.loads(history_path.read_text())
-            self.assertIn("total_entries", history_data)
-            self.assertEqual(history_data.get("total_entries"), 1)
+                self.assertTrue(history_path.exists())
+                self.assertTrue(streaming_path.exists())
+                self.assertTrue(telemetry_path.exists())
+                self.assertTrue(skip_path.exists())
 
-            streaming_data = json.loads(streaming_path.read_text())
-            self.assertEqual(streaming_data.get("status"), "unknown")
+                history_data = json.loads(history_path.read_text())
+                self.assertIn("total_entries", history_data)
+                self.assertEqual(history_data.get("total_entries"), 1)
 
-            telemetry_data = json.loads(telemetry_path.read_text())
-            self.assertEqual(telemetry_data.get("total_entries"), 1)
-            self.assertIn("suggestion_skip", telemetry_data)
-            self.assertEqual(telemetry_data.get("suggestion_skip", {}).get("total"), 3)
-            self.assertIn("scheduler", telemetry_data)
-            scheduler_payload = telemetry_data["scheduler"]
-            self.assertIsInstance(scheduler_payload, dict)
-            self.assertIn("reschedule_count", scheduler_payload)
+                streaming_data = json.loads(streaming_path.read_text())
+                self.assertEqual(streaming_data.get("status"), "unknown")
 
-            skip_data = json.loads(skip_path.read_text())
-            self.assertEqual(skip_data.get("total_skipped"), 3)
-            reasons = skip_data.get("reason_counts")
-            self.assertIsInstance(reasons, list)
-            self.assertEqual(len(reasons), 2)
+                telemetry_data = json.loads(telemetry_path.read_text())
+                self.assertEqual(telemetry_data.get("total_entries"), 1)
+                self.assertIn("suggestion_skip", telemetry_data)
+                self.assertEqual(
+                    telemetry_data.get("suggestion_skip", {}).get("total"), 3
+                )
+                self.assertIn("scheduler", telemetry_data)
+                scheduler_payload = telemetry_data["scheduler"]
+                self.assertIsInstance(scheduler_payload, dict)
+                self.assertIn("reschedule_count", scheduler_payload)
+                self.assertEqual(
+                    telemetry_data.get("ui_dispatch_inline_fallback"), inline_fixture
+                )
 
-            self.assertEqual(history_lifecycle.gating_drop_stats(), {})
+                skip_data = json.loads(skip_path.read_text())
+                self.assertEqual(skip_data.get("total_skipped"), 3)
+                reasons = skip_data.get("reason_counts")
+                self.assertIsInstance(reasons, list)
+                self.assertEqual(len(reasons), 2)
+
+                self.assertEqual(history_lifecycle.gating_drop_stats(), {})
 
     def test_snapshot_telemetry_delegates_to_history_lifecycle(self) -> None:
         lifecycle_stats = {
@@ -87,6 +106,9 @@ class TelemetryExportTests(unittest.TestCase):
                 telemetry_module, "historyLifecycle", create=True
             ) as lifecycle,
             patch.object(telemetry_module, "requestLog", create=True) as requestlog,
+            patch.object(
+                telemetry_module, "_fetch_ui_dispatch_inline_stats", return_value=None
+            ),
         ):
             lifecycle.history_validation_stats.return_value = dict(lifecycle_stats)
             lifecycle.consume_gating_drop_stats.return_value = {}

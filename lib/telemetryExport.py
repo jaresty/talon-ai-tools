@@ -30,6 +30,75 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "telemetry"
 DEFAULT_TOP_N = 5
 
 
+def _fetch_ui_dispatch_inline_stats() -> Dict[str, Any] | None:
+    try:
+        from . import uiDispatch as ui_dispatch_module  # type: ignore
+    except Exception:
+        return None
+
+    stats_fn = getattr(ui_dispatch_module, "ui_dispatch_inline_stats", None)
+    if not callable(stats_fn):
+        return None
+
+    try:
+        raw_stats = stats_fn()
+    except Exception:
+        return None
+    if not isinstance(raw_stats, Mapping):
+        return None
+
+    counts_payload: Dict[str, int] = {}
+    raw_counts = raw_stats.get("counts")
+    if isinstance(raw_counts, Mapping):
+        for key, value in raw_counts.items():
+            count_value = _coerce_int(value)
+            if count_value < 0:
+                continue
+            counts_payload[str(key)] = count_value
+
+    total_value = _coerce_int(raw_stats.get("total"))
+    if total_value < 0:
+        total_value = sum(counts_payload.values())
+
+    last_monotonic_value = raw_stats.get("last_monotonic")
+    last_monotonic = 0.0
+    if last_monotonic_value is not None:
+        try:
+            last_monotonic = float(last_monotonic_value)
+        except (TypeError, ValueError):
+            last_monotonic = 0.0
+    if last_monotonic < 0:
+        last_monotonic = 0.0
+
+    wall_time_raw = raw_stats.get("last_wall_time")
+    last_wall_time = wall_time_raw.strip() if isinstance(wall_time_raw, str) else ""
+
+    seconds_since_last_raw = raw_stats.get("seconds_since_last")
+    seconds_since_last: float | None = None
+    if seconds_since_last_raw is not None:
+        try:
+            seconds_since_last = float(seconds_since_last_raw)
+        except (TypeError, ValueError):
+            seconds_since_last = None
+        else:
+            if seconds_since_last < 0:
+                seconds_since_last = None
+
+    active_value = raw_stats.get("active")
+    active = bool(active_value)
+
+    stats_payload: Dict[str, Any] = {
+        "counts": counts_payload,
+        "total": total_value,
+        "last_monotonic": last_monotonic,
+        "last_wall_time": last_wall_time,
+        "seconds_since_last": seconds_since_last,
+        "active": active,
+    }
+
+    return stats_payload
+
+
 def _coerce_int(value: object) -> int:
     if isinstance(value, bool):
         return int(value)
@@ -257,6 +326,11 @@ def _build_telemetry_payload(
         "total": skip_total,
         "reasons": skip_reasons,
     }
+
+    inline_stats = _fetch_ui_dispatch_inline_stats()
+    if inline_stats is not None:
+        payload["ui_dispatch_inline_fallback"] = inline_stats
+
     return payload
 
 

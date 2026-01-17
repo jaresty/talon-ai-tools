@@ -109,3 +109,38 @@ residual_constraints:
 next_work:
 - Behaviour: Restore pytest environment and rerun `_tests/test_ui_dispatch.py`; Validation: python3 -m pytest _tests/test_ui_dispatch.py
 - Behaviour: Capture overnight soak metrics with new telemetry; Validation: manual soak log with helper:rerun once data collected
+
+## 2026-01-17 – Loop 4: export dispatcher fallback stats (kind: behaviour+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 Decision bullet 3 – add dispatcher degraded-mode telemetry to the guardrail export so operators can spot inline fallback in artifacts.
+active_constraint: Telemetry snapshots omitted `ui_dispatch_inline_stats`, leaving `artifacts/telemetry/*.json` blind to degraded dispatcher sessions; `_tests/test_telemetry_export.py` fails when asserting the inline fallback payload.
+expected_value:
+  Impact: High – guardrail exports now surface dispatcher degradation for operators running manual snapshots.
+  Probability: High – wiring the export to reuse the dispatcher stats helper deterministically satisfies the regression test.
+  Time Sensitivity: Medium – telemetry exports happen during operations; missing data delays leak detection but is recoverable within the release window.
+  Uncertainty note: Low – scope is limited to JSON serialization of existing counters with unit coverage.
+validation_targets:
+  - python3 -m pytest _tests/test_telemetry_export.py
+
+evidence:
+- red | 2026-01-17T22:28:03Z | exit 1 | python3 -m pytest _tests/test_telemetry_export.py
+    pointer: docs/adr/evidence/0082/loop-4.md#red
+- green | 2026-01-17T22:28:17Z | exit 0 | python3 -m pytest _tests/test_telemetry_export.py
+    pointer: docs/adr/evidence/0082/loop-4.md#green
+- removal | 2026-01-17T22:28:26Z | exit 1 | git checkout -- lib/telemetryExport.py && python3 -m pytest _tests/test_telemetry_export.py
+    pointer: docs/adr/evidence/0082/loop-4.md#removal
+
+rollback_plan: git restore --source=HEAD -- lib/telemetryExport.py _tests/test_telemetry_export.py docs/adr/evidence/0082/loop-4.md docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md
+
+delta_summary: helper:diff-snapshot=docs/adr/evidence/0082/loop-4.md#helper:diff-snapshot; added `_fetch_ui_dispatch_inline_stats()` and exported its payload in `snapshot_telemetry`, extending `_tests/test_telemetry_export.py` to cover the inline fallback artefact.
+
+loops_remaining_forecast: 1 (confidence medium) – run overnight soak with the new telemetry artefacts and update operator guidance before marking ADR 0082 accepted.
+
+residual_constraints:
+- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that exports include dispatcher stats; monitor trigger: first post-loop overnight session; owning ADR: 0082.
+- severity: Low | constraint: Help Hub copy still needs to reference the new dispatcher fallback telemetry counters; mitigation: draft guidance after soak data reviewed; monitor trigger: guardrail review queue.
+
+next_work:
+- Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
+- Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)

@@ -1,10 +1,17 @@
 ## helper:diff-snapshot
 
 ```
-_tests/test_telemetry_export.py | 94 +++++++++++++++++++++++++----------------
-lib/telemetryExport.py          | 74 ++++++++++++++++++++++++++++++++
-2 files changed, 132 insertions(+), 36 deletions(-)
+
+## manual evidence – leaks snapshot (2026-01-17T22:48Z)
+
 ```
+Process 19317: 19458674 leaks for 1873232784 total leaked bytes.
+    19458674 (1786M) << TOTAL >>
+```
+
+- Source: `tmp/talon-leaks-1448.txt`
+- Notes: allocations present as repeated 20,480-byte IOSurface tiles retained during dispatcher fallback.
+
 
 ## helper:rerun python3 -m pytest _tests/test_telemetry_export.py
 

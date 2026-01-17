@@ -138,7 +138,7 @@ delta_summary: helper:diff-snapshot=docs/adr/evidence/0082/loop-4.md#helper:diff
 loops_remaining_forecast: 1 (confidence medium) – run overnight soak with the new telemetry artefacts and update operator guidance before marking ADR 0082 accepted.
 
 residual_constraints:
-- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that exports include dispatcher stats; monitor trigger: first post-loop overnight session; owning ADR: 0082.
+- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that exports include dispatcher stats and leak evidence (`docs/adr/evidence/0082/loop-4.md`) points to Talon-held IOSurface tiles; monitor trigger: first post-loop overnight session; owning ADR: 0082.
 - severity: Low | constraint: Help Hub copy still needs to reference the new dispatcher fallback telemetry counters; mitigation: draft guidance after soak data reviewed; monitor trigger: guardrail review queue.
 
 next_work:

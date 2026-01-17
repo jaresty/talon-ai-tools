@@ -144,3 +144,39 @@ residual_constraints:
 next_work:
 - Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
 - Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
+
+## 2026-01-17 – Loop 5: cache Skia typefaces and emoji segments (kind: behaviour+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 Decision bullet 3 – stop dispatcher fallback from leaking Skia text resources by caching typefaces and emoji segment plans in canvas rendering helpers.
+active_constraint: Response/help canvases rebuilt Skia typefaces and text runs on every inline drain, causing `sk_textblob_builder_alloc_run` to leak and `_tests/test_canvas_font.py` fails when asserting reuse of dispatcher font resources.
+expected_value:
+  Impact: High – stabilises UI dispatcher memory footprint during fallback by preventing per-frame Skia allocations.
+  Probability: High – caching helpers are exercised directly by updated unit tests and reused across canvases.
+  Time Sensitivity: High – leak manifests within a single idle session; shipping caches immediately prevents further runaway sessions.
+  Uncertainty note: Medium – assumes SkiaSharp reuses cached typeface objects when reused across draws; telemetry soak will confirm.
+validation_targets:
+  - python3 -m pytest _tests/test_canvas_font.py
+
+evidence:
+- red | 2026-01-17T23:20:11Z | exit 1 | python3 -m pytest _tests/test_canvas_font.py
+    pointer: docs/adr/evidence/0082/loop-5.md#red
+- green | 2026-01-17T23:20:48Z | exit 0 | python3 -m pytest _tests/test_canvas_font.py
+    pointer: docs/adr/evidence/0082/loop-5.md#green
+- removal | 2026-01-17T23:21:16Z | exit 1 | git checkout -- lib/canvasFont.py && python3 -m pytest _tests/test_canvas_font.py
+    pointer: docs/adr/evidence/0082/loop-5.md#removal
+
+rollback_plan: git restore --source=HEAD -- lib/canvasFont.py _tests/stubs/talon/__init__.py _tests/test_canvas_font.py docs/adr/evidence/0082/loop-5.md docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md
+
+delta_summary: helper:diff-snapshot=docs/adr/evidence/0082/loop-5.md#helper:diff-snapshot; cached Skia typefaces and emoji render plans, added reset helper for tests, extended Talon stubs with instrumentation, and codified caching regressions via `_tests/test_canvas_font.py`.
+
+loops_remaining_forecast: 2 (confidence medium) – validate overnight soak under inline fallback and update degraded-mode operator guidance before closing ADR 0082.
+
+residual_constraints:
+- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that dispatcher caches land; monitor trigger: first post-loop overnight session; owning ADR: 0082.
+- severity: Low | constraint: Help Hub copy still needs to reference the new dispatcher fallback telemetry counters and caching behaviour; mitigation: draft guidance after soak data reviewed; monitor trigger: guardrail review queue.
+
+next_work:
+- Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
+- Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
+- Behaviour: Correlate telemetry exports with Skia stats to confirm leak bound; Validation: python3 -m pytest _tests/test_telemetry_export.py && manual telemetry snapshot review

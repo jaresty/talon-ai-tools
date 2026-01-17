@@ -299,6 +299,8 @@ tap = _Tap()
 class _SkiaPaint:
     def __init__(self):
         self.color = 0
+        self.typeface = None
+        self.Style = SimpleNamespace(FILL="fill", STROKE="stroke")
 
 
 class _SkiaRect:
@@ -309,9 +311,54 @@ class _SkiaRect:
         self.height = height
 
 
+_skia_stats = SimpleNamespace(typeface_creations=0, match_calls=0)
+
+
+class _Typeface:
+    def __init__(self, family: str):
+        _skia_stats.typeface_creations += 1
+        self._family = family
+
+    def getFamilyName(self):  # pragma: no cover - metadata helper
+        return self._family
+
+    @property
+    def familyName(self):  # pragma: no cover - compatibility shim
+        return self._family
+
+
+class _FontStyle:
+    def __init__(self):
+        pass
+
+
+class _FontMgr:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def RefDefault(cls):
+        return cls()
+
+    def matchFamilyStyle(self, family, _style):
+        _skia_stats.match_calls += 1
+        return _Typeface(family)
+
+
 class _SkiaModule(SimpleNamespace):
     def __init__(self):
-        super().__init__(Paint=_SkiaPaint, Rect=_SkiaRect)
+        super().__init__(
+            Paint=_SkiaPaint,
+            Rect=_SkiaRect,
+            Typeface=_Typeface,
+            FontMgr=_FontMgr,
+            FontStyle=_FontStyle,
+        )
+        self.stats = _skia_stats
+
+    def reset_stats(self):
+        self.stats.typeface_creations = 0
+        self.stats.match_calls = 0
 
 
 skia = _SkiaModule()

@@ -1,4 +1,6 @@
-from typing import Callable, Optional
+from dataclasses import dataclass
+from typing import Callable, Optional, Dict, List, Tuple
+from weakref import WeakKeyDictionary
 
 from talon import settings
 
@@ -34,19 +36,38 @@ DEFAULT_EMOJI_FAMILIES: list[str] = [
 ]
 
 
-def _try_set_typeface(paint, family: str) -> bool:
-    """Best-effort typeface selection for a canvas paint object.
+_TYPEFACE_CACHE: Dict[str, object] = {}
+_TYPEFACE_SENTINEL = object()
 
-    Attempts to use Skia helpers when available, then falls back to assigning
-    the family name directly. Returns True when a typeface was applied.
-    """
-    if not family or paint is None:
-        return False
 
+@dataclass
+class _EmojiCacheEntry:
+    key: Tuple[str, Tuple[str, ...], float, int]
+    segments: List[Tuple[object | None, str]]
+    original_typeface: object | None
+
+
+_EMOJI_SEGMENT_CACHE: "WeakKeyDictionary[object, _EmojiCacheEntry]" = (
+    WeakKeyDictionary()
+)
+
+
+def reset_canvas_font_caches() -> None:
+    """Clear cached Skia typefaces and emoji render plans (primarily for tests)."""
+
+    _TYPEFACE_CACHE.clear()
+    _EMOJI_SEGMENT_CACHE.clear()
+
+
+def _resolve_typeface(family: str):
+    cached = _TYPEFACE_CACHE.get(family, _TYPEFACE_SENTINEL)
+    if cached is not _TYPEFACE_SENTINEL:
+        return cached
+
+    typeface = None
     sk = skia
     if sk is not None:
         try:
-            typeface = None
             FontMgr = getattr(sk, "FontMgr", None)
             FontStyle = getattr(sk, "FontStyle", None)
             if FontMgr is not None and FontStyle is not None:
@@ -63,13 +84,53 @@ def _try_set_typeface(paint, family: str) -> bool:
                         typeface = TypefaceCtor(family)
                     except Exception:
                         typeface = None
-            if typeface is not None:
-                paint.typeface = typeface
-                return True
         except Exception:
-            # Fall through to the simpler string-based assignment below.
-            pass
+            typeface = None
 
+    if typeface is None:
+        typeface = family
+    _TYPEFACE_CACHE[family] = typeface
+    return typeface
+
+
+def _apply_typeface_value(paint, value) -> bool:
+    if paint is None:
+        return False
+    if value is None:
+        try:
+            paint.typeface = None
+            return True
+        except Exception:
+            try:
+                delattr(paint, "typeface")
+                return True
+            except Exception:
+                return False
+    try:
+        paint.typeface = value
+        return True
+    except Exception:
+        if isinstance(value, str):
+            try:
+                paint.typeface = value
+                return True
+            except Exception:
+                return False
+        return False
+
+
+def _try_set_typeface(paint, family: str) -> bool:
+    """Best-effort typeface selection for a canvas paint object."""
+    if not family or paint is None:
+        return False
+
+    typeface_value = _resolve_typeface(family)
+    if _apply_typeface_value(paint, typeface_value):
+        return True
+
+    # Fallback: attempt plain family assignment when cached object failed.
+    if isinstance(typeface_value, str):
+        return _apply_typeface_value(paint, typeface_value)
     try:
         paint.typeface = family
         return True
@@ -221,10 +282,6 @@ def draw_text_with_emoji_fallback(
         draw_text(text, x, y)
         return
 
-    # Unified path: handle mixed and all-emoji lines the same way by
-    # consistently splitting into runs and swapping typefaces per run. This
-    # avoids special-casing all-emoji lines while still allowing emoji-aware
-    # fonts where available.
     if len(runs) <= 1:
         draw_text(text, x, y)
         return
@@ -234,8 +291,24 @@ def draw_text_with_emoji_fallback(
     except Exception:
         original_typeface = None
 
-    families = emoji_families or DEFAULT_EMOJI_FAMILIES
-    cursor_x = x
+    families_list = [
+        str(fam) for fam in (emoji_families or DEFAULT_EMOJI_FAMILIES) if fam
+    ]
+    try:
+        approx_width = float(approx_char_width)
+    except Exception:
+        approx_width = 8.0
+    if approx_width <= 0:
+        approx_width = 8.0
+
+    families_tuple = tuple(families_list)
+    cache_key = (text, families_tuple, approx_width, id(original_typeface))
+
+    cache_entry = None
+    if paint is not None:
+        existing = _EMOJI_SEGMENT_CACHE.get(paint)
+        if existing is not None and existing.key == cache_key:
+            cache_entry = existing
 
     def _describe_typeface() -> str:
         if paint is None:
@@ -246,7 +319,6 @@ def draw_text_with_emoji_fallback(
             return "typeface=<unavailable>"
         if tf is None:
             return "typeface=None"
-        # Try common Skia-style family name accessors first.
         name = None
         try:
             get_family = getattr(tf, "getFamilyName", None)
@@ -257,21 +329,16 @@ def draw_text_with_emoji_fallback(
         except Exception:
             name = None
         ident = f"id={id(tf)}"
-        # String-based typefaces (older runtimes) just expose the family name.
         if isinstance(tf, str):
             return f"typeface=str:{tf!r} {ident}"
         if name:
             return f"typeface=skia:{name!r} {ident}"
-        # Fall back to the class name and repr so we can still distinguish
-        # different objects even when the family name API is unavailable.
         try:
             tf_repr = repr(tf)
         except Exception:
             tf_repr = "<repr-unavailable>"
         return f"typeface={type(tf).__name__!s} {ident} repr={tf_repr!r}"
 
-    # Optional debug logging for emoji runs; enabled only when a debug callback
-    # is provided so normal usage stays quiet.
     if debug is not None:
         try:
             debug(
@@ -282,57 +349,59 @@ def draw_text_with_emoji_fallback(
         except Exception:
             pass
 
-    for is_emoji, segment in runs:
-        if not segment:
-            continue
-
-        # For now, favour a simple, deterministic rule: use an explicit
-        # emoji-capable typeface for emoji runs, and restore the original
-        # base/canvas typeface for non-emoji runs. Glyph-based detection can be
-        # unreliable when the base font claims coverage but still renders tofu.
-        if is_emoji and families:
-            applied = False
-            for family in families:
-                if _try_set_typeface(paint, family):
-                    applied = True
+    if cache_entry is None:
+        segments: List[Tuple[object | None, str]] = []
+        for is_emoji, segment in runs:
+            if not segment:
+                continue
+            if is_emoji and families_list:
+                resolved_value = None
+                for family in families_list:
+                    resolved_value = _resolve_typeface(family)
                     if debug is not None:
                         try:
                             debug(
-                                f"emoji_draw applied family={family!r} for segment={segment!r} "
-                                f"-> {_describe_typeface()}"
+                                f"emoji_draw resolved family={family!r} for segment={segment!r}"
                             )
                         except Exception:
                             pass
-                    break
-            if not applied and original_typeface is not None:
-                try:
-                    paint.typeface = original_typeface
-                except Exception:
-                    pass
-        else:
-            # Non-emoji or no emoji families configured: stick with the
-            # original/base typeface so normal text stays consistent.
-            if original_typeface is not None:
-                try:
-                    paint.typeface = original_typeface
-                except Exception:
-                    pass
+                    if resolved_value is not None:
+                        break
+                segments.append((resolved_value, segment))
+            else:
+                segments.append((None, segment))
+        cache_entry = _EmojiCacheEntry(cache_key, segments, original_typeface)
+        if paint is not None:
+            _EMOJI_SEGMENT_CACHE[paint] = cache_entry
 
+    segments = cache_entry.segments
+    cached_original = cache_entry.original_typeface
+    cursor_x = x
+
+    for typeface_value, segment in segments:
+        if not segment:
+            continue
+        if typeface_value is None:
+            if cached_original is not None:
+                _apply_typeface_value(paint, cached_original)
+        else:
+            _apply_typeface_value(paint, typeface_value)
+            if debug is not None:
+                try:
+                    debug(
+                        f"emoji_draw using cached typeface for segment={segment!r} -> {_describe_typeface()}"
+                    )
+                except Exception:
+                    pass
         try:
             draw_text(segment, cursor_x, y)
         except Exception:
-            # As a last resort, try drawing the full text once.
             try:
                 draw_text(text, x, y)
             except Exception:
                 pass
             return
+        cursor_x += approx_width * len(segment)
 
-        cursor_x += approx_char_width * len(segment)
-
-    # Restore original typeface at the end.
-    if original_typeface is not None:
-        try:
-            paint.typeface = original_typeface
-        except Exception:
-            pass
+    if cached_original is not None:
+        _apply_typeface_value(paint, cached_original)

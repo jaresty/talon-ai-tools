@@ -133,12 +133,12 @@ evidence:
 
 rollback_plan: git restore --source=HEAD -- lib/telemetryExport.py _tests/test_telemetry_export.py docs/adr/evidence/0082/loop-4.md docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md
 
-delta_summary: helper:diff-snapshot=docs/adr/evidence/0082/loop-4.md#helper:diff-snapshot; added `_fetch_ui_dispatch_inline_stats()` and exported its payload in `snapshot_telemetry`, extending `_tests/test_telemetry_export.py` to cover the inline fallback artefact.
+delta_summary: helper:diff-snapshot=docs/adr/evidence/0082/loop-4.md#helper:diff-snapshot; added `_fetch_ui_dispatch_inline_stats()` and exported its payload in `snapshot_telemetry`, extending `_tests/test_telemetry_export.py` to cover the inline fallback artefact; appended stack-logged leaks evidence confirming Skia text blob retention.
 
 loops_remaining_forecast: 1 (confidence medium) – run overnight soak with the new telemetry artefacts and update operator guidance before marking ADR 0082 accepted.
 
 residual_constraints:
-- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that exports include dispatcher stats and leak evidence (`docs/adr/evidence/0082/loop-4.md`) points to Talon-held IOSurface tiles; monitor trigger: first post-loop overnight session; owning ADR: 0082.
+- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that exports include dispatcher stats and leak evidence (`docs/adr/evidence/0082/loop-4.md`) points to Talon-held IOSurface tiles and Skia text blobs; monitor trigger: first post-loop overnight session; owning ADR: 0082.
 - severity: Low | constraint: Help Hub copy still needs to reference the new dispatcher fallback telemetry counters; mitigation: draft guidance after soak data reviewed; monitor trigger: guardrail review queue.
 
 next_work:

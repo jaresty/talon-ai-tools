@@ -12,6 +12,19 @@ Process 19317: 19458674 leaks for 1873232784 total leaked bytes.
 - Source: `tmp/talon-leaks-1448.txt`
 - Notes: allocations present as repeated 20,480-byte IOSurface tiles retained during dispatcher fallback.
 
+## manual evidence – leaks stack snapshot (2026-01-17T23:00Z)
+
+```
+STACK OF 1920 INSTANCES OF 'ROOT LEAK: <non-object from libSkiaSharp.so>':
+...
+2   libSkiaSharp.so                       sk_textblob_builder_alloc_run + 40
+1   libSkiaSharp.so                       0x100ea0000 + 1514284
+0   libsystem_malloc.dylib                _malloc_zone_malloc_instrumented_or_legacy + 152
+```
+
+- Source: `tmp/talon-leaks-1500.txt`
+- Notes: stack logging ties leaked allocations to Skia text blob builds invoked via Python/CFFI during Talon UI dispatch.
+
 
 ## helper:rerun python3 -m pytest _tests/test_telemetry_export.py
 

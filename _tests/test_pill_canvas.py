@@ -113,7 +113,6 @@ class PillCanvasClickTests(unittest.TestCase):
             fn()
 
         dummy_canvas = MagicMock()
-        dummy_canvas.close = MagicMock()
         original_canvas = pillCanvas._pill_canvas
         pillCanvas._pill_canvas = dummy_canvas
         try:
@@ -124,8 +123,6 @@ class PillCanvasClickTests(unittest.TestCase):
 
             self.assertEqual(dispatched, [0])
             dummy_canvas.hide.assert_called_once()
-            dummy_canvas.close.assert_called_once()
-            self.assertIsNone(pillCanvas._pill_canvas)
         finally:
             pillCanvas._pill_canvas = original_canvas
 

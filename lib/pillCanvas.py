@@ -85,24 +85,6 @@ _warmup_handle = None
 _warmup_done = False
 
 
-def _release_pill_canvas() -> None:
-    global _pill_canvas
-    canvas_obj = _pill_canvas
-    if canvas_obj is None:
-        return
-    _pill_canvas = None
-    try:
-        canvas_obj.hide()
-    except Exception:
-        pass
-    close = getattr(canvas_obj, "close", None)
-    if callable(close):
-        try:
-            close()
-        except Exception:
-            pass
-
-
 def _stop_pill_warmup(interval: object | None = None) -> None:
     global _warmup_handle
     if interval is not None and interval is not _warmup_handle:
@@ -375,7 +357,11 @@ def hide_pill() -> None:
     _debug("Hide pill")
 
     def _hide():
-        _release_pill_canvas()
+        if _pill_canvas is not None:
+            try:
+                _pill_canvas.hide()
+            except Exception:
+                pass
 
     run_on_ui_thread(_hide)
 

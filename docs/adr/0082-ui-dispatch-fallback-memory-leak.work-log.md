@@ -290,3 +290,41 @@ next_work:
 - Behaviour: Run overnight soak and capture dispatcher telemetry artefacts (`leaks <talon-pid>` plus user.model_export_telemetry()); Validation: helper:rerun python3 -m pytest _tests/test_telemetry_export.py after soak data lands
 - Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
 - Behaviour: Correlate dispatcher inline stats with canvas font counters via telemetry export; Validation: python3 -m pytest _tests/test_telemetry_export.py && user.model_export_telemetry()
+
+## 2026-01-19 – Loop 9: investigate Skia text blob retention (kind: analysis)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 Decision bullet 3 – confirm next steps for the suggestion overlay so inline fallback no longer leaks Skia text blobs when Talon throttles scheduling.
+active_constraint: A single `model run suggest` still retains ~8k `SkTextBlob` allocations (≈1.2 MB) even after canvases close; without an exposed Skia cache purge, the suggestion overlay remains the dominant leak vector and blocks the overnight soak.
+expected_value:
+  Impact: Medium – validating Talon’s Skia API surface prevents us from chasing impossible fixes and directs effort toward viable mitigation.
+  Probability: High – REPL inspection and `leaks` runs deterministically exercise the behaviour.
+  Time Sensitivity: Medium – we must settle on a mitigation path before scheduling the soak and Help Hub guidance.
+  Uncertainty note: Medium – needed to confirm whether SkiaSharp exposed cache controls before committing to UI changes.
+validation_targets:
+  - /Applications/Talon.app/Contents/Resources/python/bin/python3 /Applications/Talon.app/Contents/Resources/repl.py (skia inspection + canvas stats)
+  - leaks 33006
+
+evidence:
+- green | 2026-01-19T07:12:44Z | exit 0 | /Applications/Talon.app/Contents/Resources/python/bin/python3 /Applications/Talon.app/Contents/Resources/repl.py
+    pointer: inline (listed `talon.skia` attrs; no `purge`/`flush` API beyond `Canvas.flush`, confirming Skia caches are not controllable from Python)
+- red | 2026-01-19T07:24:58Z | exit 0 | leaks 33006
+    pointer: inline (`SkTextBlob` leak stack persisted at ~8.5k instances after a single suggest cycle; truncation experiments did not reduce allocations)
+- green | 2026-01-19T07:28:12Z | exit 0 | /Applications/Talon.app/Contents/Resources/python/bin/python3 /Applications/Talon.app/Contents/Resources/repl.py
+    pointer: inline (`canvas_font_stats(reset=True)` / `canvas_font_stats()` instrumentation ready for future validation of collapsed-detail UI)
+
+rollback_plan: None (analysis-only loop; codebase left unchanged).
+
+delta_summary: helper:diff-snapshot=0 files changed; confirmed Talon’s Skia bindings lack cache purge APIs and established that the suggestion overlay’s long-form text must be gated (e.g., collapsed by default) to avoid minting thousands of blobs per request.
+
+loops_remaining_forecast: 2 (confidence medium) – build an expand/collapse path for long-form suggestion copy, then rerun the overnight soak with telemetry/`leaks` before updating operator guidance.
+
+residual_constraints:
+- severity: Medium | constraint: Suggestion overlay still emits ~8k `SkTextBlob`s per run; mitigation: switch to collapsed summaries with explicit expand affordance and revalidate via `canvas_font_stats` + `leaks`; monitor trigger: next suggestion UI pull request; owning ADR: 0082.
+- severity: Medium | constraint: Overnight idle soak (>12h) with dispatcher telemetry and canvas font stats remains pending; mitigation: execute once overlay churn is bounded; monitor trigger: soak scheduling; owning ADR: 0082.
+- severity: Low | constraint: Help Hub degraded-mode guidance still needs dispatcher fallback copy and telemetry pointers; mitigation: draft after soak review; monitor trigger: guardrail review queue.
+
+next_work:
+- Behaviour: Implement collapsed suggestion summaries with explicit expand/collapse; Validation: python3 -m pytest _tests/test_model_suggestion_gui.py + canvas_font_stats()/leaks spot check
+- Behaviour: Run overnight soak once suggestion churn is bounded; Validation: helper:rerun python3 -m pytest _tests/test_telemetry_export.py and captured soak artefacts
+- Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)

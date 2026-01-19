@@ -212,3 +212,39 @@ next_work:
 - Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
 - Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
 - Behaviour: Use telemetry export snapshots to correlate inline fallback with canvas stats; Validation: python3 -m pytest _tests/test_telemetry_export.py && model export telemetry artefact review
+
+## 2026-01-19 – Loop 7: lazily create/destroy pill canvas (kind: behaviour+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 Decision bullet 3 – ensure the pill dispatcher surface only holds Skia resources while a request is active.
+active_constraint: Pill cron warm-up kept the canvas alive and `_tests/test_pill_canvas.py` failed because `hide_pill` never closed the canvas, leaving idle sessions to retain Skia allocations.
+expected_value:
+  Impact: High – removing cron and releasing canvases immediately prevents background Skia churn when Talon is idle.
+  Probability: High – tests cover show/hide flows directly.
+  Time Sensitivity: Medium – mitigates rapid idle leaks while leaving time for downstream soak validation.
+  Uncertainty note: Medium – will validate with overnight leaks/telemetry run.
+validation_targets:
+  - python3 -m pytest _tests/test_pill_canvas.py
+
+evidence:
+- red | 2026-01-19T04:20:48Z | exit 1 | python3 -m pytest _tests/test_pill_canvas.py
+    pointer: docs/adr/evidence/0082/loop-7.md#red
+- green | 2026-01-19T04:22:15Z | exit 0 | python3 -m pytest _tests/test_pill_canvas.py
+    pointer: docs/adr/evidence/0082/loop-7.md#green
+- removal | 2026-01-19T04:23:03Z | exit 1 | python3 -m pytest _tests/test_pill_canvas.py
+    pointer: docs/adr/evidence/0082/loop-7.md#removal
+
+rollback_plan: git restore --source=HEAD -- lib/pillCanvas.py _tests/test_pill_canvas.py docs/adr/evidence/0082/loop-7.md docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md
+
+delta_summary: helper:diff-snapshot=docs/adr/evidence/0082/loop-7.md#helper:diff-snapshot; removed cron warm-up, switched `show_pill` to lazy creation, and made `hide_pill` release the canvas immediately.
+
+loops_remaining_forecast: 2 (confidence medium) – run the overnight soak with dispatcher telemetry and update operator guidance before marking ADR 0082 Accepted.
+
+residual_constraints:
+- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: run soak with the revised pill lifecycle and review telemetry/leaks (`docs/adr/evidence/0082/loop-7.md`); monitor trigger: first post-loop overnight session; owning ADR: 0082.
+- severity: Low | constraint: Help Hub copy still needs to reference the new dispatcher fallback telemetry counters and usage guidance; mitigation: draft guidance after soak data reviewed; monitor trigger: guardrail review queue.
+
+next_work:
+- Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
+- Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
+- Behaviour: Use telemetry export snapshots to correlate inline fallback with canvas stats; Validation: python3 -m pytest _tests/test_telemetry_export.py && model export telemetry artefact review

@@ -54,7 +54,7 @@ class PillCanvasClickTests(unittest.TestCase):
             patch.object(pillCanvas, "ui") as ui_mock,
             patch.object(pillCanvas, "_ensure_pill_canvas") as ensure_canvas,
             patch.object(pillCanvas, "actions") as actions_mock,
-            patch.object(pillCanvas, "cron") as cron_mock,
+            patch.object(pillCanvas, "run_on_ui_thread") as run_mock,
         ):
             ui_mock.main_screen.return_value = Screen()
             ui_mock.Rect.side_effect = lambda x, y, w, h: type(
@@ -63,7 +63,7 @@ class PillCanvasClickTests(unittest.TestCase):
             dummy_canvas = MagicMock()
             ensure_canvas.return_value = dummy_canvas
             actions_mock.user.notify = MagicMock()
-            cron_mock.after.side_effect = lambda _, fn: fn()
+            run_mock.side_effect = lambda fn, delay_ms=0: fn()
 
             pillCanvas.show_pill("Sending", RequestPhase.SENDING)
 
@@ -113,6 +113,7 @@ class PillCanvasClickTests(unittest.TestCase):
             fn()
 
         dummy_canvas = MagicMock()
+        dummy_canvas.close = MagicMock()
         original_canvas = pillCanvas._pill_canvas
         pillCanvas._pill_canvas = dummy_canvas
         try:
@@ -123,6 +124,8 @@ class PillCanvasClickTests(unittest.TestCase):
 
             self.assertEqual(dispatched, [0])
             dummy_canvas.hide.assert_called_once()
+            dummy_canvas.close.assert_called_once()
+            self.assertIsNone(pillCanvas._pill_canvas)
         finally:
             pillCanvas._pill_canvas = original_canvas
 

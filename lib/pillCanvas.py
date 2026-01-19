@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Callable, Optional
 
-from talon import Module, actions, app, canvas, ui, settings, cron
+from talon import Module, actions, app, canvas, ui, settings
 
 from .historyLifecycle import RequestPhase
 from .uiDispatch import run_on_ui_thread
@@ -79,40 +79,22 @@ def _debug(msg: str) -> None:
         pass
 
 
-# Proactively create the canvas on Talon's ready event to ensure a main-thread
-# resource context is available before worker threads attempt to show it.
-_warmup_handle = None
-_warmup_done = False
-
-
-def _on_app_ready():
-    """Warm up a canvas on the main thread; retry a few times via cron."""
-
-    def _warmup():
-        global _warmup_handle, _warmup_done
-        if _warmup_done:
-            return
-        try:
-            if _ensure_pill_canvas() is not None:
-                _debug("app ready: pill canvas warmup succeeded; stopping interval")
-                _warmup_done = True
-                if _warmup_handle:
-                    cron.cancel(_warmup_handle)
-                _warmup_handle = None
-        except Exception as e:
-            _debug(f"app ready warmup failed: {e}")
-
+def _release_pill_canvas() -> None:
+    global _pill_canvas
+    canvas_obj = _pill_canvas
+    if canvas_obj is None:
+        return
+    _pill_canvas = None
     try:
-        _debug("app ready: scheduling pill canvas warmup")
-        _warmup_handle = cron.interval("50ms", _warmup)
-    except Exception as e:
-        _debug(f"app ready warmup scheduling failed: {e}")
-
-
-try:
-    app.register("ready", _on_app_ready)
-except Exception:
-    pass
+        canvas_obj.hide()
+    except Exception:
+        pass
+    close = getattr(canvas_obj, "close", None)
+    if callable(close):
+        try:
+            close()
+        except Exception:
+            pass
 
 
 def _ensure_pill_canvas() -> canvas.Canvas:
@@ -342,11 +324,7 @@ def hide_pill() -> None:
     _debug("Hide pill")
 
     def _hide():
-        if _pill_canvas is not None:
-            try:
-                _pill_canvas.hide()
-            except Exception:
-                pass
+        _release_pill_canvas()
 
     run_on_ui_thread(_hide)
 

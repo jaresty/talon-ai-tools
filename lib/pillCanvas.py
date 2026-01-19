@@ -83,6 +83,30 @@ def _debug(msg: str) -> None:
 # resource context is available before worker threads attempt to show it.
 _warmup_handle = None
 _warmup_done = False
+_idle_release_handle = None
+_IDLE_RELEASE_DELAY = "15m"
+
+
+def _cancel_idle_release() -> None:
+    global _idle_release_handle
+    if _idle_release_handle is None:
+        return
+    try:
+        cron.cancel(_idle_release_handle)
+    except Exception:
+        pass
+    _idle_release_handle = None
+
+
+def _schedule_idle_release() -> None:
+    global _idle_release_handle
+    _cancel_idle_release()
+    try:
+        _idle_release_handle = cron.after(_IDLE_RELEASE_DELAY, _release_pill_canvas)
+        _debug(f"scheduled idle release in {_IDLE_RELEASE_DELAY}")
+    except Exception as exc:
+        _debug(f"idle release scheduling failed: {exc}")
+        _idle_release_handle = None
 
 
 def _release_pill_canvas() -> None:
@@ -90,6 +114,7 @@ def _release_pill_canvas() -> None:
     canvas_obj = _pill_canvas
     if canvas_obj is None:
         return
+    _cancel_idle_release()
     _pill_canvas = None
     try:
         canvas_obj.hide()
@@ -375,9 +400,18 @@ def hide_pill() -> None:
     _debug("Hide pill")
 
     def _hide():
-        _release_pill_canvas()
+        _schedule_idle_release()
 
     run_on_ui_thread(_hide)
+
+
+def force_release_pill_canvas() -> None:
+    """Immediately release pill canvas resources (main-thread safe)."""
+
+    def _force_release():
+        _release_pill_canvas()
+
+    run_on_ui_thread(_force_release)
 
 
 def handle_pill_click(phase: RequestPhase, action: Optional[str] = None) -> None:

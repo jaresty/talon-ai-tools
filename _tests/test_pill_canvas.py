@@ -120,14 +120,38 @@ class PillCanvasClickTests(unittest.TestCase):
             with patch.object(
                 pillCanvas, "run_on_ui_thread", side_effect=run_on_ui_thread
             ):
-                pillCanvas.hide_pill()
+                with patch.object(pillCanvas, "cron") as cron_mock:
+                    cron_mock.after.return_value = "idle_handle"
+                    pillCanvas.hide_pill()
 
             self.assertEqual(dispatched, [0])
+            dummy_canvas.hide.assert_not_called()
+            dummy_canvas.close.assert_not_called()
+            self.assertIs(pillCanvas._pill_canvas, dummy_canvas)
+            cron_mock.after.assert_called_once()
+            self.assertEqual(pillCanvas._idle_release_handle, "idle_handle")
+        finally:
+            pillCanvas._pill_canvas = original_canvas
+            pillCanvas._idle_release_handle = None
+
+    def test_idle_release_cancels_and_closes_canvas(self):
+        dummy_canvas = MagicMock()
+        dummy_canvas.close = MagicMock()
+        original_canvas = pillCanvas._pill_canvas
+        pillCanvas._pill_canvas = dummy_canvas
+        pillCanvas._idle_release_handle = "handle"
+        try:
+            with patch.object(pillCanvas, "cron") as cron_mock:
+                pillCanvas.force_release_pill_canvas()
+                cron_mock.cancel.assert_called_once_with("handle")
+
             dummy_canvas.hide.assert_called_once()
             dummy_canvas.close.assert_called_once()
             self.assertIsNone(pillCanvas._pill_canvas)
+            self.assertIsNone(pillCanvas._idle_release_handle)
         finally:
             pillCanvas._pill_canvas = original_canvas
+            pillCanvas._idle_release_handle = None
 
     def test_hide_prevents_late_show_from_background(self):
         # Simulate rapid hide after show scheduling; stale show should be skipped.

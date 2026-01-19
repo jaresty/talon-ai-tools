@@ -141,6 +141,24 @@ _prompt_pattern_hover_name: Optional[str] = None
 _prompt_pattern_drag_offset: Optional[Tuple[float, float]] = None
 _prompt_pattern_dragging: bool = False
 
+
+def _release_prompt_pattern_canvas() -> None:
+    global _prompt_pattern_canvas, _prompt_pattern_handlers_registered
+    canvas_obj = _prompt_pattern_canvas
+    if canvas_obj is None:
+        return
+    _prompt_pattern_canvas = None
+    _prompt_pattern_handlers_registered = False
+    try:
+        close = getattr(canvas_obj, "close", None)
+        if callable(close):
+            close()
+        else:
+            canvas_obj.hide()
+    except Exception:
+        pass
+
+
 _PANEL_WIDTH = 720
 _PANEL_HEIGHT = 600
 
@@ -539,10 +557,7 @@ def _close_prompt_pattern_canvas() -> None:
     _prompt_pattern_hover_name = None
     if _prompt_pattern_canvas is None:
         return
-    try:
-        _prompt_pattern_canvas.hide()
-    except Exception:
-        pass
+    _release_prompt_pattern_canvas()
 
 
 def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visual only

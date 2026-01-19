@@ -552,6 +552,23 @@ _hover_toggle: bool = False
 _last_rect: Optional["Rect"] = None
 _dragging: bool = False
 
+
+def _release_help_canvas() -> None:
+    global _help_canvas
+    canvas_obj = _help_canvas
+    if canvas_obj is None:
+        return
+    _help_canvas = None
+    try:
+        close = getattr(canvas_obj, "close", None)
+        if callable(close):
+            close()
+        else:
+            canvas_obj.hide()
+    except Exception:
+        pass
+
+
 # Default geometry for the quick help window. Kept in one place so future
 # tweaks do not require hunting for magic numbers.
 _PANEL_WIDTH = 820
@@ -789,11 +806,7 @@ def _ensure_canvas() -> canvas.Canvas:
                         HelpCanvasState, "compact", False
                     )
                     _debug(f"compact toggle -> {HelpCanvasState.compact}")
-                    try:
-                        _help_canvas.hide()
-                    except Exception:
-                        pass
-                    _help_canvas = None
+                    _release_help_canvas()
                     _open_canvas()
                     _drag_offset = None
                     _dragging = False
@@ -966,12 +979,13 @@ def _close_canvas() -> None:
         _hover_panel, \
         _hover_toggle, \
         _dragging
-    if _help_canvas is None:
+    canvas_obj = _help_canvas
+    if canvas_obj is None:
         HelpCanvasState.showing = False
         HelpGUIState.showing = False
         _drag_offset = None
         return
-    rect = getattr(_help_canvas, "rect", None)
+    rect = getattr(canvas_obj, "rect", None)
     if rect is not None:
         try:
             _last_rect = Rect(rect.x, rect.y, rect.width, rect.height)  # type: ignore
@@ -980,18 +994,14 @@ def _close_canvas() -> None:
     HelpCanvasState.showing = False
     HelpGUIState.showing = False
     HelpCanvasState.scroll_y = 0.0
-    try:
-        _debug("closing canvas quick help")
-        _help_canvas.hide()
-    except Exception:
-        pass
     _drag_offset = None
     _drag_offset_global = None
     _dragging = False
     _hover_close = False
     _hover_panel = False
     _hover_toggle = False
-    _help_canvas = None
+    _debug("closing canvas quick help")
+    _release_help_canvas()
 
 
 def _reset_help_state(

@@ -53,7 +53,16 @@ def hide_provider_canvas() -> None:
     ProviderCanvasState.showing = False
     ProviderCanvasState.lines = []
     if _canvas is not None:
-        _canvas.hide()
+        canvas_obj = _canvas
+        _canvas = None
+        try:
+            close = getattr(canvas_obj, "close", None)
+            if callable(close):
+                close()
+            else:
+                canvas_obj.hide()
+        except Exception:
+            pass
 
 
 @mod.action_class

@@ -127,19 +127,42 @@ class SuggestionCanvasState:
 
 
 _suggestion_canvas: Optional[canvas.Canvas] = None
-_suggestion_button_bounds: Dict[int, Tuple[int, int, int, int]] = {}
-_suggestion_hover_close: bool = False
 _suggestion_hover_index: Optional[int] = None
-_suggestion_drag_offset: Optional[Tuple[float, float]] = None
-_scroll_debug_samples: int = 0
-_scroll_state_debug_samples: int = 0
-_WHY_REASON_LABEL = "Why:"
-_AXES_LEGEND = "Axes: Completeness | Scope | Method | Form | Channel | Directional"
-_SECONDARY_INDENT = 12
-_REASONING_COLOR = "555555"
-_WHY_COLOR = "111111"
-_REASONING_INDENT = _SECONDARY_INDENT + 8
-_AXES_WRAP_MAX_CHARS = 90
+_suggestion_hover_close: bool = False
+_suggestion_drag_offset: Optional[tuple[float, float]] = None
+
+_suggestion_button_bounds: dict[int, tuple[float, float, float, float]] = {}
+_suggestion_scroll_track: Optional[tuple[float, float, float, float]] = None
+_suggestion_scroll_thumb: Optional[tuple[float, float, float, float]] = None
+_suggestion_scroll_ratio: float = 0.0
+
+
+def _release_suggestion_canvas() -> None:
+    global _suggestion_canvas
+    canvas_obj = _suggestion_canvas
+    if canvas_obj is None:
+        return
+    _suggestion_canvas = None
+    try:
+        close = getattr(canvas_obj, "close", None)
+        if callable(close):
+            close()
+        else:
+            canvas_obj.hide()
+    except Exception as exc:
+        _debug(f"failed to close suggestion canvas: {exc}")
+
+
+_SECONDARY_INDENT = 24
+_REASONING_INDENT = 28
+_AXES_WRAP_MAX_CHARS = 72
+_AXES_LEGEND = "Axes legend: C (completeness), S (scope), M (method), F (form), Ch (channel), Dir (directional)"
+_WHY_REASON_LABEL = "Reasoning:"
+_WHY_COLOR = "4A90E2"
+_REASONING_COLOR = "7A7A7A"
+_scroll_debug_samples = 0
+_scroll_state_debug_samples = 0
+
 
 # Simple geometry defaults to keep the panel centered and readable.
 _PANEL_WIDTH = 840
@@ -1064,10 +1087,7 @@ def _close_suggestion_canvas() -> None:
     _suggestion_drag_offset = None
     if _suggestion_canvas is None:
         return
-    try:
-        _suggestion_canvas.hide()
-    except Exception as e:
-        _debug(f"failed to hide suggestion canvas: {e}")
+    _release_suggestion_canvas()
 
 
 def _hydrate_axis_list(tokens: str, mapping: dict[str, str]) -> str:

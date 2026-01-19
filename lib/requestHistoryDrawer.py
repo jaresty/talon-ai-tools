@@ -40,8 +40,29 @@ class HistoryDrawerState:
 
 
 _history_canvas: Optional[canvas.Canvas] = None
+_history_canvas_released: bool = False
 _button_bounds: List[Tuple[int, int, int, int, int]] = []  # (idx, x1, y1, x2, y2)
 _last_key_handler = None
+
+
+def _release_history_canvas() -> None:
+    global _history_canvas, _history_canvas_released
+    canvas_obj = _history_canvas
+    if canvas_obj is None:
+        return
+    _history_canvas_released = True
+    hide_method = getattr(canvas_obj, "hide", None)
+    if callable(hide_method):
+        try:
+            hide_method()
+        except Exception:
+            pass
+    close_method = getattr(canvas_obj, "close", None)
+    if callable(close_method) and close_method is not hide_method:
+        try:
+            close_method()
+        except Exception:
+            pass
 
 
 def _request_is_in_flight() -> bool:
@@ -105,9 +126,12 @@ def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
 
 
 def _ensure_canvas() -> canvas.Canvas:
-    global _history_canvas
-    if _history_canvas is not None:
+    global _history_canvas, _history_canvas_released
+    if _history_canvas is not None and not _history_canvas_released:
         return _history_canvas
+    if _history_canvas_released:
+        _history_canvas = None
+        _history_canvas_released = False
 
     rect = ui.Rect(40, 80, 520, 260)
     _history_canvas = canvas.Canvas.from_rect(rect)
@@ -356,10 +380,7 @@ class UserActions:
         HistoryDrawerState.showing = False
         if _history_canvas is None:
             return
-        try:
-            _history_canvas.hide()
-        except Exception:
-            pass
+        _release_history_canvas()
 
     def request_history_drawer_prev_entry():
         """Move selection to previous entry in the history drawer"""

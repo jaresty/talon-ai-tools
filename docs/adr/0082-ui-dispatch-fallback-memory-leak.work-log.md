@@ -248,3 +248,45 @@ next_work:
 - Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
 - Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
 - Behaviour: Use telemetry export snapshots to correlate inline fallback with canvas stats; Validation: python3 -m pytest _tests/test_telemetry_export.py && model export telemetry artefact review
+
+## 2026-01-19 – Loop 8: history drawer canvas release ordering (kind: behaviour+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 Decision bullet 3 & residual constraint “Overnight idle soak” – ensure request history drawer releases its canvas the same way as other overlays so inline fallback doesn’t drop pending hide handlers and the new regression stays green.
+active_constraint: `_release_history_canvas` set the module-level reference to `None` before the Talon canvas could invoke `hide`, so `_tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_close_allows_inflight` failed (red) and inline fallback left stale handlers, letting the drawer leak Skia objects across requests.
+expected_value:
+  Impact: Medium – keeps history drawer lifecycle aligned with other overlays, closing a remaining leak vector before the overnight soak.
+  Probability: High – the targeted regression test and overlay suite deterministically cover the new ordering.
+  Time Sensitivity: Medium – overnight soak depends on all canvases releasing cleanly; letting this linger would skew telemetry.
+  Uncertainty note: Low – change is confined to overlay helpers and validated via unit tests.
+validation_targets:
+  - python3 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_close_allows_inflight
+  - python3 -m pytest _tests/test_model_response_canvas.py _tests/test_model_help_canvas.py _tests/test_model_suggestion_gui.py _tests/test_model_pattern_gui.py _tests/test_prompt_pattern_gui.py
+
+evidence:
+- red | 2026-01-19T05:49:12Z | exit 1 | python3 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_close_allows_inflight
+    helper:diff-snapshot=lib/requestHistoryDrawer.py | 11 +++++----
+    pointer: inline (hide was never invoked once `_history_canvas` dropped to `None` ahead of the MagicMock handler)
+- green | 2026-01-19T05:52:04Z | exit 0 | python3 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_close_allows_inflight
+    helper:diff-snapshot=lib/requestHistoryDrawer.py | 11 +++++----
+    pointer: inline (hide now runs before the reference is cleared, keeping the test green)
+- removal | 2026-01-19T05:53:18Z | exit 1 | python3 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_close_allows_inflight
+    helper:diff-snapshot=lib/requestHistoryDrawer.py | 11 +++++----
+    pointer: inline (reverting to close-first ordering drops hide again and recreates the failure)
+- green | 2026-01-19T05:54:26Z | exit 0 | python3 -m pytest _tests/test_model_response_canvas.py _tests/test_model_help_canvas.py _tests/test_model_suggestion_gui.py _tests/test_model_pattern_gui.py _tests/test_prompt_pattern_gui.py
+    helper:diff-snapshot=lib/helpHub.py | 22 ++++++++----; lib/modelHelpCanvas.py | 36 +++++++++++-----; lib/modelPatternGUI.py | 27 ++++++++----; lib/modelPromptPatternGUI.py | 23 ++++++----; lib/modelResponseCanvas.py | 42 ++++++++++------; lib/modelSuggestionGUI.py | 52 +++++++++++++-----; lib/providerCanvas.py | 11 +++++-
+
+rollback_plan: git restore --source=HEAD -- lib/helpHub.py lib/modelHelpCanvas.py lib/modelPatternGUI.py lib/modelPromptPatternGUI.py lib/modelResponseCanvas.py lib/modelSuggestionGUI.py lib/providerCanvas.py lib/requestHistoryDrawer.py _tests/test_request_history_drawer.py docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md
+
+delta_summary: helper:diff-snapshot=lib/requestHistoryDrawer.py | 33 +++++++++++++++++++++++-----; lib/helpHub.py | 22 +++++++++++++++----; lib/modelHelpCanvas.py | 36 +++++++++++++++++++-----------; lib/modelPatternGUI.py | 27 +++++++++++++++++------; lib/modelPromptPatternGUI.py | 23 ++++++++++++++++----; lib/modelResponseCanvas.py | 42 ++++++++++++++++++++---------------; lib/modelSuggestionGUI.py | 52 ++++++++++++++++++++++++++++++--------------; lib/providerCanvas.py | 11 +++++++++-
+
+loops_remaining_forecast: 2 (confidence medium) – run the overnight soak with the telemetry counters and publish Help Hub guidance before marking ADR 0082 Accepted.
+
+residual_constraints:
+- severity: Medium | constraint: Overnight idle soak (>12h) with dispatcher telemetry and canvas font stats remains pending; mitigation: schedule soak now that all canvases share the release helper; monitor trigger: next idle session; owning ADR: 0082.
+- severity: Low | constraint: Help Hub degraded-mode guidance still needs the dispatcher fallback copy and telemetry pointers; mitigation: draft after soak review; monitor trigger: guardrail review queue.
+
+next_work:
+- Behaviour: Run overnight soak and capture dispatcher telemetry artefacts (`leaks <talon-pid>` plus user.model_export_telemetry()); Validation: helper:rerun python3 -m pytest _tests/test_telemetry_export.py after soak data lands
+- Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
+- Behaviour: Correlate dispatcher inline stats with canvas font counters via telemetry export; Validation: python3 -m pytest _tests/test_telemetry_export.py && user.model_export_telemetry()

@@ -87,6 +87,23 @@ _tap_key_handler_registered = False
 _hub_key_handler = None  # set after canvas creation
 _handlers_registered = False
 
+
+def _release_hub_canvas() -> None:
+    global _hub_canvas
+    canvas_obj = _hub_canvas
+    if canvas_obj is None:
+        return
+    _hub_canvas = None
+    try:
+        close = getattr(canvas_obj, "close", None)
+        if callable(close):
+            close()
+        else:
+            canvas_obj.hide()
+    except Exception as e:
+        _log(f"help hub close failed: {e}")
+
+
 _HELP_METADATA_SCHEMA_VERSION = "help-hub.metadata.v1"
 _HELP_METADATA_PROVENANCE_BASE = {
     "adr": "ADR-0062",
@@ -1704,10 +1721,7 @@ def help_hub_close():
         _tap_key_handler_registered = False
     _global_key_handler_registered = False
     if _hub_canvas is not None:
-        try:
-            _hub_canvas.hide()
-        except Exception as e:
-            _log(f"help hub hide failed: {e}")
+        _release_hub_canvas()
 
 
 def help_hub_test_click(label: str) -> None:

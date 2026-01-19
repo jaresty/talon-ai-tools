@@ -100,6 +100,25 @@ except NameError:
     _last_meta_signature = None
 
 
+def _release_response_canvas(*, close_canvas: bool = True) -> None:
+    global _response_canvas, _response_handlers_registered, _last_hide_handler
+    canvas_obj = _response_canvas
+    if canvas_obj is None:
+        return
+    _response_canvas = None
+    _response_handlers_registered = False
+    _last_hide_handler = None
+    if close_canvas:
+        try:
+            close = getattr(canvas_obj, "close", None)
+            if callable(close):
+                close()
+            else:
+                canvas_obj.hide()
+        except Exception:
+            pass
+
+
 def _capture_previous_focus() -> None:
     if getattr(ResponseCanvasState, "showing", False):
         return
@@ -475,6 +494,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
         except Exception:
             pass
         _restore_previous_focus()
+        _release_response_canvas(close_canvas=False)
 
     _last_hide_handler = _hide_handler
 
@@ -725,12 +745,8 @@ def _ensure_response_canvas() -> canvas.Canvas:
                     except Exception:
                         pass
                     if key == "close":
-                        ResponseCanvasState.showing = False
                         ResponseCanvasState.scroll_y = 0.0
-                        try:
-                            _response_canvas.hide()
-                        except Exception:
-                            pass
+                        actions.user.model_response_canvas_close()
                         _response_drag_offset = None
                         return
                     return
@@ -829,11 +845,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 return
             key = (getattr(evt, "key", "") or "").lower()
             if key in ("escape", "esc"):
-                ResponseCanvasState.showing = False
-                try:
-                    _response_canvas.hide()
-                except Exception:
-                    pass
+                actions.user.model_response_canvas_close()
             elif key in ("pagedown", "page_down"):
                 ResponseCanvasState.scroll_y = clamp_scroll(
                     ResponseCanvasState.scroll_y + 200, ResponseCanvasState.max_scroll
@@ -2201,10 +2213,6 @@ class UserActions:
             ResponseCanvasState.meta_expanded = False
             ResponseCanvasState.meta_pinned_request_id = ""
             try:
-                canvas_obj.hide()
-            except Exception:
-                pass
-            try:
                 clear_response_fallback(getattr(GPTState, "last_request_id", None))
             except Exception:
                 pass
@@ -2221,6 +2229,7 @@ class UserActions:
             except Exception:
                 state = None
             _restore_previous_focus()
+            _release_response_canvas()
         else:
             _capture_previous_focus()
             close_common_overlays(
@@ -2316,10 +2325,6 @@ class UserActions:
         ResponseCanvasState.meta_expanded = False
         ResponseCanvasState.meta_pinned_request_id = ""
         try:
-            _response_canvas.hide()
-        except Exception:
-            pass
-        try:
             GPTState.suppress_response_canvas_close = False
         except Exception:
             pass
@@ -2328,6 +2333,7 @@ class UserActions:
         except Exception:
             state = None
         _restore_previous_focus()
+        _release_response_canvas()
         if state and getattr(state, "phase", None) in (
             RequestPhase.SENDING,
             RequestPhase.STREAMING,

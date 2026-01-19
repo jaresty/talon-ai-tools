@@ -141,11 +141,27 @@ class PatternCanvasState:
 
 
 _pattern_canvas: Optional[canvas.Canvas] = None
-_pattern_button_bounds: Dict[str, Tuple[int, int, int, int]] = {}
-_pattern_drag_offset: Optional[Tuple[float, float]] = None
+_pattern_button_bounds: dict[str, tuple[float, float, float, float]] = {}
 _pattern_hover_close: bool = False
 _pattern_hover_key: Optional[str] = None
-_line_height = 18
+_pattern_drag_offset: Optional[tuple[float, float]] = None
+
+
+def _release_pattern_canvas() -> None:
+    global _pattern_canvas
+    canvas_obj = _pattern_canvas
+    if canvas_obj is None:
+        return
+    _pattern_canvas = None
+    try:
+        close = getattr(canvas_obj, "close", None)
+        if callable(close):
+            close()
+        else:
+            canvas_obj.hide()
+    except Exception:
+        pass
+
 
 # Default geometry for the pattern picker window.
 _PANEL_WIDTH = 720
@@ -773,10 +789,7 @@ def _close_pattern_canvas() -> None:
     _pattern_hover_key = None
     if _pattern_canvas is None:
         return
-    try:
-        _pattern_canvas.hide()
-    except Exception:
-        pass
+    _release_pattern_canvas()
 
 
 def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual only

@@ -43,6 +43,14 @@ class TelemetryExportTests(unittest.TestCase):
             "last_wall_time": "2026-01-17T14:20:00Z",
             "seconds_since_last": 4.0,
             "active": True,
+            "canvas_font": {
+                "typeface_cache_hits": 7,
+                "typeface_cache_misses": 2,
+                "emoji_plan_hits": 5,
+                "emoji_plan_misses": 1,
+                "segments_drawn": 42,
+                "emoji_segments_drawn": 6,
+            },
         }
 
         with patch.object(

@@ -87,6 +87,15 @@ def _fetch_ui_dispatch_inline_stats() -> Dict[str, Any] | None:
     active_value = raw_stats.get("active")
     active = bool(active_value)
 
+    canvas_font_payload: Dict[str, int] = {}
+    raw_canvas = raw_stats.get("canvas_font")
+    if isinstance(raw_canvas, Mapping):
+        for key, value in raw_canvas.items():
+            count_value = _coerce_int(value)
+            if count_value < 0:
+                continue
+            canvas_font_payload[str(key)] = count_value
+
     stats_payload: Dict[str, Any] = {
         "counts": counts_payload,
         "total": total_value,
@@ -95,6 +104,8 @@ def _fetch_ui_dispatch_inline_stats() -> Dict[str, Any] | None:
         "seconds_since_last": seconds_since_last,
         "active": active,
     }
+    if canvas_font_payload:
+        stats_payload["canvas_font"] = canvas_font_payload
 
     return stats_payload
 

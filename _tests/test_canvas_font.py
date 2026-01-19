@@ -52,6 +52,8 @@ class CanvasFontCachingTests(unittest.TestCase):
         reset_fn = getattr(self.__class__, "_reset_caches", None)
         if callable(reset_fn):
             reset_fn()
+        # Ensure stats counters start from zero for each test.
+        self._canvas_font.canvas_font_stats(reset=True)
         self._skia.stats.typeface_creations = 0
         self._skia.stats.match_calls = 0
 
@@ -79,6 +81,14 @@ class CanvasFontCachingTests(unittest.TestCase):
             first_creations,
             msg="apply_canvas_typeface should reuse cached Skia typefaces",
         )
+
+        stats = self._canvas_font.canvas_font_stats(reset=True)
+        self.assertGreaterEqual(stats.get("typeface_cache_misses", 0), 1)
+        self.assertGreaterEqual(stats.get("typeface_cache_hits", 0), 1)
+        self.assertEqual(stats.get("emoji_plan_hits"), 0)
+        self.assertEqual(stats.get("emoji_plan_misses"), 0)
+        self.assertEqual(stats.get("segments_drawn"), 0)
+        self.assertEqual(stats.get("emoji_segments_drawn"), 0)
 
     def test_draw_text_with_emoji_fallback_caches_segments(self) -> None:
         class _DummyCanvas:
@@ -121,3 +131,8 @@ class CanvasFontCachingTests(unittest.TestCase):
             msg="draw_text_with_emoji_fallback should reuse cached emoji typefaces",
         )
         self.assertGreaterEqual(len(draw_calls), 2)
+
+        stats = self._canvas_font.canvas_font_stats(reset=True)
+        self.assertGreaterEqual(stats.get("emoji_plan_misses", 0), 1)
+        self.assertGreaterEqual(stats.get("segments_drawn", 0), 6)
+        self.assertGreaterEqual(stats.get("emoji_segments_drawn", 0), 2)

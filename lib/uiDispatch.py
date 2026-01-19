@@ -258,6 +258,19 @@ def ui_dispatch_inline_stats(*, reset: bool = False) -> dict[str, object]:
         if current_monotonic >= last_monotonic_value > 0:
             seconds_since_last = current_monotonic - last_monotonic_value
 
+    canvas_stats: Dict[str, int] = {}
+    try:
+        from . import canvasFont as _canvas_font_module  # type: ignore
+    except Exception:
+        _canvas_font_module = None  # type: ignore[assignment]
+    if _canvas_font_module is not None:
+        stats_fn = getattr(_canvas_font_module, "canvas_font_stats", None)
+        if callable(stats_fn):
+            try:
+                canvas_stats = stats_fn(reset=reset)
+            except Exception:
+                canvas_stats = {}
+
     return {
         "counts": counts,
         "total": total,
@@ -265,6 +278,7 @@ def ui_dispatch_inline_stats(*, reset: bool = False) -> dict[str, object]:
         "last_wall_time": last_wall_iso,
         "seconds_since_last": seconds_since_last,
         "active": ui_dispatch_fallback_active(),
+        "canvas_font": canvas_stats,
     }
 
 

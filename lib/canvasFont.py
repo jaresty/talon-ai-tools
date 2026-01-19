@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
+import threading
 from typing import Callable, Optional, Dict, List, Tuple
 from weakref import WeakKeyDictionary
 
@@ -41,6 +42,20 @@ _TYPEFACE_SENTINEL = object()
 
 
 @dataclass
+class _CanvasFontStats:
+    typeface_cache_hits: int = 0
+    typeface_cache_misses: int = 0
+    emoji_plan_hits: int = 0
+    emoji_plan_misses: int = 0
+    segments_drawn: int = 0
+    emoji_segments_drawn: int = 0
+
+
+_STATS_LOCK = threading.Lock()
+_STATS = _CanvasFontStats()
+
+
+@dataclass
 class _EmojiCacheEntry:
     key: Tuple[str, Tuple[str, ...], float, int]
     segments: List[Tuple[object | None, str]]
@@ -52,16 +67,40 @@ _EMOJI_SEGMENT_CACHE: "WeakKeyDictionary[object, _EmojiCacheEntry]" = (
 )
 
 
+def _reset_stats() -> None:
+    global _STATS
+    with _STATS_LOCK:
+        _STATS = _CanvasFontStats()
+
+
+def _stats_increment(field: str, value: int = 1) -> None:
+    if value == 0:
+        return
+    with _STATS_LOCK:
+        setattr(_STATS, field, getattr(_STATS, field) + value)
+
+
+def canvas_font_stats(*, reset: bool = False) -> Dict[str, int]:
+    global _STATS
+    with _STATS_LOCK:
+        snapshot = asdict(_STATS)
+        if reset:
+            _STATS = _CanvasFontStats()
+    return snapshot
+
+
 def reset_canvas_font_caches() -> None:
     """Clear cached Skia typefaces and emoji render plans (primarily for tests)."""
 
     _TYPEFACE_CACHE.clear()
     _EMOJI_SEGMENT_CACHE.clear()
+    _reset_stats()
 
 
 def _resolve_typeface(family: str):
     cached = _TYPEFACE_CACHE.get(family, _TYPEFACE_SENTINEL)
     if cached is not _TYPEFACE_SENTINEL:
+        _stats_increment("typeface_cache_hits")
         return cached
 
     typeface = None
@@ -90,6 +129,7 @@ def _resolve_typeface(family: str):
     if typeface is None:
         typeface = family
     _TYPEFACE_CACHE[family] = typeface
+    _stats_increment("typeface_cache_misses")
     return typeface
 
 
@@ -279,10 +319,14 @@ def draw_text_with_emoji_fallback(
 
     runs = _split_emoji_runs(text)
     if not runs:
+        _stats_increment("segments_drawn")
         draw_text(text, x, y)
         return
 
     if len(runs) <= 1:
+        _stats_increment("segments_drawn")
+        if runs and runs[0][0]:
+            _stats_increment("emoji_segments_drawn")
         draw_text(text, x, y)
         return
 
@@ -309,6 +353,7 @@ def draw_text_with_emoji_fallback(
         existing = _EMOJI_SEGMENT_CACHE.get(paint)
         if existing is not None and existing.key == cache_key:
             cache_entry = existing
+            _stats_increment("emoji_plan_hits")
 
     def _describe_typeface() -> str:
         if paint is None:
@@ -371,6 +416,7 @@ def draw_text_with_emoji_fallback(
             else:
                 segments.append((None, segment))
         cache_entry = _EmojiCacheEntry(cache_key, segments, original_typeface)
+        _stats_increment("emoji_plan_misses")
         if paint is not None:
             _EMOJI_SEGMENT_CACHE[paint] = cache_entry
 
@@ -381,10 +427,14 @@ def draw_text_with_emoji_fallback(
     for typeface_value, segment in segments:
         if not segment:
             continue
+
+        _stats_increment("segments_drawn")
+
         if typeface_value is None:
             if cached_original is not None:
                 _apply_typeface_value(paint, cached_original)
         else:
+            _stats_increment("emoji_segments_drawn")
             _apply_typeface_value(paint, typeface_value)
             if debug is not None:
                 try:

@@ -141,10 +141,6 @@ residual_constraints:
 - severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that exports include dispatcher stats and leak evidence (`docs/adr/evidence/0082/loop-4.md`) points to Talon-held IOSurface tiles and Skia text blobs; monitor trigger: first post-loop overnight session; owning ADR: 0082.
 - severity: Low | constraint: Help Hub copy still needs to reference the new dispatcher fallback telemetry counters; mitigation: draft guidance after soak data reviewed; monitor trigger: guardrail review queue.
 
-next_work:
-- Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
-- Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
-
 ## 2026-01-17 – Loop 5: cache Skia typefaces and emoji segments (kind: behaviour+tests)
 
 helper_version: helper:v20251223.1
@@ -179,4 +175,40 @@ residual_constraints:
 next_work:
 - Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
 - Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
-- Behaviour: Correlate telemetry exports with Skia stats to confirm leak bound; Validation: python3 -m pytest _tests/test_telemetry_export.py && manual telemetry snapshot review
+- Behaviour: Use telemetry export snapshots to correlate inline fallback with canvas stats; Validation: python3 -m pytest _tests/test_telemetry_export.py && model export telemetry artefact review
+
+## 2026-01-19 – Loop 6: instrument canvas font telemetry (kind: behaviour+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR 0082 Decision bullets 3–4 – expose dispatcher fallback render activity through canvas font counters so telemetry exports capture Skia churn during inline drains.
+active_constraint: Telemetry exports and tests could not observe Skia text cache behaviour; `_tests/test_canvas_font.py` failed once the new stats API was referenced because `canvas_font_stats` and dispatcher wiring were absent.
+expected_value:
+  Impact: High – operators gain in-session visibility into text rendering churn, enabling quicker detection of fallback-induced leaks.
+  Probability: High – adding counters inside `canvasFont` and plumbing them through `ui_dispatch_inline_stats` deterministically satisfies the new regression tests.
+  Time Sensitivity: Medium – instrumentation is needed before long-running soaks so data collection isn’t blocked, but one loop delay is tolerable.
+  Uncertainty note: Medium – assumes the counters track real-world Skia activity; overnight soak will validate correlation.
+validation_targets:
+  - python3 -m pytest _tests/test_canvas_font.py _tests/test_telemetry_export.py
+
+evidence:
+- red | 2026-01-19T02:31:13Z | exit 1 | python3 -m pytest _tests/test_canvas_font.py _tests/test_telemetry_export.py
+    pointer: docs/adr/evidence/0082/loop-6.md#red
+- green | 2026-01-19T02:31:55Z | exit 0 | python3 -m pytest _tests/test_canvas_font.py _tests/test_telemetry_export.py
+    pointer: docs/adr/evidence/0082/loop-6.md#green
+- removal | 2026-01-19T02:32:30Z | exit 1 | python3 -m pytest _tests/test_canvas_font.py _tests/test_telemetry_export.py
+    pointer: docs/adr/evidence/0082/loop-6.md#removal
+
+rollback_plan: git restore --source=HEAD -- lib/canvasFont.py lib/telemetryExport.py lib/uiDispatch.py _tests/test_canvas_font.py _tests/test_telemetry_export.py docs/adr/evidence/0082/loop-6.md docs/adr/0082-ui-dispatch-fallback-memory-leak.work-log.md
+
+delta_summary: helper:diff-snapshot=docs/adr/evidence/0082/loop-6.md#helper:diff-snapshot; added `canvas_font_stats()` instrumentation and counters, threaded stats into `ui_dispatch_inline_stats`, exported sanitized payloads in telemetry snapshots, and extended regression tests to assert counter availability.
+
+loops_remaining_forecast: 2 (confidence medium) – run the overnight soak with telemetry counters and update operator guidance before flipping ADR 0082 to Accepted.
+
+residual_constraints:
+- severity: Medium | constraint: Overnight idle soak (>12h) with inline fallback telemetry captured remains pending; mitigation: schedule soak now that dispatcher stats are exported; monitor trigger: first post-loop overnight session; owning ADR: 0082.
+- severity: Low | constraint: Help Hub copy still needs to reference the new dispatcher fallback telemetry counters and usage guidance; mitigation: draft guidance after soak data reviewed; monitor trigger: guardrail review queue.
+
+next_work:
+- Behaviour: Run overnight soak and capture dispatcher telemetry artefacts; Validation: manual soak log with helper:rerun once data collected
+- Behaviour: Update Help Hub degraded-mode guidance; Validation: docs/helphub/dispatcher-fallback.md (manual review once drafted)
+- Behaviour: Use telemetry export snapshots to correlate inline fallback with canvas stats; Validation: python3 -m pytest _tests/test_telemetry_export.py && model export telemetry artefact review

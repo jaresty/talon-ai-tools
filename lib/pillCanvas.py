@@ -85,43 +85,28 @@ _warmup_handle = None
 _warmup_done = False
 
 
-def _stop_pill_warmup(interval: object | None = None) -> None:
-    global _warmup_handle
-    if interval is not None and interval is not _warmup_handle:
-        return
-    if _warmup_handle is None:
-        return
-    try:
-        cron.cancel(_warmup_handle)
-    except Exception:
-        pass
-    _warmup_handle = None
-
-
-def _pill_warmup_tick() -> None:
-    global _warmup_done
-    if _warmup_done:
-        _stop_pill_warmup()
-        return
-    try:
-        if _ensure_pill_canvas() is not None:
-            _debug("app ready: pill canvas warmup succeeded; stopping interval")
-            _warmup_done = True
-            _stop_pill_warmup()
-    except Exception as exc:
-        _debug(f"app ready warmup failed: {exc}")
-
-
 def _on_app_ready():
     """Warm up a canvas on the main thread; retry a few times via cron."""
-    global _warmup_handle
-    if _warmup_done or _warmup_handle is not None:
-        return
+
+    def _warmup():
+        global _warmup_handle, _warmup_done
+        if _warmup_done:
+            return
+        try:
+            if _ensure_pill_canvas() is not None:
+                _debug("app ready: pill canvas warmup succeeded; stopping interval")
+                _warmup_done = True
+                if _warmup_handle:
+                    cron.cancel(_warmup_handle)
+                _warmup_handle = None
+        except Exception as e:
+            _debug(f"app ready warmup failed: {e}")
+
     try:
         _debug("app ready: scheduling pill canvas warmup")
-        _warmup_handle = cron.interval("50ms", _pill_warmup_tick)
-    except Exception as exc:
-        _debug(f"app ready warmup scheduling failed: {exc}")
+        _warmup_handle = cron.interval("50ms", _warmup)
+    except Exception as e:
+        _debug(f"app ready warmup scheduling failed: {e}")
 
 
 try:

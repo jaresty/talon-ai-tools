@@ -1093,14 +1093,6 @@
       }
     },
     "presets": {
-      "coach_junior": {
-        "audience": "to junior engineer",
-        "key": "coach_junior",
-        "label": "Coach junior",
-        "spoken": "coach",
-        "tone": "gently",
-        "voice": "as teacher"
-      },
       "designer_to_pm": {
         "audience": "to product manager",
         "key": "designer_to_pm",
@@ -1167,9 +1159,6 @@
       }
     },
     "spoken_map": {
-      "coach": "coach_junior",
-      "coach junior": "coach_junior",
-      "coach_junior": "coach_junior",
       "design": "designer_to_pm",
       "designer to pm": "designer_to_pm",
       "designer_to_pm": "designer_to_pm",
@@ -1636,7 +1625,6 @@
         }
       },
       "presets": {
-        "persona=coach_junior": "persona-coach_junior",
         "persona=designer_to_pm": "persona-designer_to_pm",
         "persona=executive_brief": "persona-executive_brief",
         "persona=fun_mode": "persona-fun_mode",
@@ -2175,7 +2163,6 @@
       "orthogonal": "orthogonal",
       "pain": "pain",
       "parallel": "parallel",
-      "persona=coach_junior": "persona-coach_junior",
       "persona=designer_to_pm": "persona-designer_to_pm",
       "persona=executive_brief": "persona-executive_brief",
       "persona=fun_mode": "persona-fun_mode",
@@ -2338,8 +2325,8 @@
   "checksums": {
     "axes": "1ddc698dc214dedbac379be2bb54c1242559a05232e92f66d999ee71df16d4a2",
     "static_prompts": "ce96407da230668e6eae5b9e315bb98f8823979c067692d3d278d803299f3274",
-    "persona": "2923ebb09cf58ca7a65dcad87e187e2cd5d7d515837942ea7907cf8ec7ba6cef",
+    "persona": "08cebb8aa66ec4d2eaa4c0651a9ee1ca6abb144f2f831919fbd97a93bf1440db",
     "hierarchy": "34fe23d4a1deb179e69883140897f4bd52d730c880982fb547dfc470b41c76d5",
-    "slugs": "8de367d818ca790b896d14f12fff7429d88c55e7d47a318c343c54267bae9c7c"
+    "slugs": "2872ac1284281698dfeddfa72da35b17455f8fcbe3b2c230c0ff798682306b48"
   }
 }

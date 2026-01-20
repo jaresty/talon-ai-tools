@@ -242,6 +242,11 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 		return s.applyPersonaAxis(axis, token, false)
 	}
 
+	// Check if token is a persona preset (no persona= prefix required)
+	if _, _, ok := s.grammar.ResolvePersonaPreset(token); ok {
+		return s.applyPersonaPreset(token, false)
+	}
+
 	s.unrecognized = append(s.unrecognized, token)
 	return s.fail(&CLIError{
 		Type:         errorUnknownToken,

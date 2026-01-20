@@ -234,14 +234,7 @@ PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
         voice="as programmer",
         audience="to programmer",
     ),
-    PersonaPreset(
-        key="coach_junior",
-        label="Coach junior",
-        spoken="coach",
-        voice="as teacher",
-        audience="to junior engineer",
-        tone="gently",
-    ),
+    # Removed coach_junior - conflicts with 'coach' intent and overlaps with teach_junior_dev (mentor).
     PersonaPreset(
         key="teach_junior_dev",
         label="Teach junior dev",

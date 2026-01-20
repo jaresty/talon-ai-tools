@@ -604,14 +604,15 @@ func TestPersonaPresetUsesSpokenSlugInCommand(t *testing.T) {
 
 	m.rebuildCommandLine()
 
+	// Persona presets no longer need persona= prefix - bar build recognizes them by order
 	command := strings.TrimSpace(strings.TrimPrefix(m.commandInput.Value(), "bar build"))
-	if command != "persona=coach" {
-		t.Fatalf("expected command input to use spoken slug, got %q", command)
+	if command != "coach" {
+		t.Fatalf("expected command input to use spoken slug without prefix, got %q", command)
 	}
 
 	clipboard := m.buildCommandForClipboard()
-	if clipboard != "bar build persona=coach" {
-		t.Fatalf("expected clipboard command to use spoken slug, got %q", clipboard)
+	if clipboard != "bar build coach" {
+		t.Fatalf("expected clipboard command to use spoken slug without prefix, got %q", clipboard)
 	}
 
 	display := m.getDisplayTokens()

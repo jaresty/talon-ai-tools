@@ -806,6 +806,11 @@ func (m *model) selectCompletion(c completion) {
 		return // No stage to add to
 	}
 
+	// Prevent adding when stage is already at MaxSelections (e.g., after shift-tab back)
+	if m.isStageComplete(currentStage) {
+		return
+	}
+
 	// Save state for undo before modifying
 	m.saveStateForUndo()
 
@@ -1152,10 +1157,11 @@ func (m model) getCommandTokens() []string {
 func (m model) formatTokenForCLI(stage, token string) string {
 	slug := strings.TrimSpace(m.getTokenSlug(stage, token))
 	if stage == "persona_preset" {
+		// No prefix needed - bar build recognizes persona presets by order
 		if slug == "" {
 			slug = strings.TrimSpace(token)
 		}
-		return "persona=" + slug
+		return slug
 	}
 	if slug != "" {
 		return slug

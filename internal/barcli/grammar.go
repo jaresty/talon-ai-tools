@@ -313,7 +313,8 @@ func (g *Grammar) initialise() {
 				continue
 			}
 			tokenSet[canonical] = struct{}{}
-			tokenSet[strings.ToLower(canonical)] = struct{}{}
+			// Only add lowercase alias if different from canonical (for lookup).
+			// Don't add duplicate to avoid showing same token twice in completions.
 			g.registerMultiWord(canonical)
 		}
 		if docs, ok := g.Persona.Docs[axis]; ok {
@@ -346,7 +347,7 @@ func (g *Grammar) initialise() {
 				continue
 			}
 			tokenSet[canonical] = struct{}{}
-			tokenSet[strings.ToLower(canonical)] = struct{}{}
+			// Don't add lowercase alias to avoid showing same token twice in completions.
 			if _, exists := docMap[canonical]; !exists {
 				storeDoc(docMap, canonical, "")
 			} else {

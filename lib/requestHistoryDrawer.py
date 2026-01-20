@@ -41,16 +41,42 @@ class HistoryDrawerState:
 
 _history_canvas: Optional[canvas.Canvas] = None
 _history_canvas_released: bool = False
+_history_canvas_frozen: bool = False
 _button_bounds: List[Tuple[int, int, int, int, int]] = []  # (idx, x1, y1, x2, y2)
 _last_key_handler = None
 
 
+def _freeze_history_canvas() -> None:
+    """Freeze canvas to prevent continuous redraws and reduce memory leaks."""
+    global _history_canvas_frozen
+    if _history_canvas is None:
+        return
+    try:
+        _history_canvas.freeze()
+        _history_canvas_frozen = True
+    except Exception:
+        pass
+
+
+def _resume_history_canvas() -> None:
+    """Resume canvas to allow redraws for interaction."""
+    global _history_canvas_frozen
+    if _history_canvas is None or not _history_canvas_frozen:
+        return
+    try:
+        _history_canvas.resume()
+        _history_canvas_frozen = False
+    except Exception:
+        pass
+
+
 def _release_history_canvas() -> None:
-    global _history_canvas, _history_canvas_released
+    global _history_canvas, _history_canvas_released, _history_canvas_frozen
     canvas_obj = _history_canvas
     if canvas_obj is None:
         return
     _history_canvas_released = True
+    _history_canvas_frozen = False
     hide_method = getattr(canvas_obj, "hide", None)
     if callable(hide_method):
         try:
@@ -185,8 +211,13 @@ def _ensure_canvas() -> canvas.Canvas:
             draw_text(text, x, y)
             _button_bounds.append((idx, x, y - line_h + 4, x + len(text) * 7, y + 2))
             y += line_h
+        # Freeze after draw to prevent continuous redraws and reduce memory
+        # leaks from Skia text blob accumulation (ADR 0082 Loop 14).
+        _freeze_history_canvas()
 
     def _on_mouse(evt):
+        # Resume canvas to allow redraw for interaction (ADR 0082 Loop 14).
+        _resume_history_canvas()
         event_type = getattr(evt, "event", "") or ""
         button = getattr(evt, "button", None)
         if event_type in ("mousedown", "mouse_down") and button in (0, 1):
@@ -203,6 +234,8 @@ def _ensure_canvas() -> canvas.Canvas:
                     return
 
     def _on_key(evt):
+        # Resume canvas to allow redraw for interaction (ADR 0082 Loop 14).
+        _resume_history_canvas()
         if not getattr(evt, "down", False):
             return
         key = (getattr(evt, "key", "") or "").lower()
@@ -239,39 +272,6 @@ def _ensure_canvas() -> canvas.Canvas:
         except Exception:
             pass
         return
-
-    def _clamp_selection():
-        if not HistoryDrawerState.entries:
-            HistoryDrawerState.selected_index = 0
-            return
-        HistoryDrawerState.selected_index = max(
-            0,
-            min(HistoryDrawerState.selected_index, len(HistoryDrawerState.entries) - 1),
-        )
-
-    def _on_mouse(evt):
-        event_type = getattr(evt, "event", "") or ""
-        button = getattr(evt, "button", None)
-        if event_type in ("mousedown", "mouse_down") and button in (0, 1):
-            pos = getattr(evt, "pos", None)
-            rect = getattr(_history_canvas, "rect", None)
-            if pos is None or rect is None:
-                return
-            abs_x = rect.x + pos.x
-            abs_y = rect.y + pos.y
-            for idx, x1, y1, x2, y2 in list(_button_bounds):
-                if x1 <= abs_x <= x2 and y1 <= abs_y <= y2:
-                    HistoryDrawerState.selected_index = idx
-                    _clamp_selection()
-                    try:
-                        actions.user.gpt_request_history_show_previous(idx)
-                    except Exception:
-                        pass
-                    try:
-                        actions.user.request_history_drawer_close()
-                    except Exception:
-                        pass
-                    return
 
     try:
         _history_canvas.register("draw", _on_draw)

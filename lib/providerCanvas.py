@@ -13,6 +13,19 @@ class ProviderCanvasState:
 
 
 _canvas = None
+_canvas_frozen: bool = False
+
+
+def _freeze_canvas() -> None:
+    """Freeze canvas to prevent continuous redraws and reduce memory leaks."""
+    global _canvas_frozen
+    if _canvas is None:
+        return
+    try:
+        _canvas.freeze()
+        _canvas_frozen = True
+    except Exception:
+        pass
 
 
 def _ensure_canvas():
@@ -38,6 +51,9 @@ def _on_draw(c):
     for line in ProviderCanvasState.lines:
         c.draw_text(line, x, y, paint=paint)
         y += 22
+    # Freeze after draw to prevent continuous redraws and reduce memory
+    # leaks from Skia text blob accumulation (ADR 0082 Loop 14).
+    _freeze_canvas()
 
 
 def show_provider_canvas(title: str, lines: list[str]) -> None:
@@ -49,9 +65,10 @@ def show_provider_canvas(title: str, lines: list[str]) -> None:
 
 
 def hide_provider_canvas() -> None:
-    global _canvas
+    global _canvas, _canvas_frozen
     ProviderCanvasState.showing = False
     ProviderCanvasState.lines = []
+    _canvas_frozen = False
     if _canvas is not None:
         canvas_obj = _canvas
         _canvas = None

@@ -145,6 +145,31 @@ _pattern_button_bounds: dict[str, tuple[float, float, float, float]] = {}
 _pattern_hover_close: bool = False
 _pattern_hover_key: Optional[str] = None
 _pattern_drag_offset: Optional[tuple[float, float]] = None
+_pattern_canvas_frozen: bool = False
+
+
+def _freeze_pattern_canvas() -> None:
+    """Freeze canvas to prevent continuous redraws and reduce memory leaks."""
+    global _pattern_canvas_frozen
+    if _pattern_canvas is None or _pattern_drag_offset is not None:
+        return
+    try:
+        _pattern_canvas.freeze()
+        _pattern_canvas_frozen = True
+    except Exception:
+        pass
+
+
+def _resume_pattern_canvas() -> None:
+    """Resume canvas to allow redraws for interaction."""
+    global _pattern_canvas_frozen
+    if _pattern_canvas is None or not _pattern_canvas_frozen:
+        return
+    try:
+        _pattern_canvas.resume()
+        _pattern_canvas_frozen = False
+    except Exception:
+        pass
 
 
 def _release_pattern_canvas() -> None:
@@ -546,11 +571,16 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         _draw_pattern_canvas(c)
+        # Freeze after draw to prevent continuous redraws and reduce memory
+        # leaks from Skia text blob accumulation (ADR 0082 Loop 14).
+        _freeze_pattern_canvas()
 
     _pattern_canvas.register("draw", _on_draw)
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         """Handle close hotspot, domain selection, pattern clicks, hover, and drag."""
+        # Resume canvas to allow redraw for interaction (ADR 0082 Loop 14).
+        _resume_pattern_canvas()
         try:
             global _pattern_drag_offset, _pattern_hover_close, _pattern_hover_key
             rect = getattr(_pattern_canvas, "rect", None)
@@ -757,6 +787,8 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
             _debug(f"pattern scroll handler registration failed for '{evt_name}'")
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
+        # Resume canvas to allow redraw for interaction (ADR 0082 Loop 14).
+        _resume_pattern_canvas()
         try:
             if not getattr(evt, "down", False):
                 return
@@ -783,10 +815,11 @@ def _open_pattern_canvas(domain: Optional[PatternDomain]) -> None:
 
 
 def _close_pattern_canvas() -> None:
-    global _pattern_canvas, _pattern_hover_close, _pattern_hover_key
+    global _pattern_canvas, _pattern_hover_close, _pattern_hover_key, _pattern_canvas_frozen
     PatternCanvasState.showing = False
     _pattern_hover_close = False
     _pattern_hover_key = None
+    _pattern_canvas_frozen = False
     if _pattern_canvas is None:
         return
     _release_pattern_canvas()

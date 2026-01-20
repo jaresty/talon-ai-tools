@@ -551,6 +551,31 @@ _hover_panel: bool = False
 _hover_toggle: bool = False
 _last_rect: Optional["Rect"] = None
 _dragging: bool = False
+_canvas_frozen: bool = False
+
+
+def _freeze_canvas() -> None:
+    """Freeze canvas to prevent continuous redraws and reduce memory leaks."""
+    global _canvas_frozen
+    if _help_canvas is None or _dragging:
+        return
+    try:
+        _help_canvas.freeze()
+        _canvas_frozen = True
+    except Exception:
+        pass
+
+
+def _resume_canvas() -> None:
+    """Resume canvas to allow redraws for interaction."""
+    global _canvas_frozen
+    if _help_canvas is None or not _canvas_frozen:
+        return
+    try:
+        _help_canvas.resume()
+        _canvas_frozen = False
+    except Exception:
+        pass
 
 
 def _release_help_canvas() -> None:
@@ -707,6 +732,9 @@ def _ensure_canvas() -> canvas.Canvas:
             except Exception:
                 # Drawing errors should not crash Talon; fail closed.
                 continue
+        # Freeze after draw to prevent continuous redraws and reduce memory
+        # leaks from Skia text blob accumulation (ADR 0082 Loop 14).
+        _freeze_canvas()
 
     _help_canvas.register("draw", _on_draw)
     _debug("registered draw handler on canvas")
@@ -727,6 +755,8 @@ def _ensure_canvas() -> canvas.Canvas:
             _hover_panel, \
             _hover_toggle, \
             _help_canvas
+        # Resume canvas to allow redraw for interaction (ADR 0082 Loop 14).
+        _resume_canvas()
         try:
             rect = getattr(_help_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
@@ -886,6 +916,8 @@ def _ensure_canvas() -> canvas.Canvas:
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
         """Key handler for quick help (Escape + basic scrolling)."""
+        # Resume canvas to allow redraw for interaction (ADR 0082 Loop 14).
+        _resume_canvas()
         try:
             if not getattr(evt, "down", False):
                 return
@@ -978,12 +1010,14 @@ def _close_canvas() -> None:
         _hover_close, \
         _hover_panel, \
         _hover_toggle, \
-        _dragging
+        _dragging, \
+        _canvas_frozen
     canvas_obj = _help_canvas
     if canvas_obj is None:
         HelpCanvasState.showing = False
         HelpGUIState.showing = False
         _drag_offset = None
+        _canvas_frozen = False
         return
     rect = getattr(canvas_obj, "rect", None)
     if rect is not None:
@@ -1000,6 +1034,7 @@ def _close_canvas() -> None:
     _hover_close = False
     _hover_panel = False
     _hover_toggle = False
+    _canvas_frozen = False
     _debug("closing canvas quick help")
     _release_help_canvas()
 

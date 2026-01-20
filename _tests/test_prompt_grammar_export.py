@@ -34,7 +34,7 @@ class PromptGrammarPayloadTests(unittest.TestCase):
         self.assertIn("full", completeness)
 
         persona_presets = payload["persona"]["presets"]
-        self.assertIn("coach_junior", persona_presets)
+        self.assertIn("teach_junior_dev", persona_presets)
 
         checksum = payload["checksums"]["axes"]
         self.assertEqual(len(checksum), 64)

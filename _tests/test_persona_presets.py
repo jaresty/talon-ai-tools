@@ -44,7 +44,6 @@ if bootstrap is not None:
             self.assertTrue(
                 {
                     "peer_engineer_explanation",
-                    "coach_junior",
                     "teach_junior_dev",
                     "stakeholder_facilitator",
                     "designer_to_pm",

@@ -140,6 +140,9 @@ class PatternCanvasState:
     scroll_y: float = 0.0
 
 
+# Line height constant for scroll calculations (matches draw function).
+_line_height = 18
+
 _pattern_canvas: Optional[canvas.Canvas] = None
 _pattern_button_bounds: dict[str, tuple[float, float, float, float]] = {}
 _pattern_hover_close: bool = False

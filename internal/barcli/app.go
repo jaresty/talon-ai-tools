@@ -14,12 +14,15 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|help|completion|preset|tui|tui2]"
+	topUsage   = "usage: bar [build|shuffle|help|completion|preset|tui|tui2]"
 )
 
 var generalHelpText = strings.TrimSpace(`USAGE
   bar build <tokens>... [--prompt TEXT|--input FILE] [--output FILE] [--json]
   cat prompt.txt | bar build todo focus steps fog
+
+  bar shuffle [--prompt TEXT|--input FILE] [--output FILE] [--json]
+              [--seed N] [--include CATS] [--exclude CATS] [--fill 0.0-1.0]
 
   bar help
   bar help tokens [section...] [--grammar PATH]
@@ -81,6 +84,9 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   build        Construct a prompt recipe from shorthand tokens or key=value overrides.
                  Accepts input via --prompt, --input, or STDIN (piped).
+  shuffle      Generate a random prompt by selecting tokens from available categories.
+                 Use --seed for reproducible results, --include/--exclude to control categories,
+                 and --fill to adjust inclusion probability (default 0.5).
     help         Show this message.
     help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
                  using the exported prompt grammar.
@@ -148,6 +154,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	if options.Command == "tui2" {
 		return runTUI2(options, stdin, stdout, stderr)
+	}
+
+	if options.Command == "shuffle" {
+		return runShuffle(options, stdin, stdout, stderr)
 	}
 
 	if options.Command != "build" {
@@ -416,6 +426,59 @@ func runPreset(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int 
 		fmt.Fprint(stdout, generalHelpText)
 		return 1
 	}
+}
+
+func runShuffle(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
+	grammar, loadErr := LoadGrammar(opts.GrammarPath)
+	if loadErr != nil {
+		cliErr := &CLIError{Type: "io", Message: loadErr.Error()}
+		emitError(cliErr, opts.JSON, stdout, stderr)
+		return 1
+	}
+
+	promptBody, promptErr := readPrompt(opts, stdin)
+	if promptErr != nil {
+		cliErr := &CLIError{Type: "io", Message: promptErr.Error()}
+		emitError(cliErr, opts.JSON, stdout, stderr)
+		return 1
+	}
+
+	shuffleOpts := ShuffleOptions{
+		Seed:    opts.Seed,
+		Include: opts.Include,
+		Exclude: opts.Exclude,
+		Fill:    opts.Fill,
+		Subject: promptBody,
+	}
+
+	result, shuffleErr := Shuffle(grammar, shuffleOpts)
+	if shuffleErr != nil {
+		emitError(shuffleErr, opts.JSON, stdout, stderr)
+		return 1
+	}
+
+	if opts.JSON {
+		payload, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			cliErr := &CLIError{Type: "io", Message: err.Error()}
+			emitError(cliErr, opts.JSON, stdout, stderr)
+			return 1
+		}
+		payload = append(payload, '\n')
+		if err := writeOutput(opts.OutputPath, payload, stdout); err != nil {
+			cliErr := &CLIError{Type: "io", Message: err.Error()}
+			emitError(cliErr, opts.JSON, stdout, stderr)
+			return 1
+		}
+		return 0
+	}
+
+	if err := writeOutput(opts.OutputPath, []byte(result.PlainText), stdout); err != nil {
+		cliErr := &CLIError{Type: "io", Message: err.Error()}
+		emitError(cliErr, opts.JSON, stdout, stderr)
+		return 1
+	}
+	return 0
 }
 
 func parseTokenHelpFilters(sections []string) (map[string]bool, error) {

@@ -23,11 +23,17 @@ type Config struct {
 	NoAltScreen   bool
 	NoClipboard   bool
 	EnvAllowlist  []string
+
+	// Shuffle-specific flags
+	Seed    int64
+	Include []string
+	Exclude []string
+	Fill    float64
 }
 
 // Parse converts argv-like input into a Config.
 func Parse(args []string) (*Config, error) {
-	cfg := &Config{}
+	cfg := &Config{Fill: 0.5} // default fill probability
 	tokens := make([]string, 0, len(args))
 
 	for i := 0; i < len(args); i++ {
@@ -165,6 +171,56 @@ func Parse(args []string) (*Config, error) {
 			cfg.EnvAllowlist = appendEnvOnce(cfg.EnvAllowlist, name)
 		case arg == "--force":
 			cfg.Force = true
+		case arg == "--seed":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--seed requires a value")
+			}
+			seed, err := strconv.ParseInt(args[i], 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("--seed requires an integer: %v", err)
+			}
+			cfg.Seed = seed
+		case strings.HasPrefix(arg, "--seed="):
+			value := strings.TrimPrefix(arg, "--seed=")
+			seed, err := strconv.ParseInt(value, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("--seed requires an integer: %v", err)
+			}
+			cfg.Seed = seed
+		case arg == "--include":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--include requires a value")
+			}
+			cfg.Include = parseCSV(args[i])
+		case strings.HasPrefix(arg, "--include="):
+			cfg.Include = parseCSV(strings.TrimPrefix(arg, "--include="))
+		case arg == "--exclude":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--exclude requires a value")
+			}
+			cfg.Exclude = parseCSV(args[i])
+		case strings.HasPrefix(arg, "--exclude="):
+			cfg.Exclude = parseCSV(strings.TrimPrefix(arg, "--exclude="))
+		case arg == "--fill":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--fill requires a value")
+			}
+			fill, err := strconv.ParseFloat(args[i], 64)
+			if err != nil || fill < 0 || fill > 1 {
+				return nil, fmt.Errorf("--fill requires a value between 0.0 and 1.0")
+			}
+			cfg.Fill = fill
+		case strings.HasPrefix(arg, "--fill="):
+			value := strings.TrimPrefix(arg, "--fill=")
+			fill, err := strconv.ParseFloat(value, 64)
+			if err != nil || fill < 0 || fill > 1 {
+				return nil, fmt.Errorf("--fill requires a value between 0.0 and 1.0")
+			}
+			cfg.Fill = fill
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
 		default:
@@ -216,4 +272,16 @@ func appendEnvOnce(list []string, name string) []string {
 		}
 	}
 	return append(list, name)
+}
+
+func parseCSV(value string) []string {
+	parts := strings.Split(value, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }

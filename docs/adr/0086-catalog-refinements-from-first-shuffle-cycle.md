@@ -2,7 +2,23 @@
 
 ## Status
 
-Proposed
+Implemented
+
+**Implementation Summary:**
+- Phase 1 (Loops 1-5): Preset-first intent/persona interaction across TUI2, CLI completion, and shuffle
+- Phase 2 (Loops 6-7): Retired "infer" static prompt, rewrote directional descriptions with operational language
+
+**Completed Sections:**
+- Section 1: Retire "infer" Static Task ✅
+- Section 2: Document Intent/Preset Interaction Pattern ✅
+- Section 3: Clarify Directional Descriptions ✅
+
+**Optional Sections (Deferred):**
+- Section 4: Add Tone/Audience Compatibility Guidance (medium priority, optional)
+- Section 5: Document Constraint Combination Patterns (low priority, optional)
+- Section 6: Investigation: Consolidate Compound Directionals (future work)
+
+See work log at: docs/adr/0086-catalog-refinements-from-first-shuffle-cycle.work-log.md
 
 ## Context
 

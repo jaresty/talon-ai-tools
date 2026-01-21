@@ -112,7 +112,23 @@ go build -o ../../bar .
 cd ../..
 ```
 
-### 6. Run Validation
+### 6. Update GPT/readme.md
+
+**IMPORTANT:** Manually add the token to the axis line in `GPT/readme.md`:
+
+```bash
+# Find the axis line (around line 248 for method axis)
+# Example for method axis:
+# Method (`methodModifier`): `adversarial`, `analysis`, ..., `how`, `improve`, `indirect`, ...
+```
+
+**Location:** `GPT/readme.md:246-250` (varies by axis)
+
+**Important:** Add your token in **alphabetical order** between the existing tokens.
+
+**Why manual?** The README has a specific format that the automated generators respect but don't update directly. This ensures the README stays in sync with the catalog.
+
+### 7. Run Validation
 
 ```bash
 # Run all guardrails (includes axis validation + tests)
@@ -122,10 +138,14 @@ make ci-guardrails
 This validates:
 - Axis catalog structure
 - Test coverage
-- Documentation consistency
+- Documentation consistency (including README)
 - Overlay components
 
-### 7. Test with Shuffle
+**If this fails with "Mismatch for README axis line":**
+- You forgot to update `GPT/readme.md` (step 6 above)
+- The token isn't in alphabetical order in the README
+
+### 8. Test with Shuffle
 
 Validate the token appears and works correctly:
 
@@ -141,7 +161,7 @@ for seed in {1..100}; do
 done
 ```
 
-### 8. Manual Testing
+### 9. Manual Testing
 
 Test the token in actual usage:
 
@@ -159,6 +179,7 @@ After adding a token, verify:
 
 - ✅ Token appears in `lib/axisConfig.py` in alphabetical order
 - ✅ `make axis-regenerate-apply` runs without changes (idempotent)
+- ✅ Token appears in `GPT/readme.md` axis line in alphabetical order
 - ✅ `make ci-guardrails` passes all tests
 - ✅ Token appears in `internal/barcli/embed/prompt-grammar.json`
 - ✅ bar CLI shuffle can generate prompts using the token
@@ -196,7 +217,26 @@ python3 -c "import json; data=json.load(open('internal/barcli/embed/prompt-gramm
 
 **Fix:** Use `prompts.export` as shown above, not `axisCatalog.json`.
 
-### make axis-guardrails fails
+### make axis-guardrails fails with "Mismatch for README axis line"
+
+**Symptom:** Test failure in `_tests/test_readme_axis_lists.py`:
+```
+AssertionError: Mismatch for README axis line 'Method (`methodModifier`)'
+```
+
+**Cause:** `GPT/readme.md` not updated with new token.
+
+**Fix:**
+```bash
+# Edit GPT/readme.md and add your token in alphabetical order
+# For method axis, find the line starting with:
+# Method (`methodModifier`): `adversarial`, `analysis`, ...
+
+# Add your token in alphabetical order, e.g.:
+# ..., `how`, `improve`, `indirect`, ...
+```
+
+### make axis-guardrails fails with regenerate apply issue
 
 **Symptom:** Test failures in `_tests/test_make_axis_regenerate_apply.py`
 

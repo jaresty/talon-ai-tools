@@ -187,6 +187,7 @@ from ..lib.personaConfig import (
     persona_docs_map,
     validate_intent_presets,
     validate_persona_presets,
+    PERSONA_PRESET_IMPLICIT_INTENTS,
 )
 from ..lib.personaOrchestrator import get_persona_intent_orchestrator
 from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
@@ -1454,10 +1455,15 @@ class UserActions:
         if not isinstance(current, GPTSystemPrompt):
             current = GPTSystemPrompt()
 
+        # Per ADR 0086: Set implicit intent from preset if no explicit intent exists
+        implicit_intent = ""
+        if canonical_key:
+            implicit_intent = PERSONA_PRESET_IMPLICIT_INTENTS.get(canonical_key, "")
+
         new_prompt = GPTSystemPrompt(
             voice=preset.voice or current.voice,
             audience=preset.audience or current.audience,
-            intent=current.intent,
+            intent=current.intent or implicit_intent,
             tone=preset.tone or current.tone,
             completeness=current.completeness,
             scope=current.scope,

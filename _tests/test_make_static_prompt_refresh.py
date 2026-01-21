@@ -38,7 +38,7 @@ if not TYPE_CHECKING:
             text = snapshot.read_text(encoding="utf-8")
             self.assertIn("Other static prompts", text)
             self.assertIn(
-                "- infer: The response infers the task without being told what to do.",
+                "- describe: The response describes the subject objectively.",
                 text,
             )
             self.assertIn("(defaults: completeness=gist", text)

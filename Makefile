@@ -1,7 +1,8 @@
 output_tags:
 	/opt/homebrew/bin/ctags -Rx GPT
 
-PYTHON ?= python3.11
+# Use .venv Python if it exists, otherwise fall back to system python3
+PYTHON ?= $(shell test -f .venv/bin/python && echo .venv/bin/python || echo python3)
 
 .venv/bin/pytest:
 	$(PYTHON) -m venv .venv

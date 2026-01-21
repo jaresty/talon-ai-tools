@@ -45,7 +45,7 @@ if not TYPE_CHECKING:
                 self.assertIn("full: full", completeness_text)
 
                 static_text = static_prompt_list.read_text(encoding="utf-8")
-                self.assertIn("infer: infer", static_text)
+                self.assertIn("describe: describe", static_text)
 
                 persona_text = persona_list.read_text(encoding="utf-8").lower()
                 self.assertIn("teach junior dev: teach_junior_dev", persona_text)

@@ -32,7 +32,7 @@ if not TYPE_CHECKING:
             self.assertIn("user.directionalModifier", lists)
 
             # Spot-check a few known tokens from the catalog.
-            self.assertIn("infer", lists["user.staticPrompt"])
+            self.assertIn("describe", lists["user.staticPrompt"])
             self.assertIn("full", lists["user.completenessModifier"])
             self.assertIn("steps", lists["user.methodModifier"])
 
@@ -50,7 +50,7 @@ if not TYPE_CHECKING:
                 },
                 # Simulate partial list tokens (missing gist).
                 "axis_list_tokens": {"completeness": ["full"]},
-                "static_prompts": {"profiled": [{"name": "infer", "axes": {}, "description": ""}]},
+                "static_prompts": {"profiled": [{"name": "describe", "axes": {}, "description": ""}]},
             }
 
             # Clear lists before repopulating.

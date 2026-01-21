@@ -16,9 +16,10 @@ type ShuffleOptions struct {
 }
 
 // shuffleStageOrder defines the category order for shuffle, matching TUI2's sequence.
+// Per ADR 0086: preset before intent (bundled decision fork first).
 var shuffleStageOrder = []string{
-	"intent",
-	"persona_preset",
+	"persona_preset", // Path 1: bundled (preset includes implicit intent)
+	"intent",         // Path 2: unbundled (custom build)
 	"voice",
 	"audience",
 	"tone",
@@ -50,9 +51,9 @@ func Shuffle(g *Grammar, opts ShuffleOptions) (*BuildResult, *CLIError) {
 			continue
 		}
 
-		// If we selected a persona_preset, skip individual persona axes
-		// (voice, audience, tone) since the preset already provides them.
-		if hasPersonaPreset && (stage == "voice" || stage == "audience" || stage == "tone") {
+		// Per ADR 0086: If we selected a persona_preset, skip intent and individual persona axes
+		// (voice, audience, tone) since the preset bundles all of them with implicit intent.
+		if hasPersonaPreset && (stage == "intent" || stage == "voice" || stage == "audience" || stage == "tone") {
 			continue
 		}
 

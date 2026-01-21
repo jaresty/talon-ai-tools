@@ -292,6 +292,43 @@ PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
 )
 
 
+# Document implicit intents in each preset (informational only).
+# Presets bundle voice/audience/tone with an implicit "why" (intent).
+# Per ADR 0086: Users should pick one approach (preset OR custom voice/audience/tone + intent).
+PERSONA_PRESET_IMPLICIT_INTENTS: Dict[str, str] = {
+    "peer_engineer_explanation": "inform",
+    "teach_junior_dev": "teach",
+    "scientist_to_analyst": "inform",
+    "stakeholder_facilitator": "plan",      # facilitators help groups plan and align
+    "designer_to_pm": "inform",
+    "product_manager_to_team": "plan",      # PMs plan product direction with team
+    "executive_brief": "inform",
+    "fun_mode": "entertain",
+}
+
+
+# Usage guidance for intent + preset interaction (no validation, just documentation).
+# Per ADR 0086: Document bundled vs unbundled approach.
+INTENT_PRESET_GUIDANCE = """
+Intent and Persona Presets: Pick One Approach
+
+Option 1: Use a preset (includes implicit intent)
+  - Example: scientist_to_analyst
+  - Bundles: voice(scientist) + audience(analyst) + tone(formal) + intent(inform)
+
+Option 2: Build custom with explicit intent
+  - Example: as programmer + to team + coach
+  - Unbundled: choose each piece separately
+
+Mixing preset + explicit intent is usually redundant or confusing:
+  - Redundant: teach_junior_dev + teach (preset already teaches)
+  - Conflicting: scientist_to_analyst + coach (inform vs teach)
+  - Confusing: fun_mode + inform (entertainment vs information)
+
+When in doubt: Use preset alone OR custom voice/audience/tone + intent.
+"""
+
+
 INTENT_PRESETS: tuple[IntentPreset, ...] = (
     IntentPreset(
         key="teach",

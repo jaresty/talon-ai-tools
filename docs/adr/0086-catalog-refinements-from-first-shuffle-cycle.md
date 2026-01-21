@@ -53,51 +53,234 @@ STATIC_PROMPTS = {
 
 ---
 
-### 2. Document Intent/Preset Interaction Constraints (High Priority)
+### 2. Document Intent/Preset Interaction Pattern (High Priority)
 
-**Current behavior:** Intent can be freely combined with persona presets, leading to contradictory stances.
+**Current behavior:** Intent can be freely combined with persona presets, leading to redundancy or contradictory stances.
 
 **Issue:** Persona presets have implicit intents. Example:
-- `scientist_to_analyst` preset implies "inform/explain" intent
-- Adding `coach` intent creates ambiguity: should I inform (preset) or coach (intent)?
+- `scientist_to_analyst` preset implies "inform" intent
+- Adding explicit `coach` intent creates ambiguity: should I inform (preset) or coach (intent)?
 - Evidence: seed_20 combined these, producing confused output
 
-**Decision:** Add validation and documentation for intent + preset combinations.
+**Root cause:** Presets are **bundled** (voice + audience + tone + implicit intent), while intent is an **unbundled** "why" modifier. Mixing bundled and unbundled creates confusion.
+
+**Decision:** Document that presets and explicit intent are **usually mutually exclusive**. No validation logic needed—just clear guidance.
+
+**Rationale:**
+- **ADR 015/051 design intent**: Intent exists as standalone "why" modifier for custom voice/audience/tone combinations
+- **Legitimate use case**: `"as programmer" + "to team" + "coach"` (custom combo without full preset commitment)
+- **Presets already bundle intent**: `teach_junior_dev` = voice(teacher) + audience(junior) + tone(kind) + intent(teach)
+- **Keep it simple**: Documentation > validation infrastructure
 
 **Implementation:**
 
 ```python
 # lib/personaConfig.py
 
-# Document preset implicit intents
+# Document implicit intents in each preset (informational only)
 PERSONA_PRESET_IMPLICIT_INTENTS = {
     "peer_engineer_explanation": "inform",
-    "teach_junior_dev": "coach",  # coaching is inherent
+    "teach_junior_dev": "teach",
     "scientist_to_analyst": "inform",
-    "stakeholder_facilitator": "inform",
+    "stakeholder_facilitator": "plan",      # facilitators help groups plan and align
     "designer_to_pm": "inform",
-    "product_manager_to_team": "guide",
+    "product_manager_to_team": "plan",      # PMs plan product direction with team
     "executive_brief": "inform",
-    "fun_mode": "entertain",  # entertainment is inherent
+    "fun_mode": "entertain",
 }
 
-# Document compatible intent + preset combinations
-INTENT_PRESET_COMPATIBILITY = {
-    "coach": {
-        "compatible": ["peer_engineer_explanation"],  # can add coaching flavor
-        "redundant": ["teach_junior_dev"],  # already has coaching
-        "conflicts": ["scientist_to_analyst", "executive_brief"],  # informational focus
-    },
-    "entertain": {
-        "compatible": [],  # rarely compatible with professional presets
-        "redundant": ["fun_mode"],  # already entertaining
-        "conflicts": ["scientist_to_analyst", "executive_brief", "stakeholder_facilitator"],
-    },
+# Usage guidance (no validation, just documentation)
+INTENT_PRESET_GUIDANCE = """
+Intent and Persona Presets: Pick One Approach
+
+Option 1: Use a preset (includes implicit intent)
+  - Example: scientist_to_analyst
+  - Bundles: voice(scientist) + audience(analyst) + tone(formal) + intent(inform)
+
+Option 2: Build custom with explicit intent
+  - Example: as programmer + to team + coach
+  - Unbundled: choose each piece separately
+
+Mixing preset + explicit intent is usually redundant or confusing:
+  - Redundant: teach_junior_dev + teach (preset already teaches)
+  - Conflicting: scientist_to_analyst + coach (inform vs teach)
+  - Confusing: fun_mode + inform (entertainment vs information)
+
+When in doubt: Use preset alone OR custom voice/audience/tone + intent.
+"""
+```
+
+**TUI2 stage order change:**
+
+Reorder stage progression to put preset before intent, creating a clearer decision fork:
+
+```go
+// internal/bartui2/program.go - stageOrder
+
+var stageOrder = []string{
+	"persona_preset", // Bundled persona configuration (optional) - Path 1: takes precedence
+	"intent",         // What the user wants to accomplish (optional) - Path 2: for custom builds
+	"voice",          // Speaking style (optional) - Path 2 continued
+	"audience",       // Target audience (optional) - Path 2 continued
+	"tone",           // Emotional tone (optional) - Path 2 continued
+	"static",         // Static Prompt - the main prompt type
+	"completeness",   // How thorough
+	"scope",          // How focused
+	"method",         // How to approach
+	"form",           // Output format
+	"channel",        // Communication style
+	"directional",    // Emphasis direction
 }
 ```
 
-**User guidance:** Add to TUI2 and documentation:
-> "When using a persona preset, the intent is usually implicit. Adding an explicit intent is only recommended when you want to shift the preset's default purpose. Avoid combinations like 'coach' + 'scientist_to_analyst' (informational) or 'entertain' + 'executive_brief' (serious)."
+**Smart stage skipping:**
+
+When user selects a preset, mark intent as implicitly satisfied:
+
+```go
+// In selectCompletion() when currentStage == "persona_preset"
+if len(c.Fills) > 0 {
+	sourceKey := currentStage + ":" + c.Value
+	for category, value := range c.Fills {
+		// Existing auto-fill logic for voice/audience/tone...
+	}
+	// NEW: Mark intent as implicitly satisfied
+	m.tokensByCategory["intent"] = []string{"(implicit)"}
+	m.autoFilledTokens["intent:(implicit)"] = true
+	m.autoFillSource["intent:(implicit)"] = sourceKey
+}
+```
+
+This creates two natural paths:
+- **Path 1 (bundled)**: Select preset → skip to static (intent auto-satisfied)
+- **Path 2 (unbundled)**: Skip preset → select intent → select voice/audience/tone → static
+
+Users can still Shift+Tab back to override if needed (power user escape hatch).
+
+**CLI completion order alignment:**
+
+Update completion priorities to match TUI2 stage order:
+
+```go
+// internal/barcli/completion.go - order constants
+
+const (
+	orderDefault         = 1
+	orderCommand         = 20
+	orderHelpTopic       = 18
+	orderCompletionShell = 17
+	orderPersonaPreset   = 16  // CHANGED: was 15, now comes first
+	orderPersonaIntent   = 15  // CHANGED: was 16, now comes after preset
+	orderPersonaVoice    = 14
+	orderPersonaAudience = 13
+	orderPersonaTone     = 12
+	orderStatic          = 11
+	// ... rest unchanged
+)
+
+// Update stageOrder() function to handle persona stages explicitly:
+func stageOrder(stage string) int {
+	switch stage {
+	case "persona_preset":        // NEW: explicit case
+		return orderPersonaPreset
+	case "intent":                // NEW: explicit case
+		return orderPersonaIntent
+	case "voice":                 // NEW: explicit case
+		return orderPersonaVoice
+	case "audience":              // NEW: explicit case
+		return orderPersonaAudience
+	case "tone":                  // NEW: explicit case
+		return orderPersonaTone
+	case "persona":               // Keep generic fallback
+		return orderPersonaPreset  // CHANGED: was orderPersonaIntent, now use highest priority
+	case "static":
+		return orderStatic
+	case "completeness":
+		return orderCompleteness
+	case "method":
+		return orderMethod
+	case "scope":
+		return orderScope
+	case "form":
+		return orderForm
+	case "channel":
+		return orderChannel
+	case "directional":
+		return orderDirectional
+	default:
+		return orderDefault
+	}
+}
+```
+
+**Shuffle stage order alignment:**
+
+Update shuffle to match the new preset-first order and skip intent when preset selected:
+
+```go
+// internal/barcli/shuffle.go - shuffleStageOrder
+
+var shuffleStageOrder = []string{
+	"persona_preset",  // CHANGED: was second, now first
+	"intent",          // CHANGED: was first, now second
+	"voice",
+	"audience",
+	"tone",
+	"static",
+	"completeness",
+	"scope",
+	"method",
+	"form",
+	"channel",
+	"directional",
+}
+
+// In Shuffle() function, expand skip logic:
+for _, stage := range shuffleStageOrder {
+	if excludeSet[stage] {
+		continue
+	}
+
+	// If we selected a persona_preset, skip intent and individual persona axes
+	// since the preset already provides them.
+	if hasPersonaPreset && (stage == "intent" || stage == "voice" || stage == "audience" || stage == "tone") {
+		continue
+	}
+
+	// ... rest of selection logic
+}
+```
+
+This ensures shuffled prompts follow the same preset-first, intent-skipping pattern as TUI2 and CLI completions.
+
+**Help documentation updates:**
+
+Update `internal/barcli/app.go` TOKEN ORDER section:
+
+```
+8. Persona hints / preset (persona=<preset>, intent, voice, audience, tone)
+```
+
+Update README.md example to show preset-first pattern:
+
+```bash
+# Before:
+echo "Fix onboarding" | bar build todo focus steps fog intent=coach persona=facilitator
+
+# After:
+echo "Fix onboarding" | bar build todo focus steps fog persona=facilitator
+# OR (custom build):
+echo "Fix onboarding" | bar build todo focus steps fog intent=coach as-facilitator to-team kindly
+```
+
+**Documentation additions:**
+- Add guidance to README/help text explaining bundled vs unbundled approach
+- Note in TUI2 help: "Presets include implicit intent—usually don't need explicit intent"
+- Update CLI help text to show preset before intent in persona stage
+- Update examples to demonstrate preset-first pattern
+- No warnings, no blocking—just clear conceptual model
+
+**Migration:** None needed. This is documentation-only clarification of existing design, plus TUI2 UX improvement and completion order alignment.
 
 ---
 
@@ -116,23 +299,27 @@ Users cannot distinguish operational differences.
 
 ```python
 # lib/axisConfig.py - DIRECTIONAL axis
+#
+# Core directional axes:
+#   fog = abstract + general (vertical axis: top)
+#   dig = concrete + ground (vertical axis: bottom)
+#   rog = reflect + structure (horizontal axis: left)
+#   ong = act + extend (horizontal axis: right)
+#
+# Compounds:
+#   fig = fog + dig (full vertical axis)
+#   bog = rog + ong (full horizontal axis)
 
 DIRECTIONAL = {
-    # Simple directionals (keep as-is)
+    # Simple directionals (keep as-is or minor clarification)
     "act": "The response provides actionable steps or procedures.",
     "dig": "The response examines concrete details and grounding examples.",
 
-    # Compound directionals (clarify)
-    "fig": {
-        "old": "The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt.",
-        "new": "The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal).",
-        "rationale": "Users need operational definition of how abstraction and concretization interact"
-    },
-
+    # Core directionals (clarify)
     "fog": {
-        "old": "The response frames the preceding prompt through one unified perspective that blends reflection, structure, acting, and extending, treating them as a single fused stance.",
-        "new": "The response creates a framework (structure), demonstrates it in action (acting), reflects on what works, then extends to related applications.",
-        "rationale": "Need sequential operational flow instead of 'fused stance' abstraction"
+        "old": "The response applies an abstracting-generalizing perspective as a single synthesized lens on the preceding prompt.",
+        "new": "The response identifies general patterns and abstract principles from the specifics, moving from particular cases to broader insights.",
+        "rationale": "Replace 'synthesized lens' with operational description of abstraction/generalization process"
     },
 
     "rog": {
@@ -141,31 +328,52 @@ DIRECTIONAL = {
         "rationale": "Distinguish from 'analytical' method; emphasize structure-first then reflection"
     },
 
-    "bog": {
-        "old": "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "new": "The response starts with concrete action steps (bogging down into details), identifies patterns through reflection, then extends insights to related contexts.",
-        "rationale": "Action-first lens distinct from fog's framework-first approach"
+    "ong": {
+        "old": "The response applies an acting-extending perspective as a single synthesized lens on the preceding prompt.",
+        "new": "The response identifies concrete actions to take, then extends those actions to related situations or next steps.",
+        "rationale": "Replace 'synthesized lens' with operational description of action/extension flow"
     },
 
-    # Compound variants (dip/fip combinations)
+    # Compound directionals (clarify)
+    "fig": {
+        "old": "The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt.",
+        "new": "The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal).",
+        "rationale": "Users need operational definition of how abstraction and concretization interact"
+    },
+
+    "bog": {
+        "old": "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance.",
+        "new": "The response examines the subject's structure and reflects on it, then identifies actions to take and extends them to related contexts.",
+        "rationale": "bog = rog + ong (structural reflection + actionable extension); no concrete component"
+    },
+
+    # Compound variants (dip/fip/fly combinations)
     "dip bog": {
-        "old": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending, treating them as a single fused stance.",
-        "new": "The response grounds the subject in concrete examples, works through action steps, then extends the pattern to similar cases.",
-        "rationale": "Concrete → action → extend sequence"
+        "old": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, extending, reflection, and structure, treating them as a single fused stance.",
+        "new": "The response starts with concrete examples and grounded details, examines their structure and reflects on patterns, then identifies actions and extensions.",
+        "rationale": "dip bog = dig + bog: concrete/ground foundation + structural reflection + action/extension"
     },
 
     "fip rog": {
         "old": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance.",
-        "new": "The response analyzes the subject's structure at multiple levels (concrete to abstract), reflecting on how each level illuminates the others.",
-        "rationale": "Multi-level structural analysis with reflection"
+        "new": "The response moves between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
+        "rationale": "fip rog = fig + rog: full vertical axis (abstract ↔ concrete) + structural reflection"
+    },
+
+    "fly rog": {
+        "old": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, reflection, and structure, treating them as a single fused stance.",
+        "new": "The response identifies abstract patterns and general principles, then examines their structural relationships and reflects on their implications.",
+        "rationale": "fly rog = fog + rog: abstraction/generalization + structural reflection"
     },
 }
 ```
 
 **Key changes:**
-- Replace "synthesized lens" / "fused stance" with sequential operational steps
-- Use verbs describing what the response does (alternates, creates, examines, starts)
-- Distinguish each directional's starting point and flow
+- Replace "synthesized lens" / "fused stance" with operational descriptions
+- Use verbs describing what the response does (identifies, examines, alternates, moves)
+- Preserve semantic components: fog (abstract/general), dig (concrete/ground), rog (reflect/structure), ong (act/extend)
+- Make compound relationships explicit: fig = fog + dig, bog = rog + ong
+- Distinguish each directional by its component axes, not arbitrary sequences
 
 ---
 

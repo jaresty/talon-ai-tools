@@ -152,8 +152,8 @@ const (
 	orderCommand         = 20
 	orderHelpTopic       = 18
 	orderCompletionShell = 17
-	orderPersonaIntent   = 16
-	orderPersonaPreset   = 15
+	orderPersonaPreset   = 16 // CHANGED per ADR 0086: preset before intent (bundled-first)
+	orderPersonaIntent   = 15 // CHANGED per ADR 0086: intent after preset (unbundled)
 	orderPersonaVoice    = 14
 	orderPersonaAudience = 13
 	orderPersonaTone     = 12
@@ -270,8 +270,20 @@ func sortSuggestionsForShell(shell string, suggestions []completionSuggestion) [
 
 func stageOrder(stage string) int {
 	switch stage {
-	case "persona":
+	// Per ADR 0086: Explicit persona stage mappings for preset-first order
+	case "persona_preset":
+		return orderPersonaPreset
+	case "intent":
 		return orderPersonaIntent
+	case "voice":
+		return orderPersonaVoice
+	case "audience":
+		return orderPersonaAudience
+	case "tone":
+		return orderPersonaTone
+	// Generic "persona" fallback uses highest priority (preset-first)
+	case "persona":
+		return orderPersonaPreset
 	case "static":
 		return orderStatic
 	case "completeness":

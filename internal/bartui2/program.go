@@ -61,12 +61,13 @@ type completion struct {
 // Stage order for grammar progression (matches CLI completion order).
 // Each stage corresponds to a token category key.
 // Persona stages come first (optional), then static and modifiers.
+// Per ADR 0086: preset before intent (bundled vs unbundled decision fork).
 var stageOrder = []string{
-	"intent",         // What the user wants to accomplish (optional)
-	"persona_preset", // Saved persona configuration (optional)
-	"voice",          // Speaking style or persona voice (optional)
-	"audience",       // Target audience for the response (optional)
-	"tone",           // Emotional tone of the response (optional)
+	"persona_preset", // Bundled persona configuration (optional) - Path 1: takes precedence
+	"intent",         // What the user wants to accomplish (optional) - Path 2: for custom builds
+	"voice",          // Speaking style (optional) - Path 2 continued
+	"audience",       // Target audience (optional) - Path 2 continued
+	"tone",           // Emotional tone (optional) - Path 2 continued
 	"static",         // Static Prompt - the main prompt type
 	"completeness",   // How thorough
 	"scope",          // How focused
@@ -828,6 +829,17 @@ func (m *model) selectCompletion(c completion) {
 				m.autoFilledTokens[filledKey] = true
 				// Track source so we can cascade-remove when source is removed
 				m.autoFillSource[filledKey] = sourceKey
+			}
+		}
+
+		// Per ADR 0086: When preset selected, mark intent as implicitly satisfied
+		// so user skips directly to static (bundled path).
+		if currentStage == "persona_preset" {
+			if _, exists := m.tokensByCategory["intent"]; !exists || len(m.tokensByCategory["intent"]) == 0 {
+				m.tokensByCategory["intent"] = []string{"(implicit)"}
+				intentKey := "intent:(implicit)"
+				m.autoFilledTokens[intentKey] = true
+				m.autoFillSource[intentKey] = sourceKey
 			}
 		}
 	}

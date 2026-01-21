@@ -22,12 +22,30 @@ from ..lib import historyLifecycle
 
 try:
     from ..lib.axisCatalog import (
-        axis_catalog,
+        axis_catalog as _axis_catalog_impl,
         get_static_prompt_axes,
         get_static_prompt_profile,
         static_prompt_catalog,
         static_prompt_description_overrides,
     )
+    # Module-level cache for help canvases to prevent repeated axis_catalog() allocations.
+    # Per ADR 0082: axis_catalog() creates new dictionaries on every call even though
+    # _axis_config_map() is cached. Help surfaces refresh frequently (hover, focus, polls),
+    # so caching the full catalog result eliminates 50ms+ of allocation per refresh.
+    _help_axis_catalog_cache: dict[str, object] | None = None
+
+    def axis_catalog():
+        """Cached axis catalog for help surfaces. Reuses result across refreshes."""
+        global _help_axis_catalog_cache
+        if _help_axis_catalog_cache is None:
+            _help_axis_catalog_cache = _axis_catalog_impl()
+        return _help_axis_catalog_cache
+
+    def invalidate_help_axis_catalog():
+        """Force reload on next axis_catalog() call. Used for hot reload during development."""
+        global _help_axis_catalog_cache
+        _help_axis_catalog_cache = None
+
 except ImportError:  # Talon may have a stale runtime without axisCatalog
     AXIS_KEY_TO_VALUE: dict[str, dict[str, str]] = {}
 

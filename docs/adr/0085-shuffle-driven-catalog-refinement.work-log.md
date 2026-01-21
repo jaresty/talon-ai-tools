@@ -157,3 +157,56 @@ The workflow documentation constraint has been relieved. Infrastructure is compl
 **next_work:**
 - Behaviour: Execute first refinement cycle - generate corpus, evaluate sample prompts, produce recommendations
 - Validation: `test -f docs/adr/evidence/0085/recommendations.yaml && wc -l < docs/adr/evidence/0085/recommendations.yaml` shows non-empty recommendations file
+
+---
+
+## Loop 4: Execute first refinement cycle
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR 0085 Complete Cycle - Execute generation, evaluation, and recommendation phases
+
+**active_constraint:** No refinement cycle has been executed; cannot validate the process or produce actionable catalog recommendations without generating corpus, scoring prompts, and aggregating findings.
+
+**validation_targets:**
+- `test -f docs/adr/evidence/0085/recommendations.yaml && wc -l < docs/adr/evidence/0085/recommendations.yaml`
+
+**evidence:**
+- red | 2026-01-20T03:00:00Z | exit 1 | `test -f docs/adr/evidence/0085/recommendations.yaml`
+  - helper:diff-snapshot=0 files changed
+  - recommendations file does not exist | inline
+- green | 2026-01-20T03:30:00Z | exit 0 | `test -f docs/adr/evidence/0085/recommendations.yaml && wc -l < docs/adr/evidence/0085/recommendations.yaml`
+  - helper:diff-snapshot=21 files changed (corpus + recommendations)
+  - recommendations file exists with 142 lines of actionable findings | inline
+- removal | 2026-01-20T03:35:00Z | exit 1 | `rm docs/adr/evidence/0085/recommendations.yaml && test -f docs/adr/evidence/0085/recommendations.yaml`
+  - helper:diff-snapshot=0 files changed
+  - recommendations removed; test fails | inline
+
+**rollback_plan:** `rm -rf docs/adr/evidence/0085/corpus docs/adr/evidence/0085/recommendations.yaml`
+
+**delta_summary:** Executed complete refinement cycle: Generated 20-prompt corpus (seeds 1-20), evaluated prompts against ADR 0083 criteria, aggregated findings into recommendations.yaml with 9 concrete recommendations (2 high-severity, 5 medium, 1 low, 1 investigation).
+
+**loops_remaining_forecast:** 1 loop (this execution cycle completes implementation)
+
+**residual_constraints:**
+- LLM-assisted evaluation automation (low severity, future enhancement)
+  - Mitigation: Manual evaluation proven sufficient
+  - Monitoring: Track if evaluation time becomes prohibitive
+  - Severity: Low (process works without automation)
+
+**files_changed:**
+- `docs/adr/evidence/0085/corpus/shuffle_0001.json` through `shuffle_0020.json` (new) - Generated corpus
+- `docs/adr/evidence/0085/recommendations.yaml` (new) - Aggregated findings
+
+**constraint_recap:**
+The refinement cycle constraint has been relieved. Process validated end-to-end with actionable recommendations produced. No high-priority residual constraints remain - implementation is complete and ready for Accepted status. Low-severity future enhancement (LLM-assisted evaluation) remains optional. Monitoring: Track if recommendations are applied to catalog and if subsequent shuffle cycles show improvement.
+
+**key_findings:**
+- 2 high-severity issues: "infer" task contradicts ADR 0083 philosophy; intent/preset combinations create confusion
+- 5 medium-severity issues: Directional descriptions need clarification (fig/fog/rog/bog/dig); tone/audience combination guidance needed
+- 1 low-severity issue: Constraint combination conflicts should be documented
+- 1 investigation recommendation: Consider consolidating 7+ compound directionals to 3-4 distinct patterns
+- Positive findings: Persona presets work well alone; default fill probability (0.5) produces good balance
+
+**next_work:**
+- None - ADR 0085 implementation complete; ready for Accepted status

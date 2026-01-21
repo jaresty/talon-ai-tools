@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response guides introspection or reflection on the subject.",
+  "constraints": [
+    "Completeness (minimal): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    }
+  ],
+  "axes": {
+    "static": "retro",
+    "completeness": "minimal"
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually",
+    "intent": "announce"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    },
+    {
+      "axis": "intent",
+      "token": "announce",
+      "description": "The response shares news or updates with the audience."
+    }
+  ],
+  "tokens": [
+    "announce",
+    "fun_mode",
+    "retro",
+    "minimal"
+  ]
+}

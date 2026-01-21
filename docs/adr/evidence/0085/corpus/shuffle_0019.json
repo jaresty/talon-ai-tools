@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
+  "constraints": [
+    "Completeness (minimal): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Method (how): The response concentrates on mechanical explanation of how the subject works before other narration.",
+    "Form (tight): The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "method",
+      "token": "how",
+      "description": "The response concentrates on mechanical explanation of how the subject works before other narration."
+    },
+    {
+      "axis": "form",
+      "token": "tight",
+      "description": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler."
+    }
+  ],
+  "axes": {
+    "static": "fix",
+    "completeness": "minimal",
+    "method": [
+      "how"
+    ],
+    "form": [
+      "tight"
+    ]
+  },
+  "persona": {
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "casually",
+    "fix",
+    "minimal",
+    "how",
+    "tight"
+  ]
+}

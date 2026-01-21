@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response explains how the elements interact.",
+  "constraints": [
+    "Completeness (minimal): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Scope (relations): The response examines relationships, interactions, and dependencies between elements within the selected target rather than internal details.",
+    "Directional (fip rog): The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "scope",
+      "token": "relations",
+      "description": "The response examines relationships, interactions, and dependencies between elements within the selected target rather than internal details."
+    },
+    {
+      "axis": "directional",
+      "token": "fip rog",
+      "description": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+    }
+  ],
+  "axes": {
+    "static": "interact",
+    "completeness": "minimal",
+    "scope": [
+      "relations"
+    ],
+    "directional": "fip rog"
+  },
+  "persona": {
+    "preset": "scientist_to_analyst",
+    "preset_label": "Scientist to analyst",
+    "voice": "as scientist",
+    "audience": "to analyst",
+    "tone": "formally",
+    "intent": "coach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "scientist_to_analyst",
+      "description": "Scientist to analyst"
+    },
+    {
+      "axis": "voice",
+      "token": "as scientist",
+      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+    },
+    {
+      "axis": "audience",
+      "token": "to analyst",
+      "description": "The response addresses an analyst, providing structure, data framing, and ways to visualise results."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    },
+    {
+      "axis": "intent",
+      "token": "coach",
+      "description": "The response supports someone's growth through guidance and feedback."
+    }
+  ],
+  "tokens": [
+    "coach",
+    "scientist_to_analyst",
+    "interact",
+    "minimal",
+    "relations",
+    "fip rog"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response infers the task without being told what to do.",
+  "constraints": [
+    "Completeness (gist): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Scope (edges): The response emphasises edge cases, errors, and unusual conditions around the subject.",
+    "Form (recipe): The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+    "Channel (sync): The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
+    "Directional (fig): The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "scope",
+      "token": "edges",
+      "description": "The response emphasises edge cases, errors, and unusual conditions around the subject."
+    },
+    {
+      "axis": "form",
+      "token": "recipe",
+      "description": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it."
+    },
+    {
+      "axis": "channel",
+      "token": "sync",
+      "description": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+    },
+    {
+      "axis": "directional",
+      "token": "fig",
+      "description": "The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt."
+    }
+  ],
+  "axes": {
+    "static": "infer",
+    "completeness": "gist",
+    "scope": [
+      "edges"
+    ],
+    "form": [
+      "recipe"
+    ],
+    "channel": [
+      "sync"
+    ],
+    "directional": "fig"
+  },
+  "persona": {
+    "audience": "to Kent Beck"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to Kent Beck",
+      "description": "The response addresses Kent Beck, staying concrete, test-minded, and iterative."
+    }
+  ],
+  "tokens": [
+    "to Kent Beck",
+    "infer",
+    "gist",
+    "edges",
+    "recipe",
+    "sync",
+    "fig"
+  ]
+}

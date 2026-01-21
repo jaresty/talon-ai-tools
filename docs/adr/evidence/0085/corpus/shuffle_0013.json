@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.",
+  "constraints": [
+    "Completeness (full): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (activities): The response lists concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+    "Method (socratic): The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
+    "Channel (slack): The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
+    "Directional (dip rog): The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "activities",
+      "description": "The response lists concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description."
+    },
+    {
+      "axis": "method",
+      "token": "socratic",
+      "description": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary."
+    },
+    {
+      "axis": "channel",
+      "token": "slack",
+      "description": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration."
+    },
+    {
+      "axis": "directional",
+      "token": "dip rog",
+      "description": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+    }
+  ],
+  "axes": {
+    "static": "jim",
+    "completeness": "full",
+    "scope": [
+      "activities"
+    ],
+    "method": [
+      "socratic"
+    ],
+    "channel": [
+      "slack"
+    ],
+    "directional": "dip rog"
+  },
+  "persona": {
+    "preset": "peer_engineer_explanation",
+    "preset_label": "Peer engineer explanation",
+    "voice": "as programmer",
+    "audience": "to programmer",
+    "intent": "evaluate"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "peer_engineer_explanation",
+      "description": "Peer engineer explanation"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    },
+    {
+      "axis": "intent",
+      "token": "evaluate",
+      "description": "The response reaches a justified judgment about quality or viability."
+    }
+  ],
+  "tokens": [
+    "evaluate",
+    "peer_engineer_explanation",
+    "jim",
+    "activities",
+    "socratic",
+    "slack",
+    "dip rog"
+  ]
+}

@@ -1,0 +1,142 @@
+# Catalog Refinement Recommendations
+# Generated from first refinement cycle (seeds 1-20)
+# Date: 2026-01-20
+# Evaluator: Claude Sonnet 4.5
+
+recommendations:
+
+  # EDIT: Tone/Audience combinations need guidance
+  - action: edit
+    category: persona_guidelines
+    current: "Tone and audience are independent axes"
+    proposed: "Add guidance: Some tone/audience combinations are contradictory (e.g., 'casually' to 'CEO' typically conflicts with business context expectations). Consider audience expectations when selecting tone."
+    reason: "Seed 16 combined 'to CEO' with 'casually', creating tonal mismatch. CEOs expect professional communication even if friendly. Need guidance on appropriate combinations."
+    evidence: [seed_16]
+    evaluator_consensus: 1
+    severity: medium
+    confidence: high
+
+  # RECATEGORIZE: Intent conflicts with persona presets
+  - action: edit
+    category: intent_usage
+    current: "Intent can be combined with persona presets freely"
+    proposed: "Document: When using a persona preset, intent should complement not contradict the preset's inherent purpose. Presets like 'scientist_to_analyst' have implicit informational intent; adding 'coach' or 'entertain' creates confusion."
+    reason: "Seed 20 combined 'coach' intent with 'scientist_to_analyst' preset, creating ambiguity about whether to inform (preset) or coach (intent). Seed 18 combined 'entertain' with 'stakeholder_facilitator'."
+    evidence: [seed_18, seed_20]
+    evaluator_consensus: 1
+    severity: high
+    confidence: high
+
+  # EDIT: Directional descriptions need clarification
+  - action: edit
+    token: "fig"
+    axis: directional
+    current: "The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt."
+    proposed: "The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
+    reason: "Current description lists multiple perspectives but doesn't explain what 'synthesized lens' means practically. Users confused about how 'fig' differs from individual abstract/concrete directives."
+    evidence: [seed_1]
+    evaluator_consensus: 1
+    severity: medium
+    confidence: medium
+
+  - action: edit
+    token: "fog"
+    axis: directional
+    current: "The response frames the preceding prompt through one unified perspective that blends reflection, structure, acting, and extending, treating them as a single fused stance."
+    proposed: "The response creates a framework (structure) then demonstrates it in action (acting), using reflection to refine and extending to show applications."
+    reason: "Users unclear what 'fused stance' means. Need operational definition of how these blend."
+    evidence: [seed_multiple]
+    evaluator_consensus: 1
+    severity: medium
+    confidence: medium
+
+  - action: edit
+    token: "rog"
+    axis: directional
+    current: "The response applies a reflective-structural perspective as a single synthesized lens on the preceding prompt."
+    proposed: "The response examines the structure of the subject (how it's organized) while reflecting on why that structure exists and what it reveals."
+    reason: "Seed 5, 9, 14, 20 use rog variants. Current description doesn't distinguish from 'analytical' method."
+    evidence: [seed_5, seed_9, seed_14, seed_20]
+    evaluator_consensus: 1
+    severity: medium
+    confidence: high
+
+  - action: edit
+    token: "bog"
+    axis: directional
+    current: "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance."
+    proposed: "The response starts with action-oriented steps (bog down into details), reflects on patterns, then extends to related contexts."
+    reason: "Seed 7 uses 'dip bog'. Description overlaps too much with fog. Need clearer differentiation."
+    evidence: [seed_7]
+    evaluator_consensus: 1
+    severity: medium
+    confidence: low
+
+  # ADD: Missing constraint combinations cause ambiguity
+  - action: add
+    category: documentation
+    proposed_section: "Constraint Interaction Patterns"
+    proposed_content: "Document common constraint conflicts:\n- 'gist' (short) + 'max' (exhaustive) = contradiction\n- 'edges' (edge cases) + 'narrow' (single focus) = potential conflict\n- 'recipe' (structured format) + 'gherkin' (structured format) = redundancy\n\nRecommend: When shuffle generates conflicting constraints, regenerate or manually adjust."
+    reason: "Multiple seeds showed constraint combinations that work against each other. Need guidance on recognizing and resolving conflicts."
+    evidence: [seed_multiple]
+    evaluator_consensus: 1
+    severity: low
+    confidence: medium
+
+  # RETIRE: Consider consolidating similar directionals
+  - action: investigate
+    tokens: ["fig", "fog", "rog", "bog", "dig", "dip", "fip"]
+    axis: directional
+    question: "Are all 7+ compound directionals necessary, or can some be consolidated?"
+    reason: "Many directionals use similar vocabulary ('blends X and Y perspective', 'synthesized lens', 'fused stance') making them hard to distinguish. Users may not perceive meaningful differences between fig/fog/rog/bog."
+    proposed_investigation:
+      - Generate 20 shuffles with only compound directionals (--include directional)
+      - Evaluate if outputs meaningfully differ
+      - Consider consolidating to 3-4 distinct directional patterns
+    evidence: [seed_1, seed_5, seed_7, seed_9, seed_14, seed_16, seed_20]
+    evaluator_consensus: 1
+    severity: medium
+    confidence: low
+
+  # EDIT: Task "infer" conflicts with constraint philosophy
+  - action: edit
+    token: "infer"
+    axis: static
+    current: "The response infers the task without being told what to do."
+    proposed: "The response examines the subject and proposes what task would be most valuable, then executes that task."
+    reason: "Seed 1 used 'infer' which contradicts ADR 0083 guidance that 'task defines success'. If task is to infer, that should be stated explicitly as a meta-task."
+    evidence: [seed_1]
+    evaluator_consensus: 1
+    severity: high
+    confidence: high
+
+  # POSITIVE: Well-working combinations
+  - action: document_success
+    observation: "Persona presets work well when used alone"
+    evidence: [seed_10, seed_12]
+    examples:
+      - "peer_engineer_explanation with 'easier', 'skim', 'focus', 'tight' (seed 10) - harmonious combination"
+      - "fun_mode with 'cochange', 'dynamics' (seed 12) - tone matches task well"
+    recommendation: "Encourage use of presets without additional persona axes for clearer combinations"
+
+  - action: document_success
+    observation: "Simple constraint combinations score highest"
+    evidence: [seed_10]
+    examples:
+      - "Seed 10 had 5 constraints that worked harmoniously: all were independent and complementary"
+    recommendation: "Default fill probability (0.5) produces good balance; higher fills may create constraint conflicts"
+
+# Summary statistics:
+# - Total prompts evaluated: 20
+# - Seeds with issues: 8 (seeds 1, 5, 7, 9, 14, 16, 18, 20)
+# - Seeds working well: 12 (especially seeds 10, 12)
+# - High-severity issues: 2 (intent/preset conflict, infer task contradiction)
+# - Medium-severity issues: 5 (tone/audience guidance, directional clarity)
+# - Low-severity issues: 1 (constraint combination documentation)
+
+# Recommended prioritization:
+# 1. HIGH: Fix 'infer' task and document intent/preset interaction (seeds 1, 18, 20)
+# 2. MEDIUM: Clarify directional descriptions (seeds 1, 5, 7, 9, 14, 20)
+# 3. MEDIUM: Add tone/audience combination guidance (seed 16)
+# 4. LOW: Document constraint conflicts (general guidance)
+# 5. INVESTIGATE: Consider consolidating compound directionals (requires deeper analysis)

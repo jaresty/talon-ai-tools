@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.",
+  "constraints": [
+    "Completeness (full): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (bound): The response remains within the explicit conceptual limits stated or inferred in the prompt and avoids introducing outside material.",
+    "Method (cocreate): The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
+    "Form (diagram): The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
+    "Directional (fip rog): The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "bound",
+      "description": "The response remains within the explicit conceptual limits stated or inferred in the prompt and avoids introducing outside material."
+    },
+    {
+      "axis": "method",
+      "token": "cocreate",
+      "description": "The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer."
+    },
+    {
+      "axis": "form",
+      "token": "diagram",
+      "description": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
+    },
+    {
+      "axis": "directional",
+      "token": "fip rog",
+      "description": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+    }
+  ],
+  "axes": {
+    "static": "knowledge",
+    "completeness": "full",
+    "scope": [
+      "bound"
+    ],
+    "method": [
+      "cocreate"
+    ],
+    "form": [
+      "diagram"
+    ],
+    "directional": "fip rog"
+  },
+  "persona": {
+    "voice": "as scientist",
+    "audience": "to junior engineer",
+    "tone": "formally"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as scientist",
+      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    }
+  ],
+  "tokens": [
+    "as scientist",
+    "to junior engineer",
+    "formally",
+    "knowledge",
+    "bound",
+    "cocreate",
+    "diagram",
+    "fip rog"
+  ]
+}

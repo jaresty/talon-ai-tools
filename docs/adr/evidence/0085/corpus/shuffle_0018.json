@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response lists metrics that drive the outcomes and includes concrete examples.",
+  "constraints": [
+    "Completeness (full): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (tune): The response evaluates visibility, scope, and volatility alignment using the Concordance Frame and recommends tuning actions.",
+    "Form (commit): The response is formatted as a conventional commit message with a short type or scope line and an optional concise body."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "tune",
+      "description": "The response evaluates visibility, scope, and volatility alignment using the Concordance Frame and recommends tuning actions."
+    },
+    {
+      "axis": "form",
+      "token": "commit",
+      "description": "The response is formatted as a conventional commit message with a short type or scope line and an optional concise body."
+    }
+  ],
+  "axes": {
+    "static": "metrics",
+    "completeness": "full",
+    "method": [
+      "tune"
+    ],
+    "form": [
+      "commit"
+    ]
+  },
+  "persona": {
+    "preset": "stakeholder_facilitator",
+    "preset_label": "Stakeholder facilitator",
+    "voice": "as facilitator",
+    "audience": "to stakeholders",
+    "tone": "directly",
+    "intent": "entertain"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "stakeholder_facilitator",
+      "description": "Stakeholder facilitator"
+    },
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    },
+    {
+      "axis": "audience",
+      "token": "to stakeholders",
+      "description": "The response addresses stakeholders, focusing on impact, decisions, and clarity."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    },
+    {
+      "axis": "intent",
+      "token": "entertain",
+      "description": "The response entertains the audience."
+    }
+  ],
+  "tokens": [
+    "entertain",
+    "stakeholder_facilitator",
+    "metrics",
+    "tune",
+    "commit"
+  ]
+}

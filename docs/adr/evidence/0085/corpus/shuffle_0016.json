@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response explains when it occurs.",
+  "constraints": [
+    "Completeness (max): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Channel (remote): The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
+    "Directional (dip ong): The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending, treating them as a single fused stance."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "channel",
+      "token": "remote",
+      "description": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing."
+    },
+    {
+      "axis": "directional",
+      "token": "dip ong",
+      "description": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending, treating them as a single fused stance."
+    }
+  ],
+  "axes": {
+    "static": "when",
+    "completeness": "max",
+    "channel": [
+      "remote"
+    ],
+    "directional": "dip ong"
+  },
+  "persona": {
+    "audience": "to CEO",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to CEO",
+      "description": "The response addresses a CEO, surfacing business impact, risk, and crisp asks."
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "to CEO",
+    "casually",
+    "when",
+    "max",
+    "remote",
+    "dip ong"
+  ]
+}

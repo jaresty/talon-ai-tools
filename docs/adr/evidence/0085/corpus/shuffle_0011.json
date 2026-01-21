@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response lists only the undefined terms.",
+  "constraints": [
+    "Completeness (minimal): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Scope (system): The response looks at the overall system as a whole—components, boundaries, stakeholders, and internal structure—rather than individual lines or snippets.",
+    "Channel (sync): The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "scope",
+      "token": "system",
+      "description": "The response looks at the overall system as a whole—components, boundaries, stakeholders, and internal structure—rather than individual lines or snippets."
+    },
+    {
+      "axis": "channel",
+      "token": "sync",
+      "description": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+    }
+  ],
+  "axes": {
+    "static": "undefined",
+    "completeness": "minimal",
+    "scope": [
+      "system"
+    ],
+    "channel": [
+      "sync"
+    ]
+  },
+  "persona": {
+    "tone": "kindly",
+    "intent": "resolve"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    },
+    {
+      "axis": "intent",
+      "token": "resolve",
+      "description": "The response brings the problem or issue to a settled, resolved state."
+    }
+  ],
+  "tokens": [
+    "resolve",
+    "kindly",
+    "undefined",
+    "minimal",
+    "system",
+    "sync"
+  ]
+}

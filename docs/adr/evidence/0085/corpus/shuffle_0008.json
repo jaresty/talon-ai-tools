@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response explains what is happening.",
+  "constraints": [
+    "Completeness (max): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (interfaces): The response concentrates on external interfaces, contracts, and boundaries between components or systems rather than internal implementations.",
+    "Method (indirect): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "interfaces",
+      "description": "The response concentrates on external interfaces, contracts, and boundaries between components or systems rather than internal implementations."
+    },
+    {
+      "axis": "method",
+      "token": "indirect",
+      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    }
+  ],
+  "axes": {
+    "static": "what",
+    "completeness": "max",
+    "scope": [
+      "interfaces"
+    ],
+    "method": [
+      "indirect"
+    ]
+  },
+  "persona": {
+    "voice": "as writer",
+    "audience": "to Kent Beck",
+    "tone": "formally",
+    "intent": "coach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as writer",
+      "description": "The response speaks as a writer, focusing on narrative clarity and flow."
+    },
+    {
+      "axis": "audience",
+      "token": "to Kent Beck",
+      "description": "The response addresses Kent Beck, staying concrete, test-minded, and iterative."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    },
+    {
+      "axis": "intent",
+      "token": "coach",
+      "description": "The response supports someone's growth through guidance and feedback."
+    }
+  ],
+  "tokens": [
+    "coach",
+    "as writer",
+    "to Kent Beck",
+    "formally",
+    "what",
+    "max",
+    "interfaces",
+    "indirect"
+  ]
+}

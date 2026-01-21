@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response identifies the relevant elements of the situation.",
+  "constraints": [
+    "Completeness (full): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (edges): The response emphasises edge cases, errors, and unusual conditions around the subject.",
+    "Method (indirect): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+    "Directional (bog): The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "edges",
+      "description": "The response emphasises edge cases, errors, and unusual conditions around the subject."
+    },
+    {
+      "axis": "method",
+      "token": "indirect",
+      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    },
+    {
+      "axis": "directional",
+      "token": "bog",
+      "description": "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance."
+    }
+  ],
+  "axes": {
+    "static": "relevant",
+    "completeness": "full",
+    "scope": [
+      "edges"
+    ],
+    "method": [
+      "indirect"
+    ],
+    "directional": "bog"
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly",
+    "intent": "evaluate"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    },
+    {
+      "axis": "intent",
+      "token": "evaluate",
+      "description": "The response reaches a justified judgment about quality or viability."
+    }
+  ],
+  "tokens": [
+    "evaluate",
+    "designer_to_pm",
+    "relevant",
+    "edges",
+    "indirect",
+    "bog"
+  ]
+}

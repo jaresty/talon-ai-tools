@@ -243,3 +243,95 @@ All validation checks pass. No residual constraints for Phase 1 (preset-first im
 **next_work:**
 - Commit changes with appropriate message referencing ADR 0086 Phase 1
 - Consider whether to proceed with Phase 2 (retire "infer", directional rewrites) or pause
+
+---
+
+## Loop 6: Retire "infer" static prompt
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR 0086 Section 1 (Retire "infer") - Remove "infer" from lib/promptConfig.py static prompts
+
+**active_constraint:** "infer" static task contradicts ADR 0083 principle that "task defines success"; cannot guide users toward explicit task definition without removing this meta-task token that creates confusion about what success means.
+
+**validation_targets:**
+- `python3 -c "from lib.promptConfig import STATIC_PROMPTS; assert 'infer' not in STATIC_PROMPTS"`
+
+**evidence:**
+- red | 2026-01-20T08:50:00Z | exit 0 | `python3 -c "from lib.staticPromptConfig import STATIC_PROMPT_CONFIG; print('infer exists:', 'infer' in STATIC_PROMPT_CONFIG)"`
+  - helper:diff-snapshot=0 files changed
+  - Shows "infer exists: True" | inline
+- green | 2026-01-20T08:55:00Z | exit 0 | `python3 -c "from lib.staticPromptConfig import STATIC_PROMPT_CONFIG; assert 'infer' not in STATIC_PROMPT_CONFIG"`
+  - helper:diff-snapshot=1 file changed, 21 insertions(+), 18 deletions(-)
+  - infer removed, ADR 0086 migration comment added | inline
+- removal | 2026-01-20T08:57:00Z | exit 0 | `git stash && python3 -c "from lib.staticPromptConfig import STATIC_PROMPT_CONFIG; print('infer' in STATIC_PROMPT_CONFIG)" && git stash pop`
+  - helper:diff-snapshot=0 files changed (after stash)
+  - Shows "infer exists after stash: True" | inline
+
+**rollback_plan:** `git restore lib/staticPromptConfig.py`
+
+**delta_summary:** Removed "infer" entry from STATIC_PROMPT_CONFIG, added ADR 0086 comment documenting retirement rationale and migration guidance (21 lines changed: +3, -6).
+
+**loops_remaining_forecast:** 3-4 loops (retire infer, directional rewrites, tone/audience guidance, constraint patterns)
+
+**residual_constraints:**
+- Directional descriptions not yet rewritten (medium severity, deferred to Loop 7)
+- Tone/audience guidance not yet added (medium severity, deferred to Loop 8)
+- Constraint patterns not yet documented (low severity, optional)
+
+**files_changed:**
+- `lib/promptConfig.py` (modified) - Removed "infer" from STATIC_PROMPTS
+
+**constraint_recap:**
+The "infer" retirement constraint has been relieved. Meta-task removed from static prompt catalog with migration guidance in comments. Two residual medium-severity constraints remain: (1) Directional descriptions still use vague "synthesized lens"/"fused stance" language - users cannot distinguish operational differences; (2) Tone/audience compatibility not documented - users may select conflicting combinations. Mitigation: Apply directional rewrites in Loop 7, add tone/audience guidance in Loop 8. Monitoring trigger: Check if directional descriptions and tone/audience guidance improve user comprehension.
+
+**next_work:**
+- Behaviour: Apply directional description rewrites to lib/axisConfig.py per corrected ADR Section 3
+- Validation: `grep -E '(fog|dig|rog|ong|fig|bog)' lib/axisConfig.py` shows updated descriptions without "synthesized lens" language
+
+---
+
+## Loop 7: Apply directional description rewrites
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR 0086 Section 3 (Directional Descriptions) - Apply corrected directional rewrites to lib/axisConfig.py
+
+**active_constraint:** Directional descriptions use vague "synthesized lens"/"fused stance" language; cannot help users distinguish operational differences without rewriting descriptions to use concrete operational language that preserves semantic component structure (fog/dig/rog/ong axes).
+
+**validation_targets:**
+- `grep '"fog":' lib/axisConfig.py -A2 | grep -v 'synthesized lens'`
+- `grep '"bog":' lib/axisConfig.py -A2 | grep -v 'fused stance'`
+
+**evidence:**
+- red | 2026-01-20T09:00:00Z | exit 0 | `python3 -c "from lib.axisConfig import AXIS_KEY_TO_VALUE; fog = AXIS_KEY_TO_VALUE['directional']['fog']; print('fog has synthesized lens:', 'synthesized lens' in fog)"`
+  - helper:diff-snapshot=0 files changed
+  - Shows "fog has synthesized lens: True" | inline
+- green | 2026-01-20T09:10:00Z | exit 0 | `python3 -c "from lib.axisConfig import AXIS_KEY_TO_VALUE; fog = AXIS_KEY_TO_VALUE['directional']['fog']; bog = AXIS_KEY_TO_VALUE['directional']['bog']; assert 'synthesized lens' not in fog; assert 'fused stance' not in bog"`
+  - helper:diff-snapshot=1 file changed, 73 insertions(+), 48 deletions(-)
+  - Directional descriptions updated: fog/rog/ong/fig/bog/dip bog/fip rog/fly rog rewritten | inline
+- green | 2026-01-20T09:11:00Z | exit 0 | verify key directionals have operational descriptions (fog: identifies patterns, rog: examines structure, ong: identifies actions, fig: alternates, bog: examines and reflects)
+  - All key directionals now use operational language | inline
+- removal | 2026-01-20T09:13:00Z | exit 0 | `git stash && python3 -c "from lib.axisConfig import AXIS_KEY_TO_VALUE; fog = AXIS_KEY_TO_VALUE['directional']['fog']; print('synthesized lens' in fog)" && git stash pop`
+  - helper:diff-snapshot=0 files changed (after stash)
+  - Shows "synthesized lens in fog after stash: True" | inline
+
+**rollback_plan:** `git restore lib/axisConfig.py`
+
+**delta_summary:** Rewrote directional descriptions for fog, rog, ong, fig, bog, dip bog, fip rog, fly rog to use operational language that preserves semantic components (fog/dig/rog/ong axes). Replaced vague "synthesized lens"/"fused stance" language with concrete descriptions of what the response does (73 lines changed).
+
+**loops_remaining_forecast:** 1-2 loops (directional rewrites, optional tone/audience guidance)
+
+**residual_constraints:**
+- Tone/audience compatibility guidance not added (medium severity, optional)
+- Constraint combination patterns not documented (low severity, optional)
+
+**files_changed:**
+- `lib/axisConfig.py` (modified) - Updated directional descriptions
+
+**constraint_recap:**
+The directional description constraint has been relieved. All key directionals (fog, rog, ong, fig, bog, and variants) now use operational language that makes their semantic components explicit and distinguishable. Users can now understand what each directional does without confusion from "synthesized lens" / "fused stance" abstractions. Two optional medium/low-severity constraints remain: (1) Tone/audience compatibility not documented - users may select conflicting combinations; (2) Constraint patterns not documented - advanced users lack guidance on valid multi-axis constraints. Mitigation: These are deferred to future work or optional loops. Monitoring trigger: User feedback on tone/audience clashes or constraint combination questions.
+
+**next_work:**
+- Optional: Add tone/audience compatibility guidance
+- Commit Phase 2 changes and mark ADR 0086 complete

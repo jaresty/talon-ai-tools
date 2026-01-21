@@ -70,22 +70,21 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                              'need.',
                   'skim': 'The response performs only a very light pass, addressing the most '
                           'obvious or critical issues without aiming for completeness.'},
- 'directional': {'bog': 'The response frames the preceding prompt through one unified perspective '
-                        'that blends acting, extending, reflection, and structure, treating them '
-                        'as a single fused stance.',
+ 'directional': {'bog': 'The response examines the subject\'s structure and reflects on it, then '
+                        'identifies actions to take and extends them to related contexts.',
                  'dig': 'The response applies a concretizing-grounding perspective as a single '
                         'synthesized lens on the preceding prompt.',
-                 'dip bog': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends concreteness, grounding, acting, extending, '
-                            'reflection, and structure, treating them as a single fused stance.',
+                 'dip bog': 'The response starts with concrete examples and grounded details, examines '
+                            'their structure and reflects on patterns, then identifies actions and '
+                            'extensions.',
                  'dip ong': 'The response frames the preceding prompt through one unified '
                             'perspective that blends concreteness, grounding, acting, and '
                             'extending, treating them as a single fused stance.',
                  'dip rog': 'The response frames the preceding prompt through one unified '
                             'perspective that blends concreteness, grounding, reflection, and '
                             'structure, treating them as a single fused stance.',
-                 'fig': 'The response applies an abstracting-generalizing-concretizing-grounding '
-                        'perspective as a single synthesized lens on the preceding prompt.',
+                 'fig': 'The response alternates between abstract principles and concrete examples, '
+                        'using each to illuminate the other (figure-ground reversal).',
                  'fip bog': 'The response frames the preceding prompt through one unified '
                             'perspective that blends abstraction, generalization, concreteness, '
                             'grounding, acting, extending, reflection, and structure, treating '
@@ -94,10 +93,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                             'perspective that blends abstraction, generalization, concreteness, '
                             'grounding, acting, and extending, treating them as a single fused '
                             'stance.',
-                 'fip rog': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends abstraction, generalization, concreteness, '
-                            'grounding, reflection, and structure, treating them as a single fused '
-                            'stance.',
+                 'fip rog': 'The response moves between abstract principles and concrete examples while '
+                            'examining structural patterns and reflecting on what they reveal.',
                  'fly bog': 'The response frames the preceding prompt through one unified '
                             'perspective that blends abstraction, generalization, acting, '
                             'extending, reflection, and structure, treating them as a single fused '
@@ -105,17 +102,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                  'fly ong': 'The response frames the preceding prompt through one unified '
                             'perspective that blends abstraction, generalization, acting, and '
                             'extending, treating them as a single fused stance.',
-                 'fly rog': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends abstraction, generalization, reflection, and '
-                            'structure, treating them as a single fused stance.',
-                 'fog': 'The response applies an abstracting-generalizing perspective as a single '
-                        'synthesized lens on the preceding prompt.',
+                 'fly rog': 'The response identifies abstract patterns and general principles, then '
+                            'examines their structural relationships and reflects on their implications.',
+                 'fog': 'The response identifies general patterns and abstract principles from the '
+                        'specifics, moving from particular cases to broader insights.',
                  'jog': 'The response interprets the intent and carries it out directly without '
                         'asking follow-up questions.',
-                 'ong': 'The response applies an acting-extending perspective as a single '
-                        'synthesized lens on the preceding prompt.',
-                 'rog': 'The response applies a reflective-structural perspective as a single '
-                        'synthesized lens on the preceding prompt.'},
+                 'ong': 'The response identifies concrete actions to take, then extends those actions '
+                        'to related situations or next steps.',
+                 'rog': 'The response examines the structure of the subject (how it is organized), '
+                        'then reflects on why that structure exists and what it reveals.'},
  'form': {'adr': 'The response takes the shape of an Architecture Decision Record (ADR) with '
                  'sections for context, decision, and consequences, written in a concise document '
                  'style.',

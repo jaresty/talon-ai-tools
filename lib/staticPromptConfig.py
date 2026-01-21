@@ -30,12 +30,10 @@ def completeness_freeform_allowlist() -> Set[str]:
 
 
 STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
-    # Default "infer the task" prompt used when no explicit staticPrompt
-    # is provided. This keeps the visible Task description consistent with
-    # the historical fallback while giving it a concise recipe token.
-    "infer": {
-        "description": "The response infers the task without being told what to do.",
-    },
+    # Per ADR 0086: Retired "infer" - contradicts ADR 0083 principle that "task defines success".
+    # Users should explicitly state what task to perform rather than asking LLM to infer intent.
+    # Migration: Use explicit tasks like "todo", "explain", "analyze" instead.
+
     # Analysis, structure, and perspective prompts (description-only profiles).
     "describe": {
         "description": "The response describes the subject objectively.",

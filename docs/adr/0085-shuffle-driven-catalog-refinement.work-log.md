@@ -107,3 +107,53 @@ The evaluation template constraint has been relieved. One residual medium-severi
 **next_work:**
 - Behaviour: Create README documenting the refinement workflow and recommendation aggregation process
 - Validation: `test -f docs/adr/evidence/0085/README.md && grep -q "Workflow" docs/adr/evidence/0085/README.md` exits 0
+
+---
+
+## Loop 3: Create workflow README
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR 0085 Phase 3 (Recommendation) - Create README documenting complete refinement workflow
+
+**active_constraint:** No workflow documentation exists; evaluators cannot execute the refinement cycle without step-by-step guidance on corpus generation, evaluation, and recommendation aggregation.
+
+**validation_targets:**
+- `test -f docs/adr/evidence/0085/README.md && grep -q "Workflow" docs/adr/evidence/0085/README.md`
+
+**evidence:**
+- red | 2026-01-20T02:40:00Z | exit 1 | `test -f docs/adr/evidence/0085/README.md && grep -q "Workflow" docs/adr/evidence/0085/README.md`
+  - helper:diff-snapshot=0 files changed
+  - README does not exist | inline
+- green | 2026-01-20T02:50:00Z | exit 0 | `test -f docs/adr/evidence/0085/README.md && grep -q "Workflow" docs/adr/evidence/0085/README.md`
+  - helper:diff-snapshot=1 file changed, 249 insertions(+)
+  - README exists with complete workflow documentation | inline
+- removal | 2026-01-20T02:55:00Z | exit 1 | `rm docs/adr/evidence/0085/README.md && test -f docs/adr/evidence/0085/README.md`
+  - helper:diff-snapshot=0 files changed
+  - README removed; test fails | inline
+
+**rollback_plan:** `rm docs/adr/evidence/0085/README.md`
+
+**delta_summary:** Created README.md documenting complete refinement workflow with 3 phases (generation, evaluation, recommendation), sampling strategies, scoring rubric, recommendation schema, example cycle, validation commands, and tips for efficient evaluation.
+
+**loops_remaining_forecast:** 1-2 loops (README, optional first cycle demo)
+
+**residual_constraints:**
+- First refinement cycle not yet executed (medium severity, optional for ADR completion)
+  - Mitigation: Process is documented; execution is demonstration, not requirement
+  - Monitoring: Track if process is adopted for actual catalog refinement
+  - Severity: Medium (documentation sufficient for Accepted status; execution proves value)
+- Automation of LLM-assisted evaluation (low severity, deferred to future extension)
+  - Mitigation: Manual evaluation sufficient for first cycles
+  - Monitoring: Track evaluation time/consistency
+  - Severity: Low (manual process works)
+
+**files_changed:**
+- `docs/adr/evidence/0085/README.md` (new) - Workflow documentation
+
+**constraint_recap:**
+The workflow documentation constraint has been relieved. Infrastructure is complete (corpus script, evaluation template, README). Remaining constraint: first refinement cycle not yet executed to validate the process and produce actual catalog recommendations. This is a demonstration constraint - the process is documented and ready for use, but execution proves value and surfaces any process gaps.
+
+**next_work:**
+- Behaviour: Execute first refinement cycle - generate corpus, evaluate sample prompts, produce recommendations
+- Validation: `test -f docs/adr/evidence/0085/recommendations.yaml && wc -l < docs/adr/evidence/0085/recommendations.yaml` shows non-empty recommendations file

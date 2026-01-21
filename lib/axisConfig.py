@@ -246,6 +246,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                      'non-numerical way to explore accumulation and rate-of-change.',
             'how': 'The response concentrates on mechanical explanation of how the subject works '
                    'before other narration.',
+            'improve': 'The response takes existing work and enhances it along relevant '
+                       'dimensions—such as performance, readability, maintainability, correctness, '
+                       'or robustness—identifying specific improvements and applying them while '
+                       'preserving core functionality.',
             'indirect': 'The response begins with brief background, reasoning, and trade-offs and '
                         'finishes with a clear bottom-line point or recommendation that ties them '
                         'together.',

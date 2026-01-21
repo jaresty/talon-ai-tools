@@ -90,6 +90,7 @@
         "graph": "The response uses graph or tree reasoning by mapping nodes, edges, direction, weight, and centrality to explain structural flow.",
         "grove": "The response applies integral or derivative style reasoning in a non-numerical way to explore accumulation and rate-of-change.",
         "how": "The response concentrates on mechanical explanation of how the subject works before other narration.",
+        "improve": "The response takes existing work and enhances it along relevant dimensions—such as performance, readability, maintainability, correctness, or robustness—identifying specific improvements and applying them while preserving core functionality.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "invert": "The response inverts the concept to expose its negative space and complementary behaviours.",
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
@@ -226,6 +227,7 @@
         "graph",
         "grove",
         "how",
+        "improve",
         "indirect",
         "invert",
         "ladder",
@@ -1461,6 +1463,7 @@
         "graph": "graph",
         "grove": "grove",
         "how": "how",
+        "improve": "improve",
         "indirect": "indirect",
         "invert": "invert",
         "ladder": "ladder",
@@ -1728,6 +1731,7 @@
         "method=graph": "method-graph",
         "method=grove": "method-grove",
         "method=how": "method-how",
+        "method=improve": "method-improve",
         "method=indirect": "method-indirect",
         "method=invert": "method-invert",
         "method=ladder": "method-ladder",
@@ -2034,6 +2038,7 @@
       "help": "help",
       "how": "how",
       "html": "html",
+      "improve": "improve",
       "independent": "independent",
       "indirect": "indirect",
       "inform": "inform",
@@ -2104,6 +2109,7 @@
       "method=graph": "method-graph",
       "method=grove": "method-grove",
       "method=how": "method-how",
+      "method=improve": "method-improve",
       "method=indirect": "method-indirect",
       "method=invert": "method-invert",
       "method=ladder": "method-ladder",
@@ -2309,10 +2315,10 @@
     }
   },
   "checksums": {
-    "axes": "e277be0d85d53a8e704e68a7857de9d7b4aeca021441ed9461bf7deccdbc3ff9",
+    "axes": "8648b9ce0fc807cbd1aa8cedd61f32c2096135396d4f1b30b9cc6c7bc8caa82b",
     "static_prompts": "36a31a47b3cb15cf2f286d5ecfcc894d2e0092c6f6d3340a07e65752c3137d37",
     "persona": "08cebb8aa66ec4d2eaa4c0651a9ee1ca6abb144f2f831919fbd97a93bf1440db",
     "hierarchy": "5cfb0346c57471a16b4e16e374fe3fbaae0f6261297ea760b7b51396fdd87212",
-    "slugs": "93f2f086432e140f0b700ab9ff1e83121cf5b48196f25359ef1e10cf07740b3e"
+    "slugs": "e0a2850510865e252fe75f5fc8c729d7e8cf750048baf945de36dbf5d9e8a738"
   }
 }

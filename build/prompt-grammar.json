@@ -17,22 +17,22 @@
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
       },
       "directional": {
-        "bog": "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "dig": "The response applies a concretizing-grounding perspective as a single synthesized lens on the preceding prompt.",
-        "dip bog": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "dip ong": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending, treating them as a single fused stance.",
-        "dip rog": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, reflection, and structure, treating them as a single fused stance.",
-        "fig": "The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt.",
-        "fip bog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "fip ong": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, acting, and extending, treating them as a single fused stance.",
-        "fip rog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance.",
-        "fly bog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "fly ong": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, acting, and extending, treating them as a single fused stance.",
-        "fly rog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, reflection, and structure, treating them as a single fused stance.",
-        "fog": "The response applies an abstracting-generalizing perspective as a single synthesized lens on the preceding prompt.",
+        "bog": "The response examines the subject's structure and reflects on it, then identifies actions to take and extends them to related contexts.",
+        "dig": "The response examines concrete details and grounding examples, focusing on specifics rather than abstractions.",
+        "dip bog": "The response starts with concrete examples and grounded details, examines their structure and reflects on patterns, then identifies actions and extensions.",
+        "dip ong": "The response starts with concrete examples, identifies actions to take from them, then extends those actions to related situations.",
+        "dip rog": "The response examines concrete details and grounded examples, then reflects on their structural patterns and what they reveal.",
+        "fig": "The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal).",
+        "fip bog": "The response moves between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts.",
+        "fip ong": "The response alternates between abstract principles and concrete examples, then identifies actions to take and extends them to related situations.",
+        "fip rog": "The response moves between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
+        "fly bog": "The response identifies abstract patterns and general principles, examines their structure and reflects on it, then identifies actions and extends them to related contexts.",
+        "fly ong": "The response identifies abstract patterns and general principles, then proposes concrete actions and extends them to related contexts.",
+        "fly rog": "The response identifies abstract patterns and general principles, then examines their structural relationships and reflects on their implications.",
+        "fog": "The response identifies general patterns and abstract principles from the specifics, moving from particular cases to broader insights.",
         "jog": "The response interprets the intent and carries it out directly without asking follow-up questions.",
-        "ong": "The response applies an acting-extending perspective as a single synthesized lens on the preceding prompt.",
-        "rog": "The response applies a reflective-structural perspective as a single synthesized lens on the preceding prompt."
+        "ong": "The response identifies concrete actions to take, then extends those actions to related situations or next steps.",
+        "rog": "The response examines the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
       },
       "form": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) with sections for context, decision, and consequences, written in a concise document style.",
@@ -277,11 +277,6 @@
   "static_prompts": {
     "catalog": {
       "profiled": [
-        {
-          "axes": {},
-          "description": "The response infers the task without being told what to do.",
-          "name": "infer"
-        },
         {
           "axes": {},
           "description": "The response describes the subject objectively.",
@@ -691,7 +686,6 @@
         }
       ],
       "talon_list_tokens": [
-        "infer",
         "describe",
         "undefined",
         "who",
@@ -799,9 +793,6 @@
       "independent": {
         "description": "The response explains how the elements remain independent.",
         "scope": "relations"
-      },
-      "infer": {
-        "description": "The response infers the task without being told what to do."
       },
       "interact": {
         "description": "The response explains how the elements interact.",
@@ -962,7 +953,6 @@
       "easier": "The response proposes an approach that accomplishes the goal on a smaller timescale.",
       "fix": "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
       "independent": "The response explains how the elements remain independent.",
-      "infer": "The response infers the task without being told what to do.",
       "interact": "The response explains how the elements interact.",
       "jim": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.",
       "jobs": "The response highlights the key Jobs To Be Done, desired outcomes, and forces shaping them.",
@@ -1377,7 +1367,7 @@
       "channel": {}
     },
     "defaults": {
-      "static_prompt": "infer",
+      "static_prompt": "assumption",
       "completeness": "full"
     }
   },
@@ -1534,7 +1524,6 @@
       "easier": "easier",
       "fix": "fix",
       "independent": "independent",
-      "infer": "infer",
       "interact": "interact",
       "jim": "jim",
       "jobs": "jobs",
@@ -1657,7 +1646,6 @@
         "static=easier": "static-easier",
         "static=fix": "static-fix",
         "static=independent": "static-independent",
-        "static=infer": "static-infer",
         "static=interact": "static-interact",
         "static=jim": "static-jim",
         "static=jobs": "static-jobs",
@@ -2048,7 +2036,6 @@
       "html": "html",
       "independent": "independent",
       "indirect": "indirect",
-      "infer": "infer",
       "inform": "inform",
       "intent=announce": "intent-announce",
       "intent=appreciate": "intent-appreciate",
@@ -2224,7 +2211,6 @@
       "static=easier": "static-easier",
       "static=fix": "static-fix",
       "static=independent": "static-independent",
-      "static=infer": "static-infer",
       "static=interact": "static-interact",
       "static=jim": "static-jim",
       "static=jobs": "static-jobs",
@@ -2323,10 +2309,10 @@
     }
   },
   "checksums": {
-    "axes": "1ddc698dc214dedbac379be2bb54c1242559a05232e92f66d999ee71df16d4a2",
-    "static_prompts": "ce96407da230668e6eae5b9e315bb98f8823979c067692d3d278d803299f3274",
+    "axes": "e277be0d85d53a8e704e68a7857de9d7b4aeca021441ed9461bf7deccdbc3ff9",
+    "static_prompts": "36a31a47b3cb15cf2f286d5ecfcc894d2e0092c6f6d3340a07e65752c3137d37",
     "persona": "08cebb8aa66ec4d2eaa4c0651a9ee1ca6abb144f2f831919fbd97a93bf1440db",
-    "hierarchy": "34fe23d4a1deb179e69883140897f4bd52d730c880982fb547dfc470b41c76d5",
-    "slugs": "2872ac1284281698dfeddfa72da35b17455f8fcbe3b2c230c0ff798682306b48"
+    "hierarchy": "5cfb0346c57471a16b4e16e374fe3fbaae0f6261297ea760b7b51396fdd87212",
+    "slugs": "93f2f086432e140f0b700ab9ff1e83121cf5b48196f25359ef1e10cf07740b3e"
   }
 }

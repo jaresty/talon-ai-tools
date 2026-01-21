@@ -72,36 +72,29 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                           'obvious or critical issues without aiming for completeness.'},
  'directional': {'bog': 'The response examines the subject\'s structure and reflects on it, then '
                         'identifies actions to take and extends them to related contexts.',
-                 'dig': 'The response applies a concretizing-grounding perspective as a single '
-                        'synthesized lens on the preceding prompt.',
+                 'dig': 'The response examines concrete details and grounding examples, focusing on '
+                        'specifics rather than abstractions.',
                  'dip bog': 'The response starts with concrete examples and grounded details, examines '
                             'their structure and reflects on patterns, then identifies actions and '
                             'extensions.',
-                 'dip ong': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends concreteness, grounding, acting, and '
-                            'extending, treating them as a single fused stance.',
-                 'dip rog': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends concreteness, grounding, reflection, and '
-                            'structure, treating them as a single fused stance.',
+                 'dip ong': 'The response starts with concrete examples, identifies actions to take from '
+                            'them, then extends those actions to related situations.',
+                 'dip rog': 'The response examines concrete details and grounded examples, then reflects '
+                            'on their structural patterns and what they reveal.',
                  'fig': 'The response alternates between abstract principles and concrete examples, '
                         'using each to illuminate the other (figure-ground reversal).',
-                 'fip bog': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends abstraction, generalization, concreteness, '
-                            'grounding, acting, extending, reflection, and structure, treating '
-                            'them as a single fused stance.',
-                 'fip ong': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends abstraction, generalization, concreteness, '
-                            'grounding, acting, and extending, treating them as a single fused '
-                            'stance.',
+                 'fip bog': 'The response moves between abstract principles and concrete examples, '
+                            'examines their structural patterns and reflects on them, then identifies '
+                            'actions and extends them to related contexts.',
+                 'fip ong': 'The response alternates between abstract principles and concrete examples, '
+                            'then identifies actions to take and extends them to related situations.',
                  'fip rog': 'The response moves between abstract principles and concrete examples while '
                             'examining structural patterns and reflecting on what they reveal.',
-                 'fly bog': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends abstraction, generalization, acting, '
-                            'extending, reflection, and structure, treating them as a single fused '
-                            'stance.',
-                 'fly ong': 'The response frames the preceding prompt through one unified '
-                            'perspective that blends abstraction, generalization, acting, and '
-                            'extending, treating them as a single fused stance.',
+                 'fly bog': 'The response identifies abstract patterns and general principles, examines '
+                            'their structure and reflects on it, then identifies actions and extends '
+                            'them to related contexts.',
+                 'fly ong': 'The response identifies abstract patterns and general principles, then '
+                            'proposes concrete actions and extends them to related contexts.',
                  'fly rog': 'The response identifies abstract patterns and general principles, then '
                             'examines their structural relationships and reflects on their implications.',
                  'fog': 'The response identifies general patterns and abstract principles from the '

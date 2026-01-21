@@ -70,39 +70,42 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                              'need.',
                   'skim': 'The response performs only a very light pass, addressing the most '
                           'obvious or critical issues without aiming for completeness.'},
- 'directional': {'bog': 'The response examines the subject\'s structure and reflects on it, then '
+ 'directional': {'bog': "The response examines the subject's structure and reflects on it, then "
                         'identifies actions to take and extends them to related contexts.',
-                 'dig': 'The response examines concrete details and grounding examples, focusing on '
-                        'specifics rather than abstractions.',
-                 'dip bog': 'The response starts with concrete examples and grounded details, examines '
-                            'their structure and reflects on patterns, then identifies actions and '
-                            'extensions.',
-                 'dip ong': 'The response starts with concrete examples, identifies actions to take from '
-                            'them, then extends those actions to related situations.',
-                 'dip rog': 'The response examines concrete details and grounded examples, then reflects '
-                            'on their structural patterns and what they reveal.',
-                 'fig': 'The response alternates between abstract principles and concrete examples, '
-                        'using each to illuminate the other (figure-ground reversal).',
+                 'dig': 'The response examines concrete details and grounding examples, focusing '
+                        'on specifics rather than abstractions.',
+                 'dip bog': 'The response starts with concrete examples and grounded details, '
+                            'examines their structure and reflects on patterns, then identifies '
+                            'actions and extensions.',
+                 'dip ong': 'The response starts with concrete examples, identifies actions to '
+                            'take from them, then extends those actions to related situations.',
+                 'dip rog': 'The response examines concrete details and grounded examples, then '
+                            'reflects on their structural patterns and what they reveal.',
+                 'fig': 'The response alternates between abstract principles and concrete '
+                        'examples, using each to illuminate the other (figure-ground reversal).',
                  'fip bog': 'The response moves between abstract principles and concrete examples, '
-                            'examines their structural patterns and reflects on them, then identifies '
-                            'actions and extends them to related contexts.',
-                 'fip ong': 'The response alternates between abstract principles and concrete examples, '
-                            'then identifies actions to take and extends them to related situations.',
-                 'fip rog': 'The response moves between abstract principles and concrete examples while '
-                            'examining structural patterns and reflecting on what they reveal.',
-                 'fly bog': 'The response identifies abstract patterns and general principles, examines '
-                            'their structure and reflects on it, then identifies actions and extends '
-                            'them to related contexts.',
-                 'fly ong': 'The response identifies abstract patterns and general principles, then '
-                            'proposes concrete actions and extends them to related contexts.',
-                 'fly rog': 'The response identifies abstract patterns and general principles, then '
-                            'examines their structural relationships and reflects on their implications.',
+                            'examines their structural patterns and reflects on them, then '
+                            'identifies actions and extends them to related contexts.',
+                 'fip ong': 'The response alternates between abstract principles and concrete '
+                            'examples, then identifies actions to take and extends them to related '
+                            'situations.',
+                 'fip rog': 'The response moves between abstract principles and concrete examples '
+                            'while examining structural patterns and reflecting on what they '
+                            'reveal.',
+                 'fly bog': 'The response identifies abstract patterns and general principles, '
+                            'examines their structure and reflects on it, then identifies actions '
+                            'and extends them to related contexts.',
+                 'fly ong': 'The response identifies abstract patterns and general principles, '
+                            'then proposes concrete actions and extends them to related contexts.',
+                 'fly rog': 'The response identifies abstract patterns and general principles, '
+                            'then examines their structural relationships and reflects on their '
+                            'implications.',
                  'fog': 'The response identifies general patterns and abstract principles from the '
                         'specifics, moving from particular cases to broader insights.',
                  'jog': 'The response interprets the intent and carries it out directly without '
                         'asking follow-up questions.',
-                 'ong': 'The response identifies concrete actions to take, then extends those actions '
-                        'to related situations or next steps.',
+                 'ong': 'The response identifies concrete actions to take, then extends those '
+                        'actions to related situations or next steps.',
                  'rog': 'The response examines the structure of the subject (how it is organized), '
                         'then reflects on why that structure exists and what it reveals.'},
  'form': {'adr': 'The response takes the shape of an Architecture Decision Record (ADR) with '

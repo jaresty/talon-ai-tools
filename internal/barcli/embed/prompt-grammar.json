@@ -664,12 +664,9 @@
         },
         {
           "axes": {
-            "completeness": "full",
-            "scope": [
-              "narrow"
-            ]
+            "completeness": "full"
           },
-          "description": "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
+          "description": "The response makes the necessary corrections, changes, or improvements to address the issue or request.",
           "name": "fix"
         },
         {
@@ -791,8 +788,7 @@
       },
       "fix": {
         "completeness": "full",
-        "description": "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
-        "scope": "narrow"
+        "description": "The response makes the necessary corrections, changes, or improvements to address the issue or request."
       },
       "independent": {
         "description": "The response explains how the elements remain independent.",
@@ -955,7 +951,7 @@
       "domain": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies.",
       "done": "The response provides a clear Definition of Done or acceptance criteria as a checklist.",
       "easier": "The response proposes an approach that accomplishes the goal on a smaller timescale.",
-      "fix": "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
+      "fix": "The response makes the necessary corrections, changes, or improvements to address the issue or request.",
       "independent": "The response explains how the elements remain independent.",
       "interact": "The response explains how the elements interact.",
       "jim": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.",
@@ -2322,7 +2318,7 @@
   },
   "checksums": {
     "axes": "01eec91385da83ac19112208b3c0f469d4ba8519a88d12c08f149eb8b505931d",
-    "static_prompts": "36a31a47b3cb15cf2f286d5ecfcc894d2e0092c6f6d3340a07e65752c3137d37",
+    "static_prompts": "07b85cbfa7748d79d4cd2a80007a5b81ad662c4cf351e7a6f03602faedb06478",
     "persona": "08cebb8aa66ec4d2eaa4c0651a9ee1ca6abb144f2f831919fbd97a93bf1440db",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
     "slugs": "c00e0b2b7b8c96c34d67921269cfe36a0672ca5b819c0c6ab01023d4256eb36a"

@@ -237,9 +237,8 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         ),
     },
     "fix": {
-        "description": "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
+        "description": "The response makes the necessary corrections, changes, or improvements to address the issue or request.",
         "completeness": "full",
-        "scope": "narrow",
     },
     "todo": {
         "description": "The response formats the content as a todo list.",

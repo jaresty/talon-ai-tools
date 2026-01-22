@@ -1262,7 +1262,7 @@ def _default_draw_quick_help(
 
     # Spacer below the title; rely on hover/affordances rather than a long
     # textual hint for interaction.
-    y += line_h // 2
+    y += line_h // 4
 
     # --- Band 1: Active state + last action -------------------------------------------------
     y = _draw_section_label("Session snapshot", x, y)
@@ -1287,7 +1287,7 @@ def _default_draw_quick_help(
         recap = f"{recipe} · {directional}" if directional else recipe
         y = _draw_wrapped_line(f"Last recipe: {recap}", x, y)
 
-    y += line_h // 2
+    y += line_h // 3
 
     # Compact view stops after state/caps/last recipe.
     if getattr(HelpCanvasState, "compact", False):
@@ -1296,22 +1296,21 @@ def _default_draw_quick_help(
     # --- Band 2: Grammar + commands ---------------------------------------------------------
     y = _draw_section_label("Commands & grammar", x, y, accent="F3F3F3")
     y = _draw_wrapped_line(
-        "Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y
+        "Grammar: model run <task> [axes…] <directional>", x, y
     )
     y = _draw_wrapped_line(
-        "Say: model run <prompt> <directional>  |  model again [axes] [directional]",
+        "Tasks: make, fix, pull, sort, diff, show, probe, pick, plan, check",
         x,
         y,
         indent=2,
     )
     y = _draw_wrapped_line(
-        "Axes: use one directional; form/channel are singletons.", x, y, indent=2
+        "Say: model run <task> <dir>  |  model again [axes]", x, y, indent=2
     )
-    y += line_h // 2
+    y += line_h // 4
 
     # Persona / Intent quick grammar and presets (compressed).
     y = _draw_section_label("Who / Why / How", x, y, accent="FFF7E6")
-    y = _draw_wrapped_line("Who/Why: persona <preset> · intent <preset>", x, y)
     try:
         persona_commands = _persona_preset_commands()
         if persona_commands:
@@ -1389,6 +1388,7 @@ def _default_draw_quick_help(
         x,
         y,
     )
+    y += line_h // 4
 
     section_focus = getattr(HelpGUIState, "section", "all") or "all"
 
@@ -1425,8 +1425,7 @@ def _default_draw_quick_help(
                     if rendered:
                         draw_text(f"  {axis.capitalize()}: {rendered}", x, y)
                         y += line_h
-            y += line_h
-    y += line_h
+            y += line_h // 2
 
     y = _draw_section_label("Axes (keys)", x, y, accent="EAF4FF")
 
@@ -1528,10 +1527,10 @@ def _default_draw_quick_help(
                 pass
         if keys:
             col_y = _draw_axis_keys_wrapped(keys, col_x, col_y)
-        col_y += line_h // 2
+        col_y += line_h // 3
         return col_y
 
-    # Left column: completeness + scope
+    # Left column: completeness + scope + form (out of order for vertical balance)
     y_left = _draw_axis_column(
         "Completeness", "completeness", _axis_key_list("completeness"), x_left, y_left
     )
@@ -1539,12 +1538,12 @@ def _default_draw_quick_help(
         "Scope", "scope", _axis_key_list("scope"), x_left, y_left
     )
     y_left = _draw_axis_column(
-        "Method", "method", _axis_key_list("method"), x_left, y_left
+        "Form", "form", _axis_key_list("form"), x_left, y_left
     )
 
-    # Right column: form/channel stacked to save horizontal space.
+    # Right column: method + channel
     y_right = _draw_axis_column(
-        "Form", "form", _axis_key_list("form"), x_right, y_right
+        "Method", "method", _axis_key_list("method"), x_right, y_right
     )
     y_right = _draw_axis_column(
         "Channel", "channel", _axis_key_list("channel"), x_right, y_right
@@ -1554,7 +1553,7 @@ def _default_draw_quick_help(
     axes_bottom = max(y_left, y_right)
     note = f"Note: C single; S≤{scope_cap}, M≤{method_cap}, F≤{form_cap}, Ch≤{channel_cap}; combine tags like actions edges."
     y = _draw_wrapped_line(note, x_left, axes_bottom)
-    y += line_h
+    y += line_h // 3
 
     # Draw a subtle separator between the axis block and the directional map
     # to make the section boundary easier to see.

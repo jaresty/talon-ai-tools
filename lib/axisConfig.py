@@ -144,6 +144,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                  'reference without unrelated narrative.',
           'plain': 'The response uses plain prose with natural paragraphs and sentences, imposing '
                    'no additional structure such as bullets, tables, or code blocks.',
+          'questions': 'The response presents the answer as a series of probing or clarifying '
+                       'questions rather than statements.',
           'recipe': 'The response expresses the answer as a recipe that includes a custom, clearly '
                     'explained mini-language and a short key for understanding it.',
           'shellscript': 'The response is delivered as a shell script, focusing on correct, '
@@ -171,7 +173,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                       'alternatives.',
           'visual': 'The response conveys the answer as an abstract visual or metaphorical layout '
                     'accompanied by a short legend, emphasising big-picture structure over dense '
-                    'prose.'},
+                    'prose.',
+          'wardley': 'The response expresses the answer as a Wardley Map showing value chain '
+                     'evolution from genesis to commodity.'},
  'method': {'adversarial': 'The response runs a constructive stress-test, systematically searching '
                            'for weaknesses, edge cases, counterexamples, failure modes, and '
                            'unstated assumptions while prioritising critique and stress-testing '
@@ -189,6 +193,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                     'recommendation that addresses objections and constraints.',
             'cluster': 'The response groups similar items into labelled categories and describes '
                        'each cluster, emphasising recurring patterns over isolated singletons.',
+            'cochange': 'The response applies cochange analysis to identify temporal coupling and '
+                        'coordinated modification patterns.',
             'cocreate': 'The response works collaboratively with the user, proposing small moves, '
                         'checking alignment, and iterating together instead of delivering a '
                         'one-shot answer.',
@@ -213,6 +219,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
             'deep': 'The response goes into substantial depth within the chosen scope, unpacking '
                     'reasoning layers and fine details without necessarily enumerating every edge '
                     'case.',
+            'depends': 'The response traces dependency relationships, identifying what depends on '
+                       'what and the nature of those dependencies.',
             'diagnose': 'The response seeks likely causes of problems first, narrowing hypotheses '
                         'before proposing fixes or changes.',
             'dimension': 'The response expands metaphorical dimensions of the subject and examines '
@@ -253,6 +261,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                        'dimensions—such as performance, readability, maintainability, correctness, '
                        'or robustness—identifying specific improvements and applying them while '
                        'preserving core functionality.',
+            'independent': 'The response examines how elements remain independent, decoupled, or '
+                           'orthogonal despite proximity.',
             'indirect': 'The response begins with brief background, reasoning, and trade-offs and '
                         'finishes with a clear bottom-line point or recommendation that ties them '
                         'together.',
@@ -278,6 +288,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                     'about combinations, unions, and overlaps.',
             'melody': 'The response analyses coordination clusters (visibility, scope, volatility) '
                       'and recommends adjustments to tune the system.',
+            'merge': 'The response combines multiple sources into a single coherent whole while '
+                     'preserving essential information.',
             'mod': 'The response treats the second idea as a modulus for the first to explore '
                    'periodicity and constraint analogies.',
             'motifs': 'The response scans for recurring motifs and patterns, identifying repeated '
@@ -293,8 +305,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                           'stated audience, making the ranking and rationale explicit.',
             'probability': 'The response applies probability or statistical reasoning to '
                            'characterise uncertainty and likely outcomes.',
-            'probe': 'The response leads with short probing questions that surface gaps and needs, '
-                     'holding off on conclusions until enough signal is gathered.',
             'recurrence': 'The response derives recurrence relationships and interprets their '
                           'implications in plain language.',
             'reflection': 'The response reflects the concept to reveal mirrored structure and '
@@ -313,6 +323,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                         'targeted questions that surface assumptions, definitions, and gaps in '
                         'understanding, withholding full conclusions until enough answers exist or '
                         'the user explicitly requests a summary.',
+            'split': 'The response separates mixed content into distinct sections or categories '
+                     'with clear boundaries.',
             'steps': 'The response solves the problem step by step, briefly labelling and '
                      'explaining each step before presenting the final answer.',
             'structure': 'The response focuses on structural aspects by outlining parts, '
@@ -340,25 +352,81 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                       'or explanation.',
            'activities': 'The response lists concrete session activities or segments—what to do, '
                          'by whom, and in what order—rather than abstract description.',
+           'actors': 'The response identifies who is involved—people, roles, stakeholders, or '
+                     'agents in the system.',
+           'aesthetics': 'The response evaluates taste, style, harmony, proportion, restraint, '
+                         'authenticity, and appropriateness.',
+           'assumptions': 'The response focuses on identifying and examining the unstated '
+                          'assumptions underlying the subject.',
            'bound': 'The response remains within the explicit conceptual limits stated or inferred '
                     'in the prompt and avoids introducing outside material.',
+           'challenges': 'The response surfaces critical questions, objections, or tests that '
+                         'challenge the subject.',
+           'concurrency': 'The response examines parallel execution, race conditions, '
+                          'synchronization, or coordination challenges.',
+           'connascence': 'The response analyzes connascence (static/dynamic coupling) measuring '
+                          'strength, degree, locality, and remedies.',
+           'criteria': 'The response defines success criteria, acceptance conditions, or tests '
+                       'that determine when something is complete.',
+           'disciplines': 'The response identifies relevant academic or industry fields of '
+                          'knowledge and their perspectives.',
+           'domains': 'The response performs domain-driven discovery by identifying bounded '
+                      'contexts, business capabilities, and domain boundaries.',
            'dynamics': "The response concentrates on how the system's behaviour and state evolve "
                        'over time, covering scenarios, state changes, feedback loops, and '
                        'transitions.',
            'edges': 'The response emphasises edge cases, errors, and unusual conditions around the '
                     'subject.',
+           'failures': 'The response identifies what is wrong, why it fails, weaknesses, or areas '
+                       'needing correction.',
            'focus': 'The response stays tightly on a central theme within the selected target, '
                     'avoiding tangents and side quests.',
+           'formats': 'The response focuses on document types, writing formats, or structural '
+                      'templates and their suitability.',
+           'gaps': 'The response identifies what is missing, misunderstood, or unclear in the '
+                   'current understanding.',
            'interfaces': 'The response concentrates on external interfaces, contracts, and '
                          'boundaries between components or systems rather than internal '
                          'implementations.',
+           'jobs': 'The response analyzes Jobs To Be Done—the outcomes users want to achieve and '
+                   'forces shaping their choices.',
+           'metrics': 'The response focuses on measurable indicators or key performance measures '
+                      'that track outcomes.',
            'narrow': 'The response restricts the discussion to a very small slice of the topic, '
                      'avoiding broad context.',
+           'objectivity': 'The response assesses whether claims are objective facts or subjective '
+                          'opinions with supporting evidence.',
+           'operations': 'The response identifies Operations Research or management science '
+                         'concepts that frame the situation.',
+           'pain': 'The response identifies obstacles, frustrations, or inefficiencies experienced '
+                   'by users or stakeholders.',
+           'product': 'The response examines the subject through a product lens—features, user '
+                      'needs, market fit, value propositions.',
+           'rationale': 'The response explains why something matters, the reasoning behind it, or '
+                        'its purpose and motivation.',
            'relations': 'The response examines relationships, interactions, and dependencies '
                         'between elements within the selected target rather than internal details.',
+           'risks': 'The response focuses on potential problems, failure modes, or negative '
+                    'outcomes and their likelihood or severity.',
+           'roles': 'The response focuses on team roles, responsibilities, ownership, handoffs, '
+                    'and collaboration patterns.',
+           'simpler': 'The response proposes simpler approaches, shortcuts, or ways to accomplish '
+                      'goals with less effort or time.',
+           'strategy': 'The response focuses on strategic positioning, competitive advantage, '
+                       'evolution, or long-term direction.',
            'system': 'The response looks at the overall system as a whole—components, boundaries, '
                      'stakeholders, and internal structure—rather than individual lines or '
-                     'snippets.'}}
+                     'snippets.',
+           'taoism': 'The response examines the subject through Taoist philosophy—Dao, De, '
+                     'Yin/Yang, Wu Wei, Ziran, Pu, Qi, Li.',
+           'terminology': 'The response focuses on undefined, ambiguous, or domain-specific terms '
+                          'that require clarification.',
+           'timing': 'The response focuses on when things occur—schedules, sequences, durations, '
+                     'or temporal relationships.',
+           'unknowns': 'The response identifies critical unknown unknowns and explores how they '
+                       'might impact outcomes.',
+           'value': 'The response focuses on user or customer value, impact, benefits, or outcomes '
+                    'delivered.'}}
 
 @dataclass(frozen=True)
 class AxisDoc:

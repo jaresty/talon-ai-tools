@@ -32,7 +32,7 @@ if not TYPE_CHECKING:
             self.assertIn("user.directionalModifier", lists)
 
             # Spot-check a few known tokens from the catalog.
-            self.assertIn("describe", lists["user.staticPrompt"])
+            self.assertIn("make", lists["user.staticPrompt"])
             self.assertIn("full", lists["user.completenessModifier"])
             self.assertIn("steps", lists["user.methodModifier"])
 

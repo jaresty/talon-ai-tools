@@ -252,11 +252,11 @@ if bootstrap is not None:
                 )
 
             self.assertIn(
-                "todo",
+                "make",
                 values,
                 "static suggestions should remain available",
             )
-            static_index = values.index("todo")
+            static_index = values.index("make")
             for expected in [
                 "full",
                 "focus",

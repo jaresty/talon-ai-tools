@@ -49,6 +49,7 @@
         "html": "The response consists solely of semantic HTML for the answer, with no surrounding prose.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
         "plain": "The response uses plain prose with natural paragraphs and sentences, imposing no additional structure such as bullets, tables, or code blocks.",
+        "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "shellscript": "The response is delivered as a shell script, focusing on correct, executable shell code rather than prose.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
@@ -58,7 +59,8 @@
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives.",
-        "visual": "The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose."
+        "visual": "The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose.",
+        "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity."
       },
       "method": {
         "adversarial": "The response runs a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions while prioritising critique and stress-testing aimed at improving the work.",
@@ -68,6 +70,7 @@
         "bud": "The response applies addition or subtraction style reasoning in a non-numerical way to emphasise contrasts or balances.",
         "case": "The response builds the case before the conclusion by laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation that addresses objections and constraints.",
         "cluster": "The response groups similar items into labelled categories and describes each cluster, emphasising recurring patterns over isolated singletons.",
+        "cochange": "The response applies cochange analysis to identify temporal coupling and coordinated modification patterns.",
         "cocreate": "The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
         "com b": "The response uses the COM-B model to analyse capability, opportunity, and motivation, mapping findings to behaviour-change techniques and outlining an implementation plan.",
         "compare": "The response compares two or more items by listing similarities and differences, highlighting subtle distinctions and trade-offs that matter to the audience.",
@@ -76,6 +79,7 @@
         "converge": "The response narrows the field and makes a call, weighing trade-offs, eliminating weaker options, and arriving at a small set of recommendations or a single decision.",
         "debugging": "The response follows a debugging-style scientific method: it summarises stable facts, lists unresolved questions, proposes plausible hypotheses, designs minimal experiments or checks, narrows likely root causes, and outlines fixes.",
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+        "depends": "The response traces dependency relationships, identifying what depends on what and the nature of those dependencies.",
         "diagnose": "The response seeks likely causes of problems first, narrowing hypotheses before proposing fixes or changes.",
         "dimension": "The response expands metaphorical dimensions of the subject and examines each axis to expose structure.",
         "direct": "The response leads with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
@@ -92,6 +96,7 @@
         "grove": "The response applies integral or derivative style reasoning in a non-numerical way to explore accumulation and rate-of-change.",
         "how": "The response concentrates on mechanical explanation of how the subject works before other narration.",
         "improve": "The response takes existing work and enhances it along relevant dimensions—such as performance, readability, maintainability, correctness, or robustness—identifying specific improvements and applying them while preserving core functionality.",
+        "independent": "The response examines how elements remain independent, decoupled, or orthogonal despite proximity.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "invert": "The response inverts the concept to expose its negative space and complementary behaviours.",
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
@@ -102,6 +107,7 @@
         "math": "The response surveys applicable mathematical fields and clarifies their relevance to the subject.",
         "meld": "The response applies set theory reasoning in a non-numerical way to reason about combinations, unions, and overlaps.",
         "melody": "The response analyses coordination clusters (visibility, scope, volatility) and recommends adjustments to tune the system.",
+        "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
         "mod": "The response treats the second idea as a modulus for the first to explore periodicity and constraint analogies.",
         "motifs": "The response scans for recurring motifs and patterns, identifying repeated elements, themes, clusters, and notable outliers, and briefly explaining why they matter.",
         "order": "The response applies order or lattice theory reasoning in a non-numerical way to reveal hierarchy, dominance, and comparative structure.",
@@ -109,7 +115,6 @@
         "plan": "The response offers a short plan first and then carries it out, clearly separating the plan from the execution.",
         "prioritize": "The response assesses and orders items by importance or impact to the stated audience, making the ranking and rationale explicit.",
         "probability": "The response applies probability or statistical reasoning to characterise uncertainty and likely outcomes.",
-        "probe": "The response leads with short probing questions that surface gaps and needs, holding off on conclusions until enough signal is gathered.",
         "recurrence": "The response derives recurrence relationships and interprets their implications in plain language.",
         "reflection": "The response reflects the concept to reveal mirrored structure and complementary perspectives.",
         "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation.",
@@ -117,6 +122,7 @@
         "rotation": "The response presents a metaphorical 90-degree rotation of the concept to surface contrasting viewpoints.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
+        "split": "The response separates mixed content into distinct sections or categories with clear boundaries.",
         "steps": "The response solves the problem step by step, briefly labelling and explaining each step before presenting the final answer.",
         "structure": "The response focuses on structural aspects by outlining parts, hierarchy, containment, and organisation rather than detailing behaviour.",
         "systemic": "The response analyses the subject using systems thinking, focusing on boundaries, components, flows, feedback loops, emergence, and leverage points.",
@@ -129,14 +135,42 @@
       "scope": {
         "actions": "The response stays within the selected target and focuses only on concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
         "activities": "The response lists concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+        "actors": "The response identifies who is involved—people, roles, stakeholders, or agents in the system.",
+        "aesthetics": "The response evaluates taste, style, harmony, proportion, restraint, authenticity, and appropriateness.",
+        "assumptions": "The response focuses on identifying and examining the unstated assumptions underlying the subject.",
         "bound": "The response remains within the explicit conceptual limits stated or inferred in the prompt and avoids introducing outside material.",
+        "challenges": "The response surfaces critical questions, objections, or tests that challenge the subject.",
+        "concurrency": "The response examines parallel execution, race conditions, synchronization, or coordination challenges.",
+        "connascence": "The response analyzes connascence (static/dynamic coupling) measuring strength, degree, locality, and remedies.",
+        "criteria": "The response defines success criteria, acceptance conditions, or tests that determine when something is complete.",
+        "disciplines": "The response identifies relevant academic or industry fields of knowledge and their perspectives.",
+        "domains": "The response performs domain-driven discovery by identifying bounded contexts, business capabilities, and domain boundaries.",
         "dynamics": "The response concentrates on how the system's behaviour and state evolve over time, covering scenarios, state changes, feedback loops, and transitions.",
         "edges": "The response emphasises edge cases, errors, and unusual conditions around the subject.",
+        "failures": "The response identifies what is wrong, why it fails, weaknesses, or areas needing correction.",
         "focus": "The response stays tightly on a central theme within the selected target, avoiding tangents and side quests.",
+        "formats": "The response focuses on document types, writing formats, or structural templates and their suitability.",
+        "gaps": "The response identifies what is missing, misunderstood, or unclear in the current understanding.",
         "interfaces": "The response concentrates on external interfaces, contracts, and boundaries between components or systems rather than internal implementations.",
+        "jobs": "The response analyzes Jobs To Be Done—the outcomes users want to achieve and forces shaping their choices.",
+        "metrics": "The response focuses on measurable indicators or key performance measures that track outcomes.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+        "objectivity": "The response assesses whether claims are objective facts or subjective opinions with supporting evidence.",
+        "operations": "The response identifies Operations Research or management science concepts that frame the situation.",
+        "pain": "The response identifies obstacles, frustrations, or inefficiencies experienced by users or stakeholders.",
+        "product": "The response examines the subject through a product lens—features, user needs, market fit, value propositions.",
+        "rationale": "The response explains why something matters, the reasoning behind it, or its purpose and motivation.",
         "relations": "The response examines relationships, interactions, and dependencies between elements within the selected target rather than internal details.",
-        "system": "The response looks at the overall system as a whole—components, boundaries, stakeholders, and internal structure—rather than individual lines or snippets."
+        "risks": "The response focuses on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
+        "roles": "The response focuses on team roles, responsibilities, ownership, handoffs, and collaboration patterns.",
+        "simpler": "The response proposes simpler approaches, shortcuts, or ways to accomplish goals with less effort or time.",
+        "strategy": "The response focuses on strategic positioning, competitive advantage, evolution, or long-term direction.",
+        "system": "The response looks at the overall system as a whole—components, boundaries, stakeholders, and internal structure—rather than individual lines or snippets.",
+        "taoism": "The response examines the subject through Taoist philosophy—Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, Li.",
+        "terminology": "The response focuses on undefined, ambiguous, or domain-specific terms that require clarification.",
+        "timing": "The response focuses on when things occur—schedules, sequences, durations, or temporal relationships.",
+        "unknowns": "The response identifies critical unknown unknowns and explores how they might impact outcomes.",
+        "value": "The response focuses on user or customer value, impact, benefits, or outcomes delivered."
       }
     },
     "list_tokens": {
@@ -187,6 +221,7 @@
         "html",
         "log",
         "plain",
+        "questions",
         "recipe",
         "shellscript",
         "spike",
@@ -196,7 +231,8 @@
         "test",
         "tight",
         "variants",
-        "visual"
+        "visual",
+        "wardley"
       ],
       "method": [
         "adversarial",
@@ -206,6 +242,7 @@
         "bud",
         "case",
         "cluster",
+        "cochange",
         "cocreate",
         "com b",
         "compare",
@@ -214,6 +251,7 @@
         "converge",
         "debugging",
         "deep",
+        "depends",
         "diagnose",
         "dimension",
         "direct",
@@ -230,6 +268,7 @@
         "grove",
         "how",
         "improve",
+        "independent",
         "indirect",
         "invert",
         "ladder",
@@ -240,6 +279,7 @@
         "math",
         "meld",
         "melody",
+        "merge",
         "mod",
         "motifs",
         "order",
@@ -247,7 +287,6 @@
         "plan",
         "prioritize",
         "probability",
-        "probe",
         "recurrence",
         "reflection",
         "rewrite",
@@ -255,6 +294,7 @@
         "rotation",
         "scaffold",
         "socratic",
+        "split",
         "steps",
         "structure",
         "systemic",
@@ -267,14 +307,42 @@
       "scope": [
         "actions",
         "activities",
+        "actors",
+        "aesthetics",
+        "assumptions",
         "bound",
+        "challenges",
+        "concurrency",
+        "connascence",
+        "criteria",
+        "disciplines",
+        "domains",
         "dynamics",
         "edges",
+        "failures",
         "focus",
+        "formats",
+        "gaps",
         "interfaces",
+        "jobs",
+        "metrics",
         "narrow",
+        "objectivity",
+        "operations",
+        "pain",
+        "product",
+        "rationale",
         "relations",
-        "system"
+        "risks",
+        "roles",
+        "simpler",
+        "strategy",
+        "system",
+        "taoism",
+        "terminology",
+        "timing",
+        "unknowns",
+        "value"
       ]
     }
   },
@@ -282,399 +350,72 @@
     "catalog": {
       "profiled": [
         {
-          "axes": {},
-          "description": "The response describes the subject objectively.",
-          "name": "describe"
-        },
-        {
-          "axes": {},
-          "description": "The response lists only the undefined terms.",
-          "name": "undefined"
-        },
-        {
-          "axes": {},
-          "description": "The response explains who is involved.",
-          "name": "who"
-        },
-        {
-          "axes": {},
-          "description": "The response explains what is happening.",
-          "name": "what"
-        },
-        {
-          "axes": {},
-          "description": "The response explains when it occurs.",
-          "name": "when"
-        },
-        {
-          "axes": {},
-          "description": "The response explains where it takes place.",
-          "name": "where"
-        },
-        {
-          "axes": {},
-          "description": "The response explains why it matters.",
-          "name": "why"
-        },
-        {
-          "axes": {},
-          "description": "The response identifies and explains the assumptions behind the subject.",
-          "name": "assumption"
-        },
-        {
-          "axes": {},
-          "description": "The response assesses objectivity and includes relevant examples.",
-          "name": "objectivity"
-        },
-        {
-          "axes": {},
-          "description": "The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.",
-          "name": "knowledge"
-        },
-        {
-          "axes": {},
-          "description": "The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.",
-          "name": "taste"
-        },
-        {
-          "axes": {},
-          "description": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters.",
-          "name": "tao"
-        },
-        {
           "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "steps"
-            ],
-            "scope": [
-              "focus"
-            ]
+            "completeness": "full"
           },
-          "description": "The response frames the subject through a product lens.",
-          "name": "product"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "steps"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response lists metrics that drive the outcomes and includes concrete examples.",
-          "name": "metrics"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "method": [
-              "rigor"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response identifies an Operations Research or management science concept that best frames the situation.",
-          "name": "operations"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "analysis"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response highlights the key Jobs To Be Done, desired outcomes, and forces shaping them.",
-          "name": "jobs"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "analysis"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response describes user or customer value and impact in a concise narrative.",
-          "name": "value"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "filter"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response lists pain points and obstacles, noting brief prioritisation or severity.",
-          "name": "pain"
-        },
-        {
-          "axes": {
-            "completeness": "full",
-            "form": [
-              "checklist"
-            ],
-            "method": [
-              "structure"
-            ],
-            "scope": [
-              "actions"
-            ]
-          },
-          "description": "The response provides a clear Definition of Done or acceptance criteria as a checklist.",
-          "name": "done"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "table"
-            ],
-            "method": [
-              "mapping"
-            ],
-            "scope": [
-              "system"
-            ]
-          },
-          "description": "The response maps team roles, responsibilities, and handoffs needed for the work.",
-          "name": "team"
-        },
-        {
-          "axes": {},
-          "description": "The response challenges the subject with questions aimed at improvement.",
-          "name": "challenge"
-        },
-        {
-          "axes": {},
-          "description": "The response explains what is wrong with the subject and why it fails.",
-          "name": "critique"
-        },
-        {
-          "axes": {},
-          "description": "The response guides introspection or reflection on the subject.",
-          "name": "retro"
-        },
-        {
-          "axes": {},
-          "description": "The response proposes an approach that accomplishes the goal on a smaller timescale.",
-          "name": "easier"
-        },
-        {
-          "axes": {},
-          "description": "The response evaluates whether the statement is true using the available information.",
-          "name": "true"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "filter"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response identifies the relevant elements of the situation.",
-          "name": "relevant"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "filter"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response surfaces what is misunderstood in this situation.",
-          "name": "misunderstood"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "form": [
-              "bullets"
-            ],
-            "method": [
-              "filter"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response highlights the risks and explains why they matter.",
-          "name": "risky"
-        },
-        {
-          "axes": {},
-          "description": "The response separates topics into clear sections and returns only reformatted text.",
-          "name": "split"
-        },
-        {
-          "axes": {},
-          "description": "The response rewrites the content to match the provided style and returns only the modified text.",
-          "name": "match"
-        },
-        {
-          "axes": {},
-          "description": "The response combines source and destination texts coherently, follows the destination’s structure while reordering and renaming as needed, and returns only the integrated text, treating additional_source as the destination.",
-          "name": "blend"
-        },
-        {
-          "axes": {},
-          "description": "The response merges the content into a single coherent piece and removes redundancy.",
-          "name": "join"
-        },
-        {
-          "axes": {
-            "completeness": "gist",
-            "method": [
-              "contextualise"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response adds LLM-ready context without rewriting the main text.",
-          "name": "context"
-        },
-        {
-          "axes": {},
-          "description": "The response lists document or writing formats, explains why each fits, and states what perspective each reveals.",
-          "name": "document"
-        },
-        {
-          "axes": {
-            "completeness": "full",
-            "form": [
-              "table"
-            ],
-            "method": [
-              "steps"
-            ],
-            "scope": [
-              "focus"
-            ]
-          },
-          "description": "The response produces a Wardley Map by identifying users, needs, and components, expressing it as a Markdown table (rows as visibility levels, columns as evolution stages) with a concise summary of dependencies and key strategic insights.",
-          "name": "wardley"
-        },
-        {
-          "axes": {
-            "scope": [
-              "relations"
-            ]
-          },
-          "description": "The response lists dependencies and the items they rely on.",
-          "name": "dependency"
-        },
-        {
-          "axes": {
-            "scope": [
-              "relations"
-            ]
-          },
-          "description": "The response shows how each subject directly cochanges with the others.",
-          "name": "cochange"
-        },
-        {
-          "axes": {
-            "scope": [
-              "relations"
-            ]
-          },
-          "description": "The response explains how the elements interact.",
-          "name": "interact"
-        },
-        {
-          "axes": {
-            "scope": [
-              "relations"
-            ]
-          },
-          "description": "The response explains how the elements depend on one another.",
-          "name": "dependent"
-        },
-        {
-          "axes": {
-            "scope": [
-              "relations"
-            ]
-          },
-          "description": "The response explains how the elements remain independent.",
-          "name": "independent"
-        },
-        {
-          "axes": {
-            "scope": [
-              "relations"
-            ]
-          },
-          "description": "The response describes problems that could arise if the items are parallelized.",
-          "name": "parallel"
-        },
-        {
-          "axes": {},
-          "description": "The response imagines critical unknown unknowns and explains how they might impact the outcome.",
-          "name": "unknown"
-        },
-        {
-          "axes": {},
-          "description": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.",
-          "name": "jim"
-        },
-        {
-          "axes": {},
-          "description": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies.",
-          "name": "domain"
+          "description": "The response produces content that did not previously exist, creating something new that matches required properties.",
+          "name": "make"
         },
         {
           "axes": {
             "completeness": "full"
           },
-          "description": "The response makes the necessary corrections, changes, or improvements to address the issue or request.",
+          "description": "The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
           "name": "fix"
         },
         {
           "axes": {
             "completeness": "gist",
-            "form": [
-              "checklist"
-            ],
+            "method": [
+              "filter"
+            ]
+          },
+          "description": "The response selects or isolates information already present without introducing new content.",
+          "name": "pull"
+        },
+        {
+          "axes": {
+            "method": [
+              "cluster"
+            ]
+          },
+          "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions.",
+          "name": "sort"
+        },
+        {
+          "axes": {
+            "method": [
+              "compare"
+            ]
+          },
+          "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
+          "name": "diff"
+        },
+        {
+          "axes": {},
+          "description": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
+          "name": "show"
+        },
+        {
+          "axes": {
+            "method": [
+              "analysis"
+            ]
+          },
+          "description": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
+          "name": "probe"
+        },
+        {
+          "axes": {
+            "method": [
+              "converge"
+            ]
+          },
+          "description": "The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
+          "name": "pick"
+        },
+        {
+          "axes": {
             "method": [
               "steps"
             ],
@@ -682,308 +423,82 @@
               "actions"
             ]
           },
-          "description": "The response formats the content as a todo list.",
-          "name": "todo"
+          "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
+          "name": "plan"
+        },
+        {
+          "axes": {},
+          "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
+          "name": "check"
         }
       ],
       "talon_list_tokens": [
-        "describe",
-        "undefined",
-        "who",
-        "what",
-        "when",
-        "where",
-        "why",
-        "assumption",
-        "objectivity",
-        "knowledge",
-        "taste",
-        "tao",
-        "product",
-        "metrics",
-        "operations",
-        "jobs",
-        "value",
-        "pain",
-        "done",
-        "team",
-        "challenge",
-        "critique",
-        "retro",
-        "easier",
-        "true",
-        "relevant",
-        "misunderstood",
-        "risky",
-        "split",
-        "match",
-        "blend",
-        "join",
-        "context",
-        "document",
-        "wardley",
-        "dependency",
-        "cochange",
-        "interact",
-        "dependent",
-        "independent",
-        "parallel",
-        "unknown",
-        "jim",
-        "domain",
+        "make",
         "fix",
-        "todo"
+        "pull",
+        "sort",
+        "diff",
+        "show",
+        "probe",
+        "pick",
+        "plan",
+        "check"
       ],
       "unprofiled_tokens": []
     },
     "profiles": {
-      "assumption": {
-        "description": "The response identifies and explains the assumptions behind the subject."
+      "check": {
+        "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement."
       },
-      "blend": {
-        "description": "The response combines source and destination texts coherently, follows the destination’s structure while reordering and renaming as needed, and returns only the integrated text, treating additional_source as the destination."
-      },
-      "challenge": {
-        "description": "The response challenges the subject with questions aimed at improvement."
-      },
-      "cochange": {
-        "description": "The response shows how each subject directly cochanges with the others.",
-        "scope": "relations"
-      },
-      "context": {
-        "completeness": "gist",
-        "description": "The response adds LLM-ready context without rewriting the main text.",
-        "method": "contextualise",
-        "scope": "focus"
-      },
-      "critique": {
-        "description": "The response explains what is wrong with the subject and why it fails."
-      },
-      "dependency": {
-        "description": "The response lists dependencies and the items they rely on.",
-        "scope": "relations"
-      },
-      "dependent": {
-        "description": "The response explains how the elements depend on one another.",
-        "scope": "relations"
-      },
-      "describe": {
-        "description": "The response describes the subject objectively."
-      },
-      "document": {
-        "description": "The response lists document or writing formats, explains why each fits, and states what perspective each reveals."
-      },
-      "domain": {
-        "description": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies."
-      },
-      "done": {
-        "completeness": "full",
-        "description": "The response provides a clear Definition of Done or acceptance criteria as a checklist.",
-        "form": "checklist",
-        "method": "structure",
-        "scope": "actions"
-      },
-      "easier": {
-        "description": "The response proposes an approach that accomplishes the goal on a smaller timescale."
+      "diff": {
+        "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
+        "method": "compare"
       },
       "fix": {
         "completeness": "full",
-        "description": "The response makes the necessary corrections, changes, or improvements to address the issue or request."
+        "description": "The response changes the representation or form while preserving underlying meaning and semantic equivalence."
       },
-      "independent": {
-        "description": "The response explains how the elements remain independent.",
-        "scope": "relations"
+      "make": {
+        "completeness": "full",
+        "description": "The response produces content that did not previously exist, creating something new that matches required properties."
       },
-      "interact": {
-        "description": "The response explains how the elements interact.",
-        "scope": "relations"
+      "pick": {
+        "description": "The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
+        "method": "converge"
       },
-      "jim": {
-        "description": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence."
-      },
-      "jobs": {
-        "completeness": "gist",
-        "description": "The response highlights the key Jobs To Be Done, desired outcomes, and forces shaping them.",
-        "form": "bullets",
-        "method": "analysis",
-        "scope": "focus"
-      },
-      "join": {
-        "description": "The response merges the content into a single coherent piece and removes redundancy."
-      },
-      "knowledge": {
-        "description": "The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers."
-      },
-      "match": {
-        "description": "The response rewrites the content to match the provided style and returns only the modified text."
-      },
-      "metrics": {
-        "completeness": "gist",
-        "description": "The response lists metrics that drive the outcomes and includes concrete examples.",
-        "form": "bullets",
-        "method": "steps",
-        "scope": "focus"
-      },
-      "misunderstood": {
-        "completeness": "gist",
-        "description": "The response surfaces what is misunderstood in this situation.",
-        "form": "bullets",
-        "method": "filter",
-        "scope": "focus"
-      },
-      "objectivity": {
-        "description": "The response assesses objectivity and includes relevant examples."
-      },
-      "operations": {
-        "completeness": "gist",
-        "description": "The response identifies an Operations Research or management science concept that best frames the situation.",
-        "method": "rigor",
-        "scope": "focus"
-      },
-      "pain": {
-        "completeness": "gist",
-        "description": "The response lists pain points and obstacles, noting brief prioritisation or severity.",
-        "form": "bullets",
-        "method": "filter",
-        "scope": "focus"
-      },
-      "parallel": {
-        "description": "The response describes problems that could arise if the items are parallelized.",
-        "scope": "relations"
-      },
-      "product": {
-        "completeness": "gist",
-        "description": "The response frames the subject through a product lens.",
-        "form": "bullets",
-        "method": "steps",
-        "scope": "focus"
-      },
-      "relevant": {
-        "completeness": "gist",
-        "description": "The response identifies the relevant elements of the situation.",
-        "form": "bullets",
-        "method": "filter",
-        "scope": "focus"
-      },
-      "retro": {
-        "description": "The response guides introspection or reflection on the subject."
-      },
-      "risky": {
-        "completeness": "gist",
-        "description": "The response highlights the risks and explains why they matter.",
-        "form": "bullets",
-        "method": "filter",
-        "scope": "focus"
-      },
-      "split": {
-        "description": "The response separates topics into clear sections and returns only reformatted text."
-      },
-      "tao": {
-        "description": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters."
-      },
-      "taste": {
-        "description": "The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit."
-      },
-      "team": {
-        "completeness": "gist",
-        "description": "The response maps team roles, responsibilities, and handoffs needed for the work.",
-        "form": "table",
-        "method": "mapping",
-        "scope": "system"
-      },
-      "todo": {
-        "completeness": "gist",
-        "description": "The response formats the content as a todo list.",
-        "form": "checklist",
+      "plan": {
+        "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
         "method": "steps",
         "scope": "actions"
       },
-      "true": {
-        "description": "The response evaluates whether the statement is true using the available information."
+      "probe": {
+        "description": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
+        "method": "analysis"
       },
-      "undefined": {
-        "description": "The response lists only the undefined terms."
-      },
-      "unknown": {
-        "description": "The response imagines critical unknown unknowns and explains how they might impact the outcome."
-      },
-      "value": {
+      "pull": {
         "completeness": "gist",
-        "description": "The response describes user or customer value and impact in a concise narrative.",
-        "form": "bullets",
-        "method": "analysis",
-        "scope": "focus"
+        "description": "The response selects or isolates information already present without introducing new content.",
+        "method": "filter"
       },
-      "wardley": {
-        "completeness": "full",
-        "description": "The response produces a Wardley Map by identifying users, needs, and components, expressing it as a Markdown table (rows as visibility levels, columns as evolution stages) with a concise summary of dependencies and key strategic insights.",
-        "form": "table",
-        "method": "steps",
-        "scope": "focus"
+      "show": {
+        "description": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction."
       },
-      "what": {
-        "description": "The response explains what is happening."
-      },
-      "when": {
-        "description": "The response explains when it occurs."
-      },
-      "where": {
-        "description": "The response explains where it takes place."
-      },
-      "who": {
-        "description": "The response explains who is involved."
-      },
-      "why": {
-        "description": "The response explains why it matters."
+      "sort": {
+        "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions.",
+        "method": "cluster"
       }
     },
     "descriptions": {
-      "assumption": "The response identifies and explains the assumptions behind the subject.",
-      "blend": "The response combines source and destination texts coherently, follows the destination’s structure while reordering and renaming as needed, and returns only the integrated text, treating additional_source as the destination.",
-      "challenge": "The response challenges the subject with questions aimed at improvement.",
-      "cochange": "The response shows how each subject directly cochanges with the others.",
-      "context": "The response adds LLM-ready context without rewriting the main text.",
-      "critique": "The response explains what is wrong with the subject and why it fails.",
-      "dependency": "The response lists dependencies and the items they rely on.",
-      "dependent": "The response explains how the elements depend on one another.",
-      "describe": "The response describes the subject objectively.",
-      "document": "The response lists document or writing formats, explains why each fits, and states what perspective each reveals.",
-      "domain": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies.",
-      "done": "The response provides a clear Definition of Done or acceptance criteria as a checklist.",
-      "easier": "The response proposes an approach that accomplishes the goal on a smaller timescale.",
-      "fix": "The response makes the necessary corrections, changes, or improvements to address the issue or request.",
-      "independent": "The response explains how the elements remain independent.",
-      "interact": "The response explains how the elements interact.",
-      "jim": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.",
-      "jobs": "The response highlights the key Jobs To Be Done, desired outcomes, and forces shaping them.",
-      "join": "The response merges the content into a single coherent piece and removes redundancy.",
-      "knowledge": "The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.",
-      "match": "The response rewrites the content to match the provided style and returns only the modified text.",
-      "metrics": "The response lists metrics that drive the outcomes and includes concrete examples.",
-      "misunderstood": "The response surfaces what is misunderstood in this situation.",
-      "objectivity": "The response assesses objectivity and includes relevant examples.",
-      "operations": "The response identifies an Operations Research or management science concept that best frames the situation.",
-      "pain": "The response lists pain points and obstacles, noting brief prioritisation or severity.",
-      "parallel": "The response describes problems that could arise if the items are parallelized.",
-      "product": "The response frames the subject through a product lens.",
-      "relevant": "The response identifies the relevant elements of the situation.",
-      "retro": "The response guides introspection or reflection on the subject.",
-      "risky": "The response highlights the risks and explains why they matter.",
-      "split": "The response separates topics into clear sections and returns only reformatted text.",
-      "tao": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters.",
-      "taste": "The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.",
-      "team": "The response maps team roles, responsibilities, and handoffs needed for the work.",
-      "todo": "The response formats the content as a todo list.",
-      "true": "The response evaluates whether the statement is true using the available information.",
-      "undefined": "The response lists only the undefined terms.",
-      "unknown": "The response imagines critical unknown unknowns and explains how they might impact the outcome.",
-      "value": "The response describes user or customer value and impact in a concise narrative.",
-      "wardley": "The response produces a Wardley Map by identifying users, needs, and components, expressing it as a Markdown table (rows as visibility levels, columns as evolution stages) with a concise summary of dependencies and key strategic insights.",
-      "what": "The response explains what is happening.",
-      "when": "The response explains when it occurs.",
-      "where": "The response explains where it takes place.",
-      "who": "The response explains who is involved.",
-      "why": "The response explains why it matters."
+      "check": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
+      "diff": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
+      "fix": "The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
+      "make": "The response produces content that did not previously exist, creating something new that matches required properties.",
+      "pick": "The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
+      "plan": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
+      "probe": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
+      "pull": "The response selects or isolates information already present without introducing new content.",
+      "show": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
+      "sort": "The response assigns items to predefined or inferred categories with consistent application of category definitions."
     }
   },
   "persona": {
@@ -1420,6 +935,7 @@
         "html": "html",
         "log": "log",
         "plain": "plain",
+        "questions": "questions",
         "recipe": "recipe",
         "shellscript": "shellscript",
         "spike": "spike",
@@ -1429,7 +945,8 @@
         "test": "test",
         "tight": "tight",
         "variants": "variants",
-        "visual": "visual"
+        "visual": "visual",
+        "wardley": "wardley"
       },
       "method": {
         "adversarial": "adversarial",
@@ -1439,6 +956,7 @@
         "bud": "bud",
         "case": "case",
         "cluster": "cluster",
+        "cochange": "cochange",
         "cocreate": "cocreate",
         "com b": "com-b",
         "compare": "compare",
@@ -1447,6 +965,7 @@
         "converge": "converge",
         "debugging": "debugging",
         "deep": "deep",
+        "depends": "depends",
         "diagnose": "diagnose",
         "dimension": "dimension",
         "direct": "direct",
@@ -1463,6 +982,7 @@
         "grove": "grove",
         "how": "how",
         "improve": "improve",
+        "independent": "independent",
         "indirect": "indirect",
         "invert": "invert",
         "ladder": "ladder",
@@ -1473,6 +993,7 @@
         "math": "math",
         "meld": "meld",
         "melody": "melody",
+        "merge": "merge",
         "mod": "mod",
         "motifs": "motifs",
         "order": "order",
@@ -1480,7 +1001,6 @@
         "plan": "plan",
         "prioritize": "prioritize",
         "probability": "probability",
-        "probe": "probe",
         "recurrence": "recurrence",
         "reflection": "reflection",
         "rewrite": "rewrite",
@@ -1488,6 +1008,7 @@
         "rotation": "rotation",
         "scaffold": "scaffold",
         "socratic": "socratic",
+        "split": "split",
         "steps": "steps",
         "structure": "structure",
         "systemic": "systemic",
@@ -1500,63 +1021,55 @@
       "scope": {
         "actions": "actions",
         "activities": "activities",
+        "actors": "actors",
+        "aesthetics": "aesthetics",
+        "assumptions": "assumptions",
         "bound": "bound",
+        "challenges": "challenges",
+        "concurrency": "concurrency",
+        "connascence": "connascence",
+        "criteria": "criteria",
+        "disciplines": "disciplines",
+        "domains": "domains",
         "dynamics": "dynamics",
         "edges": "edges",
+        "failures": "failures",
         "focus": "focus",
+        "formats": "formats",
+        "gaps": "gaps",
         "interfaces": "interfaces",
+        "jobs": "jobs",
+        "metrics": "metrics",
         "narrow": "narrow",
+        "objectivity": "objectivity",
+        "operations": "operations",
+        "pain": "pain",
+        "product": "product",
+        "rationale": "rationale",
         "relations": "relations",
-        "system": "system"
+        "risks": "risks",
+        "roles": "roles",
+        "simpler": "simpler",
+        "strategy": "strategy",
+        "system": "system",
+        "taoism": "taoism",
+        "terminology": "terminology",
+        "timing": "timing",
+        "unknowns": "unknowns",
+        "value": "value"
       }
     },
     "static": {
-      "assumption": "assumption",
-      "blend": "blend",
-      "challenge": "challenge",
-      "cochange": "cochange",
-      "context": "context",
-      "critique": "critique",
-      "dependency": "dependency",
-      "dependent": "dependent",
-      "describe": "describe",
-      "document": "document",
-      "domain": "domain",
-      "done": "done",
-      "easier": "easier",
+      "check": "check",
+      "diff": "diff",
       "fix": "fix",
-      "independent": "independent",
-      "interact": "interact",
-      "jim": "jim",
-      "jobs": "jobs",
-      "join": "join",
-      "knowledge": "knowledge",
-      "match": "match",
-      "metrics": "metrics",
-      "misunderstood": "misunderstood",
-      "objectivity": "objectivity",
-      "operations": "operations",
-      "pain": "pain",
-      "parallel": "parallel",
-      "product": "product",
-      "relevant": "relevant",
-      "retro": "retro",
-      "risky": "risky",
-      "split": "split",
-      "tao": "tao",
-      "taste": "taste",
-      "team": "team",
-      "todo": "todo",
-      "true": "true",
-      "undefined": "undefined",
-      "unknown": "unknown",
-      "value": "value",
-      "wardley": "wardley",
-      "what": "what",
-      "when": "when",
-      "where": "where",
-      "who": "who",
-      "why": "why"
+      "make": "make",
+      "pick": "pick",
+      "plan": "static-plan",
+      "probe": "probe",
+      "pull": "pull",
+      "show": "show",
+      "sort": "sort"
     },
     "persona": {
       "axes": {
@@ -1633,52 +1146,16 @@
     },
     "overrides": {
       "static": {
-        "static=assumption": "static-assumption",
-        "static=blend": "static-blend",
-        "static=challenge": "static-challenge",
-        "static=cochange": "static-cochange",
-        "static=context": "static-context",
-        "static=critique": "static-critique",
-        "static=dependency": "static-dependency",
-        "static=dependent": "static-dependent",
-        "static=describe": "static-describe",
-        "static=document": "static-document",
-        "static=domain": "static-domain",
-        "static=done": "static-done",
-        "static=easier": "static-easier",
+        "static=check": "static-check",
+        "static=diff": "static-diff",
         "static=fix": "static-fix",
-        "static=independent": "static-independent",
-        "static=interact": "static-interact",
-        "static=jim": "static-jim",
-        "static=jobs": "static-jobs",
-        "static=join": "static-join",
-        "static=knowledge": "static-knowledge",
-        "static=match": "static-match",
-        "static=metrics": "static-metrics",
-        "static=misunderstood": "static-misunderstood",
-        "static=objectivity": "static-objectivity",
-        "static=operations": "static-operations",
-        "static=pain": "static-pain",
-        "static=parallel": "static-parallel",
-        "static=product": "static-product",
-        "static=relevant": "static-relevant",
-        "static=retro": "static-retro",
-        "static=risky": "static-risky",
-        "static=split": "static-split",
-        "static=tao": "static-tao",
-        "static=taste": "static-taste",
-        "static=team": "static-team",
-        "static=todo": "static-todo",
-        "static=true": "static-true",
-        "static=undefined": "static-undefined",
-        "static=unknown": "static-unknown",
-        "static=value": "static-value",
-        "static=wardley": "static-wardley",
-        "static=what": "static-what",
-        "static=when": "static-when",
-        "static=where": "static-where",
-        "static=who": "static-who",
-        "static=why": "static-why"
+        "static=make": "static-make",
+        "static=pick": "static-pick",
+        "static=plan": "override-static-static-plan",
+        "static=probe": "static-probe",
+        "static=pull": "static-pull",
+        "static=show": "static-show",
+        "static=sort": "static-sort"
       },
       "completeness": {
         "completeness=full": "completeness-full",
@@ -1690,14 +1167,42 @@
       "scope": {
         "scope=actions": "scope-actions",
         "scope=activities": "scope-activities",
+        "scope=actors": "scope-actors",
+        "scope=aesthetics": "scope-aesthetics",
+        "scope=assumptions": "scope-assumptions",
         "scope=bound": "scope-bound",
+        "scope=challenges": "scope-challenges",
+        "scope=concurrency": "scope-concurrency",
+        "scope=connascence": "scope-connascence",
+        "scope=criteria": "scope-criteria",
+        "scope=disciplines": "scope-disciplines",
+        "scope=domains": "scope-domains",
         "scope=dynamics": "scope-dynamics",
         "scope=edges": "scope-edges",
+        "scope=failures": "scope-failures",
         "scope=focus": "scope-focus",
+        "scope=formats": "scope-formats",
+        "scope=gaps": "scope-gaps",
         "scope=interfaces": "scope-interfaces",
+        "scope=jobs": "scope-jobs",
+        "scope=metrics": "scope-metrics",
         "scope=narrow": "scope-narrow",
+        "scope=objectivity": "scope-objectivity",
+        "scope=operations": "scope-operations",
+        "scope=pain": "scope-pain",
+        "scope=product": "scope-product",
+        "scope=rationale": "scope-rationale",
         "scope=relations": "scope-relations",
-        "scope=system": "scope-system"
+        "scope=risks": "scope-risks",
+        "scope=roles": "scope-roles",
+        "scope=simpler": "scope-simpler",
+        "scope=strategy": "scope-strategy",
+        "scope=system": "scope-system",
+        "scope=taoism": "scope-taoism",
+        "scope=terminology": "scope-terminology",
+        "scope=timing": "scope-timing",
+        "scope=unknowns": "scope-unknowns",
+        "scope=value": "scope-value"
       },
       "method": {
         "method=adversarial": "method-adversarial",
@@ -1707,6 +1212,7 @@
         "method=bud": "method-bud",
         "method=case": "method-case",
         "method=cluster": "method-cluster",
+        "method=cochange": "method-cochange",
         "method=cocreate": "method-cocreate",
         "method=com b": "method-com-b",
         "method=compare": "method-compare",
@@ -1715,6 +1221,7 @@
         "method=converge": "method-converge",
         "method=debugging": "method-debugging",
         "method=deep": "method-deep",
+        "method=depends": "method-depends",
         "method=diagnose": "method-diagnose",
         "method=dimension": "method-dimension",
         "method=direct": "method-direct",
@@ -1731,6 +1238,7 @@
         "method=grove": "method-grove",
         "method=how": "method-how",
         "method=improve": "method-improve",
+        "method=independent": "method-independent",
         "method=indirect": "method-indirect",
         "method=invert": "method-invert",
         "method=ladder": "method-ladder",
@@ -1741,6 +1249,7 @@
         "method=math": "method-math",
         "method=meld": "method-meld",
         "method=melody": "method-melody",
+        "method=merge": "method-merge",
         "method=mod": "method-mod",
         "method=motifs": "method-motifs",
         "method=order": "method-order",
@@ -1748,7 +1257,6 @@
         "method=plan": "method-plan",
         "method=prioritize": "method-prioritize",
         "method=probability": "method-probability",
-        "method=probe": "method-probe",
         "method=recurrence": "method-recurrence",
         "method=reflection": "method-reflection",
         "method=rewrite": "method-rewrite",
@@ -1756,6 +1264,7 @@
         "method=rotation": "method-rotation",
         "method=scaffold": "method-scaffold",
         "method=socratic": "method-socratic",
+        "method=split": "method-split",
         "method=steps": "method-steps",
         "method=structure": "method-structure",
         "method=systemic": "method-systemic",
@@ -1780,6 +1289,7 @@
         "form=html": "form-html",
         "form=log": "form-log",
         "form=plain": "form-plain",
+        "form=questions": "form-questions",
         "form=recipe": "form-recipe",
         "form=shellscript": "form-shellscript",
         "form=spike": "form-spike",
@@ -1789,7 +1299,8 @@
         "form=test": "form-test",
         "form=tight": "form-tight",
         "form=variants": "form-variants",
-        "form=visual": "form-visual"
+        "form=visual": "form-visual",
+        "form=wardley": "form-wardley"
       },
       "channel": {
         "channel=jira": "channel-jira",
@@ -1874,8 +1385,10 @@
     "canonical_to_slug": {
       "actions": "actions",
       "activities": "activities",
+      "actors": "actors",
       "adr": "adr",
       "adversarial": "adversarial",
+      "aesthetics": "aesthetics",
       "analysis": "analysis",
       "announce": "announce",
       "appreciate": "appreciate",
@@ -1890,7 +1403,7 @@
       "as scientist": "as-scientist",
       "as teacher": "as-teacher",
       "as writer": "as-writer",
-      "assumption": "assumption",
+      "assumptions": "assumptions",
       "audience=to CEO": "audience-to-ceo",
       "audience=to Kent Beck": "audience-to-kent-beck",
       "audience=to LLM": "audience-to-llm",
@@ -1906,7 +1419,6 @@
       "audience=to stakeholders": "audience-to-stakeholders",
       "audience=to stream aligned team": "audience-to-stream-aligned-team",
       "audience=to team": "audience-to-team",
-      "blend": "blend",
       "bog": "bog",
       "boom": "boom",
       "bound": "bound",
@@ -1919,12 +1431,13 @@
       "cards": "cards",
       "case": "case",
       "casually": "casually",
-      "challenge": "challenge",
+      "challenges": "challenges",
       "channel=jira": "channel-jira",
       "channel=presenterm": "channel-presenterm",
       "channel=remote": "channel-remote",
       "channel=slack": "channel-slack",
       "channel=sync": "channel-sync",
+      "check": "check",
       "checklist": "checklist",
       "cluster": "cluster",
       "coach": "coach",
@@ -1941,19 +1454,19 @@
       "completeness=minimal": "completeness-minimal",
       "completeness=skim": "completeness-skim",
       "completion": "completion",
+      "concurrency": "concurrency",
+      "connascence": "connascence",
       "constraints": "constraints",
-      "context": "context",
       "contextualise": "contextualise",
       "converge": "converge",
-      "critique": "critique",
+      "criteria": "criteria",
       "debugging": "debugging",
       "decide": "decide",
       "deep": "deep",
-      "dependency": "dependency",
-      "dependent": "dependent",
-      "describe": "describe",
+      "depends": "depends",
       "diagnose": "diagnose",
       "diagram": "diagram",
+      "diff": "diff",
       "dig": "dig",
       "dimension": "dimension",
       "dip bog": "dip-bog",
@@ -1977,14 +1490,12 @@
       "directional=ong": "directional-ong",
       "directional=rog": "directional-rog",
       "directly": "directly",
+      "disciplines": "disciplines",
       "diverge": "diverge",
-      "document": "document",
-      "domain": "domain",
-      "done": "done",
+      "domains": "domains",
       "drum": "drum",
       "dub": "dub",
       "dynamics": "dynamics",
-      "easier": "easier",
       "edges": "edges",
       "effects": "effects",
       "entertain": "entertain",
@@ -1992,6 +1503,7 @@
       "experimental": "experimental",
       "explore": "explore",
       "facilitate": "facilitate",
+      "failures": "failures",
       "faq": "faq",
       "fig": "fig",
       "filter": "filter",
@@ -2019,6 +1531,7 @@
       "form=html": "form-html",
       "form=log": "form-log",
       "form=plain": "form-plain",
+      "form=questions": "form-questions",
       "form=recipe": "form-recipe",
       "form=shellscript": "form-shellscript",
       "form=spike": "form-spike",
@@ -2029,8 +1542,11 @@
       "form=tight": "form-tight",
       "form=variants": "form-variants",
       "form=visual": "form-visual",
+      "form=wardley": "form-wardley",
       "formally": "formally",
+      "formats": "formats",
       "full": "full",
+      "gaps": "gaps",
       "gently": "gently",
       "gherkin": "gherkin",
       "gist": "gist",
@@ -2058,28 +1574,25 @@
       "intent=teach": "intent-teach",
       "intent=trace": "intent-trace",
       "intent=understand": "intent-understand",
-      "interact": "interact",
       "interfaces": "interfaces",
       "invert": "invert",
-      "jim": "jim",
       "jira": "jira",
       "jobs": "jobs",
       "jog": "jog",
-      "join": "join",
       "kindly": "kindly",
-      "knowledge": "knowledge",
       "ladder": "ladder",
       "learn": "learn",
       "liberating": "liberating",
       "log": "log",
       "logic": "logic",
+      "make": "make",
       "map": "map",
       "mapping": "mapping",
-      "match": "match",
       "math": "math",
       "max": "max",
       "meld": "meld",
       "melody": "melody",
+      "merge": "merge",
       "method=adversarial": "method-adversarial",
       "method=analysis": "method-analysis",
       "method=boom": "method-boom",
@@ -2087,6 +1600,7 @@
       "method=bud": "method-bud",
       "method=case": "method-case",
       "method=cluster": "method-cluster",
+      "method=cochange": "method-cochange",
       "method=cocreate": "method-cocreate",
       "method=com b": "method-com-b",
       "method=compare": "method-compare",
@@ -2095,6 +1609,7 @@
       "method=converge": "method-converge",
       "method=debugging": "method-debugging",
       "method=deep": "method-deep",
+      "method=depends": "method-depends",
       "method=diagnose": "method-diagnose",
       "method=dimension": "method-dimension",
       "method=direct": "method-direct",
@@ -2111,6 +1626,7 @@
       "method=grove": "method-grove",
       "method=how": "method-how",
       "method=improve": "method-improve",
+      "method=independent": "method-independent",
       "method=indirect": "method-indirect",
       "method=invert": "method-invert",
       "method=ladder": "method-ladder",
@@ -2121,6 +1637,7 @@
       "method=math": "method-math",
       "method=meld": "method-meld",
       "method=melody": "method-melody",
+      "method=merge": "method-merge",
       "method=mod": "method-mod",
       "method=motifs": "method-motifs",
       "method=order": "method-order",
@@ -2128,7 +1645,6 @@
       "method=plan": "method-plan",
       "method=prioritize": "method-prioritize",
       "method=probability": "method-probability",
-      "method=probe": "method-probe",
       "method=recurrence": "method-recurrence",
       "method=reflection": "method-reflection",
       "method=rewrite": "method-rewrite",
@@ -2136,6 +1652,7 @@
       "method=rotation": "method-rotation",
       "method=scaffold": "method-scaffold",
       "method=socratic": "method-socratic",
+      "method=split": "method-split",
       "method=steps": "method-steps",
       "method=structure": "method-structure",
       "method=systemic": "method-systemic",
@@ -2146,7 +1663,6 @@
       "method=xp": "method-xp",
       "metrics": "metrics",
       "minimal": "minimal",
-      "misunderstood": "misunderstood",
       "mod": "mod",
       "motifs": "motifs",
       "narrow": "narrow",
@@ -2156,7 +1672,6 @@
       "order": "order",
       "orthogonal": "orthogonal",
       "pain": "pain",
-      "parallel": "parallel",
       "persona=designer_to_pm": "persona-designer_to_pm",
       "persona=executive_brief": "persona-executive_brief",
       "persona=fun_mode": "persona-fun_mode",
@@ -2166,6 +1681,7 @@
       "persona=stakeholder_facilitator": "persona-stakeholder_facilitator",
       "persona=teach_junior_dev": "persona-teach_junior_dev",
       "persuade": "persuade",
+      "pick": "pick",
       "plain": "plain",
       "plan": "persona-intent-plan",
       "presenterm": "presenterm",
@@ -2173,97 +1689,95 @@
       "probability": "probability",
       "probe": "probe",
       "product": "product",
+      "pull": "pull",
+      "questions": "questions",
+      "rationale": "rationale",
       "recipe": "recipe",
       "recurrence": "recurrence",
       "reflection": "reflection",
       "relations": "relations",
-      "relevant": "relevant",
       "remote": "remote",
       "resolve": "resolve",
-      "retro": "retro",
       "rewrite": "rewrite",
       "rigor": "rigor",
-      "risky": "risky",
+      "risks": "risks",
       "rog": "rog",
+      "roles": "roles",
       "rotation": "rotation",
       "scaffold": "scaffold",
       "scope=actions": "scope-actions",
       "scope=activities": "scope-activities",
+      "scope=actors": "scope-actors",
+      "scope=aesthetics": "scope-aesthetics",
+      "scope=assumptions": "scope-assumptions",
       "scope=bound": "scope-bound",
+      "scope=challenges": "scope-challenges",
+      "scope=concurrency": "scope-concurrency",
+      "scope=connascence": "scope-connascence",
+      "scope=criteria": "scope-criteria",
+      "scope=disciplines": "scope-disciplines",
+      "scope=domains": "scope-domains",
       "scope=dynamics": "scope-dynamics",
       "scope=edges": "scope-edges",
+      "scope=failures": "scope-failures",
       "scope=focus": "scope-focus",
+      "scope=formats": "scope-formats",
+      "scope=gaps": "scope-gaps",
       "scope=interfaces": "scope-interfaces",
+      "scope=jobs": "scope-jobs",
+      "scope=metrics": "scope-metrics",
       "scope=narrow": "scope-narrow",
+      "scope=objectivity": "scope-objectivity",
+      "scope=operations": "scope-operations",
+      "scope=pain": "scope-pain",
+      "scope=product": "scope-product",
+      "scope=rationale": "scope-rationale",
       "scope=relations": "scope-relations",
+      "scope=risks": "scope-risks",
+      "scope=roles": "scope-roles",
+      "scope=simpler": "scope-simpler",
+      "scope=strategy": "scope-strategy",
       "scope=system": "scope-system",
+      "scope=taoism": "scope-taoism",
+      "scope=terminology": "scope-terminology",
+      "scope=timing": "scope-timing",
+      "scope=unknowns": "scope-unknowns",
+      "scope=value": "scope-value",
       "shellscript": "shellscript",
+      "show": "show",
+      "simpler": "simpler",
       "skim": "skim",
       "slack": "slack",
       "socratic": "socratic",
+      "sort": "sort",
       "spike": "spike",
       "split": "split",
-      "static=assumption": "static-assumption",
-      "static=blend": "static-blend",
-      "static=challenge": "static-challenge",
-      "static=cochange": "static-cochange",
-      "static=context": "static-context",
-      "static=critique": "static-critique",
-      "static=dependency": "static-dependency",
-      "static=dependent": "static-dependent",
-      "static=describe": "static-describe",
-      "static=document": "static-document",
-      "static=domain": "static-domain",
-      "static=done": "static-done",
-      "static=easier": "static-easier",
+      "static=check": "static-check",
+      "static=diff": "static-diff",
       "static=fix": "static-fix",
-      "static=independent": "static-independent",
-      "static=interact": "static-interact",
-      "static=jim": "static-jim",
-      "static=jobs": "static-jobs",
-      "static=join": "static-join",
-      "static=knowledge": "static-knowledge",
-      "static=match": "static-match",
-      "static=metrics": "static-metrics",
-      "static=misunderstood": "static-misunderstood",
-      "static=objectivity": "static-objectivity",
-      "static=operations": "static-operations",
-      "static=pain": "static-pain",
-      "static=parallel": "static-parallel",
-      "static=product": "static-product",
-      "static=relevant": "static-relevant",
-      "static=retro": "static-retro",
-      "static=risky": "static-risky",
-      "static=split": "static-split",
-      "static=tao": "static-tao",
-      "static=taste": "static-taste",
-      "static=team": "static-team",
-      "static=todo": "static-todo",
-      "static=true": "static-true",
-      "static=undefined": "static-undefined",
-      "static=unknown": "static-unknown",
-      "static=value": "static-value",
-      "static=wardley": "static-wardley",
-      "static=what": "static-what",
-      "static=when": "static-when",
-      "static=where": "static-where",
-      "static=who": "static-who",
-      "static=why": "static-why",
+      "static=make": "static-make",
+      "static=pick": "static-pick",
+      "static=plan": "override-static-static-plan",
+      "static=probe": "static-probe",
+      "static=pull": "static-pull",
+      "static=show": "static-show",
+      "static=sort": "static-sort",
       "steps": "steps",
       "story": "story",
+      "strategy": "strategy",
       "structure": "structure",
       "svg": "svg",
       "sync": "sync",
       "system": "system",
       "systemic": "systemic",
       "table": "table",
-      "tao": "tao",
-      "taste": "taste",
+      "taoism": "taoism",
       "taxonomy": "taxonomy",
       "teach": "teach",
-      "team": "team",
+      "terminology": "terminology",
       "test": "test",
       "tight": "tight",
+      "timing": "timing",
       "to CEO": "to-ceo",
       "to Kent Beck": "to-kent-beck",
       "to LLM": "to-llm",
@@ -2279,18 +1793,15 @@
       "to stakeholders": "to-stakeholders",
       "to stream aligned team": "to-stream-aligned-team",
       "to team": "to-team",
-      "todo": "todo",
       "tone=casually": "tone-casually",
       "tone=directly": "tone-directly",
       "tone=formally": "tone-formally",
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
       "trace": "trace",
-      "true": "true",
       "tune": "tune",
-      "undefined": "undefined",
       "understand": "understand",
-      "unknown": "unknown",
+      "unknowns": "unknowns",
       "value": "value",
       "variants": "variants",
       "visual": "visual",
@@ -2308,19 +1819,14 @@
       "walkthrough": "walkthrough",
       "wardley": "wardley",
       "wasinawa": "wasinawa",
-      "what": "what",
-      "when": "when",
-      "where": "where",
-      "who": "who",
-      "why": "why",
       "xp": "xp"
     }
   },
   "checksums": {
-    "axes": "01eec91385da83ac19112208b3c0f469d4ba8519a88d12c08f149eb8b505931d",
-    "static_prompts": "07b85cbfa7748d79d4cd2a80007a5b81ad662c4cf351e7a6f03602faedb06478",
+    "axes": "4f4e9d5cdc711c922e6204ee108556bb7b4b4f4ed9138c42d0051eb80f2b2d32",
+    "static_prompts": "95d9be5b22c24d36ec18beed111f89bc738e15f0cde56fb56c01da704ab148ef",
     "persona": "08cebb8aa66ec4d2eaa4c0651a9ee1ca6abb144f2f831919fbd97a93bf1440db",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "c00e0b2b7b8c96c34d67921269cfe36a0672ca5b819c0c6ab01023d4256eb36a"
+    "slugs": "34528f5ba84f242cff7f84d66bad090e4afd3f6a2f33dc7680da0a8173486783"
   }
 }

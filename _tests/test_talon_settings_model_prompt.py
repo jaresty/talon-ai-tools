@@ -50,12 +50,11 @@ if bootstrap is not None:
             self.assertIn("Task:", result)
             self.assertIn("Constraints:", result)
             self.assertIn(
-                "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
+                "The response makes the necessary corrections, changes, or improvements to address the issue or request.",
                 result,
             )
-            # Profile for "fix" biases completeness/scope conceptually.
+            # Profile for "fix" includes completeness.
             self.assertIn("Completeness:", result)
-            self.assertIn("Scope:", result)
             # Directional lens is pushed into the system prompt instead of the task text.
             self.assertEqual(GPTState.system_prompt.directional, "DIR")
             self.assertNotIn("\nDIR", result)

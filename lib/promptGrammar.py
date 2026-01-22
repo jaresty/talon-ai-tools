@@ -296,8 +296,10 @@ def _compute_checksum(section: Any) -> str:
 def prompt_grammar_payload() -> dict[str, Any]:
     catalog = axis_catalog()
     taken_slugs: set[str] = set()
-    axis_section, axis_slugs = _build_axis_section(catalog, taken_slugs)
+    # Process static prompts before axes to give tasks priority for clean slugs.
+    # Per ADR 0088: "plan" task should claim "plan" slug, not method=plan.
     static_section, static_slugs = _build_static_section(catalog, taken_slugs)
+    axis_section, axis_slugs = _build_axis_section(catalog, taken_slugs)
     persona_section, persona_slugs = _build_persona_section(taken_slugs)
     hierarchy_section = _build_hierarchy_section()
 

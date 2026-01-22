@@ -299,8 +299,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                      'way to reveal hierarchy, dominance, and comparative structure.',
             'orthogonal': 'The response isolates orthogonal factors and articulates how their '
                           'independence shapes the problem.',
-            'plan': 'The response offers a short plan first and then carries it out, clearly '
-                    'separating the plan from the execution.',
             'prioritize': 'The response assesses and orders items by importance or impact to the '
                           'stated audience, making the ranking and rationale explicit.',
             'probability': 'The response applies probability or statistical reasoning to '

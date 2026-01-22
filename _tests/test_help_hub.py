@@ -1077,16 +1077,16 @@ def test_cheat_sheet_catalog_fallback_without_maps(monkeypatch):
         tone="Catalog Tone",
     )
     catalog_intent = SimpleNamespace(
-        key="plan",
+        key="decide",
         label="Catalog Plan",
-        intent="plan",
+        intent="decide",
         spoken="catalog plan alias",
     )
     catalog_snapshot = SimpleNamespace(
         persona_presets={"mentor": catalog_persona},
-        intent_presets={"plan": catalog_intent},
-        intent_display_map={"plan": "Catalog Plan Display"},
-        intent_buckets={"assist": ["plan"]},
+        intent_presets={"decide": catalog_intent},
+        intent_display_map={"decide": "Catalog Plan Display"},
+        intent_buckets={"assist": ["decide"]},
     )
     legacy_persona = SimpleNamespace(
         key="mentor",
@@ -1097,15 +1097,15 @@ def test_cheat_sheet_catalog_fallback_without_maps(monkeypatch):
         tone="Legacy Tone",
     )
     legacy_intent = SimpleNamespace(
-        key="plan",
+        key="decide",
         label="Legacy Plan",
         intent="legacy-plan",
         spoken="legacy plan alias",
     )
     legacy_maps = SimpleNamespace(
         persona_presets={"mentor": legacy_persona},
-        intent_presets={"plan": legacy_intent},
-        intent_display_map={"plan": "Legacy Plan Display"},
+        intent_presets={"decide": legacy_intent},
+        intent_display_map={"decide": "Legacy Plan Display"},
     )
 
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})

@@ -566,7 +566,7 @@ if bootstrap is not None:
                 tone="Catalog Tone",
             )
             catalog_intent = SimpleNamespace(
-                key="plan",
+                key="decide",
                 label="Catalog Plan",
                 intent="plan",
                 spoken="catalog plan alias",
@@ -579,11 +579,11 @@ if bootstrap is not None:
                     "audience": ["Catalog Audience"],
                     "tone": ["Catalog Tone"],
                 },
-                intent_presets={"plan": catalog_intent},
-                intent_spoken_map={"catalog plan alias": "plan"},
-                intent_axis_tokens={"intent": ["plan"]},
-                intent_buckets={"assist": ["plan"]},
-                intent_display_map={"plan": "Catalog Plan Display"},
+                intent_presets={"decide": catalog_intent},
+                intent_spoken_map={"catalog plan alias": "decide"},
+                intent_axis_tokens={"intent": ["decide"]},
+                intent_buckets={"assist": ["decide"]},
+                intent_display_map={"decide": "Catalog Plan Display"},
             )
 
             legacy_persona = SimpleNamespace(
@@ -595,7 +595,7 @@ if bootstrap is not None:
                 tone="Legacy Tone",
             )
             legacy_intent = SimpleNamespace(
-                key="plan",
+                key="decide",
                 label="Legacy Plan",
                 intent="legacy-plan",
                 spoken="legacy plan alias",
@@ -608,10 +608,10 @@ if bootstrap is not None:
                     "audience": {"legacy audience": "Legacy Audience"},
                     "tone": {"legacy tone": "Legacy Tone"},
                 },
-                intent_presets={"plan": legacy_intent},
-                intent_preset_aliases={"legacy plan alias": "plan"},
-                intent_synonyms={"legacy plan alias": "plan"},
-                intent_display_map={"plan": "Legacy Plan Display"},
+                intent_presets={"decide": legacy_intent},
+                intent_preset_aliases={"legacy plan alias": "decide"},
+                intent_synonyms={"legacy plan alias": "decide"},
+                intent_display_map={"decide": "Legacy Plan Display"},
             )
 
             def empty_read_list_items(_name: str) -> list[str]:
@@ -765,7 +765,7 @@ if bootstrap is not None:
                 tone="Catalog Tone",
             )
             catalog_intent = SimpleNamespace(
-                key="plan",
+                key="decide",
                 label="Catalog Plan",
                 intent="plan",
                 spoken="catalog plan alias",
@@ -778,11 +778,11 @@ if bootstrap is not None:
                     "audience": ["Catalog Audience"],
                     "tone": ["Catalog Tone"],
                 },
-                intent_presets={"plan": catalog_intent},
-                intent_spoken_map={"catalog plan alias": "plan"},
-                intent_axis_tokens={"intent": ["plan"]},
-                intent_buckets={"assist": ["plan"]},
-                intent_display_map={"plan": "Catalog Plan Display"},
+                intent_presets={"decide": catalog_intent},
+                intent_spoken_map={"catalog plan alias": "decide"},
+                intent_axis_tokens={"intent": ["decide"]},
+                intent_buckets={"assist": ["decide"]},
+                intent_display_map={"decide": "Catalog Plan Display"},
             )
             legacy_persona = SimpleNamespace(
                 key="mentor",
@@ -793,7 +793,7 @@ if bootstrap is not None:
                 tone="Legacy Tone",
             )
             legacy_intent = SimpleNamespace(
-                key="plan",
+                key="decide",
                 label="Legacy Plan",
                 intent="legacy-plan",
                 spoken="legacy plan alias",
@@ -806,10 +806,10 @@ if bootstrap is not None:
                     "audience": {"legacy audience": "Legacy Audience"},
                     "tone": {"legacy tone": "Legacy Tone"},
                 },
-                intent_presets={"plan": legacy_intent},
-                intent_preset_aliases={"legacy plan alias": "plan"},
-                intent_synonyms={"legacy plan alias": "plan"},
-                intent_display_map={"plan": "Legacy Plan Display"},
+                intent_presets={"decide": legacy_intent},
+                intent_preset_aliases={"legacy plan alias": "decide"},
+                intent_synonyms={"legacy plan alias": "decide"},
+                intent_display_map={"decide": "Legacy Plan Display"},
             )
 
             with ExitStack() as stack:
@@ -909,7 +909,7 @@ if bootstrap is not None:
                 ),
                 intents=(
                     HelpIntentMetadata(
-                        key="plan",
+                        key="decide",
                         display_label="Zeta Plan",
                         canonical_intent="plan",
                         spoken_display="Zeta Plan",

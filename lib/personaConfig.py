@@ -51,7 +51,6 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "persuade": "The response persuades the audience toward a view or action.",
         "brainstorm": "The response uncovers possibilities and surfaces options to consider.",
         "decide": "The response converges on a decision with clear rationale.",
-        "plan": "The response selects a course of action and outlines what should happen next.",
         "evaluate": "The response reaches a justified judgment about quality or viability.",
         "coach": "The response supports someone's growth through guidance and feedback.",
         "appreciate": "The response expresses appreciation or thanks.",
@@ -299,9 +298,9 @@ PERSONA_PRESET_IMPLICIT_INTENTS: Dict[str, str] = {
     "peer_engineer_explanation": "inform",
     "teach_junior_dev": "teach",
     "scientist_to_analyst": "inform",
-    "stakeholder_facilitator": "plan",      # facilitators help groups plan and align
+    "stakeholder_facilitator": "decide",    # facilitators help groups converge on decisions
     "designer_to_pm": "inform",
-    "product_manager_to_team": "plan",      # PMs plan product direction with team
+    "product_manager_to_team": "decide",    # PMs help teams decide on product direction
     "executive_brief": "inform",
     "fun_mode": "entertain",
 }
@@ -339,11 +338,6 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         key="decide",
         label="Decide",
         intent="decide",
-    ),
-    IntentPreset(
-        key="plan",
-        label="Plan / organise",
-        intent="plan",
     ),
     IntentPreset(
         key="evaluate",

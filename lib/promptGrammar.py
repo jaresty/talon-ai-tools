@@ -105,10 +105,9 @@ def _canonicalize_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _default_static_prompt() -> str:
-    if "infer" in STATIC_PROMPT_CONFIG:
-        return "infer"
-    if STATIC_PROMPT_CONFIG:
-        return next(iter(sorted(STATIC_PROMPT_CONFIG.keys())))
+    # Per ADR 0086: "infer" was retired as it violated task-defines-success principle.
+    # Default to empty string to allow open-ended responses when no task is specified,
+    # since the current task catalog doesn't cover all possible definitions of success.
     return ""
 
 

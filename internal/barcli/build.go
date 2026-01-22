@@ -89,9 +89,8 @@ type buildState struct {
 
 func newBuildState(g *Grammar) *buildState {
 	static := g.Hierarchy.Defaults.StaticPrompt
-	if static == "" {
-		static = "infer"
-	}
+	// Per ADR 0086: "infer" was retired. Default to empty string to allow open-ended
+	// responses when no task is specified.
 	completeness := g.Hierarchy.Defaults.Completeness
 	return &buildState{
 		grammar:      g,
@@ -587,9 +586,10 @@ func (s *buildState) cloneRecognized() map[string][]string {
 }
 
 func (s *buildState) finalise() *CLIError {
-	if s.static == "" {
-		return s.errorf(errorMissingStatic, "static prompt missing")
-	}
+	// Per ADR 0086: Allow empty static prompt for open-ended responses.
+	// The task catalog doesn't cover all possible definitions of success,
+	// so empty task is valid to let the LLM respond naturally to the subject.
+
 	// Sort scope and method for deterministic output while preserving initial order for text.
 	s.scope = dedupeInOrder(s.scope)
 	s.method = dedupeInOrder(s.method)

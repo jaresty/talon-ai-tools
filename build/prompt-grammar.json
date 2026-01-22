@@ -1371,7 +1371,7 @@
       "channel": {}
     },
     "defaults": {
-      "static_prompt": "assumption",
+      "static_prompt": "",
       "completeness": "full"
     }
   },
@@ -2324,7 +2324,7 @@
     "axes": "01eec91385da83ac19112208b3c0f469d4ba8519a88d12c08f149eb8b505931d",
     "static_prompts": "36a31a47b3cb15cf2f286d5ecfcc894d2e0092c6f6d3340a07e65752c3137d37",
     "persona": "08cebb8aa66ec4d2eaa4c0651a9ee1ca6abb144f2f831919fbd97a93bf1440db",
-    "hierarchy": "5cfb0346c57471a16b4e16e374fe3fbaae0f6261297ea760b7b51396fdd87212",
+    "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
     "slugs": "c00e0b2b7b8c96c34d67921269cfe36a0672ca5b819c0c6ab01023d4256eb36a"
   }
 }

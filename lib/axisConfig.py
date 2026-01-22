@@ -160,6 +160,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                  'prose, and remains minimal and valid for copy/paste into an `.svg` file.',
           'table': 'The response presents the main answer as a Markdown table when feasible, '
                    'keeping columns and rows compact.',
+          'test': 'The response presents test cases in a structured format with clear setup, '
+                  'execution, and assertion sections, organized by scenario type (happy path, edge '
+                  'cases, errors, boundaries) and including descriptive test names.',
           'tight': 'The response uses concise, dense prose, remaining freeform without bullets, '
                    'tables, or code and avoiding filler.',
           'variants': 'The response presents several distinct, decision-ready options as separate '

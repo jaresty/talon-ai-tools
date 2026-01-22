@@ -91,19 +91,27 @@ Comprehensive guide covering:
 **Key learnings documented:**
 - ✅ CRITICAL: Use `prompts.export` for bar CLI grammar, NOT `axisCatalog.json`
 - ✅ Correct JSON structure has nested "definitions" key
-- ✅ Complete workflow: Python source → regenerate → export → rebuild → validate
+- ✅ Complete workflow: Python source → regenerate → export → rebuild → update README → validate
+- ✅ GPT/readme.md must be manually updated with new tokens in alphabetical order
 - ✅ Shuffle-based validation process
 - ✅ Common troubleshooting scenarios
+
+**Guide updated (2026-01-21):**
+- ✅ Added step 6: Update GPT/readme.md
+- ✅ Added validation check for README update
+- ✅ Added troubleshooting for "Mismatch for README axis line" error
+- ✅ Updated example to include README update step
 
 **Phase 4: Cross-Reference Updates** ⏸️ DEFERRED (Optional)
 
 ## Files Modified
 
 1. `/Users/jaresty/.talon/user/talon-ai-tools/lib/axisConfig.py` - Added improve method
-2. `/Users/jaresty/.talon/user/talon-ai-tools/internal/barcli/embed/prompt-grammar.json` - Updated with new catalog (via prompts.export)
-3. `/Users/jaresty/.talon/user/talon-ai-tools/build/prompt-grammar.json` - Generated grammar JSON
-4. `/Users/jaresty/.talon/user/talon-ai-tools/docs/adr/0087-add-improve-optimize-method.md` - Created ADR
-5. `/Users/jaresty/.talon/user/talon-ai-tools/docs/ADDING_NEW_TOKENS.md` - Created comprehensive guide
+2. `/Users/jaresty/.talon/user/talon-ai-tools/GPT/readme.md` - Added improve to method axis line
+3. `/Users/jaresty/.talon/user/talon-ai-tools/internal/barcli/embed/prompt-grammar.json` - Updated with new catalog (via prompts.export)
+4. `/Users/jaresty/.talon/user/talon-ai-tools/build/prompt-grammar.json` - Generated grammar JSON
+5. `/Users/jaresty/.talon/user/talon-ai-tools/docs/adr/0087-add-improve-optimize-method.md` - Created ADR
+6. `/Users/jaresty/.talon/user/talon-ai-tools/docs/ADDING_NEW_TOKENS.md` - Created comprehensive guide (updated with README step)
 
 ## Artifacts Generated
 

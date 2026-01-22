@@ -292,14 +292,27 @@ python3 -m prompts.export --output build/prompt-grammar.json --embed-path intern
 cd cmd/bar && go build -o ../../bar . && cd ../..
 ```
 
-### 5. Validate
+### 5. Update GPT/readme.md
+
+```bash
+# Edit GPT/readme.md line 248 (method axis)
+# Change:
+# Method (`methodModifier`): `adversarial`, `analysis`, ..., `how`, `indirect`, ...
+# To:
+# Method (`methodModifier`): `adversarial`, `analysis`, ..., `how`, `improve`, `indirect`, ...
+```
+
+### 6. Validate
 
 ```bash
 # Run guardrails
 make ci-guardrails
-# Output: All tests pass
+# Output: All tests pass (100/100)
+```
 
-# Find in shuffle
+### 7. Find in shuffle
+
+```bash
 for seed in {1..200}; do
   if ./bar shuffle --seed $seed --include method --fill 0.9 2>&1 | grep -q "Method (improve)"; then
     echo "Found at seed $seed"
@@ -313,7 +326,7 @@ done
 # Output shows: Method (improve): The response takes existing work and enhances it...
 ```
 
-### 6. Test build command
+### 8. Test build command
 
 ```bash
 ./bar build method=improve form=code --prompt "Refactor this class"
@@ -368,6 +381,7 @@ When adding a token, these files are typically modified:
 - `lib/axisConfig.py` - Axis token definitions
 - `lib/promptConfig.py` - Static prompt definitions
 - `lib/personaConfig.py` - Persona presets and axes
+- `GPT/readme.md` - Axis token lists (must be manually updated)
 
 **Generated (automated):**
 - `tmp/axisConfig.generated.py` - Formatted Python config

@@ -55,6 +55,7 @@
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
         "svg": "The response consists solely of SVG markup for the answer, with no surrounding prose, and remains minimal and valid for copy/paste into an `.svg` file.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
+        "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives.",
         "visual": "The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose."
@@ -192,6 +193,7 @@
         "story",
         "svg",
         "table",
+        "test",
         "tight",
         "variants",
         "visual"
@@ -1428,6 +1430,7 @@
         "story": "story",
         "svg": "svg",
         "table": "table",
+        "test": "test",
         "tight": "tight",
         "variants": "variants",
         "visual": "visual"
@@ -1787,6 +1790,7 @@
         "form=story": "form-story",
         "form=svg": "form-svg",
         "form=table": "form-table",
+        "form=test": "form-test",
         "form=tight": "form-tight",
         "form=variants": "form-variants",
         "form=visual": "form-visual"
@@ -2025,6 +2029,7 @@
       "form=story": "form-story",
       "form=svg": "form-svg",
       "form=table": "form-table",
+      "form=test": "form-test",
       "form=tight": "form-tight",
       "form=variants": "form-variants",
       "form=visual": "form-visual",
@@ -2261,6 +2266,7 @@
       "taxonomy": "taxonomy",
       "teach": "teach",
       "team": "team",
+      "test": "test",
       "tight": "tight",
       "to CEO": "to-ceo",
       "to Kent Beck": "to-kent-beck",
@@ -2315,10 +2321,10 @@
     }
   },
   "checksums": {
-    "axes": "8648b9ce0fc807cbd1aa8cedd61f32c2096135396d4f1b30b9cc6c7bc8caa82b",
+    "axes": "01eec91385da83ac19112208b3c0f469d4ba8519a88d12c08f149eb8b505931d",
     "static_prompts": "36a31a47b3cb15cf2f286d5ecfcc894d2e0092c6f6d3340a07e65752c3137d37",
     "persona": "08cebb8aa66ec4d2eaa4c0651a9ee1ca6abb144f2f831919fbd97a93bf1440db",
     "hierarchy": "5cfb0346c57471a16b4e16e374fe3fbaae0f6261297ea760b7b51396fdd87212",
-    "slugs": "e0a2850510865e252fe75f5fc8c729d7e8cf750048baf945de36dbf5d9e8a738"
+    "slugs": "c00e0b2b7b8c96c34d67921269cfe36a0672ca5b819c0c6ab01023d4256eb36a"
   }
 }

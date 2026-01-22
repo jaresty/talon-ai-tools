@@ -33,7 +33,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     # Per ADR 0088: Universal task taxonomy with 10 single-syllable success primitives.
     # All specialized tasks (46 total) retired in favor of composable universal tasks + axis values.
     # Migration guide: docs/adr/0088-adopt-universal-task-taxonomy.md
-
     # Universal task types (all single-syllable, pronounceable for voice workflows)
     "make": {
         "description": "The response produces content that did not previously exist, creating something new that matches required properties.",
@@ -74,6 +73,9 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "check": {
         "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
+    },
+    "chat": {
+        "description": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
     },
 }
 

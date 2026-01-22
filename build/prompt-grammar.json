@@ -428,6 +428,11 @@
           "axes": {},
           "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
           "name": "check"
+        },
+        {
+          "axes": {},
+          "description": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
+          "name": "chat"
         }
       ],
       "talon_list_tokens": [
@@ -440,11 +445,15 @@
         "probe",
         "pick",
         "plan",
-        "check"
+        "check",
+        "chat"
       ],
       "unprofiled_tokens": []
     },
     "profiles": {
+      "chat": {
+        "description": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction."
+      },
       "check": {
         "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement."
       },
@@ -487,6 +496,7 @@
       }
     },
     "descriptions": {
+      "chat": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
       "check": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
       "diff": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
       "fix": "The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
@@ -1046,6 +1056,7 @@
       }
     },
     "static": {
+      "chat": "chat",
       "check": "check",
       "diff": "diff",
       "fix": "fix",
@@ -1131,6 +1142,7 @@
     },
     "overrides": {
       "static": {
+        "static=chat": "static-chat",
         "static=check": "static-check",
         "static=diff": "static-diff",
         "static=fix": "static-fix",
@@ -1420,6 +1432,7 @@
       "channel=remote": "channel-remote",
       "channel=slack": "channel-slack",
       "channel=sync": "channel-sync",
+      "chat": "chat",
       "check": "check",
       "checklist": "checklist",
       "cluster": "cluster",
@@ -1733,6 +1746,7 @@
       "sort": "sort",
       "spike": "spike",
       "split": "split",
+      "static=chat": "static-chat",
       "static=check": "static-check",
       "static=diff": "static-diff",
       "static=fix": "static-fix",
@@ -1805,9 +1819,9 @@
   },
   "checksums": {
     "axes": "941035c68bd87f846308b95baee6c005328075308724f0413dd63be2100363b6",
-    "static_prompts": "95d9be5b22c24d36ec18beed111f89bc738e15f0cde56fb56c01da704ab148ef",
+    "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
     "persona": "4b1f1623782b84cba7b95564f3bc4dd2eebb2e80884ead2f6d556059c3010d64",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "0edda100258f13ad56697c5c60c43451e4bf314f7262639da811bd81cc329c44"
+    "slugs": "797b2cde080b0b14023020ab3d92d42e0ce9b3c48a105877f8eba3e3e28384a9"
   }
 }

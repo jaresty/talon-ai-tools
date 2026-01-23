@@ -135,6 +135,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
           'faq': 'The response adopts an FAQ layout: clearly separated question headings with '
                  'concise answers beneath each one, keeping content easy to skim and free of long '
                  'uninterrupted prose.',
+          'walkthrough': 'The response guides the audience step by step by outlining stages and '
+                           'walking through them in order so understanding builds gradually.',
           'gherkin': 'The response outputs only Gherkin, using Jira markup where appropriate and '
                      'omitting surrounding explanation.',
           'html': 'The response consists solely of semantic HTML for the answer, with no '
@@ -336,8 +338,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                         'representations over prose.',
             'tune': 'The response evaluates visibility, scope, and volatility alignment using the '
                     'Concordance Frame and recommends tuning actions.',
-            'walkthrough': 'The response guides the audience step by step by outlining stages and '
-                           'walking through them in order so understanding builds gradually.',
             'wasinawa': 'The response applies a What–So What–Now What reflection: it describes '
                         'what happened, interprets why it matters, and proposes concrete next '
                         'steps.',

@@ -60,6 +60,7 @@
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives.",
         "visual": "The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose.",
+        "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity."
       },
       "method": {
@@ -127,7 +128,6 @@
         "systemic": "The response analyses the subject using systems thinking, focusing on boundaries, components, flows, feedback loops, emergence, and leverage points.",
         "taxonomy": "The response builds or refines a taxonomy by defining categories, subtypes, and relationships to clarify structure, preferring compact representations over prose.",
         "tune": "The response evaluates visibility, scope, and volatility alignment using the Concordance Frame and recommends tuning actions.",
-        "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
         "xp": "The response follows an Extreme Programming-style approach, favouring very small incremental changes, relying on working software and tests as primary feedback, and iterating with tight, collaborative feedback loops rather than big-bang plans."
       },
@@ -232,6 +232,7 @@
         "tight",
         "variants",
         "visual",
+        "walkthrough",
         "wardley"
       ],
       "method": [
@@ -299,7 +300,6 @@
         "systemic",
         "taxonomy",
         "tune",
-        "walkthrough",
         "wasinawa",
         "xp"
       ],
@@ -934,6 +934,7 @@
         "tight": "tight",
         "variants": "variants",
         "visual": "visual",
+        "walkthrough": "walkthrough",
         "wardley": "wardley"
       },
       "method": {
@@ -1001,7 +1002,6 @@
         "systemic": "systemic",
         "taxonomy": "taxonomy",
         "tune": "tune",
-        "walkthrough": "walkthrough",
         "wasinawa": "wasinawa",
         "xp": "xp"
       },
@@ -1258,7 +1258,6 @@
         "method=systemic": "method-systemic",
         "method=taxonomy": "method-taxonomy",
         "method=tune": "method-tune",
-        "method=walkthrough": "method-walkthrough",
         "method=wasinawa": "method-wasinawa",
         "method=xp": "method-xp"
       },
@@ -1288,6 +1287,7 @@
         "form=tight": "form-tight",
         "form=variants": "form-variants",
         "form=visual": "form-visual",
+        "form=walkthrough": "form-walkthrough",
         "form=wardley": "form-wardley"
       },
       "channel": {
@@ -1529,6 +1529,7 @@
       "form=tight": "form-tight",
       "form=variants": "form-variants",
       "form=visual": "form-visual",
+      "form=walkthrough": "form-walkthrough",
       "form=wardley": "form-wardley",
       "formally": "formally",
       "formats": "formats",
@@ -1642,7 +1643,6 @@
       "method=systemic": "method-systemic",
       "method=taxonomy": "method-taxonomy",
       "method=tune": "method-tune",
-      "method=walkthrough": "method-walkthrough",
       "method=wasinawa": "method-wasinawa",
       "method=xp": "method-xp",
       "metrics": "metrics",
@@ -1809,10 +1809,10 @@
     }
   },
   "checksums": {
-    "axes": "e38d0be67bf006b5ab4133bc67df2eb6cecb08dd28f36a7ca9b0518e8316d7ce",
+    "axes": "1cc5db8901a80abe89225d6869b5ed942af2e25dc53aac06a805218cc827a9f4",
     "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
     "persona": "6dbf06ec5444c5eda271237352ce0a7788caf8f732906266bcaf1472da9ef266",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "8331c042026a10d6915a825fe91f57e9f2d27bffb1f85719c11ddd128d4f9716"
+    "slugs": "5c94a76e2d22d8f6544fd1e928806b1ea5367bde584ff36678119412e6d347f5"
   }
 }

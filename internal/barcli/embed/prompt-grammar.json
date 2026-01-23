@@ -156,6 +156,7 @@
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "objectivity": "The response assesses whether claims are objective facts or subjective opinions with supporting evidence.",
         "operations": "The response identifies Operations Research or management science concepts that frame the situation.",
+        "origin": "The response uncovers how the subject arose, why it looks this way now, and what should happen next.",
         "pain": "The response identifies obstacles, frustrations, or inefficiencies experienced by users or stakeholders.",
         "product": "The response examines the subject through a product lens—features, user needs, market fit, value propositions.",
         "rationale": "The response explains why something matters, the reasoning behind it, or its purpose and motivation.",
@@ -327,6 +328,7 @@
         "narrow",
         "objectivity",
         "operations",
+        "origin",
         "pain",
         "product",
         "rationale",
@@ -580,7 +582,6 @@
         "persuade": "The response persuades the audience toward a view or action.",
         "resolve": "The response brings the problem or issue to a settled, resolved state.",
         "teach": "The response helps the audience learn and understand the material.",
-        "trace": "The response uncovers how the subject arose, why it looks this way now, and what should happen next.",
         "understand": "The response focuses on absorbing and understanding the input before acting."
       },
       "tone": {
@@ -711,7 +712,6 @@
           "persuade",
           "resolve",
           "teach",
-          "trace",
           "understand"
         ]
       },
@@ -776,11 +776,6 @@
           "key": "teach",
           "label": "Teach / explain"
         },
-        "trace": {
-          "intent": "trace",
-          "key": "trace",
-          "label": "Trace origins"
-        },
         "understand": {
           "intent": "understand",
           "key": "understand",
@@ -800,7 +795,6 @@
         "persuade": "persuade",
         "resolve": "resolve",
         "teach": "teach",
-        "trace": "trace",
         "understand": "understand"
       },
       "buckets": {
@@ -817,7 +811,6 @@
           "evaluate",
           "resolve",
           "understand",
-          "trace",
           "announce",
           "teach",
           "learn"
@@ -836,7 +829,6 @@
         "persuade": "Persuade",
         "resolve": "Resolve",
         "teach": "Teach / explain",
-        "trace": "Trace origins",
         "understand": "Understand"
       },
       "docs": {
@@ -852,7 +844,6 @@
         "persuade": "The response persuades the audience toward a view or action.",
         "resolve": "The response brings the problem or issue to a settled, resolved state.",
         "teach": "The response helps the audience learn and understand the material.",
-        "trace": "The response uncovers how the subject arose, why it looks this way now, and what should happen next.",
         "understand": "The response focuses on absorbing and understanding the input before acting."
       }
     }
@@ -1039,6 +1030,7 @@
         "narrow": "narrow",
         "objectivity": "objectivity",
         "operations": "operations",
+        "origin": "origin",
         "pain": "pain",
         "product": "product",
         "rationale": "rationale",
@@ -1120,7 +1112,6 @@
           "persuade": "persuade",
           "resolve": "resolve",
           "teach": "teach",
-          "trace": "trace",
           "understand": "understand"
         }
       },
@@ -1186,6 +1177,7 @@
         "scope=narrow": "scope-narrow",
         "scope=objectivity": "scope-objectivity",
         "scope=operations": "scope-operations",
+        "scope=origin": "scope-origin",
         "scope=pain": "scope-pain",
         "scope=product": "scope-product",
         "scope=rationale": "scope-rationale",
@@ -1373,7 +1365,6 @@
         "intent=persuade": "intent-persuade",
         "intent=resolve": "intent-resolve",
         "intent=teach": "intent-teach",
-        "intent=trace": "intent-trace",
         "intent=understand": "intent-understand"
       }
     },
@@ -1567,7 +1558,6 @@
       "intent=persuade": "intent-persuade",
       "intent=resolve": "intent-resolve",
       "intent=teach": "intent-teach",
-      "intent=trace": "intent-trace",
       "intent=understand": "intent-understand",
       "interfaces": "interfaces",
       "invert": "invert",
@@ -1664,6 +1654,7 @@
       "ong": "ong",
       "operations": "operations",
       "order": "order",
+      "origin": "origin",
       "orthogonal": "orthogonal",
       "pain": "pain",
       "persona=designer_to_pm": "persona-designer_to_pm",
@@ -1723,6 +1714,7 @@
       "scope=narrow": "scope-narrow",
       "scope=objectivity": "scope-objectivity",
       "scope=operations": "scope-operations",
+      "scope=origin": "scope-origin",
       "scope=pain": "scope-pain",
       "scope=product": "scope-product",
       "scope=rationale": "scope-rationale",
@@ -1793,7 +1785,6 @@
       "tone=formally": "tone-formally",
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
-      "trace": "trace",
       "tune": "tune",
       "understand": "understand",
       "unknowns": "unknowns",
@@ -1818,10 +1809,10 @@
     }
   },
   "checksums": {
-    "axes": "05f47585b920350fefa48db7f0a94099e1fa60e8daa6e6c2fae0953beba6ce3e",
+    "axes": "e38d0be67bf006b5ab4133bc67df2eb6cecb08dd28f36a7ca9b0518e8316d7ce",
     "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
-    "persona": "4b1f1623782b84cba7b95564f3bc4dd2eebb2e80884ead2f6d556059c3010d64",
+    "persona": "6dbf06ec5444c5eda271237352ce0a7788caf8f732906266bcaf1472da9ef266",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "f298cc501052fddc513b1c8dcc4f5eeb3d19b7ea4d29829d506a2a080673c5a6"
+    "slugs": "8331c042026a10d6915a825fe91f57e9f2d27bffb1f85719c11ddd128d4f9716"
   }
 }

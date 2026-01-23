@@ -396,6 +396,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                           'opinions with supporting evidence.',
            'operations': 'The response identifies Operations Research or management science '
                          'concepts that frame the situation.',
+           'origin': "The response uncovers how the subject arose, why it looks this way now, and what should happen next.",
            'pain': 'The response identifies obstacles, frustrations, or inefficiencies experienced '
                    'by users or stakeholders.',
            'product': 'The response examines the subject through a product lens—features, user '

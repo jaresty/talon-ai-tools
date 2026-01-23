@@ -56,7 +56,6 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "appreciate": "The response expresses appreciation or thanks.",
         "resolve": "The response brings the problem or issue to a settled, resolved state.",
         "understand": "The response focuses on absorbing and understanding the input before acting.",
-        "trace": "The response uncovers how the subject arose, why it looks this way now, and what should happen next.",
         "announce": "The response shares news or updates with the audience.",
         "teach": "The response helps the audience learn and understand the material.",
         "learn": "The response deepens its own understanding; the outcome is knowledge rather than an immediate fix.",
@@ -298,9 +297,9 @@ PERSONA_PRESET_IMPLICIT_INTENTS: Dict[str, str] = {
     "peer_engineer_explanation": "inform",
     "teach_junior_dev": "teach",
     "scientist_to_analyst": "inform",
-    "stakeholder_facilitator": "decide",    # facilitators help groups converge on decisions
+    "stakeholder_facilitator": "decide",  # facilitators help groups converge on decisions
     "designer_to_pm": "inform",
-    "product_manager_to_team": "decide",    # PMs help teams decide on product direction
+    "product_manager_to_team": "decide",  # PMs help teams decide on product direction
     "executive_brief": "inform",
     "fun_mode": "entertain",
 }
@@ -380,11 +379,6 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         intent="understand",
     ),
     IntentPreset(
-        key="trace",
-        label="Trace origins",
-        intent="trace",
-    ),
-    IntentPreset(
         key="inform",
         label="Inform",
         intent="inform",
@@ -410,7 +404,6 @@ INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
         "evaluate",
         "resolve",
         "understand",
-        "trace",
         "announce",
         "teach",
         "learn",

@@ -407,7 +407,6 @@ INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
         "inform",
         "brainstorm",
         "decide",
-        "plan",
         "evaluate",
         "resolve",
         "understand",

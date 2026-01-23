@@ -19,15 +19,15 @@ if bootstrap is not None:
 
     class StaticPromptConfigDomainTests(unittest.TestCase):
         def test_get_static_prompt_profile_returns_profile_when_present(self) -> None:
-            profile = get_static_prompt_profile("todo")
+            profile = get_static_prompt_profile("plan")
             self.assertIsNotNone(profile)
             # Sanity-check a couple of known fields so this stays aligned with
             # the configuration but does not over-specify it.
             self.assertEqual(
                 profile["description"],
-                "The response formats the content as a todo list.",
+                "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
             )
-            self.assertEqual(profile["completeness"], "gist")
+            self.assertEqual(profile["method"], "steps")
 
         def test_get_static_prompt_profile_returns_none_for_unknown_prompt(
             self,
@@ -37,33 +37,29 @@ if bootstrap is not None:
         def test_get_static_prompt_axes_returns_axes_subset_for_profile(
             self,
         ) -> None:
-            axes = get_static_prompt_axes("todo")
-            # "todo" has a full axis profile in the configuration.
-            self.assertEqual(axes["completeness"], "gist")
-            self.assertEqual(axes["method"], ["steps"])
-            self.assertEqual(axes["form"], ["checklist"])
+            axes = get_static_prompt_axes("plan")
+            # "plan" has a full axis profile in the configuration.
+            self.assertEqual(axes["method"], "steps")
+            self.assertEqual(axes["scope"], "actions")
             self.assertEqual(axes["scope"], ["actions"])
 
         def test_get_static_prompt_axes_is_empty_for_description_only_profile(
             self,
         ) -> None:
-            # "describe" only has a description, no axis fields.
-            self.assertIn("describe", STATIC_PROMPT_CONFIG)
-            axes = get_static_prompt_axes("describe")
+            # "show" only has a description, no axis fields.
+            self.assertIn("show", STATIC_PROMPT_CONFIG)
+            axes = get_static_prompt_axes("show")
             self.assertEqual(axes, {})
 
         def test_get_static_prompt_axes_is_empty_for_unknown_prompt(self) -> None:
             self.assertEqual(get_static_prompt_axes("nonexistent-static-prompt"), {})
 
         def test_static_prompt_axes_include_clustered_tokens(self) -> None:
-            # Spot-check a few prompts that use clustered axis tokens introduced by ADR 014.
-            done_axes = get_static_prompt_axes("done")
-            self.assertEqual(done_axes.get("form"), ["checklist"])
-            self.assertEqual(done_axes.get("scope"), ["actions"])
-
-            wardley_axes = get_static_prompt_axes("wardley")
-            self.assertEqual(wardley_axes.get("form"), ["table"])
-            self.assertEqual(wardley_axes.get("method"), ["steps"])
+            # Per ADR 0088: universal task taxonomy uses single axis values, not lists.
+            # Check that "plan" has string axis values.
+            plan_axes = get_static_prompt_axes("plan")
+            self.assertEqual(plan_axes.get("method"), "steps")
+            self.assertEqual(plan_axes.get("scope"), "actions")
 
             context_axes = get_static_prompt_axes("context")
             self.assertEqual(context_axes.get("method"), ["contextualise"])

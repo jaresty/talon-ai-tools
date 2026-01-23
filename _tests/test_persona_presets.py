@@ -59,7 +59,6 @@ if bootstrap is not None:
                 {
                     "teach",
                     "decide",
-                    "plan",
                     "evaluate",
                     "brainstorm",
                     "appreciate",

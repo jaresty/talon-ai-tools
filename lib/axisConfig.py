@@ -191,6 +191,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
             'case': 'The response builds the case before the conclusion by laying out background, '
                     'evidence, trade-offs, and alternatives before converging on a clear '
                     'recommendation that addresses objections and constraints.',
+            'connascence': 'The response analyzes connascence (static/dynamic coupling) measuring '
+                            'strength, degree, locality, and remedies.',
             'cluster': 'The response groups similar items into labelled categories and describes '
                        'each cluster, emphasising recurring patterns over isolated singletons.',
             'cochange': 'The response applies cochange analysis to identify temporal coupling and '
@@ -204,8 +206,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
             'compare': 'The response compares two or more items by listing similarities and '
                        'differences, highlighting subtle distinctions and trade-offs that matter '
                        'to the audience.',
-            'constraints': 'The response identifies the system’s primary constraint, analyses '
-                           'behaviours it enforces, and frames ways to balance or relieve it.',
             'contextualise': 'The response adds or reshapes context to support another '
                              'operation—such as supplying background for an LLM or reframing '
                              'content—without rewriting the main text itself.',
@@ -362,8 +362,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The respons
                          'challenge the subject.',
            'concurrency': 'The response examines parallel execution, race conditions, '
                           'synchronization, or coordination challenges.',
-           'connascence': 'The response analyzes connascence (static/dynamic coupling) measuring '
-                          'strength, degree, locality, and remedies.',
+           'constraints': 'The response identifies the system’s primary constraint, analyses '
+                           'behaviours it enforces, and frames ways to balance or relieve it.',
            'criteria': 'The response defines success criteria, acceptance conditions, or tests '
                        'that determine when something is complete.',
            'disciplines': 'The response identifies relevant academic or industry fields of '

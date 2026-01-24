@@ -571,11 +571,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "The response solves the problem step by step, briefly labelling and "
             "explaining each step before presenting the final answer."
         ),
-        "structure": (
-            "The response focuses on structural aspects by outlining parts, "
-            "hierarchy, containment, and organisation rather than detailing "
-            "behaviour."
-        ),
         "systemic": (
             "The response analyses the subject using systems thinking, focusing on "
             "boundaries, components, flows, feedback loops, emergence, and leverage "
@@ -601,8 +596,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "feedback, and iterating with tight, collaborative feedback loops rather than "
             "big-bang plans."
         ),
-    },
-    "scope": {
         "actions": (
             "The response stays within the selected target and focuses only on concrete "
             "actions or tasks a user or team could take, leaving out background analysis "
@@ -660,10 +653,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "edges": (
             "The response emphasises edge cases, errors, and unusual conditions around the "
             "subject."
-        ),
-        "failures": (
-            "The response identifies what is wrong, why it fails, weaknesses, or areas "
-            "needing correction."
         ),
         "focus": (
             "The response stays tightly on a central theme within the selected target, "
@@ -750,10 +739,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "The response focuses on undefined, ambiguous, or domain-specific terms "
             "that require clarification."
         ),
-        "timing": (
-            "The response focuses on when things occur—schedules, sequences, durations, "
-            "or temporal relationships."
-        ),
         "unknowns": (
             "The response identifies critical unknown unknowns and explores how they "
             "might impact outcomes."
@@ -779,6 +764,36 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "The response concentrates on how the system behaves under stress and uncertainty—fragility "
             "vs robustness, margin of safety, leverage, debt, tail risks, and multiply-by-zero failure "
             "modes—and on design choices that increase or decrease resilience over time."
+        ),
+    },
+    "scope": {
+        "entity": (
+            "The response focuses on what things are in view—objects, people, roles, "
+            "systems, domains, or bounded units—without emphasizing actions or evaluation."
+        ),
+        "action": (
+            "The response focuses on what is being done or intended—tasks, activities, "
+            "operations, or work to be performed—rather than structure or meaning."
+        ),
+        "structure": (
+            "The response focuses on how things are arranged or related—dependencies, "
+            "coordination, constraints, incentives, or organizing patterns."
+        ),
+        "time": (
+            "The response focuses on when things occur and how they change over time—"
+            "sequences, evolution, history, or temporal dynamics."
+        ),
+        "evaluation": (
+            "The response focuses on how quality, success, or goodness is judged—criteria, "
+            "metrics, value, taste, or standards of assessment."
+        ),
+        "failure": (
+            "The response focuses on breakdowns, stress, uncertainty, or limits—risks, "
+            "edge cases, pain points, resilience, or what can go wrong."
+        ),
+        "meaning": (
+            "The response focuses on why something exists or how it should be understood—"
+            "purpose, assumptions, framing, terminology, or interpretive lens."
         ),
     },
 }

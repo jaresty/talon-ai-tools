@@ -500,19 +500,13 @@
         "to team": "The response addresses the team, keeping the guidance actionable and collaborative."
       },
       "intent": {
-        "announce": "The response shares news or updates with the audience.",
-        "appreciate": "The response expresses appreciation or thanks.",
-        "brainstorm": "The response uncovers possibilities and surfaces options to consider.",
-        "coach": "The response supports someone's growth through guidance and feedback.",
-        "decide": "The response converges on a decision with clear rationale.",
-        "entertain": "The response entertains the audience.",
-        "evaluate": "The response reaches a justified judgment about quality or viability.",
-        "inform": "The response gives the audience the information they need.",
-        "learn": "The response deepens its own understanding; the outcome is knowledge rather than an immediate fix.",
-        "persuade": "The response persuades the audience toward a view or action.",
-        "resolve": "The response brings the problem or issue to a settled, resolved state.",
-        "teach": "The response helps the audience learn and understand the material.",
-        "understand": "The response focuses on absorbing and understanding the input before acting."
+        "announce": "Share news or updates with the audience.",
+        "appreciate": "Express thanks, recognition, or positive regard.",
+        "coach": "Support the audience’s growth through guidance and feedback.",
+        "entertain": "Engage or amuse the audience.",
+        "inform": "Provide clear, relevant information the audience needs.",
+        "persuade": "Influence the audience toward a view or action.",
+        "teach": "Help the audience understand and learn material."
       },
       "tone": {
         "casually": "The response uses a casual, conversational tone.",
@@ -632,17 +626,11 @@
         "intent": [
           "announce",
           "appreciate",
-          "brainstorm",
           "coach",
-          "decide",
           "entertain",
-          "evaluate",
           "inform",
-          "learn",
           "persuade",
-          "resolve",
-          "teach",
-          "understand"
+          "teach"
         ]
       },
       "presets": {
@@ -656,20 +644,10 @@
           "key": "appreciate",
           "label": "Appreciate / thank"
         },
-        "brainstorm": {
-          "intent": "brainstorm",
-          "key": "brainstorm",
-          "label": "Brainstorm"
-        },
         "coach": {
           "intent": "coach",
           "key": "coach",
           "label": "Coach"
-        },
-        "decide": {
-          "intent": "decide",
-          "key": "decide",
-          "label": "Decide"
         },
         "entertain": {
           "intent": "entertain",
@@ -686,46 +664,26 @@
           "key": "inform",
           "label": "Inform"
         },
-        "learn": {
-          "intent": "learn",
-          "key": "learn",
-          "label": "Learn"
-        },
         "persuade": {
           "intent": "persuade",
           "key": "persuade",
           "label": "Persuade"
         },
-        "resolve": {
-          "intent": "resolve",
-          "key": "resolve",
-          "label": "Resolve"
-        },
         "teach": {
           "intent": "teach",
           "key": "teach",
           "label": "Teach / explain"
-        },
-        "understand": {
-          "intent": "understand",
-          "key": "understand",
-          "label": "Understand"
         }
       },
       "spoken_map": {
         "announce": "announce",
         "appreciate": "appreciate",
-        "brainstorm": "brainstorm",
         "coach": "coach",
-        "decide": "decide",
         "entertain": "entertain",
         "evaluate": "evaluate",
         "inform": "inform",
-        "learn": "learn",
         "persuade": "persuade",
-        "resolve": "resolve",
-        "teach": "teach",
-        "understand": "understand"
+        "teach": "teach"
       },
       "buckets": {
         "relational": [
@@ -736,45 +694,28 @@
         ],
         "task": [
           "inform",
-          "brainstorm",
-          "decide",
-          "evaluate",
-          "resolve",
-          "understand",
           "announce",
-          "teach",
-          "learn"
+          "teach"
         ]
       },
       "display_map": {
         "announce": "Announce",
         "appreciate": "Appreciate / thank",
-        "brainstorm": "Brainstorm",
         "coach": "Coach",
-        "decide": "Decide",
         "entertain": "Entertain",
         "evaluate": "Evaluate / review",
         "inform": "Inform",
-        "learn": "Learn",
         "persuade": "Persuade",
-        "resolve": "Resolve",
-        "teach": "Teach / explain",
-        "understand": "Understand"
+        "teach": "Teach / explain"
       },
       "docs": {
-        "announce": "The response shares news or updates with the audience.",
-        "appreciate": "The response expresses appreciation or thanks.",
-        "brainstorm": "The response uncovers possibilities and surfaces options to consider.",
-        "coach": "The response supports someone's growth through guidance and feedback.",
-        "decide": "The response converges on a decision with clear rationale.",
-        "entertain": "The response entertains the audience.",
-        "evaluate": "The response reaches a justified judgment about quality or viability.",
-        "inform": "The response gives the audience the information they need.",
-        "learn": "The response deepens its own understanding; the outcome is knowledge rather than an immediate fix.",
-        "persuade": "The response persuades the audience toward a view or action.",
-        "resolve": "The response brings the problem or issue to a settled, resolved state.",
-        "teach": "The response helps the audience learn and understand the material.",
-        "understand": "The response focuses on absorbing and understanding the input before acting."
+        "announce": "Share news or updates with the audience.",
+        "appreciate": "Express thanks, recognition, or positive regard.",
+        "coach": "Support the audience’s growth through guidance and feedback.",
+        "entertain": "Engage or amuse the audience.",
+        "inform": "Provide clear, relevant information the audience needs.",
+        "persuade": "Influence the audience toward a view or action.",
+        "teach": "Help the audience understand and learn material."
       }
     }
   },
@@ -997,17 +938,11 @@
         "intent": {
           "announce": "announce",
           "appreciate": "appreciate",
-          "brainstorm": "brainstorm",
           "coach": "coach",
-          "decide": "decide",
           "entertain": "entertain",
-          "evaluate": "evaluate",
           "inform": "inform",
-          "learn": "learn",
           "persuade": "persuade",
-          "resolve": "resolve",
-          "teach": "teach",
-          "understand": "understand"
+          "teach": "teach"
         }
       },
       "presets": {
@@ -1215,17 +1150,11 @@
       "persona.intent": {
         "intent=announce": "intent-announce",
         "intent=appreciate": "intent-appreciate",
-        "intent=brainstorm": "intent-brainstorm",
         "intent=coach": "intent-coach",
-        "intent=decide": "intent-decide",
         "intent=entertain": "intent-entertain",
-        "intent=evaluate": "intent-evaluate",
         "intent=inform": "intent-inform",
-        "intent=learn": "intent-learn",
         "intent=persuade": "intent-persuade",
-        "intent=resolve": "intent-resolve",
-        "intent=teach": "intent-teach",
-        "intent=understand": "intent-understand"
+        "intent=teach": "intent-teach"
       }
     },
     "canonical_to_slug": {
@@ -1267,7 +1196,6 @@
       "audience=to team": "audience-to-team",
       "bog": "bog",
       "boom": "boom",
-      "brainstorm": "brainstorm",
       "bug": "bug",
       "build": "build",
       "bullets": "bullets",
@@ -1299,7 +1227,6 @@
       "contextualise": "contextualise",
       "converge": "converge",
       "criteria": "criteria",
-      "decide": "decide",
       "deep": "deep",
       "depends": "depends",
       "diagnose": "diagnose",
@@ -1333,7 +1260,6 @@
       "effects": "effects",
       "entertain": "entertain",
       "entity": "entity",
-      "evaluate": "evaluate",
       "evaluation": "evaluation",
       "experimental": "experimental",
       "explore": "explore",
@@ -1407,17 +1333,11 @@
       "inform": "inform",
       "intent=announce": "intent-announce",
       "intent=appreciate": "intent-appreciate",
-      "intent=brainstorm": "intent-brainstorm",
       "intent=coach": "intent-coach",
-      "intent=decide": "intent-decide",
       "intent=entertain": "intent-entertain",
-      "intent=evaluate": "intent-evaluate",
       "intent=inform": "intent-inform",
-      "intent=learn": "intent-learn",
       "intent=persuade": "intent-persuade",
-      "intent=resolve": "intent-resolve",
       "intent=teach": "intent-teach",
-      "intent=understand": "intent-understand",
       "interfaces": "interfaces",
       "inversion": "inversion",
       "jira": "jira",
@@ -1425,7 +1345,6 @@
       "jog": "jog",
       "kindly": "kindly",
       "ladder": "ladder",
-      "learn": "learn",
       "log": "log",
       "make": "make",
       "mapping": "mapping",
@@ -1512,7 +1431,6 @@
       "recipe": "recipe",
       "remote": "remote",
       "resilience": "resilience",
-      "resolve": "resolve",
       "rewrite": "rewrite",
       "rigor": "rigor",
       "risks": "risks",
@@ -1577,7 +1495,6 @@
       "tone=formally": "tone-formally",
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
-      "understand": "understand",
       "unknowns": "unknowns",
       "value": "value",
       "variants": "variants",
@@ -1601,8 +1518,8 @@
   "checksums": {
     "axes": "3300afa0a9cc8981ff4488242adfc0ccf084711bc6e33debf957fa380980aef7",
     "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
-    "persona": "6dbf06ec5444c5eda271237352ce0a7788caf8f732906266bcaf1472da9ef266",
+    "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "5f66506bf0bcf1e9a0389f847ea463b6d605d69fb297a6b291fb5e61ced7c4a1"
+    "slugs": "d98fb7549895685ffd1684a0347cf739e099ce4bf088a0e11e012645b306767a"
   }
 }

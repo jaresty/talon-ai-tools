@@ -46,19 +46,13 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "kindly": "The response uses a kind, warm tone.",
     },
     "intent": {
-        "inform": "The response gives the audience the information they need.",
-        "entertain": "The response entertains the audience.",
-        "persuade": "The response persuades the audience toward a view or action.",
-        "brainstorm": "The response uncovers possibilities and surfaces options to consider.",
-        "decide": "The response converges on a decision with clear rationale.",
-        "evaluate": "The response reaches a justified judgment about quality or viability.",
-        "coach": "The response supports someone's growth through guidance and feedback.",
-        "appreciate": "The response expresses appreciation or thanks.",
-        "resolve": "The response brings the problem or issue to a settled, resolved state.",
-        "understand": "The response focuses on absorbing and understanding the input before acting.",
-        "announce": "The response shares news or updates with the audience.",
-        "teach": "The response helps the audience learn and understand the material.",
-        "learn": "The response deepens its own understanding; the outcome is knowledge rather than an immediate fix.",
+        "inform": "Provide clear, relevant information the audience needs.",
+        "entertain": "Engage or amuse the audience.",
+        "persuade": "Influence the audience toward a view or action.",
+        "appreciate": "Express thanks, recognition, or positive regard.",
+        "announce": "Share news or updates with the audience.",
+        "coach": "Support the audience’s growth through guidance and feedback.",
+        "teach": "Help the audience understand and learn material.",
     },
 }
 
@@ -297,9 +291,9 @@ PERSONA_PRESET_IMPLICIT_INTENTS: Dict[str, str] = {
     "peer_engineer_explanation": "inform",
     "teach_junior_dev": "teach",
     "scientist_to_analyst": "inform",
-    "stakeholder_facilitator": "decide",  # facilitators help groups converge on decisions
+    "stakeholder_facilitator": "inform",  # facilitators help groups converge on decisions
     "designer_to_pm": "inform",
-    "product_manager_to_team": "decide",  # PMs help teams decide on product direction
+    "product_manager_to_team": "inform",  # PMs help teams inform on product direction
     "executive_brief": "inform",
     "fun_mode": "entertain",
 }
@@ -334,19 +328,9 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         intent="teach",
     ),
     IntentPreset(
-        key="decide",
-        label="Decide",
-        intent="decide",
-    ),
-    IntentPreset(
         key="evaluate",
         label="Evaluate / review",
         intent="evaluate",
-    ),
-    IntentPreset(
-        key="brainstorm",
-        label="Brainstorm",
-        intent="brainstorm",
     ),
     IntentPreset(
         key="appreciate",
@@ -369,16 +353,6 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         intent="entertain",
     ),
     IntentPreset(
-        key="resolve",
-        label="Resolve",
-        intent="resolve",
-    ),
-    IntentPreset(
-        key="understand",
-        label="Understand",
-        intent="understand",
-    ),
-    IntentPreset(
         key="inform",
         label="Inform",
         intent="inform",
@@ -388,25 +362,14 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         label="Announce",
         intent="announce",
     ),
-    IntentPreset(
-        key="learn",
-        label="Learn",
-        intent="learn",
-    ),
 )
 
 
 INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
     "task": (
         "inform",
-        "brainstorm",
-        "decide",
-        "evaluate",
-        "resolve",
-        "understand",
         "announce",
         "teach",
-        "learn",
     ),
     "relational": ("appreciate", "persuade", "coach", "entertain"),
 }

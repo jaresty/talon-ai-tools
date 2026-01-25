@@ -26,7 +26,7 @@ CONSTRAINTS: Independent guardrails that shape HOW to complete the task.
   • Completeness — coverage depth: how thoroughly to explore what is in scope (does not expand scope)
   • Method — reasoning tool: how to think, not what to conclude (does not dictate tone or format)
   • Directional — execution modifier (adverbial): governs how the task is carried out, shaping sequencing, emphasis, and tradeoffs; applies globally rather than as an additional analysis or step
-	• Form — output shape: structural organization (does not imply tone)
+  • Form — output shape: structural organization (does not imply tone)
   • Channel — delivery context: platform formatting conventions only
 
 PERSONA: Communication identity that shapes expression, not reasoning.

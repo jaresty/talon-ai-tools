@@ -466,10 +466,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "The response assesses and orders items by importance or impact, making "
             "the ranking and rationale explicit."
         ),
-        "strategy": (
-            "The response focuses on long-term positioning, competitive advantage, "
-            "and directional choices."
-        ),
         # Patterns, abstraction, and models
         "motifs": (
             "The response identifies recurring patterns, themes, or clusters and "
@@ -536,13 +532,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "rigor": (
             "The response relies on disciplined, well-justified reasoning and makes "
             "its logic explicit."
-        ),
-        "criteria": (
-            "The response defines success criteria, acceptance conditions, or tests "
-            "that determine completeness."
-        ),
-        "metrics": (
-            "The response focuses on measurable indicators that track outcomes."
         ),
         "objectivity": (
             "The response distinguishes objective facts from subjective opinions and "

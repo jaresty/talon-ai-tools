@@ -13,3 +13,4 @@ artifacts/
 .venv/
 GPT/lists/*.talon-list
 .envrc
+.grepai/

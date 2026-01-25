@@ -84,7 +84,6 @@
       "method": {
         "actors": "The response identifies people, roles, or agents involved in the system.",
         "adversarial": "The response runs a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions in order to improve the work.",
-        "aesthetics": "The response evaluates taste, harmony, proportion, restraint, and appropriateness.",
         "analysis": "The response describes and structures the situation without proposing specific actions or recommendations.",
         "boom": "The response explores behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "constraints": "The response identifies the system’s primary constraints, analyses the behaviours they enforce, and frames ways to balance or relieve them.",
@@ -112,7 +111,6 @@
         "operations": "The response identifies operations research or management science concepts that frame the situation.",
         "order": "The response applies abstract structural reasoning such as hierarchy, dominance, or recurrence.",
         "origin": "The response uncovers how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
-        "pain": "The response identifies obstacles, frustrations, or inefficiencies experienced by stakeholders.",
         "prioritize": "The response assesses and orders items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response applies probability or statistical reasoning to characterise uncertainty and likely outcomes.",
         "product": "The response examines the subject through a product lens—features, user needs, and value propositions.",
@@ -122,8 +120,7 @@
         "roles": "The response focuses on responsibilities, ownership, and collaboration patterns.",
         "simulation": "The response uses explicit thought experiments or scenario walkthroughs to project how the situation might evolve over time, including feedback loops, bottlenecks, tipping points, and emergent effects.",
         "systemic": "The response analyses the subject as a whole system, including components, boundaries, flows, and feedback loops.",
-        "unknowns": "The response identifies critical unknown unknowns and explores how they might impact outcomes.",
-        "value": "The response focuses on user or customer value, impact, or outcomes delivered."
+        "unknowns": "The response identifies critical unknown unknowns and explores how they might impact outcomes."
       },
       "scope": {
         "action": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—rather than structure or meaning.",
@@ -218,7 +215,6 @@
       "method": [
         "actors",
         "adversarial",
-        "aesthetics",
         "analysis",
         "boom",
         "constraints",
@@ -246,7 +242,6 @@
         "operations",
         "order",
         "origin",
-        "pain",
         "prioritize",
         "probability",
         "product",
@@ -256,8 +251,7 @@
         "roles",
         "simulation",
         "systemic",
-        "unknowns",
-        "value"
+        "unknowns"
       ],
       "scope": [
         "action",
@@ -823,7 +817,6 @@
       "method": {
         "actors": "actors",
         "adversarial": "adversarial",
-        "aesthetics": "aesthetics",
         "analysis": "analysis",
         "boom": "boom",
         "constraints": "constraints",
@@ -851,7 +844,6 @@
         "operations": "operations",
         "order": "order",
         "origin": "origin",
-        "pain": "pain",
         "prioritize": "prioritize",
         "probability": "probability",
         "product": "product",
@@ -861,8 +853,7 @@
         "roles": "roles",
         "simulation": "simulation",
         "systemic": "systemic",
-        "unknowns": "unknowns",
-        "value": "value"
+        "unknowns": "unknowns"
       },
       "scope": {
         "action": "action",
@@ -987,7 +978,6 @@
       "method": {
         "method=actors": "method-actors",
         "method=adversarial": "method-adversarial",
-        "method=aesthetics": "method-aesthetics",
         "method=analysis": "method-analysis",
         "method=boom": "method-boom",
         "method=constraints": "method-constraints",
@@ -1015,7 +1005,6 @@
         "method=operations": "method-operations",
         "method=order": "method-order",
         "method=origin": "method-origin",
-        "method=pain": "method-pain",
         "method=prioritize": "method-prioritize",
         "method=probability": "method-probability",
         "method=product": "method-product",
@@ -1025,8 +1014,7 @@
         "method=roles": "method-roles",
         "method=simulation": "method-simulation",
         "method=systemic": "method-systemic",
-        "method=unknowns": "method-unknowns",
-        "method=value": "method-value"
+        "method=unknowns": "method-unknowns"
       },
       "form": {
         "form=actions": "form-actions",
@@ -1152,7 +1140,6 @@
       "actors": "actors",
       "adr": "adr",
       "adversarial": "adversarial",
-      "aesthetics": "aesthetics",
       "analysis": "analysis",
       "announce": "announce",
       "appreciate": "appreciate",
@@ -1342,7 +1329,6 @@
       "merge": "merge",
       "method=actors": "method-actors",
       "method=adversarial": "method-adversarial",
-      "method=aesthetics": "method-aesthetics",
       "method=analysis": "method-analysis",
       "method=boom": "method-boom",
       "method=constraints": "method-constraints",
@@ -1370,7 +1356,6 @@
       "method=operations": "method-operations",
       "method=order": "method-order",
       "method=origin": "method-origin",
-      "method=pain": "method-pain",
       "method=prioritize": "method-prioritize",
       "method=probability": "method-probability",
       "method=product": "method-product",
@@ -1381,7 +1366,6 @@
       "method=simulation": "method-simulation",
       "method=systemic": "method-systemic",
       "method=unknowns": "method-unknowns",
-      "method=value": "method-value",
       "minimal": "minimal",
       "models": "models",
       "motifs": "motifs",
@@ -1391,7 +1375,6 @@
       "operations": "operations",
       "order": "order",
       "origin": "origin",
-      "pain": "pain",
       "persona=designer_to_pm": "persona-designer_to_pm",
       "persona=executive_brief": "persona-executive_brief",
       "persona=fun_mode": "persona-fun_mode",
@@ -1478,7 +1461,6 @@
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
       "unknowns": "unknowns",
-      "value": "value",
       "variants": "variants",
       "visual": "visual",
       "voice=as Kent Beck": "voice-as-kent-beck",
@@ -1498,10 +1480,10 @@
     }
   },
   "checksums": {
-    "axes": "9dd75c2dc30468dcebd5d235642e09616e7780b44a6e90ba8e12ba6b7c20747c",
+    "axes": "e389aace68c1b0117a9fddc7c1041ae871de9404ea778e018f4fc026afb6110e",
     "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
     "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "020121e327f2a60a8a18193a9b53c04f6496f346c21ead3fae72f02ee1e80280"
+    "slugs": "20afd29fd952157489712309f9697fecacd3a33c81fa2540f91ca1690e011755"
   }
 }

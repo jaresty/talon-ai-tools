@@ -516,14 +516,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "The response examines the subject through a product lens—features, user "
             "needs, and value propositions."
         ),
-        "value": (
-            "The response focuses on user or customer value, impact, or outcomes "
-            "delivered."
-        ),
-        "pain": (
-            "The response identifies obstacles, frustrations, or inefficiencies "
-            "experienced by stakeholders."
-        ),
         # Quality, clarity, and evaluation
         "analysis": (
             "The response describes and structures the situation without proposing "
@@ -536,10 +528,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "objectivity": (
             "The response distinguishes objective facts from subjective opinions and "
             "supports claims with evidence."
-        ),
-        "aesthetics": (
-            "The response evaluates taste, harmony, proportion, restraint, and "
-            "appropriateness."
         ),
         # System scope and context
         "systemic": (

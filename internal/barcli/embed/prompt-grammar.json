@@ -123,12 +123,12 @@
         "unknowns": "The response identifies critical unknown unknowns and explores how they might impact outcomes."
       },
       "scope": {
-        "action": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—rather than structure or meaning.",
-        "entity": "The response focuses on what things are in view—objects, people, roles, systems, domains, or bounded units—without emphasizing actions or evaluation.",
-        "evaluation": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, value, taste, or standards of assessment.",
-        "failure": "The response focuses on breakdowns, stress, uncertainty, or limits—risks, edge cases, pain points, resilience, or what can go wrong.",
-        "meaning": "The response focuses on why something exists or how it should be understood—purpose, assumptions, framing, terminology, or interpretive lens.",
-        "structure": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
+        "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—rather than structure or meaning.",
+        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits—risks, edge cases, pain points, resilience, or what can go wrong.",
+        "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, value, taste, or standards of assessment.",
+        "mean": "The response focuses on why something exists or how it should be understood—purpose, assumptions, framing, terminology, or interpretive lens.",
+        "struct": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
+        "thing": "The response focuses on what things are in view—objects, people, roles, systems, domains, or bounded units—without emphasizing actions or evaluation.",
         "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, or temporal dynamics."
       }
     },
@@ -254,12 +254,12 @@
         "unknowns"
       ],
       "scope": [
-        "action",
-        "entity",
-        "evaluation",
-        "failure",
-        "meaning",
-        "structure",
+        "act",
+        "fail",
+        "good",
+        "mean",
+        "struct",
+        "thing",
         "time"
       ]
     }
@@ -856,12 +856,12 @@
         "unknowns": "unknowns"
       },
       "scope": {
-        "action": "action",
-        "entity": "entity",
-        "evaluation": "evaluation",
-        "failure": "failure",
-        "meaning": "meaning",
-        "structure": "structure",
+        "act": "act",
+        "fail": "fail",
+        "good": "good",
+        "mean": "mean",
+        "struct": "struct",
+        "thing": "thing",
         "time": "time"
       }
     },
@@ -967,12 +967,12 @@
         "completeness=skim": "completeness-skim"
       },
       "scope": {
-        "scope=action": "scope-action",
-        "scope=entity": "scope-entity",
-        "scope=evaluation": "scope-evaluation",
-        "scope=failure": "scope-failure",
-        "scope=meaning": "scope-meaning",
-        "scope=structure": "scope-structure",
+        "scope=act": "scope-act",
+        "scope=fail": "scope-fail",
+        "scope=good": "scope-good",
+        "scope=mean": "scope-mean",
+        "scope=struct": "scope-struct",
+        "scope=thing": "scope-thing",
         "scope=time": "scope-time"
       },
       "method": {
@@ -1134,7 +1134,7 @@
       }
     },
     "canonical_to_slug": {
-      "action": "action",
+      "act": "act",
       "actions": "actions",
       "activities": "activities",
       "actors": "actors",
@@ -1233,12 +1233,10 @@
       "dynamics": "dynamics",
       "effects": "effects",
       "entertain": "entertain",
-      "entity": "entity",
-      "evaluation": "evaluation",
       "experimental": "experimental",
       "explore": "explore",
       "facilitate": "facilitate",
-      "failure": "failure",
+      "fail": "fail",
       "faq": "faq",
       "fig": "fig",
       "fip bog": "fip-bog",
@@ -1299,6 +1297,7 @@
       "gently": "gently",
       "gherkin": "gherkin",
       "gist": "gist",
+      "good": "good",
       "grove": "grove",
       "help": "help",
       "html": "html",
@@ -1323,7 +1322,7 @@
       "make": "make",
       "mapping": "mapping",
       "max": "max",
-      "meaning": "meaning",
+      "mean": "mean",
       "meld": "meld",
       "melody": "melody",
       "merge": "merge",
@@ -1403,12 +1402,12 @@
       "rog": "rog",
       "roles": "roles",
       "scaffold": "scaffold",
-      "scope=action": "scope-action",
-      "scope=entity": "scope-entity",
-      "scope=evaluation": "scope-evaluation",
-      "scope=failure": "scope-failure",
-      "scope=meaning": "scope-meaning",
-      "scope=structure": "scope-structure",
+      "scope=act": "scope-act",
+      "scope=fail": "scope-fail",
+      "scope=good": "scope-good",
+      "scope=mean": "scope-mean",
+      "scope=struct": "scope-struct",
+      "scope=thing": "scope-thing",
       "scope=time": "scope-time",
       "shellscript": "shellscript",
       "show": "show",
@@ -1431,13 +1430,14 @@
       "static=sort": "static-sort",
       "steps": "steps",
       "story": "story",
-      "structure": "structure",
+      "struct": "struct",
       "svg": "svg",
       "sync": "sync",
       "systemic": "systemic",
       "table": "table",
       "teach": "teach",
       "test": "test",
+      "thing": "thing",
       "tight": "tight",
       "time": "time",
       "to CEO": "to-ceo",
@@ -1480,10 +1480,10 @@
     }
   },
   "checksums": {
-    "axes": "e389aace68c1b0117a9fddc7c1041ae871de9404ea778e018f4fc026afb6110e",
+    "axes": "09b662ba4914f170c22102289169bab17d111d5a3f63c97c5418091ab5a61ac8",
     "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
     "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "20afd29fd952157489712309f9697fecacd3a33c81fa2540f91ca1690e011755"
+    "slugs": "45e64a09d747c40dd6a5b53b28d92d505dd988eb407ba2d0fe4cd766ec30d6ef"
   }
 }

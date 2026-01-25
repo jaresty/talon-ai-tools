@@ -544,15 +544,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         ),
     },
     "scope": {
-        "entity": (
+        "thing": (
             "The response focuses on what things are in view—objects, people, roles, "
             "systems, domains, or bounded units—without emphasizing actions or evaluation."
         ),
-        "action": (
+        "act": (
             "The response focuses on what is being done or intended—tasks, activities, "
             "operations, or work to be performed—rather than structure or meaning."
         ),
-        "structure": (
+        "struct": (
             "The response focuses on how things are arranged or related—dependencies, "
             "coordination, constraints, incentives, or organizing patterns."
         ),
@@ -560,15 +560,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "The response focuses on when things occur and how they change over time—"
             "sequences, evolution, history, or temporal dynamics."
         ),
-        "evaluation": (
+        "good": (
             "The response focuses on how quality, success, or goodness is judged—criteria, "
             "metrics, value, taste, or standards of assessment."
         ),
-        "failure": (
+        "fail": (
             "The response focuses on breakdowns, stress, uncertainty, or limits—risks, "
             "edge cases, pain points, resilience, or what can go wrong."
         ),
-        "meaning": (
+        "mean": (
             "The response focuses on why something exists or how it should be understood—"
             "purpose, assumptions, framing, terminology, or interpretive lens."
         ),

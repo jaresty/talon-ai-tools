@@ -3,6 +3,7 @@
   "axes": {
     "definitions": {
       "channel": {
+        "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
         "presenterm": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: <descriptive title based on the input with colons encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"<!-- end_slide -->\", \"<!-- pause -->\", \"<!-- column_layout: [7, 3] -->\", \"<!-- column: 0 -->\", \"<!-- reset_layout -->\", and \"<!-- jump_to_middle -->\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image. The response emits \"<!-- snippet_output: name -->\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"<\", \"#62;\" for \">\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"&\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies.",
         "remote": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
@@ -50,7 +51,6 @@
         "codetour": "The response is a valid VS Code CodeTour `.tour` JSON document (schema-compatible) that uses steps and fields appropriate to the task and omits extra prose or surrounding explanation.",
         "commit": "The response is formatted as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response adds or reshapes context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
-        "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "direct": "The response leads with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response facilitates the session by framing the goal, proposing structure, managing turns, and keeping participation balanced rather than doing the work solo.",
         "faq": "The response adopts an FAQ layout: clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
@@ -134,6 +134,7 @@
     },
     "list_tokens": {
       "channel": [
+        "diagram",
         "jira",
         "presenterm",
         "remote",
@@ -181,7 +182,6 @@
         "codetour",
         "commit",
         "contextualise",
-        "diagram",
         "direct",
         "facilitate",
         "faq",
@@ -736,6 +736,7 @@
   "slugs": {
     "axes": {
       "channel": {
+        "diagram": "diagram",
         "jira": "jira",
         "presenterm": "presenterm",
         "remote": "remote",
@@ -783,7 +784,6 @@
         "codetour": "codetour",
         "commit": "commit",
         "contextualise": "contextualise",
-        "diagram": "diagram",
         "direct": "direct",
         "facilitate": "facilitate",
         "faq": "faq",
@@ -1030,7 +1030,6 @@
         "form=codetour": "form-codetour",
         "form=commit": "form-commit",
         "form=contextualise": "form-contextualise",
-        "form=diagram": "form-diagram",
         "form=direct": "form-direct",
         "form=facilitate": "form-facilitate",
         "form=faq": "form-faq",
@@ -1062,6 +1061,7 @@
         "form=wasinawa": "form-wasinawa"
       },
       "channel": {
+        "channel=diagram": "channel-diagram",
         "channel=jira": "channel-jira",
         "channel=presenterm": "channel-presenterm",
         "channel=remote": "channel-remote",
@@ -1177,6 +1177,7 @@
       "cards": "cards",
       "case": "case",
       "casually": "casually",
+      "channel=diagram": "channel-diagram",
       "channel=jira": "channel-jira",
       "channel=presenterm": "channel-presenterm",
       "channel=remote": "channel-remote",
@@ -1261,7 +1262,6 @@
       "form=codetour": "form-codetour",
       "form=commit": "form-commit",
       "form=contextualise": "form-contextualise",
-      "form=diagram": "form-diagram",
       "form=direct": "form-direct",
       "form=facilitate": "form-facilitate",
       "form=faq": "form-faq",
@@ -1480,10 +1480,10 @@
     }
   },
   "checksums": {
-    "axes": "09b662ba4914f170c22102289169bab17d111d5a3f63c97c5418091ab5a61ac8",
+    "axes": "a9df7778b1ad0d0a6fc6761ad84ab6f54578aea91edc081fda03c3721cb3d829",
     "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
     "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "45e64a09d747c40dd6a5b53b28d92d505dd988eb407ba2d0fe4cd766ec30d6ef"
+    "slugs": "e363416ece3f622700bfa22756c80b12623d5e52190ca0486824dd220eb18991"
   }
 }

@@ -71,6 +71,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
             "The response takes the shape of a synchronous or live session plan (agenda, "
             "steps, cues) rather than static reference text."
         ),
+        "diagram": (
+            "The response converts the input into Mermaid diagram code only: it infers "
+            "the best diagram type for the task and respects Mermaid safety constraints "
+            "(Mermaid diagrams do not allow parentheses in the syntax or raw '|' "
+            "characters inside node labels; the text uses numeric encodings such as "
+            "\"#124;\" for '|' instead of raw problematic characters)."
+        ),
     },
     "completeness": {
         "full": "The response provides a thorough answer for normal use, covering all "
@@ -279,13 +286,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "commit": (
             "The response is formatted as a conventional commit message with a short type "
             "or scope line and an optional concise body."
-        ),
-        "diagram": (
-            "The response converts the input into Mermaid diagram code only: it infers "
-            "the best diagram type for the task and respects Mermaid safety constraints "
-            "(Mermaid diagrams do not allow parentheses in the syntax or raw '|' "
-            "characters inside node labels; the text uses numeric encodings such as "
-            "\"#124;\" for '|' instead of raw problematic characters)."
         ),
         "faq": (
             "The response adopts an FAQ layout: clearly separated question headings with "

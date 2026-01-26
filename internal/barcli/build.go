@@ -755,7 +755,7 @@ func formatPromptlet(p HydratedPromptlet) string {
 
 	switch {
 	case token != "" && description != "":
-		return fmt.Sprintf("%s (%s): %s", axis, token, description)
+		return fmt.Sprintf("%s (\"%s\"): %s", axis, token, description)
 	case token != "":
 		return fmt.Sprintf("%s: %s", axis, token)
 	case description != "":

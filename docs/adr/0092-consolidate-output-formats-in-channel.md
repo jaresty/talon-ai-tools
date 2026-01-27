@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted — **Implementation Complete (Phases 1-4)**
 
 ## Context
 
@@ -413,17 +413,17 @@ Compare to post-ADR 0091 baseline (seeds 0021-0040):
    - **Findings documented**: See Phase 2 Results section below
    - Commit: (analysis complete, implementation deferred)
 
-3. **Day 3**: Phase 3 - Update documentation
+3. **Day 3**: Phase 3 - Update documentation ✅ **COMPLETE**
    - Update README with form/channel distinction
    - Document that channel is already single-select
    - Document directional as task modifiers
    - Add composition examples
-   - Commit changes
+   - Commit: 25bcbfc
 
-4. **Day 4**: Phase 4 - Update ADR 0091
+4. **Day 4**: Phase 4 - Update ADR 0091 ✅ **COMPLETE**
    - Add post-evaluation findings section
    - Link to ADR 0092
-   - Commit changes
+   - Commit: 183283c
 
 5. **Day 5-6**: Generate and evaluate seeds 0041-0060
    - Generate new corpus (channel is already single-select)

@@ -34,7 +34,7 @@ if not TYPE_CHECKING:
             # Spot-check a few known tokens from the catalog.
             self.assertIn("make", lists["user.staticPrompt"])
             self.assertIn("full", lists["user.completenessModifier"])
-            self.assertIn("steps", lists["user.methodModifier"])
+            self.assertIn("analysis", lists["user.methodModifier"])
 
         def test_runtime_lists_merge_axis_tokens_from_catalog(self) -> None:
             """Guardrail: runtime lists should include SSOT axis tokens even if list tokens are partial."""

@@ -45,15 +45,12 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "pull": {
         "description": "The response selects or isolates information already present without introducing new content.",
         "completeness": "gist",
-        "method": "filter",
     },
     "sort": {
         "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions.",
-        "method": "cluster",
     },
     "diff": {
         "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
-        "method": "compare",
     },
     "show": {
         "description": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
@@ -68,8 +65,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "plan": {
         "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
-        "method": "steps",
-        "scope": "actions",
     },
     "check": {
         "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",

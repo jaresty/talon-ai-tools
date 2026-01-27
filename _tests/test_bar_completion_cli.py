@@ -239,7 +239,7 @@ if bootstrap is not None:
 
             for expected in [
                 "full",
-                "focus",
+                "thing",
                 "steps",
                 "adr",
                 "slack",
@@ -259,7 +259,7 @@ if bootstrap is not None:
             static_index = values.index("make")
             for expected in [
                 "full",
-                "focus",
+                "thing",
                 "steps",
                 "adr",
                 "slack",

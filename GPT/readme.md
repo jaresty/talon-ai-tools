@@ -243,11 +243,11 @@ A couple of common prompts decomposed into the three families:
 
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
 
-Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
-Scope (`scopeModifier`): `actions`, `activities`, `actors`, `aesthetics`, `assumptions`, `bound`, `challenges`, `concurrency`, `connascence`, `criteria`, `disciplines`, `domains`, `dynamics`, `edges`, `failures`, `focus`, `formats`, `gaps`, `interfaces`, `jobs`, `metrics`, `narrow`, `objectivity`, `operations`, `pain`, `product`, `rationale`, `relations`, `risks`, `roles`, `simpler`, `strategy`, `system`, `taoism`, `terminology`, `timing`, `unknowns`, `value`
-Method (`methodModifier`): `adversarial`, `analysis`, `boom`, `bridge`, `bud`, `case`, `cluster`, `cochange`, `cocreate`, `com b`, `compare`, `constraints`, `contextualise`, `converge`, `debugging`, `deep`, `depends`, `diagnose`, `dimension`, `direct`, `diverge`, `drum`, `dub`, `effects`, `experimental`, `explore`, `facilitate`, `filter`, `flow`, `graph`, `grove`, `how`, `improve`, `independent`, `indirect`, `invert`, `ladder`, `liberating`, `logic`, `map`, `mapping`, `math`, `meld`, `melody`, `merge`, `mod`, `motifs`, `order`, `orthogonal`, `prioritize`, `probability`, `recurrence`, `reflection`, `rewrite`, `rigor`, `rotation`, `scaffold`, `socratic`, `split`, `steps`, `structure`, `systemic`, `taxonomy`, `tune`, `walkthrough`, `wasinawa`, `xp`
-Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `codetour`, `commit`, `diagram`, `faq`, `gherkin`, `html`, `log`, `plain`, `questions`, `recipe`, `shellscript`, `spike`, `story`, `svg`, `table`, `test`, `tight`, `variants`, `visual`, `wardley`
-Channel (`channelModifier`): `jira`, `presenterm`, `remote`, `slack`, `sync`
+Completeness (`completenessModifier`): `deep`, `full`, `gist`, `max`, `minimal`, `narrow`, `skim`
+Scope (`scopeModifier`): `act`, `fail`, `good`, `mean`, `struct`, `thing`, `time`
+Method (`methodModifier`): `actors`, `adversarial`, `analysis`, `boom`, `constraints`, `converge`, `depends`, `diagnose`, `dimension`, `domains`, `dynamics`, `effects`, `experimental`, `explore`, `flow`, `grove`, `incentives`, `interfaces`, `inversion`, `jobs`, `mapping`, `meld`, `melody`, `models`, `motifs`, `objectivity`, `operations`, `order`, `origin`, `prioritize`, `probability`, `product`, `resilience`, `rigor`, `risks`, `roles`, `simulation`, `systemic`, `unknowns`
+Form (`formModifier`): `actions`, `activities`, `adr`, `bug`, `bullets`, `cards`, `case`, `checklist`, `cocreate`, `code`, `codetour`, `commit`, `contextualise`, `direct`, `facilitate`, `faq`, `formats`, `gherkin`, `html`, `indirect`, `ladder`, `log`, `merge`, `plain`, `questions`, `recipe`, `rewrite`, `scaffold`, `shellscript`, `socratic`, `spike`, `steps`, `story`, `svg`, `table`, `test`, `tight`, `variants`, `visual`, `walkthrough`, `wardley`, `wasinawa`
+Channel (`channelModifier`): `diagram`, `jira`, `presenterm`, `remote`, `slack`, `sync`
 Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip rog`, `fig`, `fip bog`, `fip ong`, `fip rog`, `fly bog`, `fly ong`, `fly rog`, `fog`, `jog`, `ong`, `rog`
   - Additional form/channel notes:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.

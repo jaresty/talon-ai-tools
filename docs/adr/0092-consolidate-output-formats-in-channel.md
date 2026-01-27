@@ -161,29 +161,41 @@ This aligns directional with method tokens (both enhance/modify tasks) while mai
 - `lib/axisConfig.py` - Remove plain from form dict
 - Generated files will be updated by `make axis-regenerate-apply`
 
-### Phase 2: Verify Python Consistency with Single-Select Channel
+### Phase 2: Document Complete Single-Select Enforcement Stack
 
-**Action:** Review Python code to ensure it respects the existing single-select channel design.
+**Discovery:** Single-select is enforced at THREE levels:
 
-**Python files to check:**
-- `lib/modelPatternGUI.py` - Recipe parsing (line 1261: `channel_tokens: list[str] = []`)
-- `lib/talonSettings.py` - Axis values filtering
-- Any validation or prompt building logic
-
-**Verification:**
-```python
-# Check if Python allows multiple channel tokens:
-# In modelPatternGUI.py _parse_bar_style_recipe():
-# channel_tokens: list[str] = []  # Can hold multiple!
+**1. Talon Voice Grammar** (GPT/gpt.talon line 48-61):
+```talon
+[{user.channelModifier}]  # Single optional capture
+[{user.formModifier}]      # Single optional capture
 ```
+- Users can only SPEAK one channel and one form
+- Grammar syntax enforces single-select at input
 
-**Action items:**
-1. Check if Python code allows multiple channel tokens in a recipe
-2. If yes, add validation or modify to enforce single-select
-3. Ensure Talon-triggered prompts behave same as `bar build` CLI
-4. Test that saying "model <task> <channel1> <channel2>" triggers error
+**2. Go Build Validation** (internal/barcli/build.go lines 343-357):
+```go
+case "form":
+    if len(s.form) > 0 {
+        return s.errorf(errorConflict, "form accepts a single token")
+    }
+case "channel":
+    if len(s.channel) > 0 {
+        return s.errorf(errorConflict, "channel accepts a single token")
+    }
+```
+- Validates and rejects multiple tokens
+- Provides clear error messages
 
-**Goal:** Ensure Python respects Go's single-select channel validation.
+**3. Python Receives Single Token**:
+- `lib/modelPatternGUI.py` line 1245: `channel_tokens: list[str] = []`
+- List structure exists but Talon grammar only sends one token
+- Python parses what Talon provides (which is always single)
+- No additional validation needed
+
+**Conclusion:** Channel and form are single-select by design across the entire stack. Python doesn't need validation because Talon grammar enforces single-select at the voice input level.
+
+**Phase 2 Action:** Document this three-layer enforcement in README and inline comments.
 
 ### Phase 3: Update Documentation
 

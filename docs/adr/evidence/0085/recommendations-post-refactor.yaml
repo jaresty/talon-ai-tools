@@ -1,0 +1,509 @@
+# Post-Refactor Recommendations
+# Based on evaluation of seeds 0021-0040 after ADR 0091 implementation
+# Evaluation date: 2026-01-27
+# Evaluator: Claude Sonnet 4.5
+
+# =============================================================================
+# CRITICAL: Output-Exclusive Format Conflicts (Priority 1)
+# =============================================================================
+# ADR 0091's form/channel split did NOT fully resolve format conflicts.
+# Root cause: Tokens that specify "ONLY output format X" conflict with tokens
+# that specify "ONLY output format Y", regardless of which axis they're in.
+
+- action: add_validation_rule
+  name: output_exclusive_mutual_exclusion
+  priority: critical
+  reason: "Multiple output-exclusive formats in single prompt create impossible execution requirements"
+  evidence: [seed_0028, seed_0034, seed_0036, seed_0039, seed_0040]
+  evaluator_consensus: 1
+  details:
+    rule: "Maximum one output-exclusive format token per prompt"
+    affected_tokens:
+      form_axis:
+        - code  # "consists only of code"
+        - html  # "solely semantic HTML"
+        - shellscript  # "delivered as shell script"
+        - plain  # "plain prose... no bullets, tables, or code blocks"
+      channel_axis:
+        - gherkin  # "outputs only Gherkin"
+        - diagram  # "Mermaid diagram code only"
+        - adr  # structured document format
+        - sync  # session plan format
+        - presenterm  # slide deck format
+    implementation:
+      validation_level: error
+      message: "Cannot combine multiple output-exclusive formats: {token1} requires {format1}-only output, {token2} requires {format2}-only output"
+      suggestion: "Choose one output format, or use format-flexible tokens"
+
+- action: edit
+  token: code
+  axis: form
+  priority: critical
+  current: "The response consists only of code or markup for the main answer, with no surrounding natural-language explanation."
+  proposed: "The response structures the answer as code or markup (algorithms, data structures, computational logic) and may be delivered as code-only output if no conflicting channel is specified."
+  reason: "Clarify that code-only output is optional unless required; allows composition with channels that have their own formatting"
+  evidence: [seed_0028]
+  evaluator_consensus: 1
+  validation: "Must not conflict with presenterm, slack, jira channels unless explicitly code-only output"
+
+- action: edit
+  token: plain
+  axis: form
+  priority: critical
+  current: "The response uses plain prose with natural paragraphs and sentences, imposing no additional structure such as bullets, tables, or code blocks."
+  proposed: "The response uses natural flowing prose with paragraphs and sentences as the primary structure, suitable for reading. When combined with structured channels (presenterm, sync), the prose should be broken into appropriate slide or section chunks."
+  reason: "Clarify that plain doesn't forbid ALL structure, just emphasizes prose over bullets; allows composition with structured channels"
+  evidence: [seed_0040]
+  evaluator_consensus: 1
+  validation: "Should warn when combined with highly structured channels (presenterm, diagram)"
+
+- action: edit
+  token: html
+  axis: form
+  priority: critical
+  current: "The response consists solely of semantic HTML for the answer, with no surrounding prose."
+  proposed: "The response outputs semantic HTML markup as the answer format. Note: HTML output conflicts with platform channels (slack, jira) that expect their native markup."
+  reason: "Make explicit that HTML conflicts with platform-specific markup"
+  evidence: [seed_0036]
+  evaluator_consensus: 1
+  incompatible_with: [slack, jira, presenterm, diagram]
+
+- action: edit
+  token: shellscript
+  axis: form
+  priority: critical
+  current: "The response is delivered as a shell script, focusing on correct, executable shell code rather than prose."
+  proposed: "The response outputs executable shell script code as the answer format. Note: Shellscript output is incompatible with structural formats (presenterm, sync, adr, diagram)."
+  reason: "Make explicit that shellscript conflicts with structured delivery formats"
+  evidence: [seed_0039]
+  evaluator_consensus: 1
+  incompatible_with: [presenterm, sync, adr, diagram, slack, jira]
+
+- action: add_metadata
+  affected_tokens:
+    - code
+    - html
+    - shellscript
+    - plain
+    - gherkin
+    - diagram
+    - adr
+    - sync
+    - presenterm
+  metadata_key: output_exclusive
+  metadata_value: true
+  priority: critical
+  reason: "Mark tokens that specify complete output format to enable validation"
+  implementation: "Add output_exclusive: true to token definitions, use in validation"
+
+# =============================================================================
+# HIGH PRIORITY: Method/Task Overlap Issues
+# =============================================================================
+
+- action: edit
+  token: dimension
+  axis: method
+  priority: high
+  current: "The response expands conceptual dimensions of the subject and examines each axis to expose structure."
+  proposed: "The response enhances the task by explicitly analyzing at least 3 distinct dimensions or axes of the subject, making implicit factors explicit. Works best with probe, diff, show tasks. Note: If dimensional analysis is the primary goal, use 'probe' task with dimension method."
+  reason: "Clarify that dimension is a multi-axis constraint that enhances tasks, not replaces them; address overlap with probe task"
+  evidence: [seed_0024]
+  evaluator_consensus: 1
+  task_affinity:
+    works_best_with: [probe, diff, show]
+    awkward_with: [plan, fix, make]
+  future_consideration: "If confusion persists in next evaluation, consider retiring and recommending 'probe' task instead"
+
+- action: add_metadata
+  token: dimension
+  metadata_key: task_affinity
+  metadata_value:
+    works_best_with: [probe, diff, show]
+    awkward_with: [plan, fix, make, pick]
+  priority: high
+  reason: "Document which tasks dimension naturally enhances"
+
+# =============================================================================
+# MEDIUM PRIORITY: Form Token Clarifications
+# =============================================================================
+
+- action: add_metadata
+  token: wardley
+  metadata_key: task_affinity
+  metadata_value:
+    works_best_with: [probe, diff, show]
+    awkward_with: [plan, fix, make]
+    note: "Wardley maps are for strategic positioning (where things are in evolution), not action sequences (what to do next)"
+  priority: medium
+  reason: "Wardley maps conflict with action-oriented tasks"
+  evidence: [seed_0024]
+  evaluator_consensus: 1
+
+- action: edit
+  token: wardley
+  axis: form
+  priority: medium
+  current: "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity."
+  proposed: "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity. Best suited for strategic positioning and analysis tasks (probe, diff, show) rather than action planning tasks."
+  reason: "Clarify appropriate use cases for Wardley maps"
+  evidence: [seed_0024]
+
+# =============================================================================
+# POSITIVE PATTERNS TO ENCOURAGE
+# =============================================================================
+
+- action: document_pattern
+  pattern: persona_presets_excellence
+  priority: medium
+  finding: "All prompts (8/20) using persona presets scored 4-5/5, with 100% coherence"
+  successful_presets:
+    - product_manager_to_team
+    - peer_engineer_explanation
+    - teach_junior_dev
+    - designer_to_pm
+    - scientist_to_analyst
+    - executive_brief
+  recommendation: "Encourage preset usage in documentation; consider expanding preset library"
+  evidence: [seed_0023, seed_0024, seed_0026, seed_0027, seed_0029, seed_0031, seed_0033, seed_0038]
+
+- action: document_pattern
+  pattern: scope_universal_reinforcement
+  priority: medium
+  finding: "All prompts (7/20) with scope tokens scored 5/5; scope is the strongest constraint type"
+  successful_scopes:
+    - struct  # dependencies, patterns, organization
+    - mean    # purpose, framing, interpretation
+    - good    # quality, criteria, assessment
+    - fail    # risks, limits, breakdowns
+  recommendation: "Scope tokens never conflict and always reinforce task focus; highlight in examples"
+  evidence: [seed_0025, seed_0028, seed_0029, seed_0030, seed_0032, seed_0033, seed_0035]
+
+- action: document_pattern
+  pattern: sync_universal_enhancer
+  priority: medium
+  finding: "All prompts (6/20) with sync channel scored 4-5/5; sync transforms tasks into facilitation naturally"
+  use_cases:
+    - "show + sync = teaching session"
+    - "diff + sync = comparative workshop"
+    - "chat + sync = guided dialogue"
+    - "pull + sync = facilitated extraction"
+  recommendation: "Sync channel is a 'universal enhancer' that works with almost any task; promote in examples"
+  evidence: [seed_0021, seed_0029, seed_0031, seed_0034, seed_0037]
+
+- action: document_pattern
+  pattern: directional_consistent_value
+  priority: medium
+  finding: "All prompts (10/20) with directional tokens scored 4-5/5; directionals never conflict"
+  successful_directionals:
+    - fig      # abstract ↔ concrete alternation
+    - fly ong  # abstract → action → extension
+    - fip rog  # abstract ↔ concrete, structure, reflection
+    - dip ong  # concrete → action → extension
+    - rog      # structure → reflection
+    - jog      # interpret and execute directly
+  recommendation: "Directional axis is highly successful; no conflicts found"
+  evidence: [seed_0021, seed_0024, seed_0026, seed_0028, seed_0029, seed_0035, seed_0037, seed_0038, seed_0039]
+
+- action: document_pattern
+  pattern: form_channel_successful_composition
+  priority: medium
+  finding: "When properly aligned, form + channel composition creates powerful combinations"
+  successful_combinations:
+    - visual_form_plus_presenterm: "Visual content structure in slide deck format"
+      evidence: [seed_0033]
+      score: 5.0
+    - scaffold_form_plus_chat: "Pedagogical structure in conversational exchange"
+      evidence: [seed_0026]
+      score: 5.0
+    - wasinawa_form_plus_sync: "Reflective structure in session plan"
+      evidence: [seed_0037]
+      score: 4.0
+    - contextualise_form_plus_sync: "Context-adding structure in facilitation"
+      evidence: [seed_0029]
+      score: 4.0
+  recommendation: "Form/channel split IS working for content structure + delivery format; document successful patterns"
+
+# =============================================================================
+# VALIDATION RULES TO ADD
+# =============================================================================
+
+- action: add_validation_rule
+  name: output_exclusive_format_check
+  priority: critical
+  rule_type: error
+  condition: "Count of output-exclusive tokens > 1"
+  affected_tokens: [code, html, shellscript, plain, gherkin, diagram, adr, sync, presenterm]
+  message: "Cannot combine multiple output-exclusive formats in one prompt"
+  suggestion: "Choose one primary output format: {list_of_conflicting_tokens}"
+
+- action: add_validation_rule
+  name: output_exclusive_mutual_check
+  priority: critical
+  rule_type: error
+  specific_conflicts:
+    - tokens: [html, slack]
+      reason: "HTML output conflicts with Slack Markdown"
+    - tokens: [html, jira]
+      reason: "HTML output conflicts with Jira markup"
+    - tokens: [html, presenterm]
+      reason: "HTML output conflicts with Presenterm Markdown"
+    - tokens: [shellscript, presenterm]
+      reason: "Shell script output conflicts with slide deck format"
+    - tokens: [shellscript, sync]
+      reason: "Shell script output conflicts with session plan format"
+    - tokens: [shellscript, adr]
+      reason: "Shell script output conflicts with ADR document format"
+    - tokens: [adr, sync]
+      reason: "ADR document structure conflicts with session plan structure"
+    - tokens: [adr, presenterm]
+      reason: "ADR document format conflicts with slide deck format"
+
+- action: add_validation_rule
+  name: format_appropriateness_warning
+  priority: medium
+  rule_type: warning
+  specific_patterns:
+    - tokens: [plain, presenterm]
+      reason: "Plain prose in slides often violates presentation best practices (walls of text)"
+      suggestion: "Consider using bullets, visual, or scaffold form for slide content"
+    - tokens: [code, sort]
+      reason: "Code-only output makes it difficult to explain categorization rationale"
+      suggestion: "Consider removing code constraint to allow explanatory prose"
+    - tokens: [code, pick]
+      reason: "Code-only output makes it difficult to provide decision justification"
+      suggestion: "Consider removing code constraint to allow decision rationale"
+
+# =============================================================================
+# DOCUMENTATION UPDATES NEEDED
+# =============================================================================
+
+- action: update_documentation
+  target: "ADR 0091"
+  priority: high
+  section: "Consequences"
+  addition: |
+    ### Post-Evaluation Findings (seeds 0021-0040)
+
+    The form/channel split produced significant improvements but revealed deeper issues:
+
+    **Improvements achieved:**
+    - Overall quality: 4.04 → 4.16 (+0.12)
+    - Excellent prompts: 35% → 55% (+20 percentage points)
+    - Combination harmony: 3.75 → 4.05 (+0.30)
+    - Persona composition: Fully resolved
+
+    **Persistent issues:**
+    - Output-exclusive format conflicts: 5 instances (25% of corpus)
+    - Root cause: Tokens specifying "ONLY format X" conflict with tokens specifying "ONLY format Y"
+    - This occurs regardless of axis placement (form vs channel)
+
+    **Critical insight:**
+    The problem is not form vs channel taxonomy. The problem is output exclusivity.
+    Tokens that say "output ONLY as X" are fundamentally incompatible with tokens
+    that say "output ONLY as Y", whether in same axis or different axes.
+
+    **Solution:** Implement output-exclusive mutual exclusion validation (see recommendations-post-refactor.yaml)
+
+- action: update_documentation
+  target: "docs/README.md or usage guide"
+  priority: high
+  section: "Form and Channel Composition"
+  addition: |
+    ## Understanding Form and Channel
+
+    **Form** describes the *internal structure* of your response:
+    - Content organization: bullets, prose, questions, steps
+    - Pedagogical structure: scaffold, socratic, walkthrough
+    - Analytical structure: visual, table, variants
+
+    **Channel** describes the *delivery format* or wrapper:
+    - Platform formatting: slack, jira
+    - Delivery optimization: sync, remote
+    - Complete output formats: diagram, presenterm, gherkin, adr
+
+    ### Composition Principles
+
+    **Forms and channels compose naturally when properly aligned:**
+
+    ✅ **Good combinations:**
+    - `visual` form + `presenterm` channel = Visual diagrams in slides
+    - `scaffold` form + `sync` channel = First-principles teaching in workshop
+    - `bullets` form + `slack` channel = Bullet points in Slack message
+    - `questions` form + `presenterm` channel = Interactive questions on slides
+
+    ❌ **Conflicting combinations:**
+    - `html` form + `slack` channel = HTML vs Markdown conflict
+    - `shellscript` form + `presenterm` channel = Shell script vs slides conflict
+    - `plain` form + `diagram` channel = Prose vs diagram-only conflict
+    - `adr` + `sync` channels = Document vs session plan conflict
+
+    ### Output-Exclusive Formats
+
+    Some tokens specify "ONLY output in format X" and cannot be combined:
+    - **Code-only**: code, html, shellscript, gherkin, diagram
+    - **Structural formats**: adr, sync, presenterm
+    - **Prose-exclusive**: plain (when strictly interpreted)
+
+    **Rule:** Use maximum ONE output-exclusive format per prompt.
+
+    ### When in Doubt
+
+    - Use form for "how ideas are organized inside the response"
+    - Use channel for "what wrapper or platform the response is delivered in"
+    - Avoid combining multiple format-exclusive tokens
+    - Persona presets are always safe to use
+
+- action: create_example_library
+  target: "docs/examples/form-channel-compositions.md"
+  priority: medium
+  content:
+    excellent_combinations:
+      - name: "Visual Executive Brief"
+        tokens: [diff, minimal, mean, visual, presenterm, executive_brief]
+        score: 5.0
+        use_case: "Strategic comparison for executives as visual slide deck"
+        why_it_works: "Visual form provides big-picture structure, presenterm delivers as slides, minimal fits executive time, mean focuses on strategic framing"
+
+      - name: "Pedagogical Dialogue"
+        tokens: [chat, full, scaffold, dip_ong, peer_engineer_explanation]
+        score: 5.0
+        use_case: "Teaching through conversation with gradual introduction"
+        why_it_works: "Scaffold form provides first-principles structure, chat enables dialogue, peer engineer maintains technical precision"
+
+      - name: "Workshop Facilitation"
+        tokens: [show, skim, incentives, sync, fig, to_kent_beck, casually]
+        score: 5.0
+        use_case: "Interactive workshop on incentive structures"
+        why_it_works: "Sync transforms show into facilitation, incentives adds analytical lens, fig enables abstract-concrete alternation"
+
+    problematic_combinations:
+      - name: "Format Conflict: Script in Slides"
+        tokens: [fix, shellscript, presenterm]
+        score: 2.0
+        problem: "Shellscript (executable code) conflicts with presenterm (slide deck)"
+        solution: "Choose one: either shellscript OR presenterm, not both"
+
+      - name: "Format Conflict: HTML in Slack"
+        tokens: [check, html, slack]
+        score: 2.75
+        problem: "HTML markup conflicts with Slack Markdown expectations"
+        solution: "Remove html form to allow Slack's native formatting"
+
+      - name: "Format Conflict: Multiple Structures"
+        tokens: [fix, adr, sync]
+        score: 2.75
+        problem: "ADR (document structure) conflicts with sync (session structure)"
+        solution: "Choose one structural format: either ADR document OR session plan"
+
+# =============================================================================
+# FUTURE EVALUATION CRITERIA
+# =============================================================================
+
+- action: define_success_metrics
+  target: "Next evaluation cycle (seeds 0041-0060)"
+  priority: medium
+  metrics:
+    excellent_prompts:
+      target: "≥70%"
+      baseline: "55% (seeds 0021-0040)"
+      stretch: "≥75%"
+
+    overall_average:
+      target: "≥4.30"
+      baseline: "4.16 (seeds 0021-0040)"
+      stretch: "≥4.50"
+
+    form_channel_conflicts:
+      target: "≤5%"
+      baseline: "25% (seeds 0021-0040)"
+      critical: "Must show significant reduction"
+
+    output_exclusive_conflicts:
+      target: "0%"
+      baseline: "25% (seeds 0021-0040)"
+      critical: "Validation rules must prevent these entirely"
+
+    method_task_overlap:
+      target: "≤5%"
+      baseline: "10% (seeds 0021-0040)"
+      note: "Should improve with dimension clarification"
+
+  validation_steps:
+    - "Implement output-exclusive format validation before generating new corpus"
+    - "Apply updated token descriptions"
+    - "Generate seeds 0041-0060 with validation enabled"
+    - "Evaluate using same rubric as seeds 0021-0040"
+    - "Compare results to validate improvements"
+
+# =============================================================================
+# IMPLEMENTATION PRIORITY
+# =============================================================================
+
+implementation_order:
+  phase_1_critical:
+    duration: "1-2 weeks"
+    actions:
+      - Add output-exclusive mutual exclusion validation
+      - Update token descriptions (code, html, shellscript, plain)
+      - Add incompatibility metadata to affected tokens
+      - Implement validation rules in bar build
+
+  phase_2_high_priority:
+    duration: "3-5 days"
+    actions:
+      - Edit dimension method description
+      - Add task affinity metadata
+      - Edit wardley form description
+      - Add usage guidance
+
+  phase_3_documentation:
+    duration: "1 week"
+    actions:
+      - Update ADR 0091 with post-evaluation findings
+      - Create form/channel composition guide
+      - Create example library
+      - Document successful patterns
+      - Update README with composition principles
+
+  phase_4_validation:
+    duration: "1-2 weeks"
+    actions:
+      - Generate new corpus (seeds 0041-0060) with validation
+      - Evaluate new corpus
+      - Measure improvement
+      - Validate that fixes work
+      - Iterate if needed
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+
+summary:
+  overall_verdict: "ADR 0091 produced significant improvement but revealed deeper issues requiring targeted fixes"
+
+  key_improvements:
+    - "Excellent prompts increased 20 percentage points (35% → 55%)"
+    - "Overall quality improved (+0.12 average)"
+    - "Combination harmony improved (+0.30)"
+    - "Persona flexibility resolved successfully"
+
+  persistent_issues:
+    - "Output-exclusive format conflicts (5 instances, 25%)"
+    - "Method/task overlap persists for dimension method"
+    - "Some form/channel combinations remain problematic"
+
+  critical_insight: >
+    The problem is not form vs channel axis placement. The problem is output
+    exclusivity. Tokens that specify "ONLY output format X" fundamentally
+    conflict with tokens specifying "ONLY output format Y", regardless of
+    axis placement. Solution: mutual exclusion validation for output-exclusive
+    formats.
+
+  next_steps:
+    1: "Implement critical validation rules (output-exclusive mutual exclusion)"
+    2: "Update token descriptions for clarity"
+    3: "Document successful patterns and composition principles"
+    4: "Generate and evaluate seeds 0041-0060 to validate fixes"
+    5: "Target: ≥70% excellent prompts, ≤5% conflicts"
+
+  confidence_level: "High - clear patterns identified, specific solutions proposed, validation plan defined"

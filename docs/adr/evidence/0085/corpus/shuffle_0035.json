@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response assigns items to predefined or inferred categories with consistent application of category definitions.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
+    "Method (\"roles\"): The response focuses on responsibilities, ownership, and collaboration patterns.",
+    "Directional (\"fip rog\"): The response moves between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns."
+    },
+    {
+      "axis": "method",
+      "token": "roles",
+      "description": "The response focuses on responsibilities, ownership, and collaboration patterns."
+    },
+    {
+      "axis": "directional",
+      "token": "fip rog",
+      "description": "The response moves between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+    }
+  ],
+  "axes": {
+    "static": "sort",
+    "completeness": "skim",
+    "scope": [
+      "struct"
+    ],
+    "method": [
+      "roles"
+    ],
+    "directional": "fip rog"
+  },
+  "persona": {
+    "intent": "inform"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "intent",
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
+    }
+  ],
+  "tokens": [
+    "inform",
+    "sort",
+    "skim",
+    "struct",
+    "roles",
+    "fip rog"
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Method (\"motifs\"): The response identifies recurring patterns, themes, or clusters and explains why they matter.",
+    "Directional (\"jog\"): The response interprets the intent and carries it out directly without asking follow-up questions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "method",
+      "token": "motifs",
+      "description": "The response identifies recurring patterns, themes, or clusters and explains why they matter."
+    },
+    {
+      "axis": "directional",
+      "token": "jog",
+      "description": "The response interprets the intent and carries it out directly without asking follow-up questions."
+    }
+  ],
+  "axes": {
+    "static": "pick",
+    "completeness": "max",
+    "method": [
+      "motifs"
+    ],
+    "directional": "jog"
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "pick",
+    "max",
+    "motifs",
+    "jog"
+  ]
+}

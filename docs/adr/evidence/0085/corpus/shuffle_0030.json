@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or isolates information already present without introducing new content.",
+  "constraints": [
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Scope (\"good\"): The response focuses on how quality, success, or goodness is judged—criteria, metrics, value, taste, or standards of assessment.",
+    "Method (\"systemic\"): The response analyses the subject as a whole system, including components, boundaries, flows, and feedback loops.",
+    "Form (\"indirect\"): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
+    },
+    {
+      "axis": "scope",
+      "token": "good",
+      "description": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, value, taste, or standards of assessment."
+    },
+    {
+      "axis": "method",
+      "token": "systemic",
+      "description": "The response analyses the subject as a whole system, including components, boundaries, flows, and feedback loops."
+    },
+    {
+      "axis": "form",
+      "token": "indirect",
+      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    },
+    {
+      "axis": "channel",
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+    }
+  ],
+  "axes": {
+    "static": "pull",
+    "completeness": "deep",
+    "scope": [
+      "good"
+    ],
+    "method": [
+      "systemic"
+    ],
+    "form": [
+      "indirect"
+    ],
+    "channel": [
+      "jira"
+    ]
+  },
+  "persona": {
+    "audience": "to junior engineer",
+    "intent": "coach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "intent",
+      "token": "coach",
+      "description": "Support the audience’s growth through guidance and feedback."
+    }
+  ],
+  "tokens": [
+    "coach",
+    "to junior engineer",
+    "pull",
+    "deep",
+    "good",
+    "systemic",
+    "indirect",
+    "jira"
+  ]
+}

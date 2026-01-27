@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"dimension\"): The response expands conceptual dimensions of the subject and examines each axis to expose structure.",
+    "Form (\"wardley\"): The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
+    "Directional (\"fly ong\"): The response identifies abstract patterns and general principles, then proposes concrete actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "dimension",
+      "description": "The response expands conceptual dimensions of the subject and examines each axis to expose structure."
+    },
+    {
+      "axis": "form",
+      "token": "wardley",
+      "description": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity."
+    },
+    {
+      "axis": "directional",
+      "token": "fly ong",
+      "description": "The response identifies abstract patterns and general principles, then proposes concrete actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "static": "plan",
+    "completeness": "full",
+    "method": [
+      "dimension"
+    ],
+    "form": [
+      "wardley"
+    ],
+    "directional": "fly ong"
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "plan",
+    "dimension",
+    "wardley",
+    "fly ong"
+  ]
+}

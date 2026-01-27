@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Method (\"incentives\"): The response analyses explicit and implicit incentive structures and how they drive behaviour.",
+    "Channel (\"sync\"): The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
+    "Directional (\"fig\"): The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "method",
+      "token": "incentives",
+      "description": "The response analyses explicit and implicit incentive structures and how they drive behaviour."
+    },
+    {
+      "axis": "channel",
+      "token": "sync",
+      "description": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+    },
+    {
+      "axis": "directional",
+      "token": "fig",
+      "description": "The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
+    }
+  ],
+  "axes": {
+    "static": "show",
+    "completeness": "skim",
+    "method": [
+      "incentives"
+    ],
+    "channel": [
+      "sync"
+    ],
+    "directional": "fig"
+  },
+  "persona": {
+    "audience": "to Kent Beck",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to Kent Beck",
+      "description": "The response addresses Kent Beck, staying concrete, test-minded, and iterative."
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "to Kent Beck",
+    "casually",
+    "show",
+    "skim",
+    "incentives",
+    "sync",
+    "fig"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response assigns items to predefined or inferred categories with consistent application of category definitions.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"good\"): The response focuses on how quality, success, or goodness is judged—criteria, metrics, value, taste, or standards of assessment.",
+    "Method (\"systemic\"): The response analyses the subject as a whole system, including components, boundaries, flows, and feedback loops.",
+    "Form (\"code\"): The response consists only of code or markup for the main answer, with no surrounding natural-language explanation.",
+    "Directional (\"fip bog\"): The response moves between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "good",
+      "description": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, value, taste, or standards of assessment."
+    },
+    {
+      "axis": "method",
+      "token": "systemic",
+      "description": "The response analyses the subject as a whole system, including components, boundaries, flows, and feedback loops."
+    },
+    {
+      "axis": "form",
+      "token": "code",
+      "description": "The response consists only of code or markup for the main answer, with no surrounding natural-language explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "fip bog",
+      "description": "The response moves between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "static": "sort",
+    "completeness": "full",
+    "scope": [
+      "good"
+    ],
+    "method": [
+      "systemic"
+    ],
+    "form": [
+      "code"
+    ],
+    "directional": "fip bog"
+  },
+  "persona": {
+    "voice": "as facilitator",
+    "audience": "to platform team"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    },
+    {
+      "axis": "audience",
+      "token": "to platform team",
+      "description": "The response addresses a platform team, emphasising reliability, leverage, and paved-path fit."
+    }
+  ],
+  "tokens": [
+    "as facilitator",
+    "to platform team",
+    "sort",
+    "good",
+    "systemic",
+    "code",
+    "fip bog"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Form (\"html\"): The response consists solely of semantic HTML for the answer, with no surrounding prose.",
+    "Channel (\"slack\"): The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "form",
+      "token": "html",
+      "description": "The response consists solely of semantic HTML for the answer, with no surrounding prose."
+    },
+    {
+      "axis": "channel",
+      "token": "slack",
+      "description": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration."
+    }
+  ],
+  "axes": {
+    "static": "check",
+    "completeness": "full",
+    "form": [
+      "html"
+    ],
+    "channel": [
+      "slack"
+    ]
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "check",
+    "html",
+    "slack"
+  ]
+}

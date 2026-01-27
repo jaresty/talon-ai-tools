@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
+    "Directional (\"ong\"): The response identifies concrete actions to take, then extends those actions to related situations or next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns."
+    },
+    {
+      "axis": "directional",
+      "token": "ong",
+      "description": "The response identifies concrete actions to take, then extends those actions to related situations or next steps."
+    }
+  ],
+  "axes": {
+    "static": "diff",
+    "completeness": "max",
+    "scope": [
+      "struct"
+    ],
+    "directional": "ong"
+  },
+  "persona": {
+    "tone": "casually",
+    "intent": "coach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    },
+    {
+      "axis": "intent",
+      "token": "coach",
+      "description": "Support the audience’s growth through guidance and feedback."
+    }
+  ],
+  "tokens": [
+    "coach",
+    "casually",
+    "diff",
+    "max",
+    "struct",
+    "ong"
+  ]
+}

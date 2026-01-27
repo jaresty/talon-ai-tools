@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Scope (\"mean\"): The response focuses on why something exists or how it should be understood—purpose, assumptions, framing, terminology, or interpretive lens.",
+    "Method (\"product\"): The response examines the subject through a product lens—features, user needs, and value propositions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "scope",
+      "token": "mean",
+      "description": "The response focuses on why something exists or how it should be understood—purpose, assumptions, framing, terminology, or interpretive lens."
+    },
+    {
+      "axis": "method",
+      "token": "product",
+      "description": "The response examines the subject through a product lens—features, user needs, and value propositions."
+    }
+  ],
+  "axes": {
+    "static": "probe",
+    "completeness": "gist",
+    "scope": [
+      "mean"
+    ],
+    "method": [
+      "product"
+    ]
+  },
+  "persona": {
+    "tone": "directly",
+    "intent": "coach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    },
+    {
+      "axis": "intent",
+      "token": "coach",
+      "description": "Support the audience’s growth through guidance and feedback."
+    }
+  ],
+  "tokens": [
+    "coach",
+    "directly",
+    "probe",
+    "gist",
+    "mean",
+    "product"
+  ]
+}

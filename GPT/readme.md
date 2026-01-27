@@ -246,8 +246,8 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 Completeness (`completenessModifier`): `deep`, `full`, `gist`, `max`, `minimal`, `narrow`, `skim`
 Scope (`scopeModifier`): `act`, `fail`, `good`, `mean`, `struct`, `thing`, `time`
 Method (`methodModifier`): `actors`, `adversarial`, `analysis`, `boom`, `constraints`, `converge`, `depends`, `diagnose`, `dimension`, `domains`, `dynamics`, `effects`, `experimental`, `explore`, `flow`, `grove`, `incentives`, `interfaces`, `inversion`, `jobs`, `mapping`, `meld`, `melody`, `models`, `motifs`, `objectivity`, `operations`, `order`, `origin`, `prioritize`, `probability`, `product`, `resilience`, `rigor`, `risks`, `roles`, `simulation`, `systemic`, `unknowns`
-Form (`formModifier`): `actions`, `activities`, `adr`, `bug`, `bullets`, `cards`, `case`, `checklist`, `cocreate`, `code`, `codetour`, `commit`, `contextualise`, `direct`, `facilitate`, `faq`, `formats`, `gherkin`, `html`, `indirect`, `ladder`, `log`, `merge`, `plain`, `questions`, `recipe`, `rewrite`, `scaffold`, `shellscript`, `socratic`, `spike`, `steps`, `story`, `svg`, `table`, `test`, `tight`, `variants`, `visual`, `walkthrough`, `wardley`, `wasinawa`
-Channel (`channelModifier`): `diagram`, `jira`, `presenterm`, `remote`, `slack`, `sync`
+Form (`formModifier`): `actions`, `activities`, `bug`, `bullets`, `cards`, `case`, `checklist`, `cocreate`, `commit`, `contextualise`, `direct`, `facilitate`, `faq`, `formats`, `indirect`, `ladder`, `log`, `merge`, `plain`, `questions`, `recipe`, `rewrite`, `scaffold`, `socratic`, `spike`, `steps`, `story`, `table`, `test`, `tight`, `variants`, `visual`, `walkthrough`, `wardley`, `wasinawa`
+Channel (`channelModifier`): `adr`, `code`, `codetour`, `diagram`, `gherkin`, `html`, `jira`, `plain`, `presenterm`, `remote`, `shellscript`, `slack`, `svg`, `sync`
 Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip rog`, `fig`, `fip bog`, `fip ong`, `fip rog`, `fly bog`, `fly ong`, `fly rog`, `fog`, `jog`, `ong`, `rog`
   - Additional form/channel notes:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.

@@ -7,13 +7,28 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, FrozenSet
 
-AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'diagram': 'The response converts the input into Mermaid diagram code only: it infers '
+AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'adr': 'The response takes the shape of an Architecture Decision Record (ADR) '
+                    'document with sections for context, decision, and consequences, formatted as '
+                    'a structured document ready for version control.',
+             'code': 'The response consists only of code or markup as the complete output, with no '
+                     'surrounding natural-language explanation or narrative.',
+             'codetour': 'The response is delivered as a valid VS Code CodeTour `.tour` JSON file '
+                         '(schema-compatible) with steps and fields appropriate to the task, '
+                         'omitting extra prose or surrounding explanation.',
+             'diagram': 'The response converts the input into Mermaid diagram code only: it infers '
                         'the best diagram type for the task and respects Mermaid safety '
                         'constraints (Mermaid diagrams do not allow parentheses in the syntax or '
                         "raw '|' characters inside node labels; the text uses numeric encodings "
                         'such as "#124;" for \'|\' instead of raw problematic characters).',
+             'gherkin': 'The response outputs only Gherkin format as the complete output, using '
+                        'Jira markup where appropriate and omitting surrounding explanation.',
+             'html': 'The response consists solely of semantic HTML as the complete output, with '
+                     'no surrounding prose or explanation.',
              'jira': 'The response formats the content using Jira markup (headings, lists, panels) '
                      'where relevant and avoids extra explanation beyond the main material.',
+             'plain': 'The response uses plain prose with natural paragraphs and sentences as the '
+                      'delivery format, imposing no additional structural conventions such as '
+                      'bullets, tables, or code blocks.',
              'presenterm': 'The response is a valid multi-slide presenterm deck expressed as raw '
                            'Markdown (no code fences). The front matter always matches: "--- '
                            'newline title: <descriptive title based on the input with colons '
@@ -60,8 +75,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'diagram': 'The resp
              'remote': 'The response is optimised for remote delivery, ensuring instructions work '
                        'in distributed or online contexts and surfacing tooling or interaction '
                        'hints suitable for video, voice, or screen sharing.',
+             'shellscript': 'The response is delivered as a shell script output format, focusing '
+                            'on correct, executable shell code rather than prose or explanation.',
              'slack': 'The response formats the answer for Slack using appropriate Markdown, '
                       'mentions, and code blocks while avoiding channel-irrelevant decoration.',
+             'svg': 'The response consists solely of SVG markup as the complete output, with no '
+                    'surrounding prose, remaining minimal and valid for direct use in an `.svg` '
+                    'file.',
              'sync': 'The response takes the shape of a synchronous or live session plan (agenda, '
                      'steps, cues) rather than static reference text.'},
  'completeness': {'deep': 'The response goes into substantial depth within the chosen scope, '
@@ -118,53 +138,42 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'diagram': 'The resp
                         'actions to related situations or next steps.',
                  'rog': 'The response examines the structure of the subject (how it is organized), '
                         'then reflects on why that structure exists and what it reveals.'},
- 'form': {'actions': 'The response stays within the selected target and focuses only on concrete '
-                     'actions or tasks a user or team could take, leaving out background analysis '
-                     'or explanation.',
-          'activities': 'The response lists concrete session activities or segments—what to do, by '
-                        'whom, and in what order—rather than abstract description.',
-          'adr': 'The response takes the shape of an Architecture Decision Record (ADR) with '
-                 'sections for context, decision, and consequences, written in a concise document '
-                 'style.',
-          'bug': 'The response appears as a structured bug report with sections for Steps to '
+ 'form': {'actions': 'The response structures ideas as concrete actions or tasks a user or team '
+                     'could take, leaving out background analysis or explanation.',
+          'activities': 'The response organizes ideas as concrete session activities or '
+                        'segments—what to do, by whom, and in what order—rather than abstract '
+                        'description.',
+          'bug': 'The response structures ideas as a bug report with sections for Steps to '
                  'Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, '
-                 'emphasising concise, testable details.',
-          'bullets': 'The response presents the main answer as concise bullet points only, '
-                     'avoiding long paragraphs.',
-          'cards': 'The response presents the main answer as discrete cards or items, each with a '
-                   'clear heading and short body, avoiding long continuous prose.',
-          'case': 'The response builds the case before the conclusion by laying out background, '
-                  'evidence, trade-offs, and alternatives before converging on a clear '
-                  'recommendation that addresses objections and constraints.',
-          'checklist': 'The response appears as an actionable checklist whose items are clear '
-                       'imperative tasks rather than descriptive prose.',
-          'cocreate': 'The response works collaboratively with the user, proposing small moves, '
+                 'emphasizing concise, testable details.',
+          'bullets': 'The response organizes ideas as concise bullet points, avoiding long '
+                     'paragraphs.',
+          'cards': 'The response organizes ideas as discrete cards or items, each with a clear '
+                   'heading and short body, avoiding long continuous prose.',
+          'case': 'The response structures reasoning by building the case before the conclusion, '
+                  'laying out background, evidence, trade-offs, and alternatives before converging '
+                  'on a clear recommendation that addresses objections and constraints.',
+          'checklist': 'The response organizes ideas as an actionable checklist whose items are '
+                       'clear imperative tasks rather than descriptive prose.',
+          'cocreate': 'The response structures interaction collaboratively, proposing small moves, '
                       'checking alignment, and iterating together instead of delivering a one-shot '
                       'answer.',
-          'code': 'The response consists only of code or markup for the main answer, with no '
-                  'surrounding natural-language explanation.',
-          'codetour': 'The response is a valid VS Code CodeTour `.tour` JSON document '
-                      '(schema-compatible) that uses steps and fields appropriate to the task and '
-                      'omits extra prose or surrounding explanation.',
-          'commit': 'The response is formatted as a conventional commit message with a short type '
-                    'or scope line and an optional concise body.',
-          'contextualise': 'The response adds or reshapes context to support another '
-                           'operation—such as supplying background for an LLM or reframing '
-                           'content—without rewriting the main text itself.',
-          'direct': 'The response leads with the main point or recommendation, followed only by '
-                    'the most relevant supporting context, evidence, and next steps.',
-          'facilitate': 'The response facilitates the session by framing the goal, proposing '
+          'commit': 'The response structures ideas as a conventional commit message with a short '
+                    'type or scope line and an optional concise body.',
+          'contextualise': 'The response structures ideas by adding or reshaping context to '
+                           'support another operation—such as supplying background for an LLM or '
+                           'reframing content—without rewriting the main text itself.',
+          'direct': 'The response structures ideas by leading with the main point or '
+                    'recommendation, followed only by the most relevant supporting context, '
+                    'evidence, and next steps.',
+          'facilitate': 'The response structures interaction by framing the goal, proposing '
                         'structure, managing turns, and keeping participation balanced rather than '
                         'doing the work solo.',
-          'faq': 'The response adopts an FAQ layout: clearly separated question headings with '
-                 'concise answers beneath each one, keeping content easy to skim and free of long '
+          'faq': 'The response organizes ideas as clearly separated question headings with concise '
+                 'answers beneath each one, keeping content easy to skim and free of long '
                  'uninterrupted prose.',
-          'formats': 'The response focuses on document types, writing formats, or structural '
-                     'templates and their suitability.',
-          'gherkin': 'The response outputs only Gherkin, using Jira markup where appropriate and '
-                     'omitting surrounding explanation.',
-          'html': 'The response consists solely of semantic HTML for the answer, with no '
-                  'surrounding prose.',
+          'formats': 'The response structures ideas by focusing on document types, writing '
+                     'formats, or structural templates and their suitability.',
           'indirect': 'The response begins with brief background, reasoning, and trade-offs and '
                       'finishes with a clear bottom-line point or recommendation that ties them '
                       'together.',
@@ -187,8 +196,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'diagram': 'The resp
           'scaffold': 'The response explains with scaffolding: it starts from first principles, '
                       'introduces ideas gradually, uses concrete examples and analogies, and '
                       'revisits key points so a beginner can follow and retain the concepts.',
-          'shellscript': 'The response is delivered as a shell script, focusing on correct, '
-                         'executable shell code rather than prose.',
           'socratic': 'The response employs a Socratic, question-led method by asking short, '
                       'targeted questions that surface assumptions, definitions, and gaps in '
                       'understanding, withholding full conclusions until enough answers exist or '
@@ -203,8 +210,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'diagram': 'The resp
                    'want <capability>, so that <value>." It may include a short description and '
                    'high-level acceptance criteria in plain prose but avoids Gherkin or test-case '
                    'syntax.',
-          'svg': 'The response consists solely of SVG markup for the answer, with no surrounding '
-                 'prose, and remains minimal and valid for copy/paste into an `.svg` file.',
           'table': 'The response presents the main answer as a Markdown table when feasible, '
                    'keeping columns and rows compact.',
           'test': 'The response presents test cases in a structured format with clear setup, '

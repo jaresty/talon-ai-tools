@@ -28,22 +28,22 @@
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
       },
       "directional": {
-        "bog": "The response examines the subject's structure and reflects on it, then identifies actions to take and extends them to related contexts.",
-        "dig": "The response examines concrete details and grounding examples, focusing on specifics rather than abstractions.",
-        "dip bog": "The response starts with concrete examples and grounded details, examines their structure and reflects on patterns, then identifies actions and extensions.",
-        "dip ong": "The response starts with concrete examples, identifies actions to take from them, then extends those actions to related situations.",
-        "dip rog": "The response examines concrete details and grounded examples, then reflects on their structural patterns and what they reveal.",
-        "fig": "The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal).",
-        "fip bog": "The response moves between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts.",
-        "fip ong": "The response alternates between abstract principles and concrete examples, then identifies actions to take and extends them to related situations.",
-        "fip rog": "The response moves between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
-        "fly bog": "The response identifies abstract patterns and general principles, examines their structure and reflects on it, then identifies actions and extends them to related contexts.",
-        "fly ong": "The response identifies abstract patterns and general principles, then proposes concrete actions and extends them to related contexts.",
-        "fly rog": "The response identifies abstract patterns and general principles, then examines their structural relationships and reflects on their implications.",
-        "fog": "The response identifies general patterns and abstract principles from the specifics, moving from particular cases to broader insights.",
-        "jog": "The response interprets the intent and carries it out directly without asking follow-up questions.",
-        "ong": "The response identifies concrete actions to take, then extends those actions to related situations or next steps.",
-        "rog": "The response examines the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
+        "bog": "The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts.",
+        "dig": "The response modifies the task to examine concrete details and grounding examples, focusing on specifics rather than abstractions.",
+        "dip bog": "The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and extensions.",
+        "dip ong": "The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations.",
+        "dip rog": "The response modifies the task to examine concrete details and grounded examples, then reflects on their structural patterns and what they reveal.",
+        "fig": "The response modifies the task to alternate between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal).",
+        "fip bog": "The response modifies the task to move between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts.",
+        "fip ong": "The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations.",
+        "fip rog": "The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
+        "fly bog": "The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them to related contexts.",
+        "fly ong": "The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts.",
+        "fly rog": "The response modifies the task to identify abstract patterns and general principles, then examines their structural relationships and reflect on their implications.",
+        "fog": "The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights.",
+        "jog": "The response modifies the task to interpret the intent and carry it out directly without asking follow-up questions.",
+        "ong": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps.",
+        "rog": "The response modifies the task to examine the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
       },
       "form": {
         "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
@@ -1468,7 +1468,7 @@
     }
   },
   "checksums": {
-    "axes": "fcee037bb78e4c1ed365fd7d1a829fc48c76bb1d87d74636400ad6e2f6564dd6",
+    "axes": "5bf2d8ca39a3a3c447449a644ef21f4288ab53f1cca75123d7eb8363a8dcbad9",
     "static_prompts": "3bea1d9a46e494449f99df07f995c0f430eb481680ff0ca9332a4a901975159f",
     "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",

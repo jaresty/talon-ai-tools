@@ -232,92 +232,100 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'adr': 'The response
                       'happened, interprets why it matters, and proposes concrete next steps.'},
  'method': {'actors': 'The response enhances the task by identifying and centering people, roles, '
                       'or agents involved in the system.',
-            'adversarial': 'The response runs a constructive stress-test, systematically searching '
-                           'for weaknesses, edge cases, counterexamples, failure modes, and '
-                           'unstated assumptions in order to improve the work.',
+            'adversarial': 'The response enhances the task by running a constructive stress-test, '
+                           'systematically searching for weaknesses, edge cases, counterexamples, '
+                           'failure modes, and unstated assumptions.',
             'analysis': 'The response enhances the task by describing and structuring the '
                         'situation, focusing on understanding before proposing actions or '
                         'recommendations.',
-            'boom': 'The response explores behaviour toward extremes of scale or intensity, '
-                    'examining what breaks, dominates, or vanishes.',
-            'constraints': 'The response identifies the system’s primary constraints, analyses the '
-                           'behaviours they enforce, and frames ways to balance or relieve them.',
+            'boom': 'The response enhances the task by exploring behaviour toward extremes of '
+                    'scale or intensity, examining what breaks, dominates, or vanishes.',
+            'constraints': "The response enhances the task by identifying the system's primary "
+                           'constraints, analyzing the behaviours they enforce, and framing ways '
+                           'to balance or relieve them.',
             'converge': 'The response enhances the task by systematically narrowing from broad '
                         'exploration to focused recommendations, weighing trade-offs explicitly as '
                         'options are filtered.',
-            'depends': 'The response traces dependency relationships, identifying what depends on '
-                       'what and how changes propagate through the system.',
-            'diagnose': 'The response seeks likely causes of problems first, narrowing hypotheses '
-                        'through evidence, falsification pressure, and targeted checks before '
-                        'proposing fixes or changes.',
+            'depends': 'The response enhances the task by tracing dependency relationships, '
+                       'identifying what depends on what and how changes propagate through the '
+                       'system.',
+            'diagnose': 'The response enhances the task by seeking likely causes of problems '
+                        'first, narrowing hypotheses through evidence, falsification pressure, and '
+                        'targeted checks before proposing fixes or changes.',
             'dimension': 'The response enhances the task by exploring multiple dimensions or axes '
                          'of analysis, making implicit factors explicit and examining how they '
                          'interact.',
-            'domains': 'The response identifies bounded contexts, domain boundaries, and '
-                       'capabilities.',
-            'dynamics': 'The response concentrates on how the system’s behaviour and state evolve '
-                        'over time, including transitions and feedback.',
-            'effects': 'The response traces second- and third-order effects and summarises their '
-                       'downstream consequences.',
+            'domains': 'The response enhances the task by identifying bounded contexts, domain '
+                       'boundaries, and capabilities.',
+            'dynamics': "The response enhances the task by concentrating on how the system's "
+                        'behaviour and state evolve over time, including transitions and feedback.',
+            'effects': 'The response enhances the task by tracing second- and third-order effects '
+                       'and summarizing their downstream consequences.',
             'experimental': 'The response enhances the task by proposing concrete experiments or '
                             'tests, outlining how each would run, describing expected outcomes, '
                             'and explaining how results would update the hypotheses.',
             'explore': 'The response enhances the task by opening and surveying the option space, '
                        'generating and comparing multiple plausible approaches without prematurely '
                        'committing to a single answer.',
-            'flow': 'The response explains step-by-step progression over time or sequence, showing '
-                    'how control, data, or narrative moves through the system.',
-            'grove': 'The response examines accumulation, decay, or rate-of-change effects and how '
-                     'small contributions compound over time.',
-            'incentives': 'The response analyses explicit and implicit incentive structures and '
-                          'how they drive behaviour.',
-            'interfaces': 'The response concentrates on external interfaces, contracts, and '
-                          'boundaries between components or systems.',
+            'flow': 'The response enhances the task by explaining step-by-step progression over '
+                    'time or sequence, showing how control, data, or narrative moves through the '
+                    'system.',
+            'grove': 'The response enhances the task by examining accumulation, decay, or '
+                     'rate-of-change effects and how small contributions compound over time.',
+            'incentives': 'The response enhances the task by analyzing explicit and implicit '
+                          'incentive structures and how they drive behaviour.',
+            'interfaces': 'The response enhances the task by concentrating on external interfaces, '
+                          'contracts, and boundaries between components or systems.',
             'inversion': 'The response enhances the task by beginning from undesirable or '
                          'catastrophic outcomes, asking what would produce or amplify them, then '
                          'working backward to avoid, mitigate, or design around those paths.',
-            'jobs': 'The response analyses Jobs To Be Done—the outcomes users want to achieve and '
-                    'the forces shaping their choices.',
+            'jobs': 'The response enhances the task by analyzing Jobs To Be Done—the outcomes '
+                    'users want to achieve and the forces shaping their choices.',
             'mapping': 'The response enhances the task by surfacing elements, relationships, and '
                        'structure, then organising them into a coherent spatial map rather than a '
                        'linear narrative.',
-            'meld': 'The response reasons about combinations, overlaps, balances, and constraints '
-                    'between elements.',
-            'melody': 'The response analyses coordination across components, time, or teams, '
-                      'including coupling, synchronization, and change alignment.',
-            'models': 'The response explicitly identifies and names relevant mental models, '
-                      'explains why they apply (or fail), and compares or combines them.',
-            'motifs': 'The response identifies recurring patterns, themes, or clusters and '
-                      'explains why they matter.',
-            'objectivity': 'The response distinguishes objective facts from subjective opinions '
-                           'and supports claims with evidence.',
-            'operations': 'The response identifies operations research or management science '
-                          'concepts that frame the situation.',
-            'order': 'The response applies abstract structural reasoning such as hierarchy, '
-                     'dominance, or recurrence.',
-            'origin': 'The response uncovers how the subject arose, why it looks this way now, and '
-                      'how past decisions shaped the present state.',
-            'prioritize': 'The response assesses and orders items by importance or impact, making '
-                          'the ranking and rationale explicit.',
-            'probability': 'The response applies probability or statistical reasoning to '
-                           'characterise uncertainty and likely outcomes.',
-            'product': 'The response examines the subject through a product lens—features, user '
-                       'needs, and value propositions.',
-            'resilience': 'The response concentrates on how the system behaves under stress and '
-                          'uncertainty—fragility vs robustness, margin of safety, and tail risks.',
-            'rigor': 'The response relies on disciplined, well-justified reasoning and makes its '
-                     'logic explicit.',
-            'risks': 'The response focuses on potential problems, failure modes, or negative '
-                     'outcomes and their likelihood or severity.',
-            'roles': 'The response focuses on responsibilities, ownership, and collaboration '
-                     'patterns.',
+            'meld': 'The response enhances the task by reasoning about combinations, overlaps, '
+                    'balances, and constraints between elements.',
+            'melody': 'The response enhances the task by analyzing coordination across components, '
+                      'time, or teams, including coupling, synchronization, and change alignment.',
+            'mod': 'The response enhances the task by applying modulo-style reasoning—equivalence '
+                   'classes, cyclic patterns, quotient structures, or periodic behavior that '
+                   'repeats with a defined period or wraps around boundaries.',
+            'models': 'The response enhances the task by explicitly identifying and naming '
+                      'relevant mental models, explaining why they apply (or fail), and comparing '
+                      'or combining them.',
+            'motifs': 'The response enhances the task by identifying recurring patterns, themes, '
+                      'or clusters and explaining why they matter.',
+            'objectivity': 'The response enhances the task by distinguishing objective facts from '
+                           'subjective opinions and supporting claims with evidence.',
+            'operations': 'The response enhances the task by identifying operations research or '
+                          'management science concepts that frame the situation.',
+            'order': 'The response enhances the task by applying abstract structural reasoning '
+                     'such as hierarchy, dominance, or recurrence.',
+            'origin': 'The response enhances the task by uncovering how the subject arose, why it '
+                      'looks this way now, and how past decisions shaped the present state.',
+            'prioritize': 'The response enhances the task by assessing and ordering items by '
+                          'importance or impact, making the ranking and rationale explicit.',
+            'probability': 'The response enhances the task by applying probability or statistical '
+                           'reasoning to characterize uncertainty and likely outcomes.',
+            'product': 'The response enhances the task by examining the subject through a product '
+                       'lens—features, user needs, and value propositions.',
+            'resilience': 'The response enhances the task by concentrating on how the system '
+                          'behaves under stress and uncertainty—fragility vs robustness, margin of '
+                          'safety, and tail risks.',
+            'rigor': 'The response enhances the task by relying on disciplined, well-justified '
+                     'reasoning and making its logic explicit.',
+            'risks': 'The response enhances the task by focusing on potential problems, failure '
+                     'modes, or negative outcomes and their likelihood or severity.',
+            'roles': 'The response enhances the task by focusing on responsibilities, ownership, '
+                     'and collaboration patterns.',
             'simulation': 'The response enhances the task by running explicit thought experiments '
                           'or scenario walkthroughs that project evolution over time, surfacing '
                           'feedback loops, bottlenecks, tipping points, and emergent effects.',
             'systemic': 'The response enhances the task by analyzing the subject as a whole '
                         'system, identifying components, boundaries, flows, and feedback loops.',
-            'unknowns': 'The response identifies critical unknown unknowns and explores how they '
-                        'might impact outcomes.'},
+            'unknowns': 'The response enhances the task by identifying critical unknown unknowns '
+                        'and exploring how they might impact outcomes.'},
  'scope': {'act': 'The response focuses on what is being done or intended—tasks, activities, '
                   'operations, or work to be performed—rather than structure or meaning.',
            'fail': 'The response focuses on breakdowns, stress, uncertainty, or limits—risks, edge '

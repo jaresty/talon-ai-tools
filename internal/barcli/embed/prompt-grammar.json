@@ -64,7 +64,6 @@
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
-        "plain": "The response uses plain prose with natural paragraphs and sentences, imposing no additional structure such as bullets, tables, or code blocks.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation.",
@@ -197,7 +196,6 @@
         "ladder",
         "log",
         "merge",
-        "plain",
         "questions",
         "recipe",
         "rewrite",
@@ -778,7 +776,6 @@
         "ladder": "ladder",
         "log": "log",
         "merge": "merge",
-        "plain": "axis-form-plain",
         "questions": "questions",
         "recipe": "recipe",
         "rewrite": "rewrite",
@@ -1019,7 +1016,6 @@
         "form=ladder": "form-ladder",
         "form=log": "form-log",
         "form=merge": "form-merge",
-        "form=plain": "form-plain",
         "form=questions": "form-questions",
         "form=recipe": "form-recipe",
         "form=rewrite": "form-rewrite",
@@ -1260,7 +1256,6 @@
       "form=ladder": "form-ladder",
       "form=log": "form-log",
       "form=merge": "form-merge",
-      "form=plain": "form-plain",
       "form=questions": "form-questions",
       "form=recipe": "form-recipe",
       "form=rewrite": "form-rewrite",
@@ -1372,7 +1367,7 @@
       "persona=teach_junior_dev": "persona-teach_junior_dev",
       "persuade": "persuade",
       "pick": "pick",
-      "plain": "axis-form-plain",
+      "plain": "plain",
       "plan": "plan",
       "presenterm": "presenterm",
       "prioritize": "prioritize",
@@ -1468,10 +1463,10 @@
     }
   },
   "checksums": {
-    "axes": "5bf2d8ca39a3a3c447449a644ef21f4288ab53f1cca75123d7eb8363a8dcbad9",
+    "axes": "336a22701bcfa3866502d69ab30875912f70052dee09a6d41f8706b1d35bc074",
     "static_prompts": "3bea1d9a46e494449f99df07f995c0f430eb481680ff0ca9332a4a901975159f",
     "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "25f5b307d21b6d9729da653bb4b18fee5a0e7c760a4cfdca72100363967aa33b"
+    "slugs": "75d406fcc70d202519d7c901cecc428efa31453989f06b7770a03009604802ea"
   }
 }

@@ -95,27 +95,38 @@ Make two structural changes to eliminate output format conflicts:
 
 **Key principle:** Form describes *how ideas are organized inside the response*. Channel describes *what wrapper or format the response is delivered in*.
 
-### 2. Enforce Maximum One Channel Token Per Prompt
+### 2. Channel is Already Single-Select (No Implementation Needed)
 
-**Add validation rule:** Maximum one channel token may be selected in any prompt.
+**Discovery:** Channel (and form) are already enforced as single-select in `internal/barcli/build.go` lines 348-352:
 
-**Rationale:**
+```go
+case "channel":
+    if len(s.channel) > 0 {
+        return s.errorf(errorConflict, "channel accepts a single token")
+    }
+    s.channel = append(s.channel, token)
+```
+
+**Validation:**
+```bash
+$ ./bar build probe adr sync
+error: channel accepts a single token
+```
+
+**This means:**
+- Channel has been single-select since its implementation
+- The completion system (`completion.go` line 198) treats it as boolean: `channel bool`
+- Shuffle (`shuffle.go` line 73) picks ONE token per stage
+- Build validates and rejects multiple channel tokens
+
+**Rationale for single-select design:**
 - Output-exclusive formats are mutually incompatible by definition
 - "Output as shellscript" + "output as slide deck" = impossible requirement
 - "ADR document structure" + "session plan structure" = conflicting structures
-- Platform wrappers (slack, jira) can be output-exclusive in practice (HTML conflicts with Slack Markdown)
+- Platform wrappers (slack, jira) conflict with format tokens (e.g., `html` + `slack`)
 
-**Implementation:**
-- Validation level: **Error** (block prompt generation)
-- Message: "Cannot combine multiple channel formats: {token1} and {token2} specify different output formats"
-- Suggestion: "Choose one channel format, or omit channel to use default formatting"
-
-**Scope:** This validation applies to ALL channel tokens, since:
-- All output formats are mutually exclusive by nature
-- Platform wrappers often conflict with format tokens (e.g., `html` + `slack`)
-- Even flexible wrappers should be singular for clarity (one delivery context per prompt)
-
-**Exception:** None. The channel axis becomes a "choose your ONE output format/delivery context" selector.
+**Phase 2 originally planned: Add channel validation**
+**Phase 2 actual outcome: Validation already exists, no implementation needed**
 
 ### 3. Document Directional as Task Modifiers
 
@@ -150,42 +161,29 @@ This aligns directional with method tokens (both enhance/modify tasks) while mai
 - `lib/axisConfig.py` - Remove plain from form dict
 - Generated files will be updated by `make axis-regenerate-apply`
 
-### Phase 2: Add Channel Mutual Exclusion Validation
+### Phase 2: Verify Python Consistency with Single-Select Channel
 
-**Action:** Add validation rule to bar build command that enforces maximum one channel token.
+**Action:** Review Python code to ensure it respects the existing single-select channel design.
 
-**Validation logic:**
-```go
-// In internal/barcli/build.go or validation.go
-func validateChannelExclusivity(tokens []Token) error {
-    channelTokens := filterByAxis(tokens, "channel")
-    if len(channelTokens) > 1 {
-        names := tokenNames(channelTokens)
-        return fmt.Errorf(
-            "Cannot combine multiple channel formats: %s. Choose one channel format, or omit channel to use default formatting.",
-            strings.Join(names, ", "),
-        )
-    }
-    return nil
-}
+**Python files to check:**
+- `lib/modelPatternGUI.py` - Recipe parsing (line 1261: `channel_tokens: list[str] = []`)
+- `lib/talonSettings.py` - Axis values filtering
+- Any validation or prompt building logic
+
+**Verification:**
+```python
+# Check if Python allows multiple channel tokens:
+# In modelPatternGUI.py _parse_bar_style_recipe():
+# channel_tokens: list[str] = []  # Can hold multiple!
 ```
 
-**When to validate:**
-- During `bar build` before prompt generation
-- During `bar shuffle` (should still generate, but flag conflict in output)
-- In TUI before allowing prompt confirmation
+**Action items:**
+1. Check if Python code allows multiple channel tokens in a recipe
+2. If yes, add validation or modify to enforce single-select
+3. Ensure Talon-triggered prompts behave same as `bar build` CLI
+4. Test that saying "model <task> <channel1> <channel2>" triggers error
 
-**Error handling:**
-- Exit with error code 1
-- Display clear error message
-- Suggest: "Use `bar build <task> <constraints> <channel-token>` with only one channel"
-
-**Python integration consistency:**
-- Review Python system prompt generation in `lib/modelPatternGUI.py` and related files
-- Ensure Python code respects channel exclusivity when building prompts
-- Verify Python system prompts match Go implementation semantics
-- Update Python validation if present, or add validation to match Go behavior
-- Test that Talon-triggered prompts enforce same validation as bar CLI
+**Goal:** Ensure Python respects Go's single-select channel validation.
 
 ### Phase 3: Update Documentation
 
@@ -266,7 +264,8 @@ See ADR 0092 for complete analysis and resolution.
 1. **Complete elimination of format conflicts**
    - All output formats in one axis enables simple validation
    - Cross-axis conflicts impossible (form has no formats, channel is singular)
-   - Intra-axis conflicts prevented by "max 1 channel token" rule
+   - Intra-axis conflicts already prevented by existing single-select enforcement
+   - **Bonus:** Validation existed all along, just needed to be documented
 
 2. **Clear axis semantics**
    - Form = content structure (how ideas are organized)
@@ -274,15 +273,17 @@ See ADR 0092 for complete analysis and resolution.
    - Directional = navigation pattern (how to move through the response)
    - No semantic overlap or ambiguity
 
-3. **Simple validation rule**
-   - "Maximum one channel token" is easy to understand and implement
-   - Clear error messages guide users to fix issues
-   - Validation can run early (before expensive prompt generation)
+3. **Simple validation rule (already implemented)**
+   - "Maximum one channel token" already enforced in build.go since original implementation
+   - Clear error messages: "channel accepts a single token"
+   - Validation runs early (before prompt generation)
+   - No new code needed!
 
 4. **Evidence-based design**
    - Grounded in two shuffle analyses (40 prompts evaluated)
    - Addresses 100% of format conflict cases found
    - Expected improvement: 25% conflict rate → <5% in next evaluation
+   - Single-select enforcement already working
 
 5. **Consistent modifier pattern**
    - Method tokens = task modifiers (analytical techniques)
@@ -388,35 +389,33 @@ Compare to post-ADR 0091 baseline (seeds 0021-0040):
 
 ## Implementation Order
 
-1. **Day 1**: Phase 1 - Remove plain from form axis
+1. **Day 1**: Phase 1 - Remove plain from form axis ✅ **COMPLETE**
    - Edit `lib/axisConfig.py`
    - Run `make axis-regenerate-apply`
    - Run `make ci-guardrails` to verify tests pass
+   - Commit: d2d689c "Implement ADR 0092 Phase 1"
+
+2. **Day 2**: Phase 2 - Verify Python consistency with single-select channel
+   - Review `lib/modelPatternGUI.py` recipe parsing
+   - Check if Python allows multiple channel tokens
+   - Add validation if needed to match Go behavior
+   - Test Talon voice commands respect single-select
    - Commit changes
 
-2. **Day 2-3**: Phase 2 - Add channel validation to Go code
-   - Implement `validateChannelExclusivity` function
-   - Add to build validation pipeline
-   - Add to TUI validation
-   - Write unit tests
-   - Review Python system prompt generation for consistency
-   - Ensure Python code respects channel exclusivity
-   - Commit changes
-
-3. **Day 4**: Phase 3 - Update documentation
+3. **Day 3**: Phase 3 - Update documentation
    - Update README with form/channel distinction
-   - Add validation error examples
+   - Document that channel is already single-select
    - Document directional as task modifiers
    - Add composition examples
    - Commit changes
 
-4. **Day 5**: Phase 4 - Update ADR 0091
+4. **Day 4**: Phase 4 - Update ADR 0091
    - Add post-evaluation findings section
    - Link to ADR 0092
    - Commit changes
 
-5. **Day 6-7**: Generate and evaluate seeds 0041-0060
-   - Generate new corpus with validation enabled
+5. **Day 5-6**: Generate and evaluate seeds 0041-0060
+   - Generate new corpus (channel is already single-select)
    - Evaluate using same rubric
    - Measure improvement against targets
    - Document findings

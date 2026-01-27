@@ -902,8 +902,10 @@ func completeRecipe(grammar *Grammar, catalog completionCatalog, shell string, w
 		return filterSuggestionsByPrefix(grammar, overrideSuggestions, prefix), nil
 	}
 
-	if personaSuggestions := buildPersonaSuggestions(grammar, catalog, state); len(personaSuggestions) > 0 {
-		appendSection("persona", "persona (Why/Who)", orderPersonaIntent, personaSuggestions)
+	if !state.static && !state.staticClosed {
+		if personaSuggestions := buildPersonaSuggestions(grammar, catalog, state); len(personaSuggestions) > 0 {
+			appendSection("persona", "persona (Why/Who)", orderPersonaIntent, personaSuggestions)
+		}
 	}
 
 	if !state.static && !state.staticClosed {

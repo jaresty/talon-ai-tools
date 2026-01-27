@@ -134,18 +134,10 @@ if bootstrap is not None:
                 )
 
         def test_bar_internal_complete_uses_slug_values(self) -> None:
+            # Test that persona suggestions use slug values (before static prompt phase)
             tokens = [
                 "bar",
                 "build",
-                "todo",
-                "full",
-                "focus",
-                "system",
-                "steps",
-                "analysis",
-                "checklist",
-                "slack",
-                "fog",
                 "",
             ]
             index = str(len(tokens) - 1)
@@ -172,7 +164,7 @@ if bootstrap is not None:
             self.assertIn(
                 "as-teacher",
                 values,
-                "persona voice suggestions should emit slug values without trailing space",
+                "persona voice suggestions should emit slug values without trailing space (before static prompt)",
             )
 
         def test_bar_internal_complete_emits_channel_and_directional(self) -> None:

@@ -230,37 +230,41 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'adr': 'The response
                      'evolution from genesis to commodity.',
           'wasinawa': 'The response applies a What–So What–Now What reflection: it describes what '
                       'happened, interprets why it matters, and proposes concrete next steps.'},
- 'method': {'actors': 'The response identifies people, roles, or agents involved in the system.',
+ 'method': {'actors': 'The response enhances the task by identifying and centering people, roles, '
+                      'or agents involved in the system.',
             'adversarial': 'The response runs a constructive stress-test, systematically searching '
                            'for weaknesses, edge cases, counterexamples, failure modes, and '
                            'unstated assumptions in order to improve the work.',
-            'analysis': 'The response describes and structures the situation without proposing '
-                        'specific actions or recommendations.',
+            'analysis': 'The response enhances the task by describing and structuring the '
+                        'situation, focusing on understanding before proposing actions or '
+                        'recommendations.',
             'boom': 'The response explores behaviour toward extremes of scale or intensity, '
                     'examining what breaks, dominates, or vanishes.',
             'constraints': 'The response identifies the system’s primary constraints, analyses the '
                            'behaviours they enforce, and frames ways to balance or relieve them.',
-            'converge': 'The response narrows the field, weighs trade-offs, and arrives at a small '
-                        'set of recommendations or a single decision.',
+            'converge': 'The response enhances the task by systematically narrowing from broad '
+                        'exploration to focused recommendations, weighing trade-offs explicitly as '
+                        'options are filtered.',
             'depends': 'The response traces dependency relationships, identifying what depends on '
                        'what and how changes propagate through the system.',
             'diagnose': 'The response seeks likely causes of problems first, narrowing hypotheses '
                         'through evidence, falsification pressure, and targeted checks before '
                         'proposing fixes or changes.',
-            'dimension': 'The response expands conceptual dimensions of the subject and examines '
-                         'each axis to expose structure.',
+            'dimension': 'The response enhances the task by exploring multiple dimensions or axes '
+                         'of analysis, making implicit factors explicit and examining how they '
+                         'interact.',
             'domains': 'The response identifies bounded contexts, domain boundaries, and '
                        'capabilities.',
             'dynamics': 'The response concentrates on how the system’s behaviour and state evolve '
                         'over time, including transitions and feedback.',
             'effects': 'The response traces second- and third-order effects and summarises their '
                        'downstream consequences.',
-            'experimental': 'The response proposes concrete experiments or tests, outlines how '
-                            'each would run, describes expected outcomes, and explains how results '
-                            'would update the hypotheses.',
-            'explore': 'The response opens and surveys the option space by generating and '
-                       'comparing multiple plausible approaches without prematurely committing to '
-                       'a single answer.',
+            'experimental': 'The response enhances the task by proposing concrete experiments or '
+                            'tests, outlining how each would run, describing expected outcomes, '
+                            'and explaining how results would update the hypotheses.',
+            'explore': 'The response enhances the task by opening and surveying the option space, '
+                       'generating and comparing multiple plausible approaches without prematurely '
+                       'committing to a single answer.',
             'flow': 'The response explains step-by-step progression over time or sequence, showing '
                     'how control, data, or narrative moves through the system.',
             'grove': 'The response examines accumulation, decay, or rate-of-change effects and how '
@@ -269,13 +273,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'adr': 'The response
                           'how they drive behaviour.',
             'interfaces': 'The response concentrates on external interfaces, contracts, and '
                           'boundaries between components or systems.',
-            'inversion': 'The response begins from undesirable or catastrophic outcomes, asks what '
-                         'would reliably produce or amplify those outcomes, and works backward to '
-                         'avoid, mitigate, or design around those paths.',
+            'inversion': 'The response enhances the task by beginning from undesirable or '
+                         'catastrophic outcomes, asking what would produce or amplify them, then '
+                         'working backward to avoid, mitigate, or design around those paths.',
             'jobs': 'The response analyses Jobs To Be Done—the outcomes users want to achieve and '
                     'the forces shaping their choices.',
-            'mapping': 'The response surfaces elements, relationships, and structure, organising '
-                       'them into a coherent map rather than a linear narrative.',
+            'mapping': 'The response enhances the task by surfacing elements, relationships, and '
+                       'structure, then organising them into a coherent spatial map rather than a '
+                       'linear narrative.',
             'meld': 'The response reasons about combinations, overlaps, balances, and constraints '
                     'between elements.',
             'melody': 'The response analyses coordination across components, time, or teams, '
@@ -306,11 +311,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'adr': 'The response
                      'outcomes and their likelihood or severity.',
             'roles': 'The response focuses on responsibilities, ownership, and collaboration '
                      'patterns.',
-            'simulation': 'The response uses explicit thought experiments or scenario walkthroughs '
-                          'to project how the situation might evolve over time, including feedback '
-                          'loops, bottlenecks, tipping points, and emergent effects.',
-            'systemic': 'The response analyses the subject as a whole system, including '
-                        'components, boundaries, flows, and feedback loops.',
+            'simulation': 'The response enhances the task by running explicit thought experiments '
+                          'or scenario walkthroughs that project evolution over time, surfacing '
+                          'feedback loops, bottlenecks, tipping points, and emergent effects.',
+            'systemic': 'The response enhances the task by analyzing the subject as a whole '
+                        'system, identifying components, boundaries, flows, and feedback loops.',
             'unknowns': 'The response identifies critical unknown unknowns and explores how they '
                         'might impact outcomes.'},
  'scope': {'act': 'The response focuses on what is being done or intended—tasks, activities, '

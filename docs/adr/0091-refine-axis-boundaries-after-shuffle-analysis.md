@@ -261,6 +261,77 @@ Make three architectural refinements based on shuffle analysis findings:
    - Response: This is acceptable tradeoff for expressiveness
    - Philosophy: Trust users to know their context
 
+## Post-Evaluation Findings (ADR 0092)
+
+**Date**: 2026-01-27
+**Evaluation corpus**: Seeds 0021-0040 (post-refactor shuffle analysis)
+
+### Summary
+
+The form/channel split and method reframing produced **significant improvements** but revealed a deeper issue with output format consolidation, addressed in **ADR 0092: Consolidate All Output Formats in Channel Axis**.
+
+### Results (Seeds 0021-0040 vs Baseline 0001-0020)
+
+**Metrics improved:**
+- Overall quality: 4.04 → 4.16 (+0.12)
+- Excellent prompts: 35% → 55% (+20 percentage points)
+- Combination harmony: 3.75 → 4.05 (+0.30)
+- Persona composition: Fully resolved (embracing flexibility worked)
+- Method reframing: Measurably clearer (fewer task overlap issues)
+
+**Remaining issue identified:**
+- **Format conflicts**: 25% of corpus (5/20 prompts) still exhibited output format conflicts
+- **Root cause**: Form/channel split helped but didn't fully resolve output exclusivity issues
+
+### Format Conflict Examples (Seeds 0028, 0034, 0036, 0039, 0040)
+
+1. **Seed 0028**: `code` form + categorization needs prose
+2. **Seed 0034**: `adr` + `sync` channels (both complete structural formats)
+3. **Seed 0036**: `html` form + `slack` channel (HTML vs Slack Markdown)
+4. **Seed 0039**: `shellscript` form + `presenterm` channel (shell script vs slides)
+5. **Seed 0040**: `plain` form + `presenterm` channel (prose walls vs slide structure)
+
+### Critical Insight
+
+**The problem is NOT form vs channel taxonomy.**
+**The problem IS output exclusivity.**
+
+Tokens specifying "ONLY output format X" (e.g., `shellscript`, `diagram`, `presenterm`) fundamentally conflict with tokens specifying "ONLY format Y", **regardless of which axis they're in**.
+
+### ADR 0092 Resolution
+
+**Decision**: Consolidate ALL output-exclusive formats in the channel axis and enforce maximum one channel token per prompt.
+
+**Key changes:**
+1. Move `plain` from form to channel (completing migration of all formats to one axis)
+2. Document that channel is already single-select (enforced by Talon grammar + Go build validation)
+3. Update Python system prompt to match Go's ADR 0089 SUBJECT isolation defense (deferred to ADR 0093)
+
+**Expected impact (seeds 0041-0060):**
+- Format conflicts: 25% → <5%
+- Output-exclusive conflicts: 25% → 0% (eliminated by validation)
+- Overall quality: 4.16 → ≥4.30 (target +0.14 improvement)
+
+**Status**: ADR 0092 Phases 1-4 complete (plain moved, validation documented, README updated, ADR 0091 linked)
+
+### Lessons Learned
+
+1. **Form/channel split was directionally correct** but incomplete
+   - Moving output formats to channel was right decision
+   - Needed to move ALL formats, not just most
+   - Single-select enforcement prevents residual conflicts
+
+2. **Output exclusivity is fundamental architectural constraint**
+   - Cannot have "output as X" + "output as Y" in same prompt
+   - Validation must enforce this at grammar/build level
+
+3. **Method reframing and persona flexibility were successful**
+   - No method overlap issues in seeds 0021-0040
+   - Persona composition flexibility scored well
+   - These changes validated and complete
+
+See **ADR 0092** for complete analysis and resolution.
+
 ## Validation Criteria
 
 ### Success Metrics

@@ -3,11 +3,19 @@
   "axes": {
     "definitions": {
       "channel": {
+        "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control.",
+        "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
+        "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
+        "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation.",
+        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+        "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks.",
         "presenterm": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: <descriptive title based on the input with colons encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"<!-- end_slide -->\", \"<!-- pause -->\", \"<!-- column_layout: [7, 3] -->\", \"<!-- column: 0 -->\", \"<!-- reset_layout -->\", and \"<!-- jump_to_middle -->\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image. The response emits \"<!-- snippet_output: name -->\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"<\", \"#62;\" for \">\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"&\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies.",
         "remote": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
+        "shellscript": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
+        "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
       },
       "completeness": {
@@ -38,25 +46,20 @@
         "rog": "The response examines the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
       },
       "form": {
-        "actions": "The response stays within the selected target and focuses only on concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
-        "activities": "The response lists concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
-        "adr": "The response takes the shape of an Architecture Decision Record (ADR) with sections for context, decision, and consequences, written in a concise document style.",
-        "bug": "The response appears as a structured bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasising concise, testable details.",
-        "bullets": "The response presents the main answer as concise bullet points only, avoiding long paragraphs.",
-        "cards": "The response presents the main answer as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
-        "case": "The response builds the case before the conclusion by laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation that addresses objections and constraints.",
-        "checklist": "The response appears as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
-        "cocreate": "The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
-        "code": "The response consists only of code or markup for the main answer, with no surrounding natural-language explanation.",
-        "codetour": "The response is a valid VS Code CodeTour `.tour` JSON document (schema-compatible) that uses steps and fields appropriate to the task and omits extra prose or surrounding explanation.",
-        "commit": "The response is formatted as a conventional commit message with a short type or scope line and an optional concise body.",
-        "contextualise": "The response adds or reshapes context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
-        "direct": "The response leads with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
-        "facilitate": "The response facilitates the session by framing the goal, proposing structure, managing turns, and keeping participation balanced rather than doing the work solo.",
-        "faq": "The response adopts an FAQ layout: clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
-        "formats": "The response focuses on document types, writing formats, or structural templates and their suitability.",
-        "gherkin": "The response outputs only Gherkin, using Jira markup where appropriate and omitting surrounding explanation.",
-        "html": "The response consists solely of semantic HTML for the answer, with no surrounding prose.",
+        "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
+        "activities": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+        "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details.",
+        "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
+        "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
+        "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation that addresses objections and constraints.",
+        "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
+        "cocreate": "The response structures interaction collaboratively, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
+        "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
+        "contextualise": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
+        "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
+        "facilitate": "The response structures interaction by framing the goal, proposing structure, managing turns, and keeping participation balanced rather than doing the work solo.",
+        "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
+        "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
@@ -66,12 +69,10 @@
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts.",
-        "shellscript": "The response is delivered as a shell script, focusing on correct, executable shell code rather than prose.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
         "steps": "The response solves the problem step by step, briefly labelling and explaining each step before presenting the final answer.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
-        "svg": "The response consists solely of SVG markup for the answer, with no surrounding prose, and remains minimal and valid for copy/paste into an `.svg` file.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
@@ -82,45 +83,46 @@
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
       },
       "method": {
-        "actors": "The response identifies people, roles, or agents involved in the system.",
-        "adversarial": "The response runs a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions in order to improve the work.",
-        "analysis": "The response describes and structures the situation without proposing specific actions or recommendations.",
-        "boom": "The response explores behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
-        "constraints": "The response identifies the system’s primary constraints, analyses the behaviours they enforce, and frames ways to balance or relieve them.",
-        "converge": "The response narrows the field, weighs trade-offs, and arrives at a small set of recommendations or a single decision.",
-        "depends": "The response traces dependency relationships, identifying what depends on what and how changes propagate through the system.",
-        "diagnose": "The response seeks likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
-        "dimension": "The response expands conceptual dimensions of the subject and examines each axis to expose structure.",
-        "domains": "The response identifies bounded contexts, domain boundaries, and capabilities.",
-        "dynamics": "The response concentrates on how the system’s behaviour and state evolve over time, including transitions and feedback.",
-        "effects": "The response traces second- and third-order effects and summarises their downstream consequences.",
-        "experimental": "The response proposes concrete experiments or tests, outlines how each would run, describes expected outcomes, and explains how results would update the hypotheses.",
-        "explore": "The response opens and surveys the option space by generating and comparing multiple plausible approaches without prematurely committing to a single answer.",
-        "flow": "The response explains step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
-        "grove": "The response examines accumulation, decay, or rate-of-change effects and how small contributions compound over time.",
-        "incentives": "The response analyses explicit and implicit incentive structures and how they drive behaviour.",
-        "interfaces": "The response concentrates on external interfaces, contracts, and boundaries between components or systems.",
-        "inversion": "The response begins from undesirable or catastrophic outcomes, asks what would reliably produce or amplify those outcomes, and works backward to avoid, mitigate, or design around those paths.",
-        "jobs": "The response analyses Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
-        "mapping": "The response surfaces elements, relationships, and structure, organising them into a coherent map rather than a linear narrative.",
-        "meld": "The response reasons about combinations, overlaps, balances, and constraints between elements.",
-        "melody": "The response analyses coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
-        "models": "The response explicitly identifies and names relevant mental models, explains why they apply (or fail), and compares or combines them.",
-        "motifs": "The response identifies recurring patterns, themes, or clusters and explains why they matter.",
-        "objectivity": "The response distinguishes objective facts from subjective opinions and supports claims with evidence.",
-        "operations": "The response identifies operations research or management science concepts that frame the situation.",
-        "order": "The response applies abstract structural reasoning such as hierarchy, dominance, or recurrence.",
-        "origin": "The response uncovers how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
-        "prioritize": "The response assesses and orders items by importance or impact, making the ranking and rationale explicit.",
-        "probability": "The response applies probability or statistical reasoning to characterise uncertainty and likely outcomes.",
-        "product": "The response examines the subject through a product lens—features, user needs, and value propositions.",
-        "resilience": "The response concentrates on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
-        "rigor": "The response relies on disciplined, well-justified reasoning and makes its logic explicit.",
-        "risks": "The response focuses on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
-        "roles": "The response focuses on responsibilities, ownership, and collaboration patterns.",
-        "simulation": "The response uses explicit thought experiments or scenario walkthroughs to project how the situation might evolve over time, including feedback loops, bottlenecks, tipping points, and emergent effects.",
-        "systemic": "The response analyses the subject as a whole system, including components, boundaries, flows, and feedback loops.",
-        "unknowns": "The response identifies critical unknown unknowns and explores how they might impact outcomes."
+        "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
+        "adversarial": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions.",
+        "analysis": "The response enhances the task by describing and structuring the situation, focusing on understanding before proposing actions or recommendations.",
+        "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
+        "constraints": "The response enhances the task by identifying the system's primary constraints, analyzing the behaviours they enforce, and framing ways to balance or relieve them.",
+        "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
+        "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
+        "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
+        "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
+        "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
+        "dynamics": "The response enhances the task by concentrating on how the system's behaviour and state evolve over time, including transitions and feedback.",
+        "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
+        "explore": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing to a single answer.",
+        "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
+        "grove": "The response enhances the task by examining accumulation, decay, or rate-of-change effects and how small contributions compound over time.",
+        "incentives": "The response enhances the task by analyzing explicit and implicit incentive structures and how they drive behaviour.",
+        "interfaces": "The response enhances the task by concentrating on external interfaces, contracts, and boundaries between components or systems.",
+        "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
+        "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
+        "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
+        "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
+        "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
+        "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
+        "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
+        "motifs": "The response enhances the task by identifying recurring patterns, themes, or clusters and explaining why they matter.",
+        "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
+        "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+        "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence.",
+        "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
+        "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
+        "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
+        "product": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
+        "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
+        "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
+        "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
+        "roles": "The response enhances the task by focusing on responsibilities, ownership, and collaboration patterns.",
+        "simulation": "The response enhances the task by running explicit thought experiments or scenario walkthroughs that project evolution over time, surfacing feedback loops, bottlenecks, tipping points, and emergent effects.",
+        "systemic": "The response enhances the task by analyzing the subject as a whole system, identifying components, boundaries, flows, and feedback loops.",
+        "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
       },
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—rather than structure or meaning.",
@@ -134,11 +136,19 @@
     },
     "list_tokens": {
       "channel": [
+        "adr",
+        "code",
+        "codetour",
         "diagram",
+        "gherkin",
+        "html",
         "jira",
+        "plain",
         "presenterm",
         "remote",
+        "shellscript",
         "slack",
+        "svg",
         "sync"
       ],
       "completeness": [
@@ -171,23 +181,18 @@
       "form": [
         "actions",
         "activities",
-        "adr",
         "bug",
         "bullets",
         "cards",
         "case",
         "checklist",
         "cocreate",
-        "code",
-        "codetour",
         "commit",
         "contextualise",
         "direct",
         "facilitate",
         "faq",
         "formats",
-        "gherkin",
-        "html",
         "indirect",
         "ladder",
         "log",
@@ -197,12 +202,10 @@
         "recipe",
         "rewrite",
         "scaffold",
-        "shellscript",
         "socratic",
         "spike",
         "steps",
         "story",
-        "svg",
         "table",
         "test",
         "tight",
@@ -236,6 +239,7 @@
         "mapping",
         "meld",
         "melody",
+        "mod",
         "models",
         "motifs",
         "objectivity",
@@ -283,29 +287,18 @@
         },
         {
           "axes": {
-            "completeness": "gist",
-            "method": [
-              "filter"
-            ]
+            "completeness": "gist"
           },
           "description": "The response selects or isolates information already present without introducing new content.",
           "name": "pull"
         },
         {
-          "axes": {
-            "method": [
-              "cluster"
-            ]
-          },
+          "axes": {},
           "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions.",
           "name": "sort"
         },
         {
-          "axes": {
-            "method": [
-              "compare"
-            ]
-          },
+          "axes": {},
           "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
           "name": "diff"
         },
@@ -333,14 +326,7 @@
           "name": "pick"
         },
         {
-          "axes": {
-            "method": [
-              "steps"
-            ],
-            "scope": [
-              "actions"
-            ]
-          },
+          "axes": {},
           "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
           "name": "plan"
         },
@@ -378,8 +364,7 @@
         "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement."
       },
       "diff": {
-        "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
-        "method": "compare"
+        "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims."
       },
       "fix": {
         "completeness": "full",
@@ -394,9 +379,7 @@
         "method": "converge"
       },
       "plan": {
-        "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
-        "method": "steps",
-        "scope": "actions"
+        "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order."
       },
       "probe": {
         "description": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
@@ -404,15 +387,13 @@
       },
       "pull": {
         "completeness": "gist",
-        "description": "The response selects or isolates information already present without introducing new content.",
-        "method": "filter"
+        "description": "The response selects or isolates information already present without introducing new content."
       },
       "show": {
         "description": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction."
       },
       "sort": {
-        "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions.",
-        "method": "cluster"
+        "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions."
       }
     },
     "descriptions": {
@@ -736,11 +717,19 @@
   "slugs": {
     "axes": {
       "channel": {
+        "adr": "adr",
+        "code": "code",
+        "codetour": "codetour",
         "diagram": "diagram",
+        "gherkin": "gherkin",
+        "html": "html",
         "jira": "jira",
+        "plain": "plain",
         "presenterm": "presenterm",
         "remote": "remote",
+        "shellscript": "shellscript",
         "slack": "slack",
+        "svg": "svg",
         "sync": "sync"
       },
       "completeness": {
@@ -773,38 +762,31 @@
       "form": {
         "actions": "actions",
         "activities": "activities",
-        "adr": "adr",
         "bug": "bug",
         "bullets": "bullets",
         "cards": "cards",
         "case": "case",
         "checklist": "checklist",
         "cocreate": "cocreate",
-        "code": "code",
-        "codetour": "codetour",
         "commit": "commit",
         "contextualise": "contextualise",
         "direct": "direct",
         "facilitate": "facilitate",
         "faq": "faq",
         "formats": "formats",
-        "gherkin": "gherkin",
-        "html": "html",
         "indirect": "indirect",
         "ladder": "ladder",
         "log": "log",
         "merge": "merge",
-        "plain": "plain",
+        "plain": "axis-form-plain",
         "questions": "questions",
         "recipe": "recipe",
         "rewrite": "rewrite",
         "scaffold": "scaffold",
-        "shellscript": "shellscript",
         "socratic": "socratic",
         "spike": "spike",
         "steps": "steps",
         "story": "story",
-        "svg": "svg",
         "table": "table",
         "test": "test",
         "tight": "tight",
@@ -838,6 +820,7 @@
         "mapping": "mapping",
         "meld": "meld",
         "melody": "melody",
+        "mod": "mod",
         "models": "models",
         "motifs": "motifs",
         "objectivity": "objectivity",
@@ -999,6 +982,7 @@
         "method=mapping": "method-mapping",
         "method=meld": "method-meld",
         "method=melody": "method-melody",
+        "method=mod": "method-mod",
         "method=models": "method-models",
         "method=motifs": "method-motifs",
         "method=objectivity": "method-objectivity",
@@ -1019,23 +1003,18 @@
       "form": {
         "form=actions": "form-actions",
         "form=activities": "form-activities",
-        "form=adr": "form-adr",
         "form=bug": "form-bug",
         "form=bullets": "form-bullets",
         "form=cards": "form-cards",
         "form=case": "form-case",
         "form=checklist": "form-checklist",
         "form=cocreate": "form-cocreate",
-        "form=code": "form-code",
-        "form=codetour": "form-codetour",
         "form=commit": "form-commit",
         "form=contextualise": "form-contextualise",
         "form=direct": "form-direct",
         "form=facilitate": "form-facilitate",
         "form=faq": "form-faq",
         "form=formats": "form-formats",
-        "form=gherkin": "form-gherkin",
-        "form=html": "form-html",
         "form=indirect": "form-indirect",
         "form=ladder": "form-ladder",
         "form=log": "form-log",
@@ -1045,12 +1024,10 @@
         "form=recipe": "form-recipe",
         "form=rewrite": "form-rewrite",
         "form=scaffold": "form-scaffold",
-        "form=shellscript": "form-shellscript",
         "form=socratic": "form-socratic",
         "form=spike": "form-spike",
         "form=steps": "form-steps",
         "form=story": "form-story",
-        "form=svg": "form-svg",
         "form=table": "form-table",
         "form=test": "form-test",
         "form=tight": "form-tight",
@@ -1061,11 +1038,19 @@
         "form=wasinawa": "form-wasinawa"
       },
       "channel": {
+        "channel=adr": "channel-adr",
+        "channel=code": "channel-code",
+        "channel=codetour": "channel-codetour",
         "channel=diagram": "channel-diagram",
+        "channel=gherkin": "channel-gherkin",
+        "channel=html": "channel-html",
         "channel=jira": "channel-jira",
+        "channel=plain": "channel-plain",
         "channel=presenterm": "channel-presenterm",
         "channel=remote": "channel-remote",
+        "channel=shellscript": "channel-shellscript",
         "channel=slack": "channel-slack",
+        "channel=svg": "channel-svg",
         "channel=sync": "channel-sync"
       },
       "directional": {
@@ -1177,11 +1162,19 @@
       "cards": "cards",
       "case": "case",
       "casually": "casually",
+      "channel=adr": "channel-adr",
+      "channel=code": "channel-code",
+      "channel=codetour": "channel-codetour",
       "channel=diagram": "channel-diagram",
+      "channel=gherkin": "channel-gherkin",
+      "channel=html": "channel-html",
       "channel=jira": "channel-jira",
+      "channel=plain": "channel-plain",
       "channel=presenterm": "channel-presenterm",
       "channel=remote": "channel-remote",
+      "channel=shellscript": "channel-shellscript",
       "channel=slack": "channel-slack",
+      "channel=svg": "channel-svg",
       "channel=sync": "channel-sync",
       "chat": "chat",
       "check": "check",
@@ -1251,23 +1244,18 @@
       "fog": "fog",
       "form=actions": "form-actions",
       "form=activities": "form-activities",
-      "form=adr": "form-adr",
       "form=bug": "form-bug",
       "form=bullets": "form-bullets",
       "form=cards": "form-cards",
       "form=case": "form-case",
       "form=checklist": "form-checklist",
       "form=cocreate": "form-cocreate",
-      "form=code": "form-code",
-      "form=codetour": "form-codetour",
       "form=commit": "form-commit",
       "form=contextualise": "form-contextualise",
       "form=direct": "form-direct",
       "form=facilitate": "form-facilitate",
       "form=faq": "form-faq",
       "form=formats": "form-formats",
-      "form=gherkin": "form-gherkin",
-      "form=html": "form-html",
       "form=indirect": "form-indirect",
       "form=ladder": "form-ladder",
       "form=log": "form-log",
@@ -1277,12 +1265,10 @@
       "form=recipe": "form-recipe",
       "form=rewrite": "form-rewrite",
       "form=scaffold": "form-scaffold",
-      "form=shellscript": "form-shellscript",
       "form=socratic": "form-socratic",
       "form=spike": "form-spike",
       "form=steps": "form-steps",
       "form=story": "form-story",
-      "form=svg": "form-svg",
       "form=table": "form-table",
       "form=test": "form-test",
       "form=tight": "form-tight",
@@ -1349,6 +1335,7 @@
       "method=mapping": "method-mapping",
       "method=meld": "method-meld",
       "method=melody": "method-melody",
+      "method=mod": "method-mod",
       "method=models": "method-models",
       "method=motifs": "method-motifs",
       "method=objectivity": "method-objectivity",
@@ -1366,6 +1353,7 @@
       "method=systemic": "method-systemic",
       "method=unknowns": "method-unknowns",
       "minimal": "minimal",
+      "mod": "mod",
       "models": "models",
       "motifs": "motifs",
       "narrow": "narrow",
@@ -1384,7 +1372,7 @@
       "persona=teach_junior_dev": "persona-teach_junior_dev",
       "persuade": "persuade",
       "pick": "pick",
-      "plain": "plain",
+      "plain": "axis-form-plain",
       "plan": "plan",
       "presenterm": "presenterm",
       "prioritize": "prioritize",
@@ -1480,10 +1468,10 @@
     }
   },
   "checksums": {
-    "axes": "a9df7778b1ad0d0a6fc6761ad84ab6f54578aea91edc081fda03c3721cb3d829",
-    "static_prompts": "24b57e407d2b7439d7b9f84330109d6fd0766339adda3a6193187941231351d2",
+    "axes": "fcee037bb78e4c1ed365fd7d1a829fc48c76bb1d87d74636400ad6e2f6564dd6",
+    "static_prompts": "3bea1d9a46e494449f99df07f995c0f430eb481680ff0ca9332a4a901975159f",
     "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "e363416ece3f622700bfa22756c80b12623d5e52190ca0486824dd220eb18991"
+    "slugs": "25f5b307d21b6d9729da653bb4b18fee5a0e7c760a4cfdca72100363967aa33b"
   }
 }

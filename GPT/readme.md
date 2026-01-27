@@ -263,21 +263,53 @@ Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip ro
     - `remote` – emphasise remote-friendly delivery: distributed/online context hints and tooling tips.
     - `sync` – shape the answer as a synchronous/live session plan with agenda/steps/cues.
 
-Directional lenses (required) are a separate axis:
+### Understanding Form and Channel (ADR 0092)
+
+**Form** describes the *internal structure* of your response:
+- How ideas are organized: bullets, prose, questions, steps
+- Pedagogical patterns: scaffold, socratic, walkthrough
+- Analytical structures: visual, table, variants
+
+**Channel** describes the *output format or delivery context*:
+- Complete output formats: code, diagram, gherkin, html, plain, presenterm, shellscript, svg
+- Structural formats: adr (ADR document), sync (session plan)
+- Platform wrappers: slack, jira, remote
+- codetour (VS Code tour format)
+
+**Key distinction:**
+- Form = content structure (how ideas are organized *inside* the response)
+- Channel = output wrapper (what format the response is delivered *in*)
+
+**Examples:**
+- ✅ `bullets` form + `slack` channel = Bullet points in Slack message
+- ✅ `visual` form + `presenterm` channel = Visual diagrams in slides
+- ✅ `scaffold` form + `sync` channel = First-principles teaching workshop
+- ✅ `questions` form (no channel) = Interactive questions in default format
+- ❌ `adr` + `sync` channels = Error: cannot combine ADR document with session plan
+- ❌ `html` + `slack` channels = Error: cannot combine HTML output with Slack format
+
+Directional lenses (required) are a separate axis and act as **task modifiers**:
 
 - Direction (`directionalModifier`): core lenses like `fog`, `fig`, `dig`, `ong`, `rog`, `bog`, plus combined forms (for example, `fly ong`, `fip rog`, `dip bog`).
   - Every `model` command that uses this grammar should include exactly one directional lens token; composite aliases (fly/fip/dip) are advanced and hidden from primary help.
+  - Directional tokens specify **navigation patterns within the response** (e.g., `fig` = abstract ↔ concrete alternation, `ong` = concrete → action → extension, `rog` = structure → reflection).
+  - Like method tokens, directional tokens enhance the task without redefining it. They scored 4-5/5 in shuffle analysis with zero conflicts.
 
 Axis multiplicity:
 
-- Completeness is **single-valued**: you pick at most one completeness token per call.
-- Scope and method are **multi-valued** tag sets; form and channel are single-valued:
+- **Completeness** is single-valued: you pick at most one completeness token per call.
+- **Scope and method** are multi-valued tag sets with soft caps:
   - You can speak more than one modifier on these axes in a single `model` command.
-  - Under the hood, tokens are normalised into sets with small soft caps:
-    - Scope: ≤ 2 tokens.
-    - Method: ≤ 3 tokens.
-    - Form: 1 token.
-    - Channel: 1 token.
+  - Scope: ≤ 2 tokens.
+  - Method: ≤ 3 tokens.
+- **Form and channel are single-valued** (enforced by Talon grammar and Go build validation):
+  - Form: 1 token (describes content structure).
+  - Channel: 1 token (describes output format).
+  - **Why single-select:** Output-exclusive formats are mutually incompatible by definition.
+    - "Output as shellscript" + "output as slide deck" = impossible requirement
+    - "ADR document structure" + "session plan structure" = conflicting structures
+    - Platform wrappers (slack, jira) conflict with format tokens (e.g., `html` + `slack`)
+  - **Enforcement:** Talon voice grammar allows speaking only one channel/form per command; Go's `bar build` validates and rejects multiple channel tokens with error: "channel accepts a single token"
   - For example:
     - `model describe actions edges structure flow story jira fog`
       - Static prompt: `describe`.

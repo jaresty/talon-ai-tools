@@ -1,37 +1,37 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
+  "task": "Task:\n  The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
   "constraints": [
-    "Completeness (minimal): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
-    "Method (how): The response concentrates on mechanical explanation of how the subject works before other narration.",
-    "Form (tight): The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler."
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Method (\"dimension\"): The response expands conceptual dimensions of the subject and examines each axis to expose structure.",
+    "Form (\"socratic\"): The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary."
   ],
   "hydrated_constraints": [
     {
       "axis": "completeness",
-      "token": "minimal",
-      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
     },
     {
       "axis": "method",
-      "token": "how",
-      "description": "The response concentrates on mechanical explanation of how the subject works before other narration."
+      "token": "dimension",
+      "description": "The response expands conceptual dimensions of the subject and examines each axis to expose structure."
     },
     {
       "axis": "form",
-      "token": "tight",
-      "description": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler."
+      "token": "socratic",
+      "description": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary."
     }
   ],
   "axes": {
     "static": "fix",
-    "completeness": "minimal",
+    "completeness": "deep",
     "method": [
-      "how"
+      "dimension"
     ],
     "form": [
-      "tight"
+      "socratic"
     ]
   },
   "persona": {
@@ -47,8 +47,8 @@
   "tokens": [
     "casually",
     "fix",
-    "minimal",
-    "how",
-    "tight"
+    "deep",
+    "dimension",
+    "socratic"
   ]
 }

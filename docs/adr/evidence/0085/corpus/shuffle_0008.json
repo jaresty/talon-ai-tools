@@ -1,75 +1,91 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response explains what is happening.",
+  "task": "Task:\n  The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
   "constraints": [
-    "Completeness (max): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
-    "Scope (interfaces): The response concentrates on external interfaces, contracts, and boundaries between components or systems rather than internal implementations.",
-    "Method (indirect): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"act\"): The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—rather than structure or meaning.",
+    "Method (\"roles\"): The response focuses on responsibilities, ownership, and collaboration patterns.",
+    "Form (\"scaffold\"): The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts.",
+    "Directional (\"bog\"): The response examines the subject's structure and reflects on it, then identifies actions to take and extends them to related contexts."
   ],
   "hydrated_constraints": [
     {
       "axis": "completeness",
-      "token": "max",
-      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
     },
     {
       "axis": "scope",
-      "token": "interfaces",
-      "description": "The response concentrates on external interfaces, contracts, and boundaries between components or systems rather than internal implementations."
+      "token": "act",
+      "description": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—rather than structure or meaning."
     },
     {
       "axis": "method",
-      "token": "indirect",
-      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+      "token": "roles",
+      "description": "The response focuses on responsibilities, ownership, and collaboration patterns."
+    },
+    {
+      "axis": "form",
+      "token": "scaffold",
+      "description": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts."
+    },
+    {
+      "axis": "directional",
+      "token": "bog",
+      "description": "The response examines the subject's structure and reflects on it, then identifies actions to take and extends them to related contexts."
     }
   ],
   "axes": {
-    "static": "what",
-    "completeness": "max",
+    "static": "diff",
+    "completeness": "full",
     "scope": [
-      "interfaces"
+      "act"
     ],
     "method": [
-      "indirect"
-    ]
+      "roles"
+    ],
+    "form": [
+      "scaffold"
+    ],
+    "directional": "bog"
   },
   "persona": {
-    "voice": "as writer",
-    "audience": "to Kent Beck",
-    "tone": "formally",
-    "intent": "coach"
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
   },
   "hydrated_persona": [
     {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
       "axis": "voice",
-      "token": "as writer",
-      "description": "The response speaks as a writer, focusing on narrative clarity and flow."
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
     },
     {
       "axis": "audience",
-      "token": "to Kent Beck",
-      "description": "The response addresses Kent Beck, staying concrete, test-minded, and iterative."
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
     },
     {
       "axis": "tone",
-      "token": "formally",
-      "description": "The response uses a formal, professional tone."
-    },
-    {
-      "axis": "intent",
-      "token": "coach",
-      "description": "The response supports someone's growth through guidance and feedback."
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
     }
   ],
   "tokens": [
-    "coach",
-    "as writer",
-    "to Kent Beck",
-    "formally",
-    "what",
-    "max",
-    "interfaces",
-    "indirect"
+    "product_manager_to_team",
+    "diff",
+    "full",
+    "act",
+    "roles",
+    "scaffold",
+    "bog"
   ]
 }

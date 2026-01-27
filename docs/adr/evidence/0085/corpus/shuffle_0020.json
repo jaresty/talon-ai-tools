@@ -1,78 +1,72 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response explains how the elements interact.",
+  "task": "Task:\n  The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
   "constraints": [
-    "Completeness (minimal): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
-    "Scope (relations): The response examines relationships, interactions, and dependencies between elements within the selected target rather than internal details.",
-    "Directional (fip rog): The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"order\"): The response applies abstract structural reasoning such as hierarchy, dominance, or recurrence.",
+    "Form (\"bullets\"): The response presents the main answer as concise bullet points only, avoiding long paragraphs."
   ],
   "hydrated_constraints": [
     {
       "axis": "completeness",
-      "token": "minimal",
-      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
     },
     {
-      "axis": "scope",
-      "token": "relations",
-      "description": "The response examines relationships, interactions, and dependencies between elements within the selected target rather than internal details."
+      "axis": "method",
+      "token": "order",
+      "description": "The response applies abstract structural reasoning such as hierarchy, dominance, or recurrence."
     },
     {
-      "axis": "directional",
-      "token": "fip rog",
-      "description": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+      "axis": "form",
+      "token": "bullets",
+      "description": "The response presents the main answer as concise bullet points only, avoiding long paragraphs."
     }
   ],
   "axes": {
-    "static": "interact",
-    "completeness": "minimal",
-    "scope": [
-      "relations"
+    "static": "chat",
+    "completeness": "full",
+    "method": [
+      "order"
     ],
-    "directional": "fip rog"
+    "form": [
+      "bullets"
+    ]
   },
   "persona": {
-    "preset": "scientist_to_analyst",
-    "preset_label": "Scientist to analyst",
-    "voice": "as scientist",
-    "audience": "to analyst",
-    "tone": "formally",
-    "intent": "coach"
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
   },
   "hydrated_persona": [
     {
       "axis": "persona_preset",
-      "token": "scientist_to_analyst",
-      "description": "Scientist to analyst"
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
     },
     {
       "axis": "voice",
-      "token": "as scientist",
-      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
     },
     {
       "axis": "audience",
-      "token": "to analyst",
-      "description": "The response addresses an analyst, providing structure, data framing, and ways to visualise results."
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
     },
     {
       "axis": "tone",
-      "token": "formally",
-      "description": "The response uses a formal, professional tone."
-    },
-    {
-      "axis": "intent",
-      "token": "coach",
-      "description": "The response supports someone's growth through guidance and feedback."
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
     }
   ],
   "tokens": [
-    "coach",
-    "scientist_to_analyst",
-    "interact",
-    "minimal",
-    "relations",
-    "fip rog"
+    "designer_to_pm",
+    "chat",
+    "order",
+    "bullets"
   ]
 }

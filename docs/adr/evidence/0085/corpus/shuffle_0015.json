@@ -1,48 +1,72 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response guides introspection or reflection on the subject.",
+  "task": "Task:\n  The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
   "constraints": [
-    "Completeness (minimal): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
+    "Method (\"effects\"): The response traces second- and third-order effects and summarises their downstream consequences."
   ],
   "hydrated_constraints": [
     {
       "axis": "completeness",
-      "token": "minimal",
-      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns."
+    },
+    {
+      "axis": "method",
+      "token": "effects",
+      "description": "The response traces second- and third-order effects and summarises their downstream consequences."
     }
   ],
   "axes": {
-    "static": "retro",
-    "completeness": "minimal"
+    "static": "probe",
+    "completeness": "full",
+    "scope": [
+      "struct"
+    ],
+    "method": [
+      "effects"
+    ]
   },
   "persona": {
-    "preset": "fun_mode",
-    "preset_label": "Fun mode",
-    "tone": "casually",
-    "intent": "announce"
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
   },
   "hydrated_persona": [
     {
       "axis": "persona_preset",
-      "token": "fun_mode",
-      "description": "Fun mode"
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
     },
     {
       "axis": "tone",
-      "token": "casually",
-      "description": "The response uses a casual, conversational tone."
-    },
-    {
-      "axis": "intent",
-      "token": "announce",
-      "description": "The response shares news or updates with the audience."
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
     }
   ],
   "tokens": [
-    "announce",
-    "fun_mode",
-    "retro",
-    "minimal"
+    "product_manager_to_team",
+    "probe",
+    "struct",
+    "effects"
   ]
 }

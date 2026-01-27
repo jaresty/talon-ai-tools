@@ -1,12 +1,11 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response shows how each subject directly cochanges with the others.",
+  "task": "Task:\n  The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
   "constraints": [
-    "Completeness (full): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
-    "Scope (dynamics): The response concentrates on how the system's behaviour and state evolve over time, covering scenarios, state changes, feedback loops, and transitions.",
-    "Form (html): The response consists solely of semantic HTML for the answer, with no surrounding prose.",
-    "Directional (dig): The response applies a concretizing-grounding perspective as a single synthesized lens on the preceding prompt."
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
+    "Directional (\"dip rog\"): The response examines concrete details and grounded examples, then reflects on their structural patterns and what they reveal."
   ],
   "hydrated_constraints": [
     {
@@ -16,53 +15,52 @@
     },
     {
       "axis": "scope",
-      "token": "dynamics",
-      "description": "The response concentrates on how the system's behaviour and state evolve over time, covering scenarios, state changes, feedback loops, and transitions."
-    },
-    {
-      "axis": "form",
-      "token": "html",
-      "description": "The response consists solely of semantic HTML for the answer, with no surrounding prose."
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns."
     },
     {
       "axis": "directional",
-      "token": "dig",
-      "description": "The response applies a concretizing-grounding perspective as a single synthesized lens on the preceding prompt."
+      "token": "dip rog",
+      "description": "The response examines concrete details and grounded examples, then reflects on their structural patterns and what they reveal."
     }
   ],
   "axes": {
-    "static": "cochange",
+    "static": "show",
     "completeness": "full",
     "scope": [
-      "dynamics"
+      "struct"
     ],
-    "form": [
-      "html"
-    ],
-    "directional": "dig"
+    "directional": "dip rog"
   },
   "persona": {
-    "preset": "fun_mode",
-    "preset_label": "Fun mode",
-    "tone": "casually"
+    "voice": "as principal engineer",
+    "audience": "to XP enthusiast",
+    "intent": "announce"
   },
   "hydrated_persona": [
     {
-      "axis": "persona_preset",
-      "token": "fun_mode",
-      "description": "Fun mode"
+      "axis": "voice",
+      "token": "as principal engineer",
+      "description": "The response speaks as a principal engineer, bringing systems thinking, trade-offs, and pragmatic guidance."
     },
     {
-      "axis": "tone",
-      "token": "casually",
-      "description": "The response uses a casual, conversational tone."
+      "axis": "audience",
+      "token": "to XP enthusiast",
+      "description": "The response addresses an XP enthusiast, valuing small batches, social programming, and production validation."
+    },
+    {
+      "axis": "intent",
+      "token": "announce",
+      "description": "Share news or updates with the audience."
     }
   ],
   "tokens": [
-    "fun_mode",
-    "cochange",
-    "dynamics",
-    "html",
-    "dig"
+    "announce",
+    "as principal engineer",
+    "to XP enthusiast",
+    "show",
+    "full",
+    "struct",
+    "dip rog"
   ]
 }

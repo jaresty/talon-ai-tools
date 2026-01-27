@@ -1,34 +1,34 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response explains when it occurs.",
+  "task": "Task:\n  The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
   "constraints": [
-    "Completeness (max): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
-    "Channel (remote): The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
-    "Directional (dip ong): The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending, treating them as a single fused stance."
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+    "Directional (\"dip ong\"): The response starts with concrete examples, identifies actions to take from them, then extends those actions to related situations."
   ],
   "hydrated_constraints": [
     {
       "axis": "completeness",
-      "token": "max",
-      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
     },
     {
       "axis": "channel",
-      "token": "remote",
-      "description": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing."
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
     },
     {
       "axis": "directional",
       "token": "dip ong",
-      "description": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending, treating them as a single fused stance."
+      "description": "The response starts with concrete examples, identifies actions to take from them, then extends those actions to related situations."
     }
   ],
   "axes": {
-    "static": "when",
-    "completeness": "max",
+    "static": "chat",
+    "completeness": "minimal",
     "channel": [
-      "remote"
+      "jira"
     ],
     "directional": "dip ong"
   },
@@ -51,9 +51,9 @@
   "tokens": [
     "to CEO",
     "casually",
-    "when",
-    "max",
-    "remote",
+    "chat",
+    "minimal",
+    "jira",
     "dip ong"
   ]
 }

@@ -1,12 +1,10 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response proposes an approach that accomplishes the goal on a smaller timescale.",
+  "task": "Task:\n  The response assigns items to predefined or inferred categories with consistent application of category definitions.",
   "constraints": [
-    "Completeness (skim): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
-    "Scope (focus): The response stays tightly on a central theme within the selected target, avoiding tangents and side quests.",
-    "Form (tight): The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
-    "Channel (presenterm): The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: \u003cdescriptive title based on the input with colons encoded as \u0026#58; and angle brackets encoded as \u0026lt; and \u0026gt;\u003e newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"\u003c!-- end_slide --\u003e\", \"\u003c!-- pause --\u003e\", \"\u003c!-- column_layout: [7, 3] --\u003e\", \"\u003c!-- column: 0 --\u003e\", \"\u003c!-- reset_layout --\u003e\", and \"\u003c!-- jump_to_middle --\u003e\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:\u003cname\u003e) or +exec_replace or +image. The response emits \"\u003c!-- snippet_output: name --\u003e\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '\u003c' becomes \u0026lt; and every literal '\u003e' becomes \u0026gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"\u0026#126;\" (so \"~/foo\" becomes \"\u0026#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"\u003c\", \"#62;\" for \"\u003e\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"\u0026\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies."
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"thing\"): The response focuses on what things are in view—objects, people, roles, systems, domains, or bounded units—without emphasizing actions or evaluation."
   ],
   "hydrated_constraints": [
     {
@@ -16,62 +14,45 @@
     },
     {
       "axis": "scope",
-      "token": "focus",
-      "description": "The response stays tightly on a central theme within the selected target, avoiding tangents and side quests."
-    },
-    {
-      "axis": "form",
-      "token": "tight",
-      "description": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler."
-    },
-    {
-      "axis": "channel",
-      "token": "presenterm",
-      "description": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: \u003cdescriptive title based on the input with colons encoded as \u0026#58; and angle brackets encoded as \u0026lt; and \u0026gt;\u003e newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"\u003c!-- end_slide --\u003e\", \"\u003c!-- pause --\u003e\", \"\u003c!-- column_layout: [7, 3] --\u003e\", \"\u003c!-- column: 0 --\u003e\", \"\u003c!-- reset_layout --\u003e\", and \"\u003c!-- jump_to_middle --\u003e\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:\u003cname\u003e) or +exec_replace or +image. The response emits \"\u003c!-- snippet_output: name --\u003e\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '\u003c' becomes \u0026lt; and every literal '\u003e' becomes \u0026gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"\u0026#126;\" (so \"~/foo\" becomes \"\u0026#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"\u003c\", \"#62;\" for \"\u003e\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"\u0026\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies."
+      "token": "thing",
+      "description": "The response focuses on what things are in view—objects, people, roles, systems, domains, or bounded units—without emphasizing actions or evaluation."
     }
   ],
   "axes": {
-    "static": "easier",
+    "static": "sort",
     "completeness": "skim",
     "scope": [
-      "focus"
-    ],
-    "form": [
-      "tight"
-    ],
-    "channel": [
-      "presenterm"
+      "thing"
     ]
   },
   "persona": {
-    "preset": "peer_engineer_explanation",
-    "preset_label": "Peer engineer explanation",
-    "voice": "as programmer",
-    "audience": "to programmer"
+    "voice": "as designer",
+    "tone": "casually",
+    "intent": "entertain"
   },
   "hydrated_persona": [
     {
-      "axis": "persona_preset",
-      "token": "peer_engineer_explanation",
-      "description": "Peer engineer explanation"
-    },
-    {
       "axis": "voice",
-      "token": "as programmer",
-      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
     },
     {
-      "axis": "audience",
-      "token": "to programmer",
-      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    },
+    {
+      "axis": "intent",
+      "token": "entertain",
+      "description": "Engage or amuse the audience."
     }
   ],
   "tokens": [
-    "peer_engineer_explanation",
-    "easier",
+    "entertain",
+    "as designer",
+    "casually",
+    "sort",
     "skim",
-    "focus",
-    "tight",
-    "presenterm"
+    "thing"
   ]
 }

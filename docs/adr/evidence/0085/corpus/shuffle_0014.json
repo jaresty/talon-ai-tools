@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.",
+  "task": "Task:\n  The response selects or isolates information already present without introducing new content.",
   "constraints": [
-    "Completeness (full): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
-    "Scope (bound): The response remains within the explicit conceptual limits stated or inferred in the prompt and avoids introducing outside material.",
-    "Method (cocreate): The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
-    "Form (diagram): The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
-    "Directional (fip rog): The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
+    "Method (\"objectivity\"): The response distinguishes objective facts from subjective opinions and supports claims with evidence.",
+    "Form (\"cocreate\"): The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
+    "Directional (\"fip rog\"): The response moves between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
   ],
   "hydrated_constraints": [
     {
@@ -17,36 +17,36 @@
     },
     {
       "axis": "scope",
-      "token": "bound",
-      "description": "The response remains within the explicit conceptual limits stated or inferred in the prompt and avoids introducing outside material."
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns."
     },
     {
       "axis": "method",
+      "token": "objectivity",
+      "description": "The response distinguishes objective facts from subjective opinions and supports claims with evidence."
+    },
+    {
+      "axis": "form",
       "token": "cocreate",
       "description": "The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer."
     },
     {
-      "axis": "form",
-      "token": "diagram",
-      "description": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
-    },
-    {
       "axis": "directional",
       "token": "fip rog",
-      "description": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance."
+      "description": "The response moves between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
     }
   ],
   "axes": {
-    "static": "knowledge",
+    "static": "pull",
     "completeness": "full",
     "scope": [
-      "bound"
+      "struct"
     ],
     "method": [
-      "cocreate"
+      "objectivity"
     ],
     "form": [
-      "diagram"
+      "cocreate"
     ],
     "directional": "fip rog"
   },
@@ -76,10 +76,10 @@
     "as scientist",
     "to junior engineer",
     "formally",
-    "knowledge",
-    "bound",
+    "pull",
+    "struct",
+    "objectivity",
     "cocreate",
-    "diagram",
     "fip rog"
   ]
 }

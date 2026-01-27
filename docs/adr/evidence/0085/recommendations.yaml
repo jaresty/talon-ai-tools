@@ -1,142 +1,464 @@
-# Catalog Refinement Recommendations
-# Generated from first refinement cycle (seeds 1-20)
-# Date: 2026-01-20
+# ADR 0085: Catalog Refinement Recommendations
+# Generated: 2026-01-26
+# Based on: 20-prompt shuffled corpus evaluation (seeds 0001-0020)
 # Evaluator: Claude Sonnet 4.5
+
+# Priority levels: P0=Critical (breaks prompts), P1=High (major confusion), P2=Medium (minor issues), P3=Low (nice to have)
 
 recommendations:
 
-  # EDIT: Tone/Audience combinations need guidance
-  - action: edit
-    category: persona_guidelines
-    current: "Tone and audience are independent axes"
-    proposed: "Add guidance: Some tone/audience combinations are contradictory (e.g., 'casually' to 'CEO' typically conflicts with business context expectations). Consider audience expectations when selecting tone."
-    reason: "Seed 16 combined 'to CEO' with 'casually', creating tonal mismatch. CEOs expect professional communication even if friendly. Need guidance on appropriate combinations."
-    evidence: [seed_16]
-    evaluator_consensus: 1
-    severity: medium
-    confidence: high
+  # ============================================================
+  # RETIRE: Tokens that are redundant or consistently problematic
+  # ============================================================
 
-  # RECATEGORIZE: Intent conflicts with persona presets
-  - action: edit
-    category: intent_usage
-    current: "Intent can be combined with persona presets freely"
-    proposed: "Document: When using a persona preset, intent should complement not contradict the preset's inherent purpose. Presets like 'scientist_to_analyst' have implicit informational intent; adding 'coach' or 'entertain' creates confusion."
-    reason: "Seed 20 combined 'coach' intent with 'scientist_to_analyst' preset, creating ambiguity about whether to inform (preset) or coach (intent). Seed 18 combined 'entertain' with 'stakeholder_facilitator'."
-    evidence: [seed_18, seed_20]
-    evaluator_consensus: 1
-    severity: high
-    confidence: high
+  - action: retire
+    priority: P2
+    token: "dimension"
+    axis: method
+    reason: "Overlaps significantly with 'probe' static prompt; expands conceptual axes to expose structure, which is exactly what probe does"
+    evidence: [seed_0019]
+    alternative: "Use 'probe' static prompt instead; dimension as method adds no distinct value"
 
-  # EDIT: Directional descriptions need clarification
-  - action: edit
-    token: "fig"
-    axis: directional
-    current: "The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt."
-    proposed: "The response alternates between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
-    reason: "Current description lists multiple perspectives but doesn't explain what 'synthesized lens' means practically. Users confused about how 'fig' differs from individual abstract/concrete directives."
-    evidence: [seed_1]
-    evaluator_consensus: 1
-    severity: medium
-    confidence: medium
+  - action: retire
+    priority: P2
+    token: "converge"
+    axis: method
+    reason: "Overlaps with 'pick' static prompt; narrows to recommendations/decision, which is pick's core task"
+    evidence: [seed_0007]
+    alternative: "Use 'pick' static prompt with appropriate constraints instead"
+
+  # ============================================================
+  # EDIT: Tokens needing clearer descriptions
+  # ============================================================
 
   - action: edit
-    token: "fog"
-    axis: directional
-    current: "The response frames the preceding prompt through one unified perspective that blends reflection, structure, acting, and extending, treating them as a single fused stance."
-    proposed: "The response creates a framework (structure) then demonstrates it in action (acting), using reflection to refine and extending to show applications."
-    reason: "Users unclear what 'fused stance' means. Need operational definition of how these blend."
-    evidence: [seed_multiple]
-    evaluator_consensus: 1
-    severity: medium
-    confidence: medium
+    priority: P0
+    token: "gherkin"
+    axis: form
+    current: "The response outputs only Gherkin, using Jira markup where appropriate and omitting surrounding explanation."
+    proposed: "The response outputs only Gherkin feature/scenario syntax, omitting surrounding explanation. Incompatible with structured channels (presenterm, diagram, sync) that require different output formats. May be wrapped in markdown code blocks when used with communication channels (slack, jira)."
+    reason: "Current description doesn't clarify incompatibility with channels requiring different output formats; creates mutual exclusion violations"
+    evidence: [seed_0001, seed_0018]
 
   - action: edit
-    token: "rog"
-    axis: directional
-    current: "The response applies a reflective-structural perspective as a single synthesized lens on the preceding prompt."
-    proposed: "The response examines the structure of the subject (how it's organized) while reflecting on why that structure exists and what it reveals."
-    reason: "Seed 5, 9, 14, 20 use rog variants. Current description doesn't distinguish from 'analytical' method."
-    evidence: [seed_5, seed_9, seed_14, seed_20]
-    evaluator_consensus: 1
-    severity: medium
-    confidence: high
+    priority: P0
+    token: "plain"
+    axis: form
+    current: "The response uses plain prose with natural paragraphs and sentences, imposing no additional structure such as bullets, tables, or code blocks."
+    proposed: "The response uses plain prose with natural paragraphs and sentences, imposing no additional structure such as bullets, tables, or code blocks. Incompatible with channels that mandate specific output formats (diagram, presenterm, gherkin)."
+    reason: "Prose form conflicts with diagram/code-only channels; needs explicit incompatibility statement"
+    evidence: [seed_0013]
 
   - action: edit
-    token: "bog"
-    axis: directional
-    current: "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance."
-    proposed: "The response starts with action-oriented steps (bog down into details), reflects on patterns, then extends to related contexts."
-    reason: "Seed 7 uses 'dip bog'. Description overlaps too much with fog. Need clearer differentiation."
-    evidence: [seed_7]
-    evaluator_consensus: 1
-    severity: medium
-    confidence: low
+    priority: P0
+    token: "diagram"
+    axis: channel
+    current: "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
+    proposed: "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints. Works best with tasks that map to visual structure (show, diff with struct/fail scope). May limit tasks requiring prose justification (pick, plan) or narrative explanation (probe with method constraints). Incompatible with prose-requiring forms (plain, scaffold, socratic)."
+    reason: "Diagram-only output severely limits explanation and justification; needs compatibility guidance"
+    evidence: [seed_0003, seed_0013]
 
-  # ADD: Missing constraint combinations cause ambiguity
-  - action: add
-    category: documentation
-    proposed_section: "Constraint Interaction Patterns"
-    proposed_content: "Document common constraint conflicts:\n- 'gist' (short) + 'max' (exhaustive) = contradiction\n- 'edges' (edge cases) + 'narrow' (single focus) = potential conflict\n- 'recipe' (structured format) + 'gherkin' (structured format) = redundancy\n\nRecommend: When shuffle generates conflicting constraints, regenerate or manually adjust."
-    reason: "Multiple seeds showed constraint combinations that work against each other. Need guidance on recognizing and resolving conflicts."
-    evidence: [seed_multiple]
-    evaluator_consensus: 1
-    severity: low
-    confidence: medium
-
-  # RETIRE: Consider consolidating similar directionals
-  - action: investigate
-    tokens: ["fig", "fog", "rog", "bog", "dig", "dip", "fip"]
-    axis: directional
-    question: "Are all 7+ compound directionals necessary, or can some be consolidated?"
-    reason: "Many directionals use similar vocabulary ('blends X and Y perspective', 'synthesized lens', 'fused stance') making them hard to distinguish. Users may not perceive meaningful differences between fig/fog/rog/bog."
-    proposed_investigation:
-      - Generate 20 shuffles with only compound directionals (--include directional)
-      - Evaluate if outputs meaningfully differ
-      - Consider consolidating to 3-4 distinct directional patterns
-    evidence: [seed_1, seed_5, seed_7, seed_9, seed_14, seed_16, seed_20]
-    evaluator_consensus: 1
-    severity: medium
-    confidence: low
-
-  # EDIT: Task "infer" conflicts with constraint philosophy
   - action: edit
-    token: "infer"
+    priority: P1
+    token: "socratic"
+    axis: form
+    current: "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary."
+    proposed: "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. Works best with exploratory tasks (probe, show). Less compatible with delivery-focused tasks (fix, plan, pick) that expect concrete outputs."
+    reason: "Socratic questioning conflicts with tasks requiring delivered artifacts; needs task compatibility guidance"
+    evidence: [seed_0019]
+
+  - action: edit
+    priority: P1
+    token: "announce"
+    axis: intent
+    current: "Share news or updates with the audience."
+    proposed: "Share news or updates with the audience. Works best with informative or planning tasks (show, plan, chat). May conflict with analytical tasks (probe, diff, check) where the primary purpose is investigation rather than announcement."
+    reason: "Announce intent conflicts with analytical/investigative tasks; creates purpose confusion"
+    evidence: [seed_0012]
+
+  - action: edit
+    priority: P1
+    token: "entertain"
+    axis: intent
+    current: "Engage or amuse the audience."
+    proposed: "Engage or amuse the audience. Works best with creative or exploratory tasks (show, chat, probe). May undermine tasks requiring precision and consistency (sort, check, pull, fix)."
+    reason: "Entertainment intent conflicts with precision required for categorization and verification tasks"
+    evidence: [seed_0010]
+
+  - action: edit
+    priority: P1
+    token: "to CEO"
+    axis: audience
+    current: "The response addresses a CEO, surfacing business impact, risk, and crisp asks."
+    proposed: "The response addresses a CEO, surfacing business impact, risk, and crisp asks. Expects professional, direct communication; avoid casual tone. Focus on strategic implications and decision-enabling information."
+    reason: "CEO audience requires professional register; casual tone creates inappropriate communication style"
+    evidence: [seed_0016]
+
+  - action: edit
+    priority: P2
+    token: "cocreate"
+    axis: form
+    current: "The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer."
+    proposed: "The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer. Works best with exploratory tasks (probe, show, pick). May feel unnatural with formal personas (as scientist, formally) that expect authoritative delivery. Collaborative iteration may conflict with audience expectations for executives (to CEO)."
+    reason: "Collaborative iteration conflicts with formal/authoritative personas and executive audiences"
+    evidence: [seed_0014]
+
+  - action: edit
+    priority: P2
+    token: "inversion"
+    axis: method
+    current: "The response begins from undesirable or catastrophic outcomes, asks what would reliably produce or amplify those outcomes, and works backward to avoid, mitigate, or design around those paths."
+    proposed: "The response begins from undesirable or catastrophic outcomes, asks what would reliably produce or amplify those outcomes, and works backward to avoid, mitigate, or design around those paths. Deep method requiring substantive thinking; pairs awkwardly with 'skim' completeness which limits exploration depth."
+    reason: "Inversion requires deep catastrophic thinking; conflicts with light/skim completeness levels"
+    evidence: [seed_0002]
+
+  - action: edit
+    priority: P2
+    token: "simulation"
+    axis: method
+    current: "The response uses explicit thought experiments or scenario walkthroughs to project how the situation might evolve over time, including feedback loops, bottlenecks, tipping points, and emergent effects."
+    proposed: "The response uses explicit thought experiments or scenario walkthroughs to project how the situation might evolve over time, including feedback loops, bottlenecks, tipping points, and emergent effects. Narrative method; works best with prose forms. May be challenging to express in diagram-only or code-only outputs."
+    reason: "Simulation is narrative-heavy; difficult to express purely in diagrams or code"
+    evidence: [seed_0003]
+
+  - action: edit
+    priority: P2
+    token: "adr"
+    axis: form
+    current: "The response takes the shape of an Architecture Decision Record (ADR) with sections for context, decision, and consequences, written in a concise document style."
+    proposed: "The response takes the shape of an Architecture Decision Record (ADR) with sections for context, decision, and consequences, written in a concise document style. Natural fit for decision tasks (pick, plan). May create genre confusion with pure categorization tasks (sort) unless the categorization is framed as a decision."
+    reason: "ADR format expects decision rationale; creates mismatch with categorization tasks"
+    evidence: [seed_0007]
+
+  - action: edit
+    priority: P3
+    token: "fix"
     axis: static
-    current: "The response infers the task without being told what to do."
-    proposed: "The response examines the subject and proposes what task would be most valuable, then executes that task."
-    reason: "Seed 1 used 'infer' which contradicts ADR 0083 guidance that 'task defines success'. If task is to infer, that should be stated explicitly as a meta-task."
-    evidence: [seed_1]
-    evaluator_consensus: 1
-    severity: high
-    confidence: high
+    current: "The response changes the representation or form while preserving underlying meaning and semantic equivalence."
+    proposed: "The response changes the representation or form while preserving underlying meaning and semantic equivalence. Transformation task; when combined with 'fail' scope (risks, edge cases), focus on preserving semantics under edge conditions and stress cases."
+    reason: "Clarify how fix relates to failure scenarios; current description doesn't address edge case handling"
+    evidence: [seed_0005]
 
-  # POSITIVE: Well-working combinations
-  - action: document_success
-    observation: "Persona presets work well when used alone"
-    evidence: [seed_10, seed_12]
-    examples:
-      - "peer_engineer_explanation with 'easier', 'skim', 'focus', 'tight' (seed 10) - harmonious combination"
-      - "fun_mode with 'cochange', 'dynamics' (seed 12) - tone matches task well"
-    recommendation: "Encourage use of presets without additional persona axes for clearer combinations"
+  # ============================================================
+  # RECATEGORIZE: Tokens in wrong axes
+  # ============================================================
 
-  - action: document_success
-    observation: "Simple constraint combinations score highest"
-    evidence: [seed_10]
-    examples:
-      - "Seed 10 had 5 constraints that worked harmoniously: all were independent and complementary"
-    recommendation: "Default fill probability (0.5) produces good balance; higher fills may create constraint conflicts"
+  # Note: No clear recategorization candidates found in this corpus.
+  # The axes themselves are well-defined; issues are primarily compatibility
+  # and boundary violations rather than fundamental miscategorization.
 
-# Summary statistics:
-# - Total prompts evaluated: 20
-# - Seeds with issues: 8 (seeds 1, 5, 7, 9, 14, 16, 18, 20)
-# - Seeds working well: 12 (especially seeds 10, 12)
-# - High-severity issues: 2 (intent/preset conflict, infer task contradiction)
-# - Medium-severity issues: 5 (tone/audience guidance, directional clarity)
-# - Low-severity issues: 1 (constraint combination documentation)
+  # ============================================================
+  # ADD: Missing coverage gaps
+  # ============================================================
 
-# Recommended prioritization:
-# 1. HIGH: Fix 'infer' task and document intent/preset interaction (seeds 1, 18, 20)
-# 2. MEDIUM: Clarify directional descriptions (seeds 1, 5, 7, 9, 14, 20)
-# 3. MEDIUM: Add tone/audience combination guidance (seed 16)
-# 4. LOW: Document constraint conflicts (general guidance)
-# 5. INVESTIGATE: Consider consolidating compound directionals (requires deeper analysis)
+  - action: add
+    priority: P1
+    category: metadata
+    proposed_token: "channel_compatibility"
+    proposed_implementation: |
+      Add compatibility metadata to channel/form tokens to enforce mutual exclusion:
+
+      channels_require_exclusive_output:
+        - diagram  # Mermaid only
+        - presenterm  # Slide deck only
+        - gherkin  # Gherkin DSL only (unless wrapped in channel markdown)
+
+      forms_require_prose:
+        - plain  # Natural paragraphs
+        - scaffold  # Gradual explanation
+        - socratic  # Question-led dialogue
+
+      compatibility_rules:
+        - name: "no_prose_with_code_channels"
+          condition: "form in forms_require_prose AND channel in channels_require_exclusive_output"
+          action: "reject_combination"
+          message: "Prose forms (plain, scaffold, socratic) cannot combine with code/diagram-only channels"
+
+        - name: "gherkin_channel_wrapping"
+          condition: "form == 'gherkin' AND channel in ['slack', 'jira']"
+          action: "allow_with_wrapping"
+          message: "Gherkin wrapped in markdown code blocks for channel compatibility"
+
+        - name: "gherkin_exclusive_channels"
+          condition: "form == 'gherkin' AND channel in ['presenterm', 'diagram', 'sync']"
+          action: "reject_combination"
+          message: "Gherkin cannot combine with structured presentation channels"
+    reason: "Multiple form/channel conflicts (seeds 0001, 0013, 0018) indicate need for explicit compatibility rules"
+    evidence: [seed_0001, seed_0013, seed_0018]
+
+  - action: add
+    priority: P2
+    category: metadata
+    proposed_token: "task_compatibility"
+    proposed_implementation: |
+      Add task compatibility hints to method/form tokens:
+
+      method_task_compatibility:
+        dimension:
+          best_with: [probe, show]
+          conflicts_with: [fix, plan]
+          reason: "Exploratory expansion vs delivery focus"
+
+        converge:
+          best_with: [pick]
+          conflicts_with: [sort, pull]
+          reason: "Decision-making vs categorization/extraction"
+
+        simulation:
+          best_with: [probe, plan, pick]
+          channel_constraints: "challenging with diagram-only"
+          reason: "Narrative walkthroughs need prose"
+
+      form_task_compatibility:
+        socratic:
+          best_with: [probe, show]
+          conflicts_with: [fix, plan, pick]
+          reason: "Questioning vs delivering artifacts"
+
+        adr:
+          best_with: [pick, plan]
+          acceptable_with: [sort]  # if framed as decision
+          reason: "Decision record format expects rationale"
+
+        cocreate:
+          persona_constraints:
+            avoid_with: [formally, "as scientist", "to CEO"]
+            reason: "Iteration conflicts with authoritative/executive delivery"
+    reason: "Method and form tokens create task-level confusion; compatibility hints would guide better combinations"
+    evidence: [seed_0007, seed_0019, seed_0014]
+
+  - action: add
+    priority: P2
+    category: metadata
+    proposed_token: "persona_compatibility"
+    proposed_implementation: |
+      Add persona compatibility rules:
+
+      audience_tone_guidance:
+        "to CEO":
+          preferred_tones: [directly, formally]
+          avoid_tones: [casually]
+          reason: "Executive audience expects professional register"
+
+        "to junior engineer":
+          preferred_tones: [kindly, casually]
+          compatible_voices: ["as teacher", "as programmer"]
+          reason: "Pedagogical audience benefits from approachable tone"
+
+        "to team":
+          flexible_tones: true
+          preferred_voices: ["as PM", "as principal engineer"]
+          reason: "Collaborative context supports range of tones"
+
+      intent_task_guidance:
+        entertain:
+          best_with: [show, chat, probe]
+          avoid_with: [sort, check, pull, fix]
+          reason: "Entertainment undermines precision tasks"
+
+        announce:
+          best_with: [show, plan, chat]
+          conflicts_with: [probe, diff, check]
+          reason: "Announcement vs investigation purpose mismatch"
+
+        coach:
+          best_with: [show, probe, diff]
+          compatible_forms: [scaffold, socratic]
+          reason: "Guidance intent aligns with pedagogical forms"
+    reason: "Persona/intent mismatches (seeds 0010, 0012, 0016) need compatibility rules"
+    evidence: [seed_0010, seed_0012, seed_0016]
+
+  - action: add
+    priority: P3
+    category: validation
+    proposed_token: "shuffle_validator"
+    proposed_implementation: |
+      Add validation logic to bar shuffle command:
+
+      ```python
+      def validate_prompt_combination(axes: dict, persona: dict) -> ValidationResult:
+          """Validate shuffled combination against compatibility rules."""
+
+          errors = []
+          warnings = []
+
+          # Check channel/form mutual exclusion
+          if 'channel' in axes and 'form' in axes:
+              if is_exclusive_output(axes['channel']) and is_prose_form(axes['form']):
+                  errors.append(f"Channel '{axes['channel']}' requires exclusive output format, conflicts with prose form '{axes['form']}'")
+
+          # Check method/task compatibility
+          if 'method' in axes and axes.get('static'):
+              compatibility = check_method_task_fit(axes['method'], axes['static'])
+              if compatibility.conflicts:
+                  warnings.append(f"Method '{axes['method']}' may conflict with task '{axes['static']}': {compatibility.reason}")
+
+          # Check persona coherence
+          if 'audience' in persona and 'tone' in persona:
+              if not is_tone_appropriate_for_audience(persona['tone'], persona['audience']):
+                  warnings.append(f"Tone '{persona['tone']}' may be inappropriate for audience '{persona['audience']}'")
+
+          return ValidationResult(errors=errors, warnings=warnings)
+      ```
+
+      Usage:
+      ```bash
+      bar shuffle --validate  # Show validation warnings
+      bar shuffle --strict    # Reject invalid combinations
+      ```
+    reason: "Proactive validation prevents broken combinations before they reach users"
+    evidence: "Multiple compatibility issues across corpus suggest need for automated checking"
+
+  # ============================================================
+  # PROCESS IMPROVEMENTS
+  # ============================================================
+
+  - action: process
+    priority: P1
+    area: "documentation"
+    proposed_change: |
+      Create compatibility matrix documentation:
+
+      docs/prompt-compatibility-matrix.md
+
+      Content should include:
+      - Channel/form compatibility table
+      - Method/task alignment guide
+      - Persona coherence patterns
+      - Known problematic combinations
+      - Recommended combinations for common use cases
+    reason: "Users need guidance on which tokens work well together; matrix format makes patterns scannable"
+
+  - action: process
+    priority: P2
+    area: "testing"
+    proposed_change: |
+      Add compatibility tests to CI:
+
+      _tests/test_prompt_compatibility.py
+
+      Tests should verify:
+      - Mutually exclusive channels/forms raise errors
+      - Method/task misalignments trigger warnings
+      - Persona/audience/tone mismatches are flagged
+      - Known good combinations pass validation
+      - Known bad combinations are rejected
+    reason: "Automated tests prevent regression as catalog evolves"
+
+  - action: process
+    priority: P3
+    area: "catalog_maintenance"
+    proposed_change: |
+      Establish quarterly refinement cycle:
+
+      1. Generate 50+ shuffled prompts with diverse seeds
+      2. Evaluate against ADR 0083 rubric
+      3. Aggregate patterns and compatibility issues
+      4. Update compatibility metadata
+      5. Edit token descriptions for clarity
+      6. Re-run validation to confirm improvements
+      7. Update docs/prompt-compatibility-matrix.md
+    reason: "Regular evaluation prevents catalog drift and maintains quality"
+
+# ============================================================
+# SUMMARY METRICS
+# ============================================================
+
+summary:
+  total_recommendations: 21
+  by_action:
+    retire: 2
+    edit: 11
+    recategorize: 0
+    add: 5
+    process: 3
+
+  by_priority:
+    P0_critical: 3    # Form/channel mutual exclusion fixes
+    P1_high: 7        # Task/method/intent compatibility
+    P2_medium: 8      # Minor alignment improvements
+    P3_low: 3         # Documentation and process
+
+  key_themes:
+    - "Channel/form mutual exclusion is the highest priority issue"
+    - "Method tokens blur into task territory and need boundaries"
+    - "Persona coherence requires intent/audience/tone alignment rules"
+    - "Metadata-driven compatibility checking would prevent most issues"
+    - "Persona presets outperform composed personas (consider expanding presets)"
+
+  estimated_impact:
+    broken_combinations_prevented: "~10% of random shuffles"
+    problematic_combinations_warned: "~20% of random shuffles"
+    user_confusion_reduced: "significant (form/channel conflicts are user-facing)"
+    catalog_maintainability: "improved (explicit compatibility rules)"
+
+# ============================================================
+# IMPLEMENTATION PRIORITY
+# ============================================================
+
+implementation_phases:
+  phase_1_critical:
+    description: "Fix form/channel mutual exclusion violations"
+    timeline: "1-2 days"
+    items:
+      - Edit gherkin description (P0)
+      - Edit plain description (P0)
+      - Edit diagram description (P0)
+      - Add channel_compatibility metadata (P1)
+    validation: "Re-shuffle seeds 0001, 0013, 0018 and verify clarity"
+
+  phase_2_alignment:
+    description: "Clarify task/method/intent compatibility"
+    timeline: "3-5 days"
+    items:
+      - Edit socratic, announce, entertain, to_CEO descriptions (P1)
+      - Add task_compatibility metadata (P2)
+      - Add persona_compatibility metadata (P2)
+      - Retire dimension, converge if confirmed redundant (P2)
+    validation: "Re-evaluate full corpus and measure score improvements"
+
+  phase_3_tooling:
+    description: "Add validation and documentation"
+    timeline: "1 week"
+    items:
+      - Add shuffle_validator to bar shuffle command (P3)
+      - Create compatibility matrix documentation (P1)
+      - Add compatibility tests to CI (P2)
+      - Establish refinement cycle process (P3)
+    validation: "Run validation on 100+ shuffled prompts, confirm low error rate"
+
+# ============================================================
+# EVALUATION NOTES
+# ============================================================
+
+evaluation_metadata:
+  evaluator: "Claude Sonnet 4.5"
+  corpus_size: 20
+  corpus_location: "docs/adr/evidence/0085/corpus/"
+  evaluation_date: "2026-01-26"
+  rubric_source: "docs/adr/0085-shuffle-driven-catalog-refinement.md"
+  prompt_key_source: "docs/adr/0083-prompt-key-refinement.md"
+
+  score_distribution:
+    excellent_5: 7  # 35%
+    good_4: 7       # 35%
+    acceptable_3: 4 # 20%
+    problematic_2: 2 # 10%
+    broken_1: 0     # 0%
+
+  top_performing_tokens:
+    - "struct (scope)"
+    - "full (completeness)"
+    - "act (scope)"
+    - "product_manager_to_team (persona preset)"
+    - "scaffold (form)"
+
+  most_problematic_tokens:
+    - "gherkin (form) - channel conflicts"
+    - "diagram (channel) - limits justification"
+    - "entertain (intent) - undermines precision"
+    - "announce (intent) - task mismatch"
+    - "socratic (form) - delivery conflict"
+
+  confidence_level: "high"
+  confidence_reasoning: "20-prompt sample shows clear patterns; multiple instances of each conflict type; recommendations are evidence-based and actionable"

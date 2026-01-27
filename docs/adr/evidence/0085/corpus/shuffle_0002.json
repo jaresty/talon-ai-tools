@@ -1,87 +1,61 @@
 {
   "schema_version": "1.0",
   "subject": "",
-  "task": "Task:\n  The response identifies the relevant elements of the situation.",
+  "task": "Task:\n  The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
   "constraints": [
-    "Completeness (full): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
-    "Scope (edges): The response emphasises edge cases, errors, and unusual conditions around the subject.",
-    "Method (indirect): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
-    "Directional (bog): The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance."
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Method (\"inversion\"): The response begins from undesirable or catastrophic outcomes, asks what would reliably produce or amplify those outcomes, and works backward to avoid, mitigate, or design around those paths.",
+    "Form (\"spike\"): The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks."
   ],
   "hydrated_constraints": [
     {
       "axis": "completeness",
-      "token": "full",
-      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
-    },
-    {
-      "axis": "scope",
-      "token": "edges",
-      "description": "The response emphasises edge cases, errors, and unusual conditions around the subject."
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
     },
     {
       "axis": "method",
-      "token": "indirect",
-      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+      "token": "inversion",
+      "description": "The response begins from undesirable or catastrophic outcomes, asks what would reliably produce or amplify those outcomes, and works backward to avoid, mitigate, or design around those paths."
     },
     {
-      "axis": "directional",
-      "token": "bog",
-      "description": "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance."
+      "axis": "form",
+      "token": "spike",
+      "description": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks."
     }
   ],
   "axes": {
-    "static": "relevant",
-    "completeness": "full",
-    "scope": [
-      "edges"
-    ],
+    "static": "diff",
+    "completeness": "skim",
     "method": [
-      "indirect"
+      "inversion"
     ],
-    "directional": "bog"
+    "form": [
+      "spike"
+    ]
   },
   "persona": {
-    "preset": "designer_to_pm",
-    "preset_label": "Designer to PM",
-    "voice": "as designer",
-    "audience": "to product manager",
-    "tone": "directly",
-    "intent": "evaluate"
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
   },
   "hydrated_persona": [
     {
       "axis": "persona_preset",
-      "token": "designer_to_pm",
-      "description": "Designer to PM"
-    },
-    {
-      "axis": "voice",
-      "token": "as designer",
-      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
-    },
-    {
-      "axis": "audience",
-      "token": "to product manager",
-      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+      "token": "fun_mode",
+      "description": "Fun mode"
     },
     {
       "axis": "tone",
-      "token": "directly",
-      "description": "The response speaks directly and straightforwardly while remaining respectful."
-    },
-    {
-      "axis": "intent",
-      "token": "evaluate",
-      "description": "The response reaches a justified judgment about quality or viability."
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
     }
   ],
   "tokens": [
-    "evaluate",
-    "designer_to_pm",
-    "relevant",
-    "edges",
-    "indirect",
-    "bog"
+    "fun_mode",
+    "diff",
+    "skim",
+    "inversion",
+    "spike"
   ]
 }

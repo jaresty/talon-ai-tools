@@ -43,9 +43,9 @@ class HistoryLifecycleTests(unittest.TestCase):
         snapshot = self._axes_snapshot_from_axes(
             {
                 "completeness": [" full ", "FULL"],
-                "scope": [" focus"],
-                "method": ["plan", "Plan"],
-                "form": ["plain", "Plain"],
+                "scope": [" struct"],
+                "method": ["flow", "Flow"],
+                "form": ["bullets", "Bullets"],
                 "channel": ["slack"],
                 "directional": [" fog", "Fog"],
                 "style": ["casual"],
@@ -56,9 +56,9 @@ class HistoryLifecycleTests(unittest.TestCase):
             axes,
             {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["plan"],
-                "form": ["plain"],
+                "scope": ["struct"],
+                "method": ["flow"],
+                "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
             },
@@ -68,9 +68,9 @@ class HistoryLifecycleTests(unittest.TestCase):
         axes = self._history_axes_for(
             {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["plan"],
-                "form": ["plain"],
+                "scope": ["struct"],
+                "method": ["flow"],
+                "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
                 "unknown": ["drop"],
@@ -80,9 +80,9 @@ class HistoryLifecycleTests(unittest.TestCase):
             axes,
             {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["plan"],
-                "form": ["plain"],
+                "scope": ["struct"],
+                "method": ["flow"],
+                "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
             },
@@ -104,7 +104,7 @@ class HistoryLifecycleTests(unittest.TestCase):
             label="demo snapshot",
             axes={
                 "completeness": [" full "],
-                "scope": ["focus"],
+                "scope": ["struct"],
                 "directional": ["fog"],
             },
             persona={"persona_preset": "peer_engineer_explanation"},
@@ -115,7 +115,7 @@ class HistoryLifecycleTests(unittest.TestCase):
             entry.axes_snapshot.to_dict(),
             {
                 "completeness": ["full"],
-                "scope": ["focus"],
+                "scope": ["struct"],
                 "directional": ["fog"],
             },
         )

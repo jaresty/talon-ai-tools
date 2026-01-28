@@ -29,9 +29,9 @@ if bootstrap is not None:
         def test_axis_snapshot_helper_matches_history_axes_for(self) -> None:
             axes = {
                 "completeness": ["full", "Important: Hydrated completeness"],
-                "scope": ["bound", "Invalid scope"],
+                "scope": ["struct", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
-                "form": ["plain", "Hydrated style"],
+                "form": ["bullets", "Hydrated style"],
                 "channel": ["slack", "Hydrated channel"],
                 "directional": ["fog", "rog"],
             }
@@ -115,10 +115,10 @@ if bootstrap is not None:
                     self.provider_id = ""
                     self.axes = {
                         "completeness": ["full"],
-                        "scope": ["actions"],
+                        "scope": ["act"],
                         "method": ["rigor"],
-                        "form": ["adr"],
-                        "channel": ["slack"],
+                        "form": ["bullets"],
+                        "channel": ["adr"],
                         "directional": ["fog"],
                     }
 
@@ -127,7 +127,7 @@ if bootstrap is not None:
             label, body = rendered[0]
             self.assertIn("rid-axes", label)
             self.assertIn("adr", body)
-            self.assertIn("slack", body)
+            self.assertIn("bullets", body)
             self.assertIn("fog", body)
             self.assertNotIn("recipe", body)
 
@@ -212,10 +212,10 @@ if bootstrap is not None:
                     self.recipe = ""
                     self.axes = {
                         "completeness": ["gist"],
-                        "scope": ["focus"],
-                        "method": ["steps"],
-                        "form": ["adr"],
-                        "channel": ["slack"],
+                        "scope": ["struct"],
+                        "method": ["flow"],
+                        "form": ["bullets"],
+                        "channel": ["adr"],
                         "directional": ["fog"],
                     }
 
@@ -224,7 +224,7 @@ if bootstrap is not None:
             rendered = summary[0]
             self.assertIn("fog", rendered)
             self.assertIn("adr", rendered)
-            self.assertIn("slack", rendered)
+            self.assertIn("bullets", rendered)
 
         def test_history_summary_normalizes_directional_from_axes(self) -> None:
             class DummyEntry:

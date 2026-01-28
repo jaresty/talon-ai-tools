@@ -2446,7 +2446,7 @@ if bootstrap is not None:
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
             GPTState.last_scope = "relations"
-            GPTState.last_method = "cluster"
+            GPTState.last_method = "analysis"
             GPTState.last_form = "bullets"
             GPTState.last_channel = "slack"
             GPTState.last_directional = "fog"
@@ -2571,7 +2571,7 @@ if bootstrap is not None:
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
             GPTState.last_scope = "narrow focus"
-            GPTState.last_method = "cluster"
+            GPTState.last_method = "analysis"
             GPTState.last_form = "adr table"
             GPTState.last_directional = "fog"
 
@@ -2615,7 +2615,7 @@ if bootstrap is not None:
                 for token in match.scopeModifier.split():
                     self.assertIn(token, {"narrow", "focus", "bound"})
                 # Method unchanged.
-                self.assertEqual(match.methodModifier, "cluster")
+                self.assertEqual(match.methodModifier, "analysis")
                 # Form should enforce singleton cap and use the latest token.
                 self.assertEqual(match.formModifier, "bullets")
                 self.assertEqual(match.directionalModifier, "rog")
@@ -2630,7 +2630,7 @@ if bootstrap is not None:
                 for token in GPTState.last_scope.split():
                     self.assertIn(token, {"narrow", "focus", "bound"})
 
-                self.assertEqual(GPTState.last_method, "cluster")
+                self.assertEqual(GPTState.last_method, "analysis")
 
                 # Execution should still go through the normal apply_prompt path.
                 apply_prompt.assert_called_once()
@@ -2906,16 +2906,16 @@ if bootstrap is not None:
         def test_gpt_rerun_last_recipe_filters_unknown_override_tokens(self):
             """Overrides containing unknown/hydrated tokens should be dropped, preserving known tokens."""
             GPTState.reset_all()
-            GPTState.last_recipe = "infer · full · bound · rigor · plain"
+            GPTState.last_recipe = "infer · full · struct · rigor · bullets"
             GPTState.last_static_prompt = "infer"
             GPTState.last_completeness = "full"
-            GPTState.last_scope = "bound"
+            GPTState.last_scope = "struct"
             GPTState.last_method = "rigor"
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["bound"],
+                "scope": ["struct"],
                 "method": ["rigor"],
-                "form": ["adr"],
+                "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
             }
@@ -2937,7 +2937,7 @@ if bootstrap is not None:
                 gpt_module.UserActions.gpt_rerun_last_recipe(
                     "",
                     "full",  # valid completeness
-                    ["bound", "invalid-scope"],  # one valid, one invalid
+                    ["struct", "invalid-scope"],  # one valid, one invalid
                     ["rigor", "hydrated-method"],  # one valid, one invalid
                     "fig",
                     "bullets",
@@ -2945,7 +2945,7 @@ if bootstrap is not None:
                 )
 
                 match = model_prompt.call_args.args[0]
-                self.assertEqual(match.scopeModifier, "bound")
+                self.assertEqual(match.scopeModifier, "struct")
                 self.assertEqual(match.methodModifier, "rigor")
                 self.assertEqual(match.formModifier, "bullets")
                 self.assertFalse(
@@ -2957,7 +2957,7 @@ if bootstrap is not None:
                 GPTState.last_axes,
                 {
                     "completeness": ["full"],
-                    "scope": ["bound"],
+                    "scope": ["struct"],
                     "method": ["rigor"],
                     "form": ["bullets"],
                     "channel": [],

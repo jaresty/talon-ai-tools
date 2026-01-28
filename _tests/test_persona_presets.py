@@ -58,15 +58,12 @@ if bootstrap is not None:
             self.assertTrue(
                 {
                     "teach",
-                    "decide",
-                    "evaluate",
-                    "brainstorm",
                     "appreciate",
                     "persuade",
                     "coach",
                     "entertain",
-                    "resolve",
-                    "understand",
+                    "inform",
+                    "announce",
                 }
                 <= keys
             )
@@ -93,8 +90,8 @@ if bootstrap is not None:
                 "as programmer",
             )
             self.assertEqual(
-                personaConfig.canonical_persona_token("intent", "decide"),
-                "decide",
+                personaConfig.canonical_persona_token("intent", "teach"),
+                "teach",
             )
 
         def test_canonical_persona_token_rejects_spoken_intent_aliases(self) -> None:

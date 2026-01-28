@@ -381,7 +381,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Map dependencies",
         description="List and explain key dependencies and what they depend on.",
-        recipe="dependency · gist · relations · steps · fog",
+        recipe="dependency · gist · struct · steps · fog",
         domain="coding",
     ),
     # Writing / product / reflection patterns

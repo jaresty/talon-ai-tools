@@ -328,11 +328,6 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         intent="teach",
     ),
     IntentPreset(
-        key="evaluate",
-        label="Evaluate / review",
-        intent="evaluate",
-    ),
-    IntentPreset(
         key="appreciate",
         label="Appreciate / thank",
         intent="appreciate",

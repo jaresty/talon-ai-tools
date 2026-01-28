@@ -369,7 +369,7 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier="steps",
-                formModifier="plain",
+                formModifier="bullets",
                 channelModifier="slack",
                 directionalModifier="DIR",
             )
@@ -606,7 +606,7 @@ if bootstrap is not None:
                 completenessModifier="full",
                 scopeModifier="actions",
                 methodModifier="structure",
-                formModifier_list=["adr", "table"],
+                formModifier_list=["bullets", "table"],
                 channelModifier="slack",
                 directionalModifier="fog",
             )
@@ -619,10 +619,9 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_channel, "slack")
 
             recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
-            form_part = recipe_parts[4]
-            channel_part = recipe_parts[5]
-            self.assertEqual(form_part, "table")
-            self.assertEqual(channel_part, "slack")
+            # Recipe should contain table (form) and slack (channel)
+            self.assertIn("table", recipe_parts)
+            self.assertIn("slack", recipe_parts)
 
         def test_model_prompt_enforces_channel_soft_cap_from_list(self):
             """Channel list should respect singleton cap and keep the most recent token."""

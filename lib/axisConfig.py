@@ -218,6 +218,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'adr': 'The response
                    'syntax.',
           'table': 'The response presents the main answer as a Markdown table when feasible, '
                    'keeping columns and rows compact.',
+          'taxonomy': 'The response structures ideas as a classification system, type hierarchy, '
+                      'or category taxonomy, defining types, their relationships, and '
+                      'distinguishing attributes clearly.',
           'test': 'The response presents test cases in a structured format with clear setup, '
                   'execution, and assertion sections, organized by scenario type (happy path, edge '
                   'cases, errors, boundaries) and including descriptive test names.',
@@ -246,6 +249,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'adr': 'The response
                         'recommendations.',
             'boom': 'The response enhances the task by exploring behaviour toward extremes of '
                     'scale or intensity, examining what breaks, dominates, or vanishes.',
+            'cite': 'The response enhances the task by including sources, citations, or references '
+                    'that anchor claims to evidence, enabling verification and further '
+                    'exploration.',
             'constraints': "The response enhances the task by identifying the system's primary "
                            'constraints, analyzing the behaviours they enforce, and framing ways '
                            'to balance or relieve them.',

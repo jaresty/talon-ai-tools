@@ -268,6 +268,7 @@ METHOD_TOKENS = {
     "adversarial",
     "analysis",
     "boom",
+    "cite",
     "constraints",
     "converge",
     "depends",

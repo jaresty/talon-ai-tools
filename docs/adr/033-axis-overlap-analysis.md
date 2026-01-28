@@ -25,10 +25,11 @@ Manual, qualitative assessment of ambiguous adjectives using ADR 033 methods (su
 - **faq** — Style vs. completeness. Decision: *Style* (container).  
 - **announce** — Style vs. method. Decision: *Style* (container).  
 - **debugging** — Method vs. scope vs. style. Decision: *Method* (process).  
-- **mapping** — Method vs. style. Decision: *Method* (representational approach).  
-- **analysis** — Method vs. scope. Decision: *Method* (analytic stance).  
+- **mapping** — Method vs. style. Decision: *Method* (representational approach).
+- **analysis** — Method vs. scope. Decision: *Method* (analytic stance).
+- **cite** — Method. Decision: *Method* (including sources/citations/references).  
 - **liberating** — Method vs. scope vs. style. Decision: *Method* (facilitation pattern).  
-- **taxonomy** — Method vs. completeness vs. style. Decision: *Method* (structuring approach).  
+- **taxonomy** — Method vs. form. Decision: *Form* (classification/type hierarchy output format).  
 - **bug** — Style vs. method vs. scope. Decision: *Style* (container/report).  
 - **codetour** — Style vs. scope. Decision: *Style* (output schema).  
 - **gherkin** — Style vs. scope. Decision: *Style* (output schema).  

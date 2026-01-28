@@ -248,10 +248,10 @@ if bootstrap is not None:
                 "suggestions": [
                     {
                         "name": "Canonical metadata",
-                        "recipe": "describe · full · focus · plan · plain · fog",
+                        "recipe": "show · full · struct · flow · plain · fog",
                         "persona_preset_label": "TEACH JUNIOR DEV",
-                        "intent_purpose": "DECIDE",
-                        "intent_display": "Decide",
+                        "intent_purpose": "INFORM",
+                        "intent_display": "Inform",
                         "why": "Ensure presets with canonical tokens are stored correctly.",
                     }
                 ]
@@ -292,10 +292,10 @@ if bootstrap is not None:
             self.assertEqual(entry.get("persona_voice"), "as teacher")
             self.assertEqual(entry.get("persona_audience"), "to junior engineer")
             self.assertEqual(entry.get("persona_tone"), "kindly")
-            self.assertEqual(entry.get("intent_purpose"), "decide")
-            self.assertEqual(entry.get("intent_preset_key"), "decide")
-            self.assertEqual(entry.get("intent_preset_label"), "Decide")
-            self.assertEqual(entry.get("intent_display"), "Decide")
+            self.assertEqual(entry.get("intent_purpose"), "inform")
+            self.assertEqual(entry.get("intent_preset_key"), "inform")
+            self.assertEqual(entry.get("intent_preset_label"), "Inform")
+            self.assertEqual(entry.get("intent_display"), "Inform")
 
         def test_canonical_persona_value_normalises_aliases(self) -> None:
             self.assertEqual(

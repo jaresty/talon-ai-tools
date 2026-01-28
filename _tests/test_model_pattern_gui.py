@@ -306,7 +306,7 @@ if bootstrap is not None:
                 self.assertEqual(_axis_value("", mapping), "")
 
             def test_parse_recipe_extracts_static_prompt_and_axes(self) -> None:
-                recipe = "describe · full · narrow · debugging · bullets · rog"
+                recipe = "show · full · struct · diagnose · bullets · rog"
 
                 (
                     static_prompt,
@@ -318,10 +318,10 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "narrow")
-                self.assertEqual(method, "debugging")
+                self.assertEqual(scope, "struct")
+                self.assertEqual(method, "diagnose")
                 self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "rog")
@@ -341,12 +341,12 @@ if bootstrap is not None:
                 # modelPatternGUI keeps last_recipe concise and token-based.
                 self.assertEqual(
                     GPTState.last_recipe,
-                    "describe · full · narrow · debugging",
+                    "show · full · struct · diagnose",
                 )
-                self.assertEqual(GPTState.last_static_prompt, "describe")
+                self.assertEqual(GPTState.last_static_prompt, "show")
                 self.assertEqual(GPTState.last_completeness, "full")
-                self.assertEqual(GPTState.last_scope, "narrow")
-                self.assertEqual(GPTState.last_method, "debugging")
+                self.assertEqual(GPTState.last_scope, "struct")
+                self.assertEqual(GPTState.last_method, "diagnose")
                 self.assertEqual(GPTState.last_form, "")
                 self.assertEqual(GPTState.last_channel, "")
                 self.assertEqual(GPTState.last_directional, "rog")
@@ -397,7 +397,7 @@ if bootstrap is not None:
 
                 UserActions.model_pattern_run_name(target.name)
 
-                self.assertEqual(GPTState.last_static_prompt, "describe")
+                self.assertEqual(GPTState.last_static_prompt, "show")
                 self.assertEqual(GPTState.last_completeness, "gist")
                 self.assertEqual(GPTState.last_scope, "struct")
                 self.assertEqual(GPTState.last_method, "mapping")
@@ -419,9 +419,9 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(target.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "focus")
+                self.assertEqual(scope, "struct")
                 self.assertEqual(method, "flow")
                 self.assertEqual(form, "")
                 self.assertEqual(channel, "")
@@ -442,9 +442,9 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(slack.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "focus")
+                self.assertEqual(scope, "struct")
                 self.assertEqual(method, "")
                 self.assertEqual(form, "")
                 self.assertEqual(channel, "slack")
@@ -460,17 +460,17 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(jira.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "focus")
-                self.assertEqual(method, "steps")
+                self.assertEqual(scope, "act")
+                self.assertEqual(method, "")
                 self.assertEqual(form, "story")
                 self.assertEqual(channel, "jira")
                 self.assertEqual(directional, "fog")
 
             def test_parse_recipe_ignores_unknown_axis_tokens(self) -> None:
                 """Recipes with unknown axis tokens should keep known tokens and ignore unknown ones."""
-                recipe = "describe · full · actions UNKNOWN_SCOPE · structure UNKNOWN_METHOD · jira UNKNOWN_FORM · rog"
+                recipe = "show · full · act UNKNOWN_SCOPE · mapping UNKNOWN_METHOD · jira UNKNOWN_FORM · rog"
 
                 (
                     static_prompt,
@@ -482,12 +482,12 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
                 # Only known scope token should be retained.
-                self.assertEqual(scope, "actions")
+                self.assertEqual(scope, "act")
                 # Only known method token should be retained.
-                self.assertEqual(method, "structure")
+                self.assertEqual(method, "mapping")
                 # Only known channel token should be retained.
                 self.assertEqual(form, "")
                 self.assertEqual(channel, "jira")
@@ -496,8 +496,8 @@ if bootstrap is not None:
             def test_parse_recipe_applies_axis_caps_and_canonicalises(self) -> None:
                 """Recipes exceeding axis caps should be canonicalised with last-wins semantics."""
                 recipe = (
-                    "describe · full · actions edges system · steps plan rigor filter · "
-                    "plain bullets taxonomy · slack jira · rog fog"
+                    "show · full · act fail struct · flow prioritize rigor ·"
+                    "bullets taxonomy · slack jira · rog fog"
                 )
 
                 (
@@ -510,16 +510,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "edges system")
-                self.assertEqual(method, "filter plan rigor")
+                self.assertEqual(scope, "fail struct")
+                self.assertEqual(method, "flow prioritize rigor")
                 self.assertEqual(form, "taxonomy")
                 self.assertEqual(channel, "jira")
                 self.assertEqual(directional, "fog")
 
             def test_motif_scan_pattern_uses_motifs_method(self) -> None:
-                """Motif scan pattern should use relations scope and motifs method."""
+                """Motif scan pattern should use struct scope and motifs method."""
                 motif = next(p for p in PATTERNS if p.name == "Motif scan")
 
                 (
@@ -532,9 +532,9 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(motif.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "relations")
+                self.assertEqual(scope, "struct")
                 self.assertEqual(method, "motifs")
                 self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
@@ -547,8 +547,8 @@ if bootstrap is not None:
                 GPTState.last_recipe = "unit-test-recipe"
                 GPTState.last_axes = {
                     "completeness": ["full"],
-                    "scope": ["narrow"],
-                    "method": ["debugging"],
+                    "scope": ["struct"],
+                    "method": ["diagnose"],
                     "form": [],
                     "channel": [],
                 }
@@ -559,12 +559,12 @@ if bootstrap is not None:
                 self.assertEqual(snapshot["domain"], target.domain)
                 self.assertEqual(snapshot["description"], target.description)
                 self.assertEqual(snapshot["recipe"], target.recipe)
-                self.assertEqual(snapshot["static_prompt"], "describe")
+                self.assertEqual(snapshot["static_prompt"], "show")
 
                 axes = snapshot["axes"]
                 self.assertEqual(axes["completeness"], "full")
-                self.assertEqual(axes["scope"], ["narrow"])
-                self.assertEqual(axes["method"], ["debugging"])
+                self.assertEqual(axes["scope"], ["struct"])
+                self.assertEqual(axes["method"], ["diagnose"])
                 self.assertEqual(axes.get("form", []), [])
                 self.assertEqual(axes.get("channel", []), [])
                 self.assertEqual(axes["directional"], "rog")
@@ -612,7 +612,7 @@ if bootstrap is not None:
                 # recipe_line should be a concise, token-based recap including directional.
                 self.assertEqual(
                     view["recipe_line"],
-                    "describe · full · struct · diagnose · rog",
+                    "show · full · struct · diagnose · rog",
                 )
                 # last_axes should surface the seeded GPTState.last_axes.
                 self.assertEqual(view["last_axes"], GPTState.last_axes)
@@ -684,16 +684,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "focus")
+                self.assertEqual(scope, "struct")
                 self.assertEqual(method, "")
                 self.assertEqual(form, "taxonomy")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "rog")
 
-            def test_xp_next_steps_pattern_uses_xp_method(self) -> None:
-                """XP next steps pattern should use xp method on actions scope."""
+            def test_xp_next_steps_pattern_uses_experimental_method(self) -> None:
+                """XP next steps pattern should use experimental method on act scope."""
                 pattern = next(p for p in PATTERNS if p.name == "XP next steps")
 
                 (
@@ -706,10 +706,10 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "actions")
-                self.assertEqual(method, "xp")
+                self.assertEqual(scope, "act")
+                self.assertEqual(method, "experimental")
                 self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "ong")
@@ -728,18 +728,18 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "focus")
-                self.assertEqual(method, "scaffold")
-                self.assertEqual(form, "")
+                self.assertEqual(scope, "struct")
+                self.assertEqual(method, "")
+                self.assertEqual(form, "scaffold")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "fog")
 
             def test_liberating_facilitation_pattern_uses_liberating_method(
                 self,
             ) -> None:
-                """Liberating facilitation pattern should use liberating method."""
+                """Liberating facilitation pattern should use facilitate form."""
                 pattern = next(
                     p for p in PATTERNS if p.name == "Liberating facilitation"
                 )
@@ -754,16 +754,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "focus")
-                self.assertEqual(method, "liberating")
-                self.assertEqual(form, "bullets")
+                self.assertEqual(scope, "struct")
+                self.assertEqual(method, "")
+                self.assertEqual(form, "facilitate")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "rog")
 
             def test_diverge_options_pattern_uses_diverge_method(self) -> None:
-                """Diverge options pattern should use diverge method."""
+                """Diverge options pattern should use explore method."""
                 pattern = next(p for p in PATTERNS if p.name == "Diverge options")
 
                 (
@@ -776,10 +776,10 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "focus")
-                self.assertEqual(method, "diverge")
+                self.assertEqual(scope, "struct")
+                self.assertEqual(method, "explore")
                 self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "fog")
@@ -798,16 +798,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "focus")
+                self.assertEqual(scope, "struct")
                 self.assertEqual(method, "converge")
                 self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "rog")
 
             def test_mapping_scan_pattern_uses_mapping_method(self) -> None:
-                """Mapping scan pattern should use mapping method on relations scope."""
+                """Mapping scan pattern should use mapping method on struct scope."""
                 pattern = next(p for p in PATTERNS if p.name == "Mapping scan")
 
                 (
@@ -820,16 +820,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "relations")
+                self.assertEqual(scope, "struct")
                 self.assertEqual(method, "mapping")
                 self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "fog")
 
             def test_tap_map_pattern_uses_full_and_taxonomy(self) -> None:
-                """Tap map pattern should use full completeness, system scope, mapping method, and taxonomy style."""
+                """Tap map pattern should use full completeness, struct scope, mapping method, and taxonomy style."""
                 pattern = next(p for p in PATTERNS if p.name == "Tap map")
 
                 (
@@ -842,16 +842,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "system")
+                self.assertEqual(scope, "struct")
                 self.assertEqual(method, "mapping")
                 self.assertEqual(form, "taxonomy")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "fog")
 
             def test_multi_angle_view_pattern_uses_diverge_and_cards(self) -> None:
-                """Multi-angle view pattern should use diverge method on relations scope with cards style."""
+                """Multi-angle view pattern should use explore method on struct scope with cards style."""
                 pattern = next(p for p in PATTERNS if p.name == "Multi-angle view")
 
                 (
@@ -864,16 +864,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "relations")
-                self.assertEqual(method, "diverge")
+                self.assertEqual(scope, "struct")
+                self.assertEqual(method, "explore")
                 self.assertEqual(form, "cards")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "rog")
 
             def test_flip_it_review_pattern_uses_adversarial_and_edges(self) -> None:
-                """Flip it review pattern should use adversarial method on edges scope with fog lens."""
+                """Flip it review pattern should use adversarial method on fail scope with fog lens."""
                 pattern = next(p for p in PATTERNS if p.name == "Flip it review")
 
                 (
@@ -886,16 +886,16 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "edges")
+                self.assertEqual(scope, "fail")
                 self.assertEqual(method, "adversarial")
                 self.assertEqual(form, "")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "fog")
 
             def test_systems_path_pattern_uses_mapping_steps_and_ong(self) -> None:
-                """Systems path pattern should use mapping method, steps, and ong directional on system scope."""
+                """Systems path pattern should use systemic and mapping methods, and ong directional on struct scope."""
                 pattern = next(p for p in PATTERNS if p.name == "Systems path")
 
                 (
@@ -908,10 +908,10 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "system")
-                self.assertEqual(method, "mapping")
+                self.assertEqual(scope, "struct")
+                self.assertEqual(method, "mapping systemic")
                 # Systems path does not fix a specific style; default is fine.
                 self.assertEqual(form, "")
                 self.assertEqual(channel, "")

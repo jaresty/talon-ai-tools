@@ -146,8 +146,8 @@ if bootstrap is not None:
                 tone="directly",
                 intent="appreciate",
                 completeness="full",
-                scope="actions",
-                method="plan",
+                scope="act",
+                method="flow",
                 form="bullets",
                 channel="slack",
             )
@@ -173,22 +173,22 @@ if bootstrap is not None:
                 hydrated,
             )
             self.assertIn(
-                "Intent: The response expresses appreciation or thanks.", hydrated
+                "Intent: Express thanks, recognition, or positive regard.", hydrated
             )
             self.assertIn(
                 "Completeness: The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
                 hydrated,
             )
             self.assertIn(
-                "Scope: The response stays within the selected target and focuses only on concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
+                "Scope: The response focuses on what is being done or intended",
                 hydrated,
             )
             self.assertIn(
-                "Method: The response offers a short plan first and then carries it out, clearly separating the plan from the execution.",
+                "Method: The response enhances the task by explaining step-by-step progression",
                 hydrated,
             )
             self.assertIn(
-                "Form: The response presents the main answer as concise bullet points only, avoiding long paragraphs.",
+                "Form: The response organizes ideas as concise bullet points, avoiding long paragraphs.",
                 hydrated,
             )
             self.assertIn(

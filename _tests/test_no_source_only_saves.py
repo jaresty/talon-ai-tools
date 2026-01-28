@@ -19,7 +19,7 @@ class NoSourceOnlySavesTests(unittest.TestCase):
             rel = path.relative_to(root)
             rel_str = str(rel)
             # Allow ADRs to record historical context and skip generated/cache/tmp artefacts.
-            if rel_str.startswith(("docs/adr", "tmp/", "tmp\\", "__pycache__", ".git", ".pytest_cache")):
+            if rel_str.startswith(("docs/adr", "tmp/", "tmp\\", "__pycache__", ".git", ".pytest_cache", ".grepai")):
                 continue
             if rel.name.endswith((".pyc", ".pyo")):
                 continue

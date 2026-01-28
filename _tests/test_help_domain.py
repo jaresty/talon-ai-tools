@@ -765,10 +765,10 @@ if bootstrap is not None:
                 tone="Catalog Tone",
             )
             catalog_intent = SimpleNamespace(
-                key="decide",
-                label="Catalog Plan",
-                intent="plan",
-                spoken="catalog plan alias",
+                key="inform",
+                label="Catalog Inform",
+                intent="inform",
+                spoken="catalog inform alias",
             )
             catalog_snapshot = SimpleNamespace(
                 persona_presets={"mentor": catalog_persona},
@@ -778,11 +778,11 @@ if bootstrap is not None:
                     "audience": ["Catalog Audience"],
                     "tone": ["Catalog Tone"],
                 },
-                intent_presets={"decide": catalog_intent},
-                intent_spoken_map={"catalog plan alias": "decide"},
-                intent_axis_tokens={"intent": ["decide"]},
-                intent_buckets={"assist": ["decide"]},
-                intent_display_map={"decide": "Catalog Plan Display"},
+                intent_presets={"inform": catalog_intent},
+                intent_spoken_map={"catalog inform alias": "inform"},
+                intent_axis_tokens={"intent": ["inform"]},
+                intent_buckets={"assist": ["inform"]},
+                intent_display_map={"inform": "Catalog Inform Display"},
             )
             legacy_persona = SimpleNamespace(
                 key="mentor",
@@ -793,10 +793,10 @@ if bootstrap is not None:
                 tone="Legacy Tone",
             )
             legacy_intent = SimpleNamespace(
-                key="decide",
-                label="Legacy Plan",
-                intent="legacy-plan",
-                spoken="legacy plan alias",
+                key="inform",
+                label="Legacy Inform",
+                intent="legacy-inform",
+                spoken="legacy inform alias",
             )
             legacy_maps = SimpleNamespace(
                 persona_presets={"mentor": legacy_persona},
@@ -806,10 +806,10 @@ if bootstrap is not None:
                     "audience": {"legacy audience": "Legacy Audience"},
                     "tone": {"legacy tone": "Legacy Tone"},
                 },
-                intent_presets={"decide": legacy_intent},
-                intent_preset_aliases={"legacy plan alias": "decide"},
-                intent_synonyms={"legacy plan alias": "decide"},
-                intent_display_map={"decide": "Legacy Plan Display"},
+                intent_presets={"inform": legacy_intent},
+                intent_preset_aliases={"legacy inform alias": "inform"},
+                intent_synonyms={"legacy inform alias": "inform"},
+                intent_display_map={"inform": "Legacy Inform Display"},
             )
 
             with ExitStack() as stack:
@@ -864,10 +864,10 @@ if bootstrap is not None:
             self.assertIn("Catalog Mentor", persona_line)
             self.assertNotIn("Legacy Mentor", persona_line)
             intent_line = next(
-                line for line in lines if line.startswith("- intent plan")
+                line for line in lines if line.startswith("- intent inform")
             )
-            self.assertIn("Catalog Plan Display", intent_line)
-            self.assertNotIn("Legacy Plan Display", intent_line)
+            self.assertIn("Catalog Inform Display", intent_line)
+            self.assertNotIn("Legacy Inform Display", intent_line)
 
         def test_help_metadata_summary_lines_respects_headers(self) -> None:
             snapshot = HelpMetadataSnapshot(
@@ -909,20 +909,20 @@ if bootstrap is not None:
                 ),
                 intents=(
                     HelpIntentMetadata(
-                        key="decide",
-                        display_label="Zeta Plan",
-                        canonical_intent="plan",
-                        spoken_display="Zeta Plan",
-                        spoken_alias="zeta plan",
-                        voice_hint="Say: intent zeta plan",
+                        key="teach",
+                        display_label="Zeta Teach",
+                        canonical_intent="teach",
+                        spoken_display="Zeta Teach",
+                        spoken_alias="zeta teach",
+                        voice_hint="Say: intent zeta teach",
                     ),
                     HelpIntentMetadata(
-                        key="decide",
-                        display_label="Beta Decide",
-                        canonical_intent="decide",
-                        spoken_display="Beta Decide",
-                        spoken_alias="beta decide",
-                        voice_hint="Say: intent beta decide",
+                        key="inform",
+                        display_label="Beta Inform",
+                        canonical_intent="inform",
+                        spoken_display="Beta Inform",
+                        spoken_alias="beta inform",
+                        voice_hint="Say: intent beta inform",
                     ),
                 ),
                 headers=(),
@@ -942,8 +942,8 @@ if bootstrap is not None:
             intent_lines = [line for line in lines if line.startswith("- intent ")]
             self.assertEqual(
                 [
-                    "- intent decide (say: intent beta decide): Beta Decide (decide)",
-                    "- intent plan (say: intent zeta plan): Zeta Plan (plan)",
+                    "- intent inform (say: intent beta inform): Beta Inform (inform)",
+                    "- intent teach (say: intent zeta teach): Zeta Teach (teach)",
                 ],
                 intent_lines,
             )

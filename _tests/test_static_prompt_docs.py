@@ -27,30 +27,30 @@ if bootstrap is not None:
             catalog = static_prompt_catalog()
 
             # A known profiled prompt should include description and axes.
-            todo_entry = next(
-                (entry for entry in catalog["profiled"] if entry["name"] == "todo"),
+            make_entry = next(
+                (entry for entry in catalog["profiled"] if entry["name"] == "make"),
                 None,
             )
-            self.assertIsNotNone(todo_entry, "Expected todo in catalog")
+            self.assertIsNotNone(make_entry, "Expected make in catalog")
             self.assertIn(
-                "The response formats the content as a todo list.",
-                todo_entry["description"],
+                "The response produces content that did not previously exist",
+                make_entry["description"],
             )
-            self.assertIn("checklist", todo_entry["axes"].get("form", []))
+            self.assertIn("full", make_entry["axes"].get("completeness", []))
 
             # Talon list tokens should be present for drift checks.
-            self.assertIn("todo", catalog["talon_list_tokens"])
+            self.assertIn("make", catalog["talon_list_tokens"])
 
         def test_static_prompt_docs_include_profiled_and_unprofiled_prompts(
             self,
         ) -> None:
             docs = _build_static_prompt_docs()
 
-            # A profiled prompt like "todo" should appear with its description
+            # A profiled prompt like "make" should appear with its description
             # and axis defaults, since it lives in STATIC_PROMPT_CONFIG.
-            self.assertIn("todo", docs)
+            self.assertIn("make", docs)
             self.assertIn(
-                "The response formats the content as a todo list.",
+                "The response produces content that did not previously exist",
                 docs,
             )
             self.assertIn("defaults:", docs)
@@ -135,8 +135,8 @@ if bootstrap is not None:
                         "description": "Format diagnostic output.",
                         "axes": {
                             "completeness": ["Full", "Important: extra"],
-                            "scope": ["Focus"],
-                            "method": ["Steps"],
+                            "scope": ["Struct"],
+                            "method": ["Flow"],
                             "directional": ["Fog"],
                         },
                     }
@@ -152,12 +152,12 @@ if bootstrap is not None:
 
             self.assertIn("diagnostic", docs)
             self.assertIn("completeness=full", docs)
-            self.assertIn("scope=focus", docs)
-            self.assertIn("method=steps", docs)
+            self.assertIn("scope=struct", docs)
+            self.assertIn("method=flow", docs)
             self.assertIn("directional=fog", docs)
             self.assertNotIn("Important:", docs)
             self.assertNotIn("Full", docs)
-            self.assertNotIn("Focus", docs)
+            self.assertNotIn("Struct", docs)
             self.assertNotIn("Fog", docs)
 
         def test_axis_docs_include_all_axis_sections(self) -> None:
@@ -214,11 +214,6 @@ if bootstrap is not None:
                 method_keys,
                 "Legacy 'samples' method token should be removed per ADR 076",
             )
-            self.assertIn(
-                "socratic",
-                method_keys,
-                "Expected 'socratic' method token from ADR 018 to be present",
-            )
             channel_keys: set[str] = set((axes.get("channel") or {}).keys())
 
             self.assertIn(
@@ -226,17 +221,21 @@ if bootstrap is not None:
                 form_keys,
                 "Expected 'faq' form token from ADR 018 to be present",
             )
-            for token in ("codetour", "diagram", "html", "svg", "variants"):
+            self.assertIn(
+                "socratic",
+                form_keys,
+                "Expected 'socratic' form token from ADR 018 to be present",
+            )
+            self.assertIn(
+                "variants",
+                form_keys,
+                "Expected 'variants' form token after ADR 076 rebucketing",
+            )
+            for token in ("codetour", "diagram", "html", "svg"):
                 self.assertIn(
                     token,
-                    form_keys,
-                    f"Expected '{token}' form token after ADR 076 rebucketing",
-                )
-            for token in ("diagram", "html", "codetour", "svg"):
-                self.assertNotIn(
-                    token,
                     channel_keys,
-                    f"Channel tokens should no longer include '{token}' after ADR 076",
+                    f"Expected '{token}' channel token after ADR 091/092 rebucketing",
                 )
             self.assertIn(
                 "slack",

@@ -371,7 +371,7 @@ def main() -> int:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "Decide",
+                    "intent_display": "Inform",
                 },
             )
         except Exception as exc:  # pragma: no cover - defensive

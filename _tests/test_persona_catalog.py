@@ -35,11 +35,11 @@ if not TYPE_CHECKING:
 
             intent_tokens = snapshot.intent_axis_tokens.get("intent") or []
             self.assertIn("teach", intent_tokens)
-            self.assertIn("decide", intent_tokens)
+            self.assertIn("inform", intent_tokens)
 
             intent_display_map = snapshot.intent_display_map
             self.assertEqual(intent_display_map.get("teach"), "Teach / explain")
-            self.assertEqual(intent_display_map.get("decide"), "Decide")
+            self.assertEqual(intent_display_map.get("inform"), "Inform")
 
 else:
 

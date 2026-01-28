@@ -621,11 +621,6 @@
           "key": "entertain",
           "label": "Entertain"
         },
-        "evaluate": {
-          "intent": "evaluate",
-          "key": "evaluate",
-          "label": "Evaluate / review"
-        },
         "inform": {
           "intent": "inform",
           "key": "inform",
@@ -647,7 +642,6 @@
         "appreciate": "appreciate",
         "coach": "coach",
         "entertain": "entertain",
-        "evaluate": "evaluate",
         "inform": "inform",
         "persuade": "persuade",
         "teach": "teach"
@@ -670,7 +664,6 @@
         "appreciate": "Appreciate / thank",
         "coach": "Coach",
         "entertain": "Entertain",
-        "evaluate": "Evaluate / review",
         "inform": "Inform",
         "persuade": "Persuade",
         "teach": "Teach / explain"
@@ -1465,7 +1458,7 @@
   "checksums": {
     "axes": "336a22701bcfa3866502d69ab30875912f70052dee09a6d41f8706b1d35bc074",
     "static_prompts": "3bea1d9a46e494449f99df07f995c0f430eb481680ff0ca9332a4a901975159f",
-    "persona": "41597951edbe7eeddff86996f15afd65d7e63d9e62967e6c9d7ef0160df7da50",
+    "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
     "slugs": "75d406fcc70d202519d7c901cecc428efa31453989f06b7770a03009604802ea"
   }

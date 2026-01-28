@@ -40,8 +40,8 @@ def test_suggest_context_snapshot_uses_canonical_tokens():
         tone="directly",
         intent="appreciate",
         completeness="full",
-        scope="actions",
-        method="plan",
+        scope="act",
+        method="flow",
         form="bullets",
         channel="slack",
     )
@@ -54,8 +54,8 @@ def test_suggest_context_snapshot_uses_canonical_tokens():
         "tone": "directly",
         "intent": "appreciate",
         "completeness": "full",
-        "scope": "actions",
-        "method": "plan",
+        "scope": "act",
+        "method": "flow",
         "form": "bullets",
         "channel": "slack",
     }
@@ -95,8 +95,8 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
         tone="directly",
         intent="appreciate",
         completeness="full",
-        scope="actions",
-        method="plan",
+        scope="act",
+        method="flow",
         form="bullets",
         channel="slack",
     )
@@ -158,7 +158,7 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
         ]
     ), content
     # Intent intent
-    assert _contains_any(["Intent: The response expresses appreciation or thanks."]), (
+    assert _contains_any(["Intent: Express thanks, recognition, or positive regard."]), (
         content
     )
     # Contract axes
@@ -169,17 +169,17 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
     ), content
     assert _contains_any(
         [
-            "Scope: The response stays within the selected target and focuses only on concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
+            "Scope: The response focuses on what is being done or intended",
         ]
     ), content
     assert _contains_any(
         [
-            "Method: The response offers a short plan first and then carries it out, clearly separating the plan from the execution.",
+            "Method: The response enhances the task by explaining step-by-step progression",
         ]
     ), content
     assert _contains_any(
         [
-            "Form: The response presents the main answer as concise bullet points only, avoiding long paragraphs.",
+            "Form: The response organizes ideas as concise bullet points, avoiding long paragraphs.",
         ]
     ), content
     assert _contains_any(
@@ -202,8 +202,8 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
         "user.model_default_tone": ["directly"],
         "user.model_default_intent": ["appreciate"],
         "user.model_default_completeness": "full",
-        "user.model_default_scope": "actions",
-        "user.model_default_method": "plan",
+        "user.model_default_scope": "act",
+        "user.model_default_method": "flow",
         "user.model_default_form": "bullets",
         "user.model_default_channel": "slack",
     }
@@ -221,7 +221,7 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
             def wait(self, timeout=None):
                 return None
 
-        dummy_json = '{"suggestions":[{"name":"demo","recipe":"infer · full · actions · plan · bullets · slack · fog"}]}'
+        dummy_json = '{"suggestions":[{"name":"demo","recipe":"show · full · act · flow · bullets · slack · fog"}]}'
 
         mod = sys.modules[_suggest_context_snapshot.__module__]
 
@@ -261,15 +261,15 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
             "Voice: Act as a programmer",
             "Audience: The audience for this is the stakeholders",
             "Tone: The response speaks directly and straightforwardly while remaining respectful.",
-            "Intent: The response expresses appreciation or thanks.",
+            "Intent: Express thanks, recognition, or positive regard.",
         }
         for needle in persona_expected:
             assert needle in content
 
         axis_expected = [
             "Completeness: " + axis_hydrate_tokens("completeness", ["full"])[0],
-            "Scope: " + " ".join(axis_hydrate_tokens("scope", ["actions"])),
-            "Method: " + " ".join(axis_hydrate_tokens("method", ["plan"])),
+            "Scope: " + " ".join(axis_hydrate_tokens("scope", ["act"])),
+            "Method: " + " ".join(axis_hydrate_tokens("method", ["flow"])),
             "Form: " + " ".join(axis_hydrate_tokens("form", ["bullets"])),
             "Channel: " + " ".join(axis_hydrate_tokens("channel", ["slack"])),
         ]

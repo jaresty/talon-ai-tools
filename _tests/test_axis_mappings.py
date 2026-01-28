@@ -18,9 +18,9 @@ if bootstrap is not None:
             self.assertIn("The response", mapping["full"])
 
         def test_axis_hydrate_token_prefers_description_and_passthrough(self) -> None:
-            hydrated = axisMappings.axis_hydrate_token("scope", "focus")
+            hydrated = axisMappings.axis_hydrate_token("scope", "struct")
             self.assertNotEqual(hydrated, "")
-            self.assertNotEqual(hydrated, "focus")
+            self.assertNotEqual(hydrated, "struct")
             # Unknown tokens should pass through unchanged.
             self.assertEqual(
                 axisMappings.axis_hydrate_token("scope", "unknown"), "unknown"

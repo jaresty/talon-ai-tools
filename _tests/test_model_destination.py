@@ -170,7 +170,7 @@ if bootstrap is not None:
         def test_browser_includes_recipe_metadata_from_gpt_state(self, builder_cls):
             # Ensure clean state before configuring recipe fields.
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · focus · plain"
+            GPTState.last_recipe = "describe · full · struct · plain"
             GPTState.last_directional = "fog"
             GPTState.last_static_prompt = "describe"
 
@@ -188,10 +188,10 @@ if bootstrap is not None:
             ]
 
             self.assertIn(
-                "Recipe: describe · full · focus · plain · fog", paragraph_texts
+                "Recipe: describe · full · struct · plain · fog", paragraph_texts
             )
             self.assertIn(
-                "Say: model run describe full focus plain fog", paragraph_texts
+                "Say: model run describe full struct plain fog", paragraph_texts
             )
             self.assertTrue(
                 any("model show grammar" in text for text in paragraph_texts),
@@ -209,7 +209,7 @@ if bootstrap is not None:
             GPTState.reset_all()
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["bound"],
+                "scope": ["struct"],
                 "method": ["rigor"],
                 "form": ["plain"],
                 "channel": ["slack"],
@@ -229,17 +229,17 @@ if bootstrap is not None:
             ]
             # Recipe should be constructed from last_axes tokens including directional.
             self.assertIn(
-                "Recipe: infer · full · bound · rigor · plain · slack · fog",
+                "Recipe: infer · full · struct · rigor · plain · slack · fog",
                 paragraph_texts,
             )
             self.assertIn(
-                "Say: model run infer full bound rigor plain slack fog", paragraph_texts
+                "Say: model run infer full struct rigor plain slack fog", paragraph_texts
             )
 
         @patch.object(model_destination_module, "Builder")
         def test_browser_includes_meta_section_when_available(self, builder_cls):
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · focus · plain"
+            GPTState.last_recipe = "describe · full · struct · plain"
             GPTState.last_directional = "fog"
             GPTState.last_static_prompt = "describe"
 
@@ -281,25 +281,25 @@ if bootstrap is not None:
         ):
             persona_intent_maps_reset()
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_recipe = "describe · full · struct · flow · plain · fog"
             GPTState.last_static_prompt = "describe"
             GPTState.last_directional = "fog"
             GPTState.last_completeness = "full"
-            GPTState.last_scope = "focus"
-            GPTState.last_method = "plan"
+            GPTState.last_scope = "struct"
+            GPTState.last_method = "flow"
             GPTState.last_form = "plain"
             GPTState.last_channel = "slack"
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["plan"],
+                "scope": ["struct"],
+                "method": ["flow"],
                 "form": ["plain"],
                 "channel": ["slack"],
                 "directional": ["fog"],
             }
             GPTState.last_suggest_context = {
                 "persona_preset_key": "teach_junior_dev",
-                "intent_preset_key": "decide",
+                "intent_preset_key": "inform",
             }
 
             result = PromptResult.from_messages([format_message("response body")])
@@ -343,9 +343,9 @@ if bootstrap is not None:
                 "axes voice=as teacher, audience=to junior engineer, tone=kindly",
                 written,
             )
-            self.assertIn("intent_preset: decide", written)
-            self.assertIn("label=Decide", written)
-            self.assertIn("purpose=decide", written)
+            self.assertIn("intent_preset: inform", written)
+            self.assertIn("label=Inform", written)
+            self.assertIn("purpose=inform", written)
             self.assertIn("say: intent", written)
 
         @patch.object(model_destination_module, "Browser")
@@ -410,7 +410,7 @@ if bootstrap is not None:
                 getattr(GPTState, "current_destination_kind", ""), "window"
             )
 
-        def test_paste_destination_rechecks_focus_before_inserting(self):
+        def test_paste_destination_rechecks_struct_before_inserting(self):
             GPTState.reset_all()
             paste = model_destination_module.Paste()
             result = PromptResult.from_messages([format_message("response")])
@@ -431,7 +431,7 @@ if bootstrap is not None:
                 getattr(GPTState, "current_destination_kind", ""), "window"
             )
 
-        def test_paste_destination_pastes_when_focus_stable(self):
+        def test_paste_destination_pastes_when_struct_stable(self):
             GPTState.reset_all()
             paste = model_destination_module.Paste()
             result = PromptResult.from_messages([format_message("response")])
@@ -547,7 +547,7 @@ if bootstrap is not None:
             talon_settings.set("user.model_source_save_directory", tmpdir)
 
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · focus · plain"
+            GPTState.last_recipe = "describe · full · struct · plain"
             GPTState.last_directional = "fog"
             GPTState.last_static_prompt = "describe"
 
@@ -582,7 +582,7 @@ if bootstrap is not None:
             GPTState.last_method = "legacy-method"
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["bound", "edges"],
+                "scope": ["struct", "edges"],
                 "method": ["rigor"],
                 "form": ["plain"],
                 "channel": ["slack"],
@@ -601,7 +601,7 @@ if bootstrap is not None:
 
             # Filename slug should reflect the axis tokens from last_axes
             # rather than the legacy last_* strings.
-            self.assertIn("infer-full-bound-edges-rigor-plain-slack-fog", filename)
+            self.assertIn("infer-full-struct-edges-rigor-plain-slack-fog", filename)
 
             path = os.path.join(tmpdir, filename)
             with open(path, "r", encoding="utf-8") as f:
@@ -609,7 +609,7 @@ if bootstrap is not None:
 
             # Header should include axis tokens derived from last_axes.
             self.assertIn("completeness: full", content)
-            self.assertIn("scope_tokens: bound edges", content)
+            self.assertIn("scope_tokens: struct edges", content)
             self.assertIn("method_tokens: rigor", content)
             self.assertIn("form_tokens: plain", content)
             self.assertIn("channel_tokens: slack", content)

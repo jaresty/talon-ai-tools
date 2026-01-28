@@ -21,8 +21,8 @@ if bootstrap is not None:
             valid_directional = directional_tokens[:2]
 
             axes = {
-                "scope": ["focus", "Important: expand scope"],
-                "method": ["steps", "unknown-method"],
+                "scope": ["struct", "Important: expand scope"],
+                "method": ["flow", "unknown-method"],
                 "form": ["bullets"],
                 "channel": ["jira", "unknown-channel"],
                 "directional": valid_directional + ["unknown-direction"],
@@ -30,8 +30,8 @@ if bootstrap is not None:
 
             filtered = _filter_axis_tokens(axes)  # type: ignore[arg-type]
 
-            self.assertEqual(filtered["scope"], ["focus"])
-            self.assertEqual(filtered["method"], ["steps"])
+            self.assertEqual(filtered["scope"], ["struct"])
+            self.assertEqual(filtered["method"], ["flow"])
             self.assertEqual(filtered["form"], ["bullets"])
             self.assertEqual(filtered["channel"], ["jira"])
             # Unknown directional should be dropped; known catalog tokens kept.

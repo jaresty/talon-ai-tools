@@ -75,8 +75,8 @@ def test_help_hub_cheat_sheet_includes_all_intent_tokens():
     ):
         for token in tokens:
             assert token.lower() in cheat.lower(), f"{token} missing from {label} line"
-    # Ensure new intent preset keys are represented.
-    assert "understand" in " ".join(buckets.get("task", [])).lower()
+    # Ensure task intent tokens are represented.
+    assert "inform" in " ".join(buckets.get("task", [])).lower()
 
 
 def test_help_domain_uses_lifecycle_axis_snapshot():
@@ -336,17 +336,17 @@ def test_help_hub_canonical_persona_token_uses_orchestrator(monkeypatch):
 
 def test_help_hub_intent_buckets_use_orchestrator(monkeypatch):
     orchestrator_intent = SimpleNamespace(
-        key="decide",
-        label="Decide (orchestrator)",
-        intent="decide",
+        key="inform",
+        label="Inform (orchestrator)",
+        intent="inform",
     )
     orchestrator = SimpleNamespace(
-        intent_presets={"decide": orchestrator_intent},
-        intent_display_map={"decide": "Decide display"},
+        intent_presets={"inform": orchestrator_intent},
+        intent_display_map={"inform": "Inform display"},
     )
     bucket_snapshot = SimpleNamespace(
-        intent_buckets={"task": ["decide"]},
-        intent_display_map={"decide": "Snapshot display"},
+        intent_buckets={"task": ["inform"]},
+        intent_display_map={"inform": "Snapshot display"},
     )
     with ExitStack() as stack:
         stack.enter_context(
@@ -386,7 +386,7 @@ def test_help_hub_intent_buckets_use_orchestrator(monkeypatch):
             )
         )
         buckets = helpHub._intent_spoken_buckets()
-    assert buckets == {"task": ["Decide (orchestrator)"]}
+    assert buckets == {"task": ["Inform (orchestrator)"]}
 
 
 def test_help_hub_search_intent_preset_triggers(monkeypatch):
@@ -396,7 +396,7 @@ def test_help_hub_search_intent_preset_triggers(monkeypatch):
     assert any(
         "Intent preset:" in btn.label for btn in getattr(helpHub, "_search_index", [])
     ), "Intent presets missing from search index"
-    helpHub.help_hub_set_filter("decide")
+    helpHub.help_hub_set_filter("inform")
     intent_labels = [
         btn.label
         for btn in getattr(helpHub, "_search_results", [])
@@ -411,7 +411,7 @@ def test_help_hub_search_intent_preset_triggers(monkeypatch):
 def test_help_hub_intent_search_labels_surface_alias_metadata():
     helpHub.help_hub_open()
     try:
-        helpHub.help_hub_set_filter("decide")
+        helpHub.help_hub_set_filter("inform")
         intent_results = [
             btn
             for btn in getattr(helpHub, "_search_results", [])
@@ -420,9 +420,9 @@ def test_help_hub_intent_search_labels_surface_alias_metadata():
         assert intent_results, "Expected intent preset search result"
         entry = intent_results[0]
         label_lower = entry.label.lower()
-        assert "(say: intent decide)" in label_lower
+        assert "(say: intent inform)" in label_lower
         assert "apply intent stance" in entry.description.lower()
-        assert "say: intent decide" in entry.voice_hint.lower()
+        assert "say: intent inform" in entry.voice_hint.lower()
     finally:
         helpHub.help_hub_close()
 
@@ -431,7 +431,7 @@ def test_help_hub_search_results_include_intent_metadata():
     from lib.personaConfig import persona_intent_catalog_snapshot
 
     snapshot = persona_intent_catalog_snapshot()
-    expected_key = "decide"
+    expected_key = "inform"
     expected_display = (
         snapshot.intent_display_map.get(expected_key)
         or snapshot.intent_presets[expected_key].label
@@ -469,14 +469,14 @@ def test_help_hub_search_results_include_intent_metadata():
 
 def test_help_hub_search_intent_voice_hint_uses_orchestrator(monkeypatch):
     orchestrator_intent = SimpleNamespace(
-        key="decide",
+        key="inform",
         label="Legacy label",
-        intent="decide",
+        intent="inform",
         spoken="",
     )
     orchestrator = SimpleNamespace(
-        intent_presets={"decide": orchestrator_intent},
-        intent_display_map={"decide": "Decide Display"},
+        intent_presets={"inform": orchestrator_intent},
+        intent_display_map={"inform": "Inform Display"},
         intent_aliases={},
         intent_synonyms={},
     )
@@ -503,9 +503,9 @@ def test_help_hub_search_intent_voice_hint_uses_orchestrator(monkeypatch):
     ]
     assert intent_entries, "Expected intent preset entries"
     labels = {entry.label for entry in intent_entries}
-    assert any("Decide Display" in label for label in labels)
+    assert any("Inform Display" in label for label in labels)
     hints = {entry.voice_hint for entry in intent_entries}
-    assert "Say: intent Decide Display" in hints
+    assert "Say: intent Inform Display" in hints
 
 
 def test_help_hub_search_intent_metadata_uses_orchestrator_canonical(monkeypatch):
@@ -519,7 +519,7 @@ def test_help_hub_search_intent_metadata_uses_orchestrator_canonical(monkeypatch
         intent_display_map={"choose": "Choose Display"},
         intent_aliases={},
         intent_synonyms={},
-        canonical_intent_key=lambda alias: "decide" if alias else "",
+        canonical_intent_key=lambda alias: "inform" if alias else "",
     )
     with ExitStack() as stack:
         for target in (
@@ -547,7 +547,7 @@ def test_help_hub_search_intent_metadata_uses_orchestrator_canonical(monkeypatch
     metadata = entry.metadata or {}
     assert metadata.get("intent_key") == "choose"
     assert metadata.get("display_label") == "Choose Display"
-    assert metadata.get("canonical_intent") == "decide"
+    assert metadata.get("canonical_intent") == "inform"
 
 
 def test_help_hub_search_persona_metadata_includes_all_orchestrator_aliases(
@@ -758,10 +758,10 @@ def test_cheat_sheet_uses_help_index_metadata(monkeypatch):
     }
     intent_metadata = {
         "kind": "intent",
-        "intent_key": "decide",
-        "canonical_intent": "decide",
-        "spoken_alias": "decide alias",
-        "spoken_display": "Decide Alias",
+        "intent_key": "inform",
+        "canonical_intent": "inform",
+        "spoken_alias": "inform alias",
+        "spoken_display": "Inform Alias",
     }
     entries = [
         HelpIndexEntry(
@@ -772,7 +772,7 @@ def test_cheat_sheet_uses_help_index_metadata(monkeypatch):
             metadata=persona_metadata,
         ),
         HelpIndexEntry(
-            label="Intent preset: Decide",
+            label="Intent preset: Inform",
             description="",
             handler=lambda: None,
             voice_hint="",
@@ -814,8 +814,8 @@ def test_cheat_sheet_uses_help_index_metadata(monkeypatch):
 
     assert "demo alias" in text
     assert "demo axis summary" in text
-    assert "decide alias" in text
-    assert "(say: intent decide alias)" in text
+    assert "inform alias" in text
+    assert "(say: intent inform alias)" in text
 
 
 def test_cheat_sheet_prefers_metadata_snapshot(monkeypatch):
@@ -829,12 +829,12 @@ def test_cheat_sheet_prefers_metadata_snapshot(monkeypatch):
         voice_hint="Say: persona demo persona",
     )
     intent_meta = HelpIntentMetadata(
-        key="decide",
-        display_label="Decide",
-        canonical_intent="decide",
-        spoken_display="Decide",
-        spoken_alias="decide",
-        voice_hint="Say: intent decide",
+        key="inform",
+        display_label="Inform",
+        canonical_intent="inform",
+        spoken_display="Inform",
+        spoken_alias="inform",
+        voice_hint="Say: intent inform",
     )
     snapshot = HelpMetadataSnapshot(personas=(persona_meta,), intents=(intent_meta,))
 
@@ -874,7 +874,7 @@ def test_cheat_sheet_prefers_metadata_snapshot(monkeypatch):
         "- persona demo_persona (say: persona demo persona): demo persona (demo axis summary)"
         in text
     )
-    assert "- intent decide (say: intent decide): decide (decide)" in text
+    assert "- intent inform (say: intent inform): inform (inform)" in text
 
 
 def test_copy_adr_links_includes_metadata(monkeypatch):
@@ -888,11 +888,11 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
         voice_hint="",
     )
     intent_meta = HelpIntentMetadata(
-        key="decide",
-        display_label="Decide",
-        canonical_intent="decide",
-        spoken_display="Decide",
-        spoken_alias="decide",
+        key="inform",
+        display_label="Inform",
+        canonical_intent="inform",
+        spoken_display="Inform",
+        spoken_alias="inform",
         voice_hint="",
     )
     snapshot = HelpMetadataSnapshot(
@@ -914,7 +914,7 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
     monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
     monkeypatch.setattr(helpHub, "help_index", lambda *args, **kwargs: [])
-    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {"task": ["Decide"]})
+    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {"task": ["Inform"]})
     captured: dict[str, str] = {}
     monkeypatch.setattr(actions.app, "notify", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -927,9 +927,9 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
     assert "metadata header sentinel one" in text
     assert "metadata header sentinel two" in text
     assert "persona demo_persona" in text
-    assert "intent decide" in text
+    assert "intent inform" in text
     assert "intent buckets (canonical groups):" in text
-    assert "- task: decide" in text
+    assert "- task: inform" in text
 
 
 def test_copy_metadata_snapshot_json(monkeypatch):
@@ -943,11 +943,11 @@ def test_copy_metadata_snapshot_json(monkeypatch):
         voice_hint="",
     )
     intent_meta = HelpIntentMetadata(
-        key="decide",
-        display_label="Decide",
-        canonical_intent="decide",
-        spoken_display="Decide",
-        spoken_alias="decide",
+        key="inform",
+        display_label="Inform",
+        canonical_intent="inform",
+        spoken_display="Inform",
+        spoken_alias="inform",
         voice_hint="",
     )
     snapshot = HelpMetadataSnapshot(
@@ -964,7 +964,7 @@ def test_copy_metadata_snapshot_json(monkeypatch):
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
     monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
     monkeypatch.setattr(helpHub, "help_index", lambda *args, **kwargs: [])
-    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {"task": ["Decide"]})
+    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {"task": ["Inform"]})
     captured: dict[str, str] = {}
     monkeypatch.setattr(actions.app, "notify", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -982,8 +982,8 @@ def test_copy_metadata_snapshot_json(monkeypatch):
     assert provenance["source"] == "lib.helpHub.test"
     assert provenance["adr"] == "ADR-0062-test"
     assert payload["personas"][0]["key"] == "demo_persona"
-    assert payload["intents"][0]["canonical_intent"] == "decide"
-    assert payload.get("intent_buckets", {}) == {"task": ["Decide"]}
+    assert payload["intents"][0]["canonical_intent"] == "inform"
+    assert payload.get("intent_buckets", {}) == {"task": ["Inform"]}
 
 
 def test_metadata_snapshot_summary_uses_orchestrator_buckets(monkeypatch):
@@ -993,18 +993,18 @@ def test_metadata_snapshot_summary_uses_orchestrator_buckets(monkeypatch):
         headers=("Metadata header",),
     )
     orchestrator_intent = SimpleNamespace(
-        key="decide",
-        label="Decide (orchestrator)",
-        intent="decide",
+        key="inform",
+        label="Inform (orchestrator)",
+        intent="inform",
     )
     orchestrator = SimpleNamespace(
-        intent_presets={"decide": orchestrator_intent},
-        intent_display_map={"decide": "Decide (orchestrator)"},
-        canonical_intent_key=lambda alias: "decide" if alias else "",
+        intent_presets={"inform": orchestrator_intent},
+        intent_display_map={"inform": "Inform (orchestrator)"},
+        canonical_intent_key=lambda alias: "inform" if alias else "",
     )
     bucket_snapshot = SimpleNamespace(
-        intent_buckets={"task": ["decide"]},
-        intent_display_map={"decide": "Snapshot display"},
+        intent_buckets={"task": ["inform"]},
+        intent_display_map={"inform": "Snapshot display"},
     )
     with ExitStack() as stack:
         stack.enter_context(
@@ -1058,7 +1058,7 @@ def test_metadata_snapshot_summary_uses_orchestrator_buckets(monkeypatch):
         summary_lines = helpHub._metadata_snapshot_summary_lines()
     assert "Intent buckets (canonical groups):" in summary_lines
     assert any(
-        "Decide (orchestrator)" in line and "task" in line for line in summary_lines
+        "Inform (orchestrator)" in line and "task" in line for line in summary_lines
     )
 
 
@@ -1077,16 +1077,16 @@ def test_cheat_sheet_catalog_fallback_without_maps(monkeypatch):
         tone="Catalog Tone",
     )
     catalog_intent = SimpleNamespace(
-        key="decide",
+        key="inform",
         label="Catalog Plan",
-        intent="decide",
+        intent="inform",
         spoken="catalog plan alias",
     )
     catalog_snapshot = SimpleNamespace(
         persona_presets={"mentor": catalog_persona},
-        intent_presets={"decide": catalog_intent},
-        intent_display_map={"decide": "Catalog Plan Display"},
-        intent_buckets={"assist": ["decide"]},
+        intent_presets={"inform": catalog_intent},
+        intent_display_map={"inform": "Catalog Plan Display"},
+        intent_buckets={"assist": ["inform"]},
     )
     legacy_persona = SimpleNamespace(
         key="mentor",
@@ -1097,15 +1097,15 @@ def test_cheat_sheet_catalog_fallback_without_maps(monkeypatch):
         tone="Legacy Tone",
     )
     legacy_intent = SimpleNamespace(
-        key="decide",
+        key="inform",
         label="Legacy Plan",
         intent="legacy-plan",
         spoken="legacy plan alias",
     )
     legacy_maps = SimpleNamespace(
         persona_presets={"mentor": legacy_persona},
-        intent_presets={"decide": legacy_intent},
-        intent_display_map={"decide": "Legacy Plan Display"},
+        intent_presets={"inform": legacy_intent},
+        intent_display_map={"inform": "Legacy Plan Display"},
     )
 
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
@@ -1135,12 +1135,12 @@ def test_cheat_sheet_catalog_fallback_without_maps(monkeypatch):
     assert "Legacy Voice" not in persona_line
 
     intent_line = next(
-        (line for line in lines if line.startswith("- intent plan")),
+        (line for line in lines if line.startswith("- intent inform")),
         None,
     )
     assert intent_line is not None, text
     assert "Catalog Plan Display" in intent_line
-    assert "(plan)" in intent_line
+    assert "(inform)" in intent_line
     assert "legacy-plan" not in intent_line
 
     bucket_line = next((line for line in lines if line.startswith("- assist:")), None)

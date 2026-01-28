@@ -40,7 +40,7 @@ if bootstrap is not None:
                 recipe="recipe1",
                 started_at_ms=1,
                 duration_ms=2,
-                axes={"method": ["steps"], "directional": ["fog"]},
+                axes={"method": ["flow"], "directional": ["fog"]},
             )
             append_entry(
                 "r2",
@@ -57,7 +57,7 @@ if bootstrap is not None:
             self.assertEqual(ids, ["r1", "r2"])
             self.assertEqual(latest().duration_ms, 4)  # type: ignore[union-attr]
             self.assertEqual(nth_from_latest(1).recipe, "recipe1")  # type: ignore[union-attr]
-            self.assertEqual(nth_from_latest(1).axes.get("method"), ["steps"])  # type: ignore[union-attr]
+            self.assertEqual(nth_from_latest(1).axes.get("method"), ["flow"])  # type: ignore[union-attr]
 
         def test_append_entry_from_request_uses_request_structure(self):
             request = {
@@ -72,7 +72,7 @@ if bootstrap is not None:
                     },
                 ]
             }
-            axes = {"method": ["steps"]}
+            axes = {"method": ["flow"]}
             append_entry_from_request(
                 request_id="r3",
                 request=request,
@@ -91,16 +91,16 @@ if bootstrap is not None:
             self.assertEqual(entry.meta, "meta3")  # type: ignore[union-attr]
             self.assertEqual(entry.recipe, "recipe3")  # type: ignore[union-attr]
             self.assertEqual(entry.duration_ms, 6)  # type: ignore[union-attr]
-            self.assertEqual(entry.axes.get("method"), ["steps"])  # type: ignore[union-attr]
+            self.assertEqual(entry.axes.get("method"), ["flow"])  # type: ignore[union-attr]
             # Mutating the original axes dict should not affect stored entry.
             axes["method"].append("extra")
-            self.assertEqual(entry.axes.get("method"), ["steps"])  # type: ignore[union-attr]
+            self.assertEqual(entry.axes.get("method"), ["flow"])  # type: ignore[union-attr]
 
         def test_stored_axes_match_axis_snapshot_helper(self) -> None:
             axes = {
                 "completeness": ["full", "Important: hydrated"],
-                "scope": ["focus", "Important: expanded"],
-                "method": ["steps", "Important: method"],
+                "scope": ["struct", "Important: expanded"],
+                "method": ["flow", "Important: method"],
                 "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
@@ -124,8 +124,8 @@ if bootstrap is not None:
 
         def test_append_entry_filters_hydrated_axis_values(self):
             axes = {
-                "scope": ["focus", "Important: expand scope a lot"],
-                "method": ["steps", "Important: do many things"],
+                "scope": ["struct", "Important: expand scope a lot"],
+                "method": ["flow", "Important: do many things"],
                 "directional": ["fog"],
             }
 
@@ -143,8 +143,8 @@ if bootstrap is not None:
             entry = latest()  # type: ignore[assignment]
             self.assertIsNotNone(entry)
             # Known axis tokens should be preserved.
-            self.assertEqual(entry.axes.get("scope"), ["focus"])
-            self.assertEqual(entry.axes.get("method"), ["steps"])
+            self.assertEqual(entry.axes.get("scope"), ["struct"])
+            self.assertEqual(entry.axes.get("method"), ["flow"])
             # Hydrated values starting with 'Important:' should be dropped.
             self.assertNotIn(
                 "Important: expand scope a lot", entry.axes.get("scope", [])
@@ -296,7 +296,7 @@ if bootstrap is not None:
                 "resp",
                 "meta",
                 recipe="recipe6",
-                axes={"scope": ["focus"]},
+                axes={"scope": ["struct"]},
             )
 
             self.assertEqual(all_entries(), [])
@@ -333,7 +333,7 @@ if bootstrap is not None:
                 "prompt",
                 "resp",
                 "meta",
-                axes={"scope": ["focus"]},
+                axes={"scope": ["struct"]},
             )
             self.assertEqual(last_drop_reason_code(), "missing_directional")
             self.assertIn("directional lens", last_drop_reason())
@@ -348,7 +348,7 @@ if bootstrap is not None:
                 "prompt",
                 "resp",
                 "meta",
-                axes={"scope": ["focus"]},
+                axes={"scope": ["struct"]},
             )
             self.assertEqual(last_drop_reason_code(), "missing_directional")
             peek1 = last_drop_reason()
@@ -363,7 +363,7 @@ if bootstrap is not None:
                 "prompt",
                 "resp",
                 "meta",
-                axes={"scope": ["focus"]},
+                axes={"scope": ["struct"]},
             )
             self.assertEqual(last_drop_reason_code(), "missing_directional")
             self.assertIn("directional lens", last_drop_reason())
@@ -384,7 +384,7 @@ if bootstrap is not None:
                 "prompt",
                 "resp",
                 "meta",
-                axes={"scope": ["focus"]},
+                axes={"scope": ["struct"]},
             )
             self.assertEqual(last_drop_reason_code(), "missing_directional")
             first = consume_last_drop_reason()

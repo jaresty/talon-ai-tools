@@ -34,8 +34,8 @@ if bootstrap is not None:
 
             axes = {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["steps"],
+                "scope": ["struct"],
+                "method": ["flow"],
                 "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog", "unknown-dir"],
@@ -49,8 +49,8 @@ if bootstrap is not None:
 
             axes = {
                 "completeness": ["full", "unknown"],
-                "scope": ["focus", "unknown"],
-                "method": ["steps", "unknown"],
+                "scope": ["struct", "unknown"],
+                "method": ["flow", "unknown"],
                 "form": ["bullets", "unknown"],
                 "channel": ["slack", "unknown"],
                 "directional": ["fog", "unknown-dir"],
@@ -72,8 +72,8 @@ if bootstrap is not None:
                 self.assertIn(key, filtered)
 
             self.assertEqual(filtered["completeness"], ["full"])
-            self.assertEqual(filtered["scope"], ["focus"])
-            self.assertEqual(filtered["method"], ["steps"])
+            self.assertEqual(filtered["scope"], ["struct"])
+            self.assertEqual(filtered["method"], ["flow"])
             self.assertEqual(filtered["form"], ["bullets"])
             self.assertEqual(filtered["channel"], ["slack"])
             self.assertEqual(filtered["directional"], ["fog"])
@@ -85,8 +85,8 @@ if bootstrap is not None:
 
             axes = {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["steps"],
+                "scope": ["struct"],
+                "method": ["flow"],
                 "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],

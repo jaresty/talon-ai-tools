@@ -101,7 +101,7 @@ class AxisRegenContentTests(unittest.TestCase):
         # Spot check an expected profile is present
         profiled = catalog["static_prompts"].get("profiled", [])
         profile_names = {p.get("name") for p in profiled}
-        self.assertIn("describe", profile_names, "static prompt catalog missing 'describe' profile")
+        self.assertIn("show", profile_names, "static prompt catalog missing 'show' profile")
 
     def test_static_prompt_docs_include_required_headings(self):
         repo_root = Path(__file__).resolve().parents[1]

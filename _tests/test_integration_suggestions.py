@@ -140,10 +140,10 @@ if bootstrap is not None:
             payload = {
                 "suggestions": [
                     {
-                        "name": "Decide with mentor",
-                        "recipe": "describe · full · focus · plan · plain · fog",
+                        "name": "Inform with mentor",
+                        "recipe": "show · full · struct · flow · plain · fog",
                         "persona_preset_spoken": "mentor",
-                        "intent_display": "Decide",
+                        "intent_display": "Inform",
                         "why": "Alias metadata from Concordance catalog",
                     }
                 ]
@@ -176,10 +176,10 @@ if bootstrap is not None:
             self.assertEqual(entry["persona_voice"], "as teacher")
             self.assertEqual(entry["persona_audience"], "to junior engineer")
             self.assertEqual(entry["persona_tone"], "kindly")
-            self.assertEqual(entry["intent_preset_key"], "decide")
-            self.assertEqual(entry["intent_preset_label"], "Decide")
-            self.assertEqual(entry["intent_display"], "Decide")
-            self.assertEqual(entry["intent_purpose"], "decide")
+            self.assertEqual(entry["intent_preset_key"], "inform")
+            self.assertEqual(entry["intent_preset_label"], "Inform")
+            self.assertEqual(entry["intent_display"], "Inform")
+            self.assertEqual(entry["intent_purpose"], "inform")
 
             suggestion_module.SuggestionGUIState.suggestions = []
             suggestion_module.UserActions.model_prompt_recipe_suggestions_run_index(1)
@@ -187,10 +187,10 @@ if bootstrap is not None:
             hydrated = suggestion_module.SuggestionGUIState.suggestions[0]
             self.assertEqual(hydrated.persona_preset_spoken, "mentor")
             self.assertEqual(hydrated.persona_preset_label, "Teach junior dev")
-            self.assertEqual(hydrated.intent_display, "Decide")
-            self.assertEqual(hydrated.intent_preset_key, "decide")
-            self.assertEqual(hydrated.intent_preset_label, "Decide")
-            self.assertEqual(hydrated.intent_purpose, "decide")
+            self.assertEqual(hydrated.intent_display, "Inform")
+            self.assertEqual(hydrated.intent_preset_key, "inform")
+            self.assertEqual(hydrated.intent_preset_label, "Inform")
+            self.assertEqual(hydrated.intent_purpose, "inform")
             self.assertEqual(hydrated.persona_voice, "as teacher")
             self.assertEqual(hydrated.persona_audience, "to junior engineer")
             self.assertEqual(hydrated.persona_tone, "kindly")
@@ -264,7 +264,7 @@ if bootstrap is not None:
             """End-to-end: multi-tag suggestion followed by overrides respects form/channel singleton caps."""
             # Arrange a multi-tag suggestion that includes both a form and channel token;
             # the normaliser should keep singletons when rerun.
-            suggestion_text = "Name: Jira/ADR ticket | Recipe: ticket · full · actions edges · structure flow · adr · jira · fog"
+            suggestion_text = "Name: Jira/ADR ticket | Recipe: make · full · act fail · flow · bullets · jira adr · fog"
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
             )
@@ -286,8 +286,8 @@ if bootstrap is not None:
             suggestion_module.UserActions.model_prompt_recipe_suggestions_run_index(1)
 
             # At this point, last form/channel are the raw tokens from the suggestion recipe.
-            self.assertEqual(GPTState.last_form, "adr")
-            self.assertEqual(GPTState.last_channel, "jira")
+            self.assertEqual(GPTState.last_form, "bullets")
+            self.assertEqual(GPTState.last_channel, "adr")
 
             # Now rerun with a channel override that adds 'jira' again; form/channel stay singletons.
             with (
@@ -317,7 +317,7 @@ if bootstrap is not None:
                 self.assertEqual(config.please_prompt, "PROMPT-MULTI-AGAIN")
 
                 # After rerun, form/channel should remain singletons.
-                self.assertEqual(GPTState.last_form, "adr")
+                self.assertEqual(GPTState.last_form, "bullets")
                 self.assertEqual(GPTState.last_channel, "jira")
 
         def test_suggest_over_cap_axes_then_again_enforces_soft_caps(self):

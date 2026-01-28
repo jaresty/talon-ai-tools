@@ -105,25 +105,25 @@ if bootstrap is not None:
         def test_history_drawer_includes_persona_and_intent_metadata(self):
             persona_intent_maps_reset()
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_recipe = "describe · full · struct · flow · plain · fog"
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
-            GPTState.last_scope = "focus"
-            GPTState.last_method = "plan"
+            GPTState.last_scope = "struct"
+            GPTState.last_method = "flow"
             GPTState.last_form = "plain"
             GPTState.last_channel = "slack"
             GPTState.last_directional = "fog"
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["plan"],
+                "scope": ["struct"],
+                "method": ["flow"],
                 "form": ["plain"],
                 "channel": ["slack"],
                 "directional": ["fog"],
             }
             GPTState.last_suggest_context = {
                 "persona_preset_key": "teach_junior_dev",
-                "intent_preset_key": "decide",
+                "intent_preset_key": "inform",
             }
 
             append_entry(
@@ -131,11 +131,11 @@ if bootstrap is not None:
                 "prompt text",
                 "response",
                 "meta",
-                recipe="describe · full · focus · plan · plain · fog",
+                recipe="describe · full · struct · flow · plain · fog",
                 axes={
                     "completeness": ["full"],
-                    "scope": ["focus"],
-                    "method": ["plan"],
+                    "scope": ["struct"],
+                    "method": ["flow"],
                     "form": ["plain"],
                     "channel": ["slack"],
                     "directional": ["fog"],
@@ -150,9 +150,9 @@ if bootstrap is not None:
                 self.assertIn("persona mentor", lower_body)
                 self.assertIn("key=teach_junior_dev", lower_body)
                 self.assertIn("say: persona mentor", lower_body)
-                self.assertIn("intent decide", lower_body)
-                self.assertIn("key=decide", lower_body)
-                self.assertIn("say: intent decide", lower_body)
+                self.assertIn("intent inform", lower_body)
+                self.assertIn("key=inform", lower_body)
+                self.assertIn("say: intent inform", lower_body)
             finally:
                 DrawerActions.request_history_drawer_close()
 
@@ -167,7 +167,7 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "Decide",
+                    "intent_display": "Inform",
                 },
             )
 
@@ -178,8 +178,8 @@ if bootstrap is not None:
                 lower_body = body.lower()
                 self.assertIn("persona mentor", lower_body)
                 self.assertIn("key=teach_junior_dev", lower_body)
-                self.assertIn("intent decide", lower_body)
-                self.assertIn("key=decide", lower_body)
+                self.assertIn("intent inform", lower_body)
+                self.assertIn("key=inform", lower_body)
             finally:
                 DrawerActions.request_history_drawer_close()
 
@@ -427,7 +427,7 @@ if bootstrap is not None:
 
         def test_drawer_reports_drop_reason_when_no_directional_entries(self):
             # Append an entry without directional; guardrail should drop and surface the reason.
-            append_entry("rid-nd", "p1", "r1", "m1", axes={"scope": ["focus"]})
+            append_entry("rid-nd", "p1", "r1", "m1", axes={"scope": ["struct"]})
             HistoryDrawerState.showing = True
             HistoryDrawerState.entries = []
             with patch.object(history_drawer, "_ensure_canvas") as ensure_canvas:

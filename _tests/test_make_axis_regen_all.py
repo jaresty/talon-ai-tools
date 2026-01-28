@@ -48,7 +48,7 @@ class MakeAxisRegenAllTests(unittest.TestCase):
         self.assertIn("static_prompts", catalog)
         profiled = catalog["static_prompts"].get("profiled", [])
         self.assertTrue(profiled, "static_prompts.profiled should not be empty")
-        self.assertIn("describe", {p.get("name") for p in profiled})
+        self.assertIn("show", {p.get("name") for p in profiled})
         self.assertIn("axis_list_tokens", catalog)
         self.assertTrue(catalog["axis_list_tokens"].get("scope"))
 

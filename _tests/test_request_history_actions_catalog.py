@@ -21,8 +21,8 @@ if bootstrap is not None:
             valid_directional = directional_tokens[:1]
 
             axes = {
-                "scope": ["focus", "unknown-scope"],
-                "method": ["steps", "unknown-method"],
+                "scope": ["struct", "unknown-scope"],
+                "method": ["flow", "unknown-method"],
                 "form": ["bullets", "unknown-form"],
                 "channel": ["slack", "unknown-channel"],
                 "directional": valid_directional + ["unknown-direction"],
@@ -30,8 +30,8 @@ if bootstrap is not None:
 
             filtered = history_axes_for(axes)
 
-            self.assertEqual(filtered["scope"], ["focus"])
-            self.assertEqual(filtered["method"], ["steps"])
+            self.assertEqual(filtered["scope"], ["struct"])
+            self.assertEqual(filtered["method"], ["flow"])
             self.assertEqual(filtered["form"], ["bullets"])
             self.assertEqual(filtered["channel"], ["slack"])
             self.assertEqual(filtered["directional"], valid_directional)

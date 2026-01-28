@@ -115,7 +115,7 @@ if bootstrap is not None:
                 recipe="describe · gist · focus · steps · bullets · slack · fog",
                 axes={
                     "completeness": ["gist"],
-                    "scope": ["focus"],
+                    "scope": ["struct"],
                     "method": ["steps"],
                     "form": ["bullets"],
                     "channel": ["slack"],
@@ -283,7 +283,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
 
             with patch.object(history_actions, "notify") as notify_mock:
@@ -438,7 +438,7 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "Decide",
+                    "intent_display": "Inform",
                 },
             )
 
@@ -447,8 +447,8 @@ if bootstrap is not None:
             self.assertIn("teach_junior_dev", persona_pairs)
             self.assertEqual(persona_pairs["teach_junior_dev"].get("mentor"), 1)
             intent_pairs = stats.get("intent_display_pairs", {})
-            self.assertIn("decide", intent_pairs)
-            self.assertEqual(intent_pairs["decide"].get("Decide"), 1)
+            self.assertIn("inform", intent_pairs)
+            self.assertEqual(intent_pairs["inform"].get("Inform"), 1)
 
         def test_history_summary_lines_skips_entries_without_directional(self):
             append_entry(
@@ -497,7 +497,7 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "Decide",
+                    "intent_display": "Inform",
                 },
             )
 
@@ -507,8 +507,8 @@ if bootstrap is not None:
 
             self.assertIn("persona mentor", persona_line.lower())
             self.assertIn("key=teach_junior_dev", persona_line.lower())
-            self.assertIn("intent decide", intent_line.lower())
-            self.assertIn("key=decide", intent_line.lower())
+            self.assertIn("intent inform", intent_line.lower())
+            self.assertIn("key=inform", intent_line.lower())
 
         def test_history_list_notifies_when_no_directional_entries(self):
             # Legacy lens-less entry should surface the directional guardrail.
@@ -536,7 +536,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
 
             notify_mock.assert_called()
@@ -554,7 +554,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             with patch.object(history_actions, "notify") as list_notify:
                 HistoryActions.gpt_request_history_list()
@@ -570,7 +570,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             # Drawer refresh should surface and consume the drop reason.
             drawer.HistoryDrawerState.showing = True
@@ -595,7 +595,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             # History list should notify and consume the reason.
             with patch.object(history_actions, "notify") as list_notify:
@@ -615,7 +615,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             messages: list[str] = []
 
@@ -645,7 +645,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             with patch.object(history_actions, "notify") as list_notify:
                 HistoryActions.gpt_request_history_list()
@@ -665,7 +665,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             self.assertTrue(last_drop_reason())
             # successful append clears the reason
@@ -704,7 +704,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             # Clear history should also clear the drop reason.
             clear_history()
@@ -745,7 +745,7 @@ if bootstrap is not None:
                 "rid-older",
                 "old prompt",
                 "old resp",
-                axes={"scope": ["focus"]},
+                axes={"scope": ["struct"]},
             )
             append_entry(
                 "rid-latest",
@@ -768,7 +768,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             history_actions._cursor_offset = 0
             with patch.object(history_actions, "notify") as notify_mock:
@@ -784,7 +784,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             history_actions._cursor_offset = 0
             with patch.object(history_actions, "notify") as notify_mock:
@@ -815,7 +815,7 @@ if bootstrap is not None:
                     "rid-no-dir",
                     "prompt",
                     "resp",
-                    axes={"scope": ["focus"]},
+                    axes={"scope": ["struct"]},
                 )
             with patch.object(history_actions, "notify") as notify_mock:
                 HistoryActions.gpt_request_history_show_previous(1)
@@ -1423,7 +1423,7 @@ if bootstrap is not None:
                 "resp",
                 "meta",
                 recipe="infer · full · rigor",
-                axes={"directional": ["fog"], "scope": ["focus"]},
+                axes={"directional": ["fog"], "scope": ["struct"]},
             )
 
             HistoryActions.gpt_request_history_save_latest_source()
@@ -1564,7 +1564,7 @@ if bootstrap is not None:
                 "rid-missing-directional",
                 "prompt",
                 "resp",
-                axes={"scope": ["focus"]},
+                axes={"scope": ["struct"]},
             )
 
             with self.assertRaisesRegex(ValueError, "directional"):
@@ -1620,7 +1620,7 @@ if bootstrap is not None:
                 entry,
                 persona={
                     "persona_preset_key": "teach_junior_dev",
-                    "intent_preset_key": "decide",
+                    "intent_preset_key": "inform",
                 },
             )
             requestlog._history._entries[-1] = mutated
@@ -1648,7 +1648,7 @@ if bootstrap is not None:
                 entry,
                 persona={
                     "persona_preset_key": "teach_junior_dev",
-                    "intent_preset_key": "decide",
+                    "intent_preset_key": "inform",
                 },
             )
             requestlog._history._entries[-1] = mutated
@@ -1656,7 +1656,7 @@ if bootstrap is not None:
                 with patch(
                     "talon_user.lib.historyLifecycle.persona_header_lines",
                     return_value=[
-                        "intent_preset: decide (label=Decide)",
+                        "intent_preset: inform (label=Inform)",
                         "persona_preset: teach_junior_dev (label=Teach junior dev; say: persona mentor)",
                     ],
                 ):
@@ -2044,8 +2044,8 @@ if bootstrap is not None:
                 recipe="infer · full · rigor",
                 axes={
                     "completeness": ["full"],
-                    "scope": ["focus"],
-                    "method": ["steps"],
+                    "scope": ["struct"],
+                    "method": ["flow"],
                     "form": ["bullets"],
                     "channel": ["slack"],
                     "directional": ["fog"],
@@ -2061,8 +2061,8 @@ if bootstrap is not None:
             ) as saved_file:
                 content = saved_file.read()
             self.assertIn("completeness_tokens: full", content)
-            self.assertIn("scope_tokens: focus", content)
-            self.assertIn("method_tokens: steps", content)
+            self.assertIn("scope_tokens: struct", content)
+            self.assertIn("method_tokens: flow", content)
             self.assertIn("form_tokens: bullets", content)
             self.assertIn("channel_tokens: slack", content)
             self.assertIn("directional_tokens: fog", content)

@@ -153,13 +153,13 @@ if bootstrap is not None:
         def test_static_prompt_focus_uses_settings_catalog(self) -> None:
             """Quick-help static prompt focus should render settings catalog data."""
             HelpGUIState.section = "all"
-            HelpGUIState.static_prompt = "todo"
+            HelpGUIState.static_prompt = "make"
 
             catalog = static_prompt_settings_catalog()
-            entry = catalog.get("todo")
+            entry = catalog.get("make")
             self.assertIsNotNone(
                 entry,
-                "Expected 'todo' in static prompt settings catalog",
+                "Expected 'make' in static prompt settings catalog",
             )
             description = entry["description"]
             axes = entry["axes"]
@@ -175,7 +175,7 @@ if bootstrap is not None:
             canvas = StubCanvas()
             _default_draw_quick_help(canvas)
 
-            self.assertIn("Static prompt focus: todo", canvas.drawn)
+            self.assertIn("Static prompt focus: make", canvas.drawn)
             if description:
                 self.assertIn(description, canvas.drawn)
             if axes:

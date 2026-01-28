@@ -49,9 +49,9 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_preset_key": "decide",
-                    "intent_preset_label": "Decide",
-                    "intent_display": "Decide",
+                    "intent_preset_key": "inform",
+                    "intent_preset_label": "Inform",
+                    "intent_display": "Inform",
                 },
             )
             env = os.environ.copy()
@@ -99,8 +99,8 @@ if bootstrap is not None:
             self.assertIn("teach_junior_dev", persona_pairs)
             self.assertEqual(persona_pairs["teach_junior_dev"].get("mentor"), 1)
             intent_pairs = stats.get("intent_display_pairs", {})
-            self.assertIn("decide", intent_pairs)
-            self.assertEqual(intent_pairs["decide"].get("Decide"), 1)
+            self.assertIn("inform", intent_pairs)
+            self.assertEqual(intent_pairs["inform"].get("Inform"), 1)
             clear_history()
 
         def test_history_stats_flag_noncanonical_intent_key(self) -> None:

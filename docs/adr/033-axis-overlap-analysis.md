@@ -7,17 +7,17 @@ Manual, qualitative assessment of ambiguous adjectives using ADR 033 methods (su
 - **skim** — Hits completeness (light pass) and scope (narrow). Decision: Treat as *completeness*; add prefix if mixed.  
 - **gist** — Completeness vs. style (short). Decision: *Completeness*; use “short” for style.  
 - **max** — Completeness vs. method (effort). Decision: *Completeness*.  
-- **deep** — Completeness vs. method (depth of reasoning). Decision: *Method*; use “comprehensive” for completeness.  
+- **deep** — Completeness vs. method (depth of reasoning). Decision: *Completeness*.  
 - **focus/focused** — Scope vs. style/conciseness. Decision: *Scope*; use “concise” for style.  
 - **system** — Scope vs. method. Decision: *Scope* (target = system-level).  
-- **actions** — Scope vs. method. Decision: *Scope* (target actionable slices).  
-- **steps** — Method vs. style (bulleted). Decision: *Method*; keep “bullets” as style container.  
+- **actions** — Scope vs. form. Decision: *Form* (action list format); use "act" for scope.  
+- **steps** — Method vs. form (bulleted). Decision: *Form* (step-by-step format); use "flow" for method.  
 - **structure** — Method vs. scope vs. style. Decision: *Method* (organising reasoning).  
 - **flow** — Method vs. scope vs. style. Decision: *Method* (sequence/temporal reasoning).  
 - **samples** — Method vs. style. Decision: *Method* (generation strategy).  
 - **headline** — Method vs. style vs. completeness. Decision: *Style* (presentation order).  
-- **socratic** — Method vs. scope vs. completeness. Decision: *Method* (question-led process).  
-- **direct/indirect** — Method vs. scope. Decision: *Method* (ordering strategy).  
+- **socratic** — Method vs. form. Decision: *Form* (question-led dialogue format).  
+- **direct/indirect** — Method vs. form. Decision: *Form* (communication style).  
 - **plain** — Method vs. style. Decision: *Style* (register).  
 - **tight/compact** — Completeness vs. style. Decision: *Style* (concise form); for dense content use “dense” under completeness.  
 - **bullets** — Style vs. scope. Decision: *Style* (format).  

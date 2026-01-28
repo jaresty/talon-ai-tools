@@ -26,16 +26,16 @@ if bootstrap is not None:
     class PatternDebugCoordinatorTests(unittest.TestCase):
         def test_pattern_debug_snapshot_parses_recipe_axes(self) -> None:
             patterns = [
-                _DummyPattern("pat1", "desc1", "infer · full · focus · rigor · fog"),
+                _DummyPattern("pat1", "desc1", "show · full · struct · rigor · fog"),
             ]
 
             snap = pattern_debug_snapshot("pat1", patterns=patterns)
 
             self.assertEqual(snap["name"], "pat1")
             self.assertEqual(snap["description"], "desc1")
-            self.assertEqual(snap["static_prompt"], "infer")
+            self.assertEqual(snap["static_prompt"], "show")
             self.assertEqual(snap["axes"]["completeness"], "full")
-            self.assertEqual(snap["axes"]["scope"], ["focus"])
+            self.assertEqual(snap["axes"]["scope"], ["struct"])
             self.assertEqual(snap["axes"]["method"], ["rigor"])
             self.assertEqual(snap["axes"]["directional"], "fog")
 
@@ -44,21 +44,21 @@ if bootstrap is not None:
                 _DummyPattern(
                     "pat2",
                     "desc2",
-                    "infer · full · focus · steps · fog",
+                    "show · full · struct · steps · fog",
                     axes={"method": ["rigor"]},
                 ),
             ]
             view = pattern_debug_view("pat2", patterns=patterns)
             self.assertEqual(view["name"], "pat2")
             self.assertEqual(view["description"], "desc2")
-            self.assertEqual(view.get("recipe_line"), "infer · full · focus · steps · fog")
+            self.assertEqual(view.get("recipe_line"), "show · full · struct · steps · fog")
             self.assertEqual(
                 view.get("axes"),
                 {
                     "completeness": "full",
-                    "scope": ["focus"],
+                    "scope": ["struct"],
                     "method": ["rigor"],
-                    "form": [],
+                    "form": ["steps"],
                     "channel": [],
                     "directional": "fog",
                 },
@@ -66,8 +66,8 @@ if bootstrap is not None:
 
         def test_pattern_debug_catalog_filters_by_domain(self) -> None:
             patterns = [
-                _DummyPattern("pat1", "desc1", "infer · full · focus · fog", domain="coding"),
-                _DummyPattern("pat2", "desc2", "infer · full · focus · rog", domain="writing"),
+                _DummyPattern("pat1", "desc1", "show · full · struct · fog", domain="coding"),
+                _DummyPattern("pat2", "desc2", "show · full · struct · rog", domain="writing"),
             ]
             catalog = pattern_debug_catalog(patterns=patterns, domain="coding")
             names = {entry.get("name") for entry in catalog}
@@ -78,7 +78,7 @@ if bootstrap is not None:
                 _DummyPattern(
                     "pat3",
                     "desc3",
-                    "infer · full · actions edges system · steps plan rigor filter · bullets table · slack jira · rog fog",
+                    "show · full · act fail struct · flow prioritize rigor · bullets table · slack jira · rog fog",
                 ),
             ]
 
@@ -87,8 +87,8 @@ if bootstrap is not None:
 
             self.assertEqual(axes["completeness"], "full")
             # Scope/method capped and canonicalised.
-            self.assertEqual(axes["scope"], ["edges", "system"])
-            self.assertEqual(axes["method"], ["filter", "plan", "rigor"])
+            self.assertEqual(axes["scope"], ["fail", "struct"])
+            self.assertEqual(axes["method"], ["flow", "prioritize", "rigor"])
             # Form/channel singletons.
             self.assertEqual(axes["form"], ["table"])
             self.assertEqual(axes["channel"], ["jira"])

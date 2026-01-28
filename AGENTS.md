@@ -97,3 +97,43 @@ grepai trace graph "ValidateToken" --depth 3 --json
 3. Use `Read` tool to examine files from results
 4. Only use Grep for exact string searches if needed
 
+## ast-grep - Structural Code Search & Refactoring
+
+**Use ast-grep for structural code patterns and multi-file refactoring when appropriate.**
+
+### When to Use ast-grep
+
+Use ast-grep for:
+- Finding code by structure (e.g., all function calls with specific patterns)
+- Multi-file refactoring that needs to preserve syntax
+- Language-aware search (Python, Go, JavaScript, TypeScript, etc.)
+- Complex code transformations that Grep can't handle safely
+
+### When NOT to Use ast-grep
+
+Avoid ast-grep for:
+- Simple text searches (use Grep)
+- Semantic understanding (use grepai)
+- General exploration (use grepai)
+
+### Supported Languages
+
+ast-grep supports: Python, Go, JavaScript, TypeScript, Rust, Java, and more.
+
+### Basic Usage
+
+```bash
+# Find all function definitions
+ast-grep --pattern 'def $FUNC($$$ARGS): $$$BODY' --lang python
+
+# Find specific call patterns
+ast-grep --pattern 'modelPrompt($$$)' --lang python
+
+# Multi-file refactoring
+ast-grep --pattern '$OLD' --rewrite '$NEW' --lang python
+```
+
+### Fallback
+
+If ast-grep is not available or doesn't support the language, fall back to grepai or standard tools.
+

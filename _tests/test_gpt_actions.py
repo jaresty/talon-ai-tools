@@ -1504,8 +1504,8 @@ if bootstrap is not None:
                 handle.result = PromptResult.from_messages(
                     [
                         format_message(
-                            "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog\n"
-                            "Name: Quick scan | Recipe: dependency · gist · relations · steps · plain · fog"
+                            "Name: Deep map | Recipe: describe · full · struct · analysis · bullets · fog\n"
+                            "Name: Quick scan | Recipe: dependency · gist · struct · steps · plain · fog"
                         )
                     ]
                 )
@@ -1517,11 +1517,11 @@ if bootstrap is not None:
                     [
                         {
                             "name": "Deep map",
-                            "recipe": "describe · full · relations · cluster · bullets · fog",
+                            "recipe": "describe · full · struct · analysis · bullets · fog",
                         },
                         {
                             "name": "Quick scan",
-                            "recipe": "dependency · gist · relations · steps · plain · fog",
+                            "recipe": "dependency · gist · struct · steps · plain · fog",
                         },
                     ],
                 )
@@ -1667,7 +1667,7 @@ if bootstrap is not None:
                 handle.result = PromptResult.from_messages(
                     [
                         format_message(
-                            "Relational Overview | Recipe: describe · full · relations · cluster · plain · jog"
+                            "Relational Overview | Recipe: describe · full · struct · analysis · plain · jog"
                         )
                     ]
                 )
@@ -1679,7 +1679,7 @@ if bootstrap is not None:
                     [
                         {
                             "name": "Relational Overview",
-                            "recipe": "describe · full · relations · cluster · plain · jog",
+                            "recipe": "describe · full · struct · analysis · plain · jog",
                         }
                     ],
                 )
@@ -1738,7 +1738,7 @@ if bootstrap is not None:
             handle.result = PromptResult.from_messages(
                 [
                     format_message(
-                        "Relational Overview | Recipe: describe · full · relations · cluster · plain · jog"
+                        "Relational Overview | Recipe: describe · full · struct · analysis · plain · jog"
                     )
                 ]
             )
@@ -1752,7 +1752,7 @@ if bootstrap is not None:
                 [
                     {
                         "name": "Relational Overview",
-                        "recipe": "describe · full · relations · cluster · plain · jog",
+                        "recipe": "describe · full · struct · analysis · plain · jog",
                     }
                 ],
             )
@@ -1777,7 +1777,7 @@ if bootstrap is not None:
                 handle.result = PromptResult.from_messages(
                     [
                         format_message(
-                            "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog"
+                            "Name: Deep map | Recipe: describe · full · struct · analysis · bullets · fog"
                         )
                     ]
                 )
@@ -2053,7 +2053,7 @@ if bootstrap is not None:
                 handle.result = PromptResult.from_messages(
                     [
                         format_message(
-                            "Name: Multi static | Recipe: describe · full · relations · flow · story · jira · fog"
+                            "Name: Multi static | Recipe: describe · full · struct · flow · story · jira · fog"
                         )
                     ]
                 )
@@ -2066,7 +2066,7 @@ if bootstrap is not None:
                     [
                         {
                             "name": "Multi static",
-                            "recipe": "describe · full · relations · flow · story · jira · fog",
+                            "recipe": "describe · full · struct · flow · story · jira · fog",
                         }
                     ],
                 )
@@ -2087,7 +2087,7 @@ if bootstrap is not None:
                 handle.result = PromptResult.from_messages(
                     [
                         format_message(
-                            "Name: Missing directional | Recipe: describe · full · relations · flow · plain"
+                            "Name: Missing directional | Recipe: describe · full · struct · flow · plain"
                         )
                     ]
                 )
@@ -2101,7 +2101,7 @@ if bootstrap is not None:
             cached = [
                 {
                     "name": "Previous",
-                    "recipe": "describe · full · relations · flow · plain · fog",
+                    "recipe": "describe · full · struct · flow · plain · fog",
                 }
             ]
             GPTState.last_suggested_recipes = list(cached)
@@ -2124,7 +2124,7 @@ if bootstrap is not None:
             cached = [
                 {
                     "name": "Previous",
-                    "recipe": "describe · full · relations · flow · plain · fog",
+                    "recipe": "describe · full · struct · flow · plain · fog",
                 }
             ]
             GPTState.last_suggested_recipes = list(cached)
@@ -2173,7 +2173,7 @@ if bootstrap is not None:
             cached = [
                 {
                     "name": "Previous",
-                    "recipe": "describe · full · relations · flow · plain · fog",
+                    "recipe": "describe · full · struct · flow · plain · fog",
                 }
             ]
             GPTState.last_suggested_recipes = list(cached)
@@ -2379,26 +2379,26 @@ if bootstrap is not None:
 
         def test_gpt_show_last_recipe_includes_directional_when_present(self):
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · relations · cluster · bullets"
+            GPTState.last_recipe = "describe · full · struct · analysis · bullets"
             GPTState.last_directional = "fog"
 
             with patch.object(actions.app, "notify") as app_notify:
                 gpt_module.UserActions.gpt_show_last_recipe()
 
                 app_notify.assert_called_once_with(
-                    "Last recipe: describe · full · relations · cluster · bullets · fog"
+                    "Last recipe: describe · full · struct · analysis · bullets · fog"
                 )
 
         def test_gpt_show_last_recipe_omits_directional_when_absent(self):
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · relations · cluster · bullets"
+            GPTState.last_recipe = "describe · full · struct · analysis · bullets"
             GPTState.last_directional = ""
 
             with patch.object(actions.app, "notify") as app_notify:
                 gpt_module.UserActions.gpt_show_last_recipe()
 
                 app_notify.assert_called_once_with(
-                    "Last recipe: describe · full · relations · cluster · bullets"
+                    "Last recipe: describe · full · struct · analysis · bullets"
                 )
 
         def test_gpt_show_last_recipe_uses_last_axes_tokens_when_present(self):
@@ -2442,7 +2442,7 @@ if bootstrap is not None:
         def test_gpt_rerun_last_recipe_applies_overrides_on_last_tokens(self):
             # Seed last recipe state with token-based values.
             GPTState.reset_all()
-            GPTState.last_recipe = "describe · full · relations · cluster · bullets"
+            GPTState.last_recipe = "describe · full · struct · analysis · bullets"
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
             GPTState.last_scope = "relations"
@@ -2452,8 +2452,8 @@ if bootstrap is not None:
             GPTState.last_directional = "fog"
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["relations"],
-                "method": ["cluster"],
+                "scope": ["struct"],
+                "method": ["analysis"],
                 "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
@@ -2484,8 +2484,9 @@ if bootstrap is not None:
                 match = model_prompt.call_args.args[0]
                 self.assertEqual(match.staticPrompt, "todo")
                 self.assertEqual(match.completenessModifier, "gist")
-                self.assertEqual(match.scopeModifier, "relations")
-                self.assertEqual(match.methodModifier, "cluster")
+                # Scope and method are multi-valued, so they use _list attributes
+                self.assertEqual(match.scopeModifier, "struct")
+                self.assertEqual(match.methodModifier, "analysis")
                 self.assertEqual(match.formModifier, "bullets")
                 self.assertEqual(match.channelModifier, "slack")
                 self.assertEqual(match.directionalModifier, "rog")
@@ -2565,7 +2566,7 @@ if bootstrap is not None:
             GPTState.reset_all()
             # Simulate a previous multi-tag axis state.
             GPTState.last_recipe = (
-                "describe · full · narrow focus · cluster · adr table"
+                "describe · full · narrow focus · analysis · adr table"
             )
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"

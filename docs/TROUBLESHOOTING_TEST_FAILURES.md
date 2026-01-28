@@ -254,6 +254,170 @@ Refs: <ADR or commit that changed tokens>
    grep -r "formModifier.*adr\|adr.*formModifier" _tests/  # Find usage
    ```
 
+## Automation Scripts
+
+### Token Migration Script
+
+Use `scripts/tools/migrate-test-tokens.py` to automate bulk replacements:
+
+```bash
+# Preview changes without writing:
+python scripts/tools/migrate-test-tokens.py --dry-run --verbose
+
+# Apply migrations:
+python scripts/tools/migrate-test-tokens.py
+
+# Migrate specific file:
+python scripts/tools/migrate-test-tokens.py --file _tests/test_foo.py
+```
+
+**How to use:**
+
+1. Edit the script to add your token migrations:
+   ```python
+   TOKEN_MIGRATIONS = {
+       'focus': 'struct',
+       'actions': 'act',
+       'steps': 'flow',
+       # Add more mappings here
+   }
+   ```
+
+2. Run with `--dry-run` to preview changes
+
+3. Apply migrations: `python scripts/tools/migrate-test-tokens.py`
+
+4. Review and commit: `git diff _tests/`
+
+**For context-sensitive replacements** (e.g., 'plan' method vs 'plan' static prompt):
+```python
+CONTEXTUAL_MIGRATIONS = [
+    ('plan', 'flow', r'GPTState\.last_method\s*=\s*["\']plan["\']'),
+]
+```
+
+### Obsolete Token Detector
+
+Use `scripts/tools/detect-obsolete-tokens.py` to find removed token usage:
+
+```bash
+# Check test files:
+python scripts/tools/detect-obsolete-tokens.py
+
+# Check all Python files (including lib/):
+python scripts/tools/detect-obsolete-tokens.py --include-lib
+
+# Show current vocabulary to update detector:
+python scripts/tools/detect-obsolete-tokens.py --update-list
+```
+
+**Add to CI** to prevent regressions:
+```yaml
+# .github/workflows/test.yml
+- name: Check for obsolete tokens
+  run: python scripts/tools/detect-obsolete-tokens.py
+```
+
+## Token Mapping Reference
+
+Common token migrations from ADR 0091/0092 Phase 1:
+
+| Old Token     | New Token  | Axis      | Notes                                      |
+|---------------|------------|-----------|-------------------------------------------|
+| `focus`       | `struct`   | scope     | Structural focus                          |
+| `narrow`      | `struct`   | scope     | Narrow structural scope                   |
+| `bound`       | `struct`   | scope     | Bounded structure                         |
+| `edges`       | `fail`     | scope     | Edge cases → failure modes                |
+| `relations`   | `struct`   | scope     | Relationships → structure                 |
+| `actions`     | `act`      | scope     | Action-oriented scope (form token exists) |
+| `steps`       | `flow`     | method    | Step-by-step → flow (form token exists)   |
+| `plan`        | `flow`     | method    | Planning → flow (static prompt exists)    |
+| `debugging`   | `diagnose` | method    | Debug process → diagnosis                 |
+| `xp`          | `experimental` | method | Extreme Programming                       |
+| `cluster`     | `analysis` | method    | Clustering → analysis                     |
+| `decide`      | `inform`   | intent    | Decision-making → informing               |
+| `describe`    | `show`     | static    | Universal task taxonomy                   |
+| `todo`        | `make`     | static    | Universal task taxonomy                   |
+
+**Context-sensitive tokens:**
+- `plan`: Valid as **static prompt**, use `flow` for **method**
+- `actions`: Valid as **form** token, use `act` for **scope**
+- `steps`: Valid as **form** token, use `flow` for **method**
+
+## When Changing Tokens: Checklist
+
+Follow this checklist when removing, renaming, or moving tokens:
+
+### Before Making Changes
+
+- [ ] **Document the change** in an ADR or issue
+- [ ] **Search for usage** in tests: `grep -r "token_name" _tests/`
+- [ ] **Check patterns** in `lib/modelPatternGUI.py` (31 patterns reference tokens)
+- [ ] **Check ADRs** that document token-axis mappings (e.g., ADR 033)
+- [ ] **Note context-sensitive usage** (e.g., 'plan' as static vs method)
+
+### Making Changes
+
+- [ ] **Update axis configuration** (`lib/axisConfig.py` or equivalent)
+- [ ] **Update pattern definitions** in `lib/modelPatternGUI.py`:
+  - Recipe strings in all 31 patterns
+  - `SCOPE_TOKENS`, `METHOD_TOKENS` sets at bottom of file
+- [ ] **Update test files** using migration script or manually
+- [ ] **Update ADR documentation** (e.g., ADR 033 axis overlap mappings)
+- [ ] **Update scripts** that hardcode tokens (e.g., `history-axis-validate.py`)
+- [ ] **Add to obsolete token detector** in `detect-obsolete-tokens.py`
+
+### After Making Changes
+
+- [ ] **Run full test suite**: `pytest _tests/ -v`
+- [ ] **Check for obsolete tokens**: `python scripts/tools/detect-obsolete-tokens.py`
+- [ ] **Review test coverage**: Are the new tokens tested?
+- [ ] **Update troubleshooting guide** token mapping table (this document)
+- [ ] **Commit with clear message** documenting what changed and why
+
+### Special Case: Updating modelPatternGUI.py
+
+When token vocabulary changes, `lib/modelPatternGUI.py` requires systematic updates:
+
+**1. Update pattern recipes** (all 31 patterns):
+```python
+# BEFORE:
+PromptPattern(
+    name="Debug bug",
+    recipe="describe · full · narrow · debugging · rog",
+),
+
+# AFTER:
+PromptPattern(
+    name="Debug bug",
+    recipe="show · full · struct · diagnose · rog",
+),
+```
+
+**2. Update token validation sets** (bottom of file):
+```python
+# BEFORE:
+SCOPE_TOKENS = {
+    "narrow", "focus", "bound", "edges", "relations", "system", "actions",
+}
+
+# AFTER:
+SCOPE_TOKENS = {
+    "act", "fail", "good", "mean", "struct", "thing", "time",
+}
+```
+
+**Search patterns to find all occurrences:**
+```bash
+# Find patterns using obsolete token:
+grep -n "obsolete_token" lib/modelPatternGUI.py
+
+# Count patterns (should be 31):
+grep -c "PromptPattern(" lib/modelPatternGUI.py
+```
+
+**Tip:** Update all patterns in a single pass to avoid inconsistencies.
+
 ## Real-World Example: ADR 0092 Token Changes
 
 **What changed**: `plain` moved from form to channel axis
@@ -309,6 +473,13 @@ python3 -m unittest discover -s _tests 2>&1 | \
 
 ### Bulk Replace Tokens
 
+**Recommended:** Use the migration script for safer bulk replacements:
+```bash
+# See "Automation Scripts" section above
+python scripts/tools/migrate-test-tokens.py --dry-run --verbose
+```
+
+**Manual approach** (use with caution):
 ```bash
 # Single file
 sed -i '' 's/old_token/new_token/g' _tests/test_specific.py
@@ -321,16 +492,57 @@ grep -r "old_token" _tests/ | head -20
 # If OK, then run sed command above
 ```
 
+**Warning:** Manual `sed` replacements don't handle context-sensitive tokens (e.g., 'plan' as static vs method).
+
+## Real-World Example: Complete ADR 0091/0092 Phase 1 Fix
+
+**What changed**: 72 test failures after removing/renaming multiple tokens
+
+**Scope**:
+- 24 test files needed updates
+- 31 patterns in `modelPatternGUI.py` updated
+- 1 ADR document (033) corrected
+- 1 script (`history-axis-validate.py`) fixed
+
+**Token migrations applied**:
+```
+focus → struct, actions → act, steps → flow, plan → flow
+decide → inform, describe → show, todo → make
+bound → struct, edges → fail, debugging → diagnose
+```
+
+**Files changed**:
+- Tests: `test_model_pattern_gui.py` (34 tests), `test_help_hub.py` (6 tests), etc.
+- Patterns: Updated all 31 pattern recipes and token sets
+- Docs: Fixed ADR 033 axis overlap mappings (deep, actions, steps, socratic, direct)
+- Scripts: Fixed hardcoded test data
+
+**Result**: All 1205 tests passing (100% success rate)
+
+**Time to fix**: ~4 hours manual (would be ~1 hour with automation scripts)
+
+**Key insight**: Most failures were simple token replacements that could have been automated. The migration script would have saved ~3 hours.
+
 ## Summary
 
 **Key Principle**: When tokens change, tests must change too.
 
-**Quick Checklist**:
+**Quick Start** (with automation):
+1. Run obsolete token detector: `python scripts/tools/detect-obsolete-tokens.py`
+2. Update migration script with token mappings
+3. Preview migrations: `python scripts/tools/migrate-test-tokens.py --dry-run`
+4. Apply migrations: `python scripts/tools/migrate-test-tokens.py`
+5. Fix remaining context-sensitive cases manually
+6. Run tests: `pytest _tests/ -v`
+7. Commit with clear message
+
+**Traditional Checklist** (manual approach):
 - [ ] Identify baseline (last passing commit)
 - [ ] List what tokens changed (removed/moved/renamed)
 - [ ] Find all test references to changed tokens
 - [ ] Update test data (inputs)
 - [ ] Update test assertions (expected outputs)
+- [ ] Update `modelPatternGUI.py` patterns if needed
 - [ ] Run tests to verify
 - [ ] Document changes in commit message
 
@@ -339,9 +551,13 @@ grep -r "old_token" _tests/ | head -20
 2. Only fixing test data but not assertions (or vice versa)
 3. Assuming recipe parts have fixed indices
 4. Not searching for both token name and axis name together
+5. **Not using automation scripts** (newest, most time-consuming mistake)
 
 **Pro Tips**:
+- **Use the migration script** for bulk replacements (saves hours)
+- **Run obsolete token detector** before and after changes
 - Use grepai to find token usage: `grepai search "usage of token_name in tests"`
 - Run tests frequently during refactoring
 - Keep token changes and test updates in the same commit
 - Document removed tokens in ADRs for future reference
+- Add CI check for obsolete tokens to prevent regressions

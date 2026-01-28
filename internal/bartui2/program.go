@@ -1060,6 +1060,19 @@ func wrapText(s string, maxWidth int) string {
 	return result.String()
 }
 
+// wrapAndTruncateText wraps text to fit within maxWidth characters per line,
+// then truncates to maxLines, adding "..." if truncated.
+func wrapAndTruncateText(s string, maxWidth, maxLines int) string {
+	wrapped := wrapText(s, maxWidth)
+	lines := strings.Split(wrapped, "\n")
+	if len(lines) <= maxLines {
+		return wrapped
+	}
+	// Truncate to maxLines and add ellipsis
+	truncated := strings.Join(lines[:maxLines], "\n")
+	return truncated + "..."
+}
+
 // getPreviewPaneHeight returns the calculated height for the preview/result pane.
 func (m model) getPreviewPaneHeight() int {
 	paneHeight := (m.height - 10) / 2
@@ -1710,13 +1723,14 @@ func (m model) renderTokensPane() string {
 		right.WriteString("\n")
 	}
 
-	// Add selected item description area (full description)
+	// Add selected item description area (truncated description preview)
 	if selectedDesc != "" {
 		right.WriteString("\n")
 		right.WriteString(dimStyle.Render("─"))
 		right.WriteString("\n")
-		// Wrap description to fit width
-		wrappedDesc := wrapText(selectedDesc, rightWidth-2)
+		// Wrap and truncate description to prevent screen overflow
+		// Limit to 3 lines to keep the UI compact
+		wrappedDesc := wrapAndTruncateText(selectedDesc, rightWidth-2, 3)
 		right.WriteString(dimStyle.Render(wrappedDesc))
 	}
 

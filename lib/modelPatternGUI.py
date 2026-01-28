@@ -508,7 +508,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Sketch diagram",
         description="Convert this into a Mermaid-style diagram (code only).",
-        recipe="describe · gist · focus · structure · diagram · fog",
+        recipe="describe · gist · struct · mapping · diagram · fog",
         domain="coding",
     ),
     PromptPattern(

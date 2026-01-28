@@ -399,10 +399,10 @@ if bootstrap is not None:
 
                 self.assertEqual(GPTState.last_static_prompt, "describe")
                 self.assertEqual(GPTState.last_completeness, "gist")
-                self.assertEqual(GPTState.last_scope, "focus")
-                self.assertEqual(GPTState.last_method, "structure")
-                self.assertEqual(GPTState.last_form, "diagram")
-                self.assertEqual(GPTState.last_channel, "")
+                self.assertEqual(GPTState.last_scope, "struct")
+                self.assertEqual(GPTState.last_method, "mapping")
+                self.assertEqual(GPTState.last_form, "")
+                self.assertEqual(GPTState.last_channel, "diagram")
                 self.assertEqual(GPTState.last_directional, "fog")
 
             def test_parse_recipe_handles_new_method_tokens(self) -> None:
@@ -592,8 +592,8 @@ if bootstrap is not None:
                 # Seed GPTState axes so the underlying snapshot has last_axes data.
                 GPTState.last_axes = {
                     "completeness": ["full"],
-                    "scope": ["narrow"],
-                    "method": ["debugging"],
+                    "scope": ["struct"],
+                    "method": ["diagnose"],
                     "form": [],
                     "channel": [],
                 }
@@ -603,8 +603,8 @@ if bootstrap is not None:
                 # Axes in the view should match the snapshot axes shape tested elsewhere.
                 axes = view["axes"]
                 self.assertEqual(axes["completeness"], "full")
-                self.assertEqual(axes["scope"], ["narrow"])
-                self.assertEqual(axes["method"], ["debugging"])
+                self.assertEqual(axes["scope"], ["struct"])
+                self.assertEqual(axes["method"], ["diagnose"])
                 self.assertEqual(axes.get("form", []), [])
                 self.assertEqual(axes.get("channel", []), [])
                 self.assertEqual(axes["directional"], "rog")
@@ -612,7 +612,7 @@ if bootstrap is not None:
                 # recipe_line should be a concise, token-based recap including directional.
                 self.assertEqual(
                     view["recipe_line"],
-                    "describe · full · narrow · debugging · rog",
+                    "describe · full · struct · diagnose · rog",
                 )
                 # last_axes should surface the seeded GPTState.last_axes.
                 self.assertEqual(view["last_axes"], GPTState.last_axes)

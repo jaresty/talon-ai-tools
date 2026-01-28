@@ -323,25 +323,25 @@ if bootstrap is not None:
             GPTState.reset_all()
             self.addCleanup(lambda: GPTState.reset_all())
 
-            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_recipe = "describe · full · struct · flow · bullets · fog"
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
-            GPTState.last_scope = "focus"
-            GPTState.last_method = "plan"
-            GPTState.last_form = "plain"
+            GPTState.last_scope = "struct"
+            GPTState.last_method = "flow"
+            GPTState.last_form = "bullets"
             GPTState.last_channel = "slack"
             GPTState.last_directional = "fog"
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["plan"],
-                "form": ["plain"],
+                "scope": ["struct"],
+                "method": ["flow"],
+                "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
             }
             GPTState.last_suggest_context = {
                 "persona_preset_key": "teach_junior_dev",
-                "intent_preset_key": "decide",
+                "intent_preset_key": "inform",
             }
 
             append_entry(
@@ -349,12 +349,12 @@ if bootstrap is not None:
                 "prompt persona",
                 "resp",
                 "meta",
-                recipe="describe · full · focus · plan · plain · fog",
+                recipe="describe · full · struct · flow · bullets · fog",
                 axes={
                     "completeness": ["full"],
-                    "scope": ["focus"],
-                    "method": ["plan"],
-                    "form": ["plain"],
+                    "scope": ["struct"],
+                    "method": ["flow"],
+                    "form": ["bullets"],
                     "channel": ["slack"],
                     "directional": ["fog"],
                 },
@@ -368,34 +368,34 @@ if bootstrap is not None:
             self.assertIn("persona mentor", persona_lower)
             self.assertIn("key=teach_junior_dev", persona_lower)
             self.assertIn("say: persona mentor", persona_lower)
-            self.assertIn("intent decide", intent_lower)
-            self.assertIn("key=decide", intent_lower)
-            self.assertIn("say: intent decide", intent_lower)
+            self.assertIn("intent inform", intent_lower)
+            self.assertIn("key=inform", intent_lower)
+            self.assertIn("say: intent inform", intent_lower)
 
         def test_history_list_includes_persona_and_intent_metadata(self):
             persona_intent_maps_reset()
             GPTState.reset_all()
             self.addCleanup(lambda: GPTState.reset_all())
 
-            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_recipe = "describe · full · struct · flow · bullets · fog"
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
-            GPTState.last_scope = "focus"
-            GPTState.last_method = "plan"
-            GPTState.last_form = "plain"
+            GPTState.last_scope = "struct"
+            GPTState.last_method = "flow"
+            GPTState.last_form = "bullets"
             GPTState.last_channel = "slack"
             GPTState.last_directional = "fog"
             GPTState.last_axes = {
                 "completeness": ["full"],
-                "scope": ["focus"],
-                "method": ["plan"],
-                "form": ["plain"],
+                "scope": ["struct"],
+                "method": ["flow"],
+                "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
             }
             GPTState.last_suggest_context = {
                 "persona_preset_key": "teach_junior_dev",
-                "intent_preset_key": "decide",
+                "intent_preset_key": "inform",
             }
 
             append_entry(
@@ -403,12 +403,12 @@ if bootstrap is not None:
                 "prompt persona",
                 "resp",
                 "meta",
-                recipe="describe · full · focus · plan · plain · fog",
+                recipe="describe · full · struct · flow · bullets · fog",
                 axes={
                     "completeness": ["full"],
-                    "scope": ["focus"],
-                    "method": ["plan"],
-                    "form": ["plain"],
+                    "scope": ["struct"],
+                    "method": ["flow"],
+                    "form": ["bullets"],
                     "channel": ["slack"],
                     "directional": ["fog"],
                 },
@@ -423,9 +423,9 @@ if bootstrap is not None:
             self.assertIn("persona mentor", message)
             self.assertIn("key=teach_junior_dev", message)
             self.assertIn("say: persona mentor", message)
-            self.assertIn("intent decide", message)
-            self.assertIn("key=decide", message)
-            self.assertIn("say: intent decide", message)
+            self.assertIn("intent inform", message)
+            self.assertIn("key=inform", message)
+            self.assertIn("say: intent inform", message)
 
         def test_history_validation_stats_include_persona_intent_pairs(self):
             persona_intent_maps_reset()

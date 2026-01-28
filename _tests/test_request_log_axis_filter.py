@@ -17,14 +17,14 @@ if bootstrap is not None:
     class RequestLogAxisFilterTests(unittest.TestCase):
         def test_keeps_only_known_axis_tokens_and_drops_hydrated(self) -> None:
             axes = {
-                "scope": ["bound", "unknown", "Important: hydrated value"],
-                "method": ["steps", ""],
+                "scope": ["struct", "unknown", "Important: hydrated value"],
+                "method": ["flow", ""],
             }
 
             filtered = filter_axes_payload(axes)
 
-            self.assertEqual(filtered["scope"], ["bound"])
-            self.assertEqual(filtered["method"], ["steps"])
+            self.assertEqual(filtered["scope"], ["struct"])
+            self.assertEqual(filtered["method"], ["flow"])
 
         def test_drops_unknown_axis_keys(self) -> None:
             axes = {"custom": ["value", ""]}
@@ -35,9 +35,9 @@ if bootstrap is not None:
 
         def test_axis_snapshot_matches_filtered_axes_payload(self) -> None:
             axes = {
-                "scope": ["bound", "edges"],
-                "method": ["rigor", "steps"],
-                "form": ["code"],
+                "scope": ["struct", "time"],
+                "method": ["rigor", "flow"],
+                "form": ["bullets"],
                 "channel": ["slack"],
                 "directional": ["fog"],
                 "custom": ["value", ""],
@@ -51,8 +51,8 @@ if bootstrap is not None:
 
         def test_axis_snapshot_is_immutable(self) -> None:
             axes = {
-                "scope": ["focus"],
-                "method": ["steps"],
+                "scope": ["struct"],
+                "method": ["flow"],
                 "directional": ["fog"],
             }
 
@@ -60,18 +60,18 @@ if bootstrap is not None:
 
             self.assertIsInstance(snapshot.axes["scope"], tuple)
             with self.assertRaises(TypeError):
-                snapshot.axes["scope"] += ("bound",)
+                snapshot.axes["scope"] += ("time",)
 
             mutated = snapshot.as_dict()
             mutated["scope"].append("extra")
-            self.assertEqual(snapshot.get("scope"), ["focus"])
+            self.assertEqual(snapshot.get("scope"), ["struct"])
             self.assertNotIn("custom", snapshot)
 
         def test_caps_and_style_rejection(self) -> None:
             axes = {
-                "scope": ["bound", "edges", "focus"],
-                "method": ["rigor", "xp", "steps", "plan"],
-                "form": ["code", "table"],
+                "scope": ["struct", "time", "act"],
+                "method": ["rigor", "flow", "analysis", "diagnose"],
+                "form": ["bullets", "table"],
                 "channel": ["slack", "jira"],
                 "directional": ["fog", "rog"],
                 "style": ["plain"],

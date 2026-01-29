@@ -61,6 +61,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "pick": {
         "description": "The response chooses one or more options from a set of alternatives.",
+        "method": "converge",
     },
     "plan": {
         "description": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",

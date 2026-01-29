@@ -410,25 +410,36 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, "
-        "activities, operations, or work to be performed—rather than "
-        "structure or meaning.",
-        "fail": "The response focuses on breakdowns, stress, uncertainty, or "
-        "limits—risks, edge cases, pain points, resilience, or what can go "
-        "wrong.",
+        "activities, operations, or work to be performed—suppressing "
+        "interpretation, evaluation, structural explanation, or "
+        "perspective-shifting.",
+        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits "
+        "by examining how and under what conditions something stops "
+        "working—risks, edge cases, fragility, or failure modes rather than "
+        "overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is "
-        "judged—criteria, metrics, value, taste, or standards of "
-        "assessment.",
-        "mean": "The response focuses on why something exists or how it should be "
-        "understood—purpose, assumptions, framing, terminology, or "
-        "interpretive lens.",
+        "judged—criteria, metrics, standards, values, or taste—assuming a "
+        "framing rather than defining it or shifting perspective.",
+        "mean": "The response focuses on how something should be understood prior "
+        "to judgment—its purpose, assumptions, framing, terminology, or "
+        "conceptual role—without evaluating its success, prescribing "
+        "action, or adopting a specific stakeholder perspective.",
         "struct": "The response focuses on how things are arranged or "
         "related—dependencies, coordination, constraints, incentives, or "
-        "organizing patterns.",
-        "thing": "The response focuses on what things are in view—objects, people, "
-        "roles, systems, domains, or bounded units—without emphasizing "
-        "actions or evaluation.",
+        "organizing patterns—independent of sequence, value judgment, or "
+        "viewpoint.",
+        "thing": "The response focuses on what entities are in view—objects, "
+        "people, roles, systems, domains, or bounded units—and what is "
+        "excluded, without emphasizing actions, relationships, evaluation, "
+        "or perspective.",
         "time": "The response focuses on when things occur and how they change over "
-        "time—sequences, evolution, history, or temporal dynamics.",
+        "time—sequences, evolution, history, phases, or temporal "
+        "dynamics—rather than static structure, evaluation, or immediate "
+        "action.",
+        "view": "The response focuses on how the subject appears from a specific "
+        "stakeholder, role, or positional perspective, making that "
+        "viewpoint explicit without asserting it as definitive, evaluating "
+        "outcomes, or prescribing action.",
     },
 }
 

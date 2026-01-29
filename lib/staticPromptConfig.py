@@ -35,42 +35,40 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     # Migration guide: docs/adr/0088-adopt-universal-task-taxonomy.md
     # Universal task types (all single-syllable, pronounceable for voice workflows)
     "make": {
-        "description": "The response produces content that did not previously exist, creating something new that matches required properties.",
+        "description": "The response creates new content that did not previously exist, based on the input and constraints.",
         "completeness": "full",
     },
     "fix": {
-        "description": "The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
+        "description": "The response changes the form or presentation of given content while keeping its intended meaning.",
         "completeness": "full",
     },
     "pull": {
-        "description": "The response selects or isolates information already present without introducing new content.",
+        "description": "The response selects or extracts a subset of the given information without altering its substance.",
         "completeness": "gist",
     },
     "sort": {
-        "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions.",
+        "description": "The response arranges items into categories or an order using a specified or inferred scheme.",
     },
     "diff": {
-        "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
+        "description": "The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
     },
     "show": {
-        "description": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
+        "description": "The response explains or describes the subject for the stated audience.",
     },
     "probe": {
-        "description": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
-        "method": "analysis",
+        "description": "The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
     },
     "pick": {
-        "description": "The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
-        "method": "converge",
+        "description": "The response chooses one or more options from a set of alternatives.",
     },
     "plan": {
-        "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
+        "description": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+    },
+    "sim": {
+        "description": "The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
     },
     "check": {
-        "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
-    },
-    "chat": {
-        "description": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
+        "description": "The response evaluates the subject against a condition and reports whether it passes or fails.",
     },
 }
 

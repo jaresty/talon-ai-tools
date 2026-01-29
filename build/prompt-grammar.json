@@ -70,7 +70,6 @@
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
-        "steps": "The response solves the problem step by step, briefly labelling and explaining each step before presenting the final answer.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
         "taxonomy": "The response structures ideas as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly.",
@@ -121,7 +120,7 @@
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
         "roles": "The response enhances the task by focusing on responsibilities, ownership, and collaboration patterns.",
-        "simulation": "The response enhances the task by running explicit thought experiments or scenario walkthroughs that project evolution over time, surfacing feedback loops, bottlenecks, tipping points, and emergent effects.",
+        "simulation": "The response develops explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
         "systemic": "The response enhances the task by analyzing the subject as a whole system, identifying components, boundaries, flows, and feedback loops.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
       },
@@ -204,7 +203,6 @@
         "scaffold",
         "socratic",
         "spike",
-        "steps",
         "story",
         "table",
         "taxonomy",
@@ -277,70 +275,62 @@
           "axes": {
             "completeness": "full"
           },
-          "description": "The response produces content that did not previously exist, creating something new that matches required properties.",
+          "description": "The response creates new content that did not previously exist, based on the input and constraints.",
           "name": "make"
         },
         {
           "axes": {
             "completeness": "full"
           },
-          "description": "The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
+          "description": "The response changes the form or presentation of given content while keeping its intended meaning.",
           "name": "fix"
         },
         {
           "axes": {
             "completeness": "gist"
           },
-          "description": "The response selects or isolates information already present without introducing new content.",
+          "description": "The response selects or extracts a subset of the given information without altering its substance.",
           "name": "pull"
         },
         {
           "axes": {},
-          "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions.",
+          "description": "The response arranges items into categories or an order using a specified or inferred scheme.",
           "name": "sort"
         },
         {
           "axes": {},
-          "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
+          "description": "The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
           "name": "diff"
         },
         {
           "axes": {},
-          "description": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
+          "description": "The response explains or describes the subject for the stated audience.",
           "name": "show"
         },
         {
-          "axes": {
-            "method": [
-              "analysis"
-            ]
-          },
-          "description": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
+          "axes": {},
+          "description": "The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
           "name": "probe"
         },
         {
-          "axes": {
-            "method": [
-              "converge"
-            ]
-          },
-          "description": "The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
+          "axes": {},
+          "description": "The response chooses one or more options from a set of alternatives.",
           "name": "pick"
         },
         {
           "axes": {},
-          "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
+          "description": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
           "name": "plan"
         },
         {
           "axes": {},
-          "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
-          "name": "check"
+          "description": "The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+          "name": "sim"
         },
         {
           "axes": {},
-          "description": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
-          "name": "chat"
+          "description": "The response evaluates the subject against a condition and reports whether it passes or fails.",
+          "name": "check"
         }
       ],
       "talon_list_tokens": [
@@ -353,63 +343,61 @@
         "probe",
         "pick",
         "plan",
-        "check",
-        "chat"
+        "sim",
+        "check"
       ],
       "unprofiled_tokens": []
     },
     "profiles": {
-      "chat": {
-        "description": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction."
-      },
       "check": {
-        "description": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement."
+        "description": "The response evaluates the subject against a condition and reports whether it passes or fails."
       },
       "diff": {
-        "description": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims."
+        "description": "The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs."
       },
       "fix": {
         "completeness": "full",
-        "description": "The response changes the representation or form while preserving underlying meaning and semantic equivalence."
+        "description": "The response changes the form or presentation of given content while keeping its intended meaning."
       },
       "make": {
         "completeness": "full",
-        "description": "The response produces content that did not previously exist, creating something new that matches required properties."
+        "description": "The response creates new content that did not previously exist, based on the input and constraints."
       },
       "pick": {
-        "description": "The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
-        "method": "converge"
+        "description": "The response chooses one or more options from a set of alternatives."
       },
       "plan": {
-        "description": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order."
+        "description": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal."
       },
       "probe": {
-        "description": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
-        "method": "analysis"
+        "description": "The response analyzes the subject to surface structure, assumptions, or implications beyond restatement."
       },
       "pull": {
         "completeness": "gist",
-        "description": "The response selects or isolates information already present without introducing new content."
+        "description": "The response selects or extracts a subset of the given information without altering its substance."
       },
       "show": {
-        "description": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction."
+        "description": "The response explains or describes the subject for the stated audience."
+      },
+      "sim": {
+        "description": "The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions."
       },
       "sort": {
-        "description": "The response assigns items to predefined or inferred categories with consistent application of category definitions."
+        "description": "The response arranges items into categories or an order using a specified or inferred scheme."
       }
     },
     "descriptions": {
-      "chat": "The response maintains a coherent, context-aware exchange by responding meaningfully to prior turns and advancing or sustaining the interaction.",
-      "check": "The response checks truth, consistency, or compliance with accurate judgment and clear pass/fail statement.",
-      "diff": "The response analyzes similarities, differences, or tradeoffs along relevant dimensions with accurate relational claims.",
-      "fix": "The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
-      "make": "The response produces content that did not previously exist, creating something new that matches required properties.",
-      "pick": "The response selects among alternatives using stated or implied criteria with clear decision and reasoned justification.",
-      "plan": "The response produces an actionable sequence, structure, or strategy with feasible steps in logical order.",
-      "probe": "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
-      "pull": "The response selects or isolates information already present without introducing new content.",
-      "show": "The response makes the subject intelligible to the target audience with internal coherence and appropriate abstraction.",
-      "sort": "The response assigns items to predefined or inferred categories with consistent application of category definitions."
+      "check": "The response evaluates the subject against a condition and reports whether it passes or fails.",
+      "diff": "The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+      "fix": "The response changes the form or presentation of given content while keeping its intended meaning.",
+      "make": "The response creates new content that did not previously exist, based on the input and constraints.",
+      "pick": "The response chooses one or more options from a set of alternatives.",
+      "plan": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+      "probe": "The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+      "pull": "The response selects or extracts a subset of the given information without altering its substance.",
+      "show": "The response explains or describes the subject for the stated audience.",
+      "sim": "The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+      "sort": "The response arranges items into categories or an order using a specified or inferred scheme."
     }
   },
   "persona": {
@@ -779,7 +767,6 @@
         "scaffold": "scaffold",
         "socratic": "socratic",
         "spike": "spike",
-        "steps": "steps",
         "story": "story",
         "table": "table",
         "taxonomy": "taxonomy",
@@ -845,7 +832,6 @@
       }
     },
     "static": {
-      "chat": "chat",
       "check": "check",
       "diff": "diff",
       "fix": "fix",
@@ -855,6 +841,7 @@
       "probe": "probe",
       "pull": "pull",
       "show": "show",
+      "sim": "sim",
       "sort": "sort"
     },
     "persona": {
@@ -924,7 +911,6 @@
     },
     "overrides": {
       "static": {
-        "static=chat": "static-chat",
         "static=check": "static-check",
         "static=diff": "static-diff",
         "static=fix": "static-fix",
@@ -934,6 +920,7 @@
         "static=probe": "static-probe",
         "static=pull": "static-pull",
         "static=show": "static-show",
+        "static=sim": "static-sim",
         "static=sort": "static-sort"
       },
       "completeness": {
@@ -1022,7 +1009,6 @@
         "form=scaffold": "form-scaffold",
         "form=socratic": "form-socratic",
         "form=spike": "form-spike",
-        "form=steps": "form-steps",
         "form=story": "form-story",
         "form=table": "form-table",
         "form=taxonomy": "form-taxonomy",
@@ -1173,7 +1159,6 @@
       "channel=slack": "channel-slack",
       "channel=svg": "channel-svg",
       "channel=sync": "channel-sync",
-      "chat": "chat",
       "check": "check",
       "checklist": "checklist",
       "cite": "cite",
@@ -1264,7 +1249,6 @@
       "form=scaffold": "form-scaffold",
       "form=socratic": "form-socratic",
       "form=spike": "form-spike",
-      "form=steps": "form-steps",
       "form=story": "form-story",
       "form=table": "form-table",
       "form=taxonomy": "form-taxonomy",
@@ -1398,13 +1382,13 @@
       "scope=time": "scope-time",
       "shellscript": "shellscript",
       "show": "show",
+      "sim": "sim",
       "simulation": "simulation",
       "skim": "skim",
       "slack": "slack",
       "socratic": "socratic",
       "sort": "sort",
       "spike": "spike",
-      "static=chat": "static-chat",
       "static=check": "static-check",
       "static=diff": "static-diff",
       "static=fix": "static-fix",
@@ -1414,8 +1398,8 @@
       "static=probe": "static-probe",
       "static=pull": "static-pull",
       "static=show": "static-show",
+      "static=sim": "static-sim",
       "static=sort": "static-sort",
-      "steps": "steps",
       "story": "story",
       "struct": "struct",
       "svg": "svg",
@@ -1468,10 +1452,10 @@
     }
   },
   "checksums": {
-    "axes": "d5b297e78c1af463e43da2267c42177a2a7a4ef1e16ca7d54c027962911e9cb2",
-    "static_prompts": "3bea1d9a46e494449f99df07f995c0f430eb481680ff0ca9332a4a901975159f",
+    "axes": "9fd54a631970dfe204aee2330dfae6c8f4a54925d6e12332e6021867714dc337",
+    "static_prompts": "f922cf336e23724ab89dc3b60517807eac839326a0ccd5b93feb83df3adb7bf5",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "31b4c208e3b3f6612f88571b79be3cbc23dee6ccc9400abb2ccdd338efaa6292"
+    "slugs": "06c41c80abac1cda6125ed581328b9d593c59a369b69a9e68b9db9d6b2ce2dca"
   }
 }

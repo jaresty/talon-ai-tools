@@ -18,7 +18,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-from scripts.tools.generate_static_prompt_docs import main as generate_static_prompt_docs  # type: ignore  # noqa: E402
+from talon_user.GPT.gpt import _build_static_prompt_docs  # type: ignore  # noqa: E402
 
 START_MARKER = "## Help"
 END_MARKER = "### Meta interpretation channel (ADR 019) and richer structure (ADR 020)"
@@ -27,7 +27,10 @@ END_MARKER = "### Meta interpretation channel (ADR 019) and richer structure (AD
 def refresh_static_prompts(readme_path: Path, out_path: Path | None) -> None:
     tmp_path = readme_path.parent.parent / "tmp" / "static-prompt-docs.md"
     tmp_path.parent.mkdir(parents=True, exist_ok=True)
-    generate_static_prompt_docs()
+    # Generate static prompt docs content and write to tmp file
+    content = _build_static_prompt_docs() + "\n"
+    tmp_path.write_text(content, encoding="utf-8")
+    print(f"Wrote static prompt docs to {tmp_path}")
     content = readme_path.read_text(encoding="utf-8").splitlines()
     try:
         start_idx = next(i for i, line in enumerate(content) if line.strip() == START_MARKER)

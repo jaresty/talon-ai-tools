@@ -142,3 +142,37 @@
   - GO_TOKEN_MIGRATIONS dictionary initially empty (severity: low; mitigation: populate during next token migration; monitoring: script requires manual configuration before use; owning ADR: this ADR, maintenance of item #2)
 - next_work:
   - Behaviour: Update ADR 0095 status to reflect completed items #1, #2, #4; Validation: ADR document status changes from Proposed to Accepted and Decision section clearly indicates which items are complete and which remain deferred
+
+## 2026-01-28 — loop 005
+
+- helper_version: helper:v20251223.1
+- focus: ADR 0095 Status section → Update ADR status from Proposed to Accepted and mark items #1, #2, #4 as complete (salient task: final ADR status update documenting completed work)
+- active_constraint: ADR document status remains "Proposed" and does not reflect that items #1 (grammar sync validation), #2 (Go migration support), and #4 (obsolete token test) are complete, preventing readers from understanding current implementation state (validated via grepping ADR for "Status" showing "Proposed")
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Clarifies implementation status for future maintainers but does not affect functionality |
+  | Probability | High | Documentation update is straightforward |
+  | Time Sensitivity | Medium | Useful to document completed work promptly but no deadline |
+  | Uncertainty note | Low | Changes are purely documentary |
+- validation_targets:
+  - `grep -A 2 "^## Status" docs/adr/0095-future-token-migration-automation.md` (verifies status field shows Accepted and reflects completed items)
+- evidence:
+  - red | 2026-01-29T00:35:00Z | exit 0 | grep -A 2 "^## Status" docs/adr/0095-future-token-migration-automation.md
+    - helper:diff-snapshot=0 files changed
+    - behaviour: ADR status shows "Proposed" proving document not yet updated | inline
+  - green | 2026-01-29T00:40:00Z | exit 0 | grep -A 2 "^## Status" docs/adr/0095-future-token-migration-automation.md
+    - helper:diff-snapshot=docs/adr/0095-future-token-migration-automation.md | 45 +++++++++++++++++++++++++++++++++++----------
+    - behaviour: ADR status shows "Accepted" with completion notes proving document updated | inline
+  - removal | 2026-01-29T00:42:00Z | exit 0 | git restore --source=HEAD -- docs/adr/0095-future-token-migration-automation.md && grep -A 2 "^## Status" docs/adr/0095-future-token-migration-automation.md
+    - helper:diff-snapshot=0 files changed
+    - behaviour: ADR status shows "Proposed" again after revert proving update was required | inline
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0095-future-token-migration-automation.md`; rerun grep to observe "Proposed" status
+- delta_summary: helper:diff-snapshot=docs/adr/0095-future-token-migration-automation.md | 45 insertions(+), 10 deletions(-) — updated status from Proposed to Accepted, added completion summary for items #1, #2, #4, clarified items #3 and #5 are deferred, updated Success Metrics to reflect achieved outcomes
+- loops_remaining_forecast: 0 loops remaining — ADR 0095 implementation complete with items #1, #2, #4 delivered and items #3, #5 explicitly deferred
+- residual_constraints:
+  - Test token constants not implemented (severity: low; mitigation: deferred per item #3 Decision section; evaluate after observing migration patterns; monitoring: test coupling persists; owning ADR: this ADR, item #3)
+  - Pre-commit hook not implemented (severity: low; mitigation: deferred per item #5 Decision section until team requests; monitoring: developers can commit obsolete tokens without local feedback; owning ADR: this ADR, item #5)
+  - GO_TOKEN_MIGRATIONS dictionary requires manual population (severity: low; mitigation: documented in script comments; populate during next token migration; monitoring: script shows warning when empty; owning ADR: this ADR, item #2 maintenance)
+- next_work:
+  - No further loops required; ADR 0095 complete with three delivered items and two explicitly deferred items

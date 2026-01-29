@@ -134,6 +134,7 @@ A loop entry is compliant when all statements hold:
 - Each red/green/removal record lists: command string, UTC ISO-8601 timestamp, exit status, diff/hash snapshot (`helper:diff-snapshot` output or checksum), and a pointer (`inline` or `<ARTEFACT_LOG>#heading`). Red evidence must include the failure excerpt proving the targeted behaviour.
 - When summaries are insufficient, transcripts append to `<ARTEFACT_LOG>` using headings of the form `loop-### {kind} | helper:diff-snapshot`; temporary per-loop files note their migration plan. Use `inline` pointers only when the excerpt fits within existing size limits.
 - Removal records document the same command pairing, the `<VCS_REVERT>` invocation, and the re-run failure snippet. Documentation-only loops that do not touch executable artefacts may omit this removal record once blocker evidence is captured. If any required step fails (e.g., revert blocked), log the blocker evidence immediately.
+- Removal records keep the specifying validation in place and revert only the implementation under test; the re-run failure demonstrates that the validation fully specifies the behaviour change.
 - The adversarial “constraint recap” paragraph names at least one residual constraint, the mitigation, the monitoring trigger, and the reopen condition.
 
 **Next work queued**

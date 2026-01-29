@@ -72,3 +72,39 @@
   - Pre-commit hook not implemented (severity: low; mitigation: defer until team requests it per item #5; monitoring: developers can commit obsolete tokens without CI feedback; owning ADR: this ADR, item #5)
 - next_work:
   - Behaviour: Add Python test to detect obsolete tokens per item #4; Validation: `python3 -m pytest _tests/test_obsolete_tokens.py` passes and detects when obsolete tokens exist in axisConfig; create test that fails when OBSOLETE_TOKENS set contains tokens found in AXIS_KEY_TO_VALUE
+
+## 2026-01-28 — loop 003
+
+- helper_version: helper:v20251223.1
+- focus: ADR 0095 Decision section #4 → Add Python test to detect obsolete tokens in axisConfig so removed tokens don't linger undetected (salient task: item #4 from Decision section)
+- active_constraint: No automated test verifies that obsolete tokens (from ADR 0091/0092 migrations) are actually removed from `lib/axisConfig.py`, allowing legacy tokens to persist and cause confusion during future migrations (validated via attempting to run `python3 -m unittest _tests.test_obsolete_tokens` which should fail with module not found)
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Prevents obsolete tokens from lingering but doesn't block current functionality |
+  | Probability | High | Test is deterministic and directly checks axisConfig dictionary |
+  | Time Sensitivity | Medium | Useful for future migrations but no immediate deadline |
+  | Uncertainty note | Low | OBSOLETE_TOKENS set can be populated from ADR 0091/0092 migration history |
+- validation_targets:
+  - `python3 -m unittest _tests.test_obsolete_tokens -v` (verifies obsolete tokens are not in axisConfig)
+- evidence:
+  - red | 2026-01-28T23:50:00Z | exit 1 | python3 -m unittest _tests.test_obsolete_tokens -v
+    - helper:diff-snapshot=0 files changed
+    - behaviour: obsolete token test fails with "Failed to import test module" proving file does not exist | inline
+  - green | 2026-01-28T23:52:00Z | exit 0 | python3 -m unittest _tests.test_obsolete_tokens -v
+    - helper:diff-snapshot=_tests/test_obsolete_tokens.py | 50 ++++++++++++++++++++++++++++++++++++++++++++++++++
+    - behaviour: obsolete token test passes, verifying no obsolete tokens from ADR 0091/0092 exist in axisConfig | inline
+  - removal | 2026-01-28T23:53:00Z | exit 1 | rm _tests/test_obsolete_tokens.py && python3 -m unittest _tests.test_obsolete_tokens -v
+    - helper:diff-snapshot=0 files changed
+    - behaviour: test collection fails again after deletion proving test file was required | inline
+- rollback_plan: `rm _tests/test_obsolete_tokens.py`; rerun unittest to observe "Failed to import test module" failure
+- delta_summary: helper:diff-snapshot=_tests/test_obsolete_tokens.py | 50 insertions(+) — created unittest test to verify obsolete tokens from ADR 0091/0092 (todo, focus, system, relations, steps, announce, coach_junior) are not present in AXIS_KEY_TO_VALUE, preventing legacy vocabulary from persisting after migrations
+- loops_remaining_forecast: 2 loops remaining (item #2 Go migration support, final ADR status update) — high confidence that obsolete token detection works as specified
+- residual_constraints:
+  - Go test migration support remains manual (severity: medium; mitigation: extend `migrate-test-tokens.py` per item #2 in next loop; monitoring: next token migration will require manual Go updates; owning ADR: this ADR, item #2)
+  - Test token constants not implemented (severity: low; mitigation: defer per item #3 unless migration patterns show clear benefit; monitoring: test coupling persists; owning ADR: this ADR, item #3)
+  - Pre-commit hook not implemented (severity: low; mitigation: defer until team requests it per item #5; monitoring: developers can commit obsolete tokens without local feedback; owning ADR: this ADR, item #5)
+  - OBSOLETE_TOKENS set requires manual updates for future migrations (severity: low; mitigation: document in test comments that set should be updated when tokens are removed; monitoring: future migrations may add to this set; owning ADR: this ADR, maintenance of item #4)
+- next_work:
+  - Behaviour: Extend migrate-test-tokens.py to support Go files per item #2; Validation: `python scripts/tools/migrate-test-tokens.py --go --dry-run` executes successfully and shows Go test files in scope; verify script can process internal/barcli/*_test.go files
+  - Behaviour: Update ADR 0095 status to reflect completed items; Validation: ADR document clearly indicates items #1 and #4 are complete, items #2/#3/#5 remain proposed

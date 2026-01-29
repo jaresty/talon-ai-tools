@@ -108,3 +108,37 @@
 - next_work:
   - Behaviour: Extend migrate-test-tokens.py to support Go files per item #2; Validation: `python scripts/tools/migrate-test-tokens.py --go --dry-run` executes successfully and shows Go test files in scope; verify script can process internal/barcli/*_test.go files
   - Behaviour: Update ADR 0095 status to reflect completed items; Validation: ADR document clearly indicates items #1 and #4 are complete, items #2/#3/#5 remain proposed
+
+## 2026-01-28 — loop 004
+
+- helper_version: helper:v20251223.1
+- focus: ADR 0095 Decision section #2 → Extend migrate-test-tokens.py to support Go test files so token migrations can be automated across both Python and Go (salient task: item #2 from Decision section)
+- active_constraint: Migration script only processes Python test files in _tests/ directory and does not recognize --go flag, requiring manual find-replace across 40+ Go test files during token migrations (validated via attempting `python scripts/tools/migrate-test-tokens.py --go --dry-run` which should fail with unrecognized argument)
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Reduces manual work during token migrations but migrations are infrequent |
+  | Probability | High | Script pattern is proven in Python; Go adaptation is straightforward |
+  | Time Sensitivity | Medium | Useful for next migration but no immediate deadline |
+  | Uncertainty note | Low | Token patterns in Go tests are regular (string literals in slices) |
+- validation_targets:
+  - `python scripts/tools/migrate-test-tokens.py --go --dry-run` (verifies Go flag exists and processes Go test files)
+- evidence:
+  - red | 2026-01-29T00:10:00Z | exit 2 | python scripts/tools/migrate-test-tokens.py --go --dry-run
+    - helper:diff-snapshot=0 files changed
+    - behaviour: Go migration flag fails with "unrecognized arguments: --go" proving flag does not exist | inline
+  - green | 2026-01-29T00:20:00Z | exit 0 | python scripts/tools/migrate-test-tokens.py --go --dry-run
+    - helper:diff-snapshot=scripts/tools/migrate-test-tokens.py | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++
+    - behaviour: Go migration flag succeeds and shows Go test files in scope | inline
+  - removal | 2026-01-29T00:22:00Z | exit 2 | git restore --source=HEAD -- scripts/tools/migrate-test-tokens.py && python scripts/tools/migrate-test-tokens.py --go --dry-run
+    - helper:diff-snapshot=0 files changed
+    - behaviour: Go migration flag fails again after revert proving implementation was required | inline
+- rollback_plan: `git restore --source=HEAD -- scripts/tools/migrate-test-tokens.py`; rerun `python scripts/tools/migrate-test-tokens.py --go --dry-run` to observe "unrecognized arguments" failure
+- delta_summary: helper:diff-snapshot=scripts/tools/migrate-test-tokens.py | 85 insertions(+) — added --go flag support with GO_TOKEN_MIGRATIONS dictionary and logic to process internal/barcli/*_test.go files using same migration pattern as Python tests
+- loops_remaining_forecast: 1 loop remaining (final ADR status update to mark items #1, #2, #4 complete) — high confidence that Go migration support works as specified
+- residual_constraints:
+  - Test token constants not implemented (severity: low; mitigation: defer per item #3 unless migration patterns show clear benefit; monitoring: test coupling persists; owning ADR: this ADR, item #3)
+  - Pre-commit hook not implemented (severity: low; mitigation: defer until team requests it per item #5; monitoring: developers can commit obsolete tokens without local feedback; owning ADR: this ADR, item #5)
+  - GO_TOKEN_MIGRATIONS dictionary initially empty (severity: low; mitigation: populate during next token migration; monitoring: script requires manual configuration before use; owning ADR: this ADR, maintenance of item #2)
+- next_work:
+  - Behaviour: Update ADR 0095 status to reflect completed items #1, #2, #4; Validation: ADR document status changes from Proposed to Accepted and Decision section clearly indicates which items are complete and which remain deferred

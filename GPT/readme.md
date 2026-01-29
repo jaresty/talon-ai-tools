@@ -25,53 +25,17 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as form/channel/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.
 
-- infer: The response infers the task without being told what to do.
-- describe: The response describes the subject objectively.
-- undefined: The response lists only the undefined terms.
-- who: The response explains who is involved.
-- what: The response explains what is happening.
-- when: The response explains when it occurs.
-- where: The response explains where it takes place.
-- why: The response explains why it matters.
-- assumption: The response identifies and explains the assumptions behind the subject.
-- objectivity: The response assesses objectivity and includes relevant examples.
-- knowledge: The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.
-- taste: The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.
-- tao: The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters.
-- product: The response frames the subject through a product lens. (defaults: completeness=gist, scope=focus, method=steps, form=bullets)
-- metrics: The response lists metrics that drive the outcomes and includes concrete examples. (defaults: completeness=gist, scope=focus, method=steps, form=bullets)
-- operations: The response identifies an Operations Research or management science concept that best frames the situation. (defaults: completeness=gist, scope=focus, method=rigor)
-- jobs: The response highlights the key Jobs To Be Done, desired outcomes, and forces shaping them. (defaults: completeness=gist, scope=focus, method=analysis, form=bullets)
-- value: The response describes user or customer value and impact in a concise narrative. (defaults: completeness=gist, scope=focus, method=analysis, form=bullets)
-- pain: The response lists pain points and obstacles, noting brief prioritisation or severity. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
-- done: The response provides a clear Definition of Done or acceptance criteria as a checklist. (defaults: completeness=full, scope=actions, method=structure, form=checklist)
-- team: The response maps team roles, responsibilities, and handoffs needed for the work. (defaults: completeness=gist, scope=system, method=mapping, form=table)
-- challenge: The response challenges the subject with questions aimed at improvement.
-- critique: The response explains what is wrong with the subject and why it fails.
-- retro: The response guides introspection or reflection on the subject.
-- easier: The response proposes an approach that accomplishes the goal on a smaller timescale.
-- true: The response evaluates whether the statement is true using the available information.
-- relevant: The response identifies the relevant elements of the situation. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
-- misunderstood: The response surfaces what is misunderstood in this situation. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
-- risky: The response highlights the risks and explains why they matter. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
-- split: The response separates topics into clear sections and returns only reformatted text.
-- match: The response rewrites the content to match the provided style and returns only the modified text.
-- blend: The response combines source and destination texts coherently, follows the destination’s structure while reordering and renaming as needed, and returns only the integrated text, treating additional_source as the destination.
-- join: The response merges the content into a single coherent piece and removes redundancy.
-- context: The response adds LLM-ready context without rewriting the main text. (defaults: completeness=gist, scope=focus, method=contextualise)
-- document: The response lists document or writing formats, explains why each fits, and states what perspective each reveals.
-- wardley: The response produces a Wardley Map by identifying users, needs, and components, expressing it as a Markdown table (rows as visibility levels, columns as evolution stages) with a concise summary of dependencies and key strategic insights. (defaults: completeness=full, scope=focus, method=steps, form=table)
-- dependency: The response lists dependencies and the items they rely on. (defaults: scope=relations)
-- cochange: The response shows how each subject directly cochanges with the others. (defaults: scope=relations)
-- interact: The response explains how the elements interact. (defaults: scope=relations)
-- dependent: The response explains how the elements depend on one another. (defaults: scope=relations)
-- independent: The response explains how the elements remain independent. (defaults: scope=relations)
-- parallel: The response describes problems that could arise if the items are parallelized. (defaults: scope=relations)
-- unknown: The response imagines critical unknown unknowns and explains how they might impact the outcome.
-- jim: The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.
-- domain: The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies.
-- fix: The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text. (defaults: completeness=full, scope=narrow)
-- todo: The response formats the content as a todo list. (defaults: completeness=gist, scope=actions, method=steps, form=checklist)
+- make: The response creates new content that did not previously exist, based on the input and constraints. (defaults: completeness=full)
+- fix: The response changes the form or presentation of given content while keeping its intended meaning. (defaults: completeness=full)
+- pull: The response selects or extracts a subset of the given information without altering its substance. (defaults: completeness=gist)
+- sort: The response arranges items into categories or an order using a specified or inferred scheme.
+- diff: The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.
+- show: The response explains or describes the subject for the stated audience.
+- probe: The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.
+- pick: The response chooses one or more options from a set of alternatives.
+- plan: The response proposes steps, structure, or strategy to move from the current state toward a stated goal.
+- sim: The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.
+- check: The response evaluates the subject against a condition and reports whether it passes or fails.
 - Other static prompts (tokens only; see docs for semantics): (none)
 
 ### Meta interpretation channel (ADR 019) and richer structure (ADR 020)
@@ -244,9 +208,9 @@ A couple of common prompts decomposed into the three families:
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
 
 Completeness (`completenessModifier`): `deep`, `full`, `gist`, `max`, `minimal`, `narrow`, `skim`
-Scope (`scopeModifier`): `act`, `fail`, `good`, `mean`, `struct`, `thing`, `time`
+Scope (`scopeModifier`): `act`, `fail`, `good`, `mean`, `struct`, `thing`, `time`, `view`
 Method (`methodModifier`): `actors`, `adversarial`, `analysis`, `boom`, `cite`, `constraints`, `converge`, `depends`, `diagnose`, `dimension`, `domains`, `dynamics`, `effects`, `experimental`, `explore`, `flow`, `grove`, `incentives`, `interfaces`, `inversion`, `jobs`, `mapping`, `meld`, `melody`, `mod`, `models`, `motifs`, `objectivity`, `operations`, `order`, `origin`, `prioritize`, `probability`, `product`, `resilience`, `rigor`, `risks`, `roles`, `simulation`, `systemic`, `unknowns`
-Form (`formModifier`): `actions`, `activities`, `bug`, `bullets`, `cards`, `case`, `checklist`, `cocreate`, `commit`, `contextualise`, `direct`, `facilitate`, `faq`, `formats`, `indirect`, `ladder`, `log`, `merge`, `questions`, `recipe`, `rewrite`, `scaffold`, `socratic`, `spike`, `steps`, `story`, `table`, `taxonomy`, `test`, `tight`, `variants`, `visual`, `walkthrough`, `wardley`, `wasinawa`
+Form (`formModifier`): `actions`, `activities`, `bug`, `bullets`, `cards`, `case`, `checklist`, `cocreate`, `commit`, `contextualise`, `direct`, `facilitate`, `faq`, `formats`, `indirect`, `ladder`, `log`, `merge`, `questions`, `recipe`, `rewrite`, `scaffold`, `socratic`, `spike`, `story`, `table`, `taxonomy`, `test`, `tight`, `variants`, `visual`, `walkthrough`, `wardley`, `wasinawa`
 Channel (`channelModifier`): `adr`, `code`, `codetour`, `diagram`, `gherkin`, `html`, `jira`, `plain`, `presenterm`, `remote`, `shellscript`, `slack`, `svg`, `sync`
 Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip rog`, `fig`, `fip bog`, `fip ong`, `fip rog`, `fly bog`, `fly ong`, `fly rog`, `fog`, `jog`, `ong`, `rog`
   - Additional form/channel notes:

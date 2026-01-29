@@ -38,7 +38,7 @@ if not TYPE_CHECKING:
             text = snapshot.read_text(encoding="utf-8")
             self.assertIn("Other static prompts", text)
             self.assertIn(
-                "- make: The response produces content that did not previously exist, creating something new that matches required properties.",
+                "- make: The response creates new content that did not previously exist, based on the input and constraints.",
                 text,
             )
             self.assertIn("(defaults: completeness=gist", text)

@@ -232,7 +232,7 @@ if bootstrap is not None:
             for expected in [
                 "full",
                 "thing",
-                "steps",
+                "flow",
                 "adr",
                 "slack",
                 "fly-rog",
@@ -252,7 +252,7 @@ if bootstrap is not None:
             for expected in [
                 "full",
                 "thing",
-                "steps",
+                "flow",
                 "adr",
                 "slack",
                 "fly-rog",

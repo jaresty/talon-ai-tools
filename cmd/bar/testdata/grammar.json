@@ -319,7 +319,11 @@
           "name": "probe"
         },
         {
-          "axes": {},
+          "axes": {
+            "method": [
+              "converge"
+            ]
+          },
           "description": "The response chooses one or more options from a set of alternatives.",
           "name": "pick"
         },
@@ -370,7 +374,8 @@
         "description": "The response creates new content that did not previously exist, based on the input and constraints."
       },
       "pick": {
-        "description": "The response chooses one or more options from a set of alternatives."
+        "description": "The response chooses one or more options from a set of alternatives.",
+        "method": "converge"
       },
       "plan": {
         "description": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal."
@@ -1464,7 +1469,7 @@
   },
   "checksums": {
     "axes": "f27286dbebad3c290f4f54a24c52a4f33fa292e57d6947ce1a3eb0d161b0df33",
-    "static_prompts": "7a4fadc80061dcd3830598d27a93480d88fc8e3b44f86a2c0b1cf202a4fa7957",
+    "static_prompts": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
     "slugs": "c7b6d43dab6b2ed15f31539a6ba8870436b60696fb28e8b84713b54743c48f15"

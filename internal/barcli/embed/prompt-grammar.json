@@ -125,13 +125,14 @@
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
       },
       "scope": {
-        "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—rather than structure or meaning.",
-        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits—risks, edge cases, pain points, resilience, or what can go wrong.",
-        "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, value, taste, or standards of assessment.",
-        "mean": "The response focuses on why something exists or how it should be understood—purpose, assumptions, framing, terminology, or interpretive lens.",
-        "struct": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns.",
-        "thing": "The response focuses on what things are in view—objects, people, roles, systems, domains, or bounded units—without emphasizing actions or evaluation.",
-        "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, or temporal dynamics."
+        "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+        "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
+        "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+        "struct": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint.",
+        "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+        "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
+        "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
       }
     },
     "list_tokens": {
@@ -264,7 +265,8 @@
         "mean",
         "struct",
         "thing",
-        "time"
+        "time",
+        "view"
       ]
     }
   },
@@ -828,7 +830,8 @@
         "mean": "mean",
         "struct": "struct",
         "thing": "thing",
-        "time": "time"
+        "time": "time",
+        "view": "view"
       }
     },
     "static": {
@@ -939,7 +942,8 @@
         "scope=mean": "scope-mean",
         "scope=struct": "scope-struct",
         "scope=thing": "scope-thing",
-        "scope=time": "scope-time"
+        "scope=time": "scope-time",
+        "scope=view": "scope-view"
       },
       "method": {
         "method=actors": "method-actors",
@@ -1380,6 +1384,7 @@
       "scope=struct": "scope-struct",
       "scope=thing": "scope-thing",
       "scope=time": "scope-time",
+      "scope=view": "scope-view",
       "shellscript": "shellscript",
       "show": "show",
       "sim": "sim",
@@ -1434,6 +1439,7 @@
       "tone=kindly": "tone-kindly",
       "unknowns": "unknowns",
       "variants": "variants",
+      "view": "view",
       "visual": "visual",
       "voice=as Kent Beck": "voice-as-kent-beck",
       "voice=as PM": "voice-as-pm",
@@ -1452,10 +1458,10 @@
     }
   },
   "checksums": {
-    "axes": "9fd54a631970dfe204aee2330dfae6c8f4a54925d6e12332e6021867714dc337",
+    "axes": "f27286dbebad3c290f4f54a24c52a4f33fa292e57d6947ce1a3eb0d161b0df33",
     "static_prompts": "f922cf336e23724ab89dc3b60517807eac839326a0ccd5b93feb83df3adb7bf5",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "06c41c80abac1cda6125ed581328b9d593c59a369b69a9e68b9db9d6b2ce2dca"
+    "slugs": "c7b6d43dab6b2ed15f31539a6ba8870436b60696fb28e8b84713b54743c48f15"
   }
 }

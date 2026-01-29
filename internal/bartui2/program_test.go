@@ -1215,7 +1215,7 @@ func TestApplyEscapeHatch(t *testing.T) {
 
 func TestStageOrderIncludesPersonaStages(t *testing.T) {
 	// Verify persona stages are at the beginning
-	expectedPersonaStages := []string{"intent", "persona_preset", "voice", "audience", "tone"}
+	expectedPersonaStages := []string{"persona_preset", "intent", "voice", "audience", "tone"}
 	for i, stage := range expectedPersonaStages {
 		if i >= len(stageOrder) {
 			t.Fatalf("stageOrder too short, missing %s", stage)

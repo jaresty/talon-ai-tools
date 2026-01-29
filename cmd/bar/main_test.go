@@ -56,7 +56,7 @@ func TestTUICommandLaunchesProgram(t *testing.T) {
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := barcli.Run([]string{"tui", "todo", "focus"}, strings.NewReader(""), stdout, stderr)
+	exit := barcli.Run([]string{"tui", "make", "struct"}, strings.NewReader(""), stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("expected tui exit 0, got %d with stderr: %s", exit, stderr.String())
 	}
@@ -110,7 +110,7 @@ func TestTUICommandSurfacesProgramErrors(t *testing.T) {
 
 func TestTUIFixtureEmitsSnapshot(t *testing.T) {
 	subject := "Smoke subject"
-	tokens := []string{"todo", "focus"}
+	tokens := []string{"make", "struct"}
 	grammarPath := filepath.Join("testdata", "grammar.json")
 
 	grammar, err := barcli.LoadGrammar(grammarPath)
@@ -196,7 +196,7 @@ func TestTUIFixtureEmitsSnapshot(t *testing.T) {
 
 func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
 	subject := "Smoke subject"
-	tokens := []string{"todo", "focus"}
+	tokens := []string{"make", "struct"}
 	grammarPath := filepath.Join("testdata", "grammar.json")
 
 	grammar, err := barcli.LoadGrammar(grammarPath)

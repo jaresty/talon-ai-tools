@@ -13,6 +13,7 @@ import json
 import sys
 import pprint
 import textwrap
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,13 +30,17 @@ def _axis_mapping() -> dict[str, dict[str, str]]:
     )
     axes = payload.get("axes", {}) or {}
     # Ensure deterministic ordering for stable renders.
-    return {axis: dict(sorted((axes.get(axis) or {}).items())) for axis in sorted(axes.keys())}
+    return {
+        axis: dict(sorted((axes.get(axis) or {}).items()))
+        for axis in sorted(axes.keys())
+    }
 
 
 def render_axis_config() -> str:
     """Render an axisConfig.py module based on the registry."""
     mapping = _axis_mapping()
-    body = pprint.pformat(mapping, width=100, sort_dicts=True)
+    # Use width=88 to match black's default line length
+    body = pprint.pformat(mapping, width=88, sort_dicts=True)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -88,14 +93,17 @@ def render_axis_config() -> str:
             return index
         """
     )
-    return "\n\n".join(
-        [
-            header.rstrip(),
-            f"AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {body}",
-            dataclasses.rstrip(),
-            helpers.rstrip(),
-        ]
-    ).rstrip() + "\n"
+    return (
+        "\n\n".join(
+            [
+                header.rstrip(),
+                f"AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {body}",
+                dataclasses.rstrip(),
+                helpers.rstrip(),
+            ]
+        ).rstrip()
+        + "\n"
+    )
 
 
 def render_axis_markdown() -> str:
@@ -117,6 +125,22 @@ def render_axis_catalog_json(lists_dir: Path | None = None) -> str:
         lists_dir=lists_dir, include_axis_lists=True, include_static_prompts=True
     )
     return json.dumps(payload, indent=2, sort_keys=True)
+
+
+def _format_with_black(text: str) -> str:
+    """Format Python code with black if available, otherwise return unchanged."""
+    try:
+        result = subprocess.run(
+            ["black", "--quiet", "-"],
+            input=text,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        return result.stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # black not available or failed, return original
+        return text
 
 
 def _write_output(text: str, output: Path | None) -> None:
@@ -172,6 +196,8 @@ def main() -> None:
         _write_output(text, args.out)
     else:
         text = render_axis_config()
+        # Format Python code with black to match IDE formatting
+        text = _format_with_black(text)
         _write_output(text, args.out)
 
 

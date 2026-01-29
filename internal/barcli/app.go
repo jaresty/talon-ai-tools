@@ -74,7 +74,13 @@ var generalHelpText = strings.TrimSpace(`USAGE
   Sections accepted by "bar help tokens":
 
     static            Show only static prompts (slug + canonical hints)
-    axes              Show contract axes (slug + canonical hints)
+    axes              Show all contract axes (slug + canonical hints)
+    completeness      Show only completeness axis tokens
+    scope             Show only scope axis tokens
+    method            Show only method axis tokens
+    form              Show only form axis tokens
+    channel           Show only channel axis tokens
+    directional       Show only directional axis tokens
     persona           Show persona presets and persona axes
     persona-presets   Show only persona presets
     persona-axes      Show only persona axes
@@ -499,6 +505,8 @@ func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
 			filters["static"] = true
 		case "axes":
 			filters["axes"] = true
+		case "completeness", "scope", "method", "form", "channel", "directional":
+			filters["axis:"+section] = true
 		case "persona":
 			filters["persona-presets"] = true
 			filters["persona-axes"] = true
@@ -561,17 +569,56 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		}
 	}
 
-	if shouldShow("axes") {
-		writeHeader("CONTRACT AXES")
-		axisNames := make([]string, 0, len(grammar.Axes.Definitions))
-		for axis := range grammar.Axes.Definitions {
-			axisNames = append(axisNames, axis)
+	// Check if any axis filters are present
+	hasAxisFilters := false
+	for key := range filters {
+		if strings.HasPrefix(key, "axis:") {
+			hasAxisFilters = true
+			break
 		}
-		sort.Strings(axisNames)
-		if len(axisNames) == 0 {
-			fmt.Fprintln(w, "  (none)")
+	}
+
+	if shouldShow("axes") || hasAxisFilters {
+		// Use canonical ordering from tui_tokens.go
+		orderedAxes := []string{"completeness", "scope", "method", "form", "channel", "directional"}
+
+		// Add any additional axes from grammar that aren't in the canonical list
+		seenAxes := make(map[string]bool)
+		for _, axis := range orderedAxes {
+			seenAxes[axis] = true
+		}
+		for axis := range grammar.Axes.Definitions {
+			if !seenAxes[axis] {
+				orderedAxes = append(orderedAxes, axis)
+				seenAxes[axis] = true
+			}
+		}
+
+		// Filter axes based on what should be shown
+		axesToShow := make([]string, 0)
+		for _, axis := range orderedAxes {
+			if _, exists := grammar.Axes.Definitions[axis]; !exists {
+				continue
+			}
+			// Show if:
+			// - No filters (show all)
+			// - "axes" filter is set
+			// - Specific axis filter is set
+			if len(filters) == 0 || filters["axes"] || filters["axis:"+axis] {
+				axesToShow = append(axesToShow, axis)
+			}
+		}
+
+		if len(axesToShow) > 0 {
+			writeHeader("CONTRACT AXES")
+		}
+
+		if len(axesToShow) == 0 {
+			if len(filters) == 0 || filters["axes"] {
+				fmt.Fprintln(w, "  (none)")
+			}
 		} else {
-			for _, axis := range axisNames {
+			for _, axis := range axesToShow {
 				tokenSet := make(map[string]struct{})
 				for token := range grammar.Axes.Definitions[axis] {
 					tokenSet[token] = struct{}{}

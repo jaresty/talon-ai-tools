@@ -14,11 +14,11 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	renderTokensHelp(&buf, grammar, nil)
 	output := buf.String()
 
-	presetSlug := grammar.slugForToken("persona=coach_junior")
+	presetSlug := grammar.slugForToken("persona=teach_junior_dev")
 	if presetSlug == "" {
-		presetSlug = "persona=coach_junior"
+		presetSlug = "persona=teach_junior_dev"
 	}
-	expectedPreset := fmt.Sprintf("persona coach_junior | slug: %s", presetSlug)
+	expectedPreset := fmt.Sprintf("persona teach_junior_dev | slug: %s", presetSlug)
 	if !strings.Contains(output, expectedPreset) {
 		t.Fatalf("expected persona preset slug with command hint in help output, got:\n%s", output)
 	}
@@ -217,7 +217,7 @@ func TestRunPresetUseBuildsRecipe(t *testing.T) {
 	configDir := t.TempDir()
 	t.Setenv(configDirEnv, configDir)
 
-	if exit := Run([]string{"build", "todo", "focus", "--prompt", "Initial subject"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+	if exit := Run([]string{"build", "make", "struct", "--prompt", "Initial subject"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
 		t.Fatalf("expected build exit 0, got %d", exit)
 	}
 
@@ -260,7 +260,7 @@ func TestRunPresetUseJSON(t *testing.T) {
 	configDir := t.TempDir()
 	t.Setenv(configDirEnv, configDir)
 
-	if exit := Run([]string{"build", "todo", "focus"}, strings.NewReader("Initial subject"), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+	if exit := Run([]string{"build", "make", "struct"}, strings.NewReader("Initial subject"), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
 		t.Fatalf("expected build exit 0")
 	}
 	if exit := Run([]string{"preset", "save", "daily-plan"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {

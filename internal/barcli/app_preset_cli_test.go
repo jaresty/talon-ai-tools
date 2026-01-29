@@ -36,7 +36,7 @@ func TestRunPresetLifecycle(t *testing.T) {
 	t.Setenv(configDirEnv, configRoot)
 
 	// Build once to seed last build state for preset save/use flows.
-	stdout, stderr, exit := runCLI(t, []string{"build", "todo", "focus", "--prompt", "Initial subject"})
+	stdout, stderr, exit := runCLI(t, []string{"build", "make", "struct", "--prompt", "Initial subject"})
 	if exit != 0 {
 		t.Fatalf("build failed: %d, stderr: %s", exit, stderr)
 	}
@@ -141,7 +141,7 @@ func TestRunPresetListReadsExistingFiles(t *testing.T) {
 		t.Fatalf("mkdir presets: %v", err)
 	}
 	presetPath := filepath.Join(presetDir, "manual.json")
-	payload := `{"version":3,"name":"manual","saved_at":"2026-01-12T00:00:00Z","source":"last_build","result":{"schema_version":"v1","subject":"","plain_text":"","axes":{"static":"todo"},"persona":{}},"tokens":["todo"]}`
+	payload := `{"version":3,"name":"manual","saved_at":"2026-01-12T00:00:00Z","source":"last_build","result":{"schema_version":"v1","subject":"","plain_text":"","axes":{"static":"make"},"persona":{}},"tokens":["make"]}`
 	if err := os.WriteFile(presetPath, []byte(payload), 0o600); err != nil {
 		t.Fatalf("write preset: %v", err)
 	}

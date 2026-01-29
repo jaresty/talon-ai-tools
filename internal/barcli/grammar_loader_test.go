@@ -16,8 +16,8 @@ func TestLoadGrammarDefaultsToEmbedded(t *testing.T) {
 	if grammar.SchemaVersion == "" {
 		t.Fatal("expected embedded grammar to provide a schema version")
 	}
-	if desc := strings.TrimSpace(grammar.StaticPromptDescription("todo")); desc == "" {
-		t.Fatal("expected embedded grammar to include todo static prompt description")
+	if desc := strings.TrimSpace(grammar.StaticPromptDescription("make")); desc == "" {
+		t.Fatal("expected embedded grammar to include make static prompt description")
 	}
 }
 

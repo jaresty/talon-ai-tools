@@ -50,7 +50,7 @@ func TestRunCompletionEngineProducesSuggestions(t *testing.T) {
 	if exit != 0 {
 		t.Fatalf("expected completion engine exit 0, got %d with stderr: %s", exit, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "todo") {
+	if !strings.Contains(stdout.String(), "make") {
 		t.Fatalf("expected completion suggestions to include todo, got: %s", stdout.String())
 	}
 }

@@ -38,7 +38,7 @@ func TestRunBuildWithInputFile(t *testing.T) {
 		t.Fatalf("write subject: %v", err)
 	}
 
-	result := runBuildCLI(t, []string{"build", "todo", "focus", "--input", subjectPath}, nil)
+	result := runBuildCLI(t, []string{"build", "make", "struct", "--input", subjectPath}, nil)
 
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
@@ -63,7 +63,7 @@ func TestRunBuildWithStdin(t *testing.T) {
 	}
 	w.Close()
 
-	result := runBuildCLI(t, []string{"build", "todo"}, r)
+	result := runBuildCLI(t, []string{"build", "make"}, r)
 
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
@@ -78,7 +78,7 @@ func TestRunBuildWithOutputFile(t *testing.T) {
 	outDir := t.TempDir()
 	outPath := filepath.Join(outDir, "output.txt")
 
-	result := runBuildCLI(t, []string{"build", "todo", "--prompt", "from prompt", "--output", outPath}, nil)
+	result := runBuildCLI(t, []string{"build", "make", "--prompt", "from prompt", "--output", outPath}, nil)
 
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
@@ -98,7 +98,7 @@ func TestRunBuildWithOutputFile(t *testing.T) {
 func TestRunBuildJSONOutput(t *testing.T) {
 	t.Setenv(disableStateEnv, "1")
 
-	result := runBuildCLI(t, []string{"build", "todo", "--prompt", "json subject", "--json"}, nil)
+	result := runBuildCLI(t, []string{"build", "make", "--prompt", "json subject", "--json"}, nil)
 
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
@@ -141,7 +141,7 @@ func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"build", "todo", "--prompt", "warn subject"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"build", "make", "--prompt", "warn subject"}, os.Stdin, stdout, stderr)
 
 	if exit != 0 {
 		t.Fatalf("expected exit 0 even if state write fails, got %d: %s", exit, stderr.String())

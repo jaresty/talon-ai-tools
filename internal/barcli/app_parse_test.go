@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseArgsBuildCommand(t *testing.T) {
-	opts, err := cli.Parse([]string{"build", "todo", "focus", "--prompt", "hello", "--json", "--output", "out.txt", "--env", "CHATGPT_API_KEY", "--env=ORG_ID"})
+	opts, err := cli.Parse([]string{"build", "make", "struct", "--prompt", "hello", "--json", "--output", "out.txt", "--env", "CHATGPT_API_KEY", "--env=ORG_ID"})
 
 	if err != nil {
 		t.Fatalf("cli.Parse returned error: %v", err)
@@ -19,7 +19,7 @@ func TestParseArgsBuildCommand(t *testing.T) {
 	if got, want := len(opts.Tokens), 2; got != want {
 		t.Fatalf("expected %d tokens, got %d", want, got)
 	}
-	if opts.Tokens[0] != "todo" || opts.Tokens[1] != "focus" {
+	if opts.Tokens[0] != "make" || opts.Tokens[1] != "struct" {
 		t.Fatalf("unexpected tokens: %v", opts.Tokens)
 	}
 	if opts.Prompt != "hello" {

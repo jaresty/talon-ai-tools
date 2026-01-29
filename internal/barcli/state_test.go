@@ -18,15 +18,15 @@ func TestSaveLastBuildStripsSubject(t *testing.T) {
 		SchemaVersion: "v1",
 		Subject:       "Original subject",
 		PlainText:     "Rendered prompt body\nWith multiple lines",
-		Axes:          AxesResult{Static: "todo"},
+		Axes:          AxesResult{Static: "make"},
 		Persona: PersonaResult{
 			Voice:    "coach",
 			Audience: "novice",
 			Tone:     "friendly",
 		},
-		Tokens: []string{"todo", "focus"},
+		Tokens: []string{"make", "struct"},
 	}
-	tokens := []string{"todo", "focus"}
+	tokens := []string{"make", "struct"}
 
 	if err := saveLastBuild(originalResult, tokens); err != nil {
 		t.Fatalf("saveLastBuild returned error: %v", err)
@@ -94,9 +94,9 @@ func TestSavePresetExcludesSubject(t *testing.T) {
 		SchemaVersion: "v1",
 		Subject:       "Preset subject",
 		PlainText:     "Preset rendered plain text",
-		Axes:          AxesResult{Static: "focus"},
+		Axes:          AxesResult{Static: "show"},
 		Persona:       PersonaResult{Voice: "teacher"},
-		Tokens:        []string{"focus", "steps"},
+		Tokens:        []string{"show", "struct", "flow"},
 	}
 
 	if err := saveLastBuild(build, build.Tokens); err != nil {

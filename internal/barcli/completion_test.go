@@ -75,9 +75,9 @@ func TestCompleteBareSkipDefaultsToPersonaStage(t *testing.T) {
 		}
 	}
 
-	staticSlug := grammar.slugForToken("todo")
+	staticSlug := grammar.slugForToken("make")
 	if staticSlug == "" {
-		staticSlug = "todo"
+		staticSlug = "make"
 	}
 	if !containsSuggestionValue(suggestions, staticSlug) {
 		t.Fatalf("expected static suggestion %q after bare skip, got %v", staticSlug, suggestions)
@@ -175,7 +175,7 @@ func TestCompleteTUIFlagsAndTokens(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error collecting token suggestions: %v", err)
 	}
-	if _, ok := findSuggestion(tokenSuggestions, "todo"); !ok {
+	if _, ok := findSuggestion(tokenSuggestions, "make"); !ok {
 		t.Fatalf("expected static token suggestions for bar tui, got %v", tokenSuggestions)
 	}
 
@@ -213,7 +213,7 @@ func TestCompleteStaticStage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	todo, ok := findSuggestion(suggestions, "todo")
+	todo, ok := findSuggestion(suggestions, "make")
 	if !ok {
 		t.Fatalf("expected static token 'todo', got %v", suggestions)
 	}
@@ -282,9 +282,9 @@ func TestCompleteSkipsPersonaAfterSkipToken(t *testing.T) {
 		t.Fatalf("expected static skip suggestion after persona skip, got %v", suggestions)
 	}
 
-	staticSlug := grammar.slugForToken("todo")
+	staticSlug := grammar.slugForToken("make")
 	if staticSlug == "" {
-		staticSlug = "todo"
+		staticSlug = "make"
 	}
 	staticIndex := indexOfSuggestion(suggestions, staticSlug)
 	if staticIndex == -1 {
@@ -312,9 +312,9 @@ func TestCompleteSkipsStaticAfterSkipToken(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	staticSlug := grammar.slugForToken("todo")
+	staticSlug := grammar.slugForToken("make")
 	if staticSlug == "" {
-		staticSlug = "todo"
+		staticSlug = "make"
 	}
 	if containsSuggestionValue(suggestions, staticSlug) {
 		t.Fatalf("did not expect static suggestion %q after skip, got %v", staticSlug, suggestions)
@@ -336,18 +336,18 @@ func TestCompleteSkipsStaticAfterSkipToken(t *testing.T) {
 func TestCompleteSkipsMethodAfterSkipToken(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", "full", skipValue("method"), ""}
+	words := []string{"bar", "build", "make", "full", skipValue("method"), ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	stepsSlug := grammar.slugForToken("steps")
-	if stepsSlug == "" {
-		stepsSlug = "steps"
+	flowSlug := grammar.slugForToken("flow")
+	if flowSlug == "" {
+		flowSlug = "flow"
 	}
-	if containsSuggestionValue(suggestions, stepsSlug) {
-		t.Fatalf("did not expect method suggestion %q after skip, got %v", stepsSlug, suggestions)
+	if containsSuggestionValue(suggestions, flowSlug) {
+		t.Fatalf("did not expect method suggestion %q after skip, got %v", flowSlug, suggestions)
 	}
 
 	analysisSlug := grammar.slugForToken("analysis")
@@ -362,9 +362,9 @@ func TestCompleteSkipsMethodAfterSkipToken(t *testing.T) {
 		t.Fatalf("did not expect method skip suggestion after consuming it, got %v", suggestions)
 	}
 
-	scopeSlug := grammar.slugForToken("focus")
+	scopeSlug := grammar.slugForToken("struct")
 	if scopeSlug == "" {
-		scopeSlug = "focus"
+		scopeSlug = "struct"
 	}
 	if !containsSuggestionValue(suggestions, scopeSlug) {
 		t.Fatalf("expected scope suggestion %q after skipping method, got %v", scopeSlug, suggestions)
@@ -374,7 +374,7 @@ func TestCompleteSkipsMethodAfterSkipToken(t *testing.T) {
 func TestCompleteMovesToCompleteness(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", ""}
+	words := []string{"bar", "build", "make", ""}
 	suggestions, err := Complete(grammar, "bash", words, 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -397,42 +397,42 @@ func TestCompleteMovesToCompleteness(t *testing.T) {
 func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", "full", ""}
+	words := []string{"bar", "build", "make", "full", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	scopeSuggestion, ok := findSuggestion(suggestions, "focus")
+	scopeSuggestion, ok := findSuggestion(suggestions, "struct")
 	if !ok {
-		t.Fatalf("expected scope token 'focus', got %v", suggestions)
+		t.Fatalf("expected scope token 'struct', got %v", suggestions)
 	}
 	if scopeSuggestion.Category != "How (scope axis)" {
-		t.Fatalf("expected scope category 'How (scope axis)' for focus, got %q", scopeSuggestion.Category)
+		t.Fatalf("expected scope category 'How (scope axis)' for struct, got %q", scopeSuggestion.Category)
 	}
 	if strings.HasSuffix(scopeSuggestion.Value, " ") {
 		t.Fatalf("expected scope suggestion without trailing space, got %q", scopeSuggestion.Value)
 	}
-	if containsSuggestionValue(suggestions, "scope-focus") {
+	if containsSuggestionValue(suggestions, "scope-struct") {
 		t.Fatalf("expected scope override slug to be absent from shorthand suggestions, got %v", suggestions)
 	}
-	if containsSuggestionValue(suggestions, "todo") {
+	if containsSuggestionValue(suggestions, "make") {
 		t.Fatalf("expected static tokens to be absent after axis selection, got %v", suggestions)
 	}
 
-	overrideSuggestions, err := Complete(grammar, "bash", []string{"bar", "build", "todo", "full", "scope="}, 4)
+	overrideSuggestions, err := Complete(grammar, "bash", []string{"bar", "build", "make", "full", "scope="}, 4)
 	if err != nil {
 		t.Fatalf("unexpected error fetching overrides: %v", err)
 	}
-	if !containsSuggestionValue(overrideSuggestions, "scope=focus") {
-		t.Fatalf("expected override suggestion scope=focus, got %v", overrideSuggestions)
+	if !containsSuggestionValue(overrideSuggestions, "scope=struct") {
+		t.Fatalf("expected override suggestion scope=struct, got %v", overrideSuggestions)
 	}
 
-	methodSuggestion, ok := findSuggestion(suggestions, "steps")
+	methodSuggestion, ok := findSuggestion(suggestions, "flow")
 	if !ok {
-		t.Fatalf("expected method token 'steps', got %v", suggestions)
+		t.Fatalf("expected method token 'flow', got %v", suggestions)
 	}
 	if methodSuggestion.Category != "How (method axis)" {
-		t.Fatalf("expected method category 'How (method axis)' for steps, got %q", methodSuggestion.Category)
+		t.Fatalf("expected method category 'How (method axis)' for flow, got %q", methodSuggestion.Category)
 	}
 	if strings.HasSuffix(methodSuggestion.Value, " ") {
 		t.Fatalf("expected method suggestion without trailing space, got %q", methodSuggestion.Value)
@@ -442,18 +442,18 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 func TestCompleteStopsSuggestingScopeAfterCap(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", "full", "focus", "relations", ""}
+	words := []string{"bar", "build", "make", "full", "struct", "thing", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if containsSuggestionValue(suggestions, "focus") {
+	if containsSuggestionValue(suggestions, "struct") {
 		t.Fatalf("expected scope tokens to be exhausted after reaching cap, got %v", suggestions)
 	}
-	if containsSuggestionValue(suggestions, "relations") {
+	if containsSuggestionValue(suggestions, "thing") {
 		t.Fatalf("expected existing scope tokens to be filtered from suggestions, got %v", suggestions)
 	}
-	if containsSuggestionValue(suggestions, "todo") {
+	if containsSuggestionValue(suggestions, "make") {
 		t.Fatalf("expected static tokens to remain hidden after axis progression, got %v", suggestions)
 	}
 }
@@ -461,12 +461,12 @@ func TestCompleteStopsSuggestingScopeAfterCap(t *testing.T) {
 func TestCompleteSkipsEarlierAxesAfterAdvancing(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", "full", "analysis", "checklist", ""}
+	words := []string{"bar", "build", "make", "full", "analysis", "checklist", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if containsSuggestionValue(suggestions, "focus") {
+	if containsSuggestionValue(suggestions, "struct") {
 		t.Fatalf("expected scope tokens to be hidden after selecting later axis, got %v", suggestions)
 	}
 	if containsSuggestionValue(suggestions, "analysis") {
@@ -480,12 +480,12 @@ func TestCompleteSkipsEarlierAxesAfterAdvancing(t *testing.T) {
 func TestCompleteOverrideSuggestions(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", "completeness=full", "scope="}
+	words := []string{"bar", "build", "make", "completeness=full", "scope="}
 	suggestions, err := Complete(grammar, "bash", words, 4)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	slug := "scope=focus"
+	slug := "scope=struct"
 	suggestion, ok := findSuggestion(suggestions, slug)
 	if !ok {
 		t.Fatalf("expected override suggestion %q, got %v", slug, suggestions)
@@ -496,7 +496,7 @@ func TestCompleteOverrideSuggestions(t *testing.T) {
 	if trimmed := strings.TrimSpace(suggestion.Value); trimmed != slug {
 		t.Fatalf("expected override value %q, got %q", slug, trimmed)
 	}
-	if containsSuggestionValue(suggestions, "scope-focus") {
+	if containsSuggestionValue(suggestions, "scope-struct") {
 		t.Fatalf("did not expect slug-only override suggestion, got %v", suggestions)
 	}
 	if strings.HasSuffix(suggestion.Value, " ") {
@@ -523,54 +523,16 @@ func TestCompleteDirectionalSuggestionsWithoutStatic(t *testing.T) {
 	}
 }
 
-func TestCompletePersonaStage(t *testing.T) {
-	grammar := loadCompletionGrammar(t)
-
-	words := []string{"bar", "build", "todo", "full", "focus", "system", "steps", "analysis", "checklist", "slack", "fog", ""}
-	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	presetSlug := grammar.slugForToken("persona=coach_junior")
-	if presetSlug == "" {
-		presetSlug = "persona=coach_junior"
-	}
-	preset, ok := findSuggestion(suggestions, presetSlug)
-	if !ok {
-		t.Fatalf("expected persona preset slug %q, got %v", presetSlug, suggestions)
-	}
-	if preset.Category != "Who (persona preset)" {
-		t.Fatalf("expected persona preset category 'Who (persona preset)', got %q", preset.Category)
-	}
-	if trimmed := strings.TrimSpace(preset.Value); trimmed != presetSlug {
-		t.Fatalf("expected persona preset value %q, got %q", presetSlug, trimmed)
-	}
-	if strings.HasSuffix(preset.Value, " ") {
-		t.Fatalf("expected persona preset suggestion without trailing space, got %q", preset.Value)
-	}
-	voiceSlug := "as-teacher"
-	voice, ok := findSuggestion(suggestions, voiceSlug)
-	if !ok {
-		t.Fatalf("expected persona voice slug %q, got %v", voiceSlug, suggestions)
-	}
-	if voice.Category != "Who (voice)" {
-		t.Fatalf("expected persona voice category 'Who (voice)', got %q", voice.Category)
-	}
-	if trimmed := strings.TrimSpace(voice.Value); trimmed != voiceSlug {
-		t.Fatalf("expected persona voice value %q, got %q", voiceSlug, trimmed)
-	}
-	if strings.HasSuffix(voice.Value, " ") {
-		t.Fatalf("expected persona voice suggestion without trailing space, got %q", voice.Value)
-	}
-	if strings.TrimSpace(voice.Description) == "" {
-		t.Fatalf("expected persona voice description to be populated")
-	}
-}
+// TestCompletePersonaStage was removed because commit 13437f8 intentionally
+// changed behavior to hide persona/intent after static prompts. Persona
+// suggestions now only appear before static/axes, tested by
+// TestCompleteBareSkipDefaultsToPersonaStage and
+// TestCompleteOptionalOrderingFollowsAxisPriority.
 
 func TestPersonaPresetSkipsPersonaDetailSuggestions(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "persona=coach_junior", ""}
+	words := []string{"bar", "build", "persona=teach_junior_dev", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -646,7 +608,7 @@ func TestCompleteStaticAfterPersonaPresetAndIntent(t *testing.T) {
 func TestCompleteDirectionalSuggestionsWithoutChannel(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", "focus", "announce", "adr", ""}
+	words := []string{"bar", "build", "make", "full", "struct", "flow", "bullets", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -662,7 +624,7 @@ func TestCompleteDirectionalSuggestionsWithoutChannel(t *testing.T) {
 func TestCompleteDirectionalSuggestionsWithoutForm(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", "todo", "focus", "announce", ""}
+	words := []string{"bar", "build", "make", "full", "struct", "flow", "bullets", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -766,7 +728,7 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 		}
 	}
 
-	todoIdx := indexOfSuggestion(suggestions, "todo")
+	todoIdx := indexOfSuggestion(suggestions, "make")
 	if todoIdx == -1 {
 		t.Fatalf("expected static suggestion 'todo', got %v", suggestions)
 	}
@@ -797,7 +759,7 @@ func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	catalog := newCompletionCatalog(grammar)
 
-	words := []string{"bar", "build", "todo", ""}
+	words := []string{"bar", "build", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -944,7 +906,7 @@ func TestCompleteFishProgressionKeepsLaterAxesAvailable(t *testing.T) {
 	stages := []stage{
 		{
 			name:  "after_static",
-			words: []string{"bar", "build", "todo", ""},
+			words: []string{"bar", "build", "make", ""},
 			expectPresent: []string{
 				completenessToken,
 				scopeToken,
@@ -964,7 +926,7 @@ func TestCompleteFishProgressionKeepsLaterAxesAvailable(t *testing.T) {
 		},
 		{
 			name:  "after_completeness",
-			words: []string{"bar", "build", "todo", completenessToken, ""},
+			words: []string{"bar", "build", "make", completenessToken, ""},
 			expectPresent: []string{
 				scopeToken,
 				methodToken,
@@ -982,7 +944,7 @@ func TestCompleteFishProgressionKeepsLaterAxesAvailable(t *testing.T) {
 		},
 		{
 			name:  "after_scope",
-			words: []string{"bar", "build", "todo", completenessToken, scopeToken, ""},
+			words: []string{"bar", "build", "make", completenessToken, scopeToken, ""},
 			expectPresent: []string{
 				methodToken,
 				formToken,
@@ -998,7 +960,7 @@ func TestCompleteFishProgressionKeepsLaterAxesAvailable(t *testing.T) {
 		},
 		{
 			name:  "after_method",
-			words: []string{"bar", "build", "todo", completenessToken, scopeToken, methodToken, ""},
+			words: []string{"bar", "build", "make", completenessToken, scopeToken, methodToken, ""},
 			expectPresent: []string{
 				formToken,
 				channelToken,
@@ -1012,7 +974,7 @@ func TestCompleteFishProgressionKeepsLaterAxesAvailable(t *testing.T) {
 		},
 		{
 			name:  "after_form",
-			words: []string{"bar", "build", "todo", completenessToken, scopeToken, methodToken, formToken, ""},
+			words: []string{"bar", "build", "make", completenessToken, scopeToken, methodToken, formToken, ""},
 			expectPresent: []string{
 				channelToken,
 				directionalToken,

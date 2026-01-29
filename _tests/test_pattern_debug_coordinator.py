@@ -44,21 +44,21 @@ if bootstrap is not None:
                 _DummyPattern(
                     "pat2",
                     "desc2",
-                    "show · full · struct · steps · fog",
+                    "show · full · struct · fog",
                     axes={"method": ["rigor"]},
                 ),
             ]
             view = pattern_debug_view("pat2", patterns=patterns)
             self.assertEqual(view["name"], "pat2")
             self.assertEqual(view["description"], "desc2")
-            self.assertEqual(view.get("recipe_line"), "show · full · struct · steps · fog")
+            self.assertEqual(view.get("recipe_line"), "show · full · struct · fog")
             self.assertEqual(
                 view.get("axes"),
                 {
                     "completeness": "full",
                     "scope": ["struct"],
                     "method": ["rigor"],
-                    "form": ["steps"],
+                    "form": [],
                     "channel": [],
                     "directional": "fog",
                 },

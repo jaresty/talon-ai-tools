@@ -57,6 +57,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "probe": {
         "description": "The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+        "method": "analysis",
     },
     "pick": {
         "description": "The response chooses one or more options from a set of alternatives.",

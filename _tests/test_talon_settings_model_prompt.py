@@ -50,7 +50,7 @@ if bootstrap is not None:
             self.assertIn("Task:", result)
             self.assertIn("Constraints:", result)
             self.assertIn(
-                "The response changes the representation or form while preserving underlying meaning and semantic equivalence.",
+                "The response changes the form or presentation of given content while keeping its intended meaning.",
                 result,
             )
             # Profile for "fix" includes completeness.

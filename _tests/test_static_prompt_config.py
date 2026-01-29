@@ -25,7 +25,7 @@ if bootstrap is not None:
             # the configuration but does not over-specify it.
             self.assertEqual(
                 profile["description"],
-                "The response decomposes, reasons about, or interprets the subject to reveal structure or insight beyond restatement.",
+                "The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
             )
             self.assertEqual(profile["method"], "analysis")
 

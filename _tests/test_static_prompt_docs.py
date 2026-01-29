@@ -33,7 +33,7 @@ if bootstrap is not None:
             )
             self.assertIsNotNone(make_entry, "Expected make in catalog")
             self.assertIn(
-                "The response produces content that did not previously exist",
+                "The response creates new content that did not previously exist",
                 make_entry["description"],
             )
             self.assertIn("full", make_entry["axes"].get("completeness", []))
@@ -50,7 +50,7 @@ if bootstrap is not None:
             # and axis defaults, since it lives in STATIC_PROMPT_CONFIG.
             self.assertIn("make", docs)
             self.assertIn(
-                "The response produces content that did not previously exist",
+                "The response creates new content that did not previously exist",
                 docs,
             )
             self.assertIn("defaults:", docs)
@@ -175,7 +175,7 @@ if bootstrap is not None:
             # At least one known key from each list should appear.
             self.assertIn("full:", docs)
             self.assertIn("narrow:", docs)
-            self.assertIn("steps:", docs)
+            self.assertIn("flow:", docs)
             self.assertIn("bullets:", docs)
             # Directional keys depend on local config; check for a typical one.
             self.assertTrue(

@@ -36,3 +36,39 @@
 - next_work:
   - Behaviour: Wire `bar-grammar-check` into CI workflow; Validation: `.github/workflows/test.yml` contains grammar check step and CI fails when grammar is out of sync; rerun `make ci-guardrails` or equivalent to prove CI detects drift
   - Behaviour: Add Python test to detect obsolete tokens per item #4; Validation: `python3 -m pytest _tests/test_obsolete_tokens.py` passes and detects when obsolete tokens exist in axisConfig
+
+## 2026-01-28 — loop 002
+
+- helper_version: helper:v20251223.1
+- focus: ADR 0095 Decision section #1 → Wire grammar sync validation into CI so drift is caught before merge (salient task: CI integration for item #1 from Decision section)
+- active_constraint: CI workflow checks only `build/prompt-grammar.json` cleanliness but does not verify that `internal/barcli/embed/prompt-grammar.json` and `cmd/bar/testdata/grammar.json` remain synchronized with it, allowing embed/testdata drift to merge undetected (validated via `.github/workflows/test.yml` inspection showing no `make bar-grammar-check` step)
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | High | Prevents grammar drift from merging and causing downstream test failures |
+  | Probability | High | CI enforcement is deterministic; all PRs must pass |
+  | Time Sensitivity | High | Grammar sync validation exists but provides no value until CI enforces it |
+  | Uncertainty note | Low | Make target validated in loop 001; CI integration is straightforward |
+- validation_targets:
+  - Inspect `.github/workflows/test.yml` to confirm `make bar-grammar-check` step exists
+  - Local simulation: `make bar-grammar-check` runs successfully as CI would
+- evidence:
+  - red | 2026-01-28T23:15:00Z | exit 0 | grep -q "bar-grammar-check" .github/workflows/test.yml && echo "Found" || echo "Not found"
+    - helper:diff-snapshot=0 files changed
+    - behaviour: grammar sync check absent from CI workflow; grep returns "Not found" proving step missing | inline
+  - green | 2026-01-28T23:18:00Z | exit 0 | grep -q "bar-grammar-check" .github/workflows/test.yml && echo "Found" || echo "Not found"
+    - helper:diff-snapshot=.github/workflows/test.yml | 3 +++
+    - behaviour: grammar sync check present in CI workflow; grep returns "Found" proving step added | inline
+  - removal | 2026-01-28T23:20:00Z | exit 0 | git restore --source=HEAD -- .github/workflows/test.yml && grep -q "bar-grammar-check" .github/workflows/test.yml && echo "Found" || echo "Not found"
+    - helper:diff-snapshot=0 files changed
+    - behaviour: grammar sync check absent again after revert; grep returns "Not found" proving step was required | inline
+- rollback_plan: `git restore --source=HEAD -- .github/workflows/test.yml`; inspect workflow to confirm `bar-grammar-check` step is missing
+- delta_summary: helper:diff-snapshot=.github/workflows/test.yml | 3 insertions(+) — added grammar sync validation step after grammar regeneration to catch drift in all three copies (build/, embed/, testdata/) before merge
+- loops_remaining_forecast: 3 loops remaining (item #4 validation test, item #2 Go migration support, final documentation update) — high confidence that CI integration works as grammar check target is validated
+- residual_constraints:
+  - Go test migration support remains manual (severity: medium; mitigation: extend `migrate-test-tokens.py` per item #2; monitoring: next token migration will require manual Go updates; owning ADR: this ADR, item #2)
+  - Test token constants not implemented (severity: low; mitigation: evaluate after observing migration patterns per item #3; monitoring: test coupling persists; owning ADR: this ADR, item #3)
+  - Grammar validation test not yet created (severity: medium; mitigation: add `_tests/test_obsolete_tokens.py` per item #4 in next loop; monitoring: obsolete tokens could linger undetected; owning ADR: this ADR, item #4)
+  - Pre-commit hook not implemented (severity: low; mitigation: defer until team requests it per item #5; monitoring: developers can commit obsolete tokens without CI feedback; owning ADR: this ADR, item #5)
+- next_work:
+  - Behaviour: Add Python test to detect obsolete tokens per item #4; Validation: `python3 -m pytest _tests/test_obsolete_tokens.py` passes and detects when obsolete tokens exist in axisConfig; create test that fails when OBSOLETE_TOKENS set contains tokens found in AXIS_KEY_TO_VALUE

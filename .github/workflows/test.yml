@@ -38,6 +38,9 @@ jobs:
       - name: Verify prompt grammar artifact cleanliness
         run: git diff --exit-code build/prompt-grammar.json
 
+      - name: Verify grammar sync across all copies
+        run: make bar-grammar-check
+
       - name: Run Go tests
         run: go test ./internal/barcli/... -v
 

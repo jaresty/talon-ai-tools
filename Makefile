@@ -13,7 +13,22 @@ bar-completion-guard: .venv/bin/pytest
 	@command -v go >/dev/null 2>&1 || { echo "Go toolchain not found; install Go 1.21+ to run bar completion guard" >&2; exit 1; }
 	.venv/bin/python -m pytest _tests/test_bar_completion_cli.py
 
-.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard
+bar-grammar-check:
+	@echo "Regenerating grammar to check for drift..."
+	@python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
+	@echo "Checking for grammar drift..."
+	@git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json || \
+		(echo "ERROR: Grammar files are out of sync. Run 'make bar-grammar-update' to fix." && exit 1)
+	@echo "✓ Grammar files are in sync"
+
+bar-grammar-update:
+	@echo "Regenerating grammar files..."
+	@python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
+	@echo "✓ Grammar files updated. Review with 'git diff' before committing."
+
+.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-grammar-check bar-grammar-update
 
 test:
 	$(PYTHON) -m unittest discover -s tests

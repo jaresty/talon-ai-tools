@@ -286,18 +286,36 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "proposes concrete next steps.",
     },
     "method": {
+        "abduce": "The response enhances the task by generating explanatory "
+        "hypotheses that best account for the available evidence, "
+        "explicitly comparing alternative explanations.",
         "actors": "The response enhances the task by identifying and centering "
         "people, roles, or agents involved in the system.",
         "adversarial": "The response enhances the task by running a constructive "
         "stress-test, systematically searching for weaknesses, edge "
         "cases, counterexamples, failure modes, and unstated "
         "assumptions.",
+        "analog": "The response enhances the task by reasoning through analogy, "
+        "mapping relational structure from a known case onto the subject "
+        "and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by describing and structuring "
         "the situation, focusing on understanding before proposing "
         "actions or recommendations.",
+        "argue": "The response enhances the task by structuring reasoning as an "
+        "explicit argument, identifying claims, premises, warrants, and "
+        "rebuttals and assessing their support.",
+        "bias": "The response enhances the task by identifying likely cognitive "
+        "biases, heuristics, or systematic errors and examining how they "
+        "might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward "
         "extremes of scale or intensity, examining what breaks, dominates, "
         "or vanishes.",
+        "branch": "The response enhances the task by exploring multiple reasoning "
+        "paths in parallel, branching on key assumptions or choices "
+        "before evaluating and pruning alternatives.",
+        "calc": "The response enhances the task by expressing reasoning as "
+        "executable or quasi-executable procedures, calculations, or "
+        "formal steps whose outputs constrain conclusions.",
         "cite": "The response enhances the task by including sources, citations, "
         "or references that anchor claims to evidence, enabling "
         "verification and further exploration.",
@@ -307,6 +325,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "converge": "The response enhances the task by systematically narrowing "
         "from broad exploration to focused recommendations, weighing "
         "trade-offs explicitly as options are filtered.",
+        "deduce": "The response enhances the task by applying deductive reasoning, "
+        "deriving conclusions that must follow from stated premises or "
+        "assumptions and making logical entailment explicit.",
         "depends": "The response enhances the task by tracing dependency "
         "relationships, identifying what depends on what and how "
         "changes propagate through the system.",
@@ -340,6 +361,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "over time.",
         "incentives": "The response enhances the task by analyzing explicit and "
         "implicit incentive structures and how they drive behaviour.",
+        "induce": "The response enhances the task by applying inductive reasoning, "
+        "generalizing patterns from specific observations and assessing "
+        "the strength and limits of those generalizations.",
         "interfaces": "The response enhances the task by concentrating on external "
         "interfaces, contracts, and boundaries between components or "
         "systems.",
@@ -395,49 +419,25 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "risks": "The response enhances the task by focusing on potential "
         "problems, failure modes, or negative outcomes and their "
         "likelihood or severity.",
+        "robust": "The response enhances the task by reasoning under deep "
+        "uncertainty, favoring options that perform acceptably across "
+        "many plausible futures rather than optimizing for a single "
+        "forecast.",
         "roles": "The response enhances the task by focusing on responsibilities, "
         "ownership, and collaboration patterns.",
-        "simulation": "The response enhances the task by focusing on explicit thought experiments or "
-        "scenario walkthroughs that project evolution over time, "
-        "highlighting feedback loops, bottlenecks, tipping points, "
-        "and emergent effects.",
+        "shift": "The response enhances the task by deliberately rotating through "
+        "distinct perspectives or cognitive modes, contrasting how each "
+        "frame interprets the same facts.",
+        "simulation": "The response enhances the task by focusing on explicit "
+        "thought experiments or scenario walkthroughs that project "
+        "evolution over time, highlighting feedback loops, "
+        "bottlenecks, tipping points, and emergent effects.",
         "systemic": "The response enhances the task by analyzing the subject as a "
         "whole system, identifying components, boundaries, flows, and "
         "feedback loops.",
         "unknowns": "The response enhances the task by identifying critical "
         "unknown unknowns and exploring how they might impact "
         "outcomes.",
-        "deduce": "The response enhances the task by applying deductive reasoning, "
-        "deriving conclusions that must follow from stated premises or "
-        "assumptions and making logical entailment explicit.",
-        "induce": "The response enhances the task by applying inductive reasoning, "
-        "generalizing patterns from specific observations and assessing "
-        "the strength and limits of those generalizations.",
-        "abduce": "The response enhances the task by generating explanatory "
-        "hypotheses that best account for the available evidence, "
-        "explicitly comparing alternative explanations.",
-        "analog": "The response enhances the task by reasoning through analogy, "
-        "mapping relational structure from a known case onto the subject "
-        "and examining where the analogy holds or breaks.",
-        "argue": "The response enhances the task by structuring reasoning as an "
-        "explicit argument, identifying claims, premises, warrants, and "
-        "rebuttals and assessing their support.",
-        "branch": "The response enhances the task by exploring multiple reasoning "
-        "paths in parallel, branching on key assumptions or choices "
-        "before evaluating and pruning alternatives.",
-        "calc": "The response enhances the task by expressing reasoning as "
-        "executable or quasi-executable procedures, calculations, or "
-        "formal steps whose outputs constrain conclusions.",
-        "robust": "The response enhances the task by reasoning under deep "
-        "uncertainty, favoring options that perform acceptably across "
-        "many plausible futures rather than optimizing for a single "
-        "forecast.",
-        "bias": "The response enhances the task by identifying likely cognitive "
-        "biases, heuristics, or systematic errors and examining how they "
-        "might distort judgment or conclusions.",
-        "shift": "The response enhances the task by deliberately rotating through "
-        "distinct perspectives or cognitive modes, contrasting how each "
-        "frame interprets the same facts.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, "

@@ -407,6 +407,37 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unknowns": "The response enhances the task by identifying critical "
         "unknown unknowns and exploring how they might impact "
         "outcomes.",
+        "deduce": "The response enhances the task by applying deductive reasoning, "
+        "deriving conclusions that must follow from stated premises or "
+        "assumptions and making logical entailment explicit.",
+        "induce": "The response enhances the task by applying inductive reasoning, "
+        "generalizing patterns from specific observations and assessing "
+        "the strength and limits of those generalizations.",
+        "abduce": "The response enhances the task by generating explanatory "
+        "hypotheses that best account for the available evidence, "
+        "explicitly comparing alternative explanations.",
+        "analog": "The response enhances the task by reasoning through analogy, "
+        "mapping relational structure from a known case onto the subject "
+        "and examining where the analogy holds or breaks.",
+        "argue": "The response enhances the task by structuring reasoning as an "
+        "explicit argument, identifying claims, premises, warrants, and "
+        "rebuttals and assessing their support.",
+        "branch": "The response enhances the task by exploring multiple reasoning "
+        "paths in parallel, branching on key assumptions or choices "
+        "before evaluating and pruning alternatives.",
+        "calc": "The response enhances the task by expressing reasoning as "
+        "executable or quasi-executable procedures, calculations, or "
+        "formal steps whose outputs constrain conclusions.",
+        "robust": "The response enhances the task by reasoning under deep "
+        "uncertainty, favoring options that perform acceptably across "
+        "many plausible futures rather than optimizing for a single "
+        "forecast.",
+        "bias": "The response enhances the task by identifying likely cognitive "
+        "biases, heuristics, or systematic errors and examining how they "
+        "might distort judgment or conclusions.",
+        "shift": "The response enhances the task by deliberately rotating through "
+        "distinct perspectives or cognitive modes, contrasting how each "
+        "frame interprets the same facts.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, "

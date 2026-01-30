@@ -32,7 +32,7 @@ func TestRenderPlainTextSections(t *testing.T) {
 		"=== CONSTRAINTS (GUARDRAILS) ===",
 		"=== PERSONA (STANCE) ===",
 		"=== SUBJECT (CONTEXT) ===",
-		"1. Completeness (full):",
+		"- Completeness (full):",
 		"- Preset: coach_junior — Coach junior",
 		"- Voice: as teacher — Teaches kindly.",
 	}

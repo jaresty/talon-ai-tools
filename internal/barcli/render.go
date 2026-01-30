@@ -63,8 +63,8 @@ func RenderPlainText(result *BuildResult) string {
 	if len(result.Constraints) == 0 {
 		b.WriteString("(none)\n\n")
 	} else {
-		for i, constraint := range result.Constraints {
-			fmt.Fprintf(&b, "%d. %s\n", i+1, constraint)
+		for _, constraint := range result.Constraints {
+			fmt.Fprintf(&b, "- %s\n", constraint)
 		}
 		b.WriteString("\n")
 	}

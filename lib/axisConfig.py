@@ -397,7 +397,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "likelihood or severity.",
         "roles": "The response enhances the task by focusing on responsibilities, "
         "ownership, and collaboration patterns.",
-        "simulation": "The response develops explicit thought experiments or "
+        "simulation": "The response enhances the task by focusing on explicit thought experiments or "
         "scenario walkthroughs that project evolution over time, "
         "highlighting feedback loops, bottlenecks, tipping points, "
         "and emergent effects.",

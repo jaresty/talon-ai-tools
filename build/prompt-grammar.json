@@ -130,7 +130,7 @@
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
         "roles": "The response enhances the task by focusing on responsibilities, ownership, and collaboration patterns.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
-        "simulation": "The response develops explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
+        "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
         "systemic": "The response enhances the task by analyzing the subject as a whole system, identifying components, boundaries, flows, and feedback loops.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
       },
@@ -1528,7 +1528,7 @@
     }
   },
   "checksums": {
-    "axes": "a175ecc6b6e0fc734c7a8518e5f95a344a551c33fd39145b5a1a689fd6263be2",
+    "axes": "53dd41bcda9d6e461e296e6c7d88502c45b52eeb8522b7cd45a3b3f4aae045a1",
     "static_prompts": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",

@@ -28,6 +28,7 @@ try:
         static_prompt_catalog,
         static_prompt_description_overrides,
     )
+
     # Module-level cache for help canvases to prevent repeated axis_catalog() allocations.
     # Per ADR 0082: axis_catalog() creates new dictionaries on every call even though
     # _axis_config_map() is cached. Help surfaces refresh frequently (hover, focus, polls),
@@ -3980,7 +3981,14 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     except Exception:
         handle = None
 
-    if block or handle is None:
+    result_ready = False
+    if handle is not None:
+        try:
+            result_ready = getattr(handle, "result", None) is not None
+        except Exception:
+            result_ready = False
+
+    if block or handle is None or result_ready:
         _finish_suggest(handle)
     else:
         threading.Thread(target=_finish_suggest, args=(handle,), daemon=True).start()

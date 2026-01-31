@@ -432,9 +432,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "thought experiments or scenario walkthroughs that project "
         "evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
-        "systemic": "The response enhances the task by analyzing the subject as a "
-        "whole system, identifying components, boundaries, flows, and "
-        "feedback loops.",
+        "split": "The response enhances the task by deliberately decomposing the "
+        "subject into parts or components, analyzing each in isolation "
+        "while intentionally bracketing interactions, treating the "
+        "decomposition as provisional and preparatory rather than final.",
+        "systemic": "The response enhances the task by reasoning about the subject "
+        "as an interacting whole, identifying components, boundaries, "
+        "flows, feedback loops, and emergent behaviour that arise from "
+        "their interactions rather than from parts in isolation.",
         "unknowns": "The response enhances the task by identifying critical "
         "unknown unknowns and exploring how they might impact "
         "outcomes.",

@@ -131,7 +131,8 @@
         "roles": "The response enhances the task by focusing on responsibilities, ownership, and collaboration patterns.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
-        "systemic": "The response enhances the task by analyzing the subject as a whole system, identifying components, boundaries, flows, and feedback loops.",
+        "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
+        "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
       },
       "scope": {
@@ -275,6 +276,7 @@
         "roles",
         "shift",
         "simulation",
+        "split",
         "systemic",
         "unknowns"
       ],
@@ -860,6 +862,7 @@
         "roles": "roles",
         "shift": "shift",
         "simulation": "simulation",
+        "split": "split",
         "systemic": "systemic",
         "unknowns": "unknowns"
       },
@@ -1035,6 +1038,7 @@
         "method=roles": "method-roles",
         "method=shift": "method-shift",
         "method=simulation": "method-simulation",
+        "method=split": "method-split",
         "method=systemic": "method-systemic",
         "method=unknowns": "method-unknowns"
       },
@@ -1405,6 +1409,7 @@
       "method=roles": "method-roles",
       "method=shift": "method-shift",
       "method=simulation": "method-simulation",
+      "method=split": "method-split",
       "method=systemic": "method-systemic",
       "method=unknowns": "method-unknowns",
       "minimal": "minimal",
@@ -1464,6 +1469,7 @@
       "socratic": "socratic",
       "sort": "sort",
       "spike": "spike",
+      "split": "split",
       "static=check": "static-check",
       "static=diff": "static-diff",
       "static=fix": "static-fix",
@@ -1528,10 +1534,10 @@
     }
   },
   "checksums": {
-    "axes": "53dd41bcda9d6e461e296e6c7d88502c45b52eeb8522b7cd45a3b3f4aae045a1",
+    "axes": "5ffe2f4a37e4eeb8b9227e3931db49f2b8bf544699a59e75ee15af211f125234",
     "static_prompts": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "4be1fc9a18e84869de86a251cd7693cc7bf7d1e4b04ad821ef40e369df740bc0"
+    "slugs": "81c129ff863dc783670bb6277a4c2b85822673c4c994c6839c53785313b080bc"
   }
 }

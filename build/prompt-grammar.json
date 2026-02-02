@@ -92,6 +92,7 @@
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "branch": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
+        "check": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any of these independent checks are treated as ungrounded and must not be synthesized into conclusions, preventing internally coherent but unconstrained narratives.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "constraints": "The response enhances the task by identifying the system's primary constraints, analyzing the behaviours they enforce, and framing ways to balance or relieve them.",
         "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
@@ -237,6 +238,7 @@
         "boom",
         "branch",
         "calc",
+        "check",
         "cite",
         "constraints",
         "converge",
@@ -823,6 +825,7 @@
         "boom": "boom",
         "branch": "branch",
         "calc": "calc",
+        "check": "axis-method-check",
         "cite": "cite",
         "constraints": "constraints",
         "converge": "converge",
@@ -999,6 +1002,7 @@
         "method=boom": "method-boom",
         "method=branch": "method-branch",
         "method=calc": "method-calc",
+        "method=check": "method-check",
         "method=cite": "method-cite",
         "method=constraints": "method-constraints",
         "method=converge": "method-converge",
@@ -1370,6 +1374,7 @@
       "method=boom": "method-boom",
       "method=branch": "method-branch",
       "method=calc": "method-calc",
+      "method=check": "method-check",
       "method=cite": "method-cite",
       "method=constraints": "method-constraints",
       "method=converge": "method-converge",
@@ -1534,10 +1539,10 @@
     }
   },
   "checksums": {
-    "axes": "5ffe2f4a37e4eeb8b9227e3931db49f2b8bf544699a59e75ee15af211f125234",
+    "axes": "91b34e9d2ce6802fb4c1741ed2d5d25477361087ecd0f3983c8d1860509bc53b",
     "static_prompts": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "81c129ff863dc783670bb6277a4c2b85822673c4c994c6839c53785313b080bc"
+    "slugs": "d19d1c2b2fce4cdd719602a43555c3c334d9c1eeccb85a501f88c7609fc6a35b"
   }
 }

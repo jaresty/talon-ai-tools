@@ -316,6 +316,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "calc": "The response enhances the task by expressing reasoning as "
         "executable or quasi-executable procedures, calculations, or "
         "formal steps whose outputs constrain conclusions.",
+        "check": "The response enhances the task by applying falsification "
+        "pressure to claims, requiring causal chain integrity, externally "
+        "imposed constraints, and explicitly defined negative space. "
+        "Claims that fail any of these independent checks are treated as "
+        "ungrounded and must not be synthesized into conclusions, "
+        "preventing internally coherent but unconstrained narratives.",
         "cite": "The response enhances the task by including sources, citations, "
         "or references that anchor claims to evidence, enabling "
         "verification and further exploration.",

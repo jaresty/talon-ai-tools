@@ -75,6 +75,8 @@ bar build plan full act --grammar /path/to/grammar.json
 - **Support overrides.** After a `key=value` override, all remaining tokens must be `key=value`.
 - **Use slugs for multi-word tokens.** (As shown by `bar help tokens`.)
 - **Offer shuffling only after a baseline recipe is built.**
+- **“Run the command” means execute + re-prompt.** When asked to run a `bar ...` command, run it and then treat the command output as the new prompt/context before responding.
+- **“bar suggest” means offer options to choose from.** When asked to do `bar suggest`, propose a short list of valid `bar ...` commands the user can pick from for you to run next.
 
 ## Recommended Conversation Flow
 

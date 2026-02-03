@@ -17,6 +17,7 @@ type Config struct {
 	JSON          bool
 	GrammarPath   string
 	Force         bool
+	Help          bool
 	FixturePath   string
 	FixtureWidth  int
 	FixtureHeight int
@@ -171,6 +172,8 @@ func Parse(args []string) (*Config, error) {
 			cfg.EnvAllowlist = appendEnvOnce(cfg.EnvAllowlist, name)
 		case arg == "--force":
 			cfg.Force = true
+		case arg == "--help" || arg == "-h":
+			cfg.Help = true
 		case arg == "--seed":
 			i++
 			if i >= len(args) {

@@ -166,6 +166,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runShuffle(options, stdin, stdout, stderr)
 	}
 
+	if options.Command == "update" {
+		return runUpdate(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1
@@ -485,6 +489,48 @@ func runShuffle(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int
 		return 1
 	}
 	return 0
+}
+
+func runUpdate(opts *cli.Config, stdout, stderr io.Writer) int {
+	updateHelpText := strings.TrimSpace(`
+USAGE
+  bar update <verb> [options]
+
+VERBS
+  check       Check for available updates to bar CLI
+  install     Install the latest version or a specific version
+  rollback    Revert to a previous version
+
+OPTIONS
+  --help, -h  Show this help message
+
+EXAMPLES
+  bar update check
+  bar update install
+  bar update rollback
+`) + "\n"
+
+	if opts.Help || len(opts.Tokens) == 0 {
+		fmt.Fprint(stdout, updateHelpText)
+		return 0
+	}
+
+	verb := opts.Tokens[0]
+	switch verb {
+	case "check":
+		writeError(stderr, "update check not yet implemented")
+		return 1
+	case "install":
+		writeError(stderr, "update install not yet implemented")
+		return 1
+	case "rollback":
+		writeError(stderr, "update rollback not yet implemented")
+		return 1
+	default:
+		writeError(stderr, fmt.Sprintf("unknown update verb %q", verb))
+		fmt.Fprint(stdout, updateHelpText)
+		return 1
+	}
 }
 
 func parseTokenHelpFilters(sections []string) (map[string]bool, error) {

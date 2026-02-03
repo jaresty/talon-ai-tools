@@ -73,3 +73,31 @@
   - Behaviour: Implement real GitHub API client with HTTP transport (validation: `go test ./internal/updater -run TestGitHubAPIClient`)
   - Behaviour: Add retry logic and rate limit handling for GitHub API (validation: `go test ./internal/updater -run TestRateLimitHandling`)
   - Behaviour: Implement binary installation with atomic replacement (validation: `go test ./internal/updater -run TestBinaryInstallation`)
+
+## 2026-02-02 — loop 004
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Real GitHub API Integration — Implement HTTP client for GitHub Releases API with asset URL resolution
+- active_constraint: No real GitHub API client exists; UpdateChecker cannot query actual releases from GitHub (falsifiable via `go test ./internal/updater -run TestGitHubAPIClient` failing with "undefined" error for HTTPGitHubClient type)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Blocks end-to-end update functionality; mock client insufficient for production |
+  | Probability      | High  | GitHub API is well-documented; standard REST endpoints with JSON responses |
+  | Time Sensitivity | High  | Required for integration with bar update check command; blocks user-facing feature |
+  | Uncertainty note | N/A   | GitHub API contract is stable; implementation path is deterministic |
+- validation_targets:
+  - go test ./internal/updater -run TestGitHubAPIClient
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-004.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=3 files changed, 331 insertions(+) — created github.go (HTTPGitHubClient implementing GitHubClient interface with GetLatestRelease for GitHub Releases API /repos/:owner/:repo/releases/latest endpoint, GetAssetDownloadURL for asset resolution, githubRelease/githubAsset JSON structs for API parsing) and github_test.go (TestGitHubAPIClient with 3 scenarios using httptest mock server, TestGitHubAPIClientAssetURLResolution and TestGitHubAPIClientAssetNotFound for asset URL lookup)
+- loops_remaining_forecast: 5-9 loops remaining (Bar update check integration, Binary Installation, Rollback, Configuration, Integration tests, Documentation) — high confidence on API client completion
+- residual_constraints:
+  - GitHub API rate limiting not handled (severity: medium; mitigation: implement in loop 005 with exponential backoff and 429 response handling; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Binary replacement and rollback logic not implemented (severity: high; mitigation: implement in loop 005-006; monitoring: integration tests with temp binaries; owning ADR: 0096)
+  - Bar update check command not wired to updater package (severity: medium; mitigation: implement in loop 005 after API client lands; monitoring: go test for update check integration; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to loop 007; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 008-009; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 010; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Wire bar update check command to GitHub API client (validation: `go run ./cmd/bar update check` with version comparison)
+  - Behaviour: Add retry logic and rate limit handling for GitHub API (validation: `go test ./internal/updater -run TestRateLimitHandling`)
+  - Behaviour: Implement binary installation with atomic replacement (validation: `go test ./internal/updater -run TestBinaryInstallation`)

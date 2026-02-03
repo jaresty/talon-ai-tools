@@ -187,3 +187,33 @@
   - Behaviour: Implement rollback mechanism with backup restoration (validation: `go test ./internal/updater -run TestRollback`)
   - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)
   - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
+
+## 2026-02-02 — loop 008
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Rollback Mechanism — Implement backup restoration to revert failed or unwanted updates
+- active_constraint: No mechanism to restore previous binary versions; users cannot recover from failed updates (falsifiable via `go test ./internal/updater -run TestRollback` failing with "undefined" error for rollback functionality)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Critical safety feature; prevents user lockout from failed updates |
+  | Probability      | High  | Backup files already created by BinaryInstaller; restoration is file copy + rename |
+  | Time Sensitivity | High  | Required before production deployment; safety-critical feature |
+  | Uncertainty note | N/A   | File operations deterministic; backup format already established |
+- validation_targets:
+  - go test ./internal/updater -run TestRollback
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-008.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=2 files changed, 86 insertions(+), 1 deletion(-) — implemented rollback mechanism: added Rollback method to BinaryInstaller in install.go (finds most recent backup, copies to temp, atomic rename to replace current binary, preserves permissions); added ListBackups method returning sorted backup list (most recent first); added sort and strings imports; created rollback_test.go with TestRollback (2 scenarios: successful rollback, permission preservation), TestRollbackNoBackupsAvailable (validates error when no backups), TestListBackups (validates sorting)
+- loops_remaining_forecast: 1-5 loops remaining (Wire rollback command, Version flag, Platform detection, Integration tests, Documentation) — high confidence on rollback mechanism completion
+- residual_constraints:
+  - Bar update rollback command not wired to rollback logic (severity: medium; mitigation: implement in loop 009; monitoring: manual test of bar update rollback; owning ADR: 0096)
+  - Version string not embedded in bar binary (severity: medium; mitigation: add build-time version via ldflags in loop 010; monitoring: go run ./cmd/bar --version; owning ADR: 0096)
+  - Asset selection logic hardcoded (severity: medium; mitigation: add platform detection in loop 010; monitoring: test on multiple platforms; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: add backup pruning in future loop; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to loop 011; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 012; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 013; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Wire bar update rollback command to restoration logic (validation: `go run ./cmd/bar update rollback` restoring backup)
+  - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)
+  - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)

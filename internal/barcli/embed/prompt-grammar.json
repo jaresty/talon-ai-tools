@@ -132,6 +132,7 @@
         "roles": "The response enhances the task by focusing on responsibilities, ownership, and collaboration patterns.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
+        "spec": "The response enhances the task by explicitly defining criteria of correctness before proposing implementations, treating those criteria as fixed and authoritative. Implementations must satisfy the prior definition and are not permitted to redefine correctness during construction, shifting progress from building artifacts to securing meaning.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
@@ -279,6 +280,7 @@
         "roles",
         "shift",
         "simulation",
+        "spec",
         "split",
         "systemic",
         "unknowns",
@@ -867,6 +869,7 @@
         "roles": "roles",
         "shift": "shift",
         "simulation": "simulation",
+        "spec": "spec",
         "split": "split",
         "systemic": "systemic",
         "unknowns": "unknowns",
@@ -1045,6 +1048,7 @@
         "method=roles": "method-roles",
         "method=shift": "method-shift",
         "method=simulation": "method-simulation",
+        "method=spec": "method-spec",
         "method=split": "method-split",
         "method=systemic": "method-systemic",
         "method=unknowns": "method-unknowns",
@@ -1418,6 +1422,7 @@
       "method=roles": "method-roles",
       "method=shift": "method-shift",
       "method=simulation": "method-simulation",
+      "method=spec": "method-spec",
       "method=split": "method-split",
       "method=systemic": "method-systemic",
       "method=unknowns": "method-unknowns",
@@ -1479,6 +1484,7 @@
       "slack": "slack",
       "socratic": "socratic",
       "sort": "sort",
+      "spec": "spec",
       "spike": "spike",
       "split": "split",
       "static=check": "static-check",
@@ -1546,10 +1552,10 @@
     }
   },
   "checksums": {
-    "axes": "4a64251684c98c0ab63138dc038a2ea53cca78cb6a9a2ae0170817bc7a3a60b4",
+    "axes": "8090009235025cc0c3287d128ee414c7c89c8c196d430a46600fbc3ea82c1670",
     "static_prompts": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "6cbc96b26c19705cc03d31036194b42ded4e3760eeb507aa65e7bc57a577552a"
+    "slugs": "f61f903327734bf10658d71e089e730fab722c24c5989045999555c398bf06a0"
   }
 }

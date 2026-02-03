@@ -276,3 +276,33 @@
   - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
   - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
   - Behaviour: Add configuration file parsing (validation: `go test ./internal/updater -run TestConfigParsing`)
+
+## 2026-02-02 — loop 011
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 CI Version Embedding — Fix GitHub Actions release workflow to embed version via ldflags
+- active_constraint: GitHub Actions release-bar.yml workflow does not pass version to binary via ldflags; released binaries show "dev" instead of actual version (falsifiable via inspecting .github/workflows/release-bar.yml line 41 showing `-ldflags="-s -w"` without `-X main.barVersion`)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Released binaries must report correct version for update check to work; blocks production deployment |
+  | Probability      | High  | VERSION variable already extracted from tag; ldflags pattern is deterministic |
+  | Time Sensitivity | High  | Required before any release uses the update mechanism; blocks ADR completion |
+  | Uncertainty note | N/A   | Version extraction from GITHUB_REF_NAME already working; only need to pass to ldflags |
+- validation_targets:
+  - grep -A5 "go build" .github/workflows/release-bar.yml | grep "X main.barVersion"
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-011.md
+- rollback_plan: `git stash` to save changes, verify grep fails to find version ldflags, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), 2 deletions(-) — fixed GitHub Actions release workflow to embed version: updated go build command in release-bar.yml to include `-X main.barVersion=${VERSION}` in ldflags (line 41); fixed VERSION extraction from `${GITHUB_REF_NAME#v}` to `${GITHUB_REF_NAME#bar-v}` to match tag pattern "bar-v*"; released binaries will now report correct version instead of "dev"
+- loops_remaining_forecast: 2-5 loops remaining (Automated tagging, Platform detection, Integration tests, Documentation) — high confidence on CI version embedding completion
+- residual_constraints:
+  - No automated release tagging workflow (severity: high; mitigation: add GitHub Actions workflow for auto-tagging on test success in loop 012; monitoring: manual tagging required until automated; owning ADR: 0096)
+  - Asset selection logic hardcoded (severity: medium; mitigation: add platform detection in loop 013; monitoring: test on multiple platforms; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: add backup pruning in future loop; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: medium; mitigation: add configuration support in future loop; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to future loop; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in future loop; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in future loop; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Add automated release tagging workflow (validation: inspect .github/workflows/auto-tag.yml for test-gated tagging)
+  - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
+  - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)

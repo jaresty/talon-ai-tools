@@ -31,14 +31,14 @@ jobs:
         id: build
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${GITHUB_REF_NAME#bar-v}"
           mkdir -p dist
           for GOOS in linux darwin; do
             for GOARCH in amd64 arm64; do
               echo "Building bar for ${GOOS}/${GOARCH}"
               OUTPUT_DIR="dist/${GOOS}_${GOARCH}"
               mkdir -p "${OUTPUT_DIR}"
-              GOOS="${GOOS}" GOARCH="${GOARCH}" go build -trimpath -ldflags="-s -w" -o "${OUTPUT_DIR}/bar" ./cmd/bar
+              GOOS="${GOOS}" GOARCH="${GOARCH}" go build -trimpath -ldflags="-s -w -X main.barVersion=${VERSION}" -o "${OUTPUT_DIR}/bar" ./cmd/bar
               mkdir -p "${OUTPUT_DIR}/fixtures"
               cp cmd/bar/testdata/tui_smoke.json "${OUTPUT_DIR}/fixtures/tui_smoke.json"
               ARCHIVE="dist/bar_${VERSION}_${GOOS}_${GOARCH}.tar.gz"

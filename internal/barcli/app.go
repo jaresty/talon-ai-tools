@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 	"github.com/talonvoice/talon-ai-tools/internal/updater"
@@ -171,6 +172,11 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if options.Version {
 		fmt.Fprintf(stdout, "bar version %s\n", barVersion)
 		return 0
+	}
+
+	// Check for updates automatically (unless running update command itself)
+	if options.Command != "update" {
+		checkForUpdatesBackground(stderr)
 	}
 
 	if options.Command == "help" {
@@ -715,6 +721,55 @@ func runUpdateRollback(stdout, stderr io.Writer) int {
 	fmt.Fprintf(stdout, "Backup directory: %s\n", backupDir)
 
 	return 0
+}
+
+func checkForUpdatesBackground(stderr io.Writer) {
+	// Skip if update client not set (e.g., in tests)
+	if updateClient == nil {
+		return
+	}
+
+	cache := updater.NewUpdateCache()
+
+	// Check at most once per 24 hours
+	if !cache.ShouldCheck(24 * time.Hour) {
+		// Check if cached info shows an update is available
+		info, err := cache.Read()
+		if err == nil && info.Available {
+			fmt.Fprintf(stderr, "New bar version %s available. Run 'bar update install' to upgrade.\n", info.LatestVersion)
+		}
+		return
+	}
+
+	// Perform update check
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	checker := &updater.UpdateChecker{
+		Client:         updateClient,
+		CurrentVersion: barVersion,
+		Owner:          "talonvoice",
+		Repo:           "talon-ai-tools",
+	}
+
+	available, latestVersion, err := checker.CheckForUpdate(ctx)
+	if err != nil {
+		// Silent failure - don't interrupt user's command with errors
+		return
+	}
+
+	// Cache the result
+	info := updater.UpdateInfo{
+		Available:     available,
+		LatestVersion: latestVersion,
+		CheckedAt:     time.Now(),
+	}
+	_ = cache.Write(info) // Ignore cache write errors
+
+	// Notify user if update is available
+	if available {
+		fmt.Fprintf(stderr, "New bar version %s available. Run 'bar update install' to upgrade.\n", latestVersion)
+	}
 }
 
 func parseTokenHelpFilters(sections []string) (map[string]bool, error) {

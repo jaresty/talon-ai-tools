@@ -390,3 +390,28 @@
   - Behaviour: ADR completion review (validation: verify all core requirements met, document deferred enhancements)
   - Behaviour: Add end-to-end integration tests (optional enhancement) (validation: `go test ./cmd/bar -run TestUpdateE2E`)
   - Behaviour: Add backup pruning (optional enhancement) (validation: `go test ./internal/updater -run TestBackupPruning`)
+
+## 2026-02-03 — loop 015
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Automatic Update Notification — Add background update checking to proactively notify users of available updates
+- active_constraint: Update checking is manual; users must remember to run "bar update check" instead of being notified automatically (falsifiable via absence of automatic update check in app.go Run function)
+- expected_value:
+  | Factor           | Value  | Rationale |
+  | Impact           | High   | Enables proactive user notification; completes "automatic" update mechanism vision |
+  | Probability      | High   | Background check pattern is deterministic; caching prevents API rate limit issues |
+  | Time Sensitivity | High   | Required for true "automatic" updates; completes ADR core functionality |
+  | Uncertainty note | Check interval — daily is reasonable default but may need tuning based on user feedback |
+- validation_targets:
+  - go test ./internal/updater -run TestUpdateCache
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-015.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=3 files changed, 137 insertions(+), 1 deletion(-) — added automatic update notification: created cache.go with UpdateInfo struct and UpdateCache for storing/reading cached check results with 24-hour expiry; created cache_test.go with TestUpdateCache, TestUpdateCacheShouldCheck, TestUpdateCacheReadMissing covering read/write/expiry logic; updated app.go Run function to call checkForUpdatesBackground() before command execution (skips for update command itself); added checkForUpdatesBackground function that checks cache freshness, performs GitHub API check with 3-second timeout if needed, caches result, and prints notification to stderr if update available; added time import to app.go; users now automatically notified of updates without manual checking
+- loops_remaining_forecast: 0 loops remaining after this — ADR complete with automatic notifications
+- residual_constraints:
+  - No end-to-end integration tests (severity: low; mitigation: defer to future enhancement; unit and integration tests provide good coverage; monitoring: test coverage metrics; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: defer to future enhancement; manual cleanup acceptable for now; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: low; mitigation: defer to future enhancement; temp directory location acceptable for initial version; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: daily check interval minimizes risk; monitoring: user reports of rate limit issues; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: low; mitigation: defer to future enhancement; current defaults acceptable; monitoring: user requests for configuration options; owning ADR: 0096)
+- next_work:
+  - Behaviour: ADR completion review and closeout (validation: verify all core requirements met, update ADR status to complete)

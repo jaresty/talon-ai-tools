@@ -18,6 +18,7 @@ type Config struct {
 	GrammarPath   string
 	Force         bool
 	Help          bool
+	Version       bool
 	FixturePath   string
 	FixtureWidth  int
 	FixtureHeight int
@@ -174,6 +175,8 @@ func Parse(args []string) (*Config, error) {
 			cfg.Force = true
 		case arg == "--help" || arg == "-h":
 			cfg.Help = true
+		case arg == "--version" || arg == "-v":
+			cfg.Version = true
 		case arg == "--seed":
 			i++
 			if i >= len(args) {
@@ -235,7 +238,7 @@ func Parse(args []string) (*Config, error) {
 		}
 	}
 
-	if cfg.Command == "" {
+	if cfg.Command == "" && !cfg.Version {
 		return nil, fmt.Errorf("usage: bar [build|help|completion|preset|tui]")
 	}
 	if cfg.Prompt != "" && cfg.InputPath != "" {

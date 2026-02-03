@@ -168,6 +168,11 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	if options.Version {
+		fmt.Fprintf(stdout, "bar version %s\n", barVersion)
+		return 0
+	}
+
 	if options.Command == "help" {
 		return runHelp(options, stdout, stderr)
 	}

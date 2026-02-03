@@ -247,3 +247,32 @@
   - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)
   - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
   - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
+
+## 2026-02-02 — loop 010
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Version Flag — Add --version flag to display embedded bar version string
+- active_constraint: No --version flag available; users cannot determine installed bar version without manual inspection (falsifiable via `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version` failing with "unknown flag" or not showing version)
+- expected_value:
+  | Factor           | Value  | Rationale |
+  | Impact           | Medium | Enables users to verify installed version; prerequisite for troubleshooting update issues |
+  | Probability      | High   | Version string already embedded (barVersion variable exists); flag handling is standard pattern |
+  | Time Sensitivity | Medium | Useful for testing update flow; not blocking core functionality but improves UX |
+  | Uncertainty note | N/A    | Flag implementation deterministic; barVersion variable already in place |
+- validation_targets:
+  - go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-010.md
+- rollback_plan: `git stash` to save changes, verify command fails with unknown flag, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=3 files changed, 15 insertions(+), 2 deletions(-) — added --version flag to display embedded bar version: added Version bool field to cli.Config struct; added case for --version and -v flags in cli.Parse function; modified command requirement check to allow empty command when Version flag is set; added version check in app.Run function (prints "bar version {barVersion}" and exits 0); created version_test.go validating --version flag shows version and exits successfully
+- loops_remaining_forecast: 1-3 loops remaining (Platform detection, Integration tests, Documentation) — high confidence on version flag completion
+- residual_constraints:
+  - Asset selection logic hardcoded (severity: medium; mitigation: add platform detection in loop 011; monitoring: test on multiple platforms; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: add backup pruning in future loop; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: medium; mitigation: add configuration support in future loop; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to loop 012; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 013; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 014; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
+  - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
+  - Behaviour: Add configuration file parsing (validation: `go test ./internal/updater -run TestConfigParsing`)

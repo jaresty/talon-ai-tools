@@ -235,12 +235,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "whole while preserving essential information.",
         "questions": "The response presents the answer as a series of probing or "
         "clarifying questions rather than statements.",
-        "quiz": "The response enhances the task by adopting an instructional flow "
-        "that tests understanding through questions before providing "
-        "explanations. It surfaces assumptions and gaps by prompting the "
-        "user to answer, then uses those responses to clarify, correct, or "
-        "deepen understanding, prioritizing active recall and learning over "
-        "immediate exposition.",
         "recipe": "The response expresses the answer as a recipe that includes a "
         "custom, clearly explained mini-language and a short key for "
         "understanding it.",
@@ -417,6 +411,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "product": "The response enhances the task by examining the subject "
         "through a product lens—features, user needs, and value "
         "propositions.",
+        "quiz": "The response enhances the task by adopting an instructional flow "
+        "that tests understanding through questions before providing "
+        "explanations. It surfaces assumptions and gaps by prompting the "
+        "user to answer, then uses those responses to clarify, correct, or "
+        "deepen understanding, prioritizing active recall and learning "
+        "over immediate exposition.",
         "resilience": "The response enhances the task by concentrating on how the "
         "system behaves under stress and uncertainty—fragility vs "
         "robustness, margin of safety, and tail risks.",

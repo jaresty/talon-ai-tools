@@ -363,3 +363,30 @@
   - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
   - Behaviour: Add README documentation for update mechanism (validation: inspect README.md for update command documentation)
   - Behaviour: Add backup pruning to limit disk usage (validation: `go test ./internal/updater -run TestBackupPruning`)
+
+## 2026-02-03 — loop 014
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Documentation — Add README documentation for update mechanism to enable user adoption
+- active_constraint: No documentation for update commands; users cannot discover or use update mechanism (falsifiable via absence of "update" section in README.md)
+- expected_value:
+  | Factor           | Value  | Rationale |
+  | Impact           | High   | Enables users to discover and use update mechanism; required for production adoption |
+  | Probability      | High   | Documentation writing is deterministic; commands and examples are well-established |
+  | Time Sensitivity | High   | Blocks production adoption; users cannot use undocumented features |
+  | Uncertainty note | N/A    | Documentation scope clear: update check, update install, update rollback with examples |
+- validation_targets:
+  - grep -i "update" README.md
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-014.md
+- rollback_plan: `git stash` to save changes, verify update documentation missing in README, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=1 file changed, 28 insertions(+) — added comprehensive update documentation to readme.md: created new "Keeping bar up to date" subsection after "Completion skip sentinel" section; documented all three update commands (bar update check, bar update install, bar update rollback) with usage examples; explained how update mechanism works (version comparison, platform detection, backup creation, atomic replacement); documented backup location (system temp directory under bar-backups/); added version flag documentation (bar --version); documented automatic release process with conventional commit format (fix:=patch, feat:=minor, BREAKING CHANGE:=major); enables users to discover and adopt update mechanism
+- loops_remaining_forecast: 0-2 loops remaining (optional E2E tests, optional backup pruning) — high confidence on documentation completion; ADR core complete
+- residual_constraints:
+  - No end-to-end integration tests (severity: low; mitigation: defer to future enhancement; unit and integration tests provide good coverage; monitoring: test coverage metrics; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: defer to future enhancement; manual cleanup acceptable for now; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: low; mitigation: defer to future enhancement; temp directory location acceptable for initial version; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future enhancement; rate limits unlikely for individual user usage; monitoring: user reports of rate limit issues; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: low; mitigation: defer to future enhancement; current defaults acceptable; monitoring: user requests for configuration options; owning ADR: 0096)
+- next_work:
+  - Behaviour: ADR completion review (validation: verify all core requirements met, document deferred enhancements)
+  - Behaviour: Add end-to-end integration tests (optional enhancement) (validation: `go test ./cmd/bar -run TestUpdateE2E`)
+  - Behaviour: Add backup pruning (optional enhancement) (validation: `go test ./internal/updater -run TestBackupPruning`)

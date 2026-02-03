@@ -180,6 +180,38 @@ Pair the sentinel with normal completions to fast-forward through stages. For in
    ```
    This guardrail ensures the README quickstart stays in sync with the exported grammar commands.
 
+#### Keeping bar up to date
+
+The `bar` CLI includes an automatic update mechanism that checks for new releases from GitHub:
+
+```bash
+# Check for available updates
+bar update check
+
+# Install the latest version
+bar update install
+
+# Rollback to the previous version if needed
+bar update rollback
+```
+
+**How it works:**
+- `bar update check` compares your current version against the latest GitHub release
+- `bar update install` downloads the correct binary for your platform (darwin/linux × amd64/arm64), creates a backup of your current version, and atomically replaces it with the new version
+- `bar update rollback` restores the most recent backup if an update causes issues
+- Backups are stored in your system's temp directory under `bar-backups/`
+
+**Version information:**
+```bash
+bar --version  # Show currently installed version
+```
+
+**Release process:**
+New releases are automatically tagged and built when commits are pushed to the main branch. The tagging workflow analyzes commit messages using conventional commit format:
+- `fix:` commits trigger patch version bumps (1.0.0 → 1.0.1)
+- `feat:` commits trigger minor version bumps (1.0.0 → 1.1.0)
+- `BREAKING CHANGE:` in commit body triggers major version bumps (1.0.0 → 2.0.0)
+
 ### CI example
 
 ```yaml

@@ -101,3 +101,31 @@
   - Behaviour: Wire bar update check command to GitHub API client (validation: `go run ./cmd/bar update check` with version comparison)
   - Behaviour: Add retry logic and rate limit handling for GitHub API (validation: `go test ./internal/updater -run TestRateLimitHandling`)
   - Behaviour: Implement binary installation with atomic replacement (validation: `go test ./internal/updater -run TestBinaryInstallation`)
+
+## 2026-02-02 — loop 005
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Update Check Integration — Wire bar update check command to UpdateChecker with GitHub API client and version comparison
+- active_constraint: Bar update check command not connected to updater package; users cannot check for updates (falsifiable via `go run ./cmd/bar update check` returning "not yet implemented" error instead of performing actual version check against GitHub)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Enables end-to-end update checking flow; delivers user-facing feature |
+  | Probability      | High  | All components exist (UpdateChecker, HTTPGitHubClient, CompareVersions); integration is straightforward |
+  | Time Sensitivity | High  | Completes MVP for update checking; unblocks user testing |
+  | Uncertainty note | N/A   | Integration path clear; need to determine current version from binary |
+- validation_targets:
+  - go test ./cmd/bar -run TestUpdateCheckIntegration
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-005.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=7 files changed, 209 insertions(+), 28 deletions(-) — wired bar update check to updater package: added runUpdateCheck function in app.go to create UpdateChecker with HTTPGitHubClient, added SetVersion/SetUpdateClient helpers for version injection and test mocking, created main.go barVersion variable set via ldflags, moved MockGitHubClient/MockRelease from release_test.go to mock.go for cross-package testing, created update_integration_test.go with 3 test scenarios (newer version, already latest, current newer)
+- loops_remaining_forecast: 4-8 loops remaining (Binary Installation, Rollback, Configuration, Integration tests, Documentation) — high confidence on update check completion
+- residual_constraints:
+  - Version string not embedded in bar binary (severity: medium; mitigation: add build-time version via ldflags in loop 006; monitoring: go run ./cmd/bar --version; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop with exponential backoff; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Binary replacement and rollback logic not implemented (severity: high; mitigation: implement in loop 006-007; monitoring: integration tests with temp binaries; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to loop 008; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 009; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 010; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Embed version string in bar binary at build time (validation: `go run -ldflags "-X main.version=dev" ./cmd/bar --version`)
+  - Behaviour: Implement binary installation with atomic replacement (validation: `go test ./internal/updater -run TestBinaryInstallation`)
+  - Behaviour: Add rollback mechanism for failed updates (validation: `go test ./internal/updater -run TestRollback`)

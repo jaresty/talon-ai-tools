@@ -1,6 +1,7 @@
 package barcli
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,12 +11,40 @@ import (
 	"strings"
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
+	"github.com/talonvoice/talon-ai-tools/internal/updater"
 )
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
 	topUsage   = "usage: bar [build|shuffle|help|completion|preset|tui|tui2]"
 )
+
+// barVersion holds the current version of bar, set by main package
+var barVersion = "dev"
+
+// updateClient is the GitHub client for update checks (can be overridden for testing)
+var updateClient updater.GitHubClient
+
+// SetVersion sets the bar version (called from main package)
+func SetVersion(version string) {
+	barVersion = version
+}
+
+// SetUpdateClient sets the update client (used for testing)
+func SetUpdateClient(client updater.GitHubClient) {
+	if client == nil {
+		updateClient = updater.NewGitHubClient()
+	} else {
+		updateClient = client
+	}
+}
+
+func init() {
+	// Initialize default GitHub client if not already set (e.g., by tests)
+	if updateClient == nil {
+		updateClient = updater.NewGitHubClient()
+	}
+}
 
 var generalHelpText = strings.TrimSpace(`USAGE
   bar build <tokens>... [--prompt TEXT|--input FILE] [--output FILE] [--json]
@@ -518,8 +547,7 @@ EXAMPLES
 	verb := opts.Tokens[0]
 	switch verb {
 	case "check":
-		writeError(stderr, "update check not yet implemented")
-		return 1
+		return runUpdateCheck(stdout, stderr)
 	case "install":
 		writeError(stderr, "update install not yet implemented")
 		return 1
@@ -531,6 +559,31 @@ EXAMPLES
 		fmt.Fprint(stdout, updateHelpText)
 		return 1
 	}
+}
+
+func runUpdateCheck(stdout, stderr io.Writer) int {
+	checker := &updater.UpdateChecker{
+		Client:         updateClient,
+		CurrentVersion: barVersion,
+		Owner:          "talonvoice",
+		Repo:           "talon-ai-tools",
+	}
+
+	ctx := context.Background()
+	available, latestVersion, err := checker.CheckForUpdate(ctx)
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to check for updates: %v", err))
+		return 1
+	}
+
+	if available {
+		fmt.Fprintf(stdout, "A new version is available: %s (current: %s)\n", latestVersion, barVersion)
+		fmt.Fprintf(stdout, "Run 'bar update install' to upgrade.\n")
+	} else {
+		fmt.Fprintf(stdout, "You are already on the latest version: %s\n", barVersion)
+	}
+
+	return 0
 }
 
 func parseTokenHelpFilters(sections []string) (map[string]bool, error) {

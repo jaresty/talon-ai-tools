@@ -5,32 +5,6 @@ import (
 	"testing"
 )
 
-// MockRelease represents a test release
-type MockRelease struct {
-	TagName string
-	Assets  []string
-}
-
-// MockGitHubClient simulates GitHub API responses
-type MockGitHubClient struct {
-	Releases []MockRelease
-	Error    error
-}
-
-func (m *MockGitHubClient) GetLatestRelease(ctx context.Context, owner, repo string) (*Release, error) {
-	if m.Error != nil {
-		return nil, m.Error
-	}
-	if len(m.Releases) == 0 {
-		return nil, nil
-	}
-	latest := m.Releases[0]
-	return &Release{
-		TagName: latest.TagName,
-		Assets:  latest.Assets,
-	}, nil
-}
-
 func TestReleaseDiscovery(t *testing.T) {
 	tests := []struct {
 		name           string

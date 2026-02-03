@@ -42,7 +42,7 @@ jobs:
         run: make bar-grammar-check
 
       - name: Run Go tests
-        run: go test ./internal/barcli/... -v
+        run: go test ./... -v
 
       - name: Run guardrails
         run: make ci-guardrails

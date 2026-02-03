@@ -80,3 +80,61 @@ func (cv *ChecksumVerifier) VerifySHA256(filePath, expectedHash string) error {
 
 	return nil
 }
+
+// ParseChecksums parses a checksums file and returns a map of filename to hash
+// Format expected: "<hash>  <filename>" (two spaces between hash and filename)
+func ParseChecksums(content string) (map[string]string, error) {
+	checksums := make(map[string]string)
+
+	lines := []string{}
+	start := 0
+	for i := 0; i < len(content); i++ {
+		if content[i] == '\n' {
+			if i > start {
+				lines = append(lines, content[start:i])
+			}
+			start = i + 1
+		}
+	}
+	if start < len(content) {
+		lines = append(lines, content[start:])
+	}
+
+	for _, line := range lines {
+		// Skip empty lines
+		if len(line) == 0 {
+			continue
+		}
+
+		// Find the two-space separator
+		var hash, filename string
+		spaceCount := 0
+		spaceStart := -1
+
+		for i := 0; i < len(line); i++ {
+			if line[i] == ' ' {
+				if spaceStart == -1 {
+					spaceStart = i
+				}
+				spaceCount++
+			} else {
+				if spaceCount >= 2 {
+					// Found the separator
+					hash = line[:spaceStart]
+					filename = line[i:]
+					break
+				}
+				spaceCount = 0
+				spaceStart = -1
+			}
+		}
+
+		if hash == "" || filename == "" {
+			return nil, fmt.Errorf("invalid checksum line format: %s", line)
+		}
+
+		checksums[filename] = hash
+	}
+
+	return checksums, nil
+}

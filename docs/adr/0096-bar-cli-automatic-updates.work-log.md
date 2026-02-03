@@ -415,3 +415,28 @@
   - Configuration file parsing not implemented (severity: low; mitigation: defer to future enhancement; current defaults acceptable; monitoring: user requests for configuration options; owning ADR: 0096)
 - next_work:
   - Behaviour: ADR completion review and closeout (validation: verify all core requirements met, update ADR status to complete)
+
+## 2026-02-03 — loop 016
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Checksum Verification — Wire SHA256 checksum verification into install flow for security
+- active_constraint: Downloaded binaries not verified against checksums; users could install tampered releases (falsifiable via inspecting runUpdateInstall in app.go showing no checksum verification before Install call)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Critical security requirement from ADR; prevents installation of tampered binaries |
+  | Probability      | High  | ChecksumVerifier already implemented in loop 003; need to download checksums.txt and wire verification |
+  | Time Sensitivity | High  | Security-critical feature required before ADR completion; blocks production deployment |
+  | Uncertainty note | N/A   | Checksum format already established by release workflow (checksums.txt with SHA256 hashes) |
+- validation_targets:
+  - go test ./cmd/bar -run TestUpdateInstallIntegration
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-016.md
+- rollback_plan: `git stash` to save changes, verify no checksum verification in install flow, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=3 files changed, 139 insertions(+), 1 deletion(-) — added checksum verification to install flow: created ParseChecksums function in download.go to parse checksums.txt (format: "<hash>  <filename>") and return filename-to-hash map; added TestParseChecksums in download_test.go covering valid/invalid formats including multi-entry, single-entry, empty-lines, and error cases; updated runUpdateInstall in app.go to download checksums.txt from GitHub release using GetAssetDownloadURL, parse it with ParseChecksums, extract expected SHA256 hash for platform binary, and call ChecksumVerifier.VerifySHA256 before installer.Install; installation now fails gracefully if checksums.txt missing, unparseable, or hash mismatch; users protected from installing tampered releases via cryptographic verification
+- loops_remaining_forecast: 0 loops remaining after this — ADR complete with all security requirements met
+- residual_constraints:
+  - No end-to-end integration tests (severity: low; mitigation: defer to future enhancement; unit and integration tests provide good coverage; monitoring: test coverage metrics; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: defer to future enhancement; manual cleanup acceptable for now; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: low; mitigation: defer to future enhancement; temp directory location acceptable for initial version; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: daily check interval minimizes risk; monitoring: user reports of rate limit issues; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: low; mitigation: defer to future enhancement; current defaults acceptable; monitoring: user requests for configuration options; owning ADR: 0096)
+- next_work:
+  - Behaviour: Update ADR status to Accepted and document completion (validation: verify ADR 0096 status shows Accepted)

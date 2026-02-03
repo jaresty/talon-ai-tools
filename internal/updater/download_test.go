@@ -188,3 +188,94 @@ func TestComputeSHA256(t *testing.T) {
 		})
 	}
 }
+
+func TestParseChecksums(t *testing.T) {
+	tests := []struct {
+		name      string
+		content   string
+		wantMap   map[string]string
+		wantErr   bool
+	}{
+		{
+			name: "valid checksums file",
+			content: `abc123def456  bar-darwin-amd64
+789ghi012jkl  bar-linux-amd64
+mno345pqr678  bar-darwin-arm64`,
+			wantMap: map[string]string{
+				"bar-darwin-amd64": "abc123def456",
+				"bar-linux-amd64":  "789ghi012jkl",
+				"bar-darwin-arm64": "mno345pqr678",
+			},
+			wantErr: false,
+		},
+		{
+			name: "single entry",
+			content: "a1b2c3d4e5f6  bar-darwin-amd64",
+			wantMap: map[string]string{
+				"bar-darwin-amd64": "a1b2c3d4e5f6",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "empty content",
+			content: "",
+			wantMap: map[string]string{},
+			wantErr: false,
+		},
+		{
+			name: "with empty lines",
+			content: `abc123def456  bar-darwin-amd64
+
+789ghi012jkl  bar-linux-amd64`,
+			wantMap: map[string]string{
+				"bar-darwin-amd64": "abc123def456",
+				"bar-linux-amd64":  "789ghi012jkl",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "invalid format - single space",
+			content: "abc123def456 bar-darwin-amd64",
+			wantErr: true,
+		},
+		{
+			name:    "invalid format - no separator",
+			content: "abc123def456bar-darwin-amd64",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseChecksums(tt.content)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("ParseChecksums() expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("ParseChecksums() unexpected error: %v", err)
+				return
+			}
+
+			if len(got) != len(tt.wantMap) {
+				t.Errorf("ParseChecksums() returned %d entries, want %d", len(got), len(tt.wantMap))
+				return
+			}
+
+			for filename, expectedHash := range tt.wantMap {
+				actualHash, ok := got[filename]
+				if !ok {
+					t.Errorf("ParseChecksums() missing entry for %q", filename)
+					continue
+				}
+				if actualHash != expectedHash {
+					t.Errorf("ParseChecksums() for %q = %q, want %q", filename, actualHash, expectedHash)
+				}
+			}
+		})
+	}
+}

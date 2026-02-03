@@ -655,6 +655,47 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	// Download checksums.txt for verification
+	checksumsURL, err := httpClient.GetAssetDownloadURL(ctx, "talonvoice", "talon-ai-tools", "checksums.txt")
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to get checksums download URL: %v", err))
+		return 1
+	}
+
+	checksumsPath := filepath.Join(tmpDir, "checksums.txt")
+	fmt.Fprintf(stdout, "Downloading checksums...\n")
+	if err := downloader.Download(ctx, checksumsURL, checksumsPath); err != nil {
+		writeError(stderr, fmt.Sprintf("failed to download checksums: %v", err))
+		return 1
+	}
+
+	// Read and parse checksums
+	checksumsData, err := os.ReadFile(checksumsPath)
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to read checksums file: %v", err))
+		return 1
+	}
+
+	checksums, err := updater.ParseChecksums(string(checksumsData))
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to parse checksums: %v", err))
+		return 1
+	}
+
+	// Verify the downloaded binary
+	expectedHash, ok := checksums[assetName]
+	if !ok {
+		writeError(stderr, fmt.Sprintf("checksum not found for %s", assetName))
+		return 1
+	}
+
+	fmt.Fprintf(stdout, "Verifying checksum...\n")
+	verifier := &updater.ChecksumVerifier{}
+	if err := verifier.VerifySHA256(downloadPath, expectedHash); err != nil {
+		writeError(stderr, fmt.Sprintf("checksum verification failed: %v", err))
+		return 1
+	}
+
 	// Get current binary path
 	currentBinary, err := os.Executable()
 	if err != nil {

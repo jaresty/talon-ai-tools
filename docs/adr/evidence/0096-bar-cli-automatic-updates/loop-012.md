@@ -11,12 +11,12 @@
 ## loop-012 green | helper:rerun test -f .github/workflows/auto-tag-bar.yml
 - timestamp: 2026-02-03T00:45:00Z
 - exit status: 0 (file exists)
-- helper:diff-snapshot=1 file changed, 84 insertions(+)
+- helper:diff-snapshot=1 file changed, 68 insertions(+), 83 deletions(-)
 - excerpt:
   ```
   File exists
   ```
-- behaviour: Automated release tagging workflow created at .github/workflows/auto-tag-bar.yml; workflow_dispatch trigger with version input (X.Y.Z format); runs full test suite before tagging (Python deps, grammar checks, Go tests, guardrails, Python tests); validates version format and checks for duplicate tags; creates annotated git tag "bar-vX.Y.Z" and pushes to origin to trigger release-bar.yml workflow; eliminates need for manual git tag commands
+- behaviour: Fully automated release tagging workflow created at .github/workflows/auto-tag-bar.yml; triggers automatically on push to main branch (excludes docs/markdown changes); uses mathieudutour/github-tag-action@v6.2 for automatic version determination via conventional commits parsing (feat:=minor, fix:=patch, BREAKING CHANGE:=major, default=patch); runs full test suite before tagging (Python deps, grammar checks, Go tests, guardrails, Python tests); creates git tag "bar-vX.Y.Z" and pushes to origin to trigger release-bar.yml workflow; eliminates all manual intervention including version selection
 
 ## loop-012 removal | helper:rerun test -f .github/workflows/auto-tag-bar.yml (after temporary removal)
 - timestamp: 2026-02-03T00:50:00Z

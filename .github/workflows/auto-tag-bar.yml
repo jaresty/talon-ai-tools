@@ -1,12 +1,13 @@
 name: auto-tag-bar
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to tag (e.g., 1.0.0)'
-        required: true
-        type: string
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/pyright.yml'
 
 permissions:
   contents: write
@@ -55,28 +56,19 @@ jobs:
       - name: Run Python tests
         run: python3 -m unittest discover -s tests -v
 
-      - name: Validate version format
-        run: |
-          if ! echo "${{ inputs.version }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "Error: Version must be in format X.Y.Z (e.g., 1.0.0)"
-            exit 1
-          fi
-
-      - name: Check if tag already exists
-        run: |
-          if git tag | grep -q "^bar-v${{ inputs.version }}$"; then
-            echo "Error: Tag bar-v${{ inputs.version }} already exists"
-            exit 1
-          fi
-
-      - name: Create and push tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "bar-v${{ inputs.version }}" -m "Release bar v${{ inputs.version }}"
-          git push origin "bar-v${{ inputs.version }}"
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: "bar-v"
+          default_bump: patch
+          release_branches: main
+          dry_run: false
 
       - name: Summary
         run: |
-          echo "✅ Successfully created and pushed tag bar-v${{ inputs.version }}"
+          echo "✅ Successfully created and pushed tag ${{ steps.tag_version.outputs.new_tag }}"
+          echo "📦 Previous tag: ${{ steps.tag_version.outputs.previous_tag }}"
+          echo "📝 Changelog: ${{ steps.tag_version.outputs.changelog }}"
           echo "🚀 Release workflow will trigger automatically"

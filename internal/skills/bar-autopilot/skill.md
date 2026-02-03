@@ -21,6 +21,7 @@ Assumes:
 
 - **Never hardcode tokens.** Always run `bar help tokens` or sectioned variants to discover current available tokens.
 - **Be version-agnostic.** Tokens evolve; discover them dynamically.
+- **Use kebab-case for multi-word tokens.** When tokens contain spaces (e.g., "as kent beck", "to junior engineer"), convert to kebab-case: "as-kent-beck", "to-junior-engineer". Bar will show the canonical slug in help output.
 - **Work proactively.** Users should not need to ask for bar structuring.
 - **Graceful degradation.** If bar is unavailable, fall back to normal responses.
 - **Cross-agent compatible.** Must work across all Claude agent types (general-purpose, Explore, Plan, etc.).

@@ -18,6 +18,16 @@ Assumes:
 4. **Present options** to user with plain-language descriptions
 5. **Execute user's choice** and return structured response
 
+## Skill Behavior Rules
+
+- **Present options, don't choose.** Let user decide the approach.
+- **Never hardcode tokens.** Discover dynamically via `bar help tokens`.
+- **Use kebab-case for multi-word tokens.** When tokens contain spaces, convert to kebab-case (e.g., "as kent beck" → "as-kent-beck", "to product manager" → "to-product-manager"). Bar will show the canonical slug in help output.
+- **Keep options distinct.** Each option should represent meaningfully different approach.
+- **Explain trade-offs.** Help user understand what each option emphasizes.
+- **Use AskUserQuestion tool.** Present choices using Claude's question interface.
+- **Execute chosen option.** After user selects, run the bar command and structure response.
+
 ## Trigger Patterns
 
 When user request is:

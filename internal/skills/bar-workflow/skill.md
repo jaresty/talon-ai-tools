@@ -16,6 +16,15 @@ Assumes:
 3. **Execute bar commands in sequence**, using output of each to inform the next
 4. **Synthesize results** into comprehensive response
 
+## Skill Behavior Rules
+
+- **Chain commands thoughtfully.** Each step should build on the previous one.
+- **Never hardcode tokens.** Always discover dynamically via `bar help tokens`.
+- **Use kebab-case for multi-word tokens.** When tokens contain spaces, convert to kebab-case (e.g., "dip bog" → "dip-bog", "fly rog" → "fly-rog"). Bar will show the canonical slug in help output.
+- **Use progressive refinement.** Start broad, then narrow focus.
+- **Cross-agent compatible.** Works across all Claude agent types.
+- **Graceful degradation.** If workflow fails mid-sequence, return partial results.
+
 ## Common Workflow Patterns
 
 ### Feature Design Workflow

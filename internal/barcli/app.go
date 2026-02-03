@@ -607,8 +607,11 @@ func runUpdateCheck(stdout, stderr io.Writer) int {
 	if available {
 		fmt.Fprintf(stdout, "A new version is available: %s (current: %s)\n", latestVersion, barVersion)
 		fmt.Fprintf(stdout, "Run 'bar update install' to upgrade.\n")
-	} else {
+	} else if latestVersion != "" {
+		// Show current version since it's equal to or newer than latest release
 		fmt.Fprintf(stdout, "You are already on the latest version: %s\n", barVersion)
+	} else {
+		fmt.Fprintf(stdout, "No releases available (current version: %s)\n", barVersion)
 	}
 
 	return 0
@@ -631,8 +634,14 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	// Check if there are no releases available at all
+	if latestVersion == "" {
+		writeError(stderr, "no releases available to install")
+		return 1
+	}
+
 	if !available {
-		fmt.Fprintf(stdout, "Already on the latest version: %s\n", barVersion)
+		fmt.Fprintf(stdout, "Already on the latest version: %s\n", latestVersion)
 		return 0
 	}
 

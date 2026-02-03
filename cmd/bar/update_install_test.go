@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli"
+	"github.com/talonvoice/talon-ai-tools/internal/updater"
 )
 
 func TestUpdateInstallIntegration(t *testing.T) {
@@ -32,6 +33,20 @@ func TestUpdateInstallIntegration(t *testing.T) {
 		_ = oldExecutable
 	}()
 
+	// Create mock client with no releases
+	mockClient := &updater.MockGitHubClient{
+		Releases: []updater.MockRelease{},
+	}
+
+	// Set up test environment by injecting mock client
+	barcli.SetVersion("1.0.0")
+	barcli.SetUpdateClient(mockClient)
+	defer func() {
+		// Reset to defaults after test
+		barcli.SetVersion("dev")
+		barcli.SetUpdateClient(nil)
+	}()
+
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 
@@ -51,11 +66,9 @@ func TestUpdateInstallIntegration(t *testing.T) {
 		t.Errorf("install command still shows 'not yet implemented', expected real error")
 	}
 
-	// Should contain some indication it tried to do something
+	// Should contain indication that no releases are available
 	output := stdout.String() + stderrStr
-	if !strings.Contains(strings.ToLower(output), "install") &&
-		!strings.Contains(strings.ToLower(output), "download") &&
-		!strings.Contains(strings.ToLower(output), "update") {
-		t.Errorf("expected output to mention installation attempt, got: %s", output)
+	if !strings.Contains(strings.ToLower(output), "no releases") {
+		t.Errorf("expected output to mention no releases available, got: %s", output)
 	}
 }

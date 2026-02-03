@@ -32,7 +32,7 @@ func TestReleaseDiscovery(t *testing.T) {
 				{TagName: "v1.1.0", Assets: []string{"bar-darwin-amd64"}},
 			},
 			wantAvailable: false,
-			wantVersion:   "",
+			wantVersion:   "v1.1.0",
 			wantErr:       false,
 		},
 		{
@@ -42,7 +42,7 @@ func TestReleaseDiscovery(t *testing.T) {
 				{TagName: "v1.9.9", Assets: []string{"bar-darwin-amd64"}},
 			},
 			wantAvailable: false,
-			wantVersion:   "",
+			wantVersion:   "v1.9.9",
 			wantErr:       false,
 		},
 		{

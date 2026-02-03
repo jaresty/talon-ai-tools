@@ -43,6 +43,6 @@ func (uc *UpdateChecker) CheckForUpdate(ctx context.Context) (bool, string, erro
 		return true, release.TagName, nil
 	}
 
-	// Current version is same or newer
-	return false, "", nil
+	// Current version is same or newer, but return latest version for reference
+	return false, release.TagName, nil
 }

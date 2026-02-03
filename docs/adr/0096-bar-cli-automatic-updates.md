@@ -2,7 +2,26 @@
 
 ## Status
 
-Proposed
+Accepted (2026-02-03)
+
+### Implementation Summary
+
+All core requirements implemented across 16 ADR loops:
+- **Loops 001-003**: Release discovery, version comparison, and checksum verification infrastructure
+- **Loops 004-007**: Binary installation, backup/rollback, and error handling
+- **Loops 008-010**: Update commands (check/install/rollback) and CLI integration
+- **Loop 011**: CI version embedding via ldflags
+- **Loop 012**: Automated release tagging with conventional commits
+- **Loop 013**: Cross-platform support (darwin/linux × amd64/arm64)
+- **Loop 014**: User documentation in README
+- **Loop 015**: Automatic update notification with 24-hour caching
+- **Loop 016**: SHA256 checksum verification in install flow
+
+Deferred enhancements (low priority):
+- End-to-end integration tests (unit tests provide good coverage)
+- Backup pruning (manual cleanup acceptable)
+- Configurable backup directory (temp directory location acceptable)
+- GitHub API rate limit handling (24-hour check interval mitigates risk)
 
 ## Context
 

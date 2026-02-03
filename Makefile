@@ -28,7 +28,12 @@ bar-grammar-update:
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
 	@echo "✓ Grammar files updated. Review with 'git diff' before committing."
 
-.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-grammar-check bar-grammar-update
+grammar-update-all: bar-grammar-update axis-regenerate-apply
+	@echo "Updating README axis modifier lines..."
+	@PYTHONPATH=. $(PYTHON) scripts/tools/refresh_readme_axis_section.py
+	@echo "✓ Grammar, axis config, and README all updated. Review with 'git diff' before committing."
+
+.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-grammar-check bar-grammar-update grammar-update-all
 
 test:
 	$(PYTHON) -m unittest discover -s tests

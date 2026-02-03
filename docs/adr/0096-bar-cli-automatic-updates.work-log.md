@@ -217,3 +217,33 @@
   - Behaviour: Wire bar update rollback command to restoration logic (validation: `go run ./cmd/bar update rollback` restoring backup)
   - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)
   - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
+
+## 2026-02-02 — loop 009
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Rollback Command Wiring — Wire bar update rollback command to BinaryInstaller.Rollback
+- active_constraint: Rollback command returns "not yet implemented" instead of invoking BinaryInstaller.Rollback; users cannot trigger rollback via CLI (falsifiable via `go test ./cmd/bar -run TestUpdateRollbackIntegration` failing with "not yet implemented" in output)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Completes rollback safety feature; enables user recovery from failed updates |
+  | Probability      | High  | Rollback mechanism already implemented; wiring is deterministic integration |
+  | Time Sensitivity | High  | Safety-critical feature required before production deployment |
+  | Uncertainty note | N/A   | Integration path clear; backup directory and binary path determination straightforward |
+- validation_targets:
+  - go test ./cmd/bar -run TestUpdateRollbackIntegration
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-009.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=2 files changed, 58 insertions(+), 2 deletions(-) — wired bar update rollback command to BinaryInstaller.Rollback: added runUpdateRollback function in app.go (gets current binary path, creates BinaryInstaller with backup directory, lists available backups, performs rollback via installer.Rollback, prints success message); updated rollback verb case to call runUpdateRollback instead of returning "not yet implemented"; created update_rollback_test.go validating command attempts rollback and no longer shows "not yet implemented"
+- loops_remaining_forecast: 1-4 loops remaining (Version flag, Platform detection, Integration tests, Documentation) — high confidence on rollback command completion
+- residual_constraints:
+  - Version string not embedded in bar binary (severity: medium; mitigation: add build-time version via ldflags in loop 010; monitoring: go run ./cmd/bar --version; owning ADR: 0096)
+  - Asset selection logic hardcoded (severity: medium; mitigation: add platform detection in loop 010; monitoring: test on multiple platforms; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: add backup pruning in future loop; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: medium; mitigation: add configuration support in future loop; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to loop 011; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 012; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 013; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)
+  - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
+  - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)

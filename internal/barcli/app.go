@@ -552,8 +552,7 @@ EXAMPLES
 	case "install":
 		return runUpdateInstall(stdout, stderr)
 	case "rollback":
-		writeError(stderr, "update rollback not yet implemented")
-		return 1
+		return runUpdateRollback(stdout, stderr)
 	default:
 		writeError(stderr, fmt.Sprintf("unknown update verb %q", verb))
 		fmt.Fprint(stdout, updateHelpText)
@@ -667,6 +666,49 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 
 	fmt.Fprintf(stdout, "Successfully updated to version %s\n", latestVersion)
 	fmt.Fprintf(stdout, "Backup saved to: %s\n", backupDir)
+
+	return 0
+}
+
+func runUpdateRollback(stdout, stderr io.Writer) int {
+	ctx := context.Background()
+
+	// Get current binary path
+	currentBinary, err := os.Executable()
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to determine current binary path: %v", err))
+		return 1
+	}
+
+	// Use same backup directory as install
+	backupDir := filepath.Join(os.TempDir(), "bar-backups")
+	installer := &updater.BinaryInstaller{
+		BackupDir: backupDir,
+	}
+
+	// List available backups to show user what's available
+	backups, err := installer.ListBackups()
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to list backups: %v", err))
+		return 1
+	}
+
+	if len(backups) == 0 {
+		writeError(stderr, "no backups available for rollback")
+		fmt.Fprintf(stdout, "Run 'bar update install' first to create a backup before updating.\n")
+		return 1
+	}
+
+	fmt.Fprintf(stdout, "Found %d backup(s). Rolling back to most recent backup...\n", len(backups))
+
+	// Perform rollback
+	if err := installer.Rollback(ctx, currentBinary); err != nil {
+		writeError(stderr, fmt.Sprintf("failed to rollback: %v", err))
+		return 1
+	}
+
+	fmt.Fprintf(stdout, "Successfully rolled back to previous version\n")
+	fmt.Fprintf(stdout, "Backup directory: %s\n", backupDir)
 
 	return 0
 }

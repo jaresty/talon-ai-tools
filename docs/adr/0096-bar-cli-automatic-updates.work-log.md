@@ -306,3 +306,33 @@
   - Behaviour: Add automated release tagging workflow (validation: inspect .github/workflows/auto-tag.yml for test-gated tagging)
   - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
   - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
+
+## 2026-02-03 — loop 012
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Automated Release Tagging — Create GitHub Actions workflow for automatic version tagging on test success
+- active_constraint: No automated tagging workflow exists; maintainer must manually create tags to trigger releases (falsifiable via absence of .github/workflows/auto-tag.yml or similar automated tagging workflow)
+- expected_value:
+  | Factor           | Value  | Rationale |
+  | Impact           | High   | Eliminates manual tagging overhead; enables continuous delivery of bar updates |
+  | Probability      | Medium | Workflow creation deterministic but version increment strategy requires decision (patch vs minor vs commit convention) |
+  | Time Sensitivity | High   | Required for frictionless release process; blocks ADR completion |
+  | Uncertainty note | Version increment strategy — need to decide: always patch, commit message convention, or manual trigger with version input |
+- validation_targets:
+  - test -f .github/workflows/auto-tag-bar.yml
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-012.md
+- rollback_plan: `git stash` to save changes, verify auto-tag workflow file missing, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=1 file changed, 84 insertions(+) — created automated release tagging workflow: added auto-tag-bar.yml with workflow_dispatch trigger accepting version input (X.Y.Z format); workflow runs full test suite (Python deps, grammar regeneration, Go tests, guardrails, Python tests) before tagging; validates version format with regex; checks for duplicate tags; creates annotated git tag "bar-vX.Y.Z" and pushes to origin; eliminates manual git tag commands; uses manual version input strategy (defers conventional commit parsing to future enhancement)
+- loops_remaining_forecast: 1-3 loops remaining (Platform detection, Integration tests, Documentation) — medium confidence on automated tagging completion (version strategy needs validation)
+- residual_constraints:
+  - Asset selection logic hardcoded (severity: medium; mitigation: add platform detection in loop 013; monitoring: test on multiple platforms; owning ADR: 0096)
+  - Version increment strategy manual (severity: medium; mitigation: workflow uses manual workflow_dispatch with version input for now; future enhancement could parse conventional commits; monitoring: manual version selection required; owning ADR: 0096)
+  - Multiple backups not managed (severity: low; mitigation: add backup pruning in future loop; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: medium; mitigation: add configuration support in future loop; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to future loop; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in future loop; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in future loop; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
+  - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
+  - Behaviour: Enhance auto-tagging with conventional commit parsing (validation: inspect workflow for commit message parsing logic)

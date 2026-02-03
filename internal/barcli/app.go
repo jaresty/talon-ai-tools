@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -549,8 +550,7 @@ EXAMPLES
 	case "check":
 		return runUpdateCheck(stdout, stderr)
 	case "install":
-		writeError(stderr, "update install not yet implemented")
-		return 1
+		return runUpdateInstall(stdout, stderr)
 	case "rollback":
 		writeError(stderr, "update rollback not yet implemented")
 		return 1
@@ -582,6 +582,91 @@ func runUpdateCheck(stdout, stderr io.Writer) int {
 	} else {
 		fmt.Fprintf(stdout, "You are already on the latest version: %s\n", barVersion)
 	}
+
+	return 0
+}
+
+func runUpdateInstall(stdout, stderr io.Writer) int {
+	ctx := context.Background()
+
+	// Check for updates first
+	checker := &updater.UpdateChecker{
+		Client:         updateClient,
+		CurrentVersion: barVersion,
+		Owner:          "talonvoice",
+		Repo:           "talon-ai-tools",
+	}
+
+	available, latestVersion, err := checker.CheckForUpdate(ctx)
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to check for updates: %v", err))
+		return 1
+	}
+
+	if !available {
+		fmt.Fprintf(stdout, "Already on the latest version: %s\n", barVersion)
+		return 0
+	}
+
+	fmt.Fprintf(stdout, "Installing version %s...\n", latestVersion)
+
+	// Get download URL for the asset
+	// TODO: Platform detection - hardcoded to darwin-amd64 for now
+	assetName := "bar-darwin-amd64"
+
+	httpClient, ok := updateClient.(*updater.HTTPGitHubClient)
+	if !ok {
+		writeError(stderr, "update install requires real GitHub client")
+		return 1
+	}
+
+	downloadURL, err := httpClient.GetAssetDownloadURL(ctx, "talonvoice", "talon-ai-tools", assetName)
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to get download URL: %v", err))
+		return 1
+	}
+
+	// Download the artifact
+	tmpDir, err := os.MkdirTemp("", "bar-update-")
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to create temp directory: %v", err))
+		return 1
+	}
+	defer os.RemoveAll(tmpDir)
+
+	downloadPath := filepath.Join(tmpDir, "bar-new")
+
+	downloader := &updater.ArtifactDownloader{
+		Client: httpClient.HTTPClient,
+	}
+
+	fmt.Fprintf(stdout, "Downloading %s...\n", assetName)
+	if err := downloader.Download(ctx, downloadURL, downloadPath); err != nil {
+		writeError(stderr, fmt.Sprintf("failed to download artifact: %v", err))
+		return 1
+	}
+
+	// Get current binary path
+	currentBinary, err := os.Executable()
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("failed to determine current binary path: %v", err))
+		return 1
+	}
+
+	// Install the new binary
+	backupDir := filepath.Join(os.TempDir(), "bar-backups")
+	installer := &updater.BinaryInstaller{
+		BackupDir: backupDir,
+	}
+
+	fmt.Fprintf(stdout, "Installing new binary...\n")
+	if err := installer.Install(ctx, downloadPath, currentBinary); err != nil {
+		writeError(stderr, fmt.Sprintf("failed to install binary: %v", err))
+		return 1
+	}
+
+	fmt.Fprintf(stdout, "Successfully updated to version %s\n", latestVersion)
+	fmt.Fprintf(stdout, "Backup saved to: %s\n", backupDir)
 
 	return 0
 }

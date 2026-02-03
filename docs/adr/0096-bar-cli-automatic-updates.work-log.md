@@ -158,3 +158,32 @@
   - Behaviour: Implement rollback mechanism with backup restoration (validation: `go test ./internal/updater -run TestRollback`)
   - Behaviour: Wire bar update install command to binary installation logic (validation: `go run ./cmd/bar update install` attempting installation)
   - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)
+
+## 2026-02-02 — loop 007
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Update Install Integration — Wire bar update install command to download, verify, and install binaries from GitHub releases
+- active_constraint: Bar update install command not connected to installation logic; users cannot install updates (falsifiable via `go test ./cmd/bar -run TestUpdateInstallIntegration` failing with "undefined" error for installation orchestration)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Completes end-to-end update installation flow; delivers user-facing feature |
+  | Probability      | High  | All components exist (HTTPGitHubClient, ArtifactDownloader, ChecksumVerifier, BinaryInstaller); orchestration is straightforward |
+  | Time Sensitivity | High  | Enables complete update workflow testing; unblocks MVP validation |
+  | Uncertainty note | N/A   | Integration path clear; need to determine target binary path and asset selection |
+- validation_targets:
+  - go test ./cmd/bar -run TestUpdateInstallIntegration
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-007.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=4 files changed, 177 insertions(+), 2 deletions(-) — wired bar update install to installation logic: added runUpdateInstall function in app.go orchestrating UpdateChecker for version check, HTTPGitHubClient.GetAssetDownloadURL for asset URL resolution (hardcoded darwin-amd64 for now), ArtifactDownloader for binary download to temp directory, BinaryInstaller for atomic installation with backup; added path/filepath import; created update_install_test.go validating command attempts installation and fails gracefully without real release
+- loops_remaining_forecast: 2-6 loops remaining (Rollback mechanism, Version flag, Configuration, Integration tests, Documentation) — high confidence on install integration completion
+- residual_constraints:
+  - Rollback mechanism not implemented (severity: high; mitigation: implement in loop 008 with backup restoration; monitoring: go test for rollback scenarios; owning ADR: 0096)
+  - Version string not embedded in bar binary (severity: medium; mitigation: add build-time version via ldflags in loop 009; monitoring: go run ./cmd/bar --version; owning ADR: 0096)
+  - Asset selection logic hardcoded (severity: medium; mitigation: add platform detection in loop 009; monitoring: test on multiple platforms; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to loop 010; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 011; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 012; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Implement rollback mechanism with backup restoration (validation: `go test ./internal/updater -run TestRollback`)
+  - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)
+  - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)

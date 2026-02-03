@@ -48,6 +48,24 @@ func init() {
 	}
 }
 
+// getUpdateOwner returns the GitHub owner for update checks
+// Can be overridden via BAR_UPDATE_OWNER environment variable
+func getUpdateOwner() string {
+	if owner := os.Getenv("BAR_UPDATE_OWNER"); owner != "" {
+		return owner
+	}
+	return "jaresty"
+}
+
+// getUpdateRepo returns the GitHub repository for update checks
+// Can be overridden via BAR_UPDATE_REPO environment variable
+func getUpdateRepo() string {
+	if repo := os.Getenv("BAR_UPDATE_REPO"); repo != "" {
+		return repo
+	}
+	return "talon-ai-tools"
+}
+
 var generalHelpText = strings.TrimSpace(`USAGE
   bar build <tokens>... [--prompt TEXT|--input FILE] [--output FILE] [--json]
   cat prompt.txt | bar build todo focus steps fog
@@ -575,8 +593,8 @@ func runUpdateCheck(stdout, stderr io.Writer) int {
 	checker := &updater.UpdateChecker{
 		Client:         updateClient,
 		CurrentVersion: barVersion,
-		Owner:          "talonvoice",
-		Repo:           "talon-ai-tools",
+		Owner:          getUpdateOwner(),
+		Repo:           getUpdateRepo(),
 	}
 
 	ctx := context.Background()
@@ -603,8 +621,8 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 	checker := &updater.UpdateChecker{
 		Client:         updateClient,
 		CurrentVersion: barVersion,
-		Owner:          "talonvoice",
-		Repo:           "talon-ai-tools",
+		Owner:          getUpdateOwner(),
+		Repo:           getUpdateRepo(),
 	}
 
 	available, latestVersion, err := checker.CheckForUpdate(ctx)
@@ -629,7 +647,7 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	downloadURL, err := httpClient.GetAssetDownloadURL(ctx, "talonvoice", "talon-ai-tools", assetName)
+	downloadURL, err := httpClient.GetAssetDownloadURL(ctx, getUpdateOwner(), getUpdateRepo(), assetName)
 	if err != nil {
 		writeError(stderr, fmt.Sprintf("failed to get download URL: %v", err))
 		return 1
@@ -656,7 +674,7 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 	}
 
 	// Download checksums.txt for verification
-	checksumsURL, err := httpClient.GetAssetDownloadURL(ctx, "talonvoice", "talon-ai-tools", "checksums.txt")
+	checksumsURL, err := httpClient.GetAssetDownloadURL(ctx, getUpdateOwner(), getUpdateRepo(), "checksums.txt")
 	if err != nil {
 		writeError(stderr, fmt.Sprintf("failed to get checksums download URL: %v", err))
 		return 1
@@ -789,8 +807,8 @@ func checkForUpdatesBackground(stderr io.Writer) {
 	checker := &updater.UpdateChecker{
 		Client:         updateClient,
 		CurrentVersion: barVersion,
-		Owner:          "talonvoice",
-		Repo:           "talon-ai-tools",
+		Owner:          getUpdateOwner(),
+		Repo:           getUpdateRepo(),
 	}
 
 	available, latestVersion, err := checker.CheckForUpdate(ctx)

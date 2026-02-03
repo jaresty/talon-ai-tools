@@ -7,9 +7,11 @@ import (
 )
 
 // ParseVersion parses a semantic version string and returns major, minor, patch components.
-// It handles versions with or without the "v" prefix.
+// It handles versions with or without the "v" prefix, and also handles "bar-v" prefixes from release tags.
 func ParseVersion(version string) (major, minor, patch int, err error) {
-	// Remove "v" prefix if present
+	// Remove "bar-v" prefix if present (from release tags like "bar-v1.2.3")
+	version = strings.TrimPrefix(version, "bar-v")
+	// Remove "v" prefix if present (for standard semver like "v1.2.3")
 	version = strings.TrimPrefix(version, "v")
 
 	parts := strings.Split(version, ".")

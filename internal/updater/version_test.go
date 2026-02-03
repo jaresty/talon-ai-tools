@@ -47,6 +47,18 @@ func TestVersionCompare(t *testing.T) {
 			latest:   "v1.1.0",
 			expected: -1,
 		},
+		{
+			name:     "with bar-v prefix",
+			current:  "0.1.80",
+			latest:   "bar-v0.1.82",
+			expected: -1,
+		},
+		{
+			name:     "both with bar-v prefix",
+			current:  "bar-v0.1.80",
+			latest:   "bar-v0.1.82",
+			expected: -1,
+		},
 	}
 
 	for _, tt := range tests {
@@ -93,6 +105,14 @@ func TestParseVersion(t *testing.T) {
 			name:      "missing patch",
 			version:   "1.2",
 			wantErr:   true,
+		},
+		{
+			name:      "with bar-v prefix",
+			version:   "bar-v0.1.82",
+			wantMajor: 0,
+			wantMinor: 1,
+			wantPatch: 82,
+			wantErr:   false,
 		},
 	}
 

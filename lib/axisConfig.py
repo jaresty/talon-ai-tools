@@ -96,16 +96,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "shellscript": "The response is delivered as a shell script output "
         "format, focusing on correct, executable shell code rather "
         "than prose or explanation.",
-        "sketch": "Emit only pure D2 diagram source as the complete output. The "
-        "response must use valid D2 syntax and only documented D2 "
-        "shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, "
-        "cloud, text). To create visually distinct boxes, use "
-        "'border-radius' or style attributes instead of non-existent "
-        "shapes like 'rounded' or 'note'. Explanatory or note-like "
-        "content must be modeled using shape: text or a styled standard "
-        "shape. Do not include any surrounding natural language or "
-        "commentary. Ensure the output is syntactically correct and "
-        "compiles successfully with the D2 CLI.",
+        "sketch": "The response emits only pure D2 diagram source as the complete "
+        "output. The response must use valid D2 syntax and only "
+        "documented D2 shapes (e.g., rectangle, circle, cylinder, "
+        "diamond, hexagon, cloud, text). To create visually distinct "
+        "boxes, use 'border-radius' or style attributes instead of "
+        "non-existent shapes like 'rounded' or 'note'. Explanatory or "
+        "note-like content must be modeled using shape: text or a "
+        "styled standard shape. Do not include any surrounding natural "
+        "language or commentary. Ensure the output is syntactically "
+        "correct and compiles successfully with the D2 CLI.",
         "slack": "The response formats the answer for Slack using appropriate "
         "Markdown, mentions, and code blocks while avoiding "
         "channel-irrelevant decoration.",

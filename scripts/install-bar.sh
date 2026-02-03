@@ -169,7 +169,7 @@ main() {
     os=$(resolve_os)
     arch=$(resolve_arch)
     base_url="https://github.com/${REPO}/releases/download/${version}"
-    archive_name="${BINARY_NAME}_${version#v}_${os}_${arch}.tar.gz"
+    archive_name="${BINARY_NAME}_${version#bar-v}_${os}_${arch}.tar.gz"
     archive="${WORKDIR}/${archive_name}"
     checksum_url="${base_url}/checksums.txt"
     checksum_file="${WORKDIR}/checksums.txt"

@@ -129,3 +129,32 @@
   - Behaviour: Embed version string in bar binary at build time (validation: `go run -ldflags "-X main.version=dev" ./cmd/bar --version`)
   - Behaviour: Implement binary installation with atomic replacement (validation: `go test ./internal/updater -run TestBinaryInstallation`)
   - Behaviour: Add rollback mechanism for failed updates (validation: `go test ./internal/updater -run TestRollback`)
+
+## 2026-02-02 — loop 006
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Binary Installation Layer — Implement atomic binary replacement with backup and verification
+- active_constraint: No mechanism to install downloaded binaries; bar update install cannot replace running executable with new version (falsifiable via `go test ./internal/updater -run TestBinaryInstallation` failing with "undefined" error for BinaryInstaller type)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Enables complete update flow from check to installation; critical for ADR completion |
+  | Probability      | High  | Standard filesystem operations (rename, copy, chmod); atomic replacement via os.Rename well-understood |
+  | Time Sensitivity | High  | Blocks rollback mechanism and end-to-end update testing |
+  | Uncertainty note | N/A   | File permissions and cross-device rename are deterministic; tests use temp directories |
+- validation_targets:
+  - go test ./internal/updater -run TestBinaryInstallation
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-006.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=3 files changed, 294 insertions(+) — created install.go (BinaryInstaller with Install method for atomic replacement via os.Rename, CreateBackup method for timestamped backups, copyFile helper for safe file operations with permission preservation) and install_test.go (TestBinaryInstallation with 2 scenarios validating installation and permission preservation, TestBinaryInstallationBackupCreation validating backup creation and content)
+- loops_remaining_forecast: 3-7 loops remaining (Rollback mechanism, Wire install command, Configuration, Integration tests, Documentation) — high confidence on installation layer completion
+- residual_constraints:
+  - Rollback mechanism not implemented (severity: high; mitigation: implement in loop 007 with backup restoration; monitoring: go test for rollback scenarios; owning ADR: 0096)
+  - Bar update install command not wired to installation logic (severity: medium; mitigation: implement in loop 007; monitoring: manual test of bar update install; owning ADR: 0096)
+  - Version string not embedded in bar binary (severity: medium; mitigation: add build-time version via ldflags in loop 008; monitoring: go run ./cmd/bar --version; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to loop 009; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 010; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 011; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Implement rollback mechanism with backup restoration (validation: `go test ./internal/updater -run TestRollback`)
+  - Behaviour: Wire bar update install command to binary installation logic (validation: `go run ./cmd/bar update install` attempting installation)
+  - Behaviour: Add --version flag to display embedded version (validation: `go run -ldflags "-X main.barVersion=1.0.0" ./cmd/bar --version`)

@@ -44,3 +44,32 @@
   - Behaviour: Implement Artifact Retrieval Layer — download release artifacts with progress tracking (validation: `go test ./internal/updater -run TestArtifactDownload`)
   - Behaviour: Add checksum verification for downloaded artifacts (validation: `go test ./internal/updater -run TestChecksumVerification`)
   - Behaviour: Handle GitHub API rate limiting gracefully (validation: `go test ./internal/updater -run TestRateLimitHandling`)
+
+## 2026-02-02 — loop 003
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Artifact Retrieval and Verification Layer — Implement artifact download with SHA256 checksum verification
+- active_constraint: No mechanism to download and verify release artifacts; `bar update install` cannot retrieve binaries from GitHub releases or validate integrity (falsifiable via `go test ./internal/updater -run TestArtifactDownload` and `go test ./internal/updater -run TestChecksumVerification` failing with "undefined" error)
+- expected_value:
+  | Factor           | Value | Rationale |
+  | Impact           | High  | Blocks entire update installation flow; severity=critical |
+  | Probability      | High  | Standard Go libraries (net/http, crypto/sha256) provide deterministic implementation path |
+  | Time Sensitivity | High  | Blocks downstream work (binary replacement, rollback, integration tests) |
+  | Uncertainty note | N/A   | Implementation complexity is well-understood; no unknowns |
+- validation_targets:
+  - go test ./internal/updater -run TestArtifactDownload
+  - go test ./internal/updater -run TestChecksumVerification
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-003.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=3 files changed, 301 insertions(+) — created download.go (ArtifactDownloader.Download for HTTP artifact retrieval, ChecksumVerifier.VerifySHA256/ComputeSHA256 for SHA256 validation) and download_test.go (TestArtifactDownload with httptest mock server, TestChecksumVerification with known hashes, TestComputeSHA256 with temp files)
+- loops_remaining_forecast: 6-10 loops remaining (Binary Installation, Rollback, Real GitHub API Integration, Configuration, Integration tests, Documentation) — high confidence on artifact layer completion
+- residual_constraints:
+  - Real GitHub API client not implemented (severity: high; mitigation: implement HTTP client in loop 004 with retry/timeout handling; monitoring: go test with mock server; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: medium; mitigation: implement in loop 004 with exponential backoff; monitoring: test with rate-limit scenarios; owning ADR: 0096)
+  - Binary replacement and rollback logic not implemented (severity: high; mitigation: implement in loop 005-006; monitoring: integration tests with temp binaries; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: implement in loop 007; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 008-009; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 010; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Implement real GitHub API client with HTTP transport (validation: `go test ./internal/updater -run TestGitHubAPIClient`)
+  - Behaviour: Add retry logic and rate limit handling for GitHub API (validation: `go test ./internal/updater -run TestRateLimitHandling`)
+  - Behaviour: Implement binary installation with atomic replacement (validation: `go test ./internal/updater -run TestBinaryInstallation`)

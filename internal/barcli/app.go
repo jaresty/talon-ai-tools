@@ -615,8 +615,7 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 	fmt.Fprintf(stdout, "Installing version %s...\n", latestVersion)
 
 	// Get download URL for the asset
-	// TODO: Platform detection - hardcoded to darwin-amd64 for now
-	assetName := "bar-darwin-amd64"
+	assetName := updater.DetectPlatform()
 
 	httpClient, ok := updateClient.(*updater.HTTPGitHubClient)
 	if !ok {

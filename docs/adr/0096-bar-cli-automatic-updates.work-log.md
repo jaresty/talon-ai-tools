@@ -335,3 +335,31 @@
   - Behaviour: Add platform detection for asset selection (validation: `go test ./internal/updater -run TestPlatformDetection`)
   - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
   - Behaviour: Enhance auto-tagging with conventional commit parsing (validation: inspect workflow for commit message parsing logic)
+
+## 2026-02-03 — loop 013
+- helper_version: helper:v20251223.1
+- focus: ADR 0096 Platform Detection — Add runtime platform detection for automatic asset selection
+- active_constraint: Asset selection hardcoded to "bar-darwin-amd64"; users on other platforms cannot download correct binary (falsifiable via `grep -n "bar-darwin-amd64" internal/barcli/app.go` showing hardcoded asset name in runUpdateInstall)
+- expected_value:
+  | Factor           | Value  | Rationale |
+  | Impact           | High   | Enables update mechanism to work on all platforms (linux/darwin × amd64/arm64); blocks production use on non-macOS-Intel platforms |
+  | Probability      | High   | runtime.GOOS and runtime.GOARCH provide platform info; asset name pattern deterministic |
+  | Time Sensitivity | High   | Required for cross-platform update support; blocks ADR completion for production use |
+  | Uncertainty note | N/A    | Platform detection is standard Go pattern; asset naming convention already established in release workflow |
+- validation_targets:
+  - go test ./internal/updater -run TestPlatformDetection
+- evidence: docs/adr/evidence/0096-bar-cli-automatic-updates/loop-013.md
+- rollback_plan: `git stash` to save changes, verify test failures return, then `git stash pop` to restore
+- delta_summary: helper:diff-snapshot=3 files changed, 68 insertions(+), 2 deletions(-) — added runtime platform detection for automatic asset selection: created platform.go with GetAssetName(goos, goarch) and DetectPlatform() functions using runtime.GOOS and runtime.GOARCH; created platform_test.go with TestPlatformDetection covering all 4 supported platforms (darwin/linux × amd64/arm64) and TestDetectPlatform validating current runtime; updated app.go runUpdateInstall to replace hardcoded "bar-darwin-amd64" with updater.DetectPlatform() call; removed TODO comment; update mechanism now works on all supported platforms
+- loops_remaining_forecast: 1-2 loops remaining (Integration tests, Documentation) — high confidence on platform detection completion
+- residual_constraints:
+  - Multiple backups not managed (severity: low; mitigation: add backup pruning in future loop; monitoring: disk usage in backup directory; owning ADR: 0096)
+  - Backup directory location hardcoded (severity: medium; mitigation: add configuration support in future loop; monitoring: user feedback on backup location; owning ADR: 0096)
+  - GitHub API rate limiting not handled (severity: low; mitigation: defer to future loop; monitoring: test with mock rate-limit responses; owning ADR: 0096)
+  - Configuration file parsing not implemented (severity: medium; mitigation: defer to future loop; monitoring: config validation tests; owning ADR: 0096)
+  - No end-to-end integration tests (severity: medium; mitigation: add in loop 014; monitoring: CI test coverage; owning ADR: 0096)
+  - Documentation incomplete (severity: low; mitigation: update README and help text in loop 015; monitoring: documentation coverage checklist; owning ADR: 0096)
+- next_work:
+  - Behaviour: Add end-to-end integration tests (validation: `go test ./cmd/bar -run TestUpdateE2E`)
+  - Behaviour: Add README documentation for update mechanism (validation: inspect README.md for update command documentation)
+  - Behaviour: Add backup pruning to limit disk usage (validation: `go test ./internal/updater -run TestBackupPruning`)

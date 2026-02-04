@@ -187,3 +187,50 @@ Confidence: High - clear scope with existing ADR guidance
 - Behaviour: Update bar-suggest skill to use bar help llm reference
 
 ---
+
+## Loop 5: Update bar-suggest Skill to Use `bar help llm`
+
+**Date**: 2026-02-05T00:15:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Skill Updates § bar-suggest - Update skill to use bar help llm reference for generating diverse option sets
+
+**active_constraint**: The bar-suggest skill uses `bar help tokens` queries instead of the comprehensive `bar help llm` reference, missing integrated patterns and method categorization useful for generating diverse options.
+
+**validation_targets**:
+- `grep "bar help llm" .claude/skills/bar-suggest/skill.md` - Should find references to new command for option generation
+
+**evidence**:
+- red | 2026-02-05T00:15:15Z | exit 1 | grep -c "bar help llm" .claude/skills/bar-suggest/skill.md
+    helper:diff-snapshot=0 files changed
+    behaviour: skill does not reference bar help llm (exit 1, count=0); uses bar help tokens for discovery | inline
+- green | 2026-02-05T00:22:00Z | exit 0 | grep -c "bar help llm" .claude/skills/bar-suggest/skill.md
+    helper:diff-snapshot=1 file changed, 158 insertions(+), 33 deletions(-)
+    behaviour: skill now references bar help llm 18 times, uses method categorization for generating diverse options, references sections without hardcoding | inline
+- removal | 2026-02-05T00:23:00Z | exit 1 | git stash && grep -c "bar help llm" .claude/skills/bar-suggest/skill.md
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, bar help llm references return to 0 (exit 1) | inline
+
+**rollback_plan**: `git restore --source=HEAD .claude/skills/bar-suggest/skill.md` then rerun grep to verify no bar help llm references
+
+**delta_summary**: Updated `.claude/skills/bar-suggest/skill.md` with 158 insertions, 33 deletions. Added "Discovery Workflow" section with preferred (bar help llm) and fallback paths. Added "Option Generation Strategy" leveraging method categorization for creating diverse options across Exploration/Understanding/Decision/Diagnostic categories. Updated option generation to reference discovering tokens from reference sections (§ "Choosing Method", § "Usage Patterns by Task Type", § "Token Catalog"). Added "Example Option Generation" showing both approaches. Added "Performance Notes" highlighting single reference enables generating multiple diverse options. Maintains "never hardcode tokens" principle and references sections for discovery rather than embedding content.
+
+**loops_remaining_forecast**: 1 loop remaining (current, final loop)
+Confidence: High - clear scope, final skill update
+
+**residual_constraints**:
+- **Shell completion updates**: Severity=Low, bar help llm not yet in completion suggestions, deferred to Phase 2
+- **Example validation tests**: Severity=Medium, deferred to Phase 4 per ADR (`make bar-help-llm-test`)
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration after all updates complete
+- **Documentation website**: Severity=Low, future consideration per ADR notes
+
+**next_work**:
+All skill updates complete. Phase 3 (Integration) of ADR 0098 implementation plan is finished.
+
+Remaining future work (deferred per ADR):
+- Phase 2: Add filtering support (--section, --compact)
+- Phase 4: Add validation tests (make bar-help-llm-test)
+- Skill embed regeneration (bar install-skills command needs to package updated skills)
+
+---

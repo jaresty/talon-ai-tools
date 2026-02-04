@@ -58,10 +58,22 @@ bar help tokens persona persona-intents
 
 ### Build Prompt Recipes
 ```bash
-bar build plan full act analysis bullets plain fog
-bar build plan full act analysis --prompt "Fix onboarding"
-bar build //next plan full act
-bar build plan full act method=analysis directional=fog
+# Discover tokens first
+bar help tokens
+
+# Token order: persona → static → completeness → scope → method → form → channel → directional
+# Each stage is optional, but order matters when using shorthand
+bar build <static> <completeness> <scope> <method> <form> --prompt "your prompt text"
+
+# Persona tokens come first if used (preset, voice, audience, tone, intent)
+bar build <persona-preset> <static> <completeness> --prompt "your prompt text"
+
+# Use key=value overrides when needed (all tokens after first override must use key=value)
+bar build <static> completeness=<value> scope=<value> --prompt "your prompt text"
+
+# Skip stages with //next or //:<stage-name>
+bar build //next <static> <completeness>
+bar build //:static <completeness> <scope>
 ```
 
 ### Shuffle for Exploration
@@ -74,14 +86,14 @@ bar shuffle --exclude persona
 ### Use Alternate Grammar (if needed)
 ```bash
 bar help tokens --grammar /path/to/grammar.json
-bar build plan full act --grammar /path/to/grammar.json
+bar build <tokens> --grammar /path/to/grammar.json
 ```
 
 ## Skill Behavior Rules
 
 - **Never invent tokens.** Always run `bar help tokens` or a sectioned variant first.
 - **Prefer guidance over grammar.** Ask the user which section(s) to explore next.
-- **Validate ordering.** Follow the token order shown in `bar help` output.
+- **Validate ordering.** Token order is: persona stages → static → completeness → scope (1-2) → method (1-3) → form → channel → directional
 - **Support overrides.** After a `key=value` override, all remaining tokens must be `key=value`.
 - **Use kebab-case for multi-word tokens.** When tokens contain spaces, convert to kebab-case (e.g., "as kent beck" → "as-kent-beck"). Bar will show the canonical slug in help output.
 - **Offer shuffling only after a baseline recipe is built.**
@@ -90,19 +102,26 @@ bar build plan full act --grammar /path/to/grammar.json
 
 ## Recommended Conversation Flow
 
-**User:** "Help me build a prompt for onboarding improvements."
+**User:** "Help me build a prompt for [topic]."
 
 **Assistant:**
-1. "Let's discover valid tokens first: `bar help tokens scope method`."
-2. "Pick a scope + method token that fits."
-3. "Now we'll build the recipe: `bar build <tokens> --prompt "<subject>"`."
-4. "Want to shuffle for alternatives? We can constrain scope/method."
+1. "Let's discover valid tokens: `bar help tokens`"
+2. "Based on the output, which tokens fit your needs?"
+3. "We'll build: `bar build <chosen-tokens> --prompt '<topic>'`"
+4. "Want to shuffle for alternatives? We can constrain specific axes."
 
-## Example Session (Minimal)
+## Example Session (Teaching Discovery)
 
 ```bash
-bar help tokens scope method
-bar build plan full act method=analysis --prompt "Improve onboarding flow"
+# Step 1: Discover what tokens exist
+bar help tokens
+
+# Step 2: Pick tokens from different axes shown in the help output
+# (Don't hardcode examples - let users choose based on what they see)
+bar build <discovered-tokens> --prompt "Your topic here"
+
+# Step 3 (optional): Explore alternatives via shuffle
+bar shuffle --include scope,method
 ```
 
 ## Output Handling

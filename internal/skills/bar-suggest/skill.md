@@ -26,22 +26,57 @@ Assumes:
 - **Keep options distinct.** Each option should represent meaningfully different approach.
 - **Explain trade-offs.** Help user understand what each option emphasizes.
 - **Use AskUserQuestion tool.** Present choices using Claude's question interface.
+- **Be transparent about usage.** After executing the user's choice, explain which bar command you used and why it aligns with their selection.
 - **Execute chosen option.** After user selects, run the bar command and structure response.
 
-## Trigger Patterns
+## Option Generation Heuristics
 
-When user request is:
-- **Open-ended** - "Help me understand our authentication system"
-- **Ambiguous goal** - "Improve the caching layer"
-- **Multiple valid frames** - "Explain microservices"
-- **Exploration request** - "Tell me about event-driven architecture"
+### Step 1: Detect When to Offer Choices
 
-## Option Generation Logic
+Use bar-suggest when the request is:
+- **Open-ended** - No specific output format or approach specified
+- **Ambiguous** - Multiple valid ways to interpret or approach the task
+- **Exploratory** - User wants to understand something but unclear what aspect matters most
+- **Multi-faceted** - Topic can be analyzed from several distinct angles
 
-For each trigger, generate 2-4 options by varying:
-- **Scope** (thing, struct, time, mean, act, view, fail, good)
-- **Method** (explore, analysis, mapping, flow, branch, etc.)
-- **Form** (bullets, walkthrough, variants, table, visual)
+### Step 2: Discover Available Tokens
+```bash
+bar help tokens scope method
+bar help tokens form
+```
+
+**Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional. See bar-manual skill for complete grammar details.
+
+### Step 3: Generate Distinct Options
+
+Create 2-4 options by varying the tokens to create meaningfully different approaches:
+
+**Vary by scope** - Different aspects to focus on:
+- One option might focus on "what it means"
+- Another on "how it's structured"
+- Another on "how it evolves over time"
+
+**Vary by method** - Different ways of thinking:
+- One option using exploratory/discovery methods
+- Another using analytical/diagnostic methods
+- Another using flow/sequential methods
+
+**Vary by form** - Different output structures:
+- One as bullets for quick scanning
+- Another as walkthrough for deep understanding
+- Another as variants/options if multiple approaches exist
+
+### Step 4: Include Freeform Option
+
+Always include as one option:
+- **"Surprise me"** or **"Explore freely"** - Use `bar shuffle` to generate an unexpected but valid combination
+- Explain this allows bar to discover novel combinations
+
+### Step 5: Present and Execute
+
+1. Use AskUserQuestion to present options with descriptions
+2. When user selects, build and execute the corresponding bar command
+3. Explain: "You chose [option], so I used `bar build [tokens]` to [reason]"
 
 ## Integration with Other Skills
 

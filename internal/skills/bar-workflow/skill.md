@@ -22,34 +22,54 @@ Assumes:
 - **Never hardcode tokens.** Always discover dynamically via `bar help tokens`.
 - **Use kebab-case for multi-word tokens.** When tokens contain spaces, convert to kebab-case (e.g., "dip bog" → "dip-bog", "fly rog" → "fly-rog"). Bar will show the canonical slug in help output.
 - **Use progressive refinement.** Start broad, then narrow focus.
+- **Be transparent about usage.** After completing a workflow, explain the sequence of bar commands used and why each step was chosen to aid user learning.
 - **Cross-agent compatible.** Works across all Claude agent types.
 - **Graceful degradation.** If workflow fails mid-sequence, return partial results.
 
-## Common Workflow Patterns
+## Workflow Construction Heuristics
 
-### Feature Design Workflow
-**Trigger:** "Design a new feature for..."
+When a complex request requires multiple perspectives, build a multi-step workflow:
 
-**Sequence:**
-1. Probe structure - Understand current system
-2. Explore options - Survey approaches
-3. Plan implementation - Concrete steps
+### Step 1: Discover Available Tokens
+```bash
+bar help tokens scope method
+bar help tokens form
+```
 
-### Architecture Analysis Workflow
-**Trigger:** "Analyze the architecture of..."
+**Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional. See bar-manual skill for complete grammar details.
 
-**Sequence:**
-1. Probe meaning - Understand purpose
-2. Show structure - Map components
-3. Identify risks - Find weaknesses
+### Step 2: Plan Workflow Sequence
 
-### Refactoring Workflow
-**Trigger:** "Refactor this system..."
+Identify which aspects the request needs to explore. Common progressions:
 
-**Sequence:**
-1. Probe current state - Understand existing code
-2. Explore approaches - Consider options
-3. Plan migration - Create steps
+**Broadening then focusing:**
+- Start with discovery/exploration method tokens
+- Move to analysis/mapping method tokens
+- End with planning/action-oriented tokens
+
+**Understanding then acting:**
+- Begin with "what it means" scope tokens
+- Progress to "how it's structured" scope tokens
+- Conclude with "what to do" scope tokens
+
+**Diagnosis then solution:**
+- Start with current state analysis
+- Explore failure modes or constraints
+- End with remediation approaches
+
+### Step 3: Freeform Discovery
+
+If the request doesn't fit common progressions:
+- Use `bar shuffle` to generate alternative token combinations
+- Constrain with `--include scope,method` to keep structure while varying specifics
+- Try different scope progressions based on discovered tokens
+- Experiment with method combinations that complement each other
+
+### Step 4: Execute Sequence and Explain
+
+1. Run each bar command in sequence
+2. Use output from each step to inform the next
+3. After completion, explain: "I used a [N]-step workflow: [step 1 tokens] to [reason], then [step 2 tokens] to [reason], etc."
 
 ## Cross-Agent Compatibility Notes
 

@@ -434,3 +434,53 @@ Phase 2 complete. ADR 0098 Phases 1-3 implementation complete:
 Phase 4 (Validation tests) remains optional/deferred per ADR.
 
 ---
+
+## Loop 10: Add Validation Tests for Usage Pattern Examples
+
+**Date**: 2026-02-04T20:00:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Implementation Plan Phase 4 - Add `make bar-help-llm-test` validation target to prevent silent drift where example commands become invalid as grammar evolves
+
+**active_constraint**: No automated validation exists for the 23 example commands in `bar help llm` patterns section, creating risk of silent drift where examples break as grammar changes.
+
+**validation_targets**:
+- `make bar-help-llm-test` - Should execute pytest validation tests for all example commands
+
+**evidence**:
+- red | 2026-02-04T20:00:30Z | exit 2 | make bar-help-llm-test 2>&1
+    helper:diff-snapshot=0 files changed
+    behaviour: make target does not exist (make: *** No rule to make target `bar-help-llm-test'.  Stop.) | inline
+- green | 2026-02-04T20:20:45Z | exit 0 | make bar-help-llm-test
+    helper:diff-snapshot=2 files changed, 159 insertions(+)
+    behaviour: make target executes pytest validation suite; 3 tests pass (test_all_examples_parse validates all 23 commands are valid bar syntax, test_example_count ensures 23 examples present, test_patterns_have_framing verifies discovery-focused framing from Loop 9) | inline
+- removal | 2026-02-04T20:22:00Z | exit 2 | git stash && make bar-help-llm-test 2>&1 | head -10
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, make target returns "No rule to make target" error | inline
+
+**rollback_plan**: `git restore --source=HEAD Makefile _tests/test_bar_help_llm_examples.py` then verify make bar-help-llm-test fails with "No rule to make target"
+
+**delta_summary**: Added validation tests for bar help llm examples (2 files changed, 159 insertions). Created _tests/test_bar_help_llm_examples.py with 3 test cases: (1) test_all_examples_parse extracts all 23 example commands from patterns section using regex, parses tokens from "bar build <tokens> --prompt" format, validates each command succeeds with test prompt; (2) test_example_count ensures exactly 23 examples present (fails if patterns added/removed without updating test); (3) test_patterns_have_framing validates discovery-focused framing text from Loop 9 present. Updated Makefile to add bar-help-llm-test target using pytest, added to .PHONY list, added to help output. Tests prevent silent drift where grammar changes break examples without detection.
+
+**loops_remaining_forecast**: 0 loops remaining
+All ADR 0098 phases complete (1-4).
+Confidence: High - validation tests complete Phase 4
+
+**residual_constraints**:
+- **Version metadata in output**: Severity=Low, ADR Phase 4 suggested adding version to output header (already present as "Grammar Schema Version" line)
+- **README documentation**: Severity=Low, ADR Phase 4 suggested documenting usage in main README; defer to future documentation pass
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration to include updated help_llm.go
+- **Shell completion updates**: Severity=Low, --section and --compact flags need completion support
+- **Documentation website generation**: Severity=Low, future consideration per ADR notes
+
+**next_work**:
+ADR 0098 implementation complete. All 4 phases implemented:
+- ✅ Phase 1 (Core): `bar help llm` command with 727-line comprehensive reference
+- ✅ Phase 2 (Enhancements): Filtering, compact mode, 23 patterns with discovery framing
+- ✅ Phase 3 (Integration): All 4 bar skills updated to use reference
+- ✅ Phase 4 (Validation): `make bar-help-llm-test` validates all 23 examples
+
+Residual constraints documented above are low severity; implementation satisfies ADR completion criteria.
+
+---

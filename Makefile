@@ -13,6 +13,10 @@ bar-completion-guard: .venv/bin/pytest
 	@command -v go >/dev/null 2>&1 || { echo "Go toolchain not found; install Go 1.21+ to run bar completion guard" >&2; exit 1; }
 	.venv/bin/python -m pytest _tests/test_bar_completion_cli.py
 
+bar-help-llm-test: .venv/bin/pytest
+	@command -v go >/dev/null 2>&1 || { echo "Go toolchain not found; install Go 1.21+ to run bar help llm validation" >&2; exit 1; }
+	.venv/bin/python -m pytest _tests/test_bar_help_llm_examples.py -v
+
 bar-grammar-check:
 	@echo "Regenerating grammar to check for drift..."
 	@python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
@@ -33,7 +37,7 @@ grammar-update-all: bar-grammar-update axis-regenerate-apply
 	@PYTHONPATH=. $(PYTHON) scripts/tools/refresh_readme_axis_section.py
 	@echo "✓ Grammar, axis config, and README all updated. Review with 'git diff' before committing."
 
-.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-grammar-check bar-grammar-update grammar-update-all
+.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all
 
 test:
 	$(PYTHON) -m unittest discover -s tests
@@ -157,6 +161,7 @@ help:
 	@echo "  make ci-guardrails          # CI-friendly guardrails + parity tests (honors GUARDRAILS_TARGET env override)"
 	@echo "  make guardrails             # run CI-friendly guardrails + parity tests"
 	@echo "  make bar-completion-guard   # run portable CLI completion pytest guard"
+	@echo "  make bar-help-llm-test      # validate examples in bar help llm output"
 	@echo "  make overlay-lifecycle-guardrails # run overlay lifecycle guardrail tests"
 	@echo "  make overlay-guardrails     # run overlay helper guardrail tests"
 	@echo "  make request-history-guardrails     # optional: export history summaries (runs locally only)"

@@ -1,3 +1,8 @@
+---
+name: bar-suggest
+description: Present users with bar-based approach options when multiple valid approaches exist.
+---
+
 # Bar Suggest Skill
 
 ## Purpose and Preconditions

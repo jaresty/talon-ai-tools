@@ -1,3 +1,8 @@
+---
+name: bar-workflow
+description: Build and execute multi-step bar command sequences for complex tasks requiring progressive refinement.
+---
+
 # Bar Workflow Skill
 
 ## Purpose and Preconditions

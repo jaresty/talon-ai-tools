@@ -531,3 +531,56 @@ ADR 0098 fully complete. All phases implemented including embedded skill sync:
 - ✅ Phase 4: Validation tests prevent example drift
 
 ---
+
+## Loop 12: Add YAML Frontmatter to Bar Skills for Windsurf Discovery
+
+**Date**: 2026-02-04T20:45:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: Bar skills discovery - Add YAML frontmatter to all 4 bar skills so Windsurf and other IDEs can discover them
+
+**active_constraint**: Bar skills lack YAML frontmatter (name, description) preventing Windsurf IDE from discovering and presenting them as available skills.
+
+**validation_targets**:
+- `head -5 .claude/skills/bar-autopilot/skill.md` - Should show YAML frontmatter with name and description
+
+**evidence**:
+- red | 2026-02-04T20:45:30Z | exit 0 | head -5 .claude/skills/bar-autopilot/skill.md
+    helper:diff-snapshot=0 files changed
+    behaviour: skill starts with "# Bar Autopilot Skill" without YAML frontmatter | inline
+- green | 2026-02-04T20:50:12Z | exit 0 | head -5 .claude/skills/bar-autopilot/skill.md && head -5 internal/barcli/skills/bar-autopilot/skill.md
+    helper:diff-snapshot=8 files changed, 40 insertions(+)
+    behaviour: all 4 skills (source and embedded) now have YAML frontmatter with name and description fields | inline
+- removal | 2026-02-04T20:51:00Z | exit 0 | git stash && head -5 .claude/skills/bar-autopilot/skill.md
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, frontmatter gone - skill starts with "# Bar Autopilot Skill" | inline
+
+**rollback_plan**: `git restore --source=HEAD .claude/skills/ internal/barcli/skills/` then verify frontmatter absent
+
+**delta_summary**: Added YAML frontmatter to all 4 bar skills (8 files changed, 40 insertions). Added 5-line YAML frontmatter block to each skill:
+- bar-autopilot: "Automatically detect and apply bar structuring to responses for better thinking and structure."
+- bar-manual: "Guide users on how to manually build bar commands and learn the bar CLI."
+- bar-workflow: "Build and execute multi-step bar command sequences for complex tasks requiring progressive refinement."
+- bar-suggest: "Present users with bar-based approach options when multiple valid approaches exist."
+
+Updated both source (.claude/skills/) and embedded (internal/barcli/skills/) locations. Follows format from existing skills (churn-concordance-adr-helper). Enables Windsurf and other IDEs to discover and present bar skills.
+
+**loops_remaining_forecast**: 0 loops remaining
+ADR 0098 complete with all enhancements.
+Confidence: High - frontmatter added, skills discoverable
+
+**residual_constraints**:
+- **Version metadata in output**: Severity=Low, already present
+- **README documentation**: Severity=Low, defer to future
+- **Shell completion updates**: Severity=Low, defer to future
+- **Documentation website**: Severity=Low, defer to future
+
+**next_work**:
+ADR 0098 fully complete with skill discoverability fix:
+- ✅ Phase 1: Core bar help llm command
+- ✅ Phase 2: Filtering, compact mode, 23 patterns with discovery framing
+- ✅ Phase 3: All 4 bar skills updated, embedded, synced, with YAML frontmatter
+- ✅ Phase 4: Validation tests prevent example drift
+
+---

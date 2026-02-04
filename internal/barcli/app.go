@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -656,8 +657,12 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 
 	fmt.Fprintf(stdout, "Installing version %s...\n", latestVersion)
 
+	// Extract version number from tag (e.g., "bar-v0.3.0" -> "0.3.0")
+	version := strings.TrimPrefix(latestVersion, "bar-v")
+
 	// Get download URL for the asset
-	assetName := updater.DetectPlatform()
+	// Asset name format: bar_VERSION_OS_ARCH.tar.gz (e.g., bar_0.3.0_darwin_arm64.tar.gz)
+	assetName := updater.GetAssetName(runtime.GOOS, runtime.GOARCH, version)
 
 	httpClient, ok := updateClient.(*updater.HTTPGitHubClient)
 	if !ok {
@@ -679,17 +684,34 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	downloadPath := filepath.Join(tmpDir, "bar-new")
+	// Download the tar.gz archive
+	archivePath := filepath.Join(tmpDir, assetName)
 
 	downloader := &updater.ArtifactDownloader{
 		Client: httpClient.HTTPClient,
 	}
 
 	fmt.Fprintf(stdout, "Downloading %s...\n", assetName)
-	if err := downloader.Download(ctx, downloadURL, downloadPath); err != nil {
+	if err := downloader.Download(ctx, downloadURL, archivePath); err != nil {
 		writeError(stderr, fmt.Sprintf("failed to download artifact: %v", err))
 		return 1
 	}
+
+	// Extract the tar.gz archive
+	extractDir := filepath.Join(tmpDir, "extracted")
+	if err := os.MkdirAll(extractDir, 0755); err != nil {
+		writeError(stderr, fmt.Sprintf("failed to create extraction directory: %v", err))
+		return 1
+	}
+
+	fmt.Fprintf(stdout, "Extracting archive...\n")
+	if err := updater.ExtractTarGz(archivePath, extractDir); err != nil {
+		writeError(stderr, fmt.Sprintf("failed to extract archive: %v", err))
+		return 1
+	}
+
+	// The binary should be at extractDir/bar
+	downloadPath := filepath.Join(extractDir, "bar")
 
 	// Download checksums.txt for verification
 	checksumsURL, err := httpClient.GetAssetDownloadURL(ctx, getUpdateOwner(), getUpdateRepo(), "checksums.txt")

@@ -322,6 +322,14 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		}
 		renderTokensHelp(stdout, grammar, filters)
 		return 0
+	case "llm", "reference":
+		grammar, err := LoadGrammar(opts.GrammarPath)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		renderLLMHelp(stdout, grammar)
+		return 0
 	default:
 		writeError(stderr, fmt.Sprintf("unknown help topic %q", topic))
 		fmt.Fprint(stdout, generalHelpText)

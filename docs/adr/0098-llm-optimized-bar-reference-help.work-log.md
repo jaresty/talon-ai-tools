@@ -484,3 +484,50 @@ ADR 0098 implementation complete. All 4 phases implemented:
 Residual constraints documented above are low severity; implementation satisfies ADR completion criteria.
 
 ---
+
+## Loop 11: Sync Updated Skills to Embedded Location
+
+**Date**: 2026-02-04T20:30:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Phase 3 Integration - Sync updated skill files from `.claude/skills/` to `internal/barcli/skills/` so `bar install-skills` embeds the updated versions
+
+**active_constraint**: The skill files updated in Loops 2-5 were modified in `.claude/skills/` but `bar install-skills` embeds from `internal/barcli/skills/`, which still contains pre-Loop 2 versions without `bar help llm` integration.
+
+**validation_targets**:
+- `diff -q .claude/skills/bar-autopilot/skill.md internal/barcli/skills/bar-autopilot/skill.md` - Should show files are identical after sync
+
+**evidence**:
+- red | 2026-02-04T20:30:45Z | exit 1 | diff -q .claude/skills/bar-autopilot/skill.md internal/barcli/skills/bar-autopilot/skill.md
+    helper:diff-snapshot=0 files changed
+    behaviour: files differ - embedded skills are from Feb 3 (pre-Loop 2), source skills updated Feb 4 (Loops 2-5); embedded versions 50% smaller (missing bar help llm integration) | inline
+- green | 2026-02-04T20:35:12Z | exit 0 | diff -q .claude/skills/bar-autopilot/skill.md internal/barcli/skills/bar-autopilot/skill.md && all 4 skills verified identical
+    helper:diff-snapshot=4 files changed, 668 insertions(+), 186 deletions(-)
+    behaviour: all 4 skill files synced; embedded versions now match source versions with bar help llm references | inline
+- removal | 2026-02-04T20:36:30Z | exit 1 | git stash && diff -q .claude/skills/bar-autopilot/skill.md internal/barcli/skills/bar-autopilot/skill.md
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, files differ again (embedded skills back to old versions) | inline
+
+**rollback_plan**: `git restore --source=HEAD internal/barcli/skills/` then verify embedded skills differ from source
+
+**delta_summary**: Synced updated skill files to embedded location (4 files changed, 668 insertions, 186 deletions). Copied all 4 skills from `.claude/skills/bar-{autopilot,manual,workflow,suggest}/skill.md` to `internal/barcli/skills/bar-{autopilot,manual,workflow,suggest}/skill.md`. Embedded skills now include: Discovery Workflow sections with `bar help llm` (preferred) and `bar help tokens` (fallback) paths; references to bar help llm reference sections (§ "Usage Patterns by Task Type", § "Token Catalog", § "Token Selection Heuristics"); removal of embedded token listings and heuristics (deferred to reference); performance notes showing ~70% reduction in tool calls; version compatibility fallback logic. File sizes: bar-autopilot 107→188 lines, bar-manual 136→296 lines, bar-workflow 85→201 lines, bar-suggest 103→228 lines. Fixes issue where `bar install-skills` was installing pre-Loop 2 versions without bar help llm integration.
+
+**loops_remaining_forecast**: 0 loops remaining
+Phase 3 now truly complete with embedded skills synced.
+Confidence: High - all skill versions aligned
+
+**residual_constraints**:
+- **Version metadata in output**: Severity=Low, already present as "Grammar Schema Version" line
+- **README documentation**: Severity=Low, defer to future documentation pass
+- **Shell completion updates**: Severity=Low, --section and --compact flags need completion support
+- **Documentation website generation**: Severity=Low, future consideration per ADR notes
+
+**next_work**:
+ADR 0098 fully complete. All phases implemented including embedded skill sync:
+- ✅ Phase 1: Core bar help llm command
+- ✅ Phase 2: Filtering, compact mode, 23 patterns with discovery framing
+- ✅ Phase 3: All 4 bar skills updated AND embedded skills synced
+- ✅ Phase 4: Validation tests prevent example drift
+
+---

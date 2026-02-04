@@ -1,7 +1,7 @@
 # ADR 0097: Bar Command for Installing LLM Automation Skills
 
 ## Status
-Proposed
+Accepted — 2026-02-03 (Loops 1-3 complete; MVP implemented and validated)
 
 ## Context
 

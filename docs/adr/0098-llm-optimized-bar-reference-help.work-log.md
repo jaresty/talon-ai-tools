@@ -337,3 +337,51 @@ Phase 2 core features complete (filtering + compact mode). Optional enhancements
 Alternative: Close Phase 2 and note optional enhancements as residual constraints, proceed to Phase 4 validation tests or declare implementation complete per ADR scope.
 
 ---
+
+## Loop 8: Expand Usage Patterns from 8 to 23 Examples
+
+**Date**: 2026-02-04T19:00:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Implementation Plan Phase 2 § Enhancement - Expand usage patterns from 8 to 15-20 examples to provide comprehensive pattern coverage
+
+**active_constraint**: The `bar help llm` command includes only 8 usage patterns, which covers major categories but lacks detailed examples for specific use cases like comparison, risk assessment, quality evaluation, and multi-step workflows.
+
+**validation_targets**:
+- `bar help llm --section patterns | grep "^### " | wc -l` - Should show 15-20+ pattern examples
+
+**evidence**:
+- red | 2026-02-04T19:00:30Z | exit 0 | /tmp/bar help llm --section patterns 2>/dev/null | grep "^### " | wc -l
+    helper:diff-snapshot=0 files changed
+    behaviour: bar help llm patterns section contains 8 examples (below ADR Phase 2 suggestion of 15-20) | inline
+- green | 2026-02-04T19:15:45Z | exit 0 | /tmp/bar help llm --section patterns 2>/dev/null | grep "^### " | wc -l
+    helper:diff-snapshot=1 file changed, 90 insertions(+)
+    behaviour: bar help llm patterns section now contains 23 examples (exceeds ADR Phase 2 target of 15-20); full output increased from 517 to 727 lines | inline
+- removal | 2026-02-04T19:17:00Z | exit 0 | git stash && go build -o /tmp/bar-old ./cmd/bar && /tmp/bar-old help llm --section patterns 2>/dev/null | grep "^### " | wc -l
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, pattern count returns to 8 | inline
+
+**rollback_plan**: `git restore --source=HEAD internal/barcli/help_llm.go` then rebuild and verify pattern count returns to 8
+
+**delta_summary**: Expanded usage patterns from 8 to 23 examples (1 file changed, 90 insertions). Added 15 new patterns in internal/barcli/help_llm.go covering: Comparison/Tradeoff Analysis, Risk Assessment, Quality Evaluation, Progressive Refinement Workflow, Conceptual Scaffolding, Failure Mode Analysis, Success Criteria Definition, Perspective Analysis, Impact Assessment, Constraint Mapping, Evidence Building, Option Generation with Reasoning, Sequential Process Documentation, Scenario Simulation, and Dependency Analysis. Each pattern includes title, command template, concrete example, and use case description. Full output increased from 517 to 727 lines (40% expansion). Patterns now cover decision-making, understanding, diagnosis, planning, exploration, comparison, risk, quality, multi-step workflows, perspectives, impacts, constraints, and evidence building.
+
+**loops_remaining_forecast**: 0-1 loops remaining in Phase 2 (optional)
+1. Loop 8: Expand usage patterns (current)
+2. Loop 9: Categorize methods by thinking style in token catalog (optional - currently only in heuristics section)
+Confidence: High - pattern expansion complete, method categorization remains optional
+
+**residual_constraints**:
+- **Example validation tests**: Severity=Medium, deferred to Phase 4 per ADR (`make bar-help-llm-test`)
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration after updates
+- **Shell completion updates**: Severity=Low, --section and --compact flags need completion support
+- **Method categorization in token catalog**: Severity=Low, ADR Phase 2 suggests categorizing methods by thinking style in the token catalog section itself (currently only in heuristics section); impact is minimal since heuristics already provide this categorization
+- **Documentation website generation**: Severity=Low, future consideration per ADR notes
+
+**next_work**:
+Phase 2 enhancements complete (filtering, compact mode, expanded examples). Optional:
+- Loop 9: Categorize methods by thinking style in token catalog section (optional, low value since heuristics section already provides this)
+
+Alternative: Declare Phase 2 complete and proceed to Phase 4 (validation tests) or consider ADR 0098 Phase 1-3 implementation complete.
+
+---

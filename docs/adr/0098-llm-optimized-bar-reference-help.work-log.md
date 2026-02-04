@@ -234,3 +234,57 @@ Remaining future work (deferred per ADR):
 - Skill embed regeneration (bar install-skills command needs to package updated skills)
 
 ---
+
+## Loop 6: Add Filtering Support to `bar help llm`
+
+**Date**: 2026-02-05T00:30:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Implementation Plan Phase 2 § Enhancement - Add `--section` filtering to bar help llm for targeted reference access
+
+**active_constraint**: The `bar help llm` command outputs all 517 lines without filtering, making it difficult to access specific sections quickly when users only need particular information.
+
+**validation_targets**:
+- `bar help llm --section tokens | head -20` - Should output only Token Catalog section
+- `bar help llm --section patterns | head -20` - Should output only Usage Patterns section
+- `bar help llm --section heuristics | head -20` - Should output only Token Selection Heuristics section
+
+**evidence**:
+- red | 2026-02-05T00:30:30Z | exit 1 | bar help llm --section tokens 2>&1
+    helper:diff-snapshot=0 files changed
+    behaviour: bar help llm does not support --section flag (error: unknown flag --section) | inline
+- green | 2026-02-05T00:56:35Z | exit 0 | bar help llm --section tokens | head -30
+    helper:diff-snapshot=4 files changed, 115 insertions(+), 17 deletions(-)
+    behaviour: bar help llm --section tokens outputs only Token Catalog section; --section patterns outputs only Usage Patterns; full output works without flag; invalid section names produce helpful error | inline
+- removal | 2026-02-05T00:58:00Z | exit 1 | git stash && bar help llm --section tokens
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, --section flag rejected with "error: unknown flag --section" | inline
+
+**rollback_plan**: `git restore --source=HEAD internal/barcli/help_llm.go internal/barcli/app.go internal/barcli/cli/config.go` then rerun command to verify flag rejection
+
+**delta_summary**: Added --section filtering support to bar help llm (4 files changed, 115 insertions, 17 deletions). Updated internal/barcli/cli/config.go to add Section field to Config struct and parse --section flag. Updated internal/barcli/app.go to validate section names and pass to renderLLMHelp. Updated internal/barcli/help_llm.go to accept section parameter and conditionally render sections using shouldRender helper. Supports 9 section names: quickstart, architecture, tokens, persona, rules, patterns, heuristics, advanced, metadata. Full reference output unchanged when no --section provided.
+
+**loops_remaining_forecast**: 2-3 loops remaining in Phase 2
+1. Loop 6: Add --section filtering (current)
+2. Loop 7: Add --compact mode (optional)
+3. Loop 8: Expand examples if needed (optional)
+Confidence: Medium - filtering is clear, other enhancements may be optional
+
+**residual_constraints**:
+- **Compact mode**: Severity=Low, Phase 2 enhancement deferred until filtering complete
+- **Example validation tests**: Severity=Medium, deferred to Phase 4 per ADR
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration after updates
+- **Shell completion updates**: Severity=Low, new --section flag needs completion support
+
+**next_work**:
+Phase 2 filtering complete. Remaining Phase 2 enhancements (optional per ADR):
+- Loop 7: Add --compact mode (optional)
+- Loop 8: Expand examples if needed (optional - currently have 8, may be sufficient)
+
+Other future work:
+- Phase 4: Add validation tests (make bar-help-llm-test)
+- Update shell completions to include --section flag options
+- Skill embed regeneration (bar install-skills)
+
+---

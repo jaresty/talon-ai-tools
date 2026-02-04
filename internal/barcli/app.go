@@ -323,12 +323,30 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		renderTokensHelp(stdout, grammar, filters)
 		return 0
 	case "llm", "reference":
+		// Validate section if provided
+		if opts.Section != "" {
+			validSections := map[string]bool{
+				"quickstart":   true,
+				"architecture": true,
+				"tokens":       true,
+				"persona":      true,
+				"rules":        true,
+				"patterns":     true,
+				"heuristics":   true,
+				"advanced":     true,
+				"metadata":     true,
+			}
+			if !validSections[opts.Section] {
+				writeError(stderr, fmt.Sprintf("unknown section %q (valid: quickstart, architecture, tokens, persona, rules, patterns, heuristics, advanced, metadata)", opts.Section))
+				return 1
+			}
+		}
 		grammar, err := LoadGrammar(opts.GrammarPath)
 		if err != nil {
 			writeError(stderr, err.Error())
 			return 1
 		}
-		renderLLMHelp(stdout, grammar)
+		renderLLMHelp(stdout, grammar, opts.Section)
 		return 0
 	default:
 		writeError(stderr, fmt.Sprintf("unknown help topic %q", topic))

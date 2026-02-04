@@ -9,22 +9,47 @@ import (
 )
 
 // renderLLMHelp generates a comprehensive Markdown reference document optimized for LLM consumption
-func renderLLMHelp(w io.Writer, grammar *Grammar) {
-	fmt.Fprintf(w, "# Bar CLI Reference for LLMs\n\n")
-	fmt.Fprintf(w, "Generated: %s\n", time.Now().UTC().Format(time.RFC3339))
-	fmt.Fprintf(w, "Grammar Schema Version: %s\n\n", grammar.SchemaVersion)
+// If section is non-empty, only renders that section
+func renderLLMHelp(w io.Writer, grammar *Grammar, section string) {
+	shouldRender := func(sectionName string) bool {
+		return section == "" || section == sectionName
+	}
 
-	fmt.Fprintf(w, "---\n\n")
+	// Always render header unless filtering
+	if section == "" {
+		fmt.Fprintf(w, "# Bar CLI Reference for LLMs\n\n")
+		fmt.Fprintf(w, "Generated: %s\n", time.Now().UTC().Format(time.RFC3339))
+		fmt.Fprintf(w, "Grammar Schema Version: %s\n\n", grammar.SchemaVersion)
+		fmt.Fprintf(w, "---\n\n")
+	}
 
-	renderQuickStart(w)
-	renderGrammarArchitecture(w, grammar)
-	renderTokenCatalog(w, grammar)
-	renderPersonaSystem(w, grammar)
-	renderCompositionRules(w, grammar)
-	renderUsagePatterns(w)
-	renderTokenSelectionHeuristics(w)
-	renderAdvancedFeatures(w)
-	renderMetadata(w, grammar)
+	if shouldRender("quickstart") {
+		renderQuickStart(w)
+	}
+	if shouldRender("architecture") {
+		renderGrammarArchitecture(w, grammar)
+	}
+	if shouldRender("tokens") {
+		renderTokenCatalog(w, grammar)
+	}
+	if shouldRender("persona") {
+		renderPersonaSystem(w, grammar)
+	}
+	if shouldRender("rules") {
+		renderCompositionRules(w, grammar)
+	}
+	if shouldRender("patterns") {
+		renderUsagePatterns(w)
+	}
+	if shouldRender("heuristics") {
+		renderTokenSelectionHeuristics(w)
+	}
+	if shouldRender("advanced") {
+		renderAdvancedFeatures(w)
+	}
+	if shouldRender("metadata") {
+		renderMetadata(w, grammar)
+	}
 }
 
 func renderQuickStart(w io.Writer) {

@@ -35,6 +35,9 @@ type Config struct {
 	// install-skills specific flags
 	Location string
 	DryRun   bool
+
+	// help llm specific flags
+	Section string
 }
 
 // Parse converts argv-like input into a Config.
@@ -241,6 +244,14 @@ func Parse(args []string) (*Config, error) {
 				return nil, fmt.Errorf("--fill requires a value between 0.0 and 1.0")
 			}
 			cfg.Fill = fill
+		case arg == "--section":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--section requires a section name")
+			}
+			cfg.Section = args[i]
+		case strings.HasPrefix(arg, "--section="):
+			cfg.Section = strings.TrimPrefix(arg, "--section=")
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
 		default:

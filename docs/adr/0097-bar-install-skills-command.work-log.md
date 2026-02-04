@@ -164,3 +164,95 @@ Residual constraint monitoring:
 - **Skill versioning** remains deferred beyond MVP per ADR decision
 
 Re-evaluation trigger: If user testing reveals help discoverability issues or completion gaps become blocking, those constraints will be promoted and addressed before considering the ADR complete.
+
+## Loop 3: Update help text to document install-skills command
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR 0097 § "Implementation Plan → Phase 1 Step 4" and Loop 2 residual constraint - Update general help text and top-level usage message to document the install-skills command so users can discover it via `bar help` and error messages.
+
+**active_constraint:** Bar help text and CLI usage messages lack documentation for the install-skills command, preventing users from discovering the command through help system or error messages. This is the highest-impact constraint because users cannot find the installation mechanism without prior knowledge. The constraint is falsifiable via `bar help | grep install-skills` and `bar 2>&1 | grep install-skills` both succeeding.
+
+**Expected value rationale:**
+| Factor           | Value  | Rationale |
+|------------------|--------|-----------|
+| Impact           | High   | Blocks discoverability - users cannot find command without documentation |
+| Probability      | High   | Deterministic - adding help text directly relieves constraint |
+| Time Sensitivity | High   | Feature is invisible without documentation |
+| Uncertainty note | None   | Help text locations and format are established patterns |
+
+**validation_targets:**
+- `./scripts/validate-help-includes-install-skills.sh` - Validates that both `bar help` general output and top-level usage error message mention install-skills, and that install-skills help is accessible
+
+**evidence:**
+- red | 2026-02-04T00:36:57Z | exit 1 | `./scripts/validate-help-includes-install-skills.sh`
+    helper:diff-snapshot=0 files (help text not yet updated)
+    Behaviour "help text includes install-skills" fails with missing documentation | inline: "ERROR: 'bar help' output does not mention install-skills"
+
+- green | 2026-02-04T00:39:06Z | exit 0 | `./scripts/validate-help-includes-install-skills.sh`
+    helper:diff-snapshot=2 files changed, 8 insertions(+), 4 deletions(-)
+    Behaviour "help text includes install-skills" passes with documentation present | inline: "Help text validation successful"
+
+- removal | 2026-02-04T00:39:27Z | exit 1 | `git stash && go build && ./scripts/validate-help-includes-install-skills.sh; git stash pop`
+    helper:diff-snapshot=0 files changed (temporary revert)
+    Behaviour "help text includes install-skills" fails again after reverting changes | inline: "ERROR: 'bar help' output does not mention install-skills"
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/app.go internal/barcli/cli/config.go scripts/validate-help-includes-install-skills.sh` then rebuild with `go build -o ~/bin/bar ./cmd/bar` and re-run validation to verify red failure returns
+
+**delta_summary:**
+Modified 2 files and created 1 validation script with 8 insertions, 4 deletions:
+- `internal/barcli/app.go` (+7/-3 lines) - Added install-skills to COMMANDS section in generalHelpText with description and updated topUsage constant
+- `internal/barcli/cli/config.go` (+1/-1 line) - Updated CLI parser error message to include install-skills in usage
+- `scripts/validate-help-includes-install-skills.sh` (44 lines) - Validation script for help text completeness
+
+Key implementation decisions:
+- Added install-skills to COMMANDS section after preset command (natural grouping of utility commands)
+- Help text describes command purpose: "Install bar automation skills for LLM integration"
+- Updated to say "LLM integration" (not just Claude) per user feedback - skills work with any LLM
+- Mentioned three specific skills by name (bar-autopilot, bar-workflow, bar-suggest)
+- Documented key flags: --location, --dry-run, --force
+- Updated both generalHelpText and CLI parser usage message for consistency
+
+Depth-first path complete: Embed skills ✓ → Implement command ✓ → Wire into CLI ✓ → Document ✓
+
+**loops_remaining_forecast:** 0-1 loops remaining
+- Loop 4 (optional): Add install-skills to shell completion system for enhanced discoverability
+- Confidence: High - ADR MVP deliverables complete; completion support is enhancement rather than requirement
+
+**residual_constraints:**
+- **Shell completion missing install-skills** (Severity: Low) - Tab completion doesn't suggest install-skills command. Mitigation: Accept for MVP; shell completion integration is enhancement. Monitoring trigger: User feedback requests completion support. Reopen condition: Discoverability issues without completion.
+- **Skills duplicated between internal/skills and internal/barcli/skills** (Severity: Low) - Maintaining two copies creates sync burden. Mitigation: Accept duplication for MVP; go:embed path constraints require it. Monitoring trigger: Skills diverge between locations. Reopen condition: Cannot reliably keep copies synchronized.
+- **Cross-platform path handling** (Severity: Low) - Relies on filepath package; validated on macOS only. Mitigation: Trust Go stdlib guarantees. Monitoring trigger: Windows test failures. Reopen condition: Installation fails on Windows.
+- **Skill versioning not defined** (Severity: Low) - Skills may evolve over time; no version tracking yet. Mitigation: Defer versioning to future ADR per original decision. Monitoring trigger: User reports skill conflicts. Reopen condition: Skill updates break existing installations.
+
+**next_work:**
+- Behaviour: Shell completion suggests install-skills (optional enhancement)
+  - Validation: `bar __complete install` includes install-skills in suggestions
+  - Future-shaping action: Wire into completion engine for enhanced discoverability
+- Behaviour: ADR 0097 Loop closure (documentation-only)
+  - Validation: All MVP deliverables validated and documented
+  - Future-shaping action: Mark ADR as implemented with completion evidence
+
+---
+
+## Constraint Recap
+
+The active constraint (missing help text documentation) has been relieved through:
+1. Addition of install-skills to COMMANDS section in generalHelpText
+2. Update to topUsage constant in app.go  
+3. Update to CLI parser usage error message in cli/config.go
+4. Clarification that skills work with any LLM, not just Claude
+
+Residual constraint monitoring:
+- **Shell completion** identified as low-priority enhancement; MVP complete without it
+- **Skills duplication** accepted as necessary implementation detail for go:embed
+- **Cross-platform paths** trusted to Go stdlib; Windows validation deferred to user testing
+- **Skill versioning** remains deferred beyond MVP per ADR decision
+
+ADR 0097 MVP implementation complete. All Phase 1 deliverables satisfied:
+✓ Skills embedded in CLI source (Loop 1)
+✓ install-skills command implemented (Loop 2)
+✓ Command wired into CLI (Loop 2)
+✓ Help text documentation added (Loop 3)
+
+Optional Loop 4 would add completion support but is not required for MVP delivery per ADR decision section.

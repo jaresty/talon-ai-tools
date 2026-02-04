@@ -18,7 +18,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|shuffle|help|completion|preset|tui|tui2]"
+	topUsage   = "usage: bar [build|shuffle|help|completion|preset|tui|tui2|install-skills]"
 )
 
 // barVersion holds the current version of bar, set by main package
@@ -156,8 +156,12 @@ var generalHelpText = strings.TrimSpace(`USAGE
                  successful "bar build" invocation.
                  Use "bar preset use <name>" with --prompt/--input or piped text to rebuild
                  the recipe against fresh subject content.
- 
- 
+    install-skills  Install bar automation skills (bar-autopilot, bar-workflow, bar-suggest) to
+                 .claude/skills directory for LLM integration. Enables LLMs to automatically
+                 use bar for structuring responses. Use --location to specify custom installation path,
+                 --dry-run to preview, and --force to overwrite existing skills.
+
+
   TOPICS & EXAMPLES
 
 

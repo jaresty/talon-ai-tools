@@ -253,7 +253,7 @@ func Parse(args []string) (*Config, error) {
 	}
 
 	if cfg.Command == "" && !cfg.Version {
-		return nil, fmt.Errorf("usage: bar [build|help|completion|preset|tui]")
+		return nil, fmt.Errorf("usage: bar [build|shuffle|help|completion|preset|tui|tui2|install-skills]")
 	}
 	if cfg.Prompt != "" && cfg.InputPath != "" {
 		return nil, fmt.Errorf("--prompt and --input cannot be used together")

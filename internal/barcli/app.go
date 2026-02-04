@@ -156,10 +156,11 @@ var generalHelpText = strings.TrimSpace(`USAGE
                  successful "bar build" invocation.
                  Use "bar preset use <name>" with --prompt/--input or piped text to rebuild
                  the recipe against fresh subject content.
-    install-skills  Install bar automation skills (bar-autopilot, bar-workflow, bar-suggest) to
+    install-skills  Install bar skills (bar-autopilot, bar-workflow, bar-suggest, bar-manual) to
                  .claude/skills directory for LLM integration. Enables LLMs to automatically
-                 use bar for structuring responses. Use --location to specify custom installation path,
-                 --dry-run to preview, and --force to overwrite existing skills.
+                 use bar for structuring responses and helps users learn bar manually.
+                 Use --location to specify custom installation path, --dry-run to preview,
+                 and --force to overwrite existing skills.
 
 
   TOPICS & EXAMPLES

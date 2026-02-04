@@ -37,7 +37,7 @@ if ! $BAR install-skills --location "$TEMP_DIR/.claude/skills" >/dev/null 2>&1; 
 fi
 
 # Test 4: Verify skills were installed
-REQUIRED_SKILLS=("bar-autopilot" "bar-workflow" "bar-suggest")
+REQUIRED_SKILLS=("bar-autopilot" "bar-workflow" "bar-suggest" "bar-manual")
 for skill in "${REQUIRED_SKILLS[@]}"; do
     skill_file="$TEMP_DIR/.claude/skills/$skill/skill.md"
     if [ ! -f "$skill_file" ]; then

@@ -20,15 +20,16 @@ func runInstallSkills(options *cli.Config, stdout, stderr io.Writer) int {
 	if options.Help {
 		fmt.Fprintln(stdout, `usage: bar install-skills [--location PATH] [--dry-run] [--force]
 
-Install bar automation skills to .claude/skills directory.
+Install bar skills to .claude/skills directory.
 
-The install-skills command installs three embedded bar automation skills:
-  - bar-autopilot: Automatically detect and apply bar structuring
+The install-skills command installs four embedded bar skills:
+  - bar-autopilot: Automatically detect and apply bar structuring to responses
   - bar-workflow: Chain multi-step bar commands for complex tasks
   - bar-suggest: Present users with bar-based approach options
+  - bar-manual: Guide users on how to manually build bar commands
 
-These skills enable Claude to use bar as a thinking tool to structure better
-responses automatically, working across all agent types.
+These skills enable LLMs to use bar as a thinking tool (autopilot, workflow, suggest)
+and help users learn bar manually (bar-manual), working across all agent types.
 
 FLAGS
   --location PATH   Target directory for skills (default: .claude/skills)
@@ -59,11 +60,12 @@ EXAMPLES
 
 	// Dry-run mode
 	if options.DryRun {
-		fmt.Fprintf(stdout, "Would install bar automation skills to: %s\n", location)
+		fmt.Fprintf(stdout, "Would install bar skills to: %s\n", location)
 		fmt.Fprintln(stdout, "\nSkills to be installed:")
 		fmt.Fprintln(stdout, "  - bar-autopilot")
 		fmt.Fprintln(stdout, "  - bar-workflow")
 		fmt.Fprintln(stdout, "  - bar-suggest")
+		fmt.Fprintln(stdout, "  - bar-manual")
 		return 0
 	}
 
@@ -73,7 +75,7 @@ EXAMPLES
 		return 1
 	}
 
-	fmt.Fprintf(stdout, "Successfully installed bar automation skills to: %s\n", location)
+	fmt.Fprintf(stdout, "Successfully installed bar skills to: %s\n", location)
 	return 0
 }
 

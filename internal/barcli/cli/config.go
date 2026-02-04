@@ -38,6 +38,7 @@ type Config struct {
 
 	// help llm specific flags
 	Section string
+	Compact bool
 }
 
 // Parse converts argv-like input into a Config.
@@ -252,6 +253,8 @@ func Parse(args []string) (*Config, error) {
 			cfg.Section = args[i]
 		case strings.HasPrefix(arg, "--section="):
 			cfg.Section = strings.TrimPrefix(arg, "--section=")
+		case arg == "--compact":
+			cfg.Compact = true
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
 		default:

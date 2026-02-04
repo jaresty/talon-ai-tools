@@ -10,13 +10,14 @@ import (
 
 // renderLLMHelp generates a comprehensive Markdown reference document optimized for LLM consumption
 // If section is non-empty, only renders that section
-func renderLLMHelp(w io.Writer, grammar *Grammar, section string) {
+// If compact is true, outputs tables only without descriptions or examples
+func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) {
 	shouldRender := func(sectionName string) bool {
 		return section == "" || section == sectionName
 	}
 
-	// Always render header unless filtering
-	if section == "" {
+	// Always render header unless filtering or compact
+	if section == "" && !compact {
 		fmt.Fprintf(w, "# Bar CLI Reference for LLMs\n\n")
 		fmt.Fprintf(w, "Generated: %s\n", time.Now().UTC().Format(time.RFC3339))
 		fmt.Fprintf(w, "Grammar Schema Version: %s\n\n", grammar.SchemaVersion)
@@ -24,35 +25,42 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string) {
 	}
 
 	if shouldRender("quickstart") {
-		renderQuickStart(w)
+		renderQuickStart(w, compact)
 	}
 	if shouldRender("architecture") {
-		renderGrammarArchitecture(w, grammar)
+		renderGrammarArchitecture(w, grammar, compact)
 	}
 	if shouldRender("tokens") {
-		renderTokenCatalog(w, grammar)
+		renderTokenCatalog(w, grammar, compact)
 	}
 	if shouldRender("persona") {
-		renderPersonaSystem(w, grammar)
+		renderPersonaSystem(w, grammar, compact)
 	}
 	if shouldRender("rules") {
-		renderCompositionRules(w, grammar)
+		renderCompositionRules(w, grammar, compact)
 	}
 	if shouldRender("patterns") {
-		renderUsagePatterns(w)
+		renderUsagePatterns(w, compact)
 	}
 	if shouldRender("heuristics") {
-		renderTokenSelectionHeuristics(w)
+		renderTokenSelectionHeuristics(w, compact)
 	}
 	if shouldRender("advanced") {
-		renderAdvancedFeatures(w)
+		renderAdvancedFeatures(w, compact)
 	}
 	if shouldRender("metadata") {
-		renderMetadata(w, grammar)
+		renderMetadata(w, grammar, compact)
 	}
 }
 
-func renderQuickStart(w io.Writer) {
+func renderQuickStart(w io.Writer, compact bool) {
+	if compact {
+		fmt.Fprintf(w, "## Quick Start\n\n")
+		fmt.Fprintf(w, "```bash\n")
+		fmt.Fprintf(w, "bar build <tokens>... --prompt \"your text\"\n")
+		fmt.Fprintf(w, "```\n\n")
+		return
+	}
 	fmt.Fprintf(w, "## Quick Start\n\n")
 	fmt.Fprintf(w, "Bar constructs structured prompts by combining tokens from multiple axes:\n\n")
 	fmt.Fprintf(w, "```bash\n")
@@ -65,7 +73,12 @@ func renderQuickStart(w io.Writer) {
 	fmt.Fprintf(w, "```\n\n")
 }
 
-func renderGrammarArchitecture(w io.Writer, grammar *Grammar) {
+func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
+	if compact {
+		fmt.Fprintf(w, "## Grammar Architecture\n\n")
+		fmt.Fprintf(w, "Order: [persona] [static] [completeness] [scope 0-2] [method 0-3] [form] [channel] [directional]\n\n")
+		return
+	}
 	fmt.Fprintf(w, "## Grammar Architecture\n\n")
 	fmt.Fprintf(w, "### Token Ordering\n\n")
 	fmt.Fprintf(w, "Tokens must follow this order:\n\n")
@@ -90,12 +103,14 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar) {
 	fmt.Fprintf(w, "```\n\n")
 }
 
-func renderTokenCatalog(w io.Writer, grammar *Grammar) {
+func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "## Token Catalog\n\n")
 
 	// Static prompts
 	fmt.Fprintf(w, "### Static Prompts (0-1 token)\n\n")
-	fmt.Fprintf(w, "Pre-composed prompt strategies:\n\n")
+	if !compact {
+		fmt.Fprintf(w, "Pre-composed prompt strategies:\n\n")
+	}
 	fmt.Fprintf(w, "| Token | Description |\n")
 	fmt.Fprintf(w, "|-------|-------------|\n")
 
@@ -160,13 +175,15 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar) {
 	}
 }
 
-func renderPersonaSystem(w io.Writer, grammar *Grammar) {
+func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "## Persona System\n\n")
 
 	// Preset personas
 	if len(grammar.Persona.Presets) > 0 {
 		fmt.Fprintf(w, "### Preset Personas\n\n")
-		fmt.Fprintf(w, "Pre-configured combinations of voice, audience, and tone:\n\n")
+		if !compact {
+			fmt.Fprintf(w, "Pre-configured combinations of voice, audience, and tone:\n\n")
+		}
 		fmt.Fprintf(w, "| Preset | Voice | Audience | Tone | Spoken Alias |\n")
 		fmt.Fprintf(w, "|--------|-------|----------|------|--------------|\n")
 
@@ -206,7 +223,9 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar) {
 
 	// Persona axes
 	fmt.Fprintf(w, "### Persona Axes (for custom composition)\n\n")
-	fmt.Fprintf(w, "Build custom personas by combining individual axes:\n\n")
+	if !compact {
+		fmt.Fprintf(w, "Build custom personas by combining individual axes:\n\n")
+	}
 
 	personaAxes := []string{"voice", "audience", "tone", "intent"}
 	for _, axisName := range personaAxes {
@@ -234,8 +253,8 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar) {
 		}
 		fmt.Fprintf(w, "%s\n\n", strings.Join(slugs, ", "))
 
-		// Show descriptions if available
-		if len(axisDocs) > 0 {
+		// Show descriptions if available (skip in compact mode)
+		if len(axisDocs) > 0 && !compact {
 			fmt.Fprintf(w, "| Token | Description |\n")
 			fmt.Fprintf(w, "|-------|-------------|\n")
 			for _, token := range tokenNames {
@@ -254,8 +273,18 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar) {
 	}
 }
 
-func renderCompositionRules(w io.Writer, grammar *Grammar) {
+func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "## Composition Rules\n\n")
+
+	if compact {
+		fmt.Fprintf(w, "- Order: see Grammar Architecture\n")
+		fmt.Fprintf(w, "- Caps: scope 0-2, method 0-3, others 0-1\n")
+		if len(grammar.Hierarchy.AxisIncompatibilities) > 0 {
+			fmt.Fprintf(w, "- Incompatibilities exist (see full reference)\n")
+		}
+		fmt.Fprintf(w, "\n")
+		return
+	}
 
 	fmt.Fprintf(w, "### Token Ordering Constraints\n\n")
 	fmt.Fprintf(w, "1. Tokens must appear in the order specified in Grammar Architecture\n")
@@ -291,7 +320,11 @@ func renderCompositionRules(w io.Writer, grammar *Grammar) {
 	}
 }
 
-func renderUsagePatterns(w io.Writer) {
+func renderUsagePatterns(w io.Writer, compact bool) {
+	if compact {
+		// Skip usage patterns in compact mode
+		return
+	}
 	fmt.Fprintf(w, "## Usage Patterns by Task Type\n\n")
 
 	patterns := []struct {
@@ -358,7 +391,11 @@ func renderUsagePatterns(w io.Writer) {
 	}
 }
 
-func renderTokenSelectionHeuristics(w io.Writer) {
+func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
+	if compact {
+		// Skip heuristics in compact mode
+		return
+	}
 	fmt.Fprintf(w, "## Token Selection Heuristics\n\n")
 
 	fmt.Fprintf(w, "### Choosing Scope\n\n")
@@ -397,7 +434,14 @@ func renderTokenSelectionHeuristics(w io.Writer) {
 	fmt.Fprintf(w, "- **Decision documentation** → `case`, `adr`, `log`\n\n")
 }
 
-func renderAdvancedFeatures(w io.Writer) {
+func renderAdvancedFeatures(w io.Writer, compact bool) {
+	if compact {
+		fmt.Fprintf(w, "## Advanced Features\n\n")
+		fmt.Fprintf(w, "- `bar shuffle`: Random token generation\n")
+		fmt.Fprintf(w, "- `--json`, `--output`, `--input`: Output options\n")
+		fmt.Fprintf(w, "- `//next`, `//:stage`: Skip sentinels\n\n")
+		return
+	}
 	fmt.Fprintf(w, "## Advanced Features\n\n")
 
 	fmt.Fprintf(w, "### Shuffle for Exploration\n\n")
@@ -417,7 +461,11 @@ func renderAdvancedFeatures(w io.Writer) {
 	fmt.Fprintf(w, "- `//:completeness`: Jump directly to completeness stage\n\n")
 }
 
-func renderMetadata(w io.Writer, grammar *Grammar) {
+func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {
+	if compact {
+		// Skip metadata in compact mode
+		return
+	}
 	fmt.Fprintf(w, "## Grammar Metadata\n\n")
 	fmt.Fprintf(w, "- **Schema version**: %s\n", grammar.SchemaVersion)
 	fmt.Fprintf(w, "- **Total axes**: 7 (completeness, scope, method, form, channel, directional, persona)\n")

@@ -346,7 +346,7 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 			writeError(stderr, err.Error())
 			return 1
 		}
-		renderLLMHelp(stdout, grammar, opts.Section)
+		renderLLMHelp(stdout, grammar, opts.Section, opts.Compact)
 		return 0
 	default:
 		writeError(stderr, fmt.Sprintf("unknown help topic %q", topic))

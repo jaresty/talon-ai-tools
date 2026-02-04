@@ -288,3 +288,52 @@ Other future work:
 - Skill embed regeneration (bar install-skills)
 
 ---
+
+## Loop 7: Add Compact Mode to `bar help llm`
+
+**Date**: 2026-02-04T18:30:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Implementation Plan Phase 2 § Enhancement - Add `--compact` mode to bar help llm for minimal output without examples and descriptions
+
+**active_constraint**: The `bar help llm` command outputs all 517 lines without a compact mode, making it verbose for scenarios where users only need token tables without guidance text.
+
+**validation_targets**:
+- `bar help llm --compact` - Should execute successfully and output minimal reference (tables only, no examples)
+
+**evidence**:
+- red | 2026-02-04T18:30:45Z | exit 1 | bar help llm --compact 2>&1
+    helper:diff-snapshot=0 files changed
+    behaviour: bar help llm does not support --compact flag (error: unknown flag --compact) | inline
+- green | 2026-02-04T18:45:12Z | exit 0 | /tmp/bar help llm --compact | wc -l
+    helper:diff-snapshot=3 files changed, 78 insertions(+), 27 deletions(-)
+    behaviour: bar help llm --compact outputs 234 lines (55% reduction from 517 lines); tables only without examples, heuristics, or usage patterns | inline
+- removal | 2026-02-04T18:47:00Z | exit 1 | git stash && bar help llm --compact
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, --compact flag rejected with "error: unknown flag --compact" | inline
+
+**rollback_plan**: `git restore --source=HEAD internal/barcli/app.go internal/barcli/cli/config.go internal/barcli/help_llm.go` then rerun command to verify flag rejection
+
+**delta_summary**: Added --compact mode to bar help llm (3 files changed, 78 insertions, 27 deletions). Updated internal/barcli/cli/config.go to add Compact bool field and parse --compact flag. Updated internal/barcli/app.go to pass compact parameter to renderLLMHelp. Updated internal/barcli/help_llm.go to accept compact parameter in all render functions: renderQuickStart shows minimal syntax only, renderGrammarArchitecture shows single-line order, renderTokenCatalog omits descriptive paragraphs, renderPersonaSystem omits description tables, renderCompositionRules shows minimal bullets, renderUsagePatterns skipped entirely, renderTokenSelectionHeuristics skipped entirely, renderAdvancedFeatures shows one-line summaries, renderMetadata skipped entirely. Output reduced from 517 to 234 lines (55% smaller). Compact mode works with --section filtering.
+
+**loops_remaining_forecast**: 1-2 loops remaining in Phase 2 (optional)
+1. Loop 7: Add --compact mode (current)
+2. Loop 8: Expand examples to 15-20 (optional - ADR suggests this, currently have 8)
+Confidence: Medium - compact done, example expansion is optional per ADR Phase 2
+
+**residual_constraints**:
+- **Example expansion**: Severity=Low, ADR Phase 2 suggests expanding from 8 to 15-20 examples but marks as optional; current 8 examples cover major patterns
+- **Example validation tests**: Severity=Medium, deferred to Phase 4 per ADR (`make bar-help-llm-test`)
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration after updates
+- **Shell completion updates**: Severity=Low, --section and --compact flags need completion support
+- **Method categorization in token catalog**: Severity=Low, ADR Phase 2 suggests categorizing methods by thinking style in the catalog section itself (currently only in heuristics)
+
+**next_work**:
+Phase 2 core features complete (filtering + compact mode). Optional enhancements:
+- Loop 8: Expand usage patterns from 8 to 15-20 examples (optional per ADR)
+- Loop 9: Categorize methods by thinking style in token catalog section (optional per ADR)
+
+Alternative: Close Phase 2 and note optional enhancements as residual constraints, proceed to Phase 4 validation tests or declare implementation complete per ADR scope.
+
+---

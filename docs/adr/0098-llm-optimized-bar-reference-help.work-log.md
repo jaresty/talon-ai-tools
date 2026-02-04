@@ -99,3 +99,48 @@ Confidence: High - clear scope with existing ADR guidance in "Skill Updates" sec
 - Behaviour: Update bar-suggest skill to use bar help llm reference
 
 ---
+
+## Loop 3: Update bar-manual Skill to Use `bar help llm`
+
+**Date**: 2026-02-04T23:45:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Skill Updates § bar-manual - Update skill to teach users about bar help llm reference for learning
+
+**active_constraint**: The bar-manual skill teaches users to run multiple `bar help tokens` queries instead of showing them the comprehensive `bar help llm` reference, resulting in fragmented learning experience.
+
+**validation_targets**:
+- `grep "bar help llm" .claude/skills/bar-manual/skill.md` - Should find references to new command in teaching flow
+
+**evidence**:
+- red | 2026-02-04T23:45:15Z | exit 1 | grep -c "bar help llm" .claude/skills/bar-manual/skill.md
+    helper:diff-snapshot=0 files changed
+    behaviour: skill does not reference bar help llm (exit 1, count=0); teaches bar help tokens discovery | inline
+- green | 2026-02-04T23:52:00Z | exit 0 | grep -c "bar help llm" .claude/skills/bar-manual/skill.md
+    helper:diff-snapshot=1 file changed, 212 insertions(+), 52 deletions(-)
+    behaviour: skill now references bar help llm 18 times, teaches users to access comprehensive reference, guides to specific sections without hardcoding tokens | inline
+- removal | 2026-02-04T23:53:00Z | exit 1 | git stash && grep -c "bar help llm" .claude/skills/bar-manual/skill.md
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, bar help llm references return to 0 (exit 1) | inline
+
+**rollback_plan**: `git restore --source=HEAD .claude/skills/bar-manual/skill.md` then rerun grep to verify no bar help llm references
+
+**delta_summary**: Updated `.claude/skills/bar-manual/skill.md` with 212 insertions, 52 deletions. Added "Teaching Approach" section with 5 steps showing how to guide users through bar help llm reference. Added "High-level Workflow" with preferred (bar help llm) and fallback (bar help tokens) paths. Updated "Command Patterns" to teach accessing bar help llm first. References sections (§ "Usage Patterns by Task Type", § "Token Catalog", etc.) without embedding content. Added "Performance Notes" highlighting better learning experience. Maintains "never invent tokens" and "teach discovery, not memorization" principles.
+
+**loops_remaining_forecast**: 3 loops remaining
+1. Loop 3: Update bar-manual skill (current)
+2. Loop 4: Update bar-workflow skill
+3. Loop 5: Update bar-suggest skill
+Confidence: High - clear scope with existing ADR guidance
+
+**residual_constraints**:
+- **Shell completion updates**: Severity=Low, bar help llm not yet in completion suggestions
+- **Example validation tests**: Severity=Medium, deferred to Phase 4 per ADR
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration after updates
+
+**next_work**:
+- Behaviour: Update bar-workflow skill to use bar help llm reference
+- Behaviour: Update bar-suggest skill to use bar help llm reference
+
+---

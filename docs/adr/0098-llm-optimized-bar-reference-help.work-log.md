@@ -144,3 +144,46 @@ Confidence: High - clear scope with existing ADR guidance
 - Behaviour: Update bar-suggest skill to use bar help llm reference
 
 ---
+
+## Loop 4: Update bar-workflow Skill to Use `bar help llm`
+
+**Date**: 2026-02-05T00:00:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Skill Updates § bar-workflow - Update skill to use bar help llm reference for multi-step workflow planning
+
+**active_constraint**: The bar-workflow skill uses `bar help tokens` queries instead of the comprehensive `bar help llm` reference, missing integrated method categorization useful for workflow sequencing.
+
+**validation_targets**:
+- `grep "bar help llm" .claude/skills/bar-workflow/skill.md` - Should find references to new command for workflow planning
+
+**evidence**:
+- red | 2026-02-05T00:00:15Z | exit 1 | grep -c "bar help llm" .claude/skills/bar-workflow/skill.md
+    helper:diff-snapshot=0 files changed
+    behaviour: skill does not reference bar help llm (exit 1, count=0); uses bar help tokens for discovery | inline
+- green | 2026-02-05T00:08:00Z | exit 0 | grep -c "bar help llm" .claude/skills/bar-workflow/skill.md
+    helper:diff-snapshot=1 file changed, 150 insertions(+), 34 deletions(-)
+    behaviour: skill now references bar help llm 16 times, uses method categorization for workflow sequencing, references sections without hardcoding | inline
+- removal | 2026-02-05T00:09:00Z | exit 1 | git stash && grep -c "bar help llm" .claude/skills/bar-workflow/skill.md
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, bar help llm references return to 0 (exit 1) | inline
+
+**rollback_plan**: `git restore --source=HEAD .claude/skills/bar-workflow/skill.md` then rerun grep to verify no bar help llm references
+
+**delta_summary**: Updated `.claude/skills/bar-workflow/skill.md` with 150 insertions, 34 deletions. Added "Discovery Workflow" section with preferred (bar help llm) and fallback paths. Added "Workflow Construction Strategy" leveraging method categorization (Exploration/Understanding/Decision/Diagnostic) for workflow sequencing. Updated "Common Workflow Progressions" to reference discovering tokens from reference sections. Added "Example Workflow Planning" showing both approaches. Added "Performance Notes" highlighting single reference load enables planning multiple steps. Maintains "never hardcode tokens" principle and references sections (§ "Choosing Method", § "Usage Patterns by Task Type") for discovery.
+
+**loops_remaining_forecast**: 2 loops remaining
+1. Loop 4: Update bar-workflow skill (current)
+2. Loop 5: Update bar-suggest skill
+Confidence: High - clear scope with existing ADR guidance
+
+**residual_constraints**:
+- **Shell completion updates**: Severity=Low, bar help llm not yet in completion suggestions
+- **Example validation tests**: Severity=Medium, deferred to Phase 4 per ADR
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration after updates
+
+**next_work**:
+- Behaviour: Update bar-suggest skill to use bar help llm reference
+
+---

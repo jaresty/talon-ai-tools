@@ -6,70 +6,177 @@ This skill enables Claude to **build and execute multi-step bar command sequence
 
 Assumes:
 - `bar` CLI is installed and accessible
-- The LLM can run `bar help tokens` to discover available tokens
+- The LLM can run `bar help llm` (or `bar help tokens` for older versions) to discover available tokens
 - The LLM has access to the Bash tool for executing bar commands
 
 ## High-level Workflow
 
 1. **Identify complex request** requiring multiple perspectives
-2. **Plan workflow sequence** (e.g., probe → explore → plan)
-3. **Execute bar commands in sequence**, using output of each to inform the next
-4. **Synthesize results** into comprehensive response
+2. **Load comprehensive reference** via `bar help llm` once per conversation
+3. **Plan workflow sequence** using method categorization and patterns from reference
+4. **Execute bar commands in sequence**, using output of each to inform the next
+5. **Synthesize results** into comprehensive response
 
 ## Skill Behavior Rules
 
 - **Chain commands thoughtfully.** Each step should build on the previous one.
-- **Never hardcode tokens.** Always discover dynamically via `bar help tokens`.
-- **Use kebab-case for multi-word tokens.** When tokens contain spaces, convert to kebab-case (e.g., "dip bog" → "dip-bog", "fly rog" → "fly-rog"). Bar will show the canonical slug in help output.
+- **Never hardcode tokens.** Always discover via `bar help llm` (preferred) or `bar help tokens` (fallback).
+- **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "dip-bog", "fly-rog").
 - **Use progressive refinement.** Start broad, then narrow focus.
-- **Be transparent about usage.** After completing a workflow, explain the sequence of bar commands used and why each step was chosen to aid user learning.
+- **Be transparent about usage.** After completing a workflow, explain the sequence and rationale.
 - **Cross-agent compatible.** Works across all Claude agent types.
 - **Graceful degradation.** If workflow fails mid-sequence, return partial results.
 
-## Workflow Construction Heuristics
+## Discovery Workflow
 
-When a complex request requires multiple perspectives, build a multi-step workflow:
+### With `bar help llm` (preferred)
 
-### Step 1: Discover Available Tokens
-```bash
-bar help tokens scope method
-bar help tokens form
-```
+**For bar versions with `bar help llm` support:**
 
-**Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional. See bar-manual skill for complete grammar details.
+1. **Check for cached reference** - If already loaded in conversation, reuse it
+2. **Load reference once** - Run `bar help llm` to load comprehensive reference
+3. **Workflow planning strategy:**
+   - Consult **"Choosing Method"** section to understand method categorization
+   - Reference **"Usage Patterns by Task Type"** for multi-step examples
+   - Use **"Token Catalog"** to discover available tokens for each step
+   - Check **"Composition Rules"** for constraints
 
-### Step 2: Plan Workflow Sequence
+**Performance benefit:** Single reference load enables planning multiple workflow steps
 
-Identify which aspects the request needs to explore. Common progressions:
+**Method categorization for workflows:**
+- **Exploration Methods** → For discovery/broadening steps
+- **Understanding Methods** → For analysis/mapping steps
+- **Decision Methods** → For evaluation/selection steps
+- **Diagnostic Methods** → For problem identification steps
+
+### Fallback (legacy `bar help tokens`)
+
+**For older bar versions without `bar help llm`:**
+
+1. Run `bar help tokens` to discover available tokens
+2. Use sectioned queries: `bar help tokens scope method form`
+3. Apply embedded heuristics for workflow construction
+
+**Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional.
+
+## Workflow Construction Strategy
+
+**IMPORTANT:** Never hardcode tokens. Always discover them from `bar help llm` or `bar help tokens` first.
+
+### With `bar help llm` Reference
+
+1. **Identify workflow pattern** - Consult reference § "Usage Patterns by Task Type" to understand which patterns might chain well
+
+2. **Select method progression** - Read reference § "Choosing Method" to discover:
+   - Which method categories exist (Exploration, Understanding, Decision, Diagnostic)
+   - How methods within each category differ
+   - Which progressions make sense for your use case
+
+3. **Plan scope evolution** - Read reference § "Choosing Scope" to understand:
+   - How scope tokens define focus areas
+   - Which scope progressions support the workflow goal
+
+4. **Select forms for each step** - Read reference § "Choosing Form" to discover:
+   - Appropriate output structures for intermediate steps
+   - Final form for synthesized result
+
+5. **Verify composition** - Read reference § "Composition Rules" to check:
+   - Token ordering requirements for each step
+   - Axis capacity constraints
+
+### Common Workflow Progressions
+
+After discovering tokens from the reference, common patterns include:
 
 **Broadening then focusing:**
+- Step 1: Use exploration-category methods (discover from reference)
+- Step 2: Use understanding-category methods (discover from reference)
+- Step 3: Use decision-category methods (discover from reference)
+
+**Understanding then acting:**
+- Step 1: Use scope focused on meaning/structure (discover from reference)
+- Step 2: Use scope focused on relationships (discover from reference)
+- Step 3: Use scope focused on actions (discover from reference)
+
+**Diagnosis then solution:**
+- Step 1: Use diagnostic-category methods (discover from reference)
+- Step 2: Use understanding-category methods (discover from reference)
+- Step 3: Use decision-category methods (discover from reference)
+
+### Legacy Workflow Construction (without bar help llm)
+
+If `bar help llm` is unavailable, use these heuristics after discovering tokens:
+
+1. **Discover tokens** - Run `bar help tokens scope method form`
+2. **Identify request complexity** - Determine which aspects need multiple passes
+3. **Plan progression** - Choose sequence based on request characteristics:
+   - Broad to narrow
+   - Understanding to action
+   - Problem to solution
+4. **Select tokens per step** - Choose from discovered tokens based on progression
+
+**Legacy heuristics for progressions:**
 - Start with discovery/exploration method tokens
 - Move to analysis/mapping method tokens
 - End with planning/action-oriented tokens
 
-**Understanding then acting:**
-- Begin with "what it means" scope tokens
-- Progress to "how it's structured" scope tokens
-- Conclude with "what to do" scope tokens
+### Freeform Discovery
 
-**Diagnosis then solution:**
-- Start with current state analysis
-- Explore failure modes or constraints
-- End with remediation approaches
+If the request doesn't fit standard progressions:
+- Use `bar shuffle` to explore alternative combinations
+- Constrain with `--include scope,method` to focus on key axes
+- Experiment with method progressions discovered from reference
+- Try scope sequences that complement each other
 
-### Step 3: Freeform Discovery
-
-If the request doesn't fit common progressions:
-- Use `bar shuffle` to generate alternative token combinations
-- Constrain with `--include scope,method` to keep structure while varying specifics
-- Try different scope progressions based on discovered tokens
-- Experiment with method combinations that complement each other
-
-### Step 4: Execute Sequence and Explain
+### Execute Sequence and Explain
 
 1. Run each bar command in sequence
-2. Use output from each step to inform the next
+2. Use output from step N to inform step N+1
 3. After completion, explain: "I used a [N]-step workflow: [step 1 tokens] to [reason], then [step 2 tokens] to [reason], etc."
+
+## Example Workflow Planning
+
+**With bar help llm:**
+
+```bash
+# Step 1: Load reference
+bar help llm
+
+# Step 2: Consult sections for workflow planning
+# - Read § "Choosing Method" to understand categorization
+# - Read § "Usage Patterns by Task Type" for examples
+# - Read § "Token Catalog" to discover available tokens
+
+# Step 3: Execute workflow with discovered tokens
+# Example progression (tokens discovered from reference):
+bar build <exploration-tokens> --prompt "initial probe"
+bar build <understanding-tokens> --prompt "analyze results from step 1"
+bar build <decision-tokens> --prompt "synthesize into recommendations"
+```
+
+**Legacy approach:**
+
+```bash
+# Step 1: Discover tokens
+bar help tokens scope method form
+
+# Step 2: Plan progression based on discovered tokens
+# Step 3: Execute workflow
+bar build <discovered-broad-tokens> --prompt "initial probe"
+bar build <discovered-analysis-tokens> --prompt "analyze results"
+bar build <discovered-action-tokens> --prompt "synthesize recommendations"
+```
+
+## Performance Notes
+
+**With `bar help llm`:**
+- **Tool calls:** 1 reference load per conversation
+- **Benefits:** Method categorization aids workflow sequencing
+- **Planning:** Integrated examples show multi-step patterns
+
+**Legacy approach:**
+- **Tool calls:** 1-2 discovery queries per workflow
+- Still fully functional with embedded heuristics
 
 ## Cross-Agent Compatibility Notes
 
@@ -83,3 +190,12 @@ If the request doesn't fit common progressions:
 - If any workflow step fails: Log error, continue with partial results
 - If bar unavailable: Fall back to single-step autopilot or normal response
 - Always prefer partial results over complete failure
+
+## Version Detection
+
+To check if `bar help llm` is available:
+```bash
+bar help llm 2>/dev/null || bar help tokens
+```
+
+If the first command succeeds (exit 0), use the reference approach for workflow planning.

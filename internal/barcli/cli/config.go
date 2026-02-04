@@ -31,6 +31,10 @@ type Config struct {
 	Include []string
 	Exclude []string
 	Fill    float64
+
+	// install-skills specific flags
+	Location string
+	DryRun   bool
 }
 
 // Parse converts argv-like input into a Config.
@@ -177,6 +181,16 @@ func Parse(args []string) (*Config, error) {
 			cfg.Help = true
 		case arg == "--version" || arg == "-v":
 			cfg.Version = true
+		case arg == "--location":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--location requires a path")
+			}
+			cfg.Location = args[i]
+		case strings.HasPrefix(arg, "--location="):
+			cfg.Location = strings.TrimPrefix(arg, "--location=")
+		case arg == "--dry-run":
+			cfg.DryRun = true
 		case arg == "--seed":
 			i++
 			if i >= len(args) {

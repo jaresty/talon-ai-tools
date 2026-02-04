@@ -229,6 +229,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runUpdate(options, stdout, stderr)
 	}
 
+	if options.Command == "install-skills" {
+		return runInstallSkills(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1

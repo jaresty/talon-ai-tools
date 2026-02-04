@@ -74,3 +74,93 @@ Residual constraint monitoring:
 - **Skill versioning** is explicitly deferred beyond MVP scope per ADR decision section.
 
 Re-evaluation trigger: If Loop 2 implementation reveals that file-based skill storage is insufficient (e.g., deployment constraints, binary distribution requirements), the embedding strategy constraint will be promoted to active and addressed before proceeding.
+
+## Loop 2: Implement bar install-skills command
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR 0097 § "Implementation Plan → Phase 1 Step 3" - Implement `bar install-skills` command that reads embedded skills from `internal/barcli/skills/` (using go:embed) and installs them to target `.claude/skills/` directory with support for --location, --dry-run, and --force flags.
+
+**active_constraint:** Bar CLI lacks the `install-skills` command implementation to copy embedded skills to target repositories, preventing users from installing bar automation skills. This is the highest-impact constraint because without the installation mechanism, skills remain inaccessible to end users despite being embedded in the binary. The constraint is falsifiable via `bar install-skills --help` returning exit 0 and installing skills to a test directory.
+
+**Expected value rationale:**
+| Factor           | Value  | Rationale |
+|------------------|--------|-----------|
+| Impact           | High   | Enables primary ADR 0097 deliverable - users can install skills across repos |
+| Probability      | High   | Deterministic - implementing command directly relieves constraint |
+| Time Sensitivity | High   | Blocks end-user value delivery until available |
+| Uncertainty note | None   | Command structure and go:embed mechanism are well-understood patterns |
+
+**validation_targets:**
+- `./scripts/validate-install-skills-command.sh` - Validates that `bar install-skills` command exists, shows help, supports dry-run, and successfully installs all three skills to target directory
+
+**evidence:**
+- red | 2026-02-03T20:16:42Z | exit 1 | `./scripts/validate-install-skills-command.sh`
+    helper:diff-snapshot=0 files (command not yet implemented)
+    Behaviour "bar install-skills command functional" fails with missing command | inline: "ERROR: 'bar install-skills --help' failed"
+
+- green | 2026-02-03T20:22:57Z | exit 0 | `./scripts/validate-install-skills-command.sh`
+    helper:diff-snapshot=7 files changed, 446 insertions(+)
+    Behaviour "bar install-skills command functional" passes with command available and working | inline: "bar install-skills command validated successfully"
+
+- removal | 2026-02-03T20:24:15Z | exit 1 | `git stash && go build -o ~/bin/bar ./cmd/bar && ~/bin/bar install-skills --help; git stash pop`
+    helper:diff-snapshot=0 files changed (temporary revert)
+    Behaviour "bar install-skills command functional" fails again after reverting implementation | inline: "error: usage: bar [build|shuffle|help|completion|preset|tui|tui2]"
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/app.go internal/barcli/cli/config.go internal/barcli/install_skills.go internal/barcli/skills/ scripts/validate-install-skills-command.sh` then rebuild with `go build -o ~/bin/bar ./cmd/bar` and re-run validation to verify red failure returns
+
+**delta_summary:**
+Created/modified 7 files with 446 insertions:
+- `internal/barcli/install_skills.go` (131 lines) - Core installation logic using go:embed to embed skills directory and walk/copy files to target location
+- `internal/barcli/skills/bar-autopilot/skill.md` (113 lines) - Embedded copy of autopilot skill
+- `internal/barcli/skills/bar-workflow/skill.md` (65 lines) - Embedded copy of workflow skill  
+- `internal/barcli/skills/bar-suggest/skill.md` (68 lines) - Embedded copy of suggest skill
+- `internal/barcli/app.go` (+4 lines) - Added command dispatcher for install-skills
+- `internal/barcli/cli/config.go` (+14 lines) - Added Location and DryRun fields plus flag parsing
+- `scripts/validate-install-skills-command.sh` (51 lines) - Validation script for command functionality
+
+Key implementation decisions:
+- Used go:embed to package skills into binary (resolves embedding strategy constraint from Loop 1)
+- Copied skills from `internal/skills/` to `internal/barcli/skills/` to satisfy go:embed path constraints (must be within or below package directory)
+- Default installation location is `.claude/skills/` per ADR decision
+- Dry-run mode shows what would be installed without making changes
+- Force flag enables overwriting existing skills
+
+Depth-first path continues: Wire into CLI ✓ → Add help/docs → Test across repositories
+
+**loops_remaining_forecast:** 1-2 loops remaining
+- Loop 3: Update general help text and ensure command is documented in `bar help`
+- Loop 4 (optional): End-to-end integration test installing to actual project and verifying skills work with Claude
+- Confidence: High - core functionality complete, remaining work is documentation and validation
+
+**residual_constraints:**
+- **General help text missing install-skills** (Severity: Medium) - The top-level `bar help` output and `topUsage` constant don't mention install-skills command. Mitigation: Update help text in Loop 3. Monitoring trigger: User runs `bar help` and doesn't discover install-skills. Reopen condition: Help text doesn't guide users to installation command.
+- **Skills duplicated between internal/skills and internal/barcli/skills** (Severity: Low) - Maintaining two copies creates sync burden. Mitigation: Accept duplication for MVP; future refactoring could use symlinks or build-time copying. Monitoring trigger: Skills diverge between locations. Reopen condition: Cannot reliably keep copies synchronized.
+- **Cross-platform path handling** (Severity: Low) - Inherits filepath package's cross-platform handling; validated on macOS only. Mitigation: Relies on Go stdlib guarantees. Monitoring trigger: Windows test failures. Reopen condition: Installation fails on Windows.
+- **Skill versioning not defined** (Severity: Low) - Skills may evolve over time; no version tracking yet. Mitigation: Defer versioning to future ADR per original decision. Monitoring trigger: User reports skill conflicts. Reopen condition: Skill updates break existing installations.
+
+**next_work:**
+- Behaviour: Help text includes install-skills command
+  - Validation: `bar help` output contains "install-skills" reference
+  - Future-shaping action: Document command in top-level help so users discover it naturally
+- Behaviour: Commandcompletion includes install-skills
+  - Validation: Shell completion suggests install-skills when typing `bar inst`
+  - Future-shaping action: Wire into completion system for discoverability
+
+---
+
+## Constraint Recap
+
+The active constraint (missing install-skills command implementation) has been relieved through:
+1. Implementation of runInstallSkills function with go:embed-based skill packaging
+2. CLI flag parsing for --location, --dry-run, and --force
+3. Command dispatcher integration in app.go
+4. Validation proving end-to-end installation works
+
+Residual constraint monitoring:
+- **General help text** promoted to active for Loop 3 - users need documentation to discover command
+- **Skills duplication** accepted as implementation detail; go:embed requires files within package directory
+- **Cross-platform paths** rely on filepath package; no special Windows handling needed for MVP
+- **Skill versioning** remains deferred beyond MVP per ADR decision
+
+Re-evaluation trigger: If user testing reveals help discoverability issues or completion gaps become blocking, those constraints will be promoted and addressed before considering the ADR complete.

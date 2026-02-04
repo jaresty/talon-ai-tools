@@ -385,3 +385,52 @@ Phase 2 enhancements complete (filtering, compact mode, expanded examples). Opti
 Alternative: Declare Phase 2 complete and proceed to Phase 4 (validation tests) or consider ADR 0098 Phase 1-3 implementation complete.
 
 ---
+
+## Loop 9: Add Discovery-Focused Framing to Usage Patterns
+
+**Date**: 2026-02-04T19:30:00Z
+
+**helper_version**: `helper:v20251223.1`
+
+**focus**: ADR 0098 § Usage Patterns - Add framing language emphasizing patterns are for learning/reference only and LLMs should use reasoning for discovery rather than copying examples
+
+**active_constraint**: The usage patterns section presents 23 examples without framing language, creating risk that LLMs will anchor on these specific combinations rather than exploring the full token space through discovery.
+
+**validation_targets**:
+- `bar help llm --section patterns | head -25` - Should show framing text emphasizing discovery over copying
+
+**evidence**:
+- red | 2026-02-04T19:30:45Z | exit 0 | /tmp/bar help llm --section patterns 2>/dev/null | head -15
+    helper:diff-snapshot=0 files changed
+    behaviour: patterns section starts directly with first example (Decision-Making) without framing text about discovery vs copying | inline
+- green | 2026-02-04T19:40:12Z | exit 0 | /tmp/bar help llm --section patterns 2>/dev/null | head -25
+    helper:diff-snapshot=1 file changed, 10 insertions(+)
+    behaviour: patterns section now includes prominent framing emphasizing examples are "reference material for learning grammar and syntax, not an exhaustive catalog"; instructs LLMs to "use their own reasoning" via Token Catalog and Heuristics; states "patterns show HOW tokens work together, not WHICH combinations to use" | inline
+- removal | 2026-02-04T19:41:30Z | exit 0 | git stash && /tmp/bar-old help llm --section patterns 2>/dev/null | head -10
+    helper:diff-snapshot=0 files changed (reverted)
+    behaviour: after revert, framing text is gone and section starts directly with Decision-Making pattern | inline
+
+**rollback_plan**: `git restore --source=HEAD internal/barcli/help_llm.go` then rebuild and verify framing text is absent
+
+**delta_summary**: Added discovery-focused framing to usage patterns section (1 file changed, 10 insertions). Updated internal/barcli/help_llm.go renderUsagePatterns function to add 11 lines of framing text immediately after section header and before pattern examples. Framing includes: (1) "Important" callout stating examples are reference material for learning grammar/syntax, not exhaustive; (2) Bold instruction for LLMs to "use their own reasoning" by consulting Token Catalog, applying Heuristics, and composing novel combinations; (3) Key principle that patterns show HOW tokens work, not WHICH to use; (4) Reminder that full token space exceeds examples shown. Added horizontal rule separator between framing and examples. Addresses concern that 23 examples might create false ceiling or anchor LLMs to only listed patterns instead of exploring full discovery space.
+
+**loops_remaining_forecast**: 0 loops remaining
+Phase 2 complete. All planned enhancements implemented.
+Confidence: High - framing addresses discovery concern while preserving learning value of examples
+
+**residual_constraints**:
+- **Example validation tests**: Severity=Medium, deferred to Phase 4 per ADR (`make bar-help-llm-test`)
+- **Skill install-skills command**: Severity=Low, embedded skills need regeneration to include updated help_llm.go
+- **Shell completion updates**: Severity=Low, --section and --compact flags need completion support
+- **Method categorization in token catalog**: Severity=Low, ADR Phase 2 optional; heuristics section already provides categorization
+- **Documentation website generation**: Severity=Low, future consideration per ADR notes
+
+**next_work**:
+Phase 2 complete. ADR 0098 Phases 1-3 implementation complete:
+- ✅ Phase 1: Core `bar help llm` command with comprehensive reference
+- ✅ Phase 2: Filtering (--section), compact mode (--compact), 23 usage patterns with discovery framing
+- ✅ Phase 3: All 4 bar skills updated to use reference
+
+Phase 4 (Validation tests) remains optional/deferred per ADR.
+
+---

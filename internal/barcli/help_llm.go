@@ -326,6 +326,16 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 		return
 	}
 	fmt.Fprintf(w, "## Usage Patterns by Task Type\n\n")
+	fmt.Fprintf(w, "**Important**: These examples illustrate common composition patterns to help you understand\n")
+	fmt.Fprintf(w, "how tokens combine across axes. They are **reference material for learning grammar and syntax**,\n")
+	fmt.Fprintf(w, "not an exhaustive catalog of valid approaches.\n\n")
+	fmt.Fprintf(w, "**LLMs should use their own reasoning** to discover appropriate token combinations by:\n")
+	fmt.Fprintf(w, "- Consulting the Token Catalog for available tokens and their meanings\n")
+	fmt.Fprintf(w, "- Applying the Token Selection Heuristics to the specific request\n")
+	fmt.Fprintf(w, "- Composing novel combinations that fit the user's actual needs\n\n")
+	fmt.Fprintf(w, "These patterns show **how** tokens work together, not **which** combinations to use.\n")
+	fmt.Fprintf(w, "The full token space supports many more combinations than shown here.\n\n")
+	fmt.Fprintf(w, "---\n\n")
 
 	patterns := []struct {
 		title   string

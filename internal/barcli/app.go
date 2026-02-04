@@ -749,7 +749,7 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 
 	fmt.Fprintf(stdout, "Verifying checksum...\n")
 	verifier := &updater.ChecksumVerifier{}
-	if err := verifier.VerifySHA256(downloadPath, expectedHash); err != nil {
+	if err := verifier.VerifySHA256(archivePath, expectedHash); err != nil {
 		writeError(stderr, fmt.Sprintf("checksum verification failed: %v", err))
 		return 1
 	}

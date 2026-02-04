@@ -1,21 +1,31 @@
----
-name: bar-cli
-description: Use the bar CLI to build unambiguous prompt recipes by discovering valid tokens via `bar help` and composing promptlets.
-labels: [prompting, cli, prompting-grammar, exploration]
-audience: [developer, prompt-engineer, ai-operator]
----
-
-# Bar CLI Promptlet Skill
+# Bar Manual Usage Skill
 
 ## Purpose and Preconditions
 
-This skill helps users build **unambiguous prompt recipes** using the `bar` CLI’s promptlets and axes.
-It **does not encode grammar**. Instead, it **discovers available tokens via `bar help tokens`** and guides the user to compose valid sequences.
+This skill helps users **manually build bar commands** when they ask how to use the bar CLI.
+Use this skill when the user wants to learn or get help with bar, not when automatically
+structuring responses (use bar-autopilot, bar-workflow, or bar-suggest for automatic usage).
+
+This skill **does not encode grammar**. Instead, it **discovers available tokens via `bar help tokens`**
+and guides the user to compose valid sequences.
 
 Assumes:
 - `bar` CLI is installed and accessible
 - The user can run `bar help` commands
 - Optional: custom grammar JSON via `--grammar` or `BAR_GRAMMAR_PATH`
+
+## When to Use This Skill
+
+Use bar-manual when:
+- User asks "How do I use bar?"
+- User wants to learn bar command syntax
+- User asks for help building a specific bar command
+- User requests bar examples or tutorials
+
+Do NOT use bar-manual for:
+- Automatically structuring your own responses (use bar-autopilot instead)
+- Multi-step workflows (use bar-workflow instead)
+- Presenting options to users (use bar-suggest instead)
 
 ## High-level Workflow
 
@@ -73,20 +83,20 @@ bar build plan full act --grammar /path/to/grammar.json
 - **Prefer guidance over grammar.** Ask the user which section(s) to explore next.
 - **Validate ordering.** Follow the token order shown in `bar help` output.
 - **Support overrides.** After a `key=value` override, all remaining tokens must be `key=value`.
-- **Use slugs for multi-word tokens.** (As shown by `bar help tokens`.)
+- **Use kebab-case for multi-word tokens.** When tokens contain spaces, convert to kebab-case (e.g., "as kent beck" → "as-kent-beck"). Bar will show the canonical slug in help output.
 - **Offer shuffling only after a baseline recipe is built.**
-- **“Run the command” means execute + re-prompt.** When asked to run a `bar ...` command, run it and then treat the command output as the new prompt/context before responding.
-- **“bar suggest” means offer options to choose from.** When asked to do `bar suggest`, propose a short list of valid `bar ...` commands the user can pick from for you to run next.
+- **"Run the command" means execute + re-prompt.** When asked to run a `bar ...` command, run it and then treat the command output as the new prompt/context before responding.
+- **"bar suggest" means offer options to choose from.** When asked to do `bar suggest`, propose a short list of valid `bar ...` commands the user can pick from for you to run next.
 
 ## Recommended Conversation Flow
 
-**User:** “Help me build a prompt for onboarding improvements.”
+**User:** "Help me build a prompt for onboarding improvements."
 
 **Assistant:**
-1. “Let’s discover valid tokens first: `bar help tokens scope method`.”
-2. “Pick a scope + method token that fits.”
-3. “Now we’ll build the recipe: `bar build <tokens> --prompt "<subject>"`.”
-4. “Want to shuffle for alternatives? We can constrain scope/method.”
+1. "Let's discover valid tokens first: `bar help tokens scope method`."
+2. "Pick a scope + method token that fits."
+3. "Now we'll build the recipe: `bar build <tokens> --prompt "<subject>"`."
+4. "Want to shuffle for alternatives? We can constrain scope/method."
 
 ## Example Session (Minimal)
 
@@ -99,3 +109,9 @@ bar build plan full act method=analysis --prompt "Improve onboarding flow"
 
 - Use `--json` when integrating into automation pipelines.
 - Use `bar preset save` after a good build to reuse later with new prompt content.
+
+## Cross-Agent Compatibility Notes
+
+- Works with all agent types when users ask for help with bar
+- Complements bar-autopilot (manual vs automatic usage)
+- Should not be triggered automatically - only when user explicitly requests bar help

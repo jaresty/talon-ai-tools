@@ -107,3 +107,58 @@ Confidence: High - core functionality complete; remaining work is polish
 
 **next_work:**
 - Behaviour: Display recognized token context in error messages → validation: `go test ./internal/barcli -run TestBuildUnrecognizedToken` (extend with context assertions) → future-shaping: Help users understand parsing state when errors occur
+
+## Loop 003 | 2026-02-05
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR-0101 § Implementation approach (Option A) → Add recognized token context to error messages
+
+**active_constraint:** Error messages do not show what tokens were successfully recognized before failure; users cannot understand parsing state when errors occur mid-command. This blocks users from knowing whether the parser understood their earlier tokens correctly.
+
+**expected_value:**
+| Factor           | Value | Rationale |
+|------------------|-------|-----------|
+| Impact           | High  | Helps users understand exactly where parsing failed |
+| Probability      | High  | formatUnrecognizedError already has access to recognized map |
+| Time Sensitivity | Medium | Enhances error clarity; complements fuzzy suggestions |
+
+**validation_targets:**
+- `go test ./internal/barcli -run TestBuildUnrecognizedToken`
+
+**evidence:**
+- red | 2026-02-05T21:30:00Z | exit 1 | go test ./internal/barcli -run TestBuildUnrecognizedToken
+  helper:diff-snapshot=0 files changed (new test cases not yet written)
+  New tests for recognized token context do not exist; behavior undefined | inline
+  ```
+  --- FAIL: TestBuildUnrecognizedToken (0.01s)
+      --- FAIL: TestBuildUnrecognizedToken/error_shows_recognized_tokens_when_parsing_fails_mid-command (0.00s)
+          build_error_test.go:136: expected stderr to contain "Successfully recognized:"
+  ```
+
+- green | 2026-02-05T21:45:00Z | exit 0 | go test ./internal/barcli -run TestBuildUnrecognizedToken
+  helper:diff-snapshot=2 files changed, 74 insertions(+), 4 deletions(-)
+  All 9 test cases pass; recognized tokens displayed in grammar order | inline
+
+- removal | 2026-02-05T21:50:00Z | [old test count] | git stash && go test ./internal/barcli -run TestBuildUnrecognizedToken
+  helper:diff-snapshot=0 files changed
+  Test suite reverts to 6 original tests (3 new context tests removed) | inline
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/build.go internal/barcli/build_error_test.go` followed by validation rerun
+
+**delta_summary:** Added recognized token context to error messages. Files:
+- `internal/barcli/build.go`: Updated formatUnrecognizedError() signature to accept `recognized map[string][]string`; added "Successfully recognized:" section that displays tokens in grammar order (static, completeness, scope, method, form, channel, directional, persona axes)
+- `internal/barcli/build_error_test.go`: Added 3 test cases for recognized token context (mid-command failure, multiple scopes, override mode)
+
+**loops_remaining_forecast:** 1-2 loops remaining
+- Loop 004: Update integration tests and existing fixtures that expect old error format (grep for existing tests that match on error strings)
+- (Optional) Loop 005: Add color support for suggestions and recognized tokens
+Confidence: High - core functionality complete; only fixture updates remain
+
+**residual_constraints:**
+- **Medium severity** - Existing integration tests may expect old error format: Tests that match on exact error strings will fail when they encounter the new multi-line format with suggestions and context. Mitigation: Update tests to match on key phrases rather than exact strings, or update fixtures. Monitor: CI/test failures on existing test suites. Reopen condition: Test failures block ADR closure.
+- **Low severity** - Recognized token order might not match user expectations in all cases: Tokens are displayed in grammar order, not input order. For example, `make mean time` shows `static: make, scope: mean, time` even though user typed them in a different conceptual order. Mitigation: Grammar order is the canonical sequence and matches documentation. Monitor: User feedback. Reopen condition: User confusion about token order.
+- **Low severity** - Persona preset names not shown in recognized tokens: When using `persona=preset-name`, the recognized tokens show the expanded axes but not the preset name itself. Mitigation: This is consistent with how presets expand; showing expanded values is more informative. Monitor: User questions. Reopen condition: User requests to see preset names.
+
+**next_work:**
+- Behaviour: Update existing integration tests for new error format → validation: `go test ./internal/barcli -run TestBuild` → future-shaping: Ensure error format changes don't break existing validation

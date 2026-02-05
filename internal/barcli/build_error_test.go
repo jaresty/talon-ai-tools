@@ -85,6 +85,42 @@ func TestBuildUnrecognizedToken(t *testing.T) {
 				"bar help tokens form",
 			},
 		},
+		{
+			name:       "error shows recognized tokens when parsing fails mid-command",
+			args:       []string{"build", "make", "mean", "analysi"},
+			expectExit: true,
+			expectInMessage: []string{
+				"unrecognized token",
+				"analysi",
+				"Successfully recognized:",
+				"static: make",
+				"scope: mean",
+			},
+		},
+		{
+			name:       "error shows recognized tokens with multiple scopes",
+			args:       []string{"build", "make", "mean", "time", "analysi"},
+			expectExit: true,
+			expectInMessage: []string{
+				"unrecognized token",
+				"analysi",
+				"Successfully recognized:",
+				"static: make",
+				"scope: mean, time",
+			},
+		},
+		{
+			name:       "error shows recognized override tokens",
+			args:       []string{"build", "static=make", "scope=mean", "method=analysi"},
+			expectExit: true,
+			expectInMessage: []string{
+				"unrecognized token for method",
+				"analysi",
+				"Successfully recognized:",
+				"static: make",
+				"scope: mean",
+			},
+		},
 	}
 
 	for _, tt := range tests {

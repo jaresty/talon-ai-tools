@@ -246,7 +246,7 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 		return s.applyPersonaPreset(token, false)
 	}
 
-	msg := formatUnrecognizedError(s.grammar, "", token)
+	msg := formatUnrecognizedError(s.grammar, "", token, s.recognized)
 	s.unrecognized = append(s.unrecognized, token)
 	return s.fail(&CLIError{
 		Type:         errorUnknownToken,
@@ -530,7 +530,7 @@ func (s *buildState) splitValueList(value string) []string {
 }
 
 func (s *buildState) unknownValue(key, value string) *CLIError {
-	msg := formatUnrecognizedError(s.grammar, key, value)
+	msg := formatUnrecognizedError(s.grammar, key, value, s.recognized)
 	s.unrecognized = append(s.unrecognized, value)
 	return s.fail(&CLIError{
 		Type:         errorUnknownToken,
@@ -541,8 +541,8 @@ func (s *buildState) unknownValue(key, value string) *CLIError {
 }
 
 // formatUnrecognizedError creates a helpful error message for unrecognized tokens.
-// It includes fuzzy matching suggestions and help hints for discovering valid tokens.
-func formatUnrecognizedError(g *Grammar, axis, token string) string {
+// It includes fuzzy matching suggestions, help hints, and recognized token context.
+func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[string][]string) string {
 	var msg strings.Builder
 
 	// Start with the basic error
@@ -595,6 +595,40 @@ func formatUnrecognizedError(g *Grammar, axis, token string) string {
 	}
 	msg.WriteString("tokens:\n  ")
 	msg.WriteString(helpCommand)
+
+	// Add recognized token context if any tokens were successfully parsed
+	if len(recognized) > 0 {
+		msg.WriteString("\n\nSuccessfully recognized:")
+
+		// Display in grammar order: static, completeness, scope, method, form, channel, directional
+		axisOrder := []string{"static", "completeness", "scope", "method", "form", "channel", "directional"}
+
+		for _, axisName := range axisOrder {
+			tokens := recognized[axisName]
+			if len(tokens) == 0 {
+				continue
+			}
+
+			msg.WriteString("\n  ")
+			msg.WriteString(axisName)
+			msg.WriteString(": ")
+			msg.WriteString(strings.Join(tokens, ", "))
+		}
+
+		// Handle persona axes if present
+		personaAxes := []string{"voice", "audience", "tone", "intent", "persona"}
+		for _, axisName := range personaAxes {
+			tokens := recognized[axisName]
+			if len(tokens) == 0 {
+				continue
+			}
+
+			msg.WriteString("\n  ")
+			msg.WriteString(axisName)
+			msg.WriteString(": ")
+			msg.WriteString(strings.Join(tokens, ", "))
+		}
+	}
 
 	return msg.String()
 }

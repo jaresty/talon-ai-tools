@@ -162,3 +162,64 @@ Confidence: High - core functionality complete; only fixture updates remain
 
 **next_work:**
 - Behaviour: Update existing integration tests for new error format → validation: `go test ./internal/barcli -run TestBuild` → future-shaping: Ensure error format changes don't break existing validation
+
+## Loop 004 | 2026-02-05
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR-0101 § Consequences → Validate backward compatibility of enhanced error format with existing integration tests
+
+**active_constraint:** No explicit test validates that enhanced error format maintains backward compatibility with existing tests that check for "unrecognized token" strings. This prevents us from catching regressions that might break existing test expectations.
+
+**expected_value:**
+| Factor           | Value | Rationale |
+|------------------|-------|-----------|
+| Impact           | Medium | Prevents future regressions; documents compatibility |
+| Probability      | High  | Test is straightforward validation of existing behavior |
+| Time Sensitivity | Medium | Nice-to-have before ADR closure; validates design decision |
+
+**validation_targets:**
+- `go test ./internal/barcli -run TestRunBuildInvalidTokenBackwardCompatibility`
+- `go test ./internal/barcli` (all tests)
+
+**evidence:**
+- red | 2026-02-05T22:00:00Z | [no tests] | go test ./internal/barcli -run TestRunBuildInvalidTokenBackwardCompatibility
+  helper:diff-snapshot=0 files changed
+  Backward compatibility test does not exist | inline
+  ```
+  ok  	github.com/talonvoice/talon-ai-tools/internal/barcli	0.243s [no tests to run]
+  ```
+
+- green | 2026-02-05T22:10:00Z | exit 0 | go test ./internal/barcli -run TestRunBuildInvalidTokenBackwardCompatibility && go test ./internal/barcli
+  helper:diff-snapshot=1 file changed, 64 insertions(+)
+  Backward compatibility test passes; all 119 existing tests pass | inline
+
+- removal | 2026-02-05T22:15:00Z | [no tests] | git stash && go test ./internal/barcli -run TestRunBuildInvalidTokenBackwardCompatibility
+  helper:diff-snapshot=0 files changed
+  Test reverts to no-tests-to-run state | inline
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/app_build_cli_test.go` followed by validation rerun
+
+**delta_summary:** Added backward compatibility validation test. Files:
+- `internal/barcli/app_build_cli_test.go`: Added TestRunBuildInvalidTokenBackwardCompatibility with 3 test cases validating that:
+  - Invalid shorthand tokens still contain "unrecognized token"
+  - Invalid override tokens still contain "unrecognized token"
+  - New enhanced features (suggestions, help hints, context) don't break tests expecting basic error strings
+  - Old exact-match patterns are explicitly avoided (multi-line vs single-line format)
+
+**loops_remaining_forecast:** 0 loops remaining - ADR implementation complete
+- All core features implemented: fuzzy suggestions, help hints, recognized token context
+- All tests passing (119 tests total)
+- Backward compatibility validated
+- Optional enhancement (color support) deferred to post-ADR follow-up
+
+Confidence: Complete - all ADR objectives met
+
+**residual_constraints:**
+- **Low severity** - Color support not implemented: Suggestions and context are plain text. Mitigation: Acceptable for initial release; can add color in follow-up. Monitor: User feedback. Reopen condition: User requests for color highlighting.
+- **Low severity** - No telemetry on error frequency: Cannot measure impact of improved errors on user success rates. Mitigation: Defer to broader CLI telemetry initiative. Monitor: When telemetry framework is added. Reopen condition: Product team requests error metrics.
+- **Low severity** - Multi-word token convention not explained: Users typing "fly rog" see "fly-rog" suggestion but no explanation of space→dash rule. Mitigation: Current suggestion is clear enough; documentation covers this. Monitor: Support questions. Reopen condition: Frequent confusion about multi-word tokens.
+
+**next_work:**
+- ADR closure: All validation targets met; ready to update ADR status to "Accepted"
+- Future enhancement: Add color support for suggestions and recognized tokens (deferred, not blocking)

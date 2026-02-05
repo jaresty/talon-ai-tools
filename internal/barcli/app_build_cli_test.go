@@ -127,6 +127,70 @@ func TestRunBuildInvalidTokenError(t *testing.T) {
 
 }
 
+func TestRunBuildInvalidTokenBackwardCompatibility(t *testing.T) {
+	// Validate that the enhanced error format maintains backward compatibility
+	// with tests that check for "unrecognized token" strings.
+	t.Setenv(disableStateEnv, "1")
+
+	tests := []struct {
+		name         string
+		args         []string
+		expectInErr  []string
+		expectNotErr []string
+	}{
+		{
+			name: "invalid shorthand token contains basic error",
+			args: []string{"build", "does-not-exist"},
+			expectInErr: []string{
+				"unrecognized token",
+				"does-not-exist",
+			},
+		},
+		{
+			name: "invalid override token contains basic error",
+			args: []string{"build", "method=does-not-exist"},
+			expectInErr: []string{
+				"unrecognized token",
+				"does-not-exist",
+			},
+		},
+		{
+			name: "new enhanced features dont break old expectations",
+			args: []string{"build", "xyz"},
+			expectInErr: []string{
+				"unrecognized token",
+				"bar help tokens",
+			},
+			// Should NOT contain these legacy exact-match patterns
+			expectNotErr: []string{
+				"error: unrecognized token\n", // Old format was just one line
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := runBuildCLI(t, tt.args, nil)
+
+			if result.Exit == 0 {
+				t.Errorf("expected non-zero exit")
+			}
+
+			for _, expected := range tt.expectInErr {
+				if !strings.Contains(result.Stderr, expected) {
+					t.Errorf("expected stderr to contain %q\nGot:\n%s", expected, result.Stderr)
+				}
+			}
+
+			for _, unexpected := range tt.expectNotErr {
+				if strings.Contains(result.Stderr, unexpected) {
+					t.Errorf("expected stderr NOT to contain %q\nGot:\n%s", unexpected, result.Stderr)
+				}
+			}
+		})
+	}
+}
+
 func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("file permission semantics differ on Windows")

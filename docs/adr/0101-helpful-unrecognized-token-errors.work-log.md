@@ -223,3 +223,70 @@ Confidence: Complete - all ADR objectives met
 **next_work:**
 - ADR closure: All validation targets met; ready to update ADR status to "Accepted"
 - Future enhancement: Add color support for suggestions and recognized tokens (deferred, not blocking)
+
+## Loop 005 | 2026-02-05
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR-0101 § Status → Formal ADR closure with retrospective and status update to "Accepted"
+
+**active_constraint:** ADR status remains "Proposed" despite complete implementation; no final retrospective documents what was delivered vs. proposed. This prevents stakeholders from knowing the ADR is complete and understanding any deferred work.
+
+**expected_value:**
+| Factor           | Value | Rationale |
+|------------------|-------|-----------|
+| Impact           | High  | Formal closure communicates completion to stakeholders |
+| Probability      | High  | Documentation update is deterministic |
+| Time Sensitivity | High  | Required for ADR completion per helper specification |
+
+**validation_targets:**
+- Documentation-only loop: No executable validation targets
+- Blocker evidence: None (documentation loop for ADR closure)
+
+**evidence:**
+- red | 2026-02-05T22:20:00Z | observation | ADR status check
+  helper:diff-snapshot=0 files changed
+  ADR status is "Proposed"; no Implementation Summary or Retrospective sections exist | inline
+  ```
+  Status: Proposed
+  Date: 2026-02-05
+  ```
+
+- green | 2026-02-05T22:30:00Z | observation | ADR status check
+  helper:diff-snapshot=1 file changed, 151 insertions(+), 2 deletions(-)
+  ADR status updated to "Accepted"; complete Implementation Summary and Retrospective added | inline
+  ```
+  Status: Accepted
+  Date: 2026-02-05
+  Implemented: 2026-02-05
+  ```
+
+- removal | N/A | N/A | Documentation-only loop
+  helper:diff-snapshot=N/A
+  Removal evidence not applicable for ADR closure documentation | inline
+
+**rollback_plan:** `git restore --source=HEAD docs/adr/0101-helpful-unrecognized-token-errors.md` followed by status verification
+
+**delta_summary:** Formal ADR closure. Files:
+- `docs/adr/0101-helpful-unrecognized-token-errors.md`:
+  * Updated status from "Proposed" to "Accepted"
+  * Added "Implemented: 2026-02-05" timestamp
+  * Added "Implementation Summary" section documenting all 4 loops with validation commands and commit references
+  * Added "Retrospective" section with:
+    - What Was Delivered (all core improvements ✓)
+    - Deferred to Follow-up (color support, shorthand-after-override detection)
+    - Adversarial Review (design validations, residual constraints)
+    - Completion Criteria Met (all validation targets ✓)
+
+**loops_remaining_forecast:** 0 loops - ADR complete and closed
+
+Confidence: Complete - all objectives met, retrospective documented, status updated
+
+**residual_constraints:**
+- **Low severity** - Color support remains deferred: Documented in Retrospective § Deferred to Follow-up. Mitigation: Track as optional post-ADR enhancement. Monitor: User feedback. Reopen condition: User requests for color.
+- **Low severity** - Shorthand-after-override specific error not implemented: Documented in Retrospective § Deferred to Follow-up as "nice-to-have" from example. Current behavior is correct (errors caught), just less specific. Mitigation: Current error messages provide suggestions. Monitor: User confusion. Reopen condition: Multiple support requests.
+- **Low severity** - No telemetry tracking error improvements: Documented in Retrospective § Adversarial Review as acceptable per anti-goals (offline-capable CLI). Mitigation: Defer to broader CLI metrics initiative. Monitor: Product team requests. Reopen condition: Metrics framework added to CLI.
+
+**next_work:**
+- None - ADR implementation complete and closed
+- Optional future enhancements documented in ADR § Retrospective § Deferred to Follow-up

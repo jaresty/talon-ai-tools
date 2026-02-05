@@ -87,7 +87,7 @@ Use bar-suggest when the request is:
    - Specific methods within each category
    - How categories represent different thinking modes
 
-2. **Select static prompts for options** - **Almost always select a static prompt token** for each option to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". While the grammar marks static prompts as optional (0..1), omitting them results in open-ended responses that lack focus and make options less distinct.
+2. **Select static prompts for options** - **REQUIRED: Select a static prompt token** for each option to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". The grammar marks static prompts as optional (0-1), but this is a technical specification—automated usage MUST include a static prompt to make options distinct and focused. See reference § "Usage Guidance for Automated/Agent Contexts".
 
 3. **Create cross-category options** - Generate options using methods from different categories:
    - **Option 1**: Use methods from Exploration category (discover from reference)

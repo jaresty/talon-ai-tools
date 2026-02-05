@@ -96,10 +96,13 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- **Directional**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Persona**: voice, audience, tone, intent axes or preset\n\n")
 
+	fmt.Fprintf(w, "### Usage Guidance for Automated/Agent Contexts\n\n")
+	fmt.Fprintf(w, "**Static prompts are REQUIRED for automated usage**, despite the grammar allowing 0-1 tokens. Always select a static prompt token to provide clear task direction. Only omit the static prompt in manual exploratory contexts where maximum flexibility is explicitly desired. Automated responses without a static prompt lack focus and produce open-ended, poorly structured output.\n\n")
+
 	fmt.Fprintf(w, "### Key=Value Override Syntax\n\n")
 	fmt.Fprintf(w, "After the first `key=value` override, all remaining tokens must use `key=value` format:\n\n")
 	fmt.Fprintf(w, "```bash\n")
-	fmt.Fprintf(w, "bar build todo focus method=branch form=table --prompt \"text\"\n")
+	fmt.Fprintf(w, "bar build make focus method=branch form=table --prompt \"text\"\n")
 	fmt.Fprintf(w, "```\n\n")
 }
 

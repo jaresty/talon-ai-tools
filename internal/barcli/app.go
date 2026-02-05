@@ -69,7 +69,7 @@ func getUpdateRepo() string {
 
 var generalHelpText = strings.TrimSpace(`USAGE
   bar build <tokens>... [--prompt TEXT|--input FILE] [--output FILE] [--json]
-  cat prompt.txt | bar build todo focus steps fog
+  cat prompt.txt | bar build make focus steps fog
 
   bar shuffle [--prompt TEXT|--input FILE] [--output FILE] [--json]
               [--seed N] [--include CATS] [--exclude CATS] [--fill 0.0-1.0]
@@ -108,7 +108,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   After the first key=value override, *all* remaining tokens must be key=value.
   Enter tokens the way they appear in "bar help tokens": single words stay the
-  same (for example "todo", "focus"), while multi-word entries use dashed slugs
+  same (for example "make", "focus"), while multi-word entries use dashed slugs
   such as "as-teacher" or "fly-rog". Label-form tokens (for example "as teacher")
   fail with an error that points to the slug. Key=value overrides accept canonical
   values like "scope=focus" as well as slug equivalents such as "directional=fly-rog".
@@ -170,11 +170,11 @@ var generalHelpText = strings.TrimSpace(`USAGE
   List available tokens:           bar help tokens
   List only static prompts:        bar help tokens static
   List persona sections:           bar help tokens persona persona-intents
-  Emit JSON for automation:        bar build --json todo focus steps fog
-  Supply prompt content:           bar build todo focus --prompt "Fix onboarding"
+  Emit JSON for automation:        bar build --json make focus steps fog
+  Supply prompt content:           bar build make focus --prompt "Fix onboarding"
   Reuse a saved preset:            bar preset use daily-plan --prompt "Daily sync status"
-  Skip persona stage quickly:      bar build //next todo full focus
-   Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
+  Skip persona stage quickly:      bar build //next make full focus
+   Mix shorthand with overrides:    bar build make focus method=steps directional=fog
     Inspect another grammar file:    bar help tokens --grammar /path/to/grammar.json
      Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
 

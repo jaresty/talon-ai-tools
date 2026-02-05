@@ -105,9 +105,9 @@ def _canonicalize_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _default_static_prompt() -> str:
-    # Per ADR 0086: "infer" was retired as it violated task-defines-success principle.
-    # Default to empty string to allow open-ended responses when no task is specified,
-    # since the current task catalog doesn't cover all possible definitions of success.
+    # Note: Static prompt is now REQUIRED by Go CLI validation.
+    # This returns empty string for grammar schema compatibility, but the CLI will
+    # reject builds without an explicit static prompt.
     return ""
 
 

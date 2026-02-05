@@ -97,7 +97,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
 
 
-  1. Static prompt          (0..1 tokens, default: open-ended)
+  1. Static prompt          (REQUIRED: 1 token)
   2. Completeness           (0..1)
   3. Scope                  (0..2)
   4. Method                 (0..3)

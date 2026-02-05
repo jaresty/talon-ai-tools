@@ -677,9 +677,24 @@ func (s *buildState) cloneRecognized() map[string][]string {
 }
 
 func (s *buildState) finalise() *CLIError {
-	// Per ADR 0086: Allow empty static prompt for open-ended responses.
-	// The task catalog doesn't cover all possible definitions of success,
-	// so empty task is valid to let the LLM respond naturally to the subject.
+	// Require explicit static prompt (task definition)
+	if s.static == "" {
+		staticPrompts := s.grammar.GetAllStaticPrompts()
+		var msg strings.Builder
+		msg.WriteString("static prompt (task) is required\n\n")
+		msg.WriteString("Available static prompts:\n")
+		for _, prompt := range staticPrompts {
+			msg.WriteString("  ")
+			msg.WriteString(prompt)
+			if desc := s.grammar.Static.Descriptions[prompt]; desc != "" {
+				msg.WriteString(" - ")
+				msg.WriteString(desc)
+			}
+			msg.WriteString("\n")
+		}
+		msg.WriteString("\nExample: bar build make full code <prompt>")
+		return s.errorf(errorMissingStatic, msg.String())
+	}
 
 	// Sort scope and method for deterministic output while preserving initial order for text.
 	s.scope = dedupeInOrder(s.scope)

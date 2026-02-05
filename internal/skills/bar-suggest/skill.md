@@ -25,12 +25,13 @@ Assumes:
 
 ## Skill Behavior Rules
 
-- **Present options, don't choose.** Let user decide the approach.
+- **CRITICAL: Do not answer directly.** You MUST use AskUserQuestion to present options BEFORE providing any answer. Never skip presenting options and jump straight to answering.
+- **REQUIRED: Use AskUserQuestion tool.** Present 2-4 distinct choices using Claude's question interface. This is mandatory—there is no fallback mode where you answer directly.
+- **Present options, don't choose.** Let user decide the approach after seeing the options.
 - **Never hardcode tokens.** Discover via `bar help llm` (preferred) or `bar help tokens` (fallback).
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "as-kent-beck").
 - **Keep options distinct.** Each option should represent meaningfully different approach.
-- **Explain trade-offs.** Help user understand what each option emphasizes.
-- **Use AskUserQuestion tool.** Present choices using Claude's question interface.
+- **Explain trade-offs.** Help user understand what each option emphasizes in the option descriptions.
 - **Be transparent about usage.** After executing the user's choice, explain the bar command used.
 - **Execute chosen option.** After user selects, run the bar command and structure response.
 
@@ -214,15 +215,16 @@ bar build <discovered-tokens-for-choice> --prompt "topic"
 
 ## Cross-Agent Compatibility Notes
 
-- Works with all Claude agent types
-- AskUserQuestion tool must be available
-- If AskUserQuestion unavailable, fall back to bar-autopilot with best guess
+- Works with all Claude agent types that have AskUserQuestion tool
+- **AskUserQuestion tool is REQUIRED** - this skill cannot function without it
 - Token discovery ensures bar version compatibility
+- If you cannot present options, the skill has failed—do not answer directly as a fallback
 
 ## Error Handling
 
-- If bar unavailable: Present options conceptually without bar structure
-- If token discovery fails: Use common patterns from memory
+- If bar unavailable: Still present options conceptually using AskUserQuestion, just without bar token structure
+- If token discovery fails: Still present options using common patterns, but always use AskUserQuestion
+- If AskUserQuestion is unavailable: This skill cannot function—do not attempt to answer directly
 - Always prefer showing options over guessing user's intent
 
 ## Version Detection

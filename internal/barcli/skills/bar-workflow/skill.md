@@ -72,20 +72,22 @@ Assumes:
 
 1. **Identify workflow pattern** - Consult reference § "Usage Patterns by Task Type" to understand which patterns might chain well
 
-2. **Select method progression** - Read reference § "Choosing Method" to discover:
+2. **Select static prompts for each step** - **Almost always select a static prompt token** for each workflow step to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". While the grammar marks static prompts as optional (0..1), omitting them results in open-ended responses that lack focus.
+
+3. **Select method progression** - Read reference § "Choosing Method" to discover:
    - Which method categories exist (Exploration, Understanding, Decision, Diagnostic)
    - How methods within each category differ
    - Which progressions make sense for your use case
 
-3. **Plan scope evolution** - Read reference § "Choosing Scope" to understand:
+4. **Plan scope evolution** - Read reference § "Choosing Scope" to understand:
    - How scope tokens define focus areas
    - Which scope progressions support the workflow goal
 
-4. **Select forms for each step** - Read reference § "Choosing Form" to discover:
+5. **Select forms for each step** - Read reference § "Choosing Form" to discover:
    - Appropriate output structures for intermediate steps
    - Final form for synthesized result
 
-5. **Verify composition** - Read reference § "Composition Rules" to check:
+6. **Verify composition** - Read reference § "Composition Rules" to check:
    - Token ordering requirements for each step
    - Axis capacity constraints
 

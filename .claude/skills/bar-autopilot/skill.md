@@ -84,24 +84,26 @@ Assumes:
 
 1. **Match request to patterns** - Consult reference § "Usage Patterns by Task Type" to find similar examples and understand what token combinations work well for different request types
 
-2. **Select scope** - Read reference § "Choosing Scope" to understand what scope tokens are available and how to select them based on request focus
+2. **Select static prompt** - **Almost always select a static prompt token** to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". While the grammar marks static prompts as optional (0..1), omitting them results in open-ended responses that lack focus. Only skip the static prompt for truly exploratory requests where the user wants maximum flexibility.
 
-3. **Select method** - Read reference § "Choosing Method" to discover:
+3. **Select scope** - Read reference § "Choosing Scope" to understand what scope tokens are available and how to select them based on request focus
+
+4. **Select method** - Read reference § "Choosing Method" to discover:
    - What method tokens are available
    - How methods are categorized by thinking style
    - Which categories match your request type
 
-4. **Select form** - Read reference § "Choosing Form" to discover:
+5. **Select form** - Read reference § "Choosing Form" to discover:
    - What form tokens are available
    - How forms map to different output structures
    - Which form best matches the desired response format
 
-5. **Discover available tokens** - Read reference § "Token Catalog" to see:
+6. **Discover available tokens** - Read reference § "Token Catalog" to see:
    - All tokens available for each axis
    - Descriptions of what each token does
    - Complete list across all 7 axes
 
-6. **Verify composition** - Read reference § "Composition Rules" to check:
+7. **Verify composition** - Read reference § "Composition Rules" to check:
    - Token ordering requirements
    - Axis capacity constraints
    - Token incompatibilities

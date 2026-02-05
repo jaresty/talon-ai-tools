@@ -87,18 +87,20 @@ Use bar-suggest when the request is:
    - Specific methods within each category
    - How categories represent different thinking modes
 
-2. **Create cross-category options** - Generate options using methods from different categories:
+2. **Select static prompts for options** - **Almost always select a static prompt token** for each option to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". While the grammar marks static prompts as optional (0..1), omitting them results in open-ended responses that lack focus and make options less distinct.
+
+3. **Create cross-category options** - Generate options using methods from different categories:
    - **Option 1**: Use methods from Exploration category (discover from reference)
    - **Option 2**: Use methods from Understanding category (discover from reference)
    - **Option 3**: Use methods from Decision category (discover from reference)
    - **Option 4**: Use methods from Diagnostic category (discover from reference)
 
-3. **Vary scope and form** - Read reference § "Choosing Scope" and § "Choosing Form" to:
+4. **Vary scope and form** - Read reference § "Choosing Scope" and § "Choosing Form" to:
    - Discover available scope tokens for different focus areas
    - Discover available form tokens for different output structures
    - Combine with method variation for truly distinct options
 
-4. **Check patterns** - Reference § "Usage Patterns by Task Type" to:
+5. **Check patterns** - Reference § "Usage Patterns by Task Type" to:
    - See examples of different approach types
    - Understand how token combinations create distinct experiences
    - Ensure your options match established patterns

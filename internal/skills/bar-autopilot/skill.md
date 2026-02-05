@@ -1,3 +1,8 @@
+---
+name: bar-autopilot
+description: Automatically detect and apply bar structuring to responses for better thinking and structure.
+---
+
 # Bar Autopilot Skill
 
 ## Purpose and Preconditions
@@ -6,91 +11,165 @@ This skill enables Claude to **automatically detect when a user request benefits
 
 Assumes:
 - `bar` CLI is installed and accessible
-- The LLM can run `bar help tokens` to discover available tokens
+- The LLM can run `bar help llm` (or `bar help tokens` for older versions) to discover available tokens
 - The LLM has access to the Bash tool for executing bar commands
 
 ## High-level Workflow
 
 1. **Analyze user request** for implicit structure needs
-2. **Discover tokens** dynamically via `bar help tokens` (never hardcode)
-3. **Build appropriate bar command** based on request type
-4. **Execute bar command** and use output as prompt structure
-5. **Return well-structured response** to user
+2. **Load comprehensive reference** via `bar help llm` once per conversation (cache for reuse)
+3. **Select tokens** by consulting reference sections (Usage Patterns, Token Selection Heuristics, Token Catalog)
+4. **Build appropriate bar command** based on discovered tokens
+5. **Execute bar command** and use output as prompt structure
+6. **Return well-structured response** to user
 
 ## Skill Behavior Rules
 
-- **Never hardcode tokens.** Always run `bar help tokens` or sectioned variants to discover current available tokens.
-- **Be version-agnostic.** Tokens evolve; discover them dynamically.
-- **Use kebab-case for multi-word tokens.** When tokens contain spaces (e.g., "as kent beck", "to junior engineer"), convert to kebab-case: "as-kent-beck", "to-junior-engineer". Bar will show the canonical slug in help output.
+- **Never hardcode tokens.** Always discover them via `bar help llm` (preferred) or `bar help tokens` (fallback).
+- **Be version-agnostic.** Tokens evolve; discover them dynamically from the current bar version.
+- **Use kebab-case for multi-word tokens.** When tokens contain spaces (e.g., "as kent beck"), convert to kebab-case: "as-kent-beck".
 - **Work proactively.** Users should not need to ask for bar structuring.
-- **Be transparent about usage.** After using bar, briefly explain which command you used and why it fits the request type to aid user learning.
+- **Be transparent about usage.** After using bar, briefly explain which command you used and why it fits the request type.
 - **Graceful degradation.** If bar is unavailable, fall back to normal responses.
 - **Cross-agent compatible.** Must work across all Claude agent types (general-purpose, Explore, Plan, etc.).
 - **Use Bash tool.** Execute bar commands via the Bash tool.
 - **Parse output reliably.** Extract the prompt structure from bar's output.
 
-## Token Selection Heuristics
+## Discovery Workflow
 
-When a user request benefits from bar structuring, discover available tokens and select based on these characteristics:
+### With `bar help llm` (preferred)
 
-### Step 1: Discover Current Tokens
-Always begin by discovering what tokens are available in this version of bar:
-```bash
-bar help tokens scope method
-bar help tokens form
-# Add persona tokens if the request involves specific audience or voice
-bar help tokens persona
-```
+**For bar versions with `bar help llm` support:**
 
-**Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional. See bar-manual skill for complete grammar details.
+1. **Check for cached reference** - If `bar help llm` was already run in this conversation, reuse it
+2. **Load reference once** - If not cached, run `bar help llm` to load comprehensive reference (~500 lines)
+3. **Token selection strategy:**
+   - Consult **"Usage Patterns by Task Type"** section for similar use case examples
+   - Reference **"Token Selection Heuristics"** section for scope/method/form guidance
+   - Use **"Token Catalog"** section to discover available tokens across all 7 axes
+   - Check **"Composition Rules"** section for ordering, caps, and incompatibilities
 
-### Step 2: Choose Scope Based on Request Focus
+**Performance benefit:** 1 reference load per conversation (vs 3-5 queries per request with legacy approach)
 
-Analyze what aspect the request centers on:
-- **Entities and boundaries** → Look for scope tokens related to "what exists"
-- **Relationships and organization** → Look for scope tokens related to "how things connect"
-- **Sequence and change** → Look for scope tokens related to "when things happen"
-- **Understanding and framing** → Look for scope tokens related to "what it means"
-- **Tasks and intentions** → Look for scope tokens related to "what to do"
-- **Perspectives and viewpoints** → Look for scope tokens related to "from whose view"
-- **Quality and success criteria** → Look for scope tokens related to "what makes it good"
-- **Failure modes and limits** → Look for scope tokens related to "where it breaks"
+**Reference structure includes:**
+- Quick Start with example commands
+- Grammar Architecture (ordering rules)
+- Token Catalog (all 7 axes: static, completeness, scope, method, form, channel, directional)
+- Persona System (presets + custom axes)
+- Composition Rules (constraints)
+- Usage Patterns by Task Type (8 examples: decision-making, architecture, diagnosis, etc.)
+- Token Selection Heuristics (categorized by thinking style)
+- Advanced Features (shuffle, skip sentinels)
 
-### Step 3: Choose Method Based on Request Type
+### Fallback (legacy `bar help tokens`)
 
-Analyze how the request wants you to think:
-- **Deciding between options** → Look for method tokens about branching, comparing, or evaluating alternatives
-- **Understanding architecture** → Look for method tokens about mapping, structure, or relationships
-- **Explaining processes** → Look for method tokens about flow, sequence, or progression
-- **Finding problems** → Look for method tokens about diagnosis, failure, or stress-testing
-- **Exploring possibilities** → Look for method tokens about generation, survey, or divergence
-- **Building cases** → Look for method tokens about argumentation, evidence, or reasoning
-- **Learning concepts** → Look for method tokens about scaffolding, building understanding
+**For older bar versions without `bar help llm`:**
 
-### Step 4: Choose Form Based on Desired Output
+1. Run `bar help tokens` to discover all available tokens
+2. Use sectioned queries for focused discovery:
+   ```bash
+   bar help tokens scope method    # Discover scope and method axes
+   bar help tokens form            # Discover form axis
+   bar help tokens persona         # Discover persona options (if needed)
+   ```
+3. Use the heuristics below for token selection
 
-Analyze how the response should be structured:
-- **Actionable next steps** → Look for form tokens about actions, checklists, or tasks
-- **Multiple alternatives** → Look for form tokens about variants, options, or comparison
-- **Step-by-step guidance** → Look for form tokens about walkthroughs, recipes, or flows
-- **Structured comparison** → Look for form tokens about tables or side-by-side layout
-- **Building understanding** → Look for form tokens about scaffolding, gradual explanation
-- **Decision documentation** → Look for form tokens about cases, arguments, or rationale
+**Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional.
 
-### Step 5: Freeform Discovery
+## Token Selection Strategy
 
-If the request doesn't clearly match the heuristics above:
+**IMPORTANT:** Never hardcode tokens in your reasoning. Always discover them from `bar help llm` or `bar help tokens` first.
+
+### With `bar help llm` Reference
+
+1. **Match request to patterns** - Consult reference § "Usage Patterns by Task Type" to find similar examples and understand what token combinations work well for different request types
+
+2. **Select static prompt** - **Almost always select a static prompt token** to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". While the grammar marks static prompts as optional (0..1), omitting them results in open-ended responses that lack focus. Only skip the static prompt for truly exploratory requests where the user wants maximum flexibility.
+
+3. **Select scope** - Read reference § "Choosing Scope" to understand what scope tokens are available and how to select them based on request focus
+
+4. **Select method** - Read reference § "Choosing Method" to discover:
+   - What method tokens are available
+   - How methods are categorized by thinking style
+   - Which categories match your request type
+
+5. **Select form** - Read reference § "Choosing Form" to discover:
+   - What form tokens are available
+   - How forms map to different output structures
+   - Which form best matches the desired response format
+
+6. **Discover available tokens** - Read reference § "Token Catalog" to see:
+   - All tokens available for each axis
+   - Descriptions of what each token does
+   - Complete list across all 7 axes
+
+7. **Verify composition** - Read reference § "Composition Rules" to check:
+   - Token ordering requirements
+   - Axis capacity constraints
+   - Token incompatibilities
+
+### Legacy Token Selection (without bar help llm)
+
+If `bar help llm` is unavailable, use these general heuristics after discovering tokens via `bar help tokens`:
+
+1. **Analyze request focus** - What aspect does the request center on?
+2. **Analyze thinking mode** - How should you approach the problem?
+3. **Analyze output structure** - What format best serves the user?
+4. **Discover available tokens** - Run `bar help tokens` with relevant section filters
+5. **Select discovered tokens** - Choose from the discovered set based on request characteristics
+
+**Legacy heuristics for scope:**
+- Entities and boundaries → Look for scope tokens related to "what exists"
+- Relationships and organization → Look for scope tokens related to "how things connect"
+- Sequence and change → Look for scope tokens related to "when things happen"
+- Understanding and framing → Look for scope tokens related to "what it means"
+- Tasks and intentions → Look for scope tokens related to "what to do"
+- Perspectives and viewpoints → Look for scope tokens related to "from whose view"
+- Quality and success criteria → Look for scope tokens related to "what makes it good"
+- Failure modes and limits → Look for scope tokens related to "where it breaks"
+
+**Legacy heuristics for method:**
+- Deciding between options → Look for method tokens about branching, comparing, evaluating
+- Understanding architecture → Look for method tokens about mapping, structure, relationships
+- Explaining processes → Look for method tokens about flow, sequence, progression
+- Finding problems → Look for method tokens about diagnosis, failure, stress-testing
+- Exploring possibilities → Look for method tokens about generation, survey, divergence
+- Building cases → Look for method tokens about argumentation, evidence, reasoning
+- Learning concepts → Look for method tokens about scaffolding, building understanding
+
+**Legacy heuristics for form:**
+- Actionable next steps → Look for form tokens about actions, checklists, tasks
+- Multiple alternatives → Look for form tokens about variants, options, comparison
+- Step-by-step guidance → Look for form tokens about walkthroughs, recipes, flows
+- Structured comparison → Look for form tokens about tables or side-by-side layout
+- Building understanding → Look for form tokens about scaffolding, gradual explanation
+- Decision documentation → Look for form tokens about cases, arguments, rationale
+
+### Freeform Discovery
+
+If the request doesn't clearly match any pattern:
 - Use `bar shuffle` to explore alternative token combinations
-- Examine the shuffled output and select what resonates with the request
-- Constrain shuffle with `--include` or `--exclude` to focus on relevant axes
-- Use `--seed` for reproducible exploration if needed
+- Examine shuffled outputs and select what resonates with the request
+- Constrain with `--include` or `--exclude` to focus on relevant axes
+- Use `--seed` for reproducible exploration
 
-### Step 6: Execute and Explain
+### Execute and Explain
 
-After discovering tokens and selecting appropriate ones:
-1. Build the bar command with chosen tokens
+After selecting tokens via discovery:
+1. Build the bar command with discovered tokens
 2. Execute it to structure your response
-3. Briefly explain to the user: "I used `bar build [tokens]` to structure this response around [reason]"
+3. Briefly explain: "I used `bar build [tokens]` to structure this response around [reason]"
+
+## Performance Notes
+
+**With `bar help llm`:**
+- **Tool calls:** 1 reference load per conversation
+- **Reduction:** ~70% fewer discovery queries vs legacy approach
+- **Benefits:** Integrated examples, categorized methods, complete constraints in single query
+
+**Legacy approach:**
+- **Tool calls:** 3-5 discovery queries per request
+- Still fully functional with embedded heuristics
 
 ## Cross-Agent Compatibility Notes
 
@@ -102,6 +181,15 @@ After discovering tokens and selecting appropriate ones:
 ## Error Handling
 
 - If `bar` command not found: Log warning, fall back to normal response
-- If `bar help tokens` fails: Fall back to normal response
-- If bar command fails: Log error, fall back to normal response
+- If `bar help llm` and `bar help tokens` both fail: Fall back to normal response
+- If bar build fails: Log error, fall back to normal response
 - Always prefer graceful degradation over blocking the user
+
+## Version Detection
+
+To check if `bar help llm` is available:
+```bash
+bar help llm 2>/dev/null || bar help tokens
+```
+
+If the first command succeeds (exit 0), use the new reference approach. Otherwise, fall back to legacy discovery.

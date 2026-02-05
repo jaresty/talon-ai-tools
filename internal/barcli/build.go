@@ -246,10 +246,11 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 		return s.applyPersonaPreset(token, false)
 	}
 
+	msg := formatUnrecognizedError(s.grammar, "", token)
 	s.unrecognized = append(s.unrecognized, token)
 	return s.fail(&CLIError{
 		Type:         errorUnknownToken,
-		Message:      "unrecognized token",
+		Message:      msg,
 		Unrecognized: append([]string{}, s.unrecognized...),
 		Recognized:   s.cloneRecognized(),
 	})
@@ -529,10 +530,7 @@ func (s *buildState) splitValueList(value string) []string {
 }
 
 func (s *buildState) unknownValue(key, value string) *CLIError {
-	msg := "unrecognized token"
-	if key != "" {
-		msg = "unrecognized token for " + key
-	}
+	msg := formatUnrecognizedError(s.grammar, key, value)
 	s.unrecognized = append(s.unrecognized, value)
 	return s.fail(&CLIError{
 		Type:         errorUnknownToken,
@@ -540,6 +538,65 @@ func (s *buildState) unknownValue(key, value string) *CLIError {
 		Unrecognized: append([]string{}, s.unrecognized...),
 		Recognized:   s.cloneRecognized(),
 	})
+}
+
+// formatUnrecognizedError creates a helpful error message for unrecognized tokens.
+// It includes fuzzy matching suggestions and help hints for discovering valid tokens.
+func formatUnrecognizedError(g *Grammar, axis, token string) string {
+	var msg strings.Builder
+
+	// Start with the basic error
+	if axis != "" {
+		msg.WriteString("unrecognized token for ")
+		msg.WriteString(axis)
+		msg.WriteString(": ")
+	} else {
+		msg.WriteString("unrecognized token: ")
+	}
+	msg.WriteString("\"")
+	msg.WriteString(token)
+	msg.WriteString("\"")
+
+	// Get candidates for fuzzy matching
+	var candidates []string
+	var helpCommand string
+
+	if axis != "" {
+		// Axis-specific suggestions
+		candidates = g.GetValidTokensForAxis(axis)
+		helpCommand = "bar help tokens " + axis
+	} else {
+		// Try static prompts first, then all axis tokens
+		staticPrompts := g.GetAllStaticPrompts()
+		axisTokens := g.GetAllAxisTokens()
+		candidates = make([]string, 0, len(staticPrompts)+len(axisTokens))
+		candidates = append(candidates, staticPrompts...)
+		candidates = append(candidates, axisTokens...)
+		helpCommand = "bar help tokens"
+	}
+
+	// Find fuzzy matches
+	if len(candidates) > 0 {
+		suggestions := fuzzyMatch(token, candidates, 2)
+		if len(suggestions) > 0 {
+			msg.WriteString("\n\nDid you mean one of these?")
+			for _, suggestion := range suggestions {
+				msg.WriteString("\n  • ")
+				msg.WriteString(suggestion)
+			}
+		}
+	}
+
+	// Add help hint
+	msg.WriteString("\n\nTo see all valid ")
+	if axis != "" {
+		msg.WriteString(axis)
+		msg.WriteString(" ")
+	}
+	msg.WriteString("tokens:\n  ")
+	msg.WriteString(helpCommand)
+
+	return msg.String()
 }
 
 func (s *buildState) fail(err *CLIError) *CLIError {

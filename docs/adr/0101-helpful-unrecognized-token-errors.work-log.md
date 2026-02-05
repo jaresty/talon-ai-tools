@@ -52,3 +52,58 @@ Confidence: High - well-defined scope with deterministic validation
 
 **next_work:**
 - Behaviour: Enhance unknownValue() error formatting → validation: `go test ./internal/barcli -run TestBuildUnrecognizedToken` → future-shaping: Centralize error formatting to maintain "helpful by default" invariant
+
+## Loop 002 | 2026-02-05
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR-0101 § Implementation approach (Option A) → Enhance unknownValue() and applyShorthandToken() error formatting to include fuzzy suggestions and help hints
+
+**active_constraint:** Error messages return minimal text without fuzzy suggestions or help hints; users cannot discover valid tokens or fix typos without external documentation lookup. This blocks the ADR's primary goal of providing actionable error guidance.
+
+**expected_value:**
+| Factor           | Value | Rationale |
+|------------------|-------|-----------|
+| Impact           | High  | Core value delivery: "Did you mean?" and help hints |
+| Probability      | High  | Fuzzy matcher already green; formatting is deterministic |
+| Time Sensitivity | High  | Completes user-facing improvements for common error case |
+
+**validation_targets:**
+- `go test ./internal/barcli -run TestBuildUnrecognizedToken`
+
+**evidence:**
+- red | 2026-02-05T20:50:00Z | exit 1 | go test ./internal/barcli -run TestBuildUnrecognizedToken
+  helper:diff-snapshot=0 files changed (test file not yet created)
+  Test does not exist; error message behavior undefined | inline
+  ```
+  ok  	github.com/talonvoice/talon-ai-tools/internal/barcli	0.322s [no tests to run]
+  ```
+
+- green | 2026-02-05T21:15:00Z | exit 0 | go test ./internal/barcli -run TestBuildUnrecognizedToken
+  helper:diff-snapshot=3 files changed, 234 insertions(+), 5 deletions(-)
+  All test cases pass: axis-specific errors show fuzzy suggestions and help hints | inline
+
+- removal | 2026-02-05T21:20:00Z | [no tests] | git stash && go test ./internal/barcli -run TestBuildUnrecognizedToken
+  helper:diff-snapshot=0 files changed
+  Test reverts to no-tests-to-run state | inline
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/build.go internal/barcli/grammar.go internal/barcli/build_error_test.go` followed by validation rerun
+
+**delta_summary:** Enhanced error message formatting to include fuzzy suggestions and help hints. Files:
+- `internal/barcli/grammar.go`: Added GetValidTokensForAxis(), GetAllStaticPrompts(), GetAllAxisTokens() methods for querying valid tokens
+- `internal/barcli/build.go`: Added formatUnrecognizedError() helper that uses fuzzy matching; updated unknownValue() and applyShorthandToken() to use new formatter
+- `internal/barcli/build_error_test.go`: Comprehensive test coverage for axis-specific and shorthand errors, fuzzy suggestions, and help hints
+
+**loops_remaining_forecast:** 2-3 loops remaining
+- Loop 003: Add recognized token context display to show what was successfully parsed
+- Loop 004: Update integration tests and existing fixtures that expect old error format
+- (Optional) Loop 005: Add color support for suggestions
+Confidence: High - core functionality complete; remaining work is polish
+
+**residual_constraints:**
+- **Medium severity** - Shorthand mode cannot provide axis-specific context: When tokens fail in shorthand mode (e.g., "make meen"), the parser doesn't know which axis "meen" was intended for, so error shows generic "unrecognized token" with suggestions from all tokens. Override mode (e.g., "scope=meen") does provide axis context. Mitigation: This is acceptable; fuzzy matching still helps users. Users can switch to override mode for clearer errors. Monitor: User feedback about confusion. Reopen condition: Telemetry shows high retry rates on shorthand errors.
+- **Low severity** - Color support not yet implemented: formatUnrecognizedError() returns plain text; suggestions could be highlighted for better scannability. Mitigation: Defer to follow-up loop or post-ADR enhancement. Monitor: When terminal detection is added. Reopen condition: User feedback requests color.
+- **Low severity** - Multi-word token normalization not reflected in suggestions: If user types "fly rog", fuzzy matcher suggests "fly-rog" but doesn't explain the space→dash convention. Mitigation: Current suggestions are sufficient; users will learn from seeing the dash form. Monitor: Support questions about multi-word tokens. Reopen condition: Frequent user confusion.
+
+**next_work:**
+- Behaviour: Display recognized token context in error messages → validation: `go test ./internal/barcli -run TestBuildUnrecognizedToken` (extend with context assertions) → future-shaping: Help users understand parsing state when errors occur

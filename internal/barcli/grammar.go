@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -757,4 +758,64 @@ func (g *Grammar) PersonaDescription(axis, token string) string {
 		return desc
 	}
 	return ""
+}
+
+// GetValidTokensForAxis returns all valid tokens for the specified axis.
+// Returns nil if the axis is not recognized.
+func (g *Grammar) GetValidTokensForAxis(axis string) []string {
+	axisKey := normalizeAxis(axis)
+	if axisKey == "" {
+		return nil
+	}
+
+	// Check if it's a contract axis
+	if tokens, ok := g.axisTokens[axisKey]; ok {
+		result := make([]string, 0, len(tokens))
+		for token := range tokens {
+			result = append(result, token)
+		}
+		sort.Strings(result)
+		return result
+	}
+
+	// Check if it's a persona axis
+	if tokens, ok := g.personaTokens[axisKey]; ok {
+		result := make([]string, 0, len(tokens))
+		for token := range tokens {
+			result = append(result, token)
+		}
+		sort.Strings(result)
+		return result
+	}
+
+	return nil
+}
+
+// GetAllStaticPrompts returns all valid static prompt tokens.
+func (g *Grammar) GetAllStaticPrompts() []string {
+	result := make([]string, 0, len(g.Static.Descriptions))
+	for token := range g.Static.Descriptions {
+		result = append(result, token)
+	}
+	sort.Strings(result)
+	return result
+}
+
+// GetAllAxisTokens returns all valid tokens across all contract axes.
+func (g *Grammar) GetAllAxisTokens() []string {
+	tokenSet := make(map[string]struct{})
+
+	// Collect all axis tokens
+	for _, axisMap := range g.axisTokens {
+		for token := range axisMap {
+			tokenSet[token] = struct{}{}
+		}
+	}
+
+	result := make([]string, 0, len(tokenSet))
+	for token := range tokenSet {
+		result = append(result, token)
+	}
+	sort.Strings(result)
+	return result
 }

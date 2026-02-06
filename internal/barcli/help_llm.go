@@ -90,7 +90,7 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "```\n\n")
 
 	fmt.Fprintf(w, "### Axis Capacity\n\n")
-	fmt.Fprintf(w, "- **Static prompts**: 0-1 token\n")
+	fmt.Fprintf(w, "- **Static prompts**: 1 token (required)\n")
 	fmt.Fprintf(w, "- **Completeness**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Scope**: 0-2 tokens\n")
 	fmt.Fprintf(w, "- **Method**: 0-3 tokens\n")
@@ -125,7 +125,7 @@ func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {
 		staticNames = append(staticNames, slug)
 	}
 	sort.Strings(staticNames)
-	fmt.Fprintf(w, "**Static (0-1):** %s\n\n", strings.Join(staticNames, ", "))
+	fmt.Fprintf(w, "**Static (required):** %s\n\n", strings.Join(staticNames, ", "))
 
 	// Contract axes in canonical order
 	orderedAxes := []string{"completeness", "scope", "method", "form", "channel", "directional"}
@@ -200,7 +200,7 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "## Token Catalog\n\n")
 
 	// Static prompts
-	fmt.Fprintf(w, "### Static Prompts (0-1 token)\n\n")
+	fmt.Fprintf(w, "### Static Prompts (required)\n\n")
 	if !compact {
 		fmt.Fprintf(w, "Pre-composed prompt strategies:\n\n")
 	}

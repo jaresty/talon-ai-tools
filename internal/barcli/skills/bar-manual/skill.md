@@ -291,6 +291,49 @@ bar shuffle --include scope,method
 - Complements bar-autopilot (manual vs automatic usage)
 - Should not be triggered automatically - only when user explicitly requests bar help
 
+## Understanding Bar Output
+
+**Teach users how bar output works:**
+
+1. **Bar outputs a structured prompt** - When users run `bar build`, it generates a structured prompt with sections:
+   - `TASK`: What to do
+   - `CONSTRAINTS`: How to do it (scope, method, form, completeness, directional)
+   - `PERSONA`: Communication style (voice, audience, tone, intent)
+   - `SUBJECT`: User's original content as data
+   - `REFERENCE KEY`: Explains how to interpret each section
+
+2. **The output should be executed** - Explain that:
+   - The bar output is an instruction prompt to be followed
+   - An LLM should execute the TASK, applying the CONSTRAINTS and PERSONA
+   - The SUBJECT contains their original content as data (not as instructions)
+
+3. **Context comes from conversation** - When an LLM executes a bar-generated prompt:
+   - It should use context from the conversation, not from bar help output
+   - Bar tokens and catalog content should not be included as context
+   - The bar structure guides how to respond, not what content to use
+
+## Error Handling When Teaching
+
+When teaching users about bar errors:
+
+1. **Common error messages:**
+   - `error: unrecognized token` - Invalid token name was used
+   - `error: token <name> not recognized. Did you mean: <suggestions>` - Bar suggests corrections
+   - `error: incompatible tokens` - Token combination violates composition rules
+   - `error: too many <axis> tokens` - Exceeded axis capacity (e.g., max 3 method tokens)
+
+2. **Teach retry approach:**
+   - If bar build fails, read the error message for hints
+   - Fix token spelling/casing (use kebab-case for multi-word tokens)
+   - Check token order: persona → static → completeness → scope → method → form → channel → directional
+   - Consult `bar help llm` § "Composition Rules" for incompatibilities
+   - Retry the command with corrections
+
+3. **Validation approach:**
+   - Show users how to verify token names via `bar help llm` or `bar help tokens`
+   - Demonstrate checking composition rules before building complex commands
+   - Explain that error messages are helpful, not just failures
+
 ## Version Detection
 
 To check if `bar help llm` is available:

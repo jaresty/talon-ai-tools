@@ -245,7 +245,7 @@ The active constraint (missing help text documentation) has been relieved throug
 
 Residual constraint monitoring:
 - **Shell completion** identified as low-priority enhancement; MVP complete without it
-- **Skills duplication** accepted as necessary implementation detail for go:embed
+- **Skills duplication** RESOLVED in Loop 4 by removing unused internal/skills directory
 - **Cross-platform paths** trusted to Go stdlib; Windows validation deferred to user testing
 - **Skill versioning** remains deferred beyond MVP per ADR decision
 

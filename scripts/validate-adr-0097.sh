@@ -7,7 +7,7 @@ set -e
 echo "Validating ADR 0097: Bar automation skills..."
 
 # Check that skills are embedded in the bar CLI source
-SKILLS_SOURCE="internal/skills"
+SKILLS_SOURCE="internal/barcli/skills"
 REQUIRED_SKILLS=("bar-autopilot" "bar-workflow" "bar-suggest" "bar-manual")
 
 for skill in "${REQUIRED_SKILLS[@]}"; do

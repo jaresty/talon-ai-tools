@@ -328,6 +328,7 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 			validSections := map[string]bool{
 				"quickstart":   true,
 				"architecture": true,
+				"cheatsheet":   true,
 				"tokens":       true,
 				"persona":      true,
 				"rules":        true,
@@ -337,7 +338,7 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 				"metadata":     true,
 			}
 			if !validSections[opts.Section] {
-				writeError(stderr, fmt.Sprintf("unknown section %q (valid: quickstart, architecture, tokens, persona, rules, patterns, heuristics, advanced, metadata)", opts.Section))
+				writeError(stderr, fmt.Sprintf("unknown section %q (valid: quickstart, architecture, cheatsheet, tokens, persona, rules, patterns, heuristics, advanced, metadata)", opts.Section))
 				return 1
 			}
 		}

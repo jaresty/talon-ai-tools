@@ -30,6 +30,9 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 	if shouldRender("architecture") {
 		renderGrammarArchitecture(w, grammar, compact)
 	}
+	if shouldRender("cheatsheet") {
+		renderTokenCheatSheet(w, grammar, compact)
+	}
 	if shouldRender("tokens") {
 		renderTokenCatalog(w, grammar, compact)
 	}
@@ -104,6 +107,93 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "```bash\n")
 	fmt.Fprintf(w, "bar build make focus method=branch form=table --prompt \"text\"\n")
 	fmt.Fprintf(w, "```\n\n")
+}
+
+func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {
+	fmt.Fprintf(w, "## Token Quick Reference\n\n")
+	if !compact {
+		fmt.Fprintf(w, "**At-a-glance list of all valid tokens by axis.** Use this to verify token names before diving into detailed descriptions below.\n\n")
+	}
+
+	// Static prompts
+	staticNames := make([]string, 0, len(grammar.Static.Profiles))
+	for name := range grammar.Static.Profiles {
+		slug := grammar.slugForToken(name)
+		if slug == "" {
+			slug = name
+		}
+		staticNames = append(staticNames, slug)
+	}
+	sort.Strings(staticNames)
+	fmt.Fprintf(w, "**Static (0-1):** %s\n\n", strings.Join(staticNames, ", "))
+
+	// Contract axes in canonical order
+	orderedAxes := []string{"completeness", "scope", "method", "form", "channel", "directional"}
+
+	for _, axisName := range orderedAxes {
+		tokens, exists := grammar.Axes.Definitions[axisName]
+		if !exists {
+			continue
+		}
+
+		capacity := "0-1"
+		if axisName == "scope" {
+			capacity = "0-2"
+		} else if axisName == "method" {
+			capacity = "0-3"
+		}
+
+		tokenSlugs := make([]string, 0, len(tokens))
+		for token := range tokens {
+			slug := grammar.slugForToken(token)
+			if slug == "" {
+				slug = token
+			}
+			tokenSlugs = append(tokenSlugs, slug)
+		}
+		sort.Strings(tokenSlugs)
+
+		fmt.Fprintf(w, "**%s (%s):** %s\n\n", strings.Title(axisName), capacity, strings.Join(tokenSlugs, ", "))
+	}
+
+	// Persona presets
+	if len(grammar.Persona.Presets) > 0 {
+		presetNames := make([]string, 0, len(grammar.Persona.Presets))
+		for name := range grammar.Persona.Presets {
+			slug := grammar.slugForToken(name)
+			if slug == "" {
+				slug = name
+			}
+			presetNames = append(presetNames, "persona="+slug)
+		}
+		sort.Strings(presetNames)
+		fmt.Fprintf(w, "**Persona presets:** %s\n\n", strings.Join(presetNames, ", "))
+	}
+
+	// Persona axes
+	personaAxes := []string{"voice", "audience", "tone", "intent"}
+	for _, axisName := range personaAxes {
+		tokenList, exists := grammar.Persona.Axes[axisName]
+		if !exists || len(tokenList) == 0 {
+			continue
+		}
+
+		tokenSlugs := make([]string, 0, len(tokenList))
+		for _, token := range tokenList {
+			slug := grammar.slugForToken(token)
+			if slug == "" {
+				slug = token
+			}
+			tokenSlugs = append(tokenSlugs, axisName+"="+slug)
+		}
+		sort.Strings(tokenSlugs)
+
+		fmt.Fprintf(w, "**Persona %s:** %s\n\n", axisName, strings.Join(tokenSlugs, ", "))
+	}
+
+	if !compact {
+		fmt.Fprintf(w, "---\n\n")
+	}
 }
 
 func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {

@@ -180,6 +180,8 @@ After selecting tokens via discovery:
 
 ## Understanding Bar Output
 
+**Bar is a text formatting tool, not an AI.** It generates structured prompt text based on tokens - it does not interpret, execute, or respond to prompts. You (the LLM) must read and execute the structured prompt that bar generates.
+
 **The bar output IS your instruction - you MUST execute it:**
 
 1. **Execute the structured prompt** - When you run `bar build`, it generates sections that define your response:

@@ -60,6 +60,35 @@ bar shuffle --seed 102 --include persona_preset --fill 0.0
 
 ### Phase 2: Evaluation
 
+#### Step 1: Validate Against Reference Documentation
+
+Before evaluating prompt quality, verify that all tokens in the shuffled output are valid and correctly documented:
+
+```bash
+# Generate the reference for comparison
+bar help llm --section cheatsheet > /tmp/cheatsheet.txt
+
+# For each shuffle result, check:
+# 1. All tokens appear in the cheat sheet
+# 2. Token names match exactly (no typos, correct slugification)
+# 3. Axis assignments are correct (token in right category)
+```
+
+**Validation checks:**
+
+| Check | Question | Action if Fails |
+|-------|----------|-----------------|
+| **Token existence** | Does every token in the shuffle appear in `bar help llm --section cheatsheet`? | CRITICAL: Token invalid or grammar out of sync |
+| **Token spelling** | Do token names match exactly (check slugification)? | Report grammar/shuffle bug |
+| **Axis alignment** | Is each token in the correct axis section of the reference? | Report categorization error |
+| **Capacity compliance** | Does token count per axis respect limits (scope 0-2, method 0-3, etc.)? | Report grammar violation |
+
+**If validation fails:** Stop evaluation and file a bug report. Do not proceed with quality evaluation of invalid prompts.
+
+**If validation passes:** Proceed to quality evaluation below.
+
+#### Step 2: Evaluate Against Prompt Key
+
 For each generated prompt, evaluate against the prompt key (ADR 0083):
 
 | Criterion | Question |
@@ -78,7 +107,7 @@ For each generated prompt, evaluate against the prompt key (ADR 0083):
 - **2 - Problematic**: Confusion about intent or category overlap
 - **1 - Broken**: Contradictory, nonsensical, or misleading combination
 
-#### Phase 2b: Meta-Evaluation Against Bar Skills
+#### Step 3: Meta-Evaluation Against Bar Skills
 
 After evaluating prompts against the prompt key, perform a secondary evaluation by checking them against the bar skills themselves (bar-autopilot, bar-manual, bar-workflow, bar-suggest). This meta-evaluation serves dual purposes:
 
@@ -138,6 +167,7 @@ For each shuffled prompt, document:
 **Output artifacts:**
 - `docs/adr/evidence/0085/skill-feedback.md` - Aggregated skill improvement recommendations
 - `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
+- `docs/adr/evidence/0085/validation-failures.md` - Critical issues found during Step 1 validation
 
 ### Phase 3: Recommendation
 
@@ -209,6 +239,12 @@ For each shuffled prompt, capture:
 **Generated prompt preview:**
 > {first 200 chars of rendered prompt}
 
+**Validation (vs bar help llm):**
+- [ ] All tokens exist in reference cheat sheet
+- [ ] Token spellings match exactly
+- [ ] Axis assignments correct
+- [ ] Capacity limits respected
+
 **Scores (vs Prompt Key):**
 - Task clarity: {1-5}
 - Constraint independence: {1-5}
@@ -240,11 +276,12 @@ For each shuffled prompt, capture:
 The refinement cycle produces:
 
 1. **Evaluation corpus**: `docs/adr/evidence/0085/evaluations/`
-2. **Recommendations list**: `docs/adr/evidence/0085/recommendations.yaml`
-3. **Skill feedback**: `docs/adr/evidence/0085/skill-feedback.md` - Aggregated improvements for bar skills
-4. **Catalog feedback**: `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
-5. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
-6. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
+2. **Validation failures**: `docs/adr/evidence/0085/validation-failures.md` - Critical issues found in Step 1
+3. **Recommendations list**: `docs/adr/evidence/0085/recommendations.yaml`
+4. **Skill feedback**: `docs/adr/evidence/0085/skill-feedback.md` - Aggregated improvements for bar skills
+5. **Catalog feedback**: `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
+6. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
+7. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
 
 ---
 
@@ -255,13 +292,14 @@ The refinement cycle produces:
 Run this process periodically or when catalog drift is suspected:
 
 1. **Generate**: Create 50+ shuffled prompts across sampling strategies
-2. **Evaluate**: Score each against prompt key rubric, capture notes
-3. **Meta-Evaluate**: Score each against bar skills, identify skill gaps and catalog issues
-4. **Aggregate**: Group low-scoring tokens, identify patterns, collect skill feedback
-5. **Recommend**: Produce actionable list with evidence for both catalog and skills
-6. **Review**: Human review of recommendations before implementing
-7. **Apply**: Edit catalog files and/or skill documentation, regenerate grammar
-8. **Validate**: Re-run shuffle samples to confirm improvement
+2. **Validate**: Verify all tokens against `bar help llm` reference (Step 1 above)
+3. **Evaluate**: Score each against prompt key rubric, capture notes (Step 2 above)
+4. **Meta-Evaluate**: Score each against bar skills, identify skill gaps and catalog issues (Step 3 above)
+5. **Aggregate**: Group low-scoring tokens, identify patterns, collect skill feedback
+6. **Recommend**: Produce actionable list with evidence for both catalog and skills
+7. **Review**: Human review of recommendations before implementing
+8. **Apply**: Edit catalog files and/or skill documentation, regenerate grammar
+9. **Validate**: Re-run shuffle samples to confirm improvement
 
 ### Automation Opportunities
 
@@ -330,6 +368,11 @@ Run this process periodically or when catalog drift is suspected:
 ## Validation
 
 ```bash
+# Verify all shuffle tokens are valid against reference
+bar help llm --section cheatsheet > /tmp/cheatsheet.txt
+bar shuffle --seed 42 --json | jq -r '.axes | to_entries[] | .value' > /tmp/tokens.txt
+# Manually verify each token appears in cheatsheet.txt
+
 # Verify shuffle generates diverse outputs
 for i in $(seq 1 10); do
   bar shuffle --seed $i --json | jq -r '.axes.static'

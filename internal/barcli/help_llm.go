@@ -102,11 +102,249 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "### Usage Guidance for Automated/Agent Contexts\n\n")
 	fmt.Fprintf(w, "**Static prompts are REQUIRED for automated usage**, despite the grammar allowing 0-1 tokens. Always select a static prompt token to provide clear task direction. Only omit the static prompt in manual exploratory contexts where maximum flexibility is explicitly desired. Automated responses without a static prompt lack focus and produce open-ended, poorly structured output.\n\n")
 
+	renderFormalGrammar(w, grammar, compact)
+
 	fmt.Fprintf(w, "### Key=Value Override Syntax\n\n")
 	fmt.Fprintf(w, "After the first `key=value` override, all remaining tokens must use `key=value` format:\n\n")
 	fmt.Fprintf(w, "```bash\n")
 	fmt.Fprintf(w, "bar build make focus method=branch form=table --prompt \"text\"\n")
 	fmt.Fprintf(w, "```\n\n")
+}
+
+func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
+	if compact {
+		fmt.Fprintf(w, "### Formal Grammar (EBNF)\n\n")
+		fmt.Fprintf(w, "```ebnf\n")
+		fmt.Fprintf(w, "<command> ::= \"bar\" \"build\" <token-sequence> <flags>\n")
+		fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <static-token> <constraint-tokens> <override-tokens>*\n")
+		fmt.Fprintf(w, "<constraint-tokens> ::= <completeness>? <scope>? <scope>? <method>? <method>? <method>? <form>? <channel>? <directional>?\n")
+		fmt.Fprintf(w, "```\n\n")
+		return
+	}
+
+	fmt.Fprintf(w, "### Formal Grammar Specification\n\n")
+	fmt.Fprintf(w, "**For LLM agents generating bar commands: You MUST produce strings that conform to this grammar.**\n\n")
+
+	fmt.Fprintf(w, "The grammar below uses Extended Backus-Naur Form (EBNF) notation:\n")
+	fmt.Fprintf(w, "- **Angle brackets** like `<command>` denote nonterminals (placeholders to expand)\n")
+	fmt.Fprintf(w, "- **Quoted strings** like `\"build\"` are literal tokens to output exactly as shown\n")
+	fmt.Fprintf(w, "- **Pipe `|`** separates alternatives; choose exactly one\n")
+	fmt.Fprintf(w, "- **Question mark `?`** means optional (zero or one occurrence)\n")
+	fmt.Fprintf(w, "- **Asterisk `*`** means repeat zero or more times\n")
+	fmt.Fprintf(w, "- **Plus `+`** means repeat one or more times\n")
+	fmt.Fprintf(w, "- **Square brackets `[...]`** group optional elements\n")
+	fmt.Fprintf(w, "- **Parentheses `(...)`** group required elements\n\n")
+
+	fmt.Fprintf(w, "**Start symbol:** `<command>`\n\n")
+
+	fmt.Fprintf(w, "```ebnf\n")
+	fmt.Fprintf(w, "<command>       ::= \"bar\" \"build\" <token-sequence> <flags>\n\n")
+
+	fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <static-token> <constraint-tokens> <override-tokens>*\n\n")
+
+	fmt.Fprintf(w, "<persona-tokens> ::= (<persona-preset> | <persona-axis>)+\n\n")
+
+	fmt.Fprintf(w, "<persona-preset> ::= \"persona=\" <preset-name>\n\n")
+
+	fmt.Fprintf(w, "<persona-axis>   ::= <voice-token> | <audience-token> | <tone-token> | <intent-token>\n\n")
+
+	fmt.Fprintf(w, "<voice-token>    ::= \"voice=\" <voice-value>\n")
+	fmt.Fprintf(w, "<audience-token> ::= \"audience=\" <audience-value>\n")
+	fmt.Fprintf(w, "<tone-token>     ::= \"tone=\" <tone-value>\n")
+	fmt.Fprintf(w, "<intent-token>   ::= \"intent=\" <intent-value>\n\n")
+
+	fmt.Fprintf(w, "<static-token>   ::= <static-value>\n\n")
+
+	fmt.Fprintf(w, "<constraint-tokens> ::= <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
+
+	fmt.Fprintf(w, "<completeness-token> ::= <completeness-value>\n")
+	fmt.Fprintf(w, "<scope-token>        ::= <scope-value>\n")
+	fmt.Fprintf(w, "<method-token>       ::= <method-value>\n")
+	fmt.Fprintf(w, "<form-token>         ::= <form-value>\n")
+	fmt.Fprintf(w, "<channel-token>      ::= <channel-value>\n")
+	fmt.Fprintf(w, "<directional-token>  ::= <directional-value>\n\n")
+
+	fmt.Fprintf(w, "<override-tokens> ::= (<axis-override> | <constraint-override> | <persona-override>)*\n\n")
+
+	fmt.Fprintf(w, "<axis-override>       ::= \"static=\" <static-value>\n")
+	fmt.Fprintf(w, "<constraint-override> ::= \"completeness=\" <completeness-value>\n")
+	fmt.Fprintf(w, "                       | \"scope=\" <scope-value>\n")
+	fmt.Fprintf(w, "                       | \"method=\" <method-value>\n")
+	fmt.Fprintf(w, "                       | \"form=\" <form-value>\n")
+	fmt.Fprintf(w, "                       | \"channel=\" <channel-value>\n")
+	fmt.Fprintf(w, "                       | \"directional=\" <directional-value>\n")
+	fmt.Fprintf(w, "<persona-override>    ::= \"voice=\" <voice-value>\n")
+	fmt.Fprintf(w, "                       | \"audience=\" <audience-value>\n")
+	fmt.Fprintf(w, "                       | \"tone=\" <tone-value>\n")
+	fmt.Fprintf(w, "                       | \"intent=\" <intent-value>\n\n")
+
+	fmt.Fprintf(w, "<flags>          ::= <subject-flag>? <addendum-flag>? <output-flag>? <format-flag>?\n\n")
+
+	fmt.Fprintf(w, "<subject-flag>   ::= \"--subject\" <quoted-string>\n")
+	fmt.Fprintf(w, "                  | \"--input\" <filepath>\n")
+	fmt.Fprintf(w, "<addendum-flag>  ::= \"--addendum\" <quoted-string>\n")
+	fmt.Fprintf(w, "<output-flag>    ::= \"--output\" <filepath>\n")
+	fmt.Fprintf(w, "<format-flag>    ::= \"--json\"\n\n")
+
+	fmt.Fprintf(w, "<quoted-string>  ::= '\"' <any-text> '\"'\n")
+	fmt.Fprintf(w, "<filepath>       ::= <any-text-without-spaces>\n\n")
+
+	fmt.Fprintf(w, "# Terminal values (see Token Quick Reference for complete lists)\n")
+
+	// Static values - get from grammar
+	staticTokens := make([]string, 0, len(grammar.Static.Profiles))
+	for name := range grammar.Static.Profiles {
+		slug := grammar.slugForToken(name)
+		if slug == "" {
+			slug = name
+		}
+		staticTokens = append(staticTokens, fmt.Sprintf("\"%s\"", slug))
+	}
+	sort.Strings(staticTokens)
+	fmt.Fprintf(w, "<static-value>       ::= %s\n", strings.Join(staticTokens, " | "))
+
+	// Helper function to format axis tokens
+	formatAxisTokens := func(axisName string, limit int) string {
+		tokens, exists := grammar.Axes.Definitions[axisName]
+		if !exists {
+			return "..."
+		}
+		slugs := make([]string, 0, len(tokens))
+		for token := range tokens {
+			slug := grammar.slugForToken(token)
+			if slug == "" {
+				slug = token
+			}
+			slugs = append(slugs, fmt.Sprintf("\"%s\"", slug))
+		}
+		sort.Strings(slugs)
+		if limit > 0 && len(slugs) > limit {
+			return strings.Join(slugs[:limit], " | ") + " | ..."
+		}
+		return strings.Join(slugs, " | ")
+	}
+
+	fmt.Fprintf(w, "<completeness-value> ::= %s\n", formatAxisTokens("completeness", 0))
+	fmt.Fprintf(w, "<scope-value>        ::= %s\n", formatAxisTokens("scope", 8))
+	fmt.Fprintf(w, "<method-value>       ::= %s\n", formatAxisTokens("method", 7))
+	fmt.Fprintf(w, "<form-value>         ::= %s\n", formatAxisTokens("form", 7))
+	fmt.Fprintf(w, "<channel-value>      ::= %s\n", formatAxisTokens("channel", 7))
+	fmt.Fprintf(w, "<directional-value>  ::= %s\n", formatAxisTokens("directional", 7))
+
+	// Persona values - get from grammar.Persona.Axes instead of grammar.Axes.Definitions
+	formatPersonaAxis := func(axisName string, limit int) string {
+		tokens, exists := grammar.Persona.Axes[axisName]
+		if !exists {
+			return "..."
+		}
+		slugs := make([]string, 0, len(tokens))
+		for _, token := range tokens {
+			slug := grammar.slugForToken(token)
+			if slug == "" {
+				slug = token
+			}
+			slugs = append(slugs, fmt.Sprintf("\"%s\"", slug))
+		}
+		sort.Strings(slugs)
+		if limit > 0 && len(slugs) > limit {
+			return strings.Join(slugs[:limit], " | ") + " | ..."
+		}
+		return strings.Join(slugs, " | ")
+	}
+
+	fmt.Fprintf(w, "<voice-value>        ::= %s\n", formatPersonaAxis("voice", 7))
+	fmt.Fprintf(w, "<audience-value>     ::= %s\n", formatPersonaAxis("audience", 7))
+	fmt.Fprintf(w, "<tone-value>         ::= %s\n", formatPersonaAxis("tone", 0))
+
+	// Persona presets
+	presetTokens := make([]string, 0, len(grammar.Persona.Presets))
+	for name := range grammar.Persona.Presets {
+		presetTokens = append(presetTokens, fmt.Sprintf("\"%s\"", name))
+	}
+	sort.Strings(presetTokens)
+	if len(presetTokens) > 7 {
+		fmt.Fprintf(w, "<preset-name>        ::= %s | ...\n", strings.Join(presetTokens[:7], " | "))
+	} else if len(presetTokens) > 0 {
+		fmt.Fprintf(w, "<preset-name>        ::= %s\n", strings.Join(presetTokens, " | "))
+	} else {
+		fmt.Fprintf(w, "<preset-name>        ::= ...\n")
+	}
+	fmt.Fprintf(w, "```\n\n")
+
+	fmt.Fprintf(w, "**Important constraints:**\n")
+	fmt.Fprintf(w, "1. **Static token is REQUIRED** for LLM-generated commands\n")
+	fmt.Fprintf(w, "2. **Scope**: maximum 2 tokens\n")
+	fmt.Fprintf(w, "3. **Method**: maximum 3 tokens\n")
+	fmt.Fprintf(w, "4. **All other constraint axes**: maximum 1 token each\n")
+	fmt.Fprintf(w, "5. **Override mode**: Once you use `key=value` syntax, ALL subsequent tokens must use `key=value` format\n")
+	fmt.Fprintf(w, "6. **Subject input**: Use either `--subject` OR stdin (piped input), never both\n")
+	fmt.Fprintf(w, "7. **Multi-word tokens**: Use slug format with dashes (e.g., `as-teacher`, not `as teacher`)\n\n")
+
+	fmt.Fprintf(w, "**Valid examples:**\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "# Basic structure: static + constraints + flags\n")
+	fmt.Fprintf(w, "bar build make focus steps --subject \"Create login endpoint\"\n\n")
+
+	fmt.Fprintf(w, "# With persona: persona tokens before static\n")
+	fmt.Fprintf(w, "bar build voice=as-teacher show gist bullets --subject \"Explain recursion\"\n\n")
+
+	fmt.Fprintf(w, "# With multiple constraints: follow axis capacity limits\n")
+	fmt.Fprintf(w, "bar build probe struct mean flow mapping --subject \"Analyze architecture\"\n\n")
+
+	fmt.Fprintf(w, "# With override syntax: key=value after first override\n")
+	fmt.Fprintf(w, "bar build make method=branch form=table --subject \"Design API\"\n\n")
+
+	fmt.Fprintf(w, "# With addendum: separate task clarification from subject\n")
+	fmt.Fprintf(w, "bar build show focus --subject \"auth.go\" --addendum \"focus on security implications\"\n\n")
+
+	fmt.Fprintf(w, "# Using stdin instead of --subject flag\n")
+	fmt.Fprintf(w, "echo \"Fix the bug\" | bar build make focus steps\n")
+	fmt.Fprintf(w, "```\n\n")
+
+	fmt.Fprintf(w, "**Invalid examples (and why they fail):**\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "# WRONG: Missing static token\n")
+	fmt.Fprintf(w, "bar build focus steps --subject \"text\"\n")
+	fmt.Fprintf(w, "# Error: static prompt (task) is required\n\n")
+
+	fmt.Fprintf(w, "# WRONG: Too many scope tokens (max 2)\n")
+	fmt.Fprintf(w, "bar build show struct mean thing focus --subject \"text\"\n")
+	fmt.Fprintf(w, "# Error: scope accepts maximum 2 tokens\n\n")
+
+	fmt.Fprintf(w, "# WRONG: Multi-word token without dashes\n")
+	fmt.Fprintf(w, "bar build show voice=as teacher --subject \"text\"\n")
+	fmt.Fprintf(w, "# Error: unknown token 'teacher'; did you mean 'as-teacher'?\n\n")
+
+	fmt.Fprintf(w, "# WRONG: Mixed shorthand and override without consistency\n")
+	fmt.Fprintf(w, "bar build make focus method=branch steps --subject \"text\"\n")
+	fmt.Fprintf(w, "# Error: after key=value override, all remaining tokens must be key=value\n\n")
+
+	fmt.Fprintf(w, "# WRONG: Both --subject and stdin provided\n")
+	fmt.Fprintf(w, "echo \"text\" | bar build make --subject \"other text\"\n")
+	fmt.Fprintf(w, "# Error: cannot provide both --subject flag and stdin input\n")
+	fmt.Fprintf(w, "```\n\n")
+
+	fmt.Fprintf(w, "**Generation instructions for LLMs:**\n\n")
+	fmt.Fprintf(w, "When generating bar commands:\n")
+	fmt.Fprintf(w, "1. **Start with the start symbol** `<command>` and expand top-down\n")
+
+	// Get static token names for the instruction
+	staticNames := make([]string, 0, len(grammar.Static.Profiles))
+	for name := range grammar.Static.Profiles {
+		slug := grammar.slugForToken(name)
+		if slug == "" {
+			slug = name
+		}
+		staticNames = append(staticNames, slug)
+	}
+	sort.Strings(staticNames)
+	fmt.Fprintf(w, "2. **Always include a static token** (choose from: %s)\n", strings.Join(staticNames, ", "))
+
+	fmt.Fprintf(w, "3. **Verify token counts** before outputting (scope ≤ 2, method ≤ 3, others ≤ 1)\n")
+	fmt.Fprintf(w, "4. **Use slug format** for multi-word tokens (dashes, not spaces)\n")
+	fmt.Fprintf(w, "5. **Check token names** against the Token Quick Reference section below\n")
+	fmt.Fprintf(w, "6. **Do not add** comments, explanations, or text outside the grammar structure\n")
+	fmt.Fprintf(w, "7. **Output only** valid bar command strings\n\n")
 }
 
 func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {

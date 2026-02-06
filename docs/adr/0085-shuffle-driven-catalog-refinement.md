@@ -27,14 +27,14 @@ Establish a shuffle-driven refinement process that uses randomized prompt genera
 ### Process Overview
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Generate       │────▶│  Evaluate        │────▶│  Recommend      │
-│  (bar shuffle)  │     │  (vs prompt key) │     │  (catalog edit) │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-         │                       │                        │
-         ▼                       ▼                        ▼
-   N random prompts      Alignment score +        Retire / Edit /
-   with --seed           qualitative notes        Recategorize / Add
+┌─────────────────┐     ┌──────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Generate       │────▶│  Evaluate        │────▶│  Meta-Evaluate   │────▶│  Recommend      │
+│  (bar shuffle)  │     │  (vs prompt key) │     │  (vs bar skills) │     │  (catalog edit) │
+└─────────────────┘     └──────────────────┘     └──────────────────┘     └─────────────────┘
+         │                       │                        │                        │
+         ▼                       ▼                        ▼                        ▼
+   N random prompts      Alignment score +        Skill feedback +        Retire / Edit /
+   with --seed           qualitative notes        catalog gaps           Recategorize / Add
 ```
 
 ### Phase 1: Generation
@@ -77,6 +77,67 @@ For each generated prompt, evaluate against the prompt key (ADR 0083):
 - **3 - Acceptable**: Usable but some tokens feel forced or redundant
 - **2 - Problematic**: Confusion about intent or category overlap
 - **1 - Broken**: Contradictory, nonsensical, or misleading combination
+
+#### Phase 2b: Meta-Evaluation Against Bar Skills
+
+After evaluating prompts against the prompt key, perform a secondary evaluation by checking them against the bar skills themselves (bar-autopilot, bar-manual, bar-workflow, bar-suggest). This meta-evaluation serves dual purposes:
+
+**Purpose 1: Validate skill guidance quality**
+- Are the skill instructions clear enough to select appropriate tokens for this prompt?
+- Do the token selection heuristics in the skills lead to this combination?
+- Would the skills' "Usage Patterns by Task Type" suggest this combination?
+- Are there contradictions between what the skills recommend and what shuffle generated?
+
+**Purpose 2: Discover catalog gaps/issues**
+- Does this shuffle reveal tokens that aren't well-documented in the skills?
+- Are there method/scope/form combinations that the skills don't cover?
+- Would a user following skill guidance be able to construct this prompt?
+- Does this combination highlight missing categorization in skill heuristics?
+
+**Evaluation questions:**
+
+| Criterion | Question |
+|-----------|----------|
+| **Skill discoverability** | Would the skills guide a user to select these tokens for a relevant use case? |
+| **Heuristic alignment** | Do the skills' token selection heuristics explain this combination? |
+| **Documentation completeness** | Are all tokens in this prompt documented in the skills' token catalog sections? |
+| **Pattern coverage** | Does this combination fit any "Usage Patterns by Task Type" examples? |
+| **Guidance clarity** | If the skills were updated to cover this combination, what would need to change? |
+
+**Feedback capture:**
+
+For each shuffled prompt, document:
+
+```markdown
+### Meta-Evaluation vs Bar Skills
+
+**Skill alignment score:** {1-5}
+- 5: Skills would clearly recommend this combination
+- 4: Skills provide hints but not explicit guidance
+- 3: Skills are neutral/silent on this combination
+- 2: Skills guidance contradicts this combination
+- 1: Skills would actively discourage this combination
+
+**Skill gaps identified:**
+- [ ] Token {X} not documented in skill catalog sections
+- [ ] Method category {Y} missing from skill heuristics
+- [ ] Combination pattern not covered in "Usage Patterns"
+- [ ] Skill guidance contradicts shuffle result (explain why)
+
+**Recommendations for skills:**
+- Update bar-{skill-name} § "{section}" to include {specific guidance}
+- Add new usage pattern example for {task type}
+- Clarify token selection heuristics for {axis}
+
+**Recommendations for catalog:**
+- Token {X} description unclear (skills can't explain it)
+- Category misalignment detected (skills categorize differently)
+- Combination produces incoherent result (skills should warn against it)
+```
+
+**Output artifacts:**
+- `docs/adr/evidence/0085/skill-feedback.md` - Aggregated skill improvement recommendations
+- `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
 
 ### Phase 3: Recommendation
 
@@ -148,7 +209,7 @@ For each shuffled prompt, capture:
 **Generated prompt preview:**
 > {first 200 chars of rendered prompt}
 
-**Scores:**
+**Scores (vs Prompt Key):**
 - Task clarity: {1-5}
 - Constraint independence: {1-5}
 - Persona coherence: {1-5}
@@ -156,8 +217,19 @@ For each shuffled prompt, capture:
 - Combination harmony: {1-5}
 - **Overall**: {1-5}
 
+**Meta-Evaluation (vs Bar Skills):**
+- Skill alignment: {1-5}
+- Skill discoverability: {1-5}
+- Heuristic coverage: {1-5}
+- Documentation completeness: {1-5}
+- **Meta overall**: {1-5}
+
 **Notes:**
 {Qualitative observations, specific concerns, token interactions}
+
+**Skill Feedback:**
+- [ ] Skill gap: {which skill} § {section} needs {what}
+- [ ] Catalog issue: {token} description unclear to skills
 
 **Recommendations:**
 - [ ] {action}: {token} - {brief reason}
@@ -169,8 +241,10 @@ The refinement cycle produces:
 
 1. **Evaluation corpus**: `docs/adr/evidence/0085/evaluations/`
 2. **Recommendations list**: `docs/adr/evidence/0085/recommendations.yaml`
-3. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
-4. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
+3. **Skill feedback**: `docs/adr/evidence/0085/skill-feedback.md` - Aggregated improvements for bar skills
+4. **Catalog feedback**: `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
+5. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
+6. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
 
 ---
 
@@ -181,12 +255,13 @@ The refinement cycle produces:
 Run this process periodically or when catalog drift is suspected:
 
 1. **Generate**: Create 50+ shuffled prompts across sampling strategies
-2. **Evaluate**: Score each against rubric, capture notes
-3. **Aggregate**: Group low-scoring tokens, identify patterns
-4. **Recommend**: Produce actionable list with evidence
-5. **Review**: Human review of recommendations before implementing
-6. **Apply**: Edit catalog files, regenerate grammar
-7. **Validate**: Re-run shuffle samples to confirm improvement
+2. **Evaluate**: Score each against prompt key rubric, capture notes
+3. **Meta-Evaluate**: Score each against bar skills, identify skill gaps and catalog issues
+4. **Aggregate**: Group low-scoring tokens, identify patterns, collect skill feedback
+5. **Recommend**: Produce actionable list with evidence for both catalog and skills
+6. **Review**: Human review of recommendations before implementing
+7. **Apply**: Edit catalog files and/or skill documentation, regenerate grammar
+8. **Validate**: Re-run shuffle samples to confirm improvement
 
 ### Automation Opportunities
 
@@ -206,9 +281,16 @@ Run this process periodically or when catalog drift is suspected:
 |------|---------|
 | `scripts/shuffle_corpus.sh` | Generate reproducible corpus |
 | `docs/adr/evidence/0085/` | Evidence directory |
+| `docs/adr/evidence/0085/skill-feedback.md` | Aggregated skill improvement recommendations |
+| `docs/adr/evidence/0085/catalog-feedback.md` | Catalog issues discovered via skill validation |
 | `lib/promptConfig.py` | Catalog edits (static prompts) |
 | `lib/axisConfig.py` | Axes token edits |
 | `lib/personaConfig.py` | Persona/intent edits |
+| `internal/barcli/skills/bar-autopilot/skill.md` | Skill documentation updates |
+| `internal/barcli/skills/bar-manual/skill.md` | Skill documentation updates |
+| `internal/barcli/skills/bar-workflow/skill.md` | Skill documentation updates |
+| `internal/barcli/skills/bar-suggest/skill.md` | Skill documentation updates |
+| `.claude/skills/*/skill.md` | User-facing skill copies (sync after updates) |
 
 ---
 
@@ -221,6 +303,9 @@ Run this process periodically or when catalog drift is suspected:
 - Catches category misalignment before users encounter confusion
 - Identifies redundancy and gaps proactively
 - Builds institutional knowledge about what combinations work
+- **Meta-evaluation creates feedback loop**: Skills improve as catalog evolves, and catalog issues surface when skills can't explain them
+- **Bidirectional validation**: Catalog validates skills, skills validate catalog
+- **Documentation stays synchronized**: Skill guidance stays current with catalog capabilities
 
 ### Tradeoffs
 
@@ -265,8 +350,10 @@ bar shuffle --seed 123
 
 ## Future Extensions
 
-- **LLM-assisted evaluation**: Use Claude to score prompts against rubric
+- **LLM-assisted evaluation**: Use Claude to score prompts against rubric automatically
+- **Automated skill checking**: Script that validates shuffle output against skill documentation programmatically
 - **Automated regression**: CI job that flags score drops after catalog changes
 - **User feedback integration**: Correlate shuffle seeds with real usage patterns
 - **Token affinity matrix**: Identify which tokens pair well/poorly
 - **Coverage heatmap**: Visualize which combinations are over/under-represented
+- **Skill improvement tracking**: Monitor how skill feedback impacts subsequent shuffle evaluations

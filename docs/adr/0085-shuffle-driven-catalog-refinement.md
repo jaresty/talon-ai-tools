@@ -60,35 +60,6 @@ bar shuffle --seed 102 --include persona_preset --fill 0.0
 
 ### Phase 2: Evaluation
 
-#### Step 1: Validate Against Reference Documentation
-
-Before evaluating prompt quality, verify that all tokens in the shuffled output are valid and correctly documented:
-
-```bash
-# Generate the reference for comparison
-bar help llm --section cheatsheet > /tmp/cheatsheet.txt
-
-# For each shuffle result, check:
-# 1. All tokens appear in the cheat sheet
-# 2. Token names match exactly (no typos, correct slugification)
-# 3. Axis assignments are correct (token in right category)
-```
-
-**Validation checks:**
-
-| Check | Question | Action if Fails |
-|-------|----------|-----------------|
-| **Token existence** | Does every token in the shuffle appear in `bar help llm --section cheatsheet`? | CRITICAL: Token invalid or grammar out of sync |
-| **Token spelling** | Do token names match exactly (check slugification)? | Report grammar/shuffle bug |
-| **Axis alignment** | Is each token in the correct axis section of the reference? | Report categorization error |
-| **Capacity compliance** | Does token count per axis respect limits (scope 0-2, method 0-3, etc.)? | Report grammar violation |
-
-**If validation fails:** Stop evaluation and file a bug report. Do not proceed with quality evaluation of invalid prompts.
-
-**If validation passes:** Proceed to quality evaluation below.
-
-#### Step 2: Evaluate Against Prompt Key
-
 For each generated prompt, evaluate against the prompt key (ADR 0083):
 
 | Criterion | Question |
@@ -107,7 +78,7 @@ For each generated prompt, evaluate against the prompt key (ADR 0083):
 - **2 - Problematic**: Confusion about intent or category overlap
 - **1 - Broken**: Contradictory, nonsensical, or misleading combination
 
-#### Step 3: Meta-Evaluation Against Bar Skills
+#### Phase 2b: Meta-Evaluation Against Bar Skills
 
 After evaluating prompts against the prompt key, perform a secondary evaluation by checking them against the bar skills themselves (bar-autopilot, bar-manual, bar-workflow, bar-suggest). This meta-evaluation serves dual purposes:
 
@@ -132,6 +103,30 @@ After evaluating prompts against the prompt key, perform a secondary evaluation 
 | **Documentation completeness** | Are all tokens in this prompt documented in the skills' token catalog sections? |
 | **Pattern coverage** | Does this combination fit any "Usage Patterns by Task Type" examples? |
 | **Guidance clarity** | If the skills were updated to cover this combination, what would need to change? |
+
+#### Phase 2c: Evaluate `bar help llm` as Reference Tool
+
+After evaluating against skills, assess whether `bar help llm` provides adequate reference documentation for the skills to work with this prompt combination:
+
+**Purpose:** Evaluate the utility of `bar help llm` as the primary reference that skills point to
+
+**Evaluation questions:**
+
+| Criterion | Question |
+|-----------|----------|
+| **Cheat sheet utility** | Does the Token Quick Reference cheat sheet make all tokens in this combination easily discoverable? |
+| **Description clarity** | Are the token descriptions in the detailed catalog clear enough to explain this combination? |
+| **Selection guidance** | Do the "Token Selection Heuristics" in `bar help llm` help explain why these tokens work together? |
+| **Pattern examples** | Do the "Usage Patterns by Task Type" examples illustrate similar combinations? |
+| **Reference completeness** | Would someone consulting only `bar help llm` understand what this prompt will do? |
+
+**Scoring rubric:**
+
+- **5 - Excellent**: `bar help llm` fully explains this combination; skills can confidently use it as reference
+- **4 - Good**: Minor gaps but reference provides enough context to understand the combination
+- **3 - Acceptable**: Reference provides basic info but requires external knowledge to fully understand
+- **2 - Problematic**: Significant gaps in reference; skills would struggle to explain this combination
+- **1 - Broken**: Reference doesn't adequately document these tokens or how they work together
 
 **Feedback capture:**
 
@@ -164,10 +159,36 @@ For each shuffled prompt, document:
 - Combination produces incoherent result (skills should warn against it)
 ```
 
+**Feedback for `bar help llm`:**
+
+```markdown
+### Bar Help LLM Reference Evaluation
+
+**Reference utility score:** {1-5}
+- 5: Reference fully supports skills for this combination
+- 4: Reference mostly adequate with minor gaps
+- 3: Reference provides basics but limited guidance
+- 2: Reference has significant gaps for this combination
+- 1: Reference inadequate for understanding this combination
+
+**Help documentation gaps identified:**
+- [ ] Token {X} description too vague in detailed catalog
+- [ ] Cheat sheet hard to scan for {axis} tokens
+- [ ] Heuristics section missing guidance for {method category} + {scope category}
+- [ ] Usage patterns lack examples for {task type}
+- [ ] Composition rules don't explain {incompatibility or constraint}
+
+**Recommendations for bar help llm:**
+- Update § "Token Catalog" § "{axis}" to clarify {token} description
+- Add example to § "Usage Patterns by Task Type" for {scenario}
+- Expand § "Token Selection Heuristics" § "{section}" to cover {case}
+- Improve § "Composition Rules" to explain {constraint}
+```
+
 **Output artifacts:**
 - `docs/adr/evidence/0085/skill-feedback.md` - Aggregated skill improvement recommendations
 - `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
-- `docs/adr/evidence/0085/validation-failures.md` - Critical issues found during Step 1 validation
+- `docs/adr/evidence/0085/help-llm-feedback.md` - `bar help llm` documentation gaps and improvements
 
 ### Phase 3: Recommendation
 
@@ -239,12 +260,6 @@ For each shuffled prompt, capture:
 **Generated prompt preview:**
 > {first 200 chars of rendered prompt}
 
-**Validation (vs bar help llm):**
-- [ ] All tokens exist in reference cheat sheet
-- [ ] Token spellings match exactly
-- [ ] Axis assignments correct
-- [ ] Capacity limits respected
-
 **Scores (vs Prompt Key):**
 - Task clarity: {1-5}
 - Constraint independence: {1-5}
@@ -260,12 +275,23 @@ For each shuffled prompt, capture:
 - Documentation completeness: {1-5}
 - **Meta overall**: {1-5}
 
+**Bar Help LLM Reference Evaluation:**
+- Cheat sheet utility: {1-5}
+- Description clarity: {1-5}
+- Selection guidance: {1-5}
+- Pattern examples: {1-5}
+- **Reference overall**: {1-5}
+
 **Notes:**
 {Qualitative observations, specific concerns, token interactions}
 
 **Skill Feedback:**
 - [ ] Skill gap: {which skill} § {section} needs {what}
 - [ ] Catalog issue: {token} description unclear to skills
+
+**Help LLM Feedback:**
+- [ ] Help gap: bar help llm § {section} needs {what}
+- [ ] Reference issue: {token or combination} inadequately documented
 
 **Recommendations:**
 - [ ] {action}: {token} - {brief reason}
@@ -276,9 +302,9 @@ For each shuffled prompt, capture:
 The refinement cycle produces:
 
 1. **Evaluation corpus**: `docs/adr/evidence/0085/evaluations/`
-2. **Validation failures**: `docs/adr/evidence/0085/validation-failures.md` - Critical issues found in Step 1
-3. **Recommendations list**: `docs/adr/evidence/0085/recommendations.yaml`
-4. **Skill feedback**: `docs/adr/evidence/0085/skill-feedback.md` - Aggregated improvements for bar skills
+2. **Recommendations list**: `docs/adr/evidence/0085/recommendations.yaml`
+3. **Skill feedback**: `docs/adr/evidence/0085/skill-feedback.md` - Aggregated improvements for bar skills
+4. **Help LLM feedback**: `docs/adr/evidence/0085/help-llm-feedback.md` - `bar help llm` documentation gaps
 5. **Catalog feedback**: `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
 6. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
 7. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
@@ -292,13 +318,13 @@ The refinement cycle produces:
 Run this process periodically or when catalog drift is suspected:
 
 1. **Generate**: Create 50+ shuffled prompts across sampling strategies
-2. **Validate**: Verify all tokens against `bar help llm` reference (Step 1 above)
-3. **Evaluate**: Score each against prompt key rubric, capture notes (Step 2 above)
-4. **Meta-Evaluate**: Score each against bar skills, identify skill gaps and catalog issues (Step 3 above)
-5. **Aggregate**: Group low-scoring tokens, identify patterns, collect skill feedback
-6. **Recommend**: Produce actionable list with evidence for both catalog and skills
+2. **Evaluate**: Score each against prompt key rubric, capture notes
+3. **Meta-Evaluate Skills**: Score each against bar skills, identify skill gaps and catalog issues
+4. **Meta-Evaluate Reference**: Score `bar help llm` utility for each prompt, identify documentation gaps
+5. **Aggregate**: Group low-scoring tokens, identify patterns, collect feedback for skills/catalog/help
+6. **Recommend**: Produce actionable list with evidence for catalog, skills, and help documentation
 7. **Review**: Human review of recommendations before implementing
-8. **Apply**: Edit catalog files and/or skill documentation, regenerate grammar
+8. **Apply**: Edit catalog files, skill documentation, and/or help_llm.go, regenerate grammar
 9. **Validate**: Re-run shuffle samples to confirm improvement
 
 ### Automation Opportunities
@@ -320,6 +346,7 @@ Run this process periodically or when catalog drift is suspected:
 | `scripts/shuffle_corpus.sh` | Generate reproducible corpus |
 | `docs/adr/evidence/0085/` | Evidence directory |
 | `docs/adr/evidence/0085/skill-feedback.md` | Aggregated skill improvement recommendations |
+| `docs/adr/evidence/0085/help-llm-feedback.md` | `bar help llm` documentation improvement recommendations |
 | `docs/adr/evidence/0085/catalog-feedback.md` | Catalog issues discovered via skill validation |
 | `lib/promptConfig.py` | Catalog edits (static prompts) |
 | `lib/axisConfig.py` | Axes token edits |
@@ -329,6 +356,7 @@ Run this process periodically or when catalog drift is suspected:
 | `internal/barcli/skills/bar-workflow/skill.md` | Skill documentation updates |
 | `internal/barcli/skills/bar-suggest/skill.md` | Skill documentation updates |
 | `.claude/skills/*/skill.md` | User-facing skill copies (sync after updates) |
+| `internal/barcli/help_llm.go` | `bar help llm` reference documentation improvements |
 
 ---
 
@@ -344,6 +372,7 @@ Run this process periodically or when catalog drift is suspected:
 - **Meta-evaluation creates feedback loop**: Skills improve as catalog evolves, and catalog issues surface when skills can't explain them
 - **Bidirectional validation**: Catalog validates skills, skills validate catalog
 - **Documentation stays synchronized**: Skill guidance stays current with catalog capabilities
+- **Reference quality assurance**: `bar help llm` quality is continuously evaluated as the primary reference for skills
 
 ### Tradeoffs
 
@@ -368,11 +397,6 @@ Run this process periodically or when catalog drift is suspected:
 ## Validation
 
 ```bash
-# Verify all shuffle tokens are valid against reference
-bar help llm --section cheatsheet > /tmp/cheatsheet.txt
-bar shuffle --seed 42 --json | jq -r '.axes | to_entries[] | .value' > /tmp/tokens.txt
-# Manually verify each token appears in cheatsheet.txt
-
 # Verify shuffle generates diverse outputs
 for i in $(seq 1 10); do
   bar shuffle --seed $i --json | jq -r '.axes.static'

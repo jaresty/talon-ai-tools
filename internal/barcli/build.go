@@ -682,6 +682,32 @@ func (s *buildState) finalise() *CLIError {
 		staticPrompts := s.grammar.GetAllStaticPrompts()
 		var msg strings.Builder
 		msg.WriteString("static prompt (task) is required\n\n")
+		msg.WriteString("The static prompt defines WHAT to do and must come FIRST in your token sequence,\n")
+		msg.WriteString("before any completeness, scope, method, or form tokens.\n\n")
+
+		// Build contextual example if user provided other tokens
+		var userTokens []string
+		if s.completeness != "" {
+			userTokens = append(userTokens, s.completeness)
+		}
+		userTokens = append(userTokens, s.scope...)
+		userTokens = append(userTokens, s.method...)
+		userTokens = append(userTokens, s.form...)
+		userTokens = append(userTokens, s.channel...)
+		if s.directional != "" {
+			userTokens = append(userTokens, s.directional)
+		}
+
+		if len(userTokens) > 0 {
+			msg.WriteString("You provided: ")
+			msg.WriteString(strings.Join(userTokens, " "))
+			msg.WriteString("\nTry: bar build <static-token> ")
+			msg.WriteString(strings.Join(userTokens, " "))
+			msg.WriteString(" --prompt \"...\"\n\n")
+		} else {
+			msg.WriteString("Example: bar build <static-token> full code --prompt \"...\"\n\n")
+		}
+
 		msg.WriteString("Available static prompts:\n")
 		for _, prompt := range staticPrompts {
 			msg.WriteString("  ")
@@ -692,7 +718,7 @@ func (s *buildState) finalise() *CLIError {
 			}
 			msg.WriteString("\n")
 		}
-		msg.WriteString("\nExample: bar build make full code <prompt>")
+		msg.WriteString("\nRun 'bar help tokens static' to see all static prompts with detailed descriptions.")
 		return s.errorf(errorMissingStatic, msg.String())
 	}
 

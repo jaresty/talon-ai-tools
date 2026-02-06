@@ -235,6 +235,58 @@ Depth-first path complete: Embed skills ✓ → Implement command ✓ → Wire i
 
 ---
 
+## Loop 4: Remove duplicate internal/skills directory
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** Technical debt cleanup - Remove duplicate `internal/skills/` directory to eliminate synchronization burden and potential for skills to diverge.
+
+**active_constraint:** Skills are duplicated in `internal/skills/` (unused) and `internal/barcli/skills/` (embedded via go:embed), creating maintenance burden. Recent skill updates (Understanding Bar Output, Error Handling with retry logic) were incorrectly applied only to the unused `internal/skills/` copy, causing v0.6.3 release to lack these improvements.
+
+**Expected value rationale:**
+| Factor           | Value  | Rationale |
+|------------------|--------|-----------|
+| Impact           | Medium | Prevents future sync errors; clarifies source of truth |
+| Probability      | High   | Deterministic - removal eliminates confusion |
+| Time Sensitivity | Medium | Already caused one sync error; prevents future issues |
+| Uncertainty note | None   | Clear which directory is actually used (go:embed requires internal/barcli/skills) |
+
+**validation_targets:**
+- `./scripts/validate-adr-0097.sh` - Updated to check `internal/barcli/skills/` instead of `internal/skills/`
+- Skills embedded in CLI binary contain latest updates
+
+**evidence:**
+- red | 2026-02-05T19:00:00Z | manual | Downloaded bar v0.6.3, ran `bar install-skills`
+    Behaviour "installed skills contain Understanding Bar Output section" fails | inline: Skills missing new guidance sections
+    Root cause: Skills updated in wrong directory (internal/skills instead of internal/barcli/skills)
+
+- green | 2026-02-05T19:15:00Z | exit 0 | `./scripts/validate-adr-0097.sh`
+    helper:diff-snapshot=1 file changed, 1 line changed (SKILLS_SOURCE path)
+    Behaviour "validation script checks correct embedded location" passes | inline: "All bar automation skills validated successfully"
+
+**rollback_plan:** `git restore --source=HEAD~1 internal/skills/ scripts/validate-adr-0097.sh`
+
+**delta_summary:**
+Removed 4 files with 1117 deletions:
+- `internal/skills/bar-autopilot/skill.md` - Duplicate, never embedded
+- `internal/skills/bar-manual/skill.md` - Duplicate, never embedded
+- `internal/skills/bar-suggest/skill.md` - Duplicate, never embedded
+- `internal/skills/bar-workflow/skill.md` - Duplicate, never embedded
+
+Updated 1 file:
+- `scripts/validate-adr-0097.sh` - Changed SKILLS_SOURCE from `internal/skills` to `internal/barcli/skills`
+
+Source of truth clarified: Only `internal/barcli/skills/` is embedded via go:embed directive in `internal/barcli/install_skills.go:15`
+
+**loops_remaining_forecast:** 0 loops remaining
+- MVP complete; this loop addresses technical debt from Loop 1→Loop 2 transition
+- Confidence: High - duplicate removal is straightforward
+
+**residual_constraints:**
+- None - duplication constraint fully resolved
+
+---
+
 ## Constraint Recap
 
 The active constraint (missing help text documentation) has been relieved through:

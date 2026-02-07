@@ -405,8 +405,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "models": "The response enhances the task by explicitly identifying and "
         "naming relevant mental models, explaining why they apply (or "
         "fail), and comparing or combining them.",
-        "motifs": "The response enhances the task by identifying recurring "
-        "patterns, themes, or clusters and explaining why they matter.",
         "objectivity": "The response enhances the task by distinguishing objective "
         "facts from subjective opinions and supporting claims with "
         "evidence.",
@@ -497,6 +495,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "to judgment—its purpose, assumptions, framing, terminology, or "
         "conceptual role—without evaluating its success, prescribing "
         "action, or adopting a specific stakeholder perspective.",
+        "motifs": "The response enhances the task by identifying recurring "
+        "patterns, themes, or clusters and explaining why they matter.",
         "struct": "The response focuses on how things are arranged or "
         "related—dependencies, coordination, constraints, incentives, or "
         "organizing patterns—independent of sequence, value judgment, or "

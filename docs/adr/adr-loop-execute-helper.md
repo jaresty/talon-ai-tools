@@ -16,6 +16,14 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 - **Behaviour outcome** – the ADR-defined behaviour or decision this loop changes or observes.
 - **Validation command** – the smallest executable that exercises a behaviour outcome and records red/green/removal evidence.
 - **Specifying validation** – a validation target that defines correctness, not merely observes it. Examples: a new or tightened test, invariant, schema rule, type contract, golden output, or assertion whose failure uniquely identifies the targeted behaviour outcome. (This prevents “big integration command went red/green” from standing in as a spec.)
+
+    **Clarification — Specifying validations**
+    - A specifying validation MUST define criteria of correctness *before* or *independently of* implementation changes and is treated as fixed and authoritative for the duration of the loop.
+    - Implementations MUST satisfy the specifying validation and MUST NOT redefine, weaken, or reinterpret correctness during construction.
+    - Specifying validations SHOULD begin with the simplest behaviour that is valid for the targeted outcome.
+    - Generalisation, edge cases, and broader correctness conditions are introduced only when forced by earlier failures or higher-expected-value constraints; premature generalisation is treated as a failure mode rather than progress.
+    - Each strengthening of a specifying validation MUST preserve all previously defined correctness guarantees.
+
 - **Going green** – shorthand for that validation command completing successfully (exit 0) and proving the behaviour works end-to-end, whether the command is a test, CLI, docs generator, or other canonical path.
 - **Blocker evidence** – the command, excerpt, and pointer proving a behaviour cannot advance in this slice (logged as `red` evidence).
 - **Residual constraint** – a known constraint or upstream dependency that is either outside the repository’s direct control or not currently limiting progress, recorded with mitigation, a monitoring trigger, and (for external items) a pointer to the ADR or process that owns the work in `residual_constraints`.

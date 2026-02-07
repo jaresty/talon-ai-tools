@@ -496,7 +496,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "conceptual role—without evaluating its success, prescribing "
         "action, or adopting a specific stakeholder perspective.",
         "motifs": "The response enhances the task by identifying recurring "
-        "patterns, themes, or clusters and explaining why they matter.",
+        "patterns, themes, or clusters.",
         "struct": "The response focuses on how things are arranged or "
         "related—dependencies, coordination, constraints, incentives, or "
         "organizing patterns—independent of sequence, value judgment, or "

@@ -191,6 +191,57 @@ func TestRunBuildInvalidTokenBackwardCompatibility(t *testing.T) {
 	}
 }
 
+func TestRunBuildWithSubjectFlag(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "inline subject content"}, nil)
+
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "inline subject content") {
+		t.Fatalf("expected stdout to include subject from --subject flag, got: %s", result.Stdout)
+	}
+}
+
+func TestRunBuildSubjectAndStdinMutualExclusivity(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("stdin pipe detection is not stable on Windows in go test")
+	}
+	t.Setenv(disableStateEnv, "1")
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("pipe: %v", err)
+	}
+	if _, err := w.WriteString("piped content\n"); err != nil {
+		t.Fatalf("write pipe: %v", err)
+	}
+	w.Close()
+
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "flag content"}, r)
+
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit when both --subject and stdin provided")
+	}
+	if !strings.Contains(result.Stderr, "cannot provide both --subject flag and stdin input") {
+		t.Fatalf("expected mutual exclusivity error, got: %s", result.Stderr)
+	}
+}
+
+func TestRunBuildSubjectAndInputMutualExclusivity(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "inline", "--input", "file.txt"}, nil)
+
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit when both --subject and --input provided")
+	}
+	if !strings.Contains(result.Stderr, "--subject and --input cannot be used together") {
+		t.Fatalf("expected mutual exclusivity error, got: %s", result.Stderr)
+	}
+}
+
 func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("file permission semantics differ on Windows")

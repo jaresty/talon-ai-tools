@@ -12,6 +12,7 @@ type Config struct {
 	Command       string
 	Tokens        []string
 	Prompt        string
+	Subject       string
 	InputPath     string
 	OutputPath    string
 	JSON          bool
@@ -57,6 +58,14 @@ func Parse(args []string) (*Config, error) {
 			cfg.Prompt = args[i]
 		case strings.HasPrefix(arg, "--prompt="):
 			cfg.Prompt = strings.TrimPrefix(arg, "--prompt=")
+		case arg == "--subject":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--subject requires a value")
+			}
+			cfg.Subject = args[i]
+		case strings.HasPrefix(arg, "--subject="):
+			cfg.Subject = strings.TrimPrefix(arg, "--subject=")
 		case arg == "--input":
 			i++
 			if i >= len(args) {
@@ -271,6 +280,12 @@ func Parse(args []string) (*Config, error) {
 	}
 	if cfg.Prompt != "" && cfg.InputPath != "" {
 		return nil, fmt.Errorf("--prompt and --input cannot be used together")
+	}
+	if cfg.Subject != "" && cfg.InputPath != "" {
+		return nil, fmt.Errorf("--subject and --input cannot be used together")
+	}
+	if cfg.Subject != "" && cfg.Prompt != "" {
+		return nil, fmt.Errorf("--subject and --prompt cannot be used together")
 	}
 
 	cfg.Tokens = tokens

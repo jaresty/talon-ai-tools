@@ -244,3 +244,27 @@
   - Stored preset files on user machines may contain `"axes":{"static":"make"}` — the BuildResult JSON tag changed to `json:"task"`, so presets saved with old format will not populate the task field on load. Severity: medium (user presets break silently). Mitigation: consider migration or backward-compatible reading in a follow-up. Monitoring: user reports.
 - **next_work**:
   - Phase 0 complete. Next: ADR 0082 Phase 1 (CLI `bar build` — Subject and Addendum flags). Behaviour: Add `--subject TEXT` flag with mutual exclusivity against stdin. Validation: `go test ./internal/barcli/...` with new test cases. Future-shaping: separate task clarification from subject content.
+
+## Loop 11: Add --subject flag with mutual exclusivity (Phase 1a)
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 1a (CLI Implementation) — Add `--subject TEXT` flag as alternative to stdin/`--prompt` for providing subject content inline. Implement mutual exclusivity: `--subject` vs stdin, `--subject` vs `--input`, `--subject` vs `--prompt`.
+- **active_constraint**: No way to provide subject content inline via a named flag — users must use `--prompt` (which conflates task clarification with content) or stdin (which requires piping). The CLI lacks a clear, named mechanism for providing subject material that is distinct from task clarification.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestRunBuildWithSubjectFlag|TestRunBuildSubjectAndStdinMutualExclusivity|TestRunBuildSubjectAndInputMutualExclusivity"`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestRunBuildWithSubjectFlag"` — `app_build_cli_test.go:200: expected exit 0, got 1 with stderr: error: unknown flag --subject` | inline
+    helper:diff-snapshot=1 file changed (app_build_cli_test.go only; production code unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=3 files changed, 72 insertions(+)
+  - removal | 2026-02-07T (git restore config.go app.go) | exit 1 | `git restore internal/barcli/cli/config.go internal/barcli/app.go && go test ./internal/barcli/ -run "TestRunBuildWithSubjectFlag"` — `error: unknown flag --subject` returns | inline
+    helper:diff-snapshot=0 files changed (production code reverted)
+- **rollback_plan**: `git restore internal/barcli/cli/config.go internal/barcli/app.go` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=3 files changed, 72 insertions(+). Added `Subject string` field to `cli.Config` struct (config.go:15). Added `--subject` / `--subject=` flag parsing (config.go:62-68). Added mutual exclusivity validation: `--subject` + `--input` (config.go:285), `--subject` + `--prompt` (config.go:288). Updated `readPrompt()` to check `opts.Subject` first with stdin mutual exclusivity check (app.go:1191-1196). Added 3 specifying tests: `TestRunBuildWithSubjectFlag` (flag provides subject), `TestRunBuildSubjectAndStdinMutualExclusivity` (error when both), `TestRunBuildSubjectAndInputMutualExclusivity` (error when both). Depth-first rung: `--subject` flag (Phase 1a, first new flag).
+- **loops_remaining_forecast**: ~3-4 loops for Phase 1. Remaining: 1b (`--addendum` flag + ADDENDUM section rendering), 1c (remove `--prompt` + migration error), 1d (update help text). Confidence: high (each sub-phase is well-scoped).
+- **residual_constraints**:
+  - `--prompt` flag still works and conflates subject with task clarification. Severity: medium (user confusion, ADR goal unmet). Mitigation: Phase 1c removes it with migration guidance. Monitoring: `grep "opts.Prompt" internal/barcli/app.go`.
+  - No `--addendum` flag yet — users cannot provide task clarification separate from subject. Severity: medium (ADR core feature missing). Mitigation: Phase 1b. Monitoring: N/A.
+  - Stored preset files may contain `"axes":{"static":"make"}` (from Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
+- **next_work**:
+  - Behaviour: Add `--addendum TEXT` flag, `Addendum` field on `BuildResult`, and `=== ADDENDUM (CLARIFICATION) ===` section in `RenderPlainText()`. Validation: `go test ./internal/barcli/ -run "TestRunBuildWithAddendum|TestBuildAddendumRendering"`. Future-shaping: separate task clarification section in rendered output.

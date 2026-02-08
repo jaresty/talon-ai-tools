@@ -1188,6 +1188,12 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 }
 
 func readPrompt(opts *cli.Config, stdin io.Reader) (string, error) {
+	if opts.Subject != "" {
+		if isPipedInput(stdin) {
+			return "", fmt.Errorf("cannot provide both --subject flag and stdin input; use one or the other")
+		}
+		return trimTrailingNewlines(opts.Subject), nil
+	}
 	if opts.Prompt != "" {
 		return trimTrailingNewlines(opts.Prompt), nil
 	}

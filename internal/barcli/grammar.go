@@ -91,14 +91,14 @@ type HierarchySection struct {
 }
 
 type DefaultsSection struct {
-	StaticPrompt string
+	Task         string
 	Completeness string
 }
 
 type rawGrammar struct {
 	SchemaVersion string         `json:"schema_version"`
 	Axes          rawAxisSection `json:"axes"`
-	Static        rawStatic      `json:"static_prompts"`
+	Static        rawStatic      `json:"tasks"`
 	Persona       rawPersona     `json:"persona"`
 	Hierarchy     rawHierarchy   `json:"hierarchy"`
 	Slugs         rawSlugSection `json:"slugs"`
@@ -134,7 +134,7 @@ type rawPersona struct {
 
 type rawSlugSection struct {
 	Axes            map[string]map[string]string `json:"axes"`
-	Static          map[string]string            `json:"static"`
+	Static          map[string]string            `json:"task"`
 	Persona         rawSlugPersonaSection        `json:"persona"`
 	Commands        map[string]string            `json:"commands"`
 	Overrides       map[string]map[string]string `json:"overrides"`
@@ -151,7 +151,7 @@ type rawHierarchy struct {
 	AxisSoftCaps          map[string]int                 `json:"axis_soft_caps"`
 	AxisIncompatibilities map[string]map[string][]string `json:"axis_incompatibilities"`
 	Defaults              struct {
-		StaticPrompt string `json:"static_prompt"`
+		Task         string `json:"task"`
 		Completeness string `json:"completeness"`
 	} `json:"defaults"`
 }
@@ -210,7 +210,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			AxisSoftCaps:          raw.Hierarchy.AxisSoftCaps,
 			AxisIncompatibilities: raw.Hierarchy.AxisIncompatibilities,
 			Defaults: DefaultsSection{
-				StaticPrompt: raw.Hierarchy.Defaults.StaticPrompt,
+				Task:         raw.Hierarchy.Defaults.Task,
 				Completeness: raw.Hierarchy.Defaults.Completeness,
 			},
 		},

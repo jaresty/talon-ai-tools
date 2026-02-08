@@ -153,7 +153,7 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 	tokens := make(map[string]struct{})
 
-	defaultStatic := strings.TrimSpace(grammar.Hierarchy.Defaults.StaticPrompt)
+	defaultStatic := strings.TrimSpace(grammar.Hierarchy.Defaults.Task)
 	if defaultStatic != "" {
 		tokens[defaultStatic] = struct{}{}
 	}

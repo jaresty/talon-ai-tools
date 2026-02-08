@@ -194,3 +194,28 @@
   - CLI arguments `bar help tokens static` and `static=make` override syntax still use "static" as user input. Severity: low (breaking CLI change deferred). Mitigation: future phase if desired. Monitoring: `grep -r 'case "static":' internal/barcli/app.go internal/barcli/tokens/overrides.go`.
 - **next_work**:
   - Behaviour: Update Python grammar exporter to rename JSON section from `"static"` to `"task"`, then update Go struct tags `json:"static"` → `json:"task"`. Validation: `go test ./...` + Python exporter tests. Future-shaping: complete alignment of data format with internal terminology.
+
+## Loop 9: Rename JSON grammar keys from "static" to "task" in Python exporter and Go struct tags
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 0 (Terminology Cleanup) — JSON grammar schema keys (`"static_prompts"`, `"static_prompt"`, `"static"` in slugs/overrides) and corresponding Go struct tags. Rename to `"tasks"`, `"task"` across Python exporter, all three JSON grammar files, and Go deserialization struct tags.
+- **active_constraint**: Python exporter (`lib/promptGrammar.py`) generates JSON grammar with `"static_prompts"` as top-level section key, `"static_prompt"` in hierarchy defaults, and `"static"` in slug/override subsections. Go struct tags (`json:"static_prompts"`, `json:"static"`, `json:"static_prompt"`) in grammar.go read these keys. The internal Go code already uses "task" terminology (Loops 1-8) but the data interchange format still uses "static", creating a terminology split between internal code and serialised data.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestEmbeddedGrammarUsesTaskKeys"`
+  - `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...`
+  - `.venv/bin/python -m pytest _tests/test_prompt_grammar_export.py`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestEmbeddedGrammarUsesTaskKeys"` — `grammar_loader_test.go:35: expected top-level 'tasks' key in grammar JSON (found 'static_prompts'?)` | inline
+    helper:diff-snapshot=1 file changed (grammar_loader_test.go only; production code unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...` — all tests PASS + `.venv/bin/python -m pytest _tests/test_prompt_grammar_export.py` — 2 passed | inline
+    helper:diff-snapshot=9 files changed, 76 insertions(+), 35 deletions(-)
+  - removal | 2026-02-07T (git restore embed/prompt-grammar.json) | exit 1 | `git restore internal/barcli/embed/prompt-grammar.json && go test ./internal/barcli/ -run "TestEmbeddedGrammarUsesTaskKeys"` — `grammar_loader_test.go:35: expected top-level 'tasks' key in grammar JSON (found 'static_prompts'?)` returns | inline
+    helper:diff-snapshot=0 files changed (embedded grammar reverted)
+- **rollback_plan**: `git restore lib/promptGrammar.py internal/barcli/grammar.go internal/barcli/build.go internal/barcli/tui_tokens.go _tests/test_prompt_grammar_export.py && make bar-grammar-update` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=9 files changed, 76 insertions(+), 35 deletions(-). Python exporter: renamed `"static_prompts"` → `"tasks"` (top-level section key), `"static_prompt"` → `"task"` (hierarchy defaults), `"static"` → `"task"` (slug section, override section keys), `category="override-static"` → `category="override-task"`. Go struct tags: `json:"static_prompts"` → `json:"tasks"` (rawGrammar.Static), `json:"static"` → `json:"task"` (rawSlugSection.Static), `json:"static_prompt"` → `json:"task"` (rawHierarchy.Defaults), struct field `StaticPrompt` → `Task` (DefaultsSection). Updated all three grammar JSON files via `make bar-grammar-update`. Updated Python test assertion `"static_prompts"` → `"tasks"`. Added `TestEmbeddedGrammarUsesTaskKeys` specifying validation (checks embedded JSON has `"tasks"` top-level key, `"task"` in hierarchy defaults, and `"task"` in slugs). Depth-first rung: JSON schema key rename (final Phase 0 data format rung).
+- **loops_remaining_forecast**: 0 loops remaining for Phase 0 terminology cleanup. All Go code, Python exporter, JSON schema, tests, help text, skill files, and display labels now use "task" terminology. CLI argument syntax (`static=make`, `bar help tokens static`) remains unchanged as user-facing compatibility surface. Phase 0 is complete. Confidence: high.
+- **residual_constraints**:
+  - CLI arguments `bar help tokens static` and `static=make` override syntax still use "static" as user input. Severity: low (breaking CLI change, deferred intentionally). Mitigation: future phase if desired; display labels already show "task". Monitoring: `grep -r 'case "static":' internal/barcli/app.go internal/barcli/tokens/overrides.go`.
+  - JSON override values still contain `"static=check": "static-check"` patterns — these are slug values for user-facing CLI syntax, not structural keys. Severity: low (cosmetic, consistent with CLI argument preservation). Mitigation: rename only if CLI syntax changes. Monitoring: `grep "static=" build/prompt-grammar.json`.
+- **next_work**:
+  - Phase 0 complete. Next: ADR 0082 Phase 1 (CLI `bar build` — Subject and Addendum flags). Behaviour: Add `--subject TEXT` flag with mutual exclusivity against stdin. Validation: `go test ./internal/barcli/...` with new test cases. Future-shaping: separate task clarification from subject content.

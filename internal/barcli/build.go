@@ -88,7 +88,7 @@ type buildState struct {
 }
 
 func newBuildState(g *Grammar) *buildState {
-	static := g.Hierarchy.Defaults.StaticPrompt
+	static := g.Hierarchy.Defaults.Task
 	// Per ADR 0086: "infer" was retired. Default to empty string to allow open-ended
 	// responses when no task is specified.
 	completeness := g.Hierarchy.Defaults.Completeness

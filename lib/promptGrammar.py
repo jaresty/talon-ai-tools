@@ -277,7 +277,7 @@ def _build_hierarchy_section() -> dict[str, Any]:
         "axis_soft_caps": axis_soft_caps(),
         "axis_incompatibilities": axis_incompatibilities(),
         "defaults": {
-            "static_prompt": _default_static_prompt(),
+            "task": _default_static_prompt(),
             "completeness": DEFAULT_COMPLETENESS_TOKEN,
         },
     }
@@ -326,12 +326,12 @@ def prompt_grammar_payload() -> dict[str, Any]:
 
     override_slugs: dict[str, dict[str, str]] = {}
 
-    override_slugs["static"] = _map_slugs(
+    override_slugs["task"] = _map_slugs(
         (f"static={label}" for label in static_slugs.keys()),
-        category="override-static",
+        category="override-task",
         taken=taken_slugs,
     )
-    _register(override_slugs["static"])
+    _register(override_slugs["task"])
 
     for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
         labels = axis_slugs.get(axis, {})
@@ -360,7 +360,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
 
     slug_section = {
         "axes": axis_slugs,
-        "static": static_slugs,
+        "task": static_slugs,
         "persona": persona_slugs,
         "commands": command_slugs,
         "overrides": override_slugs,
@@ -369,7 +369,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
 
     sections: dict[str, Any] = {
         "axes": axis_section,
-        "static_prompts": static_section,
+        "tasks": static_section,
         "persona": persona_section,
         "hierarchy": hierarchy_section,
         "slugs": slug_section,

@@ -25,7 +25,7 @@ class PromptGrammarPayloadTests(unittest.TestCase):
 
         self.assertEqual(payload["schema_version"], "1.0")
         self.assertIn("axes", payload)
-        self.assertIn("static_prompts", payload)
+        self.assertIn("tasks", payload)
         self.assertIn("persona", payload)
         self.assertIn("hierarchy", payload)
         self.assertIn("checksums", payload)

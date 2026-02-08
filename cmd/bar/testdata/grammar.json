@@ -302,7 +302,7 @@
       ]
     }
   },
-  "static_prompts": {
+  "tasks": {
     "catalog": {
       "profiled": [
         {
@@ -737,7 +737,7 @@
       "channel": {}
     },
     "defaults": {
-      "static_prompt": "",
+      "task": "",
       "completeness": "full"
     }
   },
@@ -892,7 +892,7 @@
         "view": "view"
       }
     },
-    "static": {
+    "task": {
       "check": "check",
       "diff": "diff",
       "fix": "fix",
@@ -971,7 +971,7 @@
       "help": "help"
     },
     "overrides": {
-      "static": {
+      "task": {
         "static=check": "static-check",
         "static=diff": "static-diff",
         "static=fix": "static-fix",
@@ -1565,9 +1565,9 @@
   },
   "checksums": {
     "axes": "6ad3a33509dbb3c71f42eeeb310d1d043f758cfaf5815ee06383c7d026556204",
-    "static_prompts": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
+    "tasks": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
-    "hierarchy": "4e2b7840c705c2aaee8805896d93302bc1b9fcf3914aabb724aa923f0ca7e8ab",
-    "slugs": "69d85f0aaeb2003fdc94dcd5f56273295fedbdfadfbacccef61dfcb45240851f"
+    "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
+    "slugs": "6858363fe1ae569077e2609773eaa5c6b4fd40d3f2a6e8b6141e9234653d856d"
   }
 }

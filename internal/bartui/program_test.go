@@ -37,7 +37,7 @@ func defaultTokenCategories() []TokenCategory {
 	return []TokenCategory{
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			Kind:          TokenCategoryKindStatic,
 			MaxSelections: 1,
 			Options: []TokenOption{
@@ -2484,7 +2484,7 @@ func TestPaletteCategoryStatusIncludesLabel(t *testing.T) {
 	m.refreshPaletteStatus()
 
 	status := m.statusMessage
-	if !strings.Contains(status, "Static Prompt") {
+	if !strings.Contains(status, "Task") {
 		t.Fatalf("expected status to include current category label, got %q", status)
 	}
 	if !strings.Contains(status, "Up/Down") {
@@ -2729,7 +2729,7 @@ func TestCompletionOrderMatchesCLI(t *testing.T) {
 		},
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			Kind:          TokenCategoryKindStatic,
 			MaxSelections: 1,
 			Options: []TokenOption{

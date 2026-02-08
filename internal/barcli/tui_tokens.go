@@ -194,7 +194,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 
 	return bartui.TokenCategory{
 		Key:           "static",
-		Label:         "Static Prompt",
+		Label:         "Task",
 		Kind:          bartui.TokenCategoryKindStatic,
 		MaxSelections: 1,
 		Options:       options,
@@ -275,7 +275,7 @@ func axisDisplayLabel(axis string) string {
 	case "directional":
 		return "Directional"
 	case "static":
-		return "Static Prompt"
+		return "Task"
 	default:
 		return strings.Title(strings.ReplaceAll(axis, "_", " "))
 	}

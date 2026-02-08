@@ -564,7 +564,7 @@ func filterSuggestionsByPrefix(grammar *Grammar, suggestions []completionSuggest
 }
 
 func buildStaticSuggestions(grammar *Grammar, catalog completionCatalog) []completionSuggestion {
-	return suggestionsWithDescriptions(grammar, catalog.static, "What (static prompt)", func(token string) string {
+	return suggestionsWithDescriptions(grammar, catalog.static, "What (task)", func(token string) string {
 		return strings.TrimSpace(grammar.StaticPromptDescription(token))
 	}, false, true)
 }

@@ -241,8 +241,8 @@ func TestCompleteStaticStage(t *testing.T) {
 		t.Fatalf("expected static skip suggestion value %q, got %q", skipStaticValue, trimmed)
 	}
 
-	if todo.Category != "What (static prompt)" {
-		t.Fatalf("expected category 'What (static prompt)' for todo, got %q", todo.Category)
+	if todo.Category != "What (task)" {
+		t.Fatalf("expected category 'What (task)' for todo, got %q", todo.Category)
 	}
 	if strings.HasSuffix(todo.Value, " ") {
 		t.Fatalf("expected static suggestion without trailing space, got %q", todo.Value)

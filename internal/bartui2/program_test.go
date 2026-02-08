@@ -48,8 +48,8 @@ func TestSnapshotBasicLayout(t *testing.T) {
 	}
 
 	// Verify tokens are displayed in the TOKENS section
-	if !strings.Contains(view, "Static Prompt") {
-		t.Error("expected 'Static Prompt' category label in view")
+	if !strings.Contains(view, "Task") {
+		t.Error("expected 'Task' category label in view")
 	}
 
 	if !strings.Contains(view, "Scope") {
@@ -131,7 +131,7 @@ func testCategories() []bartui.TokenCategory {
 	return []bartui.TokenCategory{
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Return a todo list"},
@@ -324,9 +324,9 @@ func TestSnapshotWithCompletions(t *testing.T) {
 		t.Fatalf("Snapshot failed: %v", err)
 	}
 
-	// Should show stage header (first stage is "static" -> "STATIC")
-	if !strings.Contains(view, "STATIC") {
-		t.Error("expected STATIC stage header in view")
+	// Should show stage header (first stage is "static" -> "TASK")
+	if !strings.Contains(view, "TASK") {
+		t.Error("expected TASK stage header in view")
 	}
 
 	// Should show static stage completions (todo, infer)
@@ -349,8 +349,8 @@ func TestGetCategoryForToken(t *testing.T) {
 
 	// Test known token
 	category := m.getCategoryForToken("todo")
-	if category != "Static Prompt" {
-		t.Errorf("expected category 'Static Prompt' for 'todo', got %q", category)
+	if category != "Task" {
+		t.Errorf("expected category 'Task' for 'todo', got %q", category)
 	}
 
 	// Test another category
@@ -361,8 +361,8 @@ func TestGetCategoryForToken(t *testing.T) {
 
 	// Test case-insensitive matching
 	category = m.getCategoryForToken("TODO")
-	if category != "Static Prompt" {
-		t.Errorf("expected category 'Static Prompt' for 'TODO' (case-insensitive), got %q", category)
+	if category != "Task" {
+		t.Errorf("expected category 'Task' for 'TODO' (case-insensitive), got %q", category)
 	}
 
 	// Test unknown token
@@ -391,8 +391,8 @@ func TestTokenTreeWithCategoryLabels(t *testing.T) {
 	}
 
 	// Should show category labels with tokens
-	if !strings.Contains(view, "Static Prompt") {
-		t.Error("expected 'Static Prompt' category label for 'todo' token")
+	if !strings.Contains(view, "Task") {
+		t.Error("expected 'Task' category label for 'todo' token")
 	}
 
 	if !strings.Contains(view, "Scope") {
@@ -628,7 +628,7 @@ func TestDirectionalTokenUsesSlugInCommand(t *testing.T) {
 	categories := []bartui.TokenCategory{
 		{
 			Key:           "static",
-			Label:         "Static",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Todo"},
@@ -1360,7 +1360,7 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 		},
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Label: "Todo"},
@@ -1404,7 +1404,7 @@ func TestSelectedItemDescriptionArea(t *testing.T) {
 	categories := []bartui.TokenCategory{
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{
@@ -1610,7 +1610,7 @@ func TestCompletionListScrolling(t *testing.T) {
 	categories := []bartui.TokenCategory{
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options:       options,
 		},
@@ -1720,7 +1720,7 @@ func TestAutoFilledTokensTracked(t *testing.T) {
 		},
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Label: "Todo"},
@@ -1799,7 +1799,7 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 		},
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Label: "Todo"},
@@ -1883,7 +1883,7 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 		},
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Label: "Todo"},
@@ -1971,7 +1971,7 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 		},
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Label: "Todo"},
@@ -2229,7 +2229,7 @@ func TestPersonaPresetTokenPrefixed(t *testing.T) {
 		},
 		{
 			Key:           "static",
-			Label:         "Static Prompt",
+			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
 				{Value: "todo", Label: "Todo"},

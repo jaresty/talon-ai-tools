@@ -68,7 +68,7 @@ var stageOrder = []string{
 	"voice",          // Speaking style (optional) - Path 2 continued
 	"audience",       // Target audience (optional) - Path 2 continued
 	"tone",           // Emotional tone (optional) - Path 2 continued
-	"static",         // Static Prompt - the main prompt type
+	"static",         // Task - the main task type
 	"completeness",   // How thorough
 	"scope",          // How focused
 	"method",         // How to approach
@@ -91,7 +91,7 @@ func stageDisplayName(stage string) string {
 	case "tone":
 		return "Tone"
 	case "static":
-		return "Static"
+		return "Task"
 	case "completeness":
 		return "Completeness"
 	case "scope":

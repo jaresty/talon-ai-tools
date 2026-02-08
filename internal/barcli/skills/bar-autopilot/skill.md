@@ -84,7 +84,7 @@ Assumes:
 
 1. **Match request to patterns** - Consult reference § "Usage Patterns by Task Type" to find similar examples and understand what token combinations work well for different request types
 
-2. **Select static prompt** - **REQUIRED: Select a static prompt token** to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". The grammar marks static prompts as optional (0-1), but this is a technical specification—automated usage MUST include a static prompt. Omitting it produces unfocused, open-ended responses. See reference § "Usage Guidance for Automated/Agent Contexts" for explicit confirmation of this requirement.
+2. **Select task** - **REQUIRED: Select a task token** to give clear task direction. Discover available task tokens from the reference § "Token Catalog" § "Tasks". The grammar marks tasks as optional (0-1), but this is a technical specification—automated usage MUST include a task. Omitting it produces unfocused, open-ended responses. See reference § "Usage Guidance for Automated/Agent Contexts" for explicit confirmation of this requirement.
 
 3. **Select scope** - Read reference § "Choosing Scope" to understand what scope tokens are available and how to select them based on request focus
 

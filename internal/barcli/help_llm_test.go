@@ -2,6 +2,7 @@ package barcli
 
 import (
 	"bytes"
+	"io/fs"
 	"strings"
 	"testing"
 )
@@ -29,5 +30,27 @@ func TestLLMHelpUsesTaskTerminology(t *testing.T) {
 	}
 	if !strings.Contains(output, "task is required") {
 		t.Error("expected LLM help error example to say 'task is required'")
+	}
+}
+
+func TestEmbeddedSkillsUseTaskTerminology(t *testing.T) {
+	err := fs.WalkDir(embeddedSkills, "skills", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {
+			return err
+		}
+		data, readErr := fs.ReadFile(embeddedSkills, path)
+		if readErr != nil {
+			t.Fatalf("failed to read %s: %v", path, readErr)
+		}
+		content := string(data)
+		for i, line := range strings.Split(content, "\n") {
+			if strings.Contains(strings.ToLower(line), "static prompt") {
+				t.Errorf("%s:%d contains 'static prompt': %s", path, i+1, strings.TrimSpace(line))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("failed to walk embedded skills: %v", err)
 	}
 }

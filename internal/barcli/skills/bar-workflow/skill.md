@@ -72,7 +72,7 @@ Assumes:
 
 1. **Identify workflow pattern** - Consult reference § "Usage Patterns by Task Type" to understand which patterns might chain well
 
-2. **Select static prompts for each step** - **REQUIRED: Select a static prompt token** for each workflow step to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". The grammar marks static prompts as optional (0-1), but this is a technical specification—automated usage MUST include a static prompt for each step. See reference § "Usage Guidance for Automated/Agent Contexts".
+2. **Select task for each step** - **REQUIRED: Select a task token** for each workflow step to give clear task direction. Discover available task tokens from the reference § "Token Catalog" § "Tasks". The grammar marks tasks as optional (0-1), but this is a technical specification—automated usage MUST include a task for each step. See reference § "Usage Guidance for Automated/Agent Contexts".
 
 3. **Select method progression** - Read reference § "Choosing Method" to discover:
    - Which method categories exist (Exploration, Understanding, Decision, Diagnostic)

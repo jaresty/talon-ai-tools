@@ -148,3 +148,26 @@
 - **next_work**:
   - Behaviour: Update skill `.md` files to replace "static prompt" with "task" terminology. Validation: `grep -ri "static prompt" internal/barcli/skills/` returns 0 matches. Future-shaping: consistent LLM-facing documentation.
   - Behaviour: Internal key rename ("static" → "task" in stageOrder/axisOrder + Python grammar exporter). Validation: `go test ./...`. Future-shaping: complete Phase 0 alignment.
+
+## Loop 7: Rename "static prompt" to "task" in embedded skill files
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 0 (Terminology Cleanup) — Embedded skill `.md` files (bar-workflow, bar-autopilot, bar-suggest, bar-manual). Replace "static prompt" / "Static Prompts" with "task" / "Tasks" in LLM-facing skill instructions.
+- **active_constraint**: Four embedded skill files contain "static prompt" references in step instructions and code comments, causing LLM agents to see outdated terminology that conflicts with the "task" terminology adopted in Loops 1-6. The embedded skills are compiled into the Go binary via `//go:embed skills`, so text changes are testable through `embeddedSkills` filesystem.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestEmbeddedSkillsUseTaskTerminology"`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestEmbeddedSkillsUseTaskTerminology"` — `help_llm_test.go:48: skills/bar-autopilot/skill.md:87 contains 'static prompt'` (4 files flagged) | inline
+    helper:diff-snapshot=1 file changed (help_llm_test.go only; skill files unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=5 files changed, 27 insertions(+), 4 deletions(-)
+  - removal | 2026-02-07T (git restore skills/) | exit 1 | `git restore internal/barcli/skills/ && go test ./internal/barcli/ -run "TestEmbeddedSkillsUseTaskTerminology"` — `help_llm_test.go:48: skills/bar-autopilot/skill.md:87 contains 'static prompt'` returns | inline
+    helper:diff-snapshot=0 files changed (skill files reverted)
+- **rollback_plan**: `git restore internal/barcli/skills/` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=5 files changed, 27 insertions(+), 4 deletions(-). Updated `bar-workflow/skill.md:75` ("Select static prompts for each step" → "Select task for each step", all "static prompt" → "task", "Static Prompts" → "Tasks"). Updated `bar-autopilot/skill.md:87` ("Select static prompt" → "Select task", all references). Updated `bar-suggest/skill.md:91` ("Select static prompts for options" → "Select task for options", all references). Updated `bar-manual/skill.md:78` ("Static prompts only" → "Tasks only"). Created `TestEmbeddedSkillsUseTaskTerminology` in help_llm_test.go that walks all embedded `.md` files and asserts no "static prompt" appears. Depth-first rung: skill file text (LLM-facing documentation).
+- **loops_remaining_forecast**: ~1 loop remaining for Phase 0 Go-side rename. Remaining: internal key rename ("static" → "task" in stageOrder/axisOrder, `TokenCategoryKindTask` value, grammar JSON key) requires coordinated Go + Python changes. Confidence: medium (cross-language coordination adds risk).
+- **residual_constraints**:
+  - The `prompt-grammar.json` uses `"static"` as the grammar key — renaming requires updating the Python exporter. Severity: medium (internal). Mitigation: defer to coordinated loop. Owning ADR: 0082 Phase 0.
+  - Internal `stageOrder`/`axisOrder` key `"static"` and `TokenCategoryKindTask` value `"static"` remain unchanged. Severity: medium (internal-only, no user confusion). Mitigation: defer to final Phase 0 loop. Monitoring: `grep -r '"static"' internal/bartui/tokens.go internal/bartui2/program.go internal/barcli/embed/`.
+- **next_work**:
+  - Behaviour: Internal key rename ("static" → "task" in stageOrder/axisOrder, `TokenCategoryKindTask` value, all `"static"` key references in barcli/bartui/bartui2 + Python grammar exporter). Validation: `go test ./...`. Future-shaping: complete Phase 0 alignment.

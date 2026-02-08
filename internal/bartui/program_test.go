@@ -36,7 +36,7 @@ func updateExpectNoCmd(t *testing.T, m model, msg tea.Msg) model {
 func defaultTokenCategories() []TokenCategory {
 	return []TokenCategory{
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			Kind:          TokenCategoryKindTask,
 			MaxSelections: 1,
@@ -1114,7 +1114,7 @@ func TestToggleCurrentTokenOptionShowsToast(t *testing.T) {
 	if !m.toastVisible {
 		t.Fatalf("expected toast to be visible after token toggle")
 	}
-	if !strings.Contains(m.toastMessage, "static=todo applied") {
+	if !strings.Contains(m.toastMessage, "task=todo applied") {
 		t.Fatalf("expected toast message to include grammar fragment, got %q", m.toastMessage)
 	}
 	if !strings.Contains(m.toastMessage, "CLI:") {
@@ -2672,21 +2672,21 @@ func TestPositionAwareTabCompletion(t *testing.T) {
 		t.Fatalf("expected 4 completions for empty partial, got %d: %v", len(allCompletions), allCompletions)
 	}
 
-	// Test 3: Position-aware completion with "static=" prefix
-	staticCompletions := m.getCompletionsForPartial("static=")
-	if len(staticCompletions) != 2 { // static=todo, static=summary
-		t.Fatalf("expected 2 completions for 'static=', got %d: %v", len(staticCompletions), staticCompletions)
+	// Test 3: Position-aware completion with "task=" prefix
+	staticCompletions := m.getCompletionsForPartial("task=")
+	if len(staticCompletions) != 2 { // task=todo, task=summary
+		t.Fatalf("expected 2 completions for 'task=', got %d: %v", len(staticCompletions), staticCompletions)
 	}
 	for _, c := range staticCompletions {
-		if !strings.HasPrefix(c, "static=") {
-			t.Fatalf("expected completion to have 'static=' prefix, got %q", c)
+		if !strings.HasPrefix(c, "task=") {
+			t.Fatalf("expected completion to have 'task=' prefix, got %q", c)
 		}
 	}
 
 	// Test 4: Position-aware completion with partial value
-	staticTodoCompletions := m.getCompletionsForPartial("static=to")
-	if len(staticTodoCompletions) != 1 || staticTodoCompletions[0] != "static=todo" {
-		t.Fatalf("expected [static=todo] for 'static=to', got %v", staticTodoCompletions)
+	staticTodoCompletions := m.getCompletionsForPartial("task=to")
+	if len(staticTodoCompletions) != 1 || staticTodoCompletions[0] != "task=todo" {
+		t.Fatalf("expected [task=todo] for 'task=to', got %v", staticTodoCompletions)
 	}
 
 	// Test 5: Scope category completions
@@ -2695,8 +2695,8 @@ func TestPositionAwareTabCompletion(t *testing.T) {
 		t.Fatalf("expected 2 completions for 'scope=', got %d: %v", len(scopeCompletions), scopeCompletions)
 	}
 
-	// Test 6: Verify completion order matches CLI order (static=11 > scope=8)
-	// With defaultTokenCategories, static should come before scope
+	// Test 6: Verify completion order matches CLI order (task=11 > scope=8)
+	// With defaultTokenCategories, task should come before scope
 	if allCompletions[0] != "todo" && allCompletions[0] != "summary" {
 		t.Fatalf("expected first completion from static category (todo/summary), got %q", allCompletions[0])
 	}
@@ -2728,7 +2728,7 @@ func TestCompletionOrderMatchesCLI(t *testing.T) {
 			},
 		},
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			Kind:          TokenCategoryKindTask,
 			MaxSelections: 1,

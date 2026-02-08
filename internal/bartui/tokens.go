@@ -6,7 +6,7 @@ type TokenCategoryKind string
 const (
 	TokenCategoryKindAxis    TokenCategoryKind = "axis"
 	TokenCategoryKindPersona TokenCategoryKind = "persona"
-	TokenCategoryKindTask    TokenCategoryKind = "static"
+	TokenCategoryKindTask    TokenCategoryKind = "task"
 )
 
 // TokenOption represents a selectable prompt token within a category.

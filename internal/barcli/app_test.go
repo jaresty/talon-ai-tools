@@ -88,7 +88,7 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 
 func TestRenderTokensHelpFiltersStaticSection(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
-	filters := map[string]bool{"static": true}
+	filters := map[string]bool{"task": true}
 	var buf bytes.Buffer
 	renderTokensHelp(&buf, grammar, filters)
 

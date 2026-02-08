@@ -23,7 +23,7 @@ var shuffleStageOrder = []string{
 	"voice",
 	"audience",
 	"tone",
-	"static",
+	"task",
 	"completeness",
 	"scope",
 	"method",
@@ -57,8 +57,8 @@ func Shuffle(g *Grammar, opts ShuffleOptions) (*BuildResult, *CLIError) {
 			continue
 		}
 
-		// Always include static prompt for valid output
-		mustInclude := stage == "static" || includeSet[stage]
+		// Always include task for valid output
+		mustInclude := stage == "task" || includeSet[stage]
 		if !mustInclude && rng.Float64() > opts.Fill {
 			continue
 		}
@@ -95,7 +95,7 @@ func getStageTokens(g *Grammar, stage string) []string {
 	var tokens []string
 
 	switch stage {
-	case "static":
+	case "task":
 		tokens = make([]string, 0, len(g.Static.Profiles))
 		for name := range g.Static.Profiles {
 			tokens = append(tokens, name)

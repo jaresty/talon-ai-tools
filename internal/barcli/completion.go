@@ -284,7 +284,7 @@ func stageOrder(stage string) int {
 	// Generic "persona" fallback uses highest priority (preset-first)
 	case "persona":
 		return orderPersonaPreset
-	case "static":
+	case "task":
 		return orderStatic
 	case "completeness":
 		return orderCompleteness
@@ -416,7 +416,7 @@ func (state *completionState) markStageSkipped(stage string) {
 		state.personaTone = true
 		state.personaIntent = true
 		return
-	case "static":
+	case "task":
 		state.static = true
 		state.staticClosed = true
 		return
@@ -909,7 +909,7 @@ func completeRecipe(grammar *Grammar, catalog completionCatalog, shell string, w
 	}
 
 	if !state.static && !state.staticClosed {
-		appendSection("static", "What prompts", orderStatic, buildStaticSuggestions(grammar, catalog))
+		appendSection("task", "What prompts", orderStatic, buildStaticSuggestions(grammar, catalog))
 	}
 
 	orderedAxes := completionAxisOrder(grammar)

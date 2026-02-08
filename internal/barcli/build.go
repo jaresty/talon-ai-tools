@@ -229,7 +229,7 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 		}
 		s.static = token
 		s.staticExplicit = true
-		s.addRecognized("static", token)
+		s.addRecognized("task", token)
 		return nil
 	}
 
@@ -600,8 +600,8 @@ func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[stri
 	if len(recognized) > 0 {
 		msg.WriteString("\n\nSuccessfully recognized:")
 
-		// Display in grammar order: static, completeness, scope, method, form, channel, directional
-		axisOrder := []string{"static", "completeness", "scope", "method", "form", "channel", "directional"}
+		// Display in grammar order: task, completeness, scope, method, form, channel, directional
+		axisOrder := []string{"task", "completeness", "scope", "method", "form", "channel", "directional"}
 
 		for _, axisName := range axisOrder {
 			tokens := recognized[axisName]

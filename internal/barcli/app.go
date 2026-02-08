@@ -913,7 +913,7 @@ func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
 
 		switch section {
 		case "static":
-			filters["static"] = true
+			filters["task"] = true
 		case "axes":
 			filters["axes"] = true
 		case "completeness", "scope", "method", "form", "channel", "directional":
@@ -956,7 +956,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		printed = true
 	}
 
-	if shouldShow("static") {
+	if shouldShow("task") {
 		writeHeader("TASKS")
 		staticNames := make([]string, 0, len(grammar.Static.Profiles))
 		for name := range grammar.Static.Profiles {

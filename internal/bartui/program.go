@@ -1569,7 +1569,7 @@ var completionCategoryOrder = map[string]int{
 	"voice":        14,
 	"audience":     13,
 	"tone":         12,
-	"static":       11,
+	"task":          11,
 	"completeness": 9,
 	"scope":        8,
 	"method":       7,

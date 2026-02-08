@@ -130,7 +130,7 @@ func TestParseTokensFromCommandEmpty(t *testing.T) {
 func testCategories() []bartui.TokenCategory {
 	return []bartui.TokenCategory{
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -170,7 +170,7 @@ func TestFuzzyCompletionAllOptions(t *testing.T) {
 	m.commandInput.SetValue("bar build ")
 	m.updateCompletions()
 
-	// First stage is "static" which has 2 options in testCategories
+	// First stage is "task" which has 2 options in testCategories
 	if len(m.completions) != 2 {
 		t.Fatalf("expected 2 completions for static stage, got %d: %v", len(m.completions), m.completions)
 	}
@@ -324,7 +324,7 @@ func TestSnapshotWithCompletions(t *testing.T) {
 		t.Fatalf("Snapshot failed: %v", err)
 	}
 
-	// Should show stage header (first stage is "static" -> "TASK")
+	// Should show stage header (first stage is "task" -> "TASK")
 	if !strings.Contains(view, "TASK") {
 		t.Error("expected TASK stage header in view")
 	}
@@ -627,7 +627,7 @@ func TestPersonaPresetUsesSpokenSlugInCommand(t *testing.T) {
 func TestDirectionalTokenUsesSlugInCommand(t *testing.T) {
 	categories := []bartui.TokenCategory{
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -650,7 +650,7 @@ func TestDirectionalTokenUsesSlugInCommand(t *testing.T) {
 		InitialHeight:   24,
 	})
 	m.ready = true
-	m.tokensByCategory["static"] = []string{"todo"}
+	m.tokensByCategory["task"] = []string{"todo"}
 	m.tokensByCategory["directional"] = []string{"fly rog"}
 
 	m.rebuildCommandLine()
@@ -1132,7 +1132,7 @@ func TestBackspaceNavigatesBackward(t *testing.T) {
 	m2 := updated.(model)
 
 	// Should be back at static stage
-	if m2.getCurrentStage() != "static" {
+	if m2.getCurrentStage() != "task" {
 		t.Errorf("expected to go back to static stage, got %s", m2.getCurrentStage())
 	}
 
@@ -1226,7 +1226,7 @@ func TestStageOrderIncludesPersonaStages(t *testing.T) {
 	}
 
 	// Verify static comes after persona stages
-	if stageOrder[5] != "static" {
+	if stageOrder[5] != "task" {
 		t.Errorf("expected stageOrder[5] to be 'static', got %q", stageOrder[5])
 	}
 }
@@ -1270,7 +1270,7 @@ func TestShiftTabGoesToPreviousStage(t *testing.T) {
 	m2 := updated.(model)
 
 	// Should be back at static stage
-	if m2.getCurrentStage() != "static" {
+	if m2.getCurrentStage() != "task" {
 		t.Errorf("expected to go back to static stage, got %s", m2.getCurrentStage())
 	}
 
@@ -1304,7 +1304,7 @@ func TestCtrlKClearsAllTokens(t *testing.T) {
 	}
 
 	// Should be at first stage (static, since test categories don't have persona stages)
-	if m2.getCurrentStage() != "static" {
+	if m2.getCurrentStage() != "task" {
 		t.Errorf("expected to be at static stage after clear, got %s", m2.getCurrentStage())
 	}
 
@@ -1359,7 +1359,7 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 			},
 		},
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -1403,7 +1403,7 @@ func TestSelectedItemDescriptionArea(t *testing.T) {
 	// Create categories with detailed descriptions
 	categories := []bartui.TokenCategory{
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -1609,7 +1609,7 @@ func TestCompletionListScrolling(t *testing.T) {
 
 	categories := []bartui.TokenCategory{
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options:       options,
@@ -1719,7 +1719,7 @@ func TestAutoFilledTokensTracked(t *testing.T) {
 			},
 		},
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -1798,7 +1798,7 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 			},
 		},
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -1825,7 +1825,7 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 
 	// Should now be at static stage
 	currentStage := m.getCurrentStage()
-	if currentStage != "static" {
+	if currentStage != "task" {
 		t.Fatalf("expected to be at static stage after preset selection, got %q (completions: %d)", currentStage, len(m.completions))
 	}
 
@@ -1882,7 +1882,7 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 			},
 		},
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -1970,7 +1970,7 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 			},
 		},
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{
@@ -2228,7 +2228,7 @@ func TestPersonaPresetTokenPrefixed(t *testing.T) {
 			},
 		},
 		{
-			Key:           "static",
+			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
 			Options: []bartui.TokenOption{

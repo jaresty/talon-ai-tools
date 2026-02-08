@@ -46,7 +46,7 @@ func ApplyOverride(ctx OverrideContext, token string) error {
 		if err := ctx.SetTask(value); err != nil {
 			return err
 		}
-		ctx.AddRecognized("static", value)
+		ctx.AddRecognized("task", value)
 		return nil
 	case "completeness":
 		if !ctx.IsAxisToken("completeness", value) {

@@ -229,7 +229,7 @@ func TestCompleteStaticStage(t *testing.T) {
 		t.Fatalf("expected persona skip suggestion value %q, got %q", skipPersonaValue, trimmed)
 	}
 
-	skipStaticValue := skipValue("static")
+	skipStaticValue := skipValue("task")
 	skipStatic, ok := findSuggestion(suggestions, skipStaticValue)
 	if !ok {
 		t.Fatalf("expected static skip suggestion %q, got %v", skipStaticValue, suggestions)
@@ -278,7 +278,7 @@ func TestCompleteSkipsPersonaAfterSkipToken(t *testing.T) {
 		t.Fatalf("did not expect persona skip suggestion after consuming it, got %v", suggestions)
 	}
 
-	if !containsSuggestionValue(suggestions, skipValue("static")) {
+	if !containsSuggestionValue(suggestions, skipValue("task")) {
 		t.Fatalf("expected static skip suggestion after persona skip, got %v", suggestions)
 	}
 
@@ -306,7 +306,7 @@ func TestCompleteSkipsPersonaAfterSkipToken(t *testing.T) {
 func TestCompleteSkipsStaticAfterSkipToken(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	words := []string{"bar", "build", skipValue("persona"), skipValue("static"), ""}
+	words := []string{"bar", "build", skipValue("persona"), skipValue("task"), ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -320,7 +320,7 @@ func TestCompleteSkipsStaticAfterSkipToken(t *testing.T) {
 		t.Fatalf("did not expect static suggestion %q after skip, got %v", staticSlug, suggestions)
 	}
 
-	if containsSuggestionValue(suggestions, skipValue("static")) {
+	if containsSuggestionValue(suggestions, skipValue("task")) {
 		t.Fatalf("did not expect static skip suggestion after consuming it, got %v", suggestions)
 	}
 
@@ -581,7 +581,7 @@ func TestCompleteStaticAfterPersonaPresetAndIntent(t *testing.T) {
 	if !containsSuggestionValue(suggestions, staticSlug) {
 		t.Fatalf("expected static suggestion %q after persona selection, got %v", staticSlug, suggestions)
 	}
-	if !containsSuggestionValue(suggestions, skipValue("static")) {
+	if !containsSuggestionValue(suggestions, skipValue("task")) {
 		t.Fatalf("expected static skip token after persona selection, got %v", suggestions)
 	}
 
@@ -706,7 +706,7 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 		}
 	}
 	if len(catalog.static) > 0 {
-		if !containsSuggestionValue(suggestions, skipValue("static")) {
+		if !containsSuggestionValue(suggestions, skipValue("task")) {
 			t.Fatalf("expected skip token for static stage, got %v", suggestions)
 		}
 	}

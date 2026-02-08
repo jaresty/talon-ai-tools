@@ -135,7 +135,7 @@ func TestBuildUnrecognizedToken(t *testing.T) {
 		},
 		{
 			name:       "error shows recognized override tokens",
-			args:       []string{"build", "static=make", "scope=mean", "method=analysi"},
+			args:       []string{"build", "task=make", "scope=mean", "method=analysi"},
 			expectExit: true,
 			expectInMessage: []string{
 				"unrecognized token for method",
@@ -143,6 +143,14 @@ func TestBuildUnrecognizedToken(t *testing.T) {
 				"Successfully recognized:",
 				"task: make",
 				"scope: mean",
+			},
+		},
+		{
+			name:       "static= override key rejected in favor of task=",
+			args:       []string{"build", "static=make"},
+			expectExit: true,
+			expectInMessage: []string{
+				"unknown override key static",
 			},
 		},
 	}

@@ -168,7 +168,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
 
   List available tokens:           bar help tokens
-  List only tasks:                  bar help tokens static
+  List only tasks:                  bar help tokens task
   List persona sections:           bar help tokens persona persona-intents
   Emit JSON for automation:        bar build --json make focus steps fog
   Supply prompt content:           bar build make focus --prompt "Fix onboarding"
@@ -912,7 +912,7 @@ func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
 		}
 
 		switch section {
-		case "static":
+		case "task":
 			filters["task"] = true
 		case "axes":
 			filters["axes"] = true

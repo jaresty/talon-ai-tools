@@ -1579,7 +1579,7 @@ var completionCategoryOrder = map[string]int{
 }
 
 // getCompletionsForPartial returns token options matching the partial string.
-// If partial contains "=" (e.g., "static=inf"), it completes values for that category only.
+// If partial contains "=" (e.g., "task=inf"), it completes values for that category only.
 // Otherwise, it completes from all categories in CLI-matching order.
 func (m *model) getCompletionsForPartial(partial string) []string {
 	partial = strings.TrimSpace(partial)
@@ -4884,7 +4884,7 @@ func (m *model) renderPresetPane(b *strings.Builder) {
 				}
 			}
 			b.WriteString(fmt.Sprintf("  %s %s%s\n", cursor, summary.Name, state))
-			b.WriteString(fmt.Sprintf("    saved %s | static=%s | voice=%s | audience=%s | tone=%s\n",
+			b.WriteString(fmt.Sprintf("    saved %s | task=%s | voice=%s | audience=%s | tone=%s\n",
 				formatPresetTime(summary.SavedAt),
 				safeValue(summary.Static),
 				safeValue(summary.Voice),

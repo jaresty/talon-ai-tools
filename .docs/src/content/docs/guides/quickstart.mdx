@@ -52,8 +52,8 @@ Presets only store canonical tokens and metadata. Provide new subject text each 
 
 Completions expose a skip sentinel whenever you want to jump ahead in the flow:
 
-- `//next` hides the remaining persona hints and jumps straight to static prompt (“What”) suggestions.
-- `//next:<stage>` skips a named stage such as `static`, `scope`, or `method`. Stage names appear in the completion menu so you can tab-complete them.
+- `//next` hides the remaining persona hints and jumps straight to task ("What") suggestions.
+- `//next:<stage>` skips a named stage such as `task`, `scope`, or `method`. Stage names appear in the completion menu so you can tab-complete them.
 - Skip tokens are ignored by `bar build`, so the resulting recipe only contains the tokens you accept after the sentinel.
 
 Combine the sentinel with normal completions to reach the sections you need faster—for example, accept `//next`, choose `todo`, then continue with axis tokens without manually clearing persona suggestions.

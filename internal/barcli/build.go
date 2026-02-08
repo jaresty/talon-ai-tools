@@ -33,7 +33,7 @@ type BuildResult struct {
 }
 
 type AxesResult struct {
-	Static       string   `json:"static"`
+	Static       string   `json:"task"`
 	Completeness string   `json:"completeness,omitempty"`
 	Scope        []string `json:"scope,omitempty"`
 	Method       []string `json:"method,omitempty"`
@@ -718,7 +718,7 @@ func (s *buildState) finalise() *CLIError {
 			}
 			msg.WriteString("\n")
 		}
-		msg.WriteString("\nRun 'bar help tokens static' to see all tasks with detailed descriptions.")
+		msg.WriteString("\nRun 'bar help tokens task' to see all tasks with detailed descriptions.")
 		return s.errorf(errorMissingStatic, msg.String())
 	}
 

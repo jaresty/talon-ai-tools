@@ -448,11 +448,11 @@ func (g *Grammar) initialiseSlugs(raw rawSlugSection) {
 
 	for name := range g.Static.Profiles {
 		ensure(name)
-		ensure(fmt.Sprintf("static=%s", name))
+		ensure(fmt.Sprintf("task=%s", name))
 	}
 	for name := range g.Static.Descriptions {
 		ensure(name)
-		ensure(fmt.Sprintf("static=%s", name))
+		ensure(fmt.Sprintf("task=%s", name))
 	}
 	for axis, tokens := range g.Axes.Definitions {
 		for token := range tokens {

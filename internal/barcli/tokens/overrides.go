@@ -39,7 +39,7 @@ func ApplyOverride(ctx OverrideContext, token string) error {
 	case "persona":
 		return ctx.Errorf("preset_conflict", "persona presets must appear before overrides")
 
-	case "static":
+	case "task":
 		if !ctx.IsTask(value) {
 			return ctx.UnknownValue(key, value)
 		}

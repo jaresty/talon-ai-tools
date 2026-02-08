@@ -722,7 +722,7 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 
 	}
 
-	add("static=", "override.static", catalog.static, func(token string) string {
+	add("task=", "override.task", catalog.static, func(token string) string {
 		return strings.TrimSpace(grammar.TaskDescription(token))
 	})
 	add("completeness=", "override.completeness", catalog.completeness, func(token string) string {

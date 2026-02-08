@@ -166,7 +166,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 
 	fmt.Fprintf(w, "<override-tokens> ::= (<axis-override> | <constraint-override> | <persona-override>)*\n\n")
 
-	fmt.Fprintf(w, "<axis-override>       ::= \"static=\" <static-value>\n")
+	fmt.Fprintf(w, "<axis-override>       ::= \"task=\" <task-value>\n")
 	fmt.Fprintf(w, "<constraint-override> ::= \"completeness=\" <completeness-value>\n")
 	fmt.Fprintf(w, "                       | \"scope=\" <scope-value>\n")
 	fmt.Fprintf(w, "                       | \"method=\" <method-value>\n")

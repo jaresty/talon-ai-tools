@@ -327,7 +327,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
     override_slugs: dict[str, dict[str, str]] = {}
 
     override_slugs["task"] = _map_slugs(
-        (f"static={label}" for label in static_slugs.keys()),
+        (f"task={label}" for label in static_slugs.keys()),
         category="override-task",
         taken=taken_slugs,
     )

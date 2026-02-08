@@ -75,7 +75,7 @@ Explain what they'll see:
 Fall back to discovery commands:
 ```bash
 bar help tokens              # All tokens
-bar help tokens static       # Static prompts only
+bar help tokens task         # Tasks only
 bar help tokens scope method # Multiple axes
 bar help tokens persona      # Persona system
 ```
@@ -154,7 +154,7 @@ bar help reference
 bar help tokens
 
 # Discover specific sections
-bar help tokens static
+bar help tokens task
 bar help tokens axes
 bar help tokens scope method
 bar help tokens persona persona-intents

@@ -65,7 +65,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 
 - **2026-01-12** – Axis modifiers and docs now reflect ADR-076: `method=samples` is replaced by `method=explore` + `form=variants`, sampling recipes highlight `scope=focus`, and quick-help / cheatsheet surfaces pull the refreshed catalog.
 - **2026-01-09** – `bar tui` now supports a fixture-driven snapshot harness (`--fixture`, `--no-alt-screen`) with README instructions and a committed smoke transcript so pilots and CI runs capture deterministic previews.
-- **2026-01-09** – CLI completion surfaces include `//next` skip sentinels with docs, help text, and examples (`bar help`, README, and docs quickstart) so you can jump persona/static stages without hunting for options.
+- **2026-01-09** – CLI completion surfaces include `//next` skip sentinels with docs, help text, and examples (`bar help`, README, and docs quickstart) so you can jump persona/task stages without hunting for options.
 - **2026-01-08** – Portable CLI completions now insert slug tokens (for example, `as-teacher`). The CLI no longer accepts the legacy human-readable labels; supply slugs directly to keep recipes predictable.
 
 ## Development
@@ -162,7 +162,7 @@ For a complete pilot walkthrough (interactive usage, fixture expectations, trans
 Use the skip sentinel `//next` whenever tab completion offers a stage you want to bypass:
 
 - `//next` by itself skips the remaining persona hints and moves directly to “What” suggestions.
-- `//next:<stage>` skips the named stage (for example `//next:static` hides all static prompts, `//next:scope` hides further scope tokens). The CLI suggests valid stage names inline.
+- `//next:<stage>` skips the named stage (for example `//next:task` hides all tasks, `//next:scope` hides further scope tokens). The CLI suggests valid stage names inline.
 - Insert the sentinel anywhere in the shorthand sequence; the build command ignores the token, so the final recipe only contains the tokens you kept.
 
 Pair the sentinel with normal completions to fast-forward through stages. For instance, accepting `//next` followed by `todo` and `full` yields the same build as selecting persona suggestions manually, but keeps the persona stage out of the workflow.

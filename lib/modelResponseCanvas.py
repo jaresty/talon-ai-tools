@@ -1566,7 +1566,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                 if snapshot != _last_recap_log:
                     _debug(
                         "recap state "
-                        f"static={static_prompt!r} C={last_completeness!r} "
+                        f"task={static_prompt!r} C={last_completeness!r} "
                         f"S={last_scope!r} M={last_method!r} "
                         f"F={last_form!r} Ch={last_channel!r} D={directional!r}"
                     )

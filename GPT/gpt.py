@@ -2483,7 +2483,7 @@ class UserActions:
             ):
                 print(
                     "[gpt again] overrides",
-                    f"static={static_prompt!r} "
+                    f"task={static_prompt!r} "
                     f"C={override_completeness_tokens or completeness!r} "
                     f"S={override_scope_tokens or scope!r} "
                     f"M={override_method_tokens or method!r} "
@@ -2494,7 +2494,7 @@ class UserActions:
             # Always emit base once per rerun so we can see diffs.
             print(
                 "[gpt again] base",
-                f"static={base_static!r} C={base_completeness!r} "
+                f"task={base_static!r} C={base_completeness!r} "
                 f"S={base_scope!r} M={base_method!r} "
                 f"F={base_form_tokens_raw!r} Ch={base_channel_tokens_raw!r} "
                 f"D={base_directional!r}",
@@ -2627,7 +2627,7 @@ class UserActions:
             print(
                 "[gpt again] stored",
                 f"recipe={GPTState.last_recipe!r} "
-                f"static={GPTState.last_static_prompt!r} "
+                f"task={GPTState.last_static_prompt!r} "
                 f"C={GPTState.last_completeness!r} "
                 f"S={GPTState.last_scope!r} "
                 f"M={GPTState.last_method!r} "

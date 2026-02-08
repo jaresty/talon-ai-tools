@@ -141,7 +141,7 @@ func TestRunPresetListReadsExistingFiles(t *testing.T) {
 		t.Fatalf("mkdir presets: %v", err)
 	}
 	presetPath := filepath.Join(presetDir, "manual.json")
-	payload := `{"version":3,"name":"manual","saved_at":"2026-01-12T00:00:00Z","source":"last_build","result":{"schema_version":"v1","subject":"","plain_text":"","axes":{"static":"make"},"persona":{}},"tokens":["make"]}`
+	payload := `{"version":3,"name":"manual","saved_at":"2026-01-12T00:00:00Z","source":"last_build","result":{"schema_version":"v1","subject":"","plain_text":"","axes":{"task":"make"},"persona":{}},"tokens":["make"]}`
 	if err := os.WriteFile(presetPath, []byte(payload), 0o600); err != nil {
 		t.Fatalf("write preset: %v", err)
 	}

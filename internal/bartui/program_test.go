@@ -1140,7 +1140,7 @@ func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
 
 	m := model{
 		toastVisible: true,
-		toastMessage: "static=todo applied · CLI: bar build todo · Ctrl+Z undo",
+		toastMessage: "task=todo applied · CLI: bar build todo · Ctrl+Z undo",
 	}
 
 	lipgloss.SetHasDarkBackground(true)

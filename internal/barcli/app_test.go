@@ -142,7 +142,7 @@ func TestParseTokenHelpFiltersDirectPersonaSections(t *testing.T) {
 func TestRunHelpTokensFiltersSections(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exitCode := Run([]string{"help", "tokens", "static"}, strings.NewReader(""), stdout, stderr)
+	exitCode := Run([]string{"help", "tokens", "task"}, strings.NewReader(""), stdout, stderr)
 	if exitCode != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", exitCode, stderr.String())
 	}
@@ -159,7 +159,7 @@ func TestRunHelpTokensFiltersSections(t *testing.T) {
 func TestRunHelpTokensUnknownSection(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exitCode := Run([]string{"help", "tokens", "static", "bogus"}, strings.NewReader(""), stdout, stderr)
+	exitCode := Run([]string{"help", "tokens", "task", "bogus"}, strings.NewReader(""), stdout, stderr)
 	if exitCode == 0 {
 		t.Fatalf("expected non-zero exit when unknown section provided")
 	}

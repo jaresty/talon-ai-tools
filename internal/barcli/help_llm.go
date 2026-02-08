@@ -452,7 +452,7 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	sort.Strings(staticNames)
 
 	for _, name := range staticNames {
-		desc := strings.TrimSpace(grammar.StaticPromptDescription(name))
+		desc := strings.TrimSpace(grammar.TaskDescription(name))
 		if desc == "" {
 			desc = "(no description)"
 		}

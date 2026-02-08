@@ -967,7 +967,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 			fmt.Fprintln(w, "  (none)")
 		} else {
 			for _, name := range staticNames {
-				desc := strings.TrimSpace(grammar.StaticPromptDescription(name))
+				desc := strings.TrimSpace(grammar.TaskDescription(name))
 				if desc == "" {
 					desc = "(no description)"
 				}

@@ -701,8 +701,8 @@ func (g *Grammar) AxisDescription(axis, token string) string {
 	return ""
 }
 
-// StaticPromptDescription returns the human readable description for a static prompt.
-func (g *Grammar) StaticPromptDescription(name string) string {
+// TaskDescription returns the human readable description for a task token.
+func (g *Grammar) TaskDescription(name string) string {
 	if p, ok := g.Static.Profiles[name]; ok {
 		if p.Description != "" {
 			return p.Description
@@ -791,8 +791,8 @@ func (g *Grammar) GetValidTokensForAxis(axis string) []string {
 	return nil
 }
 
-// GetAllStaticPrompts returns all valid static prompt tokens.
-func (g *Grammar) GetAllStaticPrompts() []string {
+// GetAllTasks returns all valid task tokens.
+func (g *Grammar) GetAllTasks() []string {
 	result := make([]string, 0, len(g.Static.Descriptions))
 	for token := range g.Static.Descriptions {
 		result = append(result, token)

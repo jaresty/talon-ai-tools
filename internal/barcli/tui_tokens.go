@@ -183,7 +183,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 
 	options := make([]bartui.TokenOption, 0, len(values))
 	for _, value := range values {
-		description := strings.TrimSpace(grammar.StaticPromptDescription(value))
+		description := strings.TrimSpace(grammar.TaskDescription(value))
 		options = append(options, bartui.TokenOption{
 			Value:       value,
 			Slug:        grammar.slugForToken(value),

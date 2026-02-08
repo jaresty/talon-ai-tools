@@ -63,7 +63,7 @@ func TestBuildUnrecognizedToken(t *testing.T) {
 			},
 		},
 		{
-			name:       "typo in static prompt shows suggestions",
+			name:       "typo in task token shows suggestions",
 			args:       []string{"build", "mak"},
 			expectExit: true,
 			expectInMessage: []string{
@@ -71,6 +71,30 @@ func TestBuildUnrecognizedToken(t *testing.T) {
 				"mak",
 				"Did you mean",
 				"make",
+			},
+		},
+		{
+			name:       "missing task token shows requirement error",
+			args:       []string{"build", "full", "code"},
+			expectExit: true,
+			expectInMessage: []string{
+				"task is required",
+				"Available tasks",
+				"make",
+			},
+			unexpectInMessage: []string{
+				"static prompt",
+			},
+		},
+		{
+			name:       "duplicate task token shows conflict error",
+			args:       []string{"build", "make", "make"},
+			expectExit: true,
+			expectInMessage: []string{
+				"multiple task tokens provided",
+			},
+			unexpectInMessage: []string{
+				"static prompt",
 			},
 		},
 		{

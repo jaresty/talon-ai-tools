@@ -565,7 +565,7 @@ func filterSuggestionsByPrefix(grammar *Grammar, suggestions []completionSuggest
 
 func buildStaticSuggestions(grammar *Grammar, catalog completionCatalog) []completionSuggestion {
 	return suggestionsWithDescriptions(grammar, catalog.static, "What (task)", func(token string) string {
-		return strings.TrimSpace(grammar.StaticPromptDescription(token))
+		return strings.TrimSpace(grammar.TaskDescription(token))
 	}, false, true)
 }
 
@@ -723,7 +723,7 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 	}
 
 	add("static=", "override.static", catalog.static, func(token string) string {
-		return strings.TrimSpace(grammar.StaticPromptDescription(token))
+		return strings.TrimSpace(grammar.TaskDescription(token))
 	})
 	add("completeness=", "override.completeness", catalog.completeness, func(token string) string {
 		return strings.TrimSpace(grammar.AxisDescription("completeness", token))

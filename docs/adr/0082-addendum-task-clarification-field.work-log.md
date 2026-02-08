@@ -73,3 +73,28 @@
 - **next_work**:
   - Behaviour: Rename `isStaticPrompt()` → `isTask()`, `StaticPromptDescription()` → `TaskDescription()`, `GetAllStaticPrompts()` → `GetAllTasks()` in build.go/grammar.go, and update build error messages. Validation: `go test ./internal/barcli/...`. Future-shaping: align function names with "task" terminology.
   - Behaviour: Rename `IsStaticPrompt`/`SetStatic` in tokens/overrides.go. Validation: `go test ./internal/barcli/...`.
+
+## Loop 4: Rename functions and error messages from "static prompt" to "task"
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 0 (Terminology Cleanup) — Function names (`isStaticPrompt`, `StaticPromptDescription`, `GetAllStaticPrompts`, `IsStaticPrompt`) and error messages ("static prompt (task) is required", "multiple static prompt tokens provided", "Available static prompts") in build.go, grammar.go, tokens/overrides.go, and all call sites. Rename to "task" terminology.
+- **active_constraint**: `build.go` error messages say "static prompt (task) is required" and "multiple static prompt tokens provided"; `grammar.go` exports `StaticPromptDescription()` and `GetAllStaticPrompts()`; `tokens/overrides.go` uses `IsStaticPrompt` struct field — all using confusing "static prompt" terminology instead of "task" in function names and user-facing error output.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestLoadEmbeddedGrammar|TestBuildUnrecognizedToken"`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestLoadEmbeddedGrammar|TestBuildUnrecognizedToken/missing_task|TestBuildUnrecognizedToken/duplicate_task"` — `grammar_loader_test.go:19:39: grammar.TaskDescription undefined (type *Grammar has no field or method TaskDescription)` | inline
+    helper:diff-snapshot=2 files changed (grammar_loader_test.go, build_error_test.go only; production code unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... && go test ./internal/bartui/... && go test ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=9 files changed, 51 insertions(+), 27 deletions(-)
+  - removal | 2026-02-07T (git restore 7 production files) | exit 1 | `git restore internal/barcli/build.go internal/barcli/grammar.go internal/barcli/completion.go internal/barcli/app.go internal/barcli/help_llm.go internal/barcli/tui_tokens.go internal/barcli/tokens/overrides.go && go test ./internal/barcli/ -run "TestLoadEmbeddedGrammar"` — `grammar_loader_test.go:19:39: grammar.TaskDescription undefined` returns | inline
+    helper:diff-snapshot=0 files changed (production code reverted)
+- **rollback_plan**: `git restore internal/barcli/build.go internal/barcli/grammar.go internal/barcli/completion.go internal/barcli/app.go internal/barcli/help_llm.go internal/barcli/tui_tokens.go internal/barcli/tokens/overrides.go` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=9 files changed, 51 insertions(+), 27 deletions(-). Renamed `isStaticPrompt()` → `isTask()` (build.go: definition + 2 call sites), `StaticPromptDescription()` → `TaskDescription()` (grammar.go definition + 5 call sites in build.go, completion.go, app.go, help_llm.go, tui_tokens.go), `GetAllStaticPrompts()` → `GetAllTasks()` (grammar.go definition + 2 call sites in build.go), `IsStaticPrompt` → `IsTask` (tokens/overrides.go struct field + usage). Updated error messages: "multiple static prompt tokens provided" → "multiple task tokens provided", "static prompt (task) is required" → "task is required", "The static prompt defines" → "The task defines", "Available static prompts" → "Available tasks", "all static prompts with detailed descriptions" → "all tasks with detailed descriptions". Updated comments. Added 2 new test cases in build_error_test.go (missing task, duplicate task) with `unexpectInMessage: "static prompt"` assertions. Depth-first rung: function names + error messages (internal API + user-facing errors).
+- **loops_remaining_forecast**: ~2-4 loops remaining for full Phase 0 rename. Remaining: `help_llm.go` "static prompt" references (~6 occurrences), `TokenCategoryKindStatic` constant, `SetStatic`/`SetStaticPromptUsed` in build.go, internal `stageOrder`/`axisOrder` key rename ("static" → "task"), skill.md files, grammar JSON exporter in Python. Confidence: medium.
+- **residual_constraints**:
+  - `help_llm.go` contains ~6 "static prompt" references in LLM-facing help text (e.g., "Static prompts are REQUIRED", "Static Prompts (required)" heading, "Missing static token" example). Severity: medium (LLM-facing, affects automated usage guidance). Mitigation: next loop. Monitoring: `grep -i "static prompt" internal/barcli/help_llm.go`.
+  - Skill files (`bar-workflow/skill.md`, `bar-autopilot/skill.md`, `bar-suggest/skill.md`) contain "static prompt" references. Severity: low-medium (LLM-facing skill instructions). Mitigation: defer to later loop after help_llm.go. Monitoring: `grep -ri "static prompt" internal/barcli/skills/`.
+  - The `prompt-grammar.json` uses `"static"` as the grammar key — renaming requires updating the Python exporter. Severity: medium (internal). Mitigation: defer. Owning ADR: 0082 Phase 0.
+- **next_work**:
+  - Behaviour: Update `help_llm.go` "static prompt" references to "task" terminology (~6 occurrences). Validation: `go test ./internal/barcli/ -run "TestRenderTokenCatalog|TestRenderLLMHelp"`. Future-shaping: consistent "task" language in LLM-facing documentation.
+  - Behaviour: Rename `TokenCategoryKindStatic` constant and `SetStatic` in build.go. Validation: `go test ./internal/barcli/...`.

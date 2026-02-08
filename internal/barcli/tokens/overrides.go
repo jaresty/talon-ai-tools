@@ -5,7 +5,7 @@ import "strings"
 // OverrideContext provides the host state required to apply CLI overrides
 // without depending on the concrete buildState implementation.
 type OverrideContext struct {
-	IsStaticPrompt  func(string) bool
+	IsTask  func(string) bool
 	IsAxisToken     func(axis, value string) bool
 	AxisCap         func(axis string) int
 	SplitList       func(value string) []string
@@ -40,7 +40,7 @@ func ApplyOverride(ctx OverrideContext, token string) error {
 		return ctx.Errorf("preset_conflict", "persona presets must appear before overrides")
 
 	case "static":
-		if !ctx.IsStaticPrompt(value) {
+		if !ctx.IsTask(value) {
 			return ctx.UnknownValue(key, value)
 		}
 		if err := ctx.SetStatic(value); err != nil {

@@ -223,9 +223,9 @@ func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
 }
 
 func (s *buildState) applyShorthandToken(token string) *CLIError {
-	if s.isStaticPrompt(token) {
+	if s.isTask(token) {
 		if s.staticExplicit {
-			return s.errorf(errorConflict, "multiple static prompt tokens provided")
+			return s.errorf(errorConflict, "multiple task tokens provided")
 		}
 		s.static = token
 		s.staticExplicit = true
@@ -258,7 +258,7 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 
 func (s *buildState) applyOverrideToken(token string) *CLIError {
 	ctx := tokens.OverrideContext{
-		IsStaticPrompt: s.isStaticPrompt,
+		IsTask:         s.isTask,
 		IsAxisToken:    s.isAxisToken,
 		AxisCap:        s.axisCap,
 		SplitList:      s.splitValueList,
@@ -494,7 +494,7 @@ func (s *buildState) axisCap(axis string) int {
 	return 0
 }
 
-func (s *buildState) isStaticPrompt(token string) bool {
+func (s *buildState) isTask(token string) bool {
 	if token == "" {
 		return false
 	}
@@ -566,8 +566,8 @@ func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[stri
 		candidates = g.GetValidTokensForAxis(axis)
 		helpCommand = "bar help tokens " + axis
 	} else {
-		// Try static prompts first, then all axis tokens
-		staticPrompts := g.GetAllStaticPrompts()
+		// Try task tokens first, then all axis tokens
+		staticPrompts := g.GetAllTasks()
 		axisTokens := g.GetAllAxisTokens()
 		candidates = make([]string, 0, len(staticPrompts)+len(axisTokens))
 		candidates = append(candidates, staticPrompts...)
@@ -677,12 +677,12 @@ func (s *buildState) cloneRecognized() map[string][]string {
 }
 
 func (s *buildState) finalise() *CLIError {
-	// Require explicit static prompt (task definition)
+	// Require explicit task token
 	if s.static == "" {
-		staticPrompts := s.grammar.GetAllStaticPrompts()
+		staticPrompts := s.grammar.GetAllTasks()
 		var msg strings.Builder
-		msg.WriteString("static prompt (task) is required\n\n")
-		msg.WriteString("The static prompt defines WHAT to do and must come FIRST in your token sequence,\n")
+		msg.WriteString("task is required\n\n")
+		msg.WriteString("The task defines WHAT to do and must come FIRST in your token sequence,\n")
 		msg.WriteString("before any completeness, scope, method, or form tokens.\n\n")
 
 		// Build contextual example if user provided other tokens
@@ -708,7 +708,7 @@ func (s *buildState) finalise() *CLIError {
 			msg.WriteString("Example: bar build <static-token> full code --prompt \"...\"\n\n")
 		}
 
-		msg.WriteString("Available static prompts:\n")
+		msg.WriteString("Available tasks:\n")
 		for _, prompt := range staticPrompts {
 			msg.WriteString("  ")
 			msg.WriteString(prompt)
@@ -718,7 +718,7 @@ func (s *buildState) finalise() *CLIError {
 			}
 			msg.WriteString("\n")
 		}
-		msg.WriteString("\nRun 'bar help tokens static' to see all static prompts with detailed descriptions.")
+		msg.WriteString("\nRun 'bar help tokens static' to see all tasks with detailed descriptions.")
 		return s.errorf(errorMissingStatic, msg.String())
 	}
 
@@ -815,7 +815,7 @@ func (s *buildState) buildHydratedPersona() []HydratedPromptlet {
 }
 
 func (s *buildState) toResult() *BuildResult {
-	description := s.grammar.StaticPromptDescription(s.static)
+	description := s.grammar.TaskDescription(s.static)
 	if description == "" {
 		description = s.static
 	}

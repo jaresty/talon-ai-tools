@@ -10,7 +10,7 @@ This ADR introduces two new CLI flags to separate task clarification from subjec
 1. **`--subject TEXT`**: Provide subject content inline (alternative to stdin)
 2. **`--addendum TEXT`**: Provide task clarification/custom instructions (new capability)
 
-The existing `--prompt` flag is **deprecated** and will be removed in a future version. Users should migrate to:
+The existing `--prompt` flag is **deprecated** and should be removed immediately. Users should migrate to:
 - `--subject` (or stdin) for content to work with
 - `--addendum` for task clarifications
 
@@ -26,7 +26,7 @@ This change aligns the bar CLI with existing Talon architecture and enables clea
 - Aligning the CLI with the existing Talon architecture will provide consistency.
 
 ### Current State (2026-02-06)
-- **ADR 0102**: Static prompt (task) is now required for all `bar build` commands
+- **ADR 0102**: Task is now required for all `bar build` commands
 - **ADR 0097**: Bar skills system exists (bar-autopilot, bar-workflow, bar-suggest, bar-manual)
 - **Current behavior**:
   - `--prompt TEXT` provides subject content
@@ -37,7 +37,7 @@ This change aligns the bar CLI with existing Talon architecture and enables clea
 ## Decision
 Introduce distinct **Addendum** and **Subject** input mechanisms to separate task clarification from content:
 
-- **Task**: What to do (static prompt like "make", "show", "probe" - required per ADR 0102)
+- **Task**: What to do (e.g., "make", "show", "probe" - required per ADR 0102)
 - **Addendum**: How to customize/clarify the task ("focus on error handling", "keep under 100 words", "use simple language")
 - **Constraints**: Guardrails shaping execution (completeness, scope, method, form, channel, directional)
 - **Persona**: Communication identity (voice, audience, tone, intent)
@@ -60,18 +60,35 @@ Introduce distinct **Addendum** and **Subject** input mechanisms to separate tas
 - Mutually exclusive with `--subject` flag
 - Error if both stdin and `--subject` are provided
 
-### Deprecated: `--prompt TEXT`
+### Removed: `--prompt TEXT`
 
-The `--prompt` flag is **deprecated** and will be removed in a future version.
+The `--prompt` flag is **removed immediately**. Using it will result in an error.
 
 **Migration guidance:**
 - If you used `--prompt` to provide **subject content** (the material to analyze/work with), use `--subject` or stdin instead
 - If you used `--prompt` to provide **task clarification** (custom instructions like "focus on X"), use `--addendum` instead
-- The flag will emit a deprecation warning showing the correct replacement
+
+**Error message when `--prompt` is used:**
+```
+Error: --prompt flag has been removed.
+
+Please provide a task (e.g., make, show, probe) and use the appropriate flag:
+  - For subject content (material to work with): use --subject "..." or pipe via stdin
+  - For task clarification (custom instructions): use --addendum "..."
+
+Examples:
+  Old: bar build make --prompt "your content"
+  New: bar build make --subject "your content"
+
+  Old: bar build make --prompt "focus on error handling"
+  New: bar build make --addendum "focus on error handling"
+
+Available tasks: make, show, probe, quiz, grow, loop
+```
 
 Example prompt structure:
 ```
-Task: make (from static prompt token)
+Task: make
 Addendum: focus on architectural decisions and trade-offs
 Constraints: Completeness=gist, Form=bullets
 Persona: Voice=as architect, Audience=to team
@@ -92,6 +109,30 @@ Subject: [ADR document content]
 
 ## Implementation Plan
 
+### Phase 0: Terminology Cleanup - Rename "static" to "task"
+
+Before implementing the new flags, rename "static" terminology to "task" throughout the codebase, as "static" is meaningless and confusing to CLI users.
+
+**Files requiring updates:**
+- `internal/barcli/build.go`: `isStaticPrompt()` → `isTask()`, `StaticPrompt` field references
+- `internal/barcli/grammar.go`: `StaticPromptDescription()`, `GetAllStaticPrompts()`
+- `internal/barcli/tokens/overrides.go`: `IsStaticPrompt`, `SetStatic`
+- `internal/bartui2/program.go`: "static" → "task" in token categories
+- `internal/bartui2/program_test.go`: "Static Prompt" → "Task" in test assertions
+- `internal/barcli/completion_test.go`: "static" references in test names and assertions
+- `internal/barcli/state.go`: Any "static" field names
+- Other files as discovered
+
+**User-facing changes:**
+- Category labels: "What (static prompt)" → "What (task)"
+- Skip token: `skip:static` → `skip:task`
+- Help text and error messages: "static prompt" → "task"
+
+**Testing:**
+- [ ] Update all tests referencing "static" terminology
+- [ ] Verify shell completion continues to work with "task" terminology
+- [ ] Ensure TUI displays "Task" instead of "Static Prompt"
+
 ### Phase 1: CLI `bar build` - Subject and Addendum Flags
 
 **1a. Add `--subject` flag**
@@ -109,30 +150,31 @@ Subject: [ADR document content]
 - Update `RenderPlainText` in `internal/barcli/render.go` to emit `=== ADDENDUM ===` section when present
 - Position addendum after Task but before Constraints in rendered output
 
-**1c. Deprecate `--prompt` flag**
-- Keep `--prompt` parsing in `config.go` but emit deprecation warning to stderr
-- Warning message:
+**1c. Remove `--prompt` flag**
+- Remove `--prompt` parsing from `config.go` entirely
+- If `--prompt` is detected, emit error and exit
+- Error message (same as shown in "Removed: `--prompt TEXT`" section above):
   ```
-  WARNING: --prompt is deprecated and will be removed in a future version.
+  Error: --prompt flag has been removed.
 
-  Migration guide:
-  - For subject content (material to analyze): use --subject "..." or pipe via stdin
-  - For task clarification (custom instructions): use --addendum "..."
+  Please provide a task (e.g., make, show, probe) and use the appropriate flag:
+    - For subject content (material to work with): use --subject "..." or pipe via stdin
+    - For task clarification (custom instructions): use --addendum "..."
 
-  Example:
+  Examples:
     Old: bar build make --prompt "your content"
     New: bar build make --subject "your content"
 
     Old: bar build make --prompt "focus on error handling"
     New: bar build make --addendum "focus on error handling"
+
+  Available tasks: make, show, probe, quiz, grow, loop
   ```
-- Current behavior: treat `--prompt` as subject (for backward compatibility during deprecation period)
-- **Future removal**: After deprecation period, remove `--prompt` entirely
 
 **1d. Update help text and usage**
 - Update `generalHelpText` in `internal/barcli/app.go`:
-  - Change `--prompt TEXT` to `--subject TEXT` and `--addendum TEXT`
-  - Add deprecation note for `--prompt`
+  - Remove `--prompt TEXT` entirely
+  - Add `--subject TEXT` and `--addendum TEXT`
 - Update examples to use `--subject` and `--addendum`
 - Update `bar help` output to show new flags
 
@@ -287,14 +329,21 @@ Execute the TASK specified above, applying the CONSTRAINTS and PERSONA as define
 
 ## Definition of Done
 
+### Phase 0: Terminology Cleanup
+- [ ] All "static" terminology renamed to "task" in codebase
+- [ ] Shell completion uses "task" terminology
+- [ ] TUI displays "Task" instead of "Static Prompt"
+- [ ] Skip token changed from `skip:static` to `skip:task`
+- [ ] `go test ./...` passes after renaming
+
 ### Phase 1: CLI Implementation
 - [ ] `--subject TEXT` flag implemented and accepts subject content
 - [ ] stdin continues to provide subject content when used alone
 - [ ] Error when both `--subject` and stdin provided (mutual exclusivity)
 - [ ] `--addendum TEXT` flag implemented
 - [ ] `bar build make --addendum "text"` renders addendum section in output
-- [ ] `--prompt` flag emits deprecation warning to stderr
-- [ ] `--prompt` continues to work (as subject) during deprecation period
+- [ ] `--prompt` flag removed entirely from code
+- [ ] `--prompt` usage emits clear error with migration guidance
 - [ ] Help text updated to show `--subject` and `--addendum`
 - [ ] Examples updated to use new flags
 
@@ -316,7 +365,7 @@ Execute the TASK specified above, applying the CONSTRAINTS and PERSONA as define
 - [ ] `go test ./...` passes
 - [ ] `make ci-guardrails` passes (PYTHON=.venv/bin/python)
 - [ ] Manual testing: all flag combinations work correctly
-- [ ] Manual testing: deprecation warning appears for `--prompt`
+- [ ] Manual testing: error appears when using `--prompt`
 - [ ] Manual testing: addendum appears correctly in preview and final output
 
 ## Consequences
@@ -330,8 +379,8 @@ Execute the TASK specified above, applying the CONSTRAINTS and PERSONA as define
 - **Explicit intent**: Users must choose between subject and addendum, forcing clarity of purpose.
 
 ### Negative
-- **Breaking change (mitigated)**: `--prompt` deprecated but continues to work with warning during transition period.
-- **Migration effort**: Existing scripts/workflows using `--prompt` need updates.
+- **Breaking change**: `--prompt` removed immediately; existing scripts will fail with clear error message.
+- **Migration effort**: Existing scripts/workflows using `--prompt` need immediate updates.
 - **Complexity increase**: Two new flags instead of overloading one flag.
 - **Learning curve**: Users must understand the distinction between subject and addendum.
 - **Documentation burden**: All examples, skills, and docs need updates.
@@ -339,7 +388,7 @@ Execute the TASK specified above, applying the CONSTRAINTS and PERSONA as define
 ### Neutral
 - **Mutual exclusivity**: `--subject` and stdin cannot both be used (prevents confusion, but requires user to choose).
 - **Addendum adoption**: Most users won't need `--addendum` (axis tokens cover most cases), so it's an advanced feature.
-- **Deprecation timeline**: Need to decide when to remove `--prompt` entirely (after sufficient adoption period).
+- **Clean break**: Immediate removal prevents confusion and forces users to adopt correct patterns.
 
 ## Related ADRs
 
@@ -349,11 +398,23 @@ Execute the TASK specified above, applying the CONSTRAINTS and PERSONA as define
 
 ## Open Tasks
 
+### Phase 0: Terminology Cleanup
+- [ ] Rename `isStaticPrompt()` to `isTask()` in `internal/barcli/build.go`
+- [ ] Rename `StaticPromptDescription()` to `TaskDescription()` in `internal/barcli/grammar.go`
+- [ ] Rename `GetAllStaticPrompts()` to `GetAllTasks()` in `internal/barcli/grammar.go`
+- [ ] Update `IsStaticPrompt` to `IsTask` in `internal/barcli/tokens/overrides.go`
+- [ ] Update `SetStatic` to `SetTask` in `internal/barcli/tokens/overrides.go`
+- [ ] Change "static" token category to "task" in `internal/bartui2/program.go`
+- [ ] Update all test assertions from "Static Prompt" to "Task"
+- [ ] Update skip token from `skip:static` to `skip:task`
+- [ ] Update help text and error messages to use "task" instead of "static prompt"
+- [ ] Run `go test ./...` to verify all tests pass after renaming
+
 ### Phase 1: CLI Implementation
 - [ ] Add `--subject TEXT` flag to `internal/barcli/cli/config.go`
 - [ ] Add `--addendum TEXT` flag to `internal/barcli/cli/config.go`
 - [ ] Implement mutual exclusivity validation (stdin vs `--subject`)
-- [ ] Add deprecation warning for `--prompt` flag
+- [ ] Remove `--prompt` flag entirely and add error handling
 - [ ] Update `readPrompt()` to check `--subject` before stdin
 - [ ] Add `Addendum` field to `BuildResult` struct
 - [ ] Update `RenderPlainText()` to emit ADDENDUM section
@@ -408,10 +469,16 @@ bar build make --subject "API redesign" --addendum "keep backward compatibility"
 bar build probe focus --subject "$(git log -10)" --addendum "identify commits related to performance"
 ```
 
-### Deprecated --prompt (shows warning)
+### Removed --prompt (shows error)
 ```bash
-# This works but emits deprecation warning:
+# This now produces an error:
 bar build make --prompt "Create API endpoint"
+# Error: --prompt flag has been removed.
+#
+# Please provide a task (e.g., make, show, probe) and use the appropriate flag:
+#   - For subject content (material to work with): use --subject "..." or pipe via stdin
+#   - For task clarification (custom instructions): use --addendum "..."
+# ...
 
 # Migration path depends on intent:
 # If "Create API endpoint" is CONTENT to work with:
@@ -441,10 +508,10 @@ bar build make --subject "text" --input file.txt
 - **Mitigation**: Skills documentation shows proper usage patterns
 
 ### Risk: Migration from `--prompt` causes workflow disruption
-- **Mitigation**: Deprecation warning clearly explains migration path
-- **Mitigation**: `--prompt` continues to work during transition (as subject)
-- **Mitigation**: Examples in warning message show both use cases (subject vs addendum)
-- **Mitigation**: Announce deprecation in release notes with timeline
+- **Mitigation**: Clear error message explains migration path with examples
+- **Mitigation**: Error shows both use cases (subject vs addendum)
+- **Mitigation**: Announce removal in release notes
+- **Mitigation**: Clean break prevents confusion about which pattern to use
 
 ### Risk: UI clutter in TUI2
 - **Mitigation**: Design compact subject/addendum inputs that don't overwhelm interface

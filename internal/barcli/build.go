@@ -273,7 +273,7 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 		ApplyPersona: func(axis, value string, override bool) error {
 			return s.applyPersonaAxis(axis, value, override)
 		},
-		SetStatic: func(value string) error {
+		SetTask: func(value string) error {
 			s.static = value
 			s.staticExplicit = true
 			return nil

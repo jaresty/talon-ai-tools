@@ -195,7 +195,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 	return bartui.TokenCategory{
 		Key:           "static",
 		Label:         "Task",
-		Kind:          bartui.TokenCategoryKindStatic,
+		Kind:          bartui.TokenCategoryKindTask,
 		MaxSelections: 1,
 		Options:       options,
 	}, true

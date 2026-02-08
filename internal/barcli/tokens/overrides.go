@@ -14,7 +14,7 @@ type OverrideContext struct {
 	Errorf          func(kind, format string, args ...any) error
 	UnknownValue    func(axis, value string) error
 	ApplyPersona    func(axis, value string, override bool) error
-	SetStatic       func(value string) error
+	SetTask       func(value string) error
 	SetCompleteness func(value string) error
 	SetScope        func(values []string) error
 	SetMethod       func(values []string) error
@@ -43,7 +43,7 @@ func ApplyOverride(ctx OverrideContext, token string) error {
 		if !ctx.IsTask(value) {
 			return ctx.UnknownValue(key, value)
 		}
-		if err := ctx.SetStatic(value); err != nil {
+		if err := ctx.SetTask(value); err != nil {
 			return err
 		}
 		ctx.AddRecognized("static", value)

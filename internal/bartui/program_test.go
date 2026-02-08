@@ -38,7 +38,7 @@ func defaultTokenCategories() []TokenCategory {
 		{
 			Key:           "static",
 			Label:         "Task",
-			Kind:          TokenCategoryKindStatic,
+			Kind:          TokenCategoryKindTask,
 			MaxSelections: 1,
 			Options: []TokenOption{
 				{Value: "todo", Slug: "todo", Label: "Todo"},
@@ -2730,7 +2730,7 @@ func TestCompletionOrderMatchesCLI(t *testing.T) {
 		{
 			Key:           "static",
 			Label:         "Task",
-			Kind:          TokenCategoryKindStatic,
+			Kind:          TokenCategoryKindTask,
 			MaxSelections: 1,
 			Options: []TokenOption{
 				{Value: "todo", Slug: "todo", Label: "Todo"},

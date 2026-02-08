@@ -123,3 +123,28 @@
 - **next_work**:
   - Behaviour: Rename `TokenCategoryKindStatic` → `TokenCategoryKindTask` in bartui/tokens.go and all references. Validation: `go test ./internal/bartui/... ./internal/bartui2/... ./internal/barcli/...`. Future-shaping: consistent internal constant naming.
   - Behaviour: Update skill `.md` files to use "task" terminology. Validation: `grep -ri "static prompt" internal/barcli/skills/` returns 0 matches. Future-shaping: consistent LLM-facing documentation.
+
+## Loop 6: Rename TokenCategoryKindStatic and SetStatic to task terminology
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 0 (Terminology Cleanup) — Internal constant `TokenCategoryKindStatic` in bartui/tokens.go, struct field `SetStatic` in tokens/overrides.go, and all references in barcli/build.go, barcli/tui_tokens.go, bartui/program_test.go.
+- **active_constraint**: `bartui/tokens.go` exports `TokenCategoryKindStatic` constant and `tokens/overrides.go` exports `SetStatic` struct field, both using "static" naming that is misaligned with "task" terminology adopted in Loops 1-5. Referenced in 5 files across 3 packages.
+- **validation_targets**:
+  - `go test ./internal/bartui/ -run "TestPaletteCategoryStatusIncludesLabel"`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/bartui/ -run "TestPaletteCategoryStatusIncludesLabel"` — `program_test.go:41:19: undefined: TokenCategoryKindTask` | inline
+    helper:diff-snapshot=1 file changed (program_test.go only; production code unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=5 files changed, 7 insertions(+), 7 deletions(-)
+  - removal | 2026-02-07T (git restore 4 production files) | exit 1 | `git restore internal/bartui/tokens.go internal/barcli/tui_tokens.go internal/barcli/tokens/overrides.go internal/barcli/build.go && go test ./internal/bartui/ -run "TestPaletteCategoryStatusIncludesLabel"` — `program_test.go:41:19: undefined: TokenCategoryKindTask` returns | inline
+    helper:diff-snapshot=0 files changed (production code reverted)
+- **rollback_plan**: `git restore internal/bartui/tokens.go internal/barcli/tui_tokens.go internal/barcli/tokens/overrides.go internal/barcli/build.go` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=5 files changed, 7 insertions(+), 7 deletions(-). Renamed `TokenCategoryKindStatic` → `TokenCategoryKindTask` (bartui/tokens.go:9, kept value `"static"` unchanged). Updated 2 references in bartui/program_test.go and 1 in barcli/tui_tokens.go. Renamed `SetStatic` → `SetTask` in tokens/overrides.go (struct field:17 + usage:46) and barcli/build.go (struct init:276). Depth-first rung: internal constant + struct field names.
+- **loops_remaining_forecast**: ~1-2 loops remaining for full Phase 0 rename. Remaining: skill `.md` files (bar-workflow, bar-autopilot, bar-suggest) with "static prompt" references, internal key rename ("static" → "task" in stageOrder/axisOrder) + Python grammar exporter. Confidence: medium-high (skill files are text-only; internal key rename is the largest remaining risk).
+- **residual_constraints**:
+  - Skill files (`bar-workflow/skill.md`, `bar-autopilot/skill.md`, `bar-suggest/skill.md`) contain "static prompt" references. Severity: low-medium (LLM-facing skill instructions). Mitigation: next loop. Monitoring: `grep -ri "static prompt" internal/barcli/skills/`.
+  - The `prompt-grammar.json` uses `"static"` as the grammar key — renaming requires updating the Python exporter. Severity: medium (internal). Mitigation: defer. Owning ADR: 0082 Phase 0.
+  - Internal `stageOrder`/`axisOrder` key `"static"` remains unchanged — the `TokenCategoryKindTask` value is still `"static"` to maintain internal consistency. Severity: medium (internal-only, no user confusion since display labels all say "task"). Mitigation: defer to coordinated key rename loop. Monitoring: `grep -r '"static"' internal/bartui/tokens.go internal/bartui2/program.go`.
+- **next_work**:
+  - Behaviour: Update skill `.md` files to replace "static prompt" with "task" terminology. Validation: `grep -ri "static prompt" internal/barcli/skills/` returns 0 matches. Future-shaping: consistent LLM-facing documentation.
+  - Behaviour: Internal key rename ("static" → "task" in stageOrder/axisOrder + Python grammar exporter). Validation: `go test ./...`. Future-shaping: complete Phase 0 alignment.

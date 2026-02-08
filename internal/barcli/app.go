@@ -97,7 +97,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
 
 
-  1. Static prompt          (REQUIRED: 1 token)
+  1. Task                   (REQUIRED: 1 token)
   2. Completeness           (0..1)
   3. Scope                  (0..2)
   4. Method                 (0..3)
@@ -116,14 +116,14 @@ var generalHelpText = strings.TrimSpace(`USAGE
  
   QUICK NAVIGATION
  
-    Use the skip sentinel "//next" to fast-forward persona/static stages:
-      //next            Skip remaining persona hints and show static prompts.
+    Use the skip sentinel "//next" to fast-forward persona/task stages:
+      //next            Skip remaining persona hints and show tasks.
       //next:<stage>    Skip the named stage (static, scope, method, etc.).
     Skip tokens do not appear in "bar build" output—they only influence completion ordering.
  
   Sections accepted by "bar help tokens":
 
-    static            Show only static prompts (slug + canonical hints)
+    static            Show only tasks (slug + canonical hints)
     axes              Show all contract axes (slug + canonical hints)
     completeness      Show only completeness axis tokens
     scope             Show only scope axis tokens
@@ -144,7 +144,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
                  Use --seed for reproducible results, --include/--exclude to control categories,
                  and --fill to adjust inclusion probability (default 0.5).
     help         Show this message.
-    help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
+    help tokens  List available tasks, contract axes, persona presets, and multi-word tokens
                  using the exported prompt grammar.
     tui          Launch the Bubble Tea prompt editor to capture subject text and preview recipes.
                  Use --fixture PATH to emit a deterministic transcript for smoke testing and
@@ -168,7 +168,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
 
   List available tokens:           bar help tokens
-  List only static prompts:        bar help tokens static
+  List only tasks:                  bar help tokens static
   List persona sections:           bar help tokens persona persona-intents
   Emit JSON for automation:        bar build --json make focus steps fog
   Supply prompt content:           bar build make focus --prompt "Fix onboarding"
@@ -957,7 +957,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 	}
 
 	if shouldShow("static") {
-		writeHeader("STATIC PROMPTS")
+		writeHeader("TASKS")
 		staticNames := make([]string, 0, len(grammar.Static.Profiles))
 		for name := range grammar.Static.Profiles {
 			staticNames = append(staticNames, name)

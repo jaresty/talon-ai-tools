@@ -48,3 +48,28 @@
 - **next_work**:
   - Behaviour: Rename `isStaticPrompt()` → `isTask()` and `StaticPromptDescription()` → `TaskDescription()` in build.go/grammar.go. Validation: `go test ./internal/barcli/...`. Future-shaping: align function names with "task" terminology.
   - Behaviour: Update `"STATIC PROMPTS"` header and help text strings in app.go. Validation: `go test ./internal/barcli/ -run "TestRenderTokensHelp|TestRunHelpTokens"`.
+
+## Loop 3: Rename "STATIC PROMPTS" header and help text in app.go
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 0 (Terminology Cleanup) — User-facing help text in `bar help` and `bar help tokens` output. Rename "Static prompt" / "static prompts" / "STATIC PROMPTS" to "Task" / "tasks" / "TASKS" in app.go help strings.
+- **active_constraint**: `app.go` hardcodes `writeHeader("STATIC PROMPTS")` in `renderTokensHelp` and 5 occurrences of "static prompt(s)" in `generalHelpText`, causing `bar help` and `bar help tokens static` to display confusing "static prompt" terminology instead of user-meaningful "task" terminology.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestRenderTokensHelpFiltersStaticSection|TestRunHelpTokensFiltersSections"`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestRenderTokensHelpFiltersStaticSection|TestRunHelpTokensFiltersSections"` — `app_test.go:97: expected tasks heading in filtered output, got: STATIC PROMPTS` and `app_test.go:152: expected tasks heading in CLI output, got: STATIC PROMPTS` | inline
+    helper:diff-snapshot=1 file changed (app_test.go only; app.go unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... && go test ./internal/bartui/... && go test ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=2 files changed, 13 insertions(+), 13 deletions(-)
+  - removal | 2026-02-07T (git restore app.go) | exit 1 | `git restore internal/barcli/app.go && go test ./internal/barcli/ -run "TestRenderTokensHelpFiltersStaticSection"` — `app_test.go:97: expected tasks heading in filtered output, got: STATIC PROMPTS` returns | inline
+    helper:diff-snapshot=0 files changed (app.go reverted)
+- **rollback_plan**: `git restore internal/barcli/app.go` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=2 files changed, 13 insertions(+), 13 deletions(-). Changed `writeHeader("STATIC PROMPTS")` → `writeHeader("TASKS")` (app.go:960). Updated 5 help text strings: "1. Static prompt" → "1. Task", "show static prompts" → "show tasks", "Show only static prompts" → "Show only tasks", "List available static prompts" → "List available tasks", "List only static prompts" → "List only tasks". Updated test assertions from "STATIC PROMPTS" → "TASKS" and test messages from "static prompt" → "task" (app_test.go:34,40,96-97,151-152). Depth-first rung: help output text (user-facing CLI documentation).
+- **loops_remaining_forecast**: ~3-5 loops remaining for full Phase 0 rename. Remaining: `isStaticPrompt()` → `isTask()` in build.go, `StaticPromptDescription()` → `TaskDescription()` and `GetAllStaticPrompts()` → `GetAllTasks()` in grammar.go, `IsStaticPrompt`/`SetStatic` in tokens/overrides.go, build error messages ("static prompt (task) is required"), `help_llm.go` references, `TokenCategoryKindStatic` constant, grammar JSON exporter in Python. Confidence: medium.
+- **residual_constraints**:
+  - Build error messages in `build.go` still say "static prompt (task) is required" and reference "static prompts". Severity: medium (user-facing error when task token is missing). Mitigation: next loop alongside function renames. Monitoring: `grep -i "static prompt" internal/barcli/build.go`.
+  - `help_llm.go` contains multiple "static prompt" references in LLM-facing help text. Severity: low-medium (LLM-facing, not direct CLI user). Mitigation: defer to later loop. Monitoring: `grep -i "static prompt" internal/barcli/help_llm.go`.
+  - The `prompt-grammar.json` uses `"static"` as the grammar key — renaming requires updating the Python exporter. Severity: medium (internal). Mitigation: defer. Owning ADR: 0082 Phase 0.
+- **next_work**:
+  - Behaviour: Rename `isStaticPrompt()` → `isTask()`, `StaticPromptDescription()` → `TaskDescription()`, `GetAllStaticPrompts()` → `GetAllTasks()` in build.go/grammar.go, and update build error messages. Validation: `go test ./internal/barcli/...`. Future-shaping: align function names with "task" terminology.
+  - Behaviour: Rename `IsStaticPrompt`/`SetStatic` in tokens/overrides.go. Validation: `go test ./internal/barcli/...`.

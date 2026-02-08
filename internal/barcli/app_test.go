@@ -31,13 +31,13 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 		}
 		expected := fmt.Sprintf("- %s (canonical: %s):", slug, name)
 		if !strings.Contains(output, expected) {
-			t.Fatalf("expected static prompt slug hint %q in help output, got:\n%s", expected, output)
+			t.Fatalf("expected task slug hint %q in help output, got:\n%s", expected, output)
 		}
 		staticVerified = true
 		break
 	}
 	if !staticVerified {
-		t.Skip("no static prompts require slug hints in test grammar")
+		t.Skip("no tasks require slug hints in test grammar")
 	}
 
 	expectedAxis := "• fly-rog (canonical: fly rog)"
@@ -93,8 +93,8 @@ func TestRenderTokensHelpFiltersStaticSection(t *testing.T) {
 	renderTokensHelp(&buf, grammar, filters)
 
 	output := buf.String()
-	if !strings.Contains(output, "STATIC PROMPTS") {
-		t.Fatalf("expected static prompts heading in filtered output, got:\n%s", output)
+	if !strings.Contains(output, "TASKS") {
+		t.Fatalf("expected tasks heading in filtered output, got:\n%s", output)
 	}
 	forbidden := []string{"CONTRACT AXES", "PERSONA PRESETS", "PERSONA AXES", "PERSONA INTENTS"}
 	for _, heading := range forbidden {
@@ -148,8 +148,8 @@ func TestRunHelpTokensFiltersSections(t *testing.T) {
 	}
 
 	output := stdout.String()
-	if !strings.Contains(output, "STATIC PROMPTS") {
-		t.Fatalf("expected static prompts heading in CLI output, got:\n%s", output)
+	if !strings.Contains(output, "TASKS") {
+		t.Fatalf("expected tasks heading in CLI output, got:\n%s", output)
 	}
 	if strings.Contains(output, "CONTRACT AXES") {
 		t.Fatalf("expected CLI filtered output to skip contract axes, got:\n%s", output)

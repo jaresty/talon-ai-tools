@@ -10,6 +10,7 @@ const (
 	subjectPlaceholder = "(none provided)"
 	sectionReference   = "=== REFERENCE KEY ==="
 	sectionTask        = "=== TASK (DO THIS) ==="
+	sectionAddendum    = "=== ADDENDUM (CLARIFICATION) ==="
 	sectionConstraints = "=== CONSTRAINTS (GUARDRAILS) ==="
 	sectionPersona     = "=== PERSONA (STANCE) ==="
 	sectionSubject     = "=== SUBJECT (CONTEXT) ==="
@@ -21,6 +22,11 @@ const (
 TASK: The primary action to perform. This defines success.
   • Execute directly without inferring unstated goals
   • Takes precedence over all other sections if conflicts arise
+
+ADDENDUM: Task clarification that modifies HOW to execute the task.
+  • Contains additional instructions or constraints not captured by axis tokens
+  • Not the content to work with — that belongs in SUBJECT
+  • Only present when the user provides explicit clarification via --addendum
 
 CONSTRAINTS: Independent guardrails that shape HOW to complete the task.
   • Scope — boundary fence: what is in-bounds vs out-of-bounds
@@ -56,6 +62,10 @@ func RenderPlainText(result *BuildResult) string {
 	taskBody = strings.TrimPrefix(taskBody, "Task:")
 	taskBody = strings.TrimSpace(taskBody)
 	writeSection(&b, sectionTask, taskBody)
+
+	if strings.TrimSpace(result.Addendum) != "" {
+		writeSection(&b, sectionAddendum, strings.TrimSpace(result.Addendum))
+	}
 
 	b.WriteString(sectionConstraints)
 

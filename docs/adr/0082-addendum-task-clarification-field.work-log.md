@@ -268,3 +268,27 @@
   - Stored preset files may contain `"axes":{"static":"make"}` (from Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
 - **next_work**:
   - Behaviour: Add `--addendum TEXT` flag, `Addendum` field on `BuildResult`, and `=== ADDENDUM (CLARIFICATION) ===` section in `RenderPlainText()`. Validation: `go test ./internal/barcli/ -run "TestRunBuildWithAddendum|TestBuildAddendumRendering"`. Future-shaping: separate task clarification section in rendered output.
+
+## Loop 12: Add --addendum flag with ADDENDUM section rendering (Phase 1b)
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 1b (CLI Implementation) — Add `--addendum TEXT` flag for task clarification, `Addendum` field on `BuildResult`, `=== ADDENDUM (CLARIFICATION) ===` section in rendered output between TASK and CONSTRAINTS, ADDENDUM description in reference key, and completion support.
+- **active_constraint**: No mechanism to provide task clarification separate from subject content — users who want to say "focus on security" must use `--prompt` which conflates instruction with data, or axis tokens which cannot express all clarifications.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestRunBuildWithAddendumFlag|TestRunBuildAddendumOmittedWhenEmpty|TestRunBuildAddendumInJSON"`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestRunBuildWithAddendumFlag"` — `app_build_cli_test.go:251: expected exit 0, got 1 with stderr: error: unknown flag --addendum` | inline
+    helper:diff-snapshot=1 file changed (app_build_cli_test.go only; production code unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=7 files changed, 75 insertions(+), 5 deletions(-)
+  - removal | 2026-02-07T (git restore render.go build.go app.go config.go) | exit 1 | `git restore internal/barcli/render.go internal/barcli/build.go internal/barcli/app.go internal/barcli/cli/config.go && go test ./internal/barcli/ -run "TestRunBuildWithAddendumFlag"` — `error: unknown flag --addendum` returns | inline
+    helper:diff-snapshot=0 files changed (production code reverted)
+- **rollback_plan**: `git restore internal/barcli/render.go internal/barcli/build.go internal/barcli/app.go internal/barcli/cli/config.go internal/barcli/completion.go cmd/bar/testdata/tui_smoke.json` then replay red failure.
+- **delta_summary**: helper:diff-snapshot=7 files changed, 75 insertions(+), 5 deletions(-). Added `Addendum string` to `cli.Config` (config.go:16). Added `--addendum` / `--addendum=` parsing (config.go:70-76). Added `Addendum string` to `BuildResult` with `json:"addendum,omitempty"` (build.go:25). Wired `options.Addendum` → `result.Addendum` (app.go:269). Added `sectionAddendum` constant and conditional rendering in `RenderPlainText()` after TASK, before CONSTRAINTS (render.go:13,63-65). Added ADDENDUM paragraph to `referenceKeyText` (render.go:26-29). Added `--subject` and `--addendum` to `buildFlags` and `flagExpectingValue` in completion.go, plus `--subject=`/`--addendum=` prefix detection. Updated TUI fixture `expected_preview` with new reference key text. Added 3 specifying tests: `TestRunBuildWithAddendumFlag`, `TestRunBuildAddendumOmittedWhenEmpty`, `TestRunBuildAddendumInJSON`. Depth-first rung: `--addendum` flag + rendered output (Phase 1b).
+- **loops_remaining_forecast**: ~2 loops for Phase 1. Remaining: 1c (remove `--prompt` flag with migration error), 1d (update help text with `--subject`/`--addendum` examples). Confidence: high.
+- **residual_constraints**:
+  - `--prompt` flag still works — conflates subject with task clarification. Severity: medium (ADR goal to remove it). Mitigation: Phase 1c. Monitoring: `grep "opts.Prompt" internal/barcli/app.go`.
+  - Help text still shows `--prompt` in examples. Severity: medium (user-facing). Mitigation: Phase 1d. Monitoring: `grep "\-\-prompt" internal/barcli/app.go`.
+  - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
+- **next_work**:
+  - Behaviour: Remove `--prompt` flag — using it emits error with migration guidance to `--subject`/`--addendum`. Update existing tests that use `--prompt` to use `--subject`. Validation: `go test ./internal/barcli/ -run "TestRunBuildPromptFlagRemoved"`. Future-shaping: clean break from conflated flag.

@@ -242,6 +242,53 @@ func TestRunBuildSubjectAndInputMutualExclusivity(t *testing.T) {
 	}
 }
 
+func TestRunBuildWithAddendumFlag(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "some content", "--addendum", "focus on security"}, nil)
+
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "focus on security") {
+		t.Fatalf("expected stdout to include addendum text, got: %s", result.Stdout)
+	}
+	if !strings.Contains(result.Stdout, "ADDENDUM (CLARIFICATION)") {
+		t.Fatalf("expected ADDENDUM section heading in output, got: %s", result.Stdout)
+	}
+}
+
+func TestRunBuildAddendumOmittedWhenEmpty(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "some content"}, nil)
+
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
+	}
+	if strings.Contains(result.Stdout, "=== ADDENDUM") {
+		t.Fatalf("expected no ADDENDUM section heading when flag not provided, got: %s", result.Stdout)
+	}
+}
+
+func TestRunBuildAddendumInJSON(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "content", "--addendum", "clarify this", "--json"}, nil)
+
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
+	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(result.Stdout), &payload); err != nil {
+		t.Fatalf("expected valid JSON, got error %v: %s", err, result.Stdout)
+	}
+	addendum, ok := payload["addendum"].(string)
+	if !ok || addendum != "clarify this" {
+		t.Fatalf("expected JSON addendum field, got: %#v", payload["addendum"])
+	}
+}
+
 func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("file permission semantics differ on Windows")

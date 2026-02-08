@@ -22,6 +22,7 @@ const (
 type BuildResult struct {
 	SchemaVersion       string              `json:"schema_version"`
 	Subject             string              `json:"subject"`
+	Addendum            string              `json:"addendum,omitempty"`
 	Task                string              `json:"task"`
 	Constraints         []string            `json:"constraints"`
 	HydratedConstraints []HydratedPromptlet `json:"hydrated_constraints"`

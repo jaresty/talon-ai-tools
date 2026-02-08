@@ -13,6 +13,7 @@ type Config struct {
 	Tokens        []string
 	Prompt        string
 	Subject       string
+	Addendum      string
 	InputPath     string
 	OutputPath    string
 	JSON          bool
@@ -66,6 +67,14 @@ func Parse(args []string) (*Config, error) {
 			cfg.Subject = args[i]
 		case strings.HasPrefix(arg, "--subject="):
 			cfg.Subject = strings.TrimPrefix(arg, "--subject=")
+		case arg == "--addendum":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--addendum requires a value")
+			}
+			cfg.Addendum = args[i]
+		case strings.HasPrefix(arg, "--addendum="):
+			cfg.Addendum = strings.TrimPrefix(arg, "--addendum=")
 		case arg == "--input":
 			i++
 			if i >= len(args) {

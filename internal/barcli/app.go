@@ -266,6 +266,7 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	result.Subject = promptBody
+	result.Addendum = strings.TrimSpace(options.Addendum)
 	result.Tokens = append([]string(nil), options.Tokens...)
 	result.PlainText = RenderPlainText(result)
 

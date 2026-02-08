@@ -98,3 +98,28 @@
 - **next_work**:
   - Behaviour: Update `help_llm.go` "static prompt" references to "task" terminology (~6 occurrences). Validation: `go test ./internal/barcli/ -run "TestRenderTokenCatalog|TestRenderLLMHelp"`. Future-shaping: consistent "task" language in LLM-facing documentation.
   - Behaviour: Rename `TokenCategoryKindStatic` constant and `SetStatic` in build.go. Validation: `go test ./internal/barcli/...`.
+
+## Loop 5: Rename "static prompt" references to "task" in LLM help output
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 0 (Terminology Cleanup) — LLM-facing help text in `help_llm.go`. Rename "Static prompts" / "static prompt" to "Tasks" / "task" in all `renderLLMHelp` sub-functions that produce `bar help llm` output.
+- **active_constraint**: `help_llm.go` hardcodes 5 "static prompt" references in output strings — axis capacity heading ("Static prompts: 1 token"), automated usage guidance ("Static prompts are REQUIRED"), error example ("static prompt (task) is required"), token catalog heading ("Static Prompts (required)"), and metadata count ("Static prompts: N") — causing LLM-facing documentation to use confusing "static prompt" terminology instead of "task".
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestLLMHelpUsesTaskTerminology"`
+- **evidence**:
+  - red | 2026-02-07T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestLLMHelpUsesTaskTerminology"` — `help_llm_test.go:21: line 35 contains 'static prompt': - **Static prompts**: 1 token (required)` (5 lines flagged + 2 missing assertions) | inline
+    helper:diff-snapshot=1 file changed (help_llm_test.go only; help_llm.go unchanged)
+  - green | 2026-02-07T (post-implementation) | exit 0 | `go test ./internal/barcli/... && go test ./internal/bartui/... && go test ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=1 file changed, 7 insertions(+), 7 deletions(-)
+  - removal | 2026-02-07T (git restore help_llm.go) | exit 1 | `git restore internal/barcli/help_llm.go && go test ./internal/barcli/ -run "TestLLMHelpUsesTaskTerminology"` — `help_llm_test.go:21: line 35 contains 'static prompt'` returns | inline
+    helper:diff-snapshot=0 files changed (help_llm.go reverted)
+- **rollback_plan**: `git restore internal/barcli/help_llm.go` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=2 files changed (help_llm.go + help_llm_test.go), 7 insertions(+), 7 deletions(-) in help_llm.go. Changed "Static prompts" → "Tasks" in axis capacity (line 93), automated usage guidance (line 103), token catalog heading (line 441), metadata count (line 909). Changed "static prompt (task) is required" → "task is required" in error example (line 308). Updated 2 code comments from "Static prompts" → "Tasks". Created new test file `help_llm_test.go` with `TestLLMHelpUsesTaskTerminology` that asserts no "static prompt" appears in full LLM help output and checks for "Tasks" heading and "task is required" error text. Depth-first rung: LLM-facing help output text.
+- **loops_remaining_forecast**: ~1-3 loops remaining for full Phase 0 rename. Remaining: `TokenCategoryKindStatic` constant in bartui/tokens.go, `SetStatic`/`SetStaticPromptUsed` in build.go, skill `.md` files (bar-workflow, bar-autopilot, bar-suggest), internal key rename ("static" → "task" in stageOrder/axisOrder) + Python grammar exporter. Confidence: medium.
+- **residual_constraints**:
+  - Skill files (`bar-workflow/skill.md`, `bar-autopilot/skill.md`, `bar-suggest/skill.md`) contain "static prompt" references. Severity: low-medium (LLM-facing skill instructions). Mitigation: next loop. Monitoring: `grep -ri "static prompt" internal/barcli/skills/`.
+  - The `prompt-grammar.json` uses `"static"` as the grammar key — renaming requires updating the Python exporter. Severity: medium (internal). Mitigation: defer. Owning ADR: 0082 Phase 0.
+  - `TokenCategoryKindStatic` constant in bartui/tokens.go is internal but misaligned with "task" terminology. Severity: low (no user impact). Mitigation: next loop. Monitoring: `grep -r "TokenCategoryKindStatic" internal/`.
+- **next_work**:
+  - Behaviour: Rename `TokenCategoryKindStatic` → `TokenCategoryKindTask` in bartui/tokens.go and all references. Validation: `go test ./internal/bartui/... ./internal/bartui2/... ./internal/barcli/...`. Future-shaping: consistent internal constant naming.
+  - Behaviour: Update skill `.md` files to use "task" terminology. Validation: `grep -ri "static prompt" internal/barcli/skills/` returns 0 matches. Future-shaping: consistent LLM-facing documentation.

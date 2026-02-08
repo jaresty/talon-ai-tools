@@ -90,7 +90,7 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "```\n\n")
 
 	fmt.Fprintf(w, "### Axis Capacity\n\n")
-	fmt.Fprintf(w, "- **Static prompts**: 1 token (required)\n")
+	fmt.Fprintf(w, "- **Tasks**: 1 token (required)\n")
 	fmt.Fprintf(w, "- **Completeness**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Scope**: 0-2 tokens\n")
 	fmt.Fprintf(w, "- **Method**: 0-3 tokens\n")
@@ -100,7 +100,7 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- **Persona**: voice, audience, tone, intent axes or preset\n\n")
 
 	fmt.Fprintf(w, "### Usage Guidance for Automated/Agent Contexts\n\n")
-	fmt.Fprintf(w, "**Static prompts are REQUIRED for automated usage**, despite the grammar allowing 0-1 tokens. Always select a static prompt token to provide clear task direction. Only omit the static prompt in manual exploratory contexts where maximum flexibility is explicitly desired. Automated responses without a static prompt lack focus and produce open-ended, poorly structured output.\n\n")
+	fmt.Fprintf(w, "**Tasks are REQUIRED for automated usage**, despite the grammar allowing 0-1 tokens. Always select a task token to provide clear task direction. Only omit the task in manual exploratory contexts where maximum flexibility is explicitly desired. Automated responses without a task lack focus and produce open-ended, poorly structured output.\n\n")
 
 	renderFormalGrammar(w, grammar, compact)
 
@@ -305,7 +305,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "```bash\n")
 	fmt.Fprintf(w, "# WRONG: Missing static token\n")
 	fmt.Fprintf(w, "bar build focus steps --subject \"text\"\n")
-	fmt.Fprintf(w, "# Error: static prompt (task) is required\n\n")
+	fmt.Fprintf(w, "# Error: task is required\n\n")
 
 	fmt.Fprintf(w, "# WRONG: Too many scope tokens (max 2)\n")
 	fmt.Fprintf(w, "bar build show struct mean thing focus --subject \"text\"\n")
@@ -353,7 +353,7 @@ func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "**At-a-glance list of all valid tokens by axis.** Use this to verify token names before diving into detailed descriptions below.\n\n")
 	}
 
-	// Static prompts
+	// Tasks
 	staticNames := make([]string, 0, len(grammar.Static.Profiles))
 	for name := range grammar.Static.Profiles {
 		slug := grammar.slugForToken(name)
@@ -437,8 +437,8 @@ func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {
 func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "## Token Catalog\n\n")
 
-	// Static prompts
-	fmt.Fprintf(w, "### Static Prompts (required)\n\n")
+	// Tasks
+	fmt.Fprintf(w, "### Tasks (required)\n\n")
 	if !compact {
 		fmt.Fprintf(w, "Pre-composed prompt strategies:\n\n")
 	}
@@ -906,7 +906,7 @@ func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {
 		tokenCount += len(tokens)
 	}
 	fmt.Fprintf(w, "- **Contract axis tokens**: %d\n", tokenCount)
-	fmt.Fprintf(w, "- **Static prompts**: %d\n", len(grammar.Static.Profiles))
+	fmt.Fprintf(w, "- **Tasks**: %d\n", len(grammar.Static.Profiles))
 	fmt.Fprintf(w, "- **Persona presets**: %d\n", len(grammar.Persona.Presets))
 
 	fmt.Fprintf(w, "\n---\n\n")

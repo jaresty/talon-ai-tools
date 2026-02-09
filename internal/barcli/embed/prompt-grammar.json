@@ -142,6 +142,7 @@
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
         "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response enhances the task by identifying recurring patterns, themes, or clusters.",
+        "stable": "The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid.",
         "struct": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint.",
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
         "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
@@ -289,6 +290,7 @@
         "good",
         "mean",
         "motifs",
+        "stable",
         "struct",
         "thing",
         "time",
@@ -877,6 +879,7 @@
         "good": "good",
         "mean": "mean",
         "motifs": "motifs",
+        "stable": "stable",
         "struct": "struct",
         "thing": "thing",
         "time": "time",
@@ -991,6 +994,7 @@
         "scope=good": "scope-good",
         "scope=mean": "scope-mean",
         "scope=motifs": "scope-motifs",
+        "scope=stable": "scope-stable",
         "scope=struct": "scope-struct",
         "scope=thing": "scope-thing",
         "scope=time": "scope-time",
@@ -1464,6 +1468,7 @@
       "scope=good": "scope-good",
       "scope=mean": "scope-mean",
       "scope=motifs": "scope-motifs",
+      "scope=stable": "scope-stable",
       "scope=struct": "scope-struct",
       "scope=thing": "scope-thing",
       "scope=time": "scope-time",
@@ -1481,6 +1486,7 @@
       "spec": "spec",
       "spike": "spike",
       "split": "split",
+      "stable": "stable",
       "story": "story",
       "struct": "struct",
       "svg": "svg",
@@ -1546,10 +1552,10 @@
     }
   },
   "checksums": {
-    "axes": "b283f20056452c7582a09446400bd5cbac43d9a8cde1d8bc3f42f21fb9bd7cd4",
+    "axes": "72beb4cd5edaaa610931abc3f9b2b83d9cb3b8d61803a79ae94070241f8c10be",
     "tasks": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "480322bbc1be25e59c7a4d1d7b920fd0c676241e1532d7eb36d25cf4bfa4bc78"
+    "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"
   }
 }

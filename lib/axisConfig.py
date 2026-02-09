@@ -490,6 +490,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "action, or adopting a specific stakeholder perspective.",
         "motifs": "The response enhances the task by identifying recurring "
         "patterns, themes, or clusters.",
+        "stable": "The response enhances the task by analyzing stability and "
+        "persistence of states within the system. It requires identifying "
+        "self-reinforcing configurations, explaining the forces that "
+        "maintain them, and examining how perturbations impact these "
+        "states. Narrative motivation or shallow incentive talk is "
+        "forbidden; only structural, persistent-state reasoning is valid.",
         "struct": "The response focuses on how things are arranged or "
         "related—dependencies, coordination, constraints, incentives, or "
         "organizing patterns—independent of sequence, value judgment, or "

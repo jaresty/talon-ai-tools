@@ -335,9 +335,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "cite": "The response enhances the task by including sources, citations, "
         "or references that anchor claims to evidence, enabling "
         "verification and further exploration.",
-        "constraints": "The response enhances the task by identifying the system's "
-        "primary constraints, analyzing the behaviours they "
-        "enforce, and framing ways to balance or relieve them.",
         "converge": "The response enhances the task by systematically narrowing "
         "from broad exploration to focused recommendations, weighing "
         "trade-offs explicitly as options are filtered.",
@@ -356,9 +353,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "explicit and examining how they interact.",
         "domains": "The response enhances the task by identifying bounded "
         "contexts, domain boundaries, and capabilities.",
-        "dynamics": "The response enhances the task by concentrating on how the "
-        "system's behaviour and state evolve over time, including "
-        "transitions and feedback.",
         "effects": "The response enhances the task by tracing second- and "
         "third-order effects and summarizing their downstream "
         "consequences.",
@@ -381,14 +375,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "earlier steps. Each stage preserves correctness within its "
         "current scope, treating premature generalization as a failure "
         "mode rather than progress.",
-        "incentives": "The response enhances the task by analyzing explicit and "
-        "implicit incentive structures and how they drive behaviour.",
         "induce": "The response enhances the task by applying inductive reasoning, "
         "generalizing patterns from specific observations and assessing "
         "the strength and limits of those generalizations.",
-        "interfaces": "The response enhances the task by concentrating on external "
-        "interfaces, contracts, and boundaries between components or "
-        "systems.",
         "inversion": "The response enhances the task by beginning from undesirable "
         "or catastrophic outcomes, asking what would produce or "
         "amplify them, then working backward to avoid, mitigate, or "
@@ -443,8 +432,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "uncertainty, favoring options that perform acceptably across "
         "many plausible futures rather than optimizing for a single "
         "forecast.",
-        "roles": "The response enhances the task by focusing on responsibilities, "
-        "ownership, and collaboration patterns.",
         "shift": "The response enhances the task by deliberately rotating through "
         "distinct perspectives or cognitive modes, contrasting how each "
         "frame interprets the same facts.",
@@ -484,6 +471,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "activities, operations, or work to be performed—suppressing "
         "interpretation, evaluation, structural explanation, or "
         "perspective-shifting.",
+        "assume": "The response enhances the task by attending to premises that "
+        "must already hold for the reasoning or system to function.",
+        "dynamics": "The response enhances the task by concentrating on how the "
+        "system's behaviour and state evolve over time, including "
+        "transitions and feedback.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits "
         "by examining how and under what conditions something stops "
         "working—risks, edge cases, fragility, or failure modes rather than "

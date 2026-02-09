@@ -22,7 +22,7 @@ const (
 TASK: The primary action to perform. This defines success.
   • Execute directly without inferring unstated goals
   • Takes precedence over all other sections if conflicts arise
-	• The task specifies what kind of response is required (e.g., explanation, transformation, evaluation). It defines the primary action the response should perform.
+  • The task specifies what kind of response is required (e.g., explanation, transformation, evaluation). It defines the primary action the response should perform.
 	
 ADDENDUM: Task clarification that modifies HOW to execute the task.
   • Contains additional instructions or constraints not captured by axis tokens

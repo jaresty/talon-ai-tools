@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Command       string
 	Tokens        []string
+	Prompt        string
 	Subject       string
 	Addendum      string
 	InputPath     string

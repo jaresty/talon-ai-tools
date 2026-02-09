@@ -289,25 +289,6 @@ func TestRunBuildAddendumInJSON(t *testing.T) {
 	}
 }
 
-func TestRunBuildPromptFlagRemoved(t *testing.T) {
-	t.Setenv(disableStateEnv, "1")
-
-	result := runBuildCLI(t, []string{"build", "make", "--prompt", "some text"}, nil)
-
-	if result.Exit == 0 {
-		t.Fatalf("expected non-zero exit when --prompt is used")
-	}
-	if !strings.Contains(result.Stderr, "--prompt flag has been removed") {
-		t.Fatalf("expected removal error message, got: %s", result.Stderr)
-	}
-	if !strings.Contains(result.Stderr, "--subject") {
-		t.Fatalf("expected migration guidance mentioning --subject, got: %s", result.Stderr)
-	}
-	if !strings.Contains(result.Stderr, "--addendum") {
-		t.Fatalf("expected migration guidance mentioning --addendum, got: %s", result.Stderr)
-	}
-}
-
 func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("file permission semantics differ on Windows")

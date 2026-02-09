@@ -477,9 +477,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "perspective-shifting.",
         "assume": "The response enhances the task by attending to premises that "
         "must already hold for the reasoning or system to function.",
-        "dynamics": "The response enhances the task by concentrating on how the "
-        "system's behaviour and state evolve over time, including "
-        "transitions and feedback.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits "
         "by examining how and under what conditions something stops "
         "working—risks, edge cases, fragility, or failure modes rather than "

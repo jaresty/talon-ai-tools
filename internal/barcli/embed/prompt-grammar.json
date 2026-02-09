@@ -138,7 +138,6 @@
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
         "assume": "The response enhances the task by attending to premises that must already hold for the reasoning or system to function.",
-        "dynamics": "The response enhances the task by concentrating on how the system's behaviour and state evolve over time, including transitions and feedback.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
         "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
@@ -286,7 +285,6 @@
       "scope": [
         "act",
         "assume",
-        "dynamics",
         "fail",
         "good",
         "mean",
@@ -875,7 +873,6 @@
       "scope": {
         "act": "act",
         "assume": "assume",
-        "dynamics": "dynamics",
         "fail": "fail",
         "good": "good",
         "mean": "mean",
@@ -990,7 +987,6 @@
       "scope": {
         "scope=act": "scope-act",
         "scope=assume": "scope-assume",
-        "scope=dynamics": "scope-dynamics",
         "scope=fail": "scope-fail",
         "scope=good": "scope-good",
         "scope=mean": "scope-mean",
@@ -1286,7 +1282,6 @@
       "directional=rog": "directional-rog",
       "directly": "directly",
       "domains": "domains",
-      "dynamics": "dynamics",
       "effects": "effects",
       "entertain": "entertain",
       "experimental": "experimental",
@@ -1465,7 +1460,6 @@
       "scaffold": "scaffold",
       "scope=act": "scope-act",
       "scope=assume": "scope-assume",
-      "scope=dynamics": "scope-dynamics",
       "scope=fail": "scope-fail",
       "scope=good": "scope-good",
       "scope=mean": "scope-mean",
@@ -1552,10 +1546,10 @@
     }
   },
   "checksums": {
-    "axes": "65c56b85c307c2a11e94809cf88941229558d9551fcc54f42ef11ff4f9ac0433",
+    "axes": "b283f20056452c7582a09446400bd5cbac43d9a8cde1d8bc3f42f21fb9bd7cd4",
     "tasks": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "61ec9d3b84ff230f119e7037c1b30ccafc5181d051418a0fb727b9b9627291d1"
+    "slugs": "480322bbc1be25e59c7a4d1d7b920fd0c676241e1532d7eb36d25cf4bfa4bc78"
   }
 }

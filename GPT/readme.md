@@ -208,7 +208,7 @@ A couple of common prompts decomposed into the three families:
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
 
 Completeness (`completenessModifier`): `deep`, `full`, `gist`, `max`, `minimal`, `narrow`, `skim`
-Scope (`scopeModifier`): `act`, `assume`, `dynamics`, `fail`, `good`, `mean`, `motifs`, `struct`, `thing`, `time`, `view`
+Scope (`scopeModifier`): `act`, `assume`, `fail`, `good`, `mean`, `motifs`, `struct`, `thing`, `time`, `view`
 Method (`methodModifier`): `abduce`, `actors`, `adversarial`, `analog`, `analysis`, `argue`, `bias`, `boom`, `branch`, `calc`, `cite`, `cluster`, `converge`, `deduce`, `depends`, `diagnose`, `dimension`, `domains`, `effects`, `experimental`, `explore`, `flow`, `grove`, `grow`, `induce`, `inversion`, `jobs`, `mapping`, `meld`, `melody`, `mod`, `models`, `objectivity`, `operations`, `order`, `origin`, `prioritize`, `probability`, `product`, `resilience`, `rigor`, `risks`, `robust`, `shift`, `simulation`, `spec`, `split`, `systemic`, `unknowns`, `verify`
 Form (`formModifier`): `actions`, `activities`, `bug`, `bullets`, `cards`, `case`, `checklist`, `cocreate`, `commit`, `contextualise`, `direct`, `facilitate`, `faq`, `formats`, `indirect`, `ladder`, `log`, `merge`, `questions`, `quiz`, `recipe`, `rewrite`, `scaffold`, `socratic`, `spike`, `story`, `table`, `taxonomy`, `test`, `tight`, `variants`, `visual`, `walkthrough`, `wardley`, `wasinawa`
 Channel (`channelModifier`): `adr`, `code`, `codetour`, `diagram`, `gherkin`, `html`, `jira`, `plain`, `presenterm`, `remote`, `shellscript`, `sketch`, `slack`, `svg`, `sync`

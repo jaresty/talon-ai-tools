@@ -335,6 +335,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "cite": "The response enhances the task by including sources, citations, "
         "or references that anchor claims to evidence, enabling "
         "verification and further exploration.",
+        "cluster": "The response groups or organizes existing items into clusters "
+        "based on shared characteristics, relationships, or criteria, "
+        "without altering the underlying content or meaning of the "
+        "items.",
         "converge": "The response enhances the task by systematically narrowing "
         "from broad exploration to focused recommendations, weighing "
         "trade-offs explicitly as options are filtered.",

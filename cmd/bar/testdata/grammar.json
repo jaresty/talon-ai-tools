@@ -5,9 +5,9 @@
       "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
-        "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation.",
+        "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation. Appropriate for tasks that produce or reference navigable code artifacts: `fix`, `make` when creating code, `show` when exposing code structure, `pull` when extracting from code. Not appropriate for non-code tasks such as `sim`, `sort`, `probe`, `diff` (without code subject), or `plan`.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
-        "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation.",
+        "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject).",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks.",
@@ -68,7 +68,7 @@
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements.",
         "quiz": "The response enhances the task by adopting an instructional flow that tests understanding through questions before providing explanations. It surfaces assumptions and gaps by prompting the user to answer, then uses those responses to clarify, correct, or deepen understanding, prioritizing active recall and learning over immediate exposition.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
-        "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation.",
+        "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation. Best paired with `fix`, `pull`, `diff`, or `show` tasks that supply existing content to transform. Pairing with `make` is semantically incoherent: `make` implies creating from nothing while `rewrite` implies transforming existing content.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
@@ -1552,7 +1552,7 @@
     }
   },
   "checksums": {
-    "axes": "b6cf93620ceec2eacd761016a792b59ab899c17cad3a057032954f5ae1328cd8",
+    "axes": "1df65d58a68a9c61966eeb00ae2927bbaf041f131157975a9d4d39f902e23a02",
     "tasks": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

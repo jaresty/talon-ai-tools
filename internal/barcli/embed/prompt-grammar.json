@@ -48,7 +48,7 @@
       },
       "form": {
         "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
-        "activities": "The response organizes ideas as concrete session activities or segments\u2014what to do, by whom, and in what order\u2014rather than abstract description.",
+        "activities": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
         "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details.",
         "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
         "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
@@ -56,7 +56,7 @@
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures interaction collaboratively, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
-        "contextualise": "The response structures ideas by adding or reshaping context to support another operation\u2014such as supplying background for an LLM or reframing content\u2014without rewriting the main text itself.",
+        "contextualise": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures interaction by framing the goal, proposing structure, managing turns, and keeping participation balanced rather than doing the work solo.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
@@ -81,7 +81,7 @@
         "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising big-picture structure over dense prose.",
         "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
-        "wasinawa": "The response applies a What\u2013So What\u2013Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
+        "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
       },
       "method": {
         "abduce": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations.",
@@ -110,11 +110,11 @@
         "grow": "The response enhances the task by starting with the simplest valid behavior and progressively generalizing it, deliberately deferring complexity and edge cases until they are forced by earlier steps. Each stage preserves correctness within its current scope, treating premature generalization as a failure mode rather than progress.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
-        "jobs": "The response enhances the task by analyzing Jobs To Be Done\u2014the outcomes users want to achieve and the forces shaping their choices.",
+        "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
         "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
-        "mod": "The response enhances the task by applying modulo-style reasoning\u2014equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
+        "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
@@ -122,8 +122,8 @@
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
         "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
-        "product": "The response enhances the task by examining the subject through a product lens\u2014features, user needs, and value propositions.",
-        "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty\u2014fragility vs robustness, margin of safety, and tail risks.",
+        "product": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
+        "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
@@ -136,16 +136,16 @@
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment."
       },
       "scope": {
-        "act": "The response focuses on what is being done or intended\u2014tasks, activities, operations, or work to be performed\u2014suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+        "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
         "assume": "The response enhances the task by attending to premises that must already hold for the reasoning or system to function.",
-        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working\u2014risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
-        "good": "The response focuses on how quality, success, or goodness is judged\u2014criteria, metrics, standards, values, or taste\u2014assuming a framing rather than defining it or shifting perspective.",
-        "mean": "The response focuses on how something should be understood prior to judgment\u2014its purpose, assumptions, framing, terminology, or conceptual role\u2014without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+        "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
+        "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response enhances the task by identifying recurring patterns, themes, or clusters.",
         "stable": "The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid.",
-        "struct": "The response focuses on how things are arranged or related\u2014dependencies, coordination, constraints, incentives, or organizing patterns\u2014independent of sequence, value judgment, or viewpoint.",
-        "thing": "The response focuses on what entities are in view\u2014objects, people, roles, systems, domains, or bounded units\u2014and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
-        "time": "The response focuses on when things occur and how they change over time\u2014sequences, evolution, history, phases, or temporal dynamics\u2014rather than static structure, evaluation, or immediate action.",
+        "struct": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint.",
+        "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+        "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
         "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
       }
     },
@@ -501,7 +501,7 @@
       "intent": {
         "announce": "Share news or updates with the audience.",
         "appreciate": "Express thanks, recognition, or positive regard.",
-        "coach": "Support the audience\u2019s growth through guidance and feedback.",
+        "coach": "Support the audience’s growth through guidance and feedback.",
         "entertain": "Engage or amuse the audience.",
         "inform": "Provide clear, relevant information the audience needs.",
         "persuade": "Influence the audience toward a view or action.",
@@ -703,7 +703,7 @@
       "docs": {
         "announce": "Share news or updates with the audience.",
         "appreciate": "Express thanks, recognition, or positive regard.",
-        "coach": "Support the audience\u2019s growth through guidance and feedback.",
+        "coach": "Support the audience’s growth through guidance and feedback.",
         "entertain": "Engage or amuse the audience.",
         "inform": "Provide clear, relevant information the audience needs.",
         "persuade": "Influence the audience toward a view or action.",
@@ -1552,7 +1552,7 @@
     }
   },
   "checksums": {
-    "axes": "b6cf93620ceec2eacd761016a792b59ab899c17cad3a057032954f5ae1328cd8",
+    "axes": "1df65d58a68a9c61966eeb00ae2927bbaf041f131157975a9d4d39f902e23a02",
     "tasks": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

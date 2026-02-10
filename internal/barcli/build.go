@@ -704,9 +704,9 @@ func (s *buildState) finalise() *CLIError {
 			msg.WriteString(strings.Join(userTokens, " "))
 			msg.WriteString("\nTry: bar build <static-token> ")
 			msg.WriteString(strings.Join(userTokens, " "))
-			msg.WriteString(" --prompt \"...\"\n\n")
+			msg.WriteString(" --subject \"...\"\n\n")
 		} else {
-			msg.WriteString("Example: bar build <static-token> full code --prompt \"...\"\n\n")
+			msg.WriteString("Example: bar build <task-token> full code --subject \"...\"\n\n")
 		}
 
 		msg.WriteString("Available tasks:\n")

@@ -316,3 +316,28 @@
   - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
 - **next_work**:
   - Behaviour: Update all help text and examples in `app.go` (usage strings, examples), `help_llm.go` (all `--prompt` examples), `build.go` (error message example). Replace `--prompt "..."` with `--subject "..."`. Validation: `go test ./internal/barcli/ -run "TestRenderTokensHelp|TestRunHelpTokens|TestHelpLLM"`. Future-shaping: help text teaches the new `--subject`/`--addendum` split.
+
+## Loop 14: Update help text to use --subject and --addendum (Phase 1d)
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 1d (CLI Implementation) — Update all help text, usage strings, and examples in `app.go`, `help_llm.go`, and `build.go` to replace `--prompt` with `--subject`/`--addendum`.
+- **active_constraint**: Help text in `app.go`, `help_llm.go`, and `build.go` still references the removed `--prompt` flag in usage lines, command descriptions, and examples — causing `bar help` to document a flag that no longer exists.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestGeneralHelpUsesSubjectAndAddendumFlags"`
+  - `go test ./internal/barcli/...`
+- **evidence**:
+  - red | 2026-02-09T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestGeneralHelpUsesSubjectAndAddendumFlags"` — `app_test.go:225: expected help text not to mention removed --prompt flag` | inline
+    helper:diff-snapshot=1 file changed (app_test.go only; production code unchanged)
+  - green | 2026-02-09T (post-implementation) | exit 0 | `go test ./internal/barcli/...` — all tests PASS | inline
+    helper:diff-snapshot=4 files changed, ~15 insertions(+), ~14 deletions(-)
+  - removal | 2026-02-09T (git restore app.go) | exit 1 | `git restore internal/barcli/app.go && go test ./internal/barcli/ -run "TestGeneralHelpUsesSubjectAndAddendumFlags"` — `expected help text not to mention removed --prompt flag` returns | inline
+    helper:diff-snapshot=0 files changed (app.go reverted)
+- **rollback_plan**: `git restore internal/barcli/app.go internal/barcli/help_llm.go internal/barcli/build.go` then replay red failure.
+- **delta_summary**: helper:diff-snapshot=4 files changed. In `app.go`: updated `generalHelpText` USAGE lines (build/shuffle), build command description, preset use description, and examples (removed `--prompt`, added `--subject`/`--addendum`). In `help_llm.go`: replaced all `--prompt "..."` occurrences with `--subject "..."` (~20 occurrences) across `renderQuickStart`, `renderGrammarArchitecture`, and example structs. In `build.go`: updated error message examples `--prompt "..."` → `--subject "..."` and `<static-token>` → `<task-token>`. Added specifying test `TestGeneralHelpUsesSubjectAndAddendumFlags` in `app_test.go`. Depth-first rung: help text (Phase 1d).
+- **loops_remaining_forecast**: Phase 1 complete. Remaining phases: 2 (TUI2 separate subject/addendum fields), 3 (Python `PROMPT_REFERENCE_KEY`), 4 (skills integration), 5 (Talon alignment). Confidence: high for current scope; Phase 2 is moderate complexity.
+- **residual_constraints**:
+  - TUI2 has no separate subject/addendum input fields — users cannot provide `--addendum` via TUI2 interactively. Severity: medium (feature incomplete). Mitigation: Phase 2. Monitoring: TUI2 model state has no `Addendum` field.
+  - `help_llm.go` still references `[static]` in grammar architecture description (line 82). Severity: low (LLM-facing help, internal terminology). Mitigation: deferred to Phase 0 cleanup ADR. Monitoring: `grep -i "static" internal/barcli/help_llm.go`.
+  - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
+- **next_work**:
+  - Behaviour: Phase 2 — Add separate subject/addendum input fields to TUI2. Validation: `go test ./internal/bartui2/... -run "TestTUI2SubjectAndAddendumFields"`. Future-shaping: TUI2 surfaces the subject/addendum distinction interactively.

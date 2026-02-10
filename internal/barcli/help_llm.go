@@ -60,7 +60,7 @@ func renderQuickStart(w io.Writer, compact bool) {
 	if compact {
 		fmt.Fprintf(w, "## Quick Start\n\n")
 		fmt.Fprintf(w, "```bash\n")
-		fmt.Fprintf(w, "bar build <tokens>... --prompt \"your text\"\n")
+		fmt.Fprintf(w, "bar build <tokens>... --subject \"your text\"\n")
 		fmt.Fprintf(w, "```\n\n")
 		return
 	}
@@ -68,11 +68,11 @@ func renderQuickStart(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "Bar constructs structured prompts by combining tokens from multiple axes:\n\n")
 	fmt.Fprintf(w, "```bash\n")
 	fmt.Fprintf(w, "# Basic usage\n")
-	fmt.Fprintf(w, "bar build <tokens>... --prompt \"your text\"\n\n")
+	fmt.Fprintf(w, "bar build <tokens>... --subject \"your text\"\n\n")
 	fmt.Fprintf(w, "# Example: Decision-making prompt\n")
-	fmt.Fprintf(w, "bar build thing full branch variants --prompt \"Choose between Redis and Postgres\"\n\n")
+	fmt.Fprintf(w, "bar build thing full branch variants --subject \"Choose between Redis and Postgres\"\n\n")
 	fmt.Fprintf(w, "# Example: Understanding flow\n")
-	fmt.Fprintf(w, "bar build time full flow walkthrough --prompt \"Explain the authentication process\"\n")
+	fmt.Fprintf(w, "bar build time full flow walkthrough --subject \"Explain the authentication process\"\n")
 	fmt.Fprintf(w, "```\n\n")
 }
 
@@ -107,7 +107,7 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "### Key=Value Override Syntax\n\n")
 	fmt.Fprintf(w, "After the first `key=value` override, all remaining tokens must use `key=value` format:\n\n")
 	fmt.Fprintf(w, "```bash\n")
-	fmt.Fprintf(w, "bar build make focus method=branch form=table --prompt \"text\"\n")
+	fmt.Fprintf(w, "bar build make focus method=branch form=table --subject \"text\"\n")
 	fmt.Fprintf(w, "```\n\n")
 }
 
@@ -676,140 +676,140 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 	}{
 		{
 			title:   "Decision-Making",
-			command: "bar build thing full branch variants --prompt \"...\"",
-			example: "bar build thing full branch variants --prompt \"Choose between Redis and Postgres for caching\"",
+			command: "bar build thing full branch variants --subject \"...\"",
+			example: "bar build thing full branch variants --subject \"Choose between Redis and Postgres for caching\"",
 			desc:    "Use when choosing between options or evaluating alternatives",
 		},
 		{
 			title:   "Architecture Documentation",
-			command: "bar build struct full explore case adr --prompt \"...\"",
-			example: "bar build struct full explore case adr --prompt \"Document the microservices architecture\"",
+			command: "bar build struct full explore case adr --subject \"...\"",
+			example: "bar build struct full explore case adr --subject \"Document the microservices architecture\"",
 			desc:    "Use for creating ADRs or documenting architectural decisions",
 		},
 		{
 			title:   "Explanation/Understanding (Process)",
-			command: "bar build time full flow walkthrough --prompt \"...\"",
-			example: "bar build time full flow walkthrough --prompt \"Explain the OAuth authentication flow\"",
+			command: "bar build time full flow walkthrough --subject \"...\"",
+			example: "bar build time full flow walkthrough --subject \"Explain the OAuth authentication flow\"",
 			desc:    "Use when explaining how something works over time or in sequence",
 		},
 		{
 			title:   "Explanation/Understanding (Concepts)",
-			command: "bar build mean full scaffold --prompt \"...\"",
-			example: "bar build mean full scaffold --prompt \"What is eventual consistency?\"",
+			command: "bar build mean full scaffold --subject \"...\"",
+			example: "bar build mean full scaffold --subject \"What is eventual consistency?\"",
 			desc:    "Use when explaining what something means or building conceptual understanding",
 		},
 		{
 			title:   "Structural Analysis",
-			command: "bar build struct full mapping --prompt \"...\"",
-			example: "bar build struct full mapping --prompt \"Analyze the database schema relationships\"",
+			command: "bar build struct full mapping --subject \"...\"",
+			example: "bar build struct full mapping --subject \"Analyze the database schema relationships\"",
 			desc:    "Use for understanding relationships, boundaries, and structure",
 		},
 		{
 			title:   "Problem Diagnosis",
-			command: "bar build fail full diagnose checklist --prompt \"...\"",
-			example: "bar build fail full diagnose checklist --prompt \"Debug production memory leak\"",
+			command: "bar build fail full diagnose checklist --subject \"...\"",
+			example: "bar build fail full diagnose checklist --subject \"Debug production memory leak\"",
 			desc:    "Use for troubleshooting and root cause analysis",
 		},
 		{
 			title:   "Task Planning",
-			command: "bar build act full prioritize actions --prompt \"...\"",
-			example: "bar build act full prioritize actions --prompt \"Plan the database migration steps\"",
+			command: "bar build act full prioritize actions --subject \"...\"",
+			example: "bar build act full prioritize actions --subject \"Plan the database migration steps\"",
 			desc:    "Use when breaking down work into actionable steps",
 		},
 		{
 			title:   "Exploratory Analysis",
-			command: "bar build thing full explore variants --prompt \"...\"",
-			example: "bar build thing full explore variants --prompt \"What are different approaches to state management?\"",
+			command: "bar build thing full explore variants --subject \"...\"",
+			example: "bar build thing full explore variants --subject \"What are different approaches to state management?\"",
 			desc:    "Use when surveying possibilities or generating alternatives",
 		},
 		{
 			title:   "Comparison/Tradeoff Analysis",
-			command: "bar build thing full compare table --prompt \"...\"",
-			example: "bar build thing full compare table --prompt \"Compare REST vs GraphQL vs gRPC for our API\"",
+			command: "bar build thing full compare table --subject \"...\"",
+			example: "bar build thing full compare table --subject \"Compare REST vs GraphQL vs gRPC for our API\"",
 			desc:    "Use for side-by-side comparison of alternatives with tradeoffs",
 		},
 		{
 			title:   "Risk Assessment",
-			command: "bar build fail full risks checklist --prompt \"...\"",
-			example: "bar build fail full risks checklist --prompt \"Assess risks of migrating to Kubernetes\"",
+			command: "bar build fail full risks checklist --subject \"...\"",
+			example: "bar build fail full risks checklist --subject \"Assess risks of migrating to Kubernetes\"",
 			desc:    "Use for identifying and evaluating potential risks",
 		},
 		{
 			title:   "Quality Evaluation",
-			command: "bar build good full evaluate checklist --prompt \"...\"",
-			example: "bar build good full evaluate checklist --prompt \"Evaluate code review quality standards\"",
+			command: "bar build good full evaluate checklist --subject \"...\"",
+			example: "bar build good full evaluate checklist --subject \"Evaluate code review quality standards\"",
 			desc:    "Use when assessing quality, standards, or success criteria",
 		},
 		{
 			title:   "Progressive Refinement Workflow",
-			command: "bar build thing gist explore variants --prompt \"...\" && bar build thing full mapping table --prompt \"...\"",
-			example: "bar build thing gist explore variants --prompt \"API design approaches\" && bar build struct full mapping table --prompt \"Selected REST API structure\"",
+			command: "bar build thing gist explore variants --subject \"...\" && bar build thing full mapping table --subject \"...\"",
+			example: "bar build thing gist explore variants --subject \"API design approaches\" && bar build struct full mapping table --subject \"Selected REST API structure\"",
 			desc:    "Use for multi-step workflows: explore broadly, then analyze deeply",
 		},
 		{
 			title:   "Conceptual Scaffolding",
-			command: "bar build mean full scaffold bullets --prompt \"...\"",
-			example: "bar build mean full scaffold bullets --prompt \"Explain CQRS pattern for beginners\"",
+			command: "bar build mean full scaffold bullets --subject \"...\"",
+			example: "bar build mean full scaffold bullets --subject \"Explain CQRS pattern for beginners\"",
 			desc:    "Use for building understanding from fundamentals to complex concepts",
 		},
 		{
 			title:   "Failure Mode Analysis",
-			command: "bar build fail full stress variants --prompt \"...\"",
-			example: "bar build fail full stress variants --prompt \"How could the payment system fail under load?\"",
+			command: "bar build fail full stress variants --subject \"...\"",
+			example: "bar build fail full stress variants --subject \"How could the payment system fail under load?\"",
 			desc:    "Use for systematic analysis of how systems can break",
 		},
 		{
 			title:   "Success Criteria Definition",
-			command: "bar build good full criteria checklist --prompt \"...\"",
-			example: "bar build good full criteria checklist --prompt \"Define success criteria for the dashboard redesign\"",
+			command: "bar build good full criteria checklist --subject \"...\"",
+			example: "bar build good full criteria checklist --subject \"Define success criteria for the dashboard redesign\"",
 			desc:    "Use when establishing measurable quality or success standards",
 		},
 		{
 			title:   "Perspective Analysis",
-			command: "bar build view full explore variants --prompt \"...\"",
-			example: "bar build view full explore variants --prompt \"How do different stakeholders view the monolith migration?\"",
+			command: "bar build view full explore variants --subject \"...\"",
+			example: "bar build view full explore variants --subject \"How do different stakeholders view the monolith migration?\"",
 			desc:    "Use for understanding multiple viewpoints or stakeholder perspectives",
 		},
 		{
 			title:   "Impact Assessment",
-			command: "bar build struct full impacts table --prompt \"...\"",
-			example: "bar build struct full impacts table --prompt \"Assess downstream impacts of changing the auth service\"",
+			command: "bar build struct full impacts table --subject \"...\"",
+			example: "bar build struct full impacts table --subject \"Assess downstream impacts of changing the auth service\"",
 			desc:    "Use for analyzing ripple effects and dependencies",
 		},
 		{
 			title:   "Constraint Mapping",
-			command: "bar build thing full constraints table --prompt \"...\"",
-			example: "bar build thing full constraints table --prompt \"Map technical and business constraints for the mobile app\"",
+			command: "bar build thing full constraints table --subject \"...\"",
+			example: "bar build thing full constraints table --subject \"Map technical and business constraints for the mobile app\"",
 			desc:    "Use for identifying and documenting limitations and requirements",
 		},
 		{
 			title:   "Evidence Building",
-			command: "bar build thing full evidence case --prompt \"...\"",
-			example: "bar build thing full evidence case --prompt \"Build the case for adopting TypeScript\"",
+			command: "bar build thing full evidence case --subject \"...\"",
+			example: "bar build thing full evidence case --subject \"Build the case for adopting TypeScript\"",
 			desc:    "Use when making a persuasive argument with supporting evidence",
 		},
 		{
 			title:   "Option Generation with Reasoning",
-			command: "bar build thing full reasoning variants --prompt \"...\"",
-			example: "bar build thing full reasoning variants --prompt \"Generate database sharding approaches with pros/cons\"",
+			command: "bar build thing full reasoning variants --subject \"...\"",
+			example: "bar build thing full reasoning variants --subject \"Generate database sharding approaches with pros/cons\"",
 			desc:    "Use for generating alternatives with detailed reasoning for each",
 		},
 		{
 			title:   "Sequential Process Documentation",
-			command: "bar build time full sequence recipe --prompt \"...\"",
-			example: "bar build time full sequence recipe --prompt \"Document the CI/CD pipeline stages\"",
+			command: "bar build time full sequence recipe --subject \"...\"",
+			example: "bar build time full sequence recipe --subject \"Document the CI/CD pipeline stages\"",
 			desc:    "Use for documenting step-by-step processes or workflows",
 		},
 		{
 			title:   "Scenario Simulation",
-			command: "bar build time full scenario walkthrough --prompt \"...\"",
-			example: "bar build time full scenario walkthrough --prompt \"Simulate what happens during a database failover\"",
+			command: "bar build time full scenario walkthrough --subject \"...\"",
+			example: "bar build time full scenario walkthrough --subject \"Simulate what happens during a database failover\"",
 			desc:    "Use for playing out hypothetical or contingency scenarios",
 		},
 		{
 			title:   "Dependency Analysis",
-			command: "bar build struct full dependencies mapping --prompt \"...\"",
-			example: "bar build struct full dependencies mapping --prompt \"Map service dependencies in the microservices architecture\"",
+			command: "bar build struct full dependencies mapping --subject \"...\"",
+			example: "bar build struct full dependencies mapping --subject \"Map service dependencies in the microservices architecture\"",
 			desc:    "Use for understanding and visualizing dependencies and relationships",
 		},
 	}

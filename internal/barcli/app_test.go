@@ -213,6 +213,25 @@ func TestGeneralHelpMentionsSkipSentinel(t *testing.T) {
 	}
 }
 
+func TestGeneralHelpUsesSubjectAndAddendumFlags(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"help"}, strings.NewReader(""), stdout, stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", exitCode, stderr.String())
+	}
+	output := stdout.String()
+	if strings.Contains(output, "--prompt") {
+		t.Fatalf("expected help text not to mention removed --prompt flag, got:\n%s", output)
+	}
+	if !strings.Contains(output, "--subject") {
+		t.Fatalf("expected help text to mention --subject flag, got:\n%s", output)
+	}
+	if !strings.Contains(output, "--addendum") {
+		t.Fatalf("expected help text to mention --addendum flag, got:\n%s", output)
+	}
+}
+
 func TestRunPresetUseBuildsRecipe(t *testing.T) {
 	configDir := t.TempDir()
 	t.Setenv(configDirEnv, configDir)

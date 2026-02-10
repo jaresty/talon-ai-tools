@@ -68,10 +68,10 @@ func getUpdateRepo() string {
 }
 
 var generalHelpText = strings.TrimSpace(`USAGE
-  bar build <tokens>... [--prompt TEXT|--input FILE] [--output FILE] [--json]
+  bar build <tokens>... [--subject TEXT|--input FILE] [--addendum TEXT] [--output FILE] [--json]
   cat prompt.txt | bar build make focus steps fog
 
-  bar shuffle [--prompt TEXT|--input FILE] [--output FILE] [--json]
+  bar shuffle [--subject TEXT|--input FILE] [--output FILE] [--json]
               [--seed N] [--include CATS] [--exclude CATS] [--fill 0.0-1.0]
 
   bar help
@@ -139,7 +139,8 @@ var generalHelpText = strings.TrimSpace(`USAGE
  COMMANDS
 
   build        Construct a prompt recipe from shorthand tokens or key=value overrides.
-                 Accepts input via --prompt, --input, or STDIN (piped).
+                 Accepts subject via --subject, --input, or STDIN (piped).
+                 Use --addendum to add task clarification alongside the subject.
   shuffle      Generate a random prompt by selecting tokens from available categories.
                  Use --seed for reproducible results, --include/--exclude to control categories,
                  and --fill to adjust inclusion probability (default 0.5).
@@ -155,7 +156,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
     preset       Manage cached build presets (save/list/show/use/delete) derived from the last
 
                  successful "bar build" invocation.
-                 Use "bar preset use <name>" with --prompt/--input or piped text to rebuild
+                 Use "bar preset use <name>" with --subject/--input or piped text to rebuild
                  the recipe against fresh subject content.
     install-skills  Install bar skills (bar-autopilot, bar-workflow, bar-suggest, bar-manual) to
                  .claude/skills directory for LLM integration. Enables LLMs to automatically
@@ -171,8 +172,9 @@ var generalHelpText = strings.TrimSpace(`USAGE
   List only tasks:                  bar help tokens task
   List persona sections:           bar help tokens persona persona-intents
   Emit JSON for automation:        bar build --json make focus steps fog
-  Supply prompt content:           bar build make focus --prompt "Fix onboarding"
-  Reuse a saved preset:            bar preset use daily-plan --prompt "Daily sync status"
+  Supply subject content:          bar build make focus --subject "Fix onboarding"
+  Add task clarification:          bar build make focus --subject "Fix onboarding" --addendum "keep under 100 words"
+  Reuse a saved preset:            bar preset use daily-plan --subject "Daily sync status"
   Skip persona stage quickly:      bar build //next make full focus
    Mix shorthand with overrides:    bar build make focus method=steps directional=fog
     Inspect another grammar file:    bar help tokens --grammar /path/to/grammar.json

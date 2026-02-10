@@ -535,3 +535,278 @@ spec appears in seed 0059 with make(task) and scores 5.0. spec's description exp
 **Trend:** Excellent rate is improving (+10 pp over cycle 2, +30 pp over cycle 1) despite the absence of validation implementation. Average score is slightly below cycle 2 (4.09 vs 4.16), which may reflect natural corpus variance rather than regression. The output-exclusive conflict rate remains at 25%, confirming that validation rules are the critical missing implementation.
 
 **Key observation:** The targets for average score (≥4.30) and output-exclusive conflicts (≤5%) are unmet, but both are directly attributable to the absence of validation implementation. The excellent rate is approaching target (65% vs 70% goal). With validation rules in place, cycle 4 should be able to reach all three targets.
+
+---
+
+## Phase 2b: Meta-Evaluation Against Bar Skills
+
+### Overview
+
+This phase evaluates whether the four bar skills (bar-autopilot, bar-manual, bar-workflow, bar-suggest) would guide a user to the token combinations found in seeds 0041–0060.
+
+### Established Skill Deficiencies
+
+Before evaluating individual seeds, the following systemic deficiencies apply to all four skills:
+
+1. **Non-existent command reference:** All four skills reference `bar help llm` as the "preferred" discovery mechanism. This command does not exist in the current bar binary. The actual working command is `bar help tokens`. Skills label `bar help tokens` as "legacy / older versions," but it is the only working approach.
+
+2. **Missing sections in actual output:** Skills reference sections — § "Usage Patterns by Task Type", § "Choosing Method", § "Token Selection Heuristics", § "Composition Rules" — that only exist in `bar help llm` (non-existent). `bar help tokens` has no such sections.
+
+3. **Incorrect task token discovery path:** Skills state `bar help tokens task` to discover task tokens; the actual section name is `static` (i.e., `bar help tokens static`).
+
+4. **Method categorization fiction:** Skills describe Exploration Methods, Understanding Methods, Decision Methods, and Diagnostic Methods as distinct categories. No such categorization exists in `bar help tokens`.
+
+5. **No output-exclusive conflict guidance:** Skills provide no warnings about combining tokens that each prescribe the entire output format.
+
+6. **No guidance on new scope tokens:** ADR-0104 added `assume`, `motifs`, `stable`, and `view` to the scope axis. None of the skills reflect these additions.
+
+The discoverability score (1–5) below reflects how well a user following the skills as written would arrive at the token combination in each seed:
+- 5 = skills would reliably guide to this combination
+- 4 = skills would likely guide to this combination with minor gaps
+- 3 = skills provide partial guidance; user would need to discover some tokens independently
+- 2 = skills provide minimal guidance; key tokens are undiscoverable or actively misdirected
+- 1 = skills would not guide to this combination and may mislead
+
+---
+
+### Per-Seed Discoverability Assessment
+
+**Seed 0041** — probe + deep + prioritize(method) + scaffold(form) + junior_engineer(voice) + casually(tone)
+- Discoverability: 3
+- Gap: Skills reference `bar help llm` § "Choosing Method" for the prioritize + scaffold pairing. These sections do not exist. A user following `bar help tokens` would find prioritize and scaffold listed but with no guidance on their combination. The junior_engineer voice and casually tone are likely discoverable via the voice/tone sections that do function in `bar help tokens`. Methods section is discoverable. Net: task/form/method discoverable in isolation; combination logic is not.
+
+**Seed 0042** — peer_engineer_explanation(preset) + diff + narrow + thing(scope) + origin(method) + fip_ong(directional)
+- Discoverability: 3
+- Gap: thing(scope) is a new scope token from ADR-0104 and skills contain no updated guidance for it. A user following skills would not know to look for thing in the scope section. Skills do reference `bar help tokens static` correctly for the diff task (though via the non-existent `bar help tokens task` path), so task is findable. Directionals are underdocumented in skills. Preset is discoverable.
+
+**Seed 0043** — executive_brief(preset) + diff + minimal + induce(method) + sync(channel) + dip_ong(directional)
+- Discoverability: 3
+- Gap: Skills describe channels but give no guidance on executive_brief + sync delivery mismatch (the awkward combination identified in evaluation). A user following skills might combine these without any warning. inductive method is discoverable but not under the categorization system skills describe. No guidance on completeness tokens beyond basic mention.
+
+**Seed 0044** — pull + full + fip_rog(directional) + to_product_manager(audience)
+- Discoverability: 4
+- Gap: This is a simple, short combination. Skills adequately guide to task (pull) and completeness (full) tokens. Audience token is discoverable. fip_rog directional is mentioned in skills but without the selection logic that would guide a user to choose it over other directionals. Minor gap only.
+
+**Seed 0045** — product_manager_to_team(preset) + plan + full + shift(method) + rog(directional)
+- Discoverability: 3
+- Gap: Skills would not guide a user to the shift method specifically. Under the fictional method categorization in skills (Decision Methods, etc.), shift would be hard to locate without the actual taxonomy, which doesn't exist in `bar help tokens`. rog directional is discoverable. Preset and task are straightforward.
+
+**Seed 0046** — as_facilitator(voice) + kindly(tone) + pick + full
+- Discoverability: 4
+- Gap: Simple combination, all standard tokens. Skills would guide to voice, tone, task, and completeness adequately. The only gap is that skills reference `bar help tokens task` (wrong section name, should be `static`) for pick discovery. Minor.
+
+**Seed 0047** — teach_junior_dev(preset) + fix + full + view(scope) + visual(form) + adr(channel)
+- Discoverability: 2
+- Gap 1: `view(scope)` is a new ADR-0104 scope token. Skills have no guidance for it. A user following skills would not know view exists.
+- Gap 2: Skills provide no output-exclusive conflict warning. A user following skills would not be warned that visual(form) + adr(channel) is an irresolvable format conflict. They might reasonably select both tokens separately based on independent token descriptions, creating the exact conflict that scored this prompt 3.6.
+- This is the most significant skill failure in the corpus: not only does it fail to guide correctly, it would actively lead users into a known-bad combination.
+
+**Seed 0048** — as_designer(voice) + teach(intent) + make + full + resilience(method)
+- Discoverability: 4
+- Gap: resilience method is discoverable via `bar help tokens` method listings. Skills reference a non-existent § "Understanding Methods" category that would nominally include resilience, but the token itself is listed in the actual help output. Intent, voice, task, completeness all discoverable. Minor method-categorization gap.
+
+**Seed 0049** — designer_to_pm(preset) + fix + full + objectivity(method)
+- Discoverability: 4
+- Gap: Very simple combination. Objectivity method is in `bar help tokens`. Preset, task, completeness all straightforward. Minor gap from incorrect `bar help tokens task` section reference.
+
+**Seed 0050** — appreciate(intent) + as_programmer(voice) + to_managers(audience) + pick + deep + thing(scope) + indirect(form) + adr(channel)
+- Discoverability: 2
+- Gap 1: `thing(scope)` is a new ADR-0104 scope token. Skills have no guidance for it.
+- Gap 2: Skills have no guidance on the intent-task affinity issue (appreciate + pick mismatch). A user following skills would not be warned.
+- Gap 3: adr(channel) discovery requires navigating the channel section; skills describe channels but with no task-affinity filtering.
+- Net: thing(scope) is undiscoverable; no conflict warning; 8-token combination has no composition guidance in skills.
+
+**Seed 0051** — teach_junior_dev(preset) + make + full + diagram(channel) + dig(directional)
+- Discoverability: 4
+- Gap: All tokens discoverable individually. diagram channel is well-documented. dig directional is mentioned. Minor gap: no skills guidance confirming make + diagram as a canonical pairing (positive pattern not documented). Still, a user could arrive at this combination through normal token exploration.
+
+**Seed 0052** — announce(intent) + as_facilitator(voice) + kindly(tone) + plan + full + rigor(method) + visual(form) + dip_bog(directional)
+- Discoverability: 3
+- Gap 1: Skills reference non-existent § "Token Selection Heuristics" for form token guidance (including visual).
+- Gap 2: No guidance on announce(intent) + plan(task) minor mismatch.
+- Gap 3: rigor(method) falls under the fictional method categorization. Discoverable in `bar help tokens` but not under the described category system.
+- Net: each token discoverable individually; no composition guidance; intent-task mismatch unwarned.
+
+**Seed 0053** — coach(intent) + to_junior_engineer(audience) + make + deep + time(scope) + rewrite(form) + plain(channel) + fig(directional)
+- Discoverability: 2
+- Gap 1: `time(scope)` is a new ADR-0104 scope token. Skills have no guidance for it.
+- Gap 2: Skills provide no warning for make + rewrite(form) semantic conflict. A user following skills would not be warned that this is contradictory.
+- Gap 3: plain(channel) is output-exclusive; no output-exclusive guidance exists in skills.
+- This seed has three guidance failures: undiscoverable scope token, unwarned semantic conflict, unwarned output-exclusive combination.
+
+**Seed 0054** — product_manager_to_team(preset) + sim + deep + mean(scope) + abduce(method) + codetour(channel) + dip_bog(directional)
+- Discoverability: 2
+- Gap 1: `mean(scope)` is a new ADR-0104 scope token. Skills have no guidance for it.
+- Gap 2: Skills provide no task-affinity guidance for codetour. A user following skills would read codetour's description and might select it for a sim task without realizing it is only meaningful for code-navigation contexts.
+- Gap 3: The product_manager_to_team + codetour persona mismatch is not flagged anywhere in skills.
+- Net: scope token undiscoverable; codetour task-affinity mismatch unwarned; PM persona + codetour incongruity unwarned.
+
+**Seed 0055** — persuade(intent) + casually(tone) + diff + full + rewrite(form) + codetour(channel) + fog(directional)
+- Discoverability: 1
+- Gap 1: Skills have no warning for rewrite(form) + diff(task) semantic conflict.
+- Gap 2: Skills have no task-affinity guidance for codetour; user would not know codetour is inappropriate for a non-code diff task.
+- Gap 3: persuade + codetour intent/channel mismatch is not flagged anywhere.
+- Gap 4: Three overlapping conflicts exist; skills would guide a user to select all these tokens without any friction or warning.
+- This is the worst skill-guidance outcome in the corpus: a prompt that scores 2.4 would not be flagged as problematic by any current skill.
+
+**Seed 0056** — product_manager_to_team(preset) + check + full + good(scope) + dip_rog(directional)
+- Discoverability: 3
+- Gap: `good(scope)` is a new ADR-0104 scope token. Skills have no guidance for it. However, the remaining tokens (check, full, preset, directional) are all discoverable. Without good(scope), the prompt is still valid but less precise.
+- Net: partial discoverability — the combination minus the new scope token is fully guided; the scope token that makes it excellent is not.
+
+**Seed 0057** — casually(tone) + fix + full + thing(scope) + operations(method) + taxonomy(form) + diagram(channel) + dip_bog(directional)
+- Discoverability: 2
+- Gap 1: `thing(scope)` is a new ADR-0104 scope token. Skills have no guidance for it.
+- Gap 2: Skills have no output-exclusive conflict warning for taxonomy(form) + diagram(channel). A user following skills would not know these two tokens conflict.
+- Gap 3: taxonomy(form) description does not clearly communicate in skills that it mandates definitional prose (incompatible with diagram's Mermaid-only output).
+- Net: scope token undiscoverable; output-exclusive conflict unwarned.
+
+**Seed 0058** — scientist_to_analyst(preset) + probe + minimal + fail(scope) + grove(method) + remote(channel)
+- Discoverability: 3
+- Gap: `fail(scope)` is a new ADR-0104 scope token. Skills have no guidance for it. The combination otherwise (probe, minimal, grove, remote, preset) is well-guided. remote channel and grove method are discoverable individually. Without fail(scope), the probe would be less precisely targeted.
+- Net: similar to seed 0056 — a strong combination partly obscured by an undiscoverable scope token.
+
+**Seed 0059** — as_principal_engineer(voice) + to_stakeholders(audience) + make + full + spec(method)
+- Discoverability: 4
+- Gap: Very simple, all-standard combination. spec method is in `bar help tokens` method listings. Voice, audience, task, completeness are all discoverable. Minor gap from the fictional method categorization in skills (spec would fall under some unspecified category). The combination is short enough that a user exploring tokens independently would likely find all five.
+
+**Seed 0060** — entertain(intent) + as_scientist(voice) + sort + full + gherkin(channel) + fly_ong(directional)
+- Discoverability: 2
+- Gap 1: Skills have no task-affinity guidance for gherkin. A user following skills would read gherkin's description ("BDD test scenarios in Given/When/Then format") and might still select it for a sort task without realizing it is inappropriate for non-behavior tasks.
+- Gap 2: entertain(intent) + gherkin(channel) incompatibility is not flagged anywhere.
+- Net: gherkin task-affinity mismatch unwarned; intent/channel mismatch unwarned. Skills would not prevent this 3.0-scoring combination from being constructed.
+
+---
+
+### Aggregated Skill Gap Findings
+
+**Discoverability Score Distribution (20 seeds):**
+
+| Score | Count | Seeds |
+|-------|-------|-------|
+| 4–5 (adequate guidance) | 6 | 0044, 0046, 0048, 0049, 0051, 0059 |
+| 3 (partial guidance) | 7 | 0041, 0042, 0043, 0045, 0052, 0056, 0058 |
+| 1–2 (inadequate guidance) | 7 | 0047, 0050, 0053, 0054, 0055, 0057, 0060 |
+
+**Mean discoverability score: 2.9 / 5**
+
+**Gap Category Analysis:**
+
+1. **New scope tokens undiscoverable (7 seeds):** Seeds 0042 (thing), 0047 (view), 0050 (thing), 0053 (time), 0054 (mean), 0056 (good), 0057 (thing), 0058 (fail). All four ADR-0104 scope tokens appear in this cycle and none are guided by any current skill. This is a systemic gap: ADR-0104 was implemented, skills were not updated, and users have no path to these tokens via skills.
+
+2. **Output-exclusive conflicts unwarned (4 seeds):** Seeds 0047, 0053, 0057, 0060. For each of these, skills would guide a user to select the conflicting tokens independently without any friction. No skill contains output-exclusive conflict guidance.
+
+3. **Task-affinity mismatches unwarned (3 seeds):** Seeds 0054, 0055, 0060. Codetour (0054, 0055) and gherkin (0060) have task-affinity restrictions that no skill documents. Users following skills have no signal that these channels are inappropriate for non-code and non-behavior tasks respectively.
+
+4. **Non-existent `bar help llm` reference (all seeds):** The primary discovery path in all skills is broken. Users who follow the "preferred" path will receive a command-not-found error. The working path (`bar help tokens`) is labeled "legacy" which may cause users to distrust it or seek alternative discovery methods that don't exist.
+
+5. **Semantic conflict guidance absent (2 seeds):** Seeds 0053 and 0055 both involve make/diff + rewrite(form) conflicts that no skill warns against.
+
+6. **Composition guidance absent (all multi-token seeds):** The § "Composition Rules" and § "Token Selection Heuristics" sections referenced in skills do not exist. For any combination of 5+ tokens, skills provide no guidance on how tokens interact.
+
+**Seeds where skill gaps directly contributed to low scores:** 0047 (3.6), 0050 (3.8), 0053 (3.0), 0054 (3.2), 0055 (2.4), 0057 (3.6), 0060 (3.0). All 7 low/mid-scoring seeds with gaps scored below 4.0, and for 5 of them (0047, 0053, 0054, 0055, 0057) the skill gap either directly led to or would have failed to prevent the conflict.
+
+---
+
+## Phase 2c: Bar Help Tokens Reference Evaluation
+
+### Overview
+
+This phase evaluates `bar help tokens` (the actual working reference tool) as a reference for understanding and constructing the prompts in seeds 0041–0060. Note: `bar help llm` does not exist; `bar help tokens` is the only available binary reference tool.
+
+### Reference Structure
+
+`bar help tokens` lists all tokens with one-line descriptions organized by axis. It does not contain:
+- Usage patterns by task type
+- Selection heuristics
+- Composition rules
+- Incompatibility guidance
+- Output-exclusive concept documentation
+- Task-affinity metadata
+
+New scope tokens (assume, motifs, stable, view) are present after recent binary rebuild. All cycle 3 scope tokens (thing, mean, fail, good, time, view) are present and accurately described.
+
+### Evaluation Criteria
+
+Each criterion is scored 1–5 across the 20-seed corpus:
+
+**Criterion 1: Token Discovery — Does `bar help tokens` enable a user to discover the relevant tokens?**
+
+- Score: 3/5
+- Rationale: All tokens used in seeds 0041–0060 are listed in `bar help tokens` with descriptions. Discovery is possible for any individual token. However, discovery is essentially exhaustive enumeration: users must read all entries and infer relevance. There are no categories, task-type groupings, or use-case guides. For seeds with 7–8 tokens, the likelihood of independent discovery of the optimal combination is low. The new scope tokens (view, mean, fail, good, time) are present and correctly described, which is a significant improvement over the skills gap.
+
+**Criterion 2: Token Description Accuracy — Are token descriptions accurate and sufficient?**
+
+- Score: 4/5
+- Rationale: Token descriptions are broadly accurate. Task tokens correctly describe their function. Method tokens have clear descriptions. Persona presets are described adequately. The main deficiencies are:
+  - codetour: described accurately but with no task-affinity guidance ("produces a VS Code CodeTour JSON file" — accurate, but doesn't say "only meaningful with code subjects")
+  - gherkin: similarly accurate without task-affinity context
+  - visual and taxonomy forms: descriptions do not make their whole-response-scope clear (does not say "this overrides normal response structure entirely")
+  - rewrite form: description does not flag the semantic conflict with make/diff tasks
+
+**Criterion 3: Output-Exclusive Concept — Does `bar help tokens` document the output-exclusive concept?**
+
+- Score: 1/5
+- Rationale: The output-exclusive concept — that certain tokens each mandate the entire output format, making them mutually exclusive — is not documented anywhere in `bar help tokens`. The channel axis description implies "at most one" channel per prompt, but this logic is not extended to form tokens that are also output-exclusive (visual, taxonomy, code, html, shellscript). A user consulting `bar help tokens` alone has no way to know that visual(form) + adr(channel) is irresolvable, or that taxonomy(form) + diagram(channel) will conflict. This is the reference tool's most significant gap relative to the corpus issues.
+
+**Criterion 4: Composition Guidance — Does `bar help tokens` help users compose multiple tokens?**
+
+- Score: 1/5
+- Rationale: `bar help tokens` provides no composition guidance whatsoever. It does not explain how tokens from different axes interact, which combinations are productive, which are conflicting, or how to sequence token selection. The channel axis has an implicit "at most one" rule, but it is not stated explicitly in the help output. For all 20 seeds, the combination logic must be entirely inferred by the user from token descriptions alone.
+
+**Criterion 5: Task-Affinity Guidance — Does `bar help tokens` help users match tokens to tasks?**
+
+- Score: 2/5
+- Rationale: Some task tokens have clear implied affinities (e.g., diff implies comparison, make implies creation), but no token descriptions include explicit works_best_with or avoid_with metadata. The codetour and gherkin channels are a particular failure: their descriptions accurately convey what format they produce but give no signal about which tasks they are appropriate for. A user could reasonably select codetour for a sim task based on description alone (seeds 0054, 0055). A user could select gherkin for a sort task (seed 0060). The reference tool provides no protection against these mismatches.
+
+**Criterion 6: New Scope Token Coverage — Does `bar help tokens` adequately cover the ADR-0104 scope tokens?**
+
+- Score: 4/5
+- Rationale: All four new scope tokens (assume, motifs, stable, view) are present and accurately described after the binary rebuild. The five scope tokens used in this cycle (thing, mean, fail, good, time, view) are all present and correctly described. This is a genuine improvement and a significant advantage over the skills documentation. The minor gap is that the descriptions, while accurate, do not explain the scope tokens' relationship to the existing scope set (no explanation of "what distinguishes thing from struct" or "when to use view vs mean").
+
+**Criterion 7: Form Token Clarity — Do form token descriptions make their structural scope clear?**
+
+- Score: 3/5
+- Rationale: Standard form tokens (list, table, scaffold, etc.) are clearly described. However, the more complex form tokens have description gaps:
+  - visual: description conveys "abstract visual layout" but does not state that this replaces normal prose structure for the entire response
+  - taxonomy: description conveys "classification system" but does not state it implies definitional prose incompatible with Mermaid-only channels
+  - rewrite: description implies transformation but does not flag that it conflicts semantically with make (create) or that it is inappropriate for non-transformation tasks
+  - indirect: description is adequate; the form's compatibility with adr(channel) (as noted in seed 0050 analysis) is not documented but also not needed — users would discover the harmony
+  - plain: output-exclusive status is not flagged; users would not know it mandates prose-only output exclusive of markup
+
+---
+
+### Aggregated Reference Tool Findings
+
+| Criterion | Score |
+|-----------|-------|
+| Token Discovery | 3/5 |
+| Token Description Accuracy | 4/5 |
+| Output-Exclusive Concept Coverage | 1/5 |
+| Composition Guidance | 1/5 |
+| Task-Affinity Guidance | 2/5 |
+| New Scope Token Coverage | 4/5 |
+| Form Token Clarity | 3/5 |
+| **Mean** | **2.6/5** |
+
+**Summary of reference tool findings:**
+
+`bar help tokens` is adequate as a token dictionary but inadequate as a composition guide. Its core strength is completeness: all tokens are present and descriptions are broadly accurate. Its core weakness is the total absence of meta-guidance: no composition rules, no incompatibility warnings, no task-affinity signals.
+
+For users building single-token or two-token prompts, `bar help tokens` is sufficient. For users building the 5–8 token combinations characteristic of this corpus, the reference tool provides the ingredients but no recipe, and no warning labels for dangerous combinations.
+
+**Priority gaps in `bar help tokens` relative to cycle 3 findings:**
+
+1. No output-exclusive documentation — directly enabled 5 conflicting seeds (0047, 0053, 0057 at minimum)
+2. No task-affinity documentation for codetour and gherkin — directly enabled 3 mismatched seeds (0054, 0055, 0060)
+3. rewrite form lacks semantic conflict warning — directly contributed to 2 conflicted seeds (0053, 0055)
+4. visual and taxonomy form descriptions do not communicate whole-response scope replacement — underspecified for conflict detection
+
+**What would raise the mean score from 2.6 to ≥4.0:**
+
+- Adding an output-exclusive concept section (would raise criterion 3 from 1 to 4)
+- Adding a short composition guidance section (would raise criterion 4 from 1 to 3)
+- Adding task-affinity notes to codetour and gherkin descriptions (would raise criterion 5 from 2 to 4)
+- Adding scope-replacement clarification to visual, taxonomy, and plain form descriptions (would raise criterion 7 from 3 to 4)
+
+These four changes are targeted and achievable without restructuring the reference tool.

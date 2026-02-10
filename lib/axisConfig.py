@@ -276,9 +276,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when "
         "feasible, keeping columns and rows compact.",
-        "taxonomy": "The response structures ideas as a classification system, type "
-        "hierarchy, or category taxonomy, defining types, their "
-        "relationships, and distinguishing attributes clearly.",
+        "taxonomy": "The response organizes the main content as a classification "
+        "system, type hierarchy, or category taxonomy, defining types, "
+        "their relationships, and distinguishing attributes clearly, "
+        "where the subject admits classification.",
         "test": "The response presents test cases in a structured format with clear "
         "setup, execution, and assertion sections, organized by scenario "
         "type (happy path, edge cases, errors, boundaries) and including "
@@ -289,9 +290,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as separate variants, labelling each one with a short "
         "description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
-        "visual": "The response conveys the answer as an abstract visual or "
-        "metaphorical layout accompanied by a short legend, emphasising "
-        "big-picture structure over dense prose.",
+        "visual": "The response presents the main answer as an abstract visual or "
+        "metaphorical layout with a short legend where the subject lends "
+        "itself to visual representation, emphasising big-picture "
+        "structure over dense prose.",
         "walkthrough": "The response guides the audience step by step by outlining "
         "stages and walking through them in order so understanding "
         "builds gradually.",

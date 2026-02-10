@@ -19,7 +19,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "codetour": "The response is delivered as a valid VS Code CodeTour "
         "`.tour` JSON file (schema-compatible) with steps and fields "
         "appropriate to the task, omitting extra prose or surrounding "
-        "explanation.",
+        "explanation. Appropriate for tasks that produce or reference "
+        "navigable code artifacts: `fix`, `make` when creating code, "
+        "`show` when exposing code structure, `pull` when extracting "
+        "from code. Not appropriate for non-code tasks such as `sim`, "
+        "`sort`, `probe`, `diff` (without code subject), or `plan`.",
         "diagram": "The response converts the input into Mermaid diagram code "
         "only: it infers the best diagram type for the task and "
         "respects Mermaid safety constraints (Mermaid diagrams do not "
@@ -28,7 +32,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "for '|' instead of raw problematic characters).",
         "gherkin": "The response outputs only Gherkin format as the complete "
         "output, using Jira markup where appropriate and omitting "
-        "surrounding explanation.",
+        "surrounding explanation. Appropriate for tasks that map "
+        "naturally to scenario-based behavior specification: `check` "
+        "for acceptance criteria, `plan` for BDD-style feature "
+        "planning, `make` when defining system behavior. Not "
+        "appropriate for tasks that don't involve system behavior: "
+        "`sort`, `sim`, `probe`, `diff` (without behavioral subject).",
         "html": "The response consists solely of semantic HTML as the complete "
         "output, with no surrounding prose or explanation.",
         "jira": "The response formats the content using Jira markup (headings, "
@@ -256,7 +265,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "understanding it.",
         "rewrite": "The response rewrites or refactors while preserving the original "
         "intent, treating the work as a mechanical transform rather than "
-        "a reinterpretation.",
+        "a reinterpretation. Best paired with `fix`, `pull`, `diff`, or "
+        "`show` tasks that supply existing content to transform. Pairing "
+        "with `make` is semantically incoherent: `make` implies creating "
+        "from nothing while `rewrite` implies transforming existing "
+        "content.",
         "scaffold": "The response explains with scaffolding: it starts from first "
         "principles, introduces ideas gradually, uses concrete examples "
         "and analogies, and revisits key points so a beginner can follow "

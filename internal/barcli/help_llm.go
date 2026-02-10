@@ -636,10 +636,27 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	}
 	fmt.Fprintf(w, "\n")
 
-	if len(grammar.Hierarchy.AxisIncompatibilities) > 0 {
-		fmt.Fprintf(w, "### Incompatibilities\n\n")
-		fmt.Fprintf(w, "Certain token combinations are not allowed:\n\n")
+	fmt.Fprintf(w, "### Incompatibilities\n\n")
+	fmt.Fprintf(w, "Certain token combinations are not allowed or produce low-quality results:\n\n")
 
+	fmt.Fprintf(w, "**Output-exclusive conflicts:**\n")
+	fmt.Fprintf(w, "All channel tokens are output-exclusive — they mandate the entire response format. ")
+	fmt.Fprintf(w, "At most one channel token may appear per prompt. ")
+	fmt.Fprintf(w, "Similarly, form tokens `code`, `html`, and `shellscript` are output-exclusive. ")
+	fmt.Fprintf(w, "Combining two output-exclusive tokens produces contradictory instructions the LLM cannot reconcile.\n\n")
+
+	fmt.Fprintf(w, "**Task-affinity restrictions:**\n")
+	fmt.Fprintf(w, "- `codetour` channel: appropriate for tasks producing navigable code artifacts (`fix`, `make` with code, `show` with code structure, `pull` from code). ")
+	fmt.Fprintf(w, "Not appropriate for non-code tasks: `sim`, `sort`, `probe`, `diff` without code subject, `plan`.\n")
+	fmt.Fprintf(w, "- `gherkin` channel: appropriate for tasks mapping to scenario-based behavior specification (`check` for acceptance criteria, `plan` with BDD context, `make` when defining system behavior). ")
+	fmt.Fprintf(w, "Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`.\n\n")
+
+	fmt.Fprintf(w, "**Semantic conflicts:**\n")
+	fmt.Fprintf(w, "- `rewrite` form implies existing content to transform. ")
+	fmt.Fprintf(w, "Pairing with `make` is semantically incoherent: `make` implies creating from nothing while `rewrite` implies transforming existing content.\n\n")
+
+	if len(grammar.Hierarchy.AxisIncompatibilities) > 0 {
+		fmt.Fprintf(w, "**Grammar-enforced restrictions:**\n")
 		for axis1, conflicts := range grammar.Hierarchy.AxisIncompatibilities {
 			for axis2, tokens := range conflicts {
 				for _, token := range tokens {

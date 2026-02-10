@@ -117,6 +117,47 @@ func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
 	}
 }
 
+// TestLLMHelpIncompatibilitiesPopulated verifies that the § Incompatibilities
+// section in bar help llm is not empty and contains the three documented conflict
+// categories from ADR-0105: output-exclusive channel conflicts, codetour/gherkin
+// task-affinity restrictions, and the make+rewrite semantic conflict.
+func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	incompStart := strings.Index(output, "### Incompatibilities")
+	if incompStart == -1 {
+		t.Fatal("could not locate ### Incompatibilities section in bar help llm output")
+	}
+	// Advance past the heading to capture section body.
+	sectionStart := incompStart + len("### Incompatibilities")
+	// Find the next heading to bound the section.
+	sectionEnd := strings.Index(output[sectionStart:], "\n##")
+	var incompatibilities string
+	if sectionEnd == -1 {
+		incompatibilities = output[sectionStart:]
+	} else {
+		incompatibilities = output[sectionStart : sectionStart+sectionEnd]
+	}
+
+	checks := []struct {
+		description string
+		contains    string
+	}{
+		{"output-exclusive channel conflict rule", "output-exclusive"},
+		{"codetour task-affinity restriction", "codetour"},
+		{"gherkin task-affinity restriction", "gherkin"},
+		{"rewrite+make semantic conflict", "rewrite"},
+	}
+	for _, c := range checks {
+		if !strings.Contains(incompatibilities, c.contains) {
+			t.Errorf("§ Incompatibilities missing %s (expected to contain %q)", c.description, c.contains)
+		}
+	}
+}
+
 func TestEmbeddedSkillsUseTaskTerminology(t *testing.T) {
 	err := fs.WalkDir(embeddedSkills, "skills", func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {

@@ -156,9 +156,9 @@ bar help llm
 
 # Step 3: Execute workflow with discovered tokens
 # Example progression (tokens discovered from reference):
-bar build <exploration-tokens> --prompt "initial probe"
-bar build <understanding-tokens> --prompt "analyze results from step 1"
-bar build <decision-tokens> --prompt "synthesize into recommendations"
+bar build <exploration-tokens> --subject "initial probe"
+bar build <understanding-tokens> --subject "analyze results from step 1"
+bar build <decision-tokens> --subject "synthesize into recommendations"
 ```
 
 **Legacy approach:**
@@ -169,9 +169,9 @@ bar help tokens scope method form
 
 # Step 2: Plan progression based on discovered tokens
 # Step 3: Execute workflow
-bar build <discovered-broad-tokens> --prompt "initial probe"
-bar build <discovered-analysis-tokens> --prompt "analyze results"
-bar build <discovered-action-tokens> --prompt "synthesize recommendations"
+bar build <discovered-broad-tokens> --subject "initial probe"
+bar build <discovered-analysis-tokens> --subject "analyze results"
+bar build <discovered-action-tokens> --subject "synthesize recommendations"
 ```
 
 ## Performance Notes

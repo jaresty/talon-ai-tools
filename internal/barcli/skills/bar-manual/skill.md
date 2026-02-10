@@ -105,7 +105,7 @@ Once user understands the reference:
 # [persona] [static] [completeness] [scope...] [method...] [form] [channel] [directional]
 
 # Build command with discovered tokens
-bar build <tokens-from-reference> --prompt "user's text"
+bar build <tokens-from-reference> --subject "user's text"
 
 # Examples (tokens discovered from reference, not hardcoded):
 # - For decisions: reference shows patterns using decision-oriented tokens
@@ -166,13 +166,13 @@ bar help tokens persona persona-intents
 # Discover tokens first (via bar help llm or bar help tokens)
 
 # Build with shorthand (order matters)
-bar build <static> <completeness> <scope> <method> <form> --prompt "text"
+bar build <static> <completeness> <scope> <method> <form> --subject "text"
 
 # Build with persona
-bar build persona=<preset> <static> <completeness> --prompt "text"
+bar build persona=<preset> <static> <completeness> --subject "text"
 
 # Build with key=value overrides (all after first override must be key=value)
-bar build <static> completeness=<value> scope=<value> --prompt "text"
+bar build <static> completeness=<value> scope=<value> --subject "text"
 
 # Skip stages
 bar build //next <static> <completeness>
@@ -183,10 +183,10 @@ bar build //:static <completeness> <scope>
 
 ```bash
 # Get JSON for automation
-bar build <tokens> --prompt "text" --json
+bar build <tokens> --subject "text" --json
 
 # Save to file
-bar build <tokens> --prompt "text" --output recipe.txt
+bar build <tokens> --subject "text" --output recipe.txt
 
 # Read from file
 bar build <tokens> --input prompt.txt
@@ -202,7 +202,7 @@ echo "text" | bar build <tokens>
 bar preset save my-decision-pattern
 
 # Reuse with new content
-bar preset use my-decision-pattern --prompt "new text"
+bar preset use my-decision-pattern --subject "new text"
 
 # List saved presets
 bar preset list
@@ -230,13 +230,13 @@ bar preset show my-decision-pattern
 1. "Let me show you the comprehensive reference: `bar help llm`"
 2. "For your use case, look at the § 'Usage Patterns by Task Type' section"
 3. "Based on the reference, we can use tokens from § 'Token Catalog'"
-4. "Let's build: `bar build <tokens-from-reference> --prompt '<topic>'`"
+4. "Let's build: `bar build <tokens-from-reference> --subject '<topic>'`"
 5. "Want alternatives? We can use `bar shuffle` to explore"
 
 **Assistant (legacy fallback):**
 1. "Let's discover valid tokens: `bar help tokens`"
 2. "Based on the output, which tokens fit your needs?"
-3. "We'll build: `bar build <chosen-tokens> --prompt '<topic>'`"
+3. "We'll build: `bar build <chosen-tokens> --subject '<topic>'`"
 4. "Want to shuffle for alternatives?"
 
 ## Example Teaching Session
@@ -251,7 +251,7 @@ bar help llm
 # "Check § 'Token Selection Heuristics' for guidance"
 
 # Step 3: Build command with discovered tokens
-bar build <tokens-user-discovered> --prompt "User's topic"
+bar build <tokens-user-discovered> --subject "User's topic"
 
 # Step 4: Iterate if needed
 # "Check § 'Token Catalog' for alternatives"
@@ -266,7 +266,7 @@ bar shuffle --include scope,method
 bar help tokens
 
 # Step 2: Pick tokens from help output
-bar build <discovered-tokens> --prompt "User's topic"
+bar build <discovered-tokens> --subject "User's topic"
 
 # Step 3 (optional): Shuffle
 bar shuffle --include scope,method

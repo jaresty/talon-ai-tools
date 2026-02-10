@@ -47,13 +47,13 @@ class TestBarHelpLLMExamples(unittest.TestCase):
 
         failures = []
         for cmd in examples:
-            # Extract tokens from "bar build <tokens>... --prompt \"...\""
-            # Split on --prompt to get just the token part
-            if "--prompt" not in cmd:
-                failures.append(f"Missing --prompt in example: {cmd}")
+            # Extract tokens from "bar build <tokens>... --subject \"...\""
+            # Split on --subject to get just the token part
+            if "--subject" not in cmd:
+                failures.append(f"Missing --subject in example: {cmd}")
                 continue
 
-            token_part = cmd.split("--prompt")[0].strip()
+            token_part = cmd.split("--subject")[0].strip()
             # Remove "bar build" prefix
             if not token_part.startswith("bar build "):
                 failures.append(f"Invalid example format: {cmd}")
@@ -62,8 +62,8 @@ class TestBarHelpLLMExamples(unittest.TestCase):
             tokens = token_part.replace("bar build ", "").strip().split()
 
             # Test that bar can parse these tokens
-            # We don't need actual prompt text for validation
-            test_cmd = ["go", "run", "./cmd/bar", "build"] + tokens + ["--prompt", "test"]
+            # We don't need actual subject text for validation
+            test_cmd = ["go", "run", "./cmd/bar", "build"] + tokens + ["--subject", "test"]
 
             try:
                 result = subprocess.run(

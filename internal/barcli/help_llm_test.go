@@ -33,6 +33,39 @@ func TestLLMHelpUsesTaskTerminology(t *testing.T) {
 	}
 }
 
+func TestEmbeddedSkillsUseSubjectFlag(t *testing.T) {
+	promptCount := 0
+	addendumMentioned := false
+
+	err := fs.WalkDir(embeddedSkills, "skills", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {
+			return err
+		}
+		data, readErr := fs.ReadFile(embeddedSkills, path)
+		if readErr != nil {
+			t.Fatalf("failed to read %s: %v", path, readErr)
+		}
+		content := string(data)
+		for i, line := range strings.Split(content, "\n") {
+			// --prompt flag must not appear in skill files
+			if strings.Contains(line, "--prompt") {
+				t.Errorf("%s:%d uses removed --prompt flag: %s", path, i+1, strings.TrimSpace(line))
+				promptCount++
+			}
+		}
+		if strings.Contains(content, "--addendum") {
+			addendumMentioned = true
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("failed to walk embedded skills: %v", err)
+	}
+	if !addendumMentioned {
+		t.Error("no embedded skill file mentions --addendum; at least one skill should document addendum usage")
+	}
+}
+
 func TestEmbeddedSkillsUseTaskTerminology(t *testing.T) {
 	err := fs.WalkDir(embeddedSkills, "skills", func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {

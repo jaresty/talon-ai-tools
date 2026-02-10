@@ -172,7 +172,7 @@ bar help llm
 # Option 4 (Freeform): bar shuffle
 
 # Step 4: Execute user's choice with discovered tokens
-bar build <user-chosen-tokens> --prompt "microservices architecture"
+bar build <user-chosen-tokens> --subject "microservices architecture"
 ```
 
 **Legacy approach:**
@@ -188,7 +188,7 @@ bar help tokens scope method form
 # Option 4: bar shuffle
 
 # Step 3: Execute user's choice
-bar build <discovered-tokens-for-choice> --prompt "topic"
+bar build <discovered-tokens-for-choice> --subject "topic"
 ```
 
 ## Integration with Other Skills

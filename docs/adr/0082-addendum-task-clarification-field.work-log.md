@@ -366,3 +366,53 @@
   - Bar skills (bar-autopilot, bar-workflow, bar-suggest, bar-manual) may not document `--addendum` usage. Severity: medium. Mitigation: Phase 4.
 - **next_work**:
   - Behaviour: Phase 3 — Update Python `PROMPT_REFERENCE_KEY` in `lib/metaPromptConfig.py` to include ADDENDUM section description matching the Go reference key. Validation: `make ci-guardrails` or `python -m pytest _tests/`. Future-shaping: Python users see consistent reference key across CLI and Python paths.
+
+## Loop 16: Python ADDENDUM alignment — heading and reference key (Phase 3)
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 3 (Reference Key Updates) — Rename `# Prompt` heading to `=== ADDENDUM (CLARIFICATION) ===` in `lib/modelSource.py:format_source_messages()` and add ADDENDUM entry to `lib/metaPromptConfig.py:PROMPT_REFERENCE_KEY` between TASK and CONSTRAINTS sections.
+- **active_constraint**: Python `format_source_messages()` renders the task-clarification parameter as `# Prompt` (legacy heading) instead of `=== ADDENDUM (CLARIFICATION) ===`, and `PROMPT_REFERENCE_KEY` has no ADDENDUM entry — creating an inconsistency between the Python path and the Go `referenceKeyText` (which already documents ADDENDUM after Loop 12).
+- **validation_targets**:
+  - `.venv/bin/python -m pytest _tests/test_model_source_addendum.py`
+  - `.venv/bin/python -m pytest _tests/`
+- **evidence**:
+  - red | 2026-02-09T (pre-implementation) | exit 1 | `.venv/bin/python -m pytest _tests/test_model_source_addendum.py` — `AssertionError: '=== ADDENDUM (CLARIFICATION) ===' not found in '# Prompt\n do this ...'` and `AssertionError: 'ADDENDUM' not found in PROMPT_REFERENCE_KEY` | inline
+    helper:diff-snapshot=1 file changed (test_model_source_addendum.py only; production code unchanged)
+  - green | 2026-02-09T (post-implementation) | exit 0 | `.venv/bin/python -m pytest _tests/` — 1211 passed | inline
+    helper:diff-snapshot=3 files changed, 13 insertions(+), 8 deletions(-)
+  - removal | 2026-02-09T (git restore lib/modelSource.py lib/metaPromptConfig.py) | exit 1 | `.venv/bin/python -m pytest _tests/test_model_source_addendum.py` — both assertions fail again | inline
+    helper:diff-snapshot=0 files changed (production code reverted)
+- **rollback_plan**: `git restore lib/modelSource.py lib/metaPromptConfig.py` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=3 files changed, 13 insertions(+), 8 deletions(-). In `lib/modelSource.py`: renamed `format_message("# Prompt\n")` → `format_message("=== ADDENDUM (CLARIFICATION) ===\n")` (line 58). In `lib/metaPromptConfig.py`: inserted 5-line ADDENDUM block between TASK and CONSTRAINTS in `PROMPT_REFERENCE_KEY`: `ADDENDUM (user prompt): Task clarification that modifies HOW to execute the task. • Contains additional instructions... • Not the content to work with... • Only present when the user provides explicit clarification`. Created `_tests/test_model_source_addendum.py` with 2 specifying tests: `test_format_source_messages_uses_addendum_heading` and `test_prompt_reference_key_documents_addendum_section`. Also fixed `_tests/test_bar_help_llm_examples.py` to check `--subject` instead of `--prompt` (pre-existing breakage from Loop 14's flag rename). Depth-first rung: Python ADDENDUM alignment (Phase 3).
+- **loops_remaining_forecast**: ~1-2 loops remaining. Remaining: Phase 4 (update bar skills to document `--addendum` usage, verify no skills use `--prompt`). Phase 5 (Talon voice command alignment for addendum input) is lower priority and may be deferred. Confidence: high for Phase 4 scope.
+- **residual_constraints**:
+  - Bar skills (bar-autopilot, bar-workflow, bar-suggest, bar-manual) do not yet document `--addendum` usage. Severity: medium (LLM agents using skills will not know to use `--addendum` for task clarification). Mitigation: Phase 4. Monitoring: `grep -r "\-\-addendum" internal/barcli/skills/`.
+  - Python `format_source_messages()` uses the `prompt` parameter as the primary task instruction (not just clarification) — when no bar grammar tokens are present, the `prompt` IS the task, not an addendum. The heading rename is cosmetically correct but semantically the Python path doesn't have a separate task token concept like Go does. Severity: low (behavioral mismatch noted, cosmetic alignment sufficient for now). Mitigation: deferred; future ADR if Python gains grammar-token-based task selection.
+  - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
+- **next_work**:
+  - Behaviour: Phase 4 — Update bar skill files (bar-autopilot, bar-workflow, bar-suggest, bar-manual) to document `--addendum` usage and ensure no skill uses `--prompt`. Validation: `grep -r "\-\-prompt" internal/barcli/skills/` returns 0 matches; `.venv/bin/python -m pytest _tests/` passes. Future-shaping: skill documentation teaches correct `--subject`/`--addendum` split.
+
+## Loop 17: Skills Phase 4 — replace --prompt with --subject and document --addendum
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 4 (Skills Integration) — Replace all 20 `--prompt` occurrences in embedded skill files (bar-manual, bar-autopilot, bar-workflow, bar-suggest) with `--subject`, and add `--addendum` documentation to bar-autopilot's Understanding Bar Output section.
+- **active_constraint**: All four embedded skill files use the removed `--prompt` flag in examples and teaching narrative (20 occurrences total), and no skill file mentions `--addendum` — LLM agents using these skills will construct broken bar commands and have no guidance on when to use `--addendum` for task clarification.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestEmbeddedSkillsUseSubjectFlag"`
+  - `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...`
+- **evidence**:
+  - red | 2026-02-09T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestEmbeddedSkillsUseSubjectFlag"` — 20 `--prompt` occurrences flagged across 4 files + `no embedded skill file mentions --addendum` | inline
+    helper:diff-snapshot=1 file changed (help_llm_test.go only; skill files unchanged)
+  - green | 2026-02-09T (post-implementation) | exit 0 | `go test ./internal/barcli/... ./internal/bartui/... ./internal/bartui2/...` — all tests PASS | inline
+    helper:diff-snapshot=5 files changed, 46 insertions(+), 20 deletions(-)
+  - removal | 2026-02-09T (git restore internal/barcli/skills/) | exit 1 | `go test ./internal/barcli/ -run "TestEmbeddedSkillsUseSubjectFlag"` — 20 `--prompt` occurrences flagged again | inline
+    helper:diff-snapshot=0 files changed (skill files reverted)
+- **rollback_plan**: `git restore internal/barcli/skills/` then replay red failure with validation target.
+- **delta_summary**: helper:diff-snapshot=5 files changed, 46 insertions(+), 20 deletions(-). In all 4 skill `.md` files: replaced all ` --prompt "` and ` --prompt '` with ` --subject "` / ` --subject '` using `replace_all` (20 occurrences). In `bar-autopilot/skill.md`: added `ADDENDUM` to the bar output section list, added "Flag reference" subsection documenting `--subject` and `--addendum` with examples. Added `TestEmbeddedSkillsUseSubjectFlag` specifying test in `help_llm_test.go` that walks all embedded `.md` files, asserts no `--prompt` appears, and asserts at least one file mentions `--addendum`. Depth-first rung: skill file flag alignment (Phase 4).
+- **loops_remaining_forecast**: Phase 4 complete. Phase 5 (Python/Talon voice command alignment for addendum input) is lower priority and may be deferred. The core ADR 0082 objectives are now satisfied: `--subject`/`--addendum` CLI flags, TUI2 modal, Python reference key alignment, and skills documentation all complete. Remaining open items are cosmetic/deferred. Confidence: high.
+- **residual_constraints**:
+  - Phase 5 (Talon voice command alignment): Python voice commands for submitting `prompt` to bar still use the `prompt` variable name internally. Severity: low (internal variable naming, no user-visible impact). Mitigation: defer. Monitoring: `grep -r "prompt" GPT/gpt.py | grep "bar build"`.
+  - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
+  - `bar-workflow`, `bar-suggest`, `bar-manual` skill files updated for `--subject` but do not individually document `--addendum` (only bar-autopilot does). Severity: low (bar-autopilot is the canonical reference; agents using any skill can check bar-autopilot). Mitigation: acceptable for now. Monitoring: review if users report confusion.
+- **next_work**:
+  - Phase 5 (deferred) — Talon voice command alignment: verify Python voice commands that invoke bar use `--subject` and can pass `--addendum` when appropriate. Validation: manual testing or Python test for voice command format. Future-shaping: end-to-end alignment of voice → bar → LLM pipeline.

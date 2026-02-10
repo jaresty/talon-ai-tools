@@ -17,6 +17,11 @@ TASK (user prompt): The primary action to perform. This defines success.
   • The task specifies what kind of response is required (e.g., explanation, transformation, evaluation). It defines the primary action the response should perform.
 
 
+ADDENDUM (user prompt): Task clarification that modifies HOW to execute the task.
+  • Contains additional instructions or constraints not captured by axis tokens
+  • Not the content to work with — that belongs in SUBJECT
+  • Only present when the user provides explicit clarification
+
 CONSTRAINTS (system prompt and user prompt): Independent guardrails that shape HOW to complete the task.
   • Scope — The scope indicates which dimension of understanding to privilege when responding. It frames *what kind of understanding matters most* for this prompt.
   • Completeness — coverage depth: how thoroughly to explore what is in scope (does not expand scope)

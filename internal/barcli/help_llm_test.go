@@ -3,6 +3,7 @@ package barcli
 import (
 	"bytes"
 	"io/fs"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -63,6 +64,56 @@ func TestEmbeddedSkillsUseSubjectFlag(t *testing.T) {
 	}
 	if !addendumMentioned {
 		t.Error("no embedded skill file mentions --addendum; at least one skill should document addendum usage")
+	}
+}
+
+// TestLLMHelpHeuristicsTokensExist verifies that every token name cited in the
+// Token Selection Heuristics section of bar help llm is a recognized token in
+// the current grammar. This prevents stale references (e.g. deprecated tokens
+// or phantom names) from silently persisting in the heuristics.
+func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	// Build a set of all known single-word tokens across all axes.
+	knownTokens := make(map[string]bool)
+	for _, tokenDefs := range grammar.Axes.Definitions {
+		for token := range tokenDefs {
+			if !strings.Contains(token, " ") {
+				knownTokens[token] = true
+			}
+		}
+	}
+	for token := range grammar.Static.Descriptions {
+		knownTokens[token] = true
+	}
+
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	// Extract the heuristics section only.
+	heuristicsStart := strings.Index(output, "## Token Selection Heuristics")
+	heuristicsEnd := strings.Index(output, "## Advanced Features")
+	if heuristicsStart == -1 || heuristicsEnd == -1 {
+		t.Fatal("could not locate Token Selection Heuristics section in bar help llm output")
+	}
+	heuristics := output[heuristicsStart:heuristicsEnd]
+
+	// Extract all backtick-quoted tokens. Skip CLI flags (--*), commands
+	// (bar ...), and key=value overrides (*=*).
+	backtickRe := regexp.MustCompile("`([^`]+)`")
+	matches := backtickRe.FindAllStringSubmatch(heuristics, -1)
+	for _, m := range matches {
+		token := m[1]
+		if strings.HasPrefix(token, "--") ||
+			strings.HasPrefix(token, "bar ") ||
+			strings.Contains(token, "=") ||
+			strings.Contains(token, " ") {
+			continue
+		}
+		if !knownTokens[token] {
+			t.Errorf("heuristics references unknown token %q — update help_llm.go to use a current token name", token)
+		}
 	}
 }
 

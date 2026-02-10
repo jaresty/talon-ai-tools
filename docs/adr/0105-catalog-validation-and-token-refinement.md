@@ -142,105 +142,96 @@ Consider adding `make` + `rewrite(form)` to the validation rules as a soft confl
 
 ---
 
-## Decision 5: Bar Skills Reference `bar help llm` (Non-Existent)
+## Decision 5: `bar help llm` Token Selection Heuristics Contains Stale Content
 
 ### Problem
 
-All four bar skills (bar-autopilot, bar-manual, bar-workflow, bar-suggest) reference `bar help llm` as the "preferred" command for discovering tokens and understanding composition rules. This command does not exist in the current bar binary.
+`bar help llm` exists and the skills are correct to reference it — the § "Usage Patterns by Task Type", § "Token Selection Heuristics", and § "Composition Rules" sections all exist. However, the **content** of the Token Selection Heuristics section is significantly out of date.
 
-The skills label `bar help tokens` as "legacy / older versions" — but `bar help tokens` is the only working command. The fiction inverts the actual state: the "preferred" path fails with command-not-found, the "legacy" path succeeds.
+**§ Choosing Method** references many tokens that do not exist or were deprecated:
+- `compare`, `tradeoff` — do not exist as method tokens
+- `constraints` — deprecated per ADR-0104 (removed from methods)
+- `structure` — does not exist (this is a scope concept, not a method)
+- `sequence` — does not exist
+- `impacts`, `diverge`, `survey` — do not exist
+- `failure`, `stress`, `vulnerabilities` — do not exist
+- `variants`, `options` — form tokens, not method tokens
 
-Additionally, skills reference sections that only exist in `bar help llm` (non-existent):
-- § "Usage Patterns by Task Type"
-- § "Choosing Method"
-- § "Token Selection Heuristics"
-- § "Composition Rules"
+**§ Choosing Form** references non-existent tokens:
+- `matrix`, `tasks`, `options`, `log` — do not exist as form tokens
+- `adr` is a channel token, not a form token
 
-None of these sections exist in `bar help tokens`. Users following skills will encounter dead links to documentation that does not exist.
+**§ Choosing Scope** is missing `assume`, `motifs`, and `stable` — all added in ADR-0104.
 
-This was confirmed across all 20 seeds in cycle 3's Phase 2b evaluation. Mean discoverability score under current skills: 2.9/5.
+The phantom tokens in the heuristics mean that a user following skill guidance to consult § "Choosing Method" would be directed to use tokens that `bar build` will reject with `error: unrecognized token`.
+
+This was the primary source of the 2.9/5 mean discoverability score in cycle 3's Phase 2b evaluation — not the command's existence, which is correct.
 
 ### Decision
 
-Choose one of the following two remediation paths:
+Regenerate or rewrite the Token Selection Heuristics section in `bar help llm` to use only tokens that exist in the current grammar. The corrected heuristics should:
 
-**Path A (preferred):** Implement `bar help llm` as a richer version of `bar help tokens` that includes:
-- The sections skills already reference (Usage Patterns by Task Type, Choosing Method, Token Selection Heuristics, Composition Rules)
-- Output-exclusive conflict documentation
-- Task-affinity guidance for codetour and gherkin
-- Updated scope token coverage (assume, motifs, stable, view)
-
-This path makes skills accurate and adds the composition guidance missing from `bar help tokens` (Decision 7 below).
-
-**Path B (fallback):** Update all four skills to treat `bar help tokens` as the current command (removing "legacy" label) and remove all references to sections that don't exist. Acknowledge that composition guidance is not yet available in the reference tool.
-
-Path B requires fewer implementation resources but leaves the composition guidance gap in place.
+- Remove all phantom/deprecated tokens from § Choosing Method
+- Replace with real tokens drawn from the actual method axis (see `bar help tokens method`)
+- Add `assume`, `motifs`, `stable` to § Choosing Scope
+- Correct § Choosing Form to use only real form tokens
+- Ensure category groupings reflect the actual ADR-0104 token set
 
 ---
 
-## Decision 6: Skills Missing Guidance for New Scope Tokens
+## Decision 6: `bar help llm` Composition Rules Section is Empty
 
 ### Problem
 
-ADR-0104 added four new scope tokens: `assume`, `motifs`, `stable`, and `view`. None of the four bar skills have been updated to include these tokens in their guidance.
+`bar help llm` includes a § "Composition Rules" section with an § "Incompatibilities" subsection. This subsection exists but contains no content — the heading "Certain token combinations are not allowed:" is followed immediately by the next section with no entries listed.
 
-In cycle 3, four of the five scope tokens that appear in seeds are ADR-0104 additions: `thing`, `mean`, `fail`, `good`, `time`, `view` — of which `view`, `mean`, `fail`, `good`, `time` are new or recently added. The mean discoverability for seeds with new scope tokens was 2.3/5 (see Phase 2b).
+This is where output-exclusive conflict rules, task-affinity warnings, and semantic conflict notes should appear. The section is structurally present but functionally empty.
 
-A user following current skills would have no path to discover:
-- `view` (seed 0047): stakeholder or role perspective scope
-- `mean` (seed 0054): interpretation or framing scope
-- `fail` (seed 0058): failure-mode and breakdown scope
-- `good` (seed 0056): quality criteria scope
-- `time` (seed 0053): temporal scope
+Skills (bar-autopilot, bar-manual, bar-workflow, bar-suggest) correctly direct users to consult § "Composition Rules" for valid combinations. A user who follows this guidance and reads the section will find nothing, with no indication that conflicts exist.
 
-These scope tokens contributed to some of the highest-quality prompts in the corpus (seeds 0056 and 0058 both scored 5.0) and their absence from skills guidance is a significant discoverability gap.
+This gap was confirmed in the Phase 2c evaluation: Composition Guidance scored 1/5 and Output-Exclusive Concept Coverage scored 1/5 (overall mean: 2.6/5).
 
 ### Decision
 
-Update all four skills to include the new scope tokens with brief selection heuristics. At minimum, each skill should include:
-
-- `assume` — use when the response should surface and interrogate preconditions and assumptions
-- `motifs` — use when the response should identify recurring patterns and structural themes
-- `stable` — use when the response should focus on invariants and what does not change
-- `view` — use when the response should take a specific stakeholder or role perspective
-- Updated entries for `time`, `fail`, `good`, `mean`, `thing` if not already present
-
-This update should be applied in tandem with Decision 5 (fixing the `bar help llm` reference) since both require touching all four skill files.
-
----
-
-## Decision 7: No Composition Guidance in `bar help tokens`
-
-### Problem
-
-Skills reference composition-guidance sections (§ "Composition Rules", § "Token Selection Heuristics") that only exist in `bar help llm` (non-existent). `bar help tokens` has no guidance on:
-
-- Incompatible combinations (output-exclusive conflicts)
-- Token interaction (how form and channel tokens relate)
-- Task affinity (which channels work with which tasks)
-- Positive patterns (combinations that work well together)
-
-This gap was confirmed by the Phase 2c evaluation, where `bar help tokens` scored 1/5 on both output-exclusive concept coverage and composition guidance (overall mean: 2.6/5).
-
-For the 5–8 token combinations characteristic of this corpus, users have the ingredients but no recipe and no warning labels.
-
-### Decision
-
-Either implement `bar help llm` (Decision 5, Path A) or add a short composition section to `bar help tokens` output. The composition section should include:
+Populate § "Incompatibilities" in `bar help llm` with documented conflict rules, drawing from findings across evaluation cycles 1–3:
 
 **Output-exclusive conflicts:**
-> Some tokens mandate the complete output format. At most one such token (form or channel) may appear per prompt. Output-exclusive form tokens: code, html, shellscript. All channel tokens are output-exclusive. Combining two output-exclusive tokens produces contradictory instructions.
+> Some tokens mandate the entire response format. At most one output-exclusive token (form or channel) may appear per prompt. Output-exclusive form tokens: `code`, `html`, `shellscript`. All channel tokens are output-exclusive. Combining two output-exclusive tokens produces contradictory instructions the LLM cannot reconcile.
 
-**Task affinity:**
-> codetour and gherkin channels have task affinity restrictions. See `bar help tokens codetour` and `bar help tokens gherkin` for details.
+**Task-affinity restrictions:**
+> `codetour` channel: appropriate for tasks producing navigable code artifacts (`fix`, `make` with code, `show` with code structure). Not appropriate for `sim`, `sort`, `probe`, `diff` without code subject.
+> `gherkin` channel: appropriate for tasks mapping to scenario-based behavior specification (`check`, `plan` with BDD context, `make` with behavior definition). Not appropriate for `sort`, `sim`, `probe`.
 
 **Semantic conflicts:**
-> rewrite(form) implies existing content to transform. Combining with make(task) is semantically incoherent.
+> `rewrite` form implies existing content to transform. Pairing with `make` (creates new content) is semantically incoherent.
 
-**Positive composition guidance:**
-> For strong combination patterns, see [link or reference to documentation].
+This section also serves as the long-term home for future conflict rules as the catalog evolves.
 
-This section need not be exhaustive. Even a short "known conflicts" notice at the end of `bar help tokens` output would raise the composition guidance score from 1/5 to 3/5.
+---
+
+## Decision 7: `bar help llm` Scope Heuristics Missing ADR-0104 Tokens
+
+### Problem
+
+ADR-0104 added four new scope tokens: `assume`, `motifs`, `stable`, and `view`. The § "Choosing Scope" section in `bar help llm` Token Selection Heuristics includes `view` but is missing `assume`, `motifs`, and `stable`.
+
+These three tokens appeared in high-scoring seeds in cycle 3:
+- `fail` and `good` (both present in heuristics) contributed to seeds 0056 and 0058 scoring 5.0
+- `assume`, `motifs`, `stable` would similarly drive high-quality prompts if discoverable
+
+Current § Choosing Scope entries: `thing`, `struct`, `time`, `mean`, `act`, `good`, `fail`, `view`.
+
+Missing: `assume`, `motifs`, `stable`.
+
+### Decision
+
+Add the three missing tokens to § "Choosing Scope" in `bar help llm`:
+
+- **Premises/preconditions** → `assume`
+- **Recurring patterns/themes** → `motifs`
+- **Invariants/persistent states** → `stable`
+
+This update is low-cost (three lines) and should be combined with Decision 5 (heuristics rewrite) since both affect the same section.
 
 ---
 
@@ -252,9 +243,11 @@ This section need not be exhaustive. Even a short "known conflicts" notice at th
 
 - **Token descriptions become self-documenting:** Decisions 2, 3, and 4 add task-affinity and semantic-conflict guidance directly to token descriptions, making misuse visible at token selection time rather than requiring external documentation.
 
-- **Skills become reliable:** Decisions 5 and 6 eliminate the non-existent command reference and add new scope token guidance, raising mean skill discoverability from 2.9/5 toward ≥4.0.
+- **`bar help llm` heuristics become trustworthy:** Decision 5 removes phantom tokens from § Choosing Method and § Choosing Form that currently cause `error: unrecognized token` when followed literally, raising mean skill discoverability from 2.9/5 toward ≥4.0.
 
-- **Reference tool becomes composition-capable:** Decision 7 adds the meta-guidance layer that `bar help tokens` currently lacks, reducing dependence on implicit knowledge for multi-token prompt construction.
+- **Composition rules become populated:** Decision 6 fills the empty § Incompatibilities section, giving users the conflict guidance the section promises but currently withholds.
+
+- **Scope token coverage complete:** Decision 7 adds `assume`, `motifs`, `stable` to § Choosing Scope, making all 11 current scope tokens discoverable via heuristics.
 
 ### Negative / Tradeoffs
 
@@ -292,24 +285,20 @@ This section need not be exhaustive. Even a short "known conflicts" notice at th
 - Token definition file: update `rewrite` form token description to add note about task compatibility
 - `bar` binary (optional): add soft warning when make + rewrite(form) appear together
 
-### Decision 5: Fix Skills `bar help llm` Reference
-**Files to change (Path B, minimum):**
-- `bar-autopilot` skill: replace all `bar help llm` references with `bar help tokens`; remove "legacy" label; remove references to non-existent sections
-- `bar-manual` skill: same
-- `bar-workflow` skill: same
-- `bar-suggest` skill: same
-
-**Additional files to change (Path A, full):**
-- `bar` binary: implement `bar help llm` command with the sections referenced in skills
-
-### Decision 6: Update Skills for New Scope Tokens
+### Decision 5: Fix `bar help llm` Token Selection Heuristics
 **Files to change:**
-- `bar-autopilot` skill: add assume, motifs, stable, view scope token heuristics; verify time, fail, good, mean, thing are present
-- `bar-manual` skill: same
-- `bar-workflow` skill: same
-- `bar-suggest` skill: same
+- `internal/barcli/help_llm.go` (or wherever the heuristics content is generated): rewrite § Choosing Method to use only real method tokens; rewrite § Choosing Form to use only real form tokens; remove deprecated `constraints` token reference
+- Verify against `bar help tokens method` and `bar help tokens form` output after change
 
-### Decision 7: Add Composition Guidance to `bar help tokens`
+### Decision 6: Populate `bar help llm` § Composition Rules § Incompatibilities
 **Files to change:**
-- `bar` binary: add composition section to `bar help tokens` output (or implement `bar help llm` per Decision 5 Path A)
-- If adding to `bar help tokens`: add output-exclusive conflict notice, codetour/gherkin task-affinity cross-reference, and rewrite semantic conflict note
+- `internal/barcli/help_llm.go`: add output-exclusive conflict rules, codetour/gherkin task-affinity rules, and rewrite+make semantic conflict to § Incompatibilities
+
+### Decision 7: Add Missing Scope Tokens to `bar help llm` § Choosing Scope
+**Files to change:**
+- `internal/barcli/help_llm.go`: add `assume`, `motifs`, `stable` entries to § Choosing Scope in Token Selection Heuristics
+
+### Ongoing: Test Coverage for `bar help llm` Examples
+**Files to create/change:**
+- Add a test that validates all tokens mentioned in `bar help llm` heuristics exist in the current grammar, preventing phantom token regression
+- Test should run `bar help tokens` and cross-reference every token name cited in § Token Selection Heuristics

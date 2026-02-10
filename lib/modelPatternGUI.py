@@ -28,6 +28,7 @@ from .historyLifecycle import last_drop_reason, set_drop_reason
 
 from .modelHelpers import notify
 from .surfaceGuidance import guard_surface_request
+from .axisConfig import AXIS_KEY_TO_VALUE
 
 from .personaCatalog import get_persona_intent_catalog
 from .personaOrchestrator import get_persona_intent_orchestrator
@@ -253,59 +254,8 @@ COMPLETENESS_TOKENS = {
     "deep",
 }
 
-SCOPE_TOKENS = {
-    "act",
-    "fail",
-    "good",
-    "mean",
-    "struct",
-    "thing",
-    "time",
-}
-
-METHOD_TOKENS = {
-    "actors",
-    "adversarial",
-    "analysis",
-    "boom",
-    "cite",
-    "constraints",
-    "converge",
-    "depends",
-    "diagnose",
-    "dimension",
-    "domains",
-    "dynamics",
-    "effects",
-    "experimental",
-    "explore",
-    "flow",
-    "grove",
-    "incentives",
-    "interfaces",
-    "inversion",
-    "jobs",
-    "mapping",
-    "meld",
-    "melody",
-    "mod",
-    "models",
-    "motifs",
-    "objectivity",
-    "operations",
-    "order",
-    "origin",
-    "prioritize",
-    "probability",
-    "product",
-    "resilience",
-    "rigor",
-    "risks",
-    "roles",
-    "simulation",
-    "systemic",
-    "unknowns",
-}
+SCOPE_TOKENS = frozenset(AXIS_KEY_TO_VALUE["scope"].keys())
+METHOD_TOKENS = frozenset(AXIS_KEY_TO_VALUE["method"].keys())
 
 FORM_MAP = _load_axis_map("formModifier.talon-list")
 CHANNEL_MAP = _load_axis_map("channelModifier.talon-list")

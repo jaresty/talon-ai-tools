@@ -292,3 +292,27 @@
   - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
 - **next_work**:
   - Behaviour: Remove `--prompt` flag — using it emits error with migration guidance to `--subject`/`--addendum`. Update existing tests that use `--prompt` to use `--subject`. Validation: `go test ./internal/barcli/ -run "TestRunBuildPromptFlagRemoved"`. Future-shaping: clean break from conflated flag.
+
+## Loop 13: Remove --prompt flag with migration guidance (Phase 1c)
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 1c (CLI Implementation) — Remove `--prompt` flag entirely. Using `--prompt` now returns a parse-time error with migration guidance to `--subject` / `--addendum`. All callers migrated from `--prompt` to `--subject`.
+- **active_constraint**: `--prompt` flag still accepted — conflates subject content with task clarification; ADR 0082 goal requires clean separation via `--subject`/`--addendum`.
+- **validation_targets**:
+  - `go test ./internal/barcli/ -run "TestRunBuildPromptFlagRemoved"`
+  - `go test ./internal/barcli/...`
+- **evidence**:
+  - red | 2026-02-09T (pre-implementation) | exit 1 | `go test ./internal/barcli/ -run "TestRunBuildPromptFlagRemoved"` — `app_build_cli_test.go:298: expected non-zero exit when --prompt is used` (exit 0 returned) | inline
+    helper:diff-snapshot=1 file changed (app_build_cli_test.go only; production code unchanged)
+  - green | 2026-02-09T (post-implementation) | exit 0 | `go test ./internal/barcli/...` — all tests PASS | inline
+    helper:diff-snapshot=9 files changed, ~30 insertions(+), ~25 deletions(-)
+  - removal | 2026-02-09T (git restore config.go) | exit 1 | `git restore internal/barcli/cli/config.go && go test ./internal/barcli/ -run "TestRunBuildPromptFlagRemoved"` — test fails (--prompt exits 0) returns | inline
+    helper:diff-snapshot=0 files changed (config.go reverted)
+- **rollback_plan**: `git restore internal/barcli/cli/config.go internal/barcli/app.go internal/barcli/tui.go internal/barcli/tui2.go internal/barcli/completion.go` then replay red failure.
+- **delta_summary**: helper:diff-snapshot=9 files changed. Removed `Prompt string` from `cli.Config` struct (config.go). Replaced `--prompt` / `--prompt=` parsing cases with parse-time error: `"--prompt flag has been removed.\n\nUse --subject to provide content for the LLM to act on,\nor --addendum to add clarification to the task."` (config.go). Removed `--prompt`/`--input` and `--subject`/`--prompt` mutual exclusivity checks (now superseded by removal). Removed `opts.Prompt` branch from `readPrompt()` (app.go). Removed `opts.Prompt` from TUI input guards in `tui.go` and `tui2.go`, updating error messages. Removed `--prompt` from `buildFlags`, `flagExpectingValue`, and prefix detection in `completion.go`. Migrated all tests using `--prompt` to use `--subject`: `app_parse_test.go`, `app_build_cli_test.go`, `app_test.go`, `app_preset_cli_test.go`. Updated `TestParseArgsErrors` to test `--prompt removed` error instead of missing-value error. Added specifying test `TestRunBuildPromptFlagRemoved`. Depth-first rung: flag removal + migration error (Phase 1c).
+- **loops_remaining_forecast**: ~1-2 loops for Phase 1. Remaining: 1d (update help text in app.go, help_llm.go, build.go to replace `--prompt` examples with `--subject`/`--addendum`). Then Phase 2 (TUI2), Phase 3 (Python reference key), Phase 4 (skills), Phase 5 (Talon alignment). Confidence: high.
+- **residual_constraints**:
+  - Help text in `app.go`, `help_llm.go`, and `build.go` still reference `--prompt` in examples. Severity: medium (user-facing in `bar help`). Mitigation: Phase 1d. Monitoring: `grep "\-\-prompt" internal/barcli/app.go internal/barcli/help_llm.go internal/barcli/build.go`.
+  - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
+- **next_work**:
+  - Behaviour: Update all help text and examples in `app.go` (usage strings, examples), `help_llm.go` (all `--prompt` examples), `build.go` (error message example). Replace `--prompt "..."` with `--subject "..."`. Validation: `go test ./internal/barcli/ -run "TestRenderTokensHelp|TestRunHelpTokens|TestHelpLLM"`. Future-shaping: help text teaches the new `--subject`/`--addendum` split.

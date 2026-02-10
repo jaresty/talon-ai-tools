@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseArgsBuildCommand(t *testing.T) {
-	opts, err := cli.Parse([]string{"build", "make", "struct", "--prompt", "hello", "--json", "--output", "out.txt", "--env", "CHATGPT_API_KEY", "--env=ORG_ID"})
+	opts, err := cli.Parse([]string{"build", "make", "struct", "--subject", "hello", "--json", "--output", "out.txt", "--env", "CHATGPT_API_KEY", "--env=ORG_ID"})
 
 	if err != nil {
 		t.Fatalf("cli.Parse returned error: %v", err)
@@ -22,8 +22,8 @@ func TestParseArgsBuildCommand(t *testing.T) {
 	if opts.Tokens[0] != "make" || opts.Tokens[1] != "struct" {
 		t.Fatalf("unexpected tokens: %v", opts.Tokens)
 	}
-	if opts.Prompt != "hello" {
-		t.Fatalf("expected prompt 'hello', got %q", opts.Prompt)
+	if opts.Subject != "hello" {
+		t.Fatalf("expected subject 'hello', got %q", opts.Subject)
 	}
 	if !opts.JSON {
 		t.Fatalf("expected JSON flag to be true")
@@ -53,11 +53,11 @@ func TestParseArgsErrors(t *testing.T) {
 	if _, err := cli.Parse([]string{}); err == nil {
 		t.Fatalf("expected error for missing command")
 	}
-	if _, err := cli.Parse([]string{"build", "--prompt"}); err == nil {
-		t.Fatalf("expected error for missing --prompt value")
+	if _, err := cli.Parse([]string{"build", "--prompt", "body"}); err == nil || !strings.Contains(err.Error(), "removed") {
+		t.Fatalf("expected --prompt removed error, got: %v", err)
 	}
-	if _, err := cli.Parse([]string{"build", "--prompt", "body", "--input", "path"}); err == nil || !strings.Contains(err.Error(), "cannot") {
-		t.Fatalf("expected conflict error for prompt/input, got: %v", err)
+	if _, err := cli.Parse([]string{"build", "--subject", "body", "--input", "path"}); err == nil || !strings.Contains(err.Error(), "cannot") {
+		t.Fatalf("expected conflict error for subject/input, got: %v", err)
 	}
 	if _, err := cli.Parse([]string{"build", "--unknown"}); err == nil {
 		t.Fatalf("expected error for unknown flag")

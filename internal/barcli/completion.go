@@ -762,12 +762,11 @@ var (
 	completionCommands = []string{"build", "tui", "help", "completion", "preset"}
 	helpTopics         = []string{"tokens"}
 	completionShells   = []string{"bash", "zsh", "fish"}
-	buildFlags         = []string{"--subject", "--addendum", "--prompt", "--input", "--output", "--json", "--grammar"}
+	buildFlags         = []string{"--subject", "--addendum", "--input", "--output", "--json", "--grammar"}
 	tuiFlags           = []string{"--grammar", "--fixture", "--no-alt-screen", "--no-clipboard", "--env"}
 	flagExpectingValue = map[string]struct{}{
 		"--subject":  {},
 		"--addendum": {},
-		"--prompt":   {},
 		"--input":    {},
 		"--output":  {},
 		"--grammar": {},
@@ -1188,7 +1187,7 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			i++
 			continue
 		}
-		if strings.HasPrefix(lower, "--subject=") || strings.HasPrefix(lower, "--addendum=") || strings.HasPrefix(lower, "--prompt=") || strings.HasPrefix(lower, "--input=") || strings.HasPrefix(lower, "--output=") || strings.HasPrefix(lower, "--grammar=") || strings.HasPrefix(lower, "--fixture=") {
+		if strings.HasPrefix(lower, "--subject=") || strings.HasPrefix(lower, "--addendum=") || strings.HasPrefix(lower, "--input=") || strings.HasPrefix(lower, "--output=") || strings.HasPrefix(lower, "--grammar=") || strings.HasPrefix(lower, "--fixture=") {
 			continue
 		}
 		if strings.HasPrefix(token, "-") {

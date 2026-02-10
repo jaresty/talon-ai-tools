@@ -51,14 +51,8 @@ func Parse(args []string) (*Config, error) {
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch {
-		case arg == "--prompt":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--prompt requires a value")
-			}
-			cfg.Prompt = args[i]
-		case strings.HasPrefix(arg, "--prompt="):
-			cfg.Prompt = strings.TrimPrefix(arg, "--prompt=")
+		case arg == "--prompt", strings.HasPrefix(arg, "--prompt="):
+			return nil, fmt.Errorf("--prompt flag has been removed.\n\nUse --subject to provide content for the LLM to act on,\nor --addendum to add clarification to the task.")
 		case arg == "--subject":
 			i++
 			if i >= len(args) {
@@ -287,14 +281,8 @@ func Parse(args []string) (*Config, error) {
 	if cfg.Command == "" && !cfg.Version {
 		return nil, fmt.Errorf("usage: bar [build|shuffle|help|completion|preset|tui|tui2|install-skills]")
 	}
-	if cfg.Prompt != "" && cfg.InputPath != "" {
-		return nil, fmt.Errorf("--prompt and --input cannot be used together")
-	}
 	if cfg.Subject != "" && cfg.InputPath != "" {
 		return nil, fmt.Errorf("--subject and --input cannot be used together")
-	}
-	if cfg.Subject != "" && cfg.Prompt != "" {
-		return nil, fmt.Errorf("--subject and --prompt cannot be used together")
 	}
 
 	cfg.Tokens = tokens

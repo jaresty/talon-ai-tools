@@ -78,7 +78,7 @@ func TestRunBuildWithOutputFile(t *testing.T) {
 	outDir := t.TempDir()
 	outPath := filepath.Join(outDir, "output.txt")
 
-	result := runBuildCLI(t, []string{"build", "make", "--prompt", "from prompt", "--output", outPath}, nil)
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "from subject", "--output", outPath}, nil)
 
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
@@ -90,15 +90,15 @@ func TestRunBuildWithOutputFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read output: %v", err)
 	}
-	if !strings.Contains(string(payload), "from prompt") {
-		t.Fatalf("expected output file to include prompt, got: %s", payload)
+	if !strings.Contains(string(payload), "from subject") {
+		t.Fatalf("expected output file to include subject, got: %s", payload)
 	}
 }
 
 func TestRunBuildJSONOutput(t *testing.T) {
 	t.Setenv(disableStateEnv, "1")
 
-	result := runBuildCLI(t, []string{"build", "make", "--prompt", "json subject", "--json"}, nil)
+	result := runBuildCLI(t, []string{"build", "make", "--subject", "json subject", "--json"}, nil)
 
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
@@ -289,6 +289,25 @@ func TestRunBuildAddendumInJSON(t *testing.T) {
 	}
 }
 
+func TestRunBuildPromptFlagRemoved(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "make", "--prompt", "some text"}, nil)
+
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit when --prompt is used")
+	}
+	if !strings.Contains(result.Stderr, "--prompt flag has been removed") {
+		t.Fatalf("expected removal error message, got: %s", result.Stderr)
+	}
+	if !strings.Contains(result.Stderr, "--subject") {
+		t.Fatalf("expected migration guidance mentioning --subject, got: %s", result.Stderr)
+	}
+	if !strings.Contains(result.Stderr, "--addendum") {
+		t.Fatalf("expected migration guidance mentioning --addendum, got: %s", result.Stderr)
+	}
+}
+
 func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("file permission semantics differ on Windows")
@@ -303,7 +322,7 @@ func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"build", "make", "--prompt", "warn subject"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"build", "make", "--subject", "warn subject"}, os.Stdin, stdout, stderr)
 
 	if exit != 0 {
 		t.Fatalf("expected exit 0 even if state write fails, got %d: %s", exit, stderr.String())

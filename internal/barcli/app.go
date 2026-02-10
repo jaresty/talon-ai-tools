@@ -1195,9 +1195,6 @@ func readPrompt(opts *cli.Config, stdin io.Reader) (string, error) {
 		}
 		return trimTrailingNewlines(opts.Subject), nil
 	}
-	if opts.Prompt != "" {
-		return trimTrailingNewlines(opts.Prompt), nil
-	}
 	if opts.InputPath != "" {
 		data, err := os.ReadFile(opts.InputPath)
 		if err != nil {

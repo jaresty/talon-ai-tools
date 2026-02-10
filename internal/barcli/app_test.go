@@ -217,7 +217,7 @@ func TestRunPresetUseBuildsRecipe(t *testing.T) {
 	configDir := t.TempDir()
 	t.Setenv(configDirEnv, configDir)
 
-	if exit := Run([]string{"build", "make", "struct", "--prompt", "Initial subject"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+	if exit := Run([]string{"build", "make", "struct", "--subject", "Initial subject"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
 		t.Fatalf("expected build exit 0, got %d", exit)
 	}
 
@@ -232,7 +232,7 @@ func TestRunPresetUseBuildsRecipe(t *testing.T) {
 
 	useStdout := &bytes.Buffer{}
 	useStderr := &bytes.Buffer{}
-	if exit := Run([]string{"preset", "use", "daily-plan", "--prompt", "Fresh subject"}, strings.NewReader(""), useStdout, useStderr); exit != 0 {
+	if exit := Run([]string{"preset", "use", "daily-plan", "--subject", "Fresh subject"}, strings.NewReader(""), useStdout, useStderr); exit != 0 {
 		t.Fatalf("expected preset use exit 0, got %d with stderr: %s", exit, useStderr.String())
 	}
 
@@ -269,7 +269,7 @@ func TestRunPresetUseJSON(t *testing.T) {
 
 	jsonStdout := &bytes.Buffer{}
 	jsonStderr := &bytes.Buffer{}
-	args := []string{"preset", "use", "daily-plan", "--json", "--prompt", "JSON subject"}
+	args := []string{"preset", "use", "daily-plan", "--json", "--subject", "JSON subject"}
 	if exit := Run(args, strings.NewReader(""), jsonStdout, jsonStderr); exit != 0 {
 		t.Fatalf("expected preset use --json exit 0, got %d with stderr: %s", exit, jsonStderr.String())
 	}

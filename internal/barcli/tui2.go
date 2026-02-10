@@ -29,8 +29,8 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		writeError(stderr, "tui2 does not support --json output")
 		return 1
 	}
-	if opts.Prompt != "" || opts.InputPath != "" {
-		writeError(stderr, "tui2 captures subject input interactively; remove --prompt/--input")
+	if opts.InputPath != "" {
+		writeError(stderr, "tui2 captures subject input interactively; remove --input")
 		return 1
 	}
 	if opts.OutputPath != "" {

@@ -36,7 +36,7 @@ func TestRunPresetLifecycle(t *testing.T) {
 	t.Setenv(configDirEnv, configRoot)
 
 	// Build once to seed last build state for preset save/use flows.
-	stdout, stderr, exit := runCLI(t, []string{"build", "make", "struct", "--prompt", "Initial subject"})
+	stdout, stderr, exit := runCLI(t, []string{"build", "make", "struct", "--subject", "Initial subject"})
 	if exit != 0 {
 		t.Fatalf("build failed: %d, stderr: %s", exit, stderr)
 	}
@@ -78,7 +78,7 @@ func TestRunPresetLifecycle(t *testing.T) {
 	}
 
 	// Use preset with new prompt.
-	stdout, stderr, exit = runCLI(t, []string{"preset", "use", "daily-plan", "--prompt", "Fresh subject"})
+	stdout, stderr, exit = runCLI(t, []string{"preset", "use", "daily-plan", "--subject", "Fresh subject"})
 	if exit != 0 {
 		t.Fatalf("preset use failed: %d, stderr: %s", exit, stderr)
 	}

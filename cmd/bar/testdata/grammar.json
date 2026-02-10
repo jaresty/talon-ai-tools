@@ -74,11 +74,11 @@
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
-        "taxonomy": "The response structures ideas as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly.",
+        "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly, where the subject admits classification.",
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives.",
-        "visual": "The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose.",
+        "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising big-picture structure over dense prose.",
         "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
@@ -1552,7 +1552,7 @@
     }
   },
   "checksums": {
-    "axes": "72beb4cd5edaaa610931abc3f9b2b83d9cb3b8d61803a79ae94070241f8c10be",
+    "axes": "b6cf93620ceec2eacd761016a792b59ab899c17cad3a057032954f5ae1328cd8",
     "tasks": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

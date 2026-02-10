@@ -1,7 +1,7 @@
 # ADR-0105: Catalog Validation and Token Refinement
 
 ## Status
-Accepted
+Completed
 
 ## Context
 

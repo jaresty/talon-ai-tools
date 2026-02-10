@@ -417,7 +417,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Motif scan",
         description="Scan for recurring motifs and patterns.",
-        recipe="show · gist · struct · motifs · bullets · fog",
+        recipe="show · gist · motifs · bullets · fog",
         domain="writing",
     ),
     PromptPattern(

@@ -519,7 +519,7 @@ if bootstrap is not None:
                 self.assertEqual(directional, "fog")
 
             def test_motif_scan_pattern_uses_motifs_method(self) -> None:
-                """Motif scan pattern should use struct scope and motifs method."""
+                """Motif scan pattern should use motifs scope (motifs moved from method to scope in ADR-0104)."""
                 motif = next(p for p in PATTERNS if p.name == "Motif scan")
 
                 (
@@ -534,8 +534,8 @@ if bootstrap is not None:
 
                 self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "gist")
-                self.assertEqual(scope, "struct")
-                self.assertEqual(method, "motifs")
+                self.assertEqual(scope, "motifs")
+                self.assertEqual(method, "")
                 self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "fog")

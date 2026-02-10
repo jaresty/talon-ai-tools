@@ -11,7 +11,7 @@ import (
 )
 
 func TestSnapshotBasicLayout(t *testing.T) {
-	preview := func(subject string, tokens []string) (string, error) {
+	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		return "=== TASK ===\nTest preview", nil
 	}
 
@@ -63,7 +63,7 @@ func TestSnapshotBasicLayout(t *testing.T) {
 }
 
 func TestSnapshotEmptyTokens(t *testing.T) {
-	preview := func(subject string, tokens []string) (string, error) {
+	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		return "", nil
 	}
 
@@ -483,7 +483,7 @@ func TestSubjectModalHidesMainView(t *testing.T) {
 
 func TestSubjectPassedToPreview(t *testing.T) {
 	var capturedSubject string
-	preview := func(subject string, tokens []string) (string, error) {
+	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		capturedSubject = subject
 		return "Preview: " + subject, nil
 	}
@@ -499,7 +499,7 @@ func TestSubjectPassedToPreview(t *testing.T) {
 	// Set subject and trigger preview update
 	m.subject = "Test subject content"
 	if m.preview != nil {
-		text, err := m.preview(m.subject, m.getAllTokensInOrder())
+		text, err := m.preview(m.subject, m.addendum, m.getAllTokensInOrder())
 		if err == nil {
 			m.previewText = text
 		}
@@ -786,7 +786,7 @@ func TestCommandExecution(t *testing.T) {
 	m := newModel(Options{
 		TokenCategories: testCategories(),
 		RunCommand:      runCommand,
-		Preview: func(subject string, tokens []string) (string, error) {
+		Preview: func(subject string, addendum string, tokens []string) (string, error) {
 			return "preview text", nil
 		},
 		InitialWidth:  80,
@@ -1006,7 +1006,7 @@ func TestPreviewViewportScrolling(t *testing.T) {
 	// Create long preview content that exceeds viewport height
 	longContent := strings.Repeat("Line of preview content\n", 50)
 
-	preview := func(subject string, tokens []string) (string, error) {
+	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		return longContent, nil
 	}
 
@@ -1088,7 +1088,7 @@ func TestPreviewShowsScrollPercentage(t *testing.T) {
 	// Create long preview content
 	longContent := strings.Repeat("Line of content\n", 100)
 
-	preview := func(subject string, tokens []string) (string, error) {
+	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		return longContent, nil
 	}
 
@@ -1457,7 +1457,7 @@ func TestCtrlRQuickRerun(t *testing.T) {
 	m := newModel(Options{
 		TokenCategories: testCategories(),
 		RunCommand:      runCommand,
-		Preview: func(subject string, tokens []string) (string, error) {
+		Preview: func(subject string, addendum string, tokens []string) (string, error) {
 			return "preview text", nil
 		},
 		InitialWidth:  80,
@@ -1516,7 +1516,7 @@ func TestCtrlROpensModalWhenNoLastCommand(t *testing.T) {
 func TestCtrlSPipelinesResultToSubject(t *testing.T) {
 	m := newModel(Options{
 		TokenCategories: testCategories(),
-		Preview: func(subject string, tokens []string) (string, error) {
+		Preview: func(subject string, addendum string, tokens []string) (string, error) {
 			return "Preview with subject: " + subject, nil
 		},
 		InitialWidth:  80,
@@ -1551,7 +1551,7 @@ func TestCtrlSPipelinesResultToSubject(t *testing.T) {
 func TestCtrlSShowsToastConfirmation(t *testing.T) {
 	m := newModel(Options{
 		TokenCategories: testCategories(),
-		Preview: func(subject string, tokens []string) (string, error) {
+		Preview: func(subject string, addendum string, tokens []string) (string, error) {
 			return "preview", nil
 		},
 		InitialWidth:  80,
@@ -2273,7 +2273,7 @@ func TestPersonaPresetTokenPrefixed(t *testing.T) {
 
 func TestPreviewReceivesSelectedTokens(t *testing.T) {
 	var capturedTokens []string
-	preview := func(subject string, tokens []string) (string, error) {
+	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		capturedTokens = append([]string{}, tokens...)
 		return "Preview with tokens: " + strings.Join(tokens, ", "), nil
 	}
@@ -2339,5 +2339,34 @@ func TestPreviewReceivesSelectedTokens(t *testing.T) {
 	// Verify preview text was updated
 	if !strings.Contains(m.previewText, "todo") || !strings.Contains(m.previewText, "focus") {
 		t.Errorf("expected previewText to contain 'todo' and 'focus', got %q", m.previewText)
+	}
+}
+
+func TestAddendumPassedToPreviewAndCommand(t *testing.T) {
+	var capturedAddendum string
+	preview := func(subject string, addendum string, tokens []string) (string, error) {
+		capturedAddendum = addendum
+		return "Preview subject=" + subject + " addendum=" + addendum, nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview:         preview,
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+
+	m.addendum = "focus on security"
+	m.updatePreview()
+
+	if capturedAddendum != "focus on security" {
+		t.Errorf("expected addendum 'focus on security' passed to preview, got %q", capturedAddendum)
+	}
+
+	m.rebuildCommandLine()
+	cmd := m.commandInput.Value()
+	if !strings.Contains(cmd, `--addendum "focus on security"`) {
+		t.Errorf("expected command to contain --addendum flag, got %q", cmd)
 	}
 }

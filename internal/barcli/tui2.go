@@ -51,12 +51,13 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 	tokenCategories := BuildTokenCategories(grammar)
 	tokens := append([]string(nil), opts.Tokens...)
 
-	preview := func(subject string, tokenSet []string) (string, error) {
+	preview := func(subject string, addendum string, tokenSet []string) (string, error) {
 		result, buildErr := Build(grammar, tokenSet)
 		if buildErr != nil {
 			return "", fmt.Errorf("build prompt: %s", buildErr.Message)
 		}
 		result.Subject = subject
+		result.Addendum = addendum
 		result.PlainText = RenderPlainText(result)
 		return result.PlainText, nil
 	}

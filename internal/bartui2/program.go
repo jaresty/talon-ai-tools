@@ -26,8 +26,8 @@ type Options struct {
 	// TokenCategories defines available tokens grouped by category.
 	TokenCategories []bartui.TokenCategory
 
-	// Preview generates prompt text from subject and tokens.
-	Preview func(subject string, tokens []string) (string, error)
+	// Preview generates prompt text from subject, addendum, and tokens.
+	Preview func(subject string, addendum string, tokens []string) (string, error)
 
 	// ClipboardWrite writes text to the system clipboard.
 	ClipboardWrite func(string) error
@@ -143,10 +143,15 @@ type model struct {
 	subjectInput     textarea.Model
 	showSubjectModal bool
 
+	// Addendum input (modal)
+	addendum          string
+	addendumInput     textarea.Model
+	showAddendumModal bool
+
 	// Preview (pane 3) with viewport for scrolling
 	previewText     string
 	previewViewport viewport.Model
-	preview         func(subject string, tokens []string) (string, error)
+	preview         func(subject string, addendum string, tokens []string) (string, error)
 
 	// Command execution with viewport for scrolling result
 	shellCommandInput textinput.Model
@@ -213,6 +218,13 @@ func newModel(opts Options) model {
 	ta.SetHeight(8)
 	ta.ShowLineNumbers = false
 
+	// Addendum textarea for modal
+	at := textarea.New()
+	at.Placeholder = "Enter task clarification (e.g., focus on security, keep under 100 words)..."
+	at.SetWidth(60)
+	at.SetHeight(4)
+	at.ShowLineNumbers = false
+
 	// Shell command input for execution modal
 	sci := textinput.New()
 	sci.Placeholder = "Enter shell command (e.g., pbcopy, claude)"
@@ -239,6 +251,7 @@ func newModel(opts Options) model {
 		autoFillSource:    make(map[string]string),
 		tokenCategories:   opts.TokenCategories,
 		subjectInput:      ta,
+		addendumInput:     at,
 		shellCommandInput: sci,
 		previewViewport:   previewVP,
 		resultViewport:    resultVP,
@@ -278,7 +291,7 @@ func newModel(opts Options) model {
 	// Generate initial preview
 	if m.preview != nil {
 		tokens := m.getCommandTokens()
-		text, err := m.preview("", tokens)
+		text, err := m.preview("", "", tokens)
 		if err == nil {
 			m.previewText = text
 			m.previewViewport.SetContent(text)
@@ -325,6 +338,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.showSubjectModal {
 		return m.updateSubjectModal(msg)
 	}
+	if m.showAddendumModal {
+		return m.updateAddendumModal(msg)
+	}
 	if m.showCommandModal {
 		return m.updateCommandModal(msg)
 	}
@@ -358,6 +374,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.showSubjectModal = true
 			m.subjectInput.SetValue(m.subject)
 			m.subjectInput.Focus()
+			m.commandInput.Blur()
+			return m, textarea.Blink
+		case "ctrl+a":
+			// Open addendum input modal
+			m.showAddendumModal = true
+			m.addendumInput.SetValue(m.addendum)
+			m.addendumInput.Focus()
 			m.commandInput.Blur()
 			return m, textarea.Blink
 		case "ctrl+enter", "ctrl+x":
@@ -551,6 +574,36 @@ func (m model) updateSubjectModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Update textarea
 	var cmd tea.Cmd
 	m.subjectInput, cmd = m.subjectInput.Update(msg)
+	return m, cmd
+}
+
+// updateAddendumModal handles input when the addendum modal is open.
+func (m model) updateAddendumModal(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
+		case "esc":
+			// Close modal without saving
+			m.showAddendumModal = false
+			m.addendumInput.Blur()
+			m.commandInput.Focus()
+			return m, textinput.Blink
+		case "ctrl+s":
+			// Save and close modal
+			m.addendum = m.addendumInput.Value()
+			m.showAddendumModal = false
+			m.addendumInput.Blur()
+			m.commandInput.Focus()
+			m.updatePreview()
+			m.rebuildCommandLine()
+			return m, textinput.Blink
+		}
+	}
+
+	var cmd tea.Cmd
+	m.addendumInput, cmd = m.addendumInput.Update(msg)
 	return m, cmd
 }
 
@@ -866,6 +919,9 @@ func (m *model) rebuildCommandLine() {
 		cmd.WriteString(" ")
 		cmd.WriteString(token)
 	}
+	if m.addendum != "" {
+		cmd.WriteString(fmt.Sprintf(" --addendum %q", m.addendum))
+	}
 	cmd.WriteString(" ")
 	m.commandInput.SetValue(cmd.String())
 	m.commandInput.CursorEnd()
@@ -937,7 +993,7 @@ func (m *model) removeAutoFilledBy(sourceKey string) {
 func (m *model) updatePreview() {
 	if m.preview != nil {
 		tokens := m.getCommandTokens()
-		text, err := m.preview(m.subject, tokens)
+		text, err := m.preview(m.subject, m.addendum, tokens)
 		if err == nil {
 			m.previewText = text
 			m.previewViewport.SetContent(text)
@@ -1485,6 +1541,11 @@ func (m model) View() string {
 		return m.renderSubjectModal()
 	}
 
+	// Show addendum modal if active
+	if m.showAddendumModal {
+		return m.renderAddendumModal()
+	}
+
 	// Show command modal if active
 	if m.showCommandModal {
 		return m.renderCommandModal()
@@ -1801,6 +1862,7 @@ func (m model) renderHotkeyBar() string {
 			"BS: remove",
 			"^U/^D: scroll",
 			"^L: subject",
+			"^A: addendum",
 			"^X: run",
 			"^B: copy cmd",
 			"^G: copy prompt",
@@ -1828,6 +1890,29 @@ func (m model) renderSubjectModal() string {
 		lines := strings.Count(m.subject, "\n") + 1
 		chars := len(m.subject)
 		content.WriteString(dimStyle.Render(fmt.Sprintf("Current: %d lines, %d chars", lines, chars)))
+		content.WriteString("\n")
+	}
+
+	content.WriteString(dimStyle.Render("Ctrl+S: save | Esc: cancel"))
+
+	return modalStyle.Width(width).Render(content.String())
+}
+
+func (m model) renderAddendumModal() string {
+	width := m.width - 4
+	if width < 40 {
+		width = 40
+	}
+
+	var content strings.Builder
+	content.WriteString(headerStyle.Render("ADDENDUM INPUT"))
+	content.WriteString("\n\n")
+	content.WriteString(m.addendumInput.View())
+	content.WriteString("\n\n")
+
+	if m.addendum != "" {
+		chars := len(m.addendum)
+		content.WriteString(dimStyle.Render(fmt.Sprintf("Current: %d chars", chars)))
 		content.WriteString("\n")
 	}
 

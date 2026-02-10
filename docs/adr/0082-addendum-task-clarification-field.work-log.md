@@ -341,3 +341,28 @@
   - Stored preset files may contain old `"axes":{"static":"make"}` format (Loop 10). Severity: medium. Mitigation: deferred. Owning ADR: 0082 Phase 0.
 - **next_work**:
   - Behaviour: Phase 2 — Add separate subject/addendum input fields to TUI2. Validation: `go test ./internal/bartui2/... -run "TestTUI2SubjectAndAddendumFields"`. Future-shaping: TUI2 surfaces the subject/addendum distinction interactively.
+
+## Loop 15: TUI2 addendum modal and preview wiring (Phase 2a)
+
+- **helper_version**: `helper:v20251223.1`
+- **focus**: ADR 0082 Phase 2 (TUI2 Interface) — Add `addendum` field to TUI2 model, Ctrl+A modal for addendum entry, `--addendum` in rebuilt command line, addendum passed through preview callback. Update `Options.Preview` signature to include addendum.
+- **active_constraint**: TUI2 model has no `addendum` field and `Options.Preview` signature is `func(subject, tokens)` — users cannot enter addendum in TUI2 and the preview does not show ADDENDUM section even when addendum is set.
+- **validation_targets**:
+  - `go test ./internal/bartui2/... -run "TestAddendumPassedToPreviewAndCommand"`
+  - `go test ./internal/bartui2/... ./internal/barcli/...`
+- **evidence**:
+  - red | 2026-02-09T (pre-implementation) | exit 1 | `go test ./internal/bartui2/... -run "TestAddendumPassedToPreviewAndCommand"` — `cannot use preview (func(subject, addendum, tokens)) as func(subject, tokens)` and `m.addendum undefined` | inline
+    helper:diff-snapshot=1 file changed (program_test.go only; production code unchanged)
+  - green | 2026-02-09T (post-implementation) | exit 0 | `go test ./internal/bartui2/... ./internal/barcli/...` — all tests PASS | inline
+    helper:diff-snapshot=4 files changed, ~80 insertions(+), ~10 deletions(-)
+  - removal | 2026-02-09T (git restore program.go tui2.go) | exit 1 | `git restore internal/bartui2/program.go internal/barcli/tui2.go && go test ./internal/bartui2/... -run "TestAddendumPassedToPreviewAndCommand"` — `m.addendum undefined` returns | inline
+    helper:diff-snapshot=0 files changed (production code reverted)
+- **rollback_plan**: `git restore internal/bartui2/program.go internal/barcli/tui2.go` then replay red failure.
+- **delta_summary**: helper:diff-snapshot=4 files changed. In `program.go`: changed `Options.Preview` signature from `func(subject, tokens)` to `func(subject, addendum, tokens)`. Added `addendum string`, `addendumInput textarea.Model`, `showAddendumModal bool` fields to model. Initialized `addendumInput` in `newModel()`. Added `case "ctrl+a"` hotkey to open addendum modal. Added `updateAddendumModal()` (mirrors subject modal, saves on Ctrl+S). Added modal routing in `Update()` and view routing in `View()`. Added `renderAddendumModal()`. Updated `rebuildCommandLine()` to append `--addendum "..."` when set. Updated `updatePreview()` to pass `m.addendum`. Updated initial preview call to pass empty addendum. Added `^A: addendum` to hotkey bar. In `tui2.go`: updated preview closure signature and sets `result.Addendum = addendum`. Updated all 10 test preview functions to new 3-param signature. Added specifying test `TestAddendumPassedToPreviewAndCommand`. Depth-first rung: TUI2 addendum modal and preview wiring (Phase 2a).
+- **loops_remaining_forecast**: ~3-5 loops remaining. Remaining: Phase 3 (Python `PROMPT_REFERENCE_KEY` update), Phase 4 (skills integration), Phase 5 (Talon alignment). Phase 2 is functionally complete (TUI2 addendum modal operational). Confidence: high.
+- **residual_constraints**:
+  - TUI2 fixture snapshot (`cmd/bar/testdata/tui_smoke.json`) may need updating if it uses the preview callback — but smoke test doesn't exercise addendum so no immediate breakage. Severity: low. Monitoring: `go test ./internal/barcli/... -run TestRunTUIFixtureOutputsSnapshot`.
+  - Python `PROMPT_REFERENCE_KEY` in `lib/metaPromptConfig.py` does not yet mention ADDENDUM. Severity: medium (Python users see inconsistent reference key). Mitigation: Phase 3. Monitoring: `grep -i addendum lib/metaPromptConfig.py`.
+  - Bar skills (bar-autopilot, bar-workflow, bar-suggest, bar-manual) may not document `--addendum` usage. Severity: medium. Mitigation: Phase 4.
+- **next_work**:
+  - Behaviour: Phase 3 — Update Python `PROMPT_REFERENCE_KEY` in `lib/metaPromptConfig.py` to include ADDENDUM section description matching the Go reference key. Validation: `make ci-guardrails` or `python -m pytest _tests/`. Future-shaping: Python users see consistent reference key across CLI and Python paths.

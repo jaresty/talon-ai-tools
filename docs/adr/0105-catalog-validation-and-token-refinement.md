@@ -5,71 +5,24 @@ Accepted
 
 ## Context
 
-Three cycles of prompt catalog evaluation (seeds 0001–0060, ADR-0085 evidence) have identified a stable set of defects that recur across cycles because no validation or documentation fixes were applied between cycles. The dominant pattern is a 25% output-exclusive conflict rate across all three cycles — directly traceable to the absence of build-time validation. Secondary patterns involve task-affinity mismatches, semantic token conflicts, and skill documentation pointing to non-existent commands.
+Three cycles of prompt catalog evaluation (seeds 0001–0060, ADR-0085 evidence) have identified a stable set of defects that recur across cycles because no validation or documentation fixes were applied between cycles. Secondary patterns include task-affinity mismatches, semantic token conflicts, and stale content in `bar help llm`. Evaluation cycles also surfaced a persistent "output-exclusive conflict" rate of ~25%, but post-analysis established that all output-exclusive tokens (`code`, `html`, `shellscript`, `diagram`, `gherkin`, `adr`, `codetour`, `presenterm`, `sync`, `plain`) are already in the channel axis, which enforces at most one token. The conflicts observed were between composable form tokens (`visual`, `taxonomy`) and channel tokens — resolved by rephrasing rather than new validation.
 
 This ADR consolidates all actionable findings from the three evaluation cycles into a set of discrete decisions. Each decision is independently implementable.
 
 **Evaluation evidence base:**
-- Cycle 1: seeds 0001–0020 (~15% output-exclusive conflicts, 35% excellent)
-- Cycle 2: seeds 0021–0040 (25% output-exclusive conflicts, 55% excellent); introduced the output-exclusive concept
-- Cycle 3: seeds 0041–0060 (25% output-exclusive conflicts, 65% excellent); confirmed visual and taxonomy as output-exclusive form tokens; confirmed codetour and gherkin task-affinity failures; confirmed `bar help llm` non-existence across all four skills
+- Cycle 1: seeds 0001–0020 (~15% apparent output-exclusive conflicts, 35% excellent)
+- Cycle 2: seeds 0021–0040 (25% apparent output-exclusive conflicts, 55% excellent); introduced the output-exclusive concept; misidentified code/html/shellscript as form tokens
+- Cycle 3: seeds 0041–0060 (65% excellent); confirmed visual and taxonomy form token tensions with channel; confirmed codetour and gherkin task-affinity failures; found bar help llm heuristics contained many phantom/deprecated tokens
 
 ---
 
-## Decision 1: Output-Exclusive Format Validation
-
-### Problem
-
-Tokens whose descriptions say "ONLY output format X" or "the complete output is X" are mutually exclusive: when two appear in the same prompt, the LLM receives contradictory instructions about what the entire response should look like. This conflict is unresolvable at inference time; it cannot be reconciled by the LLM without discarding one instruction entirely.
-
-Three cycles of evaluation confirm a persistent 25% rate of such conflicts across seeds, and this rate has not declined because no validation was implemented between cycles.
-
-**Confirmed output-exclusive tokens by axis:**
-
-Form axis:
-- `code` — mandates "code only, no surrounding prose"
-- `html` — mandates "HTML only as the complete output"
-- `shellscript` — mandates "shell script only as the complete output"
-- `visual` — mandates "the main answer as an abstract visual or metaphorical layout" (see Decision 2 for proposed rephrasing)
-- `taxonomy` — mandates "organized as a classification system" with definitional prose (see Decision 2 for proposed rephrasing)
-
-Channel axis (already implicitly at-most-one):
-- `gherkin` — mandates "only Gherkin format as the complete output"
-- `diagram` — mandates "Mermaid diagram code only"
-- `adr` — mandates structured ADR document format
-- `codetour` — mandates VS Code CodeTour JSON format
-- `presenterm` — mandates Presenterm slide deck format
-- `sync` — mandates live session/workshop plan format
-
-**Evidence from corpus:**
-- Seed 0034 (cycle 2): adr + sync
-- Seed 0039 (cycle 2): shellscript + presenterm
-- Seed 0033 (cycle 2): visual + presenterm
-- Seed 0047 (cycle 3): visual(form) + adr(channel)
-- Seed 0057 (cycle 3): taxonomy(form) + diagram(channel)
-
-### Decision
-
-Implement validation in `bar build` and `bar shuffle` that errors when two output-exclusive tokens appear in the same prompt combination. The channel axis already enforces "at most one channel" implicitly; this validation extends the same concept to form tokens that are output-exclusive.
-
-Form tokens that are output-exclusive (`code`, `html`, `shellscript`, and pending Decision 2, `visual` and `taxonomy`) should be tagged `output_exclusive: true` in the token definitions. The validation rule is: at most one output-exclusive token (form or channel combined) per prompt.
-
-The error message should name the conflicting tokens and explain the mutual exclusion:
-
-```
-Error: output-exclusive conflict — 'visual' (form) and 'adr' (channel) both prescribe
-the entire response format. Use at most one output-exclusive token per prompt.
-```
-
----
-
-## Decision 2: Rephrase `visual` and `taxonomy` Form Tokens
+## Decision 1: Rephrase `visual` and `taxonomy` Form Tokens
 
 ### Problem
 
 `visual` and `taxonomy` are form tokens that appear in low-scoring seeds (0047, 0052, 0057) and whose descriptions imply they mandate the entire response structure. However, unlike `code` or `html` (which genuinely produce format-only output), `visual` and `taxonomy` describe *organizational approaches* that could plausibly be applied to a portion of the response alongside other content.
 
-Rather than flagging them permanently as output-exclusive (which would prevent many legitimate uses and is addressed in Decision 1 for `code`/`html`/`shellscript`), these two tokens should be rephrased so they are composable: their descriptions should signal "where the subject lends itself to this approach" rather than "the entire response is this format."
+All genuinely output-exclusive tokens (`code`, `html`, `shellscript`, `diagram`, `gherkin`, `adr`, `codetour`, `presenterm`, `sync`, `plain`) are already in the channel axis, which enforces at most one token and prevents hard format conflicts. `visual` and `taxonomy` are form tokens that should be composable, not exclusive — their descriptions should signal "where the subject lends itself to this approach" rather than "the entire response is this format."
 
 This is the same compositional strategy used for `table` form ("when feasible"), which scores consistently well across all three cycles without conflicts.
 
@@ -89,7 +42,7 @@ After rephrasing, `visual` and `taxonomy` should **not** be tagged `output_exclu
 
 ---
 
-## Decision 3: Codetour and Gherkin Task Affinity
+## Decision 2: Codetour and Gherkin Task Affinity
 
 ### Problem
 
@@ -119,7 +72,7 @@ Additionally, consider adding a soft warning in `bar build` / `bar shuffle` when
 
 ---
 
-## Decision 4: `make` + `rewrite` Form Semantic Conflict
+## Decision 3: `make` + `rewrite` Form Semantic Conflict
 
 ### Problem
 
@@ -142,7 +95,7 @@ Consider adding `make` + `rewrite(form)` to the validation rules as a soft confl
 
 ---
 
-## Decision 5: `bar help llm` Token Selection Heuristics Contains Stale Content
+## Decision 4: `bar help llm` Token Selection Heuristics Contains Stale Content
 
 ### Problem
 
@@ -179,7 +132,7 @@ Regenerate or rewrite the Token Selection Heuristics section in `bar help llm` t
 
 ---
 
-## Decision 6: `bar help llm` Composition Rules Section is Empty
+## Decision 5: `bar help llm` Composition Rules Section is Empty
 
 ### Problem
 
@@ -209,7 +162,7 @@ This section also serves as the long-term home for future conflict rules as the 
 
 ---
 
-## Decision 7: `bar help llm` Scope Heuristics Missing ADR-0104 Tokens
+## Decision 6: `bar help llm` Scope Heuristics Missing ADR-0104 Tokens
 
 ### Problem
 
@@ -239,21 +192,19 @@ This update is low-cost (three lines) and should be combined with Decision 5 (he
 
 ### Positive
 
-- **Validation eliminates 25% defect rate:** Decision 1 (output-exclusive validation in `bar build` / `bar shuffle`) directly addresses the primary defect class that persisted across all three evaluation cycles. Expected cycle 4 output-exclusive conflict rate: ≤5%.
+- **Token descriptions become self-documenting:** Decisions 1, 2, and 3 add composability qualifiers and task-affinity/semantic-conflict guidance directly to token descriptions, making misuse visible at token selection time rather than requiring external documentation.
 
-- **Token descriptions become self-documenting:** Decisions 2, 3, and 4 add task-affinity and semantic-conflict guidance directly to token descriptions, making misuse visible at token selection time rather than requiring external documentation.
+- **`bar help llm` heuristics become trustworthy:** Decision 4 removes phantom tokens from § Choosing Method and § Choosing Form that currently cause `error: unrecognized token` when followed literally, raising mean skill discoverability from 2.9/5 toward ≥4.0.
 
-- **`bar help llm` heuristics become trustworthy:** Decision 5 removes phantom tokens from § Choosing Method and § Choosing Form that currently cause `error: unrecognized token` when followed literally, raising mean skill discoverability from 2.9/5 toward ≥4.0.
+- **Composition rules become populated:** Decision 5 fills the empty § Incompatibilities section, giving users the conflict guidance the section promises but currently withholds.
 
-- **Composition rules become populated:** Decision 6 fills the empty § Incompatibilities section, giving users the conflict guidance the section promises but currently withholds.
-
-- **Scope token coverage complete:** Decision 7 adds `assume`, `motifs`, `stable` to § Choosing Scope, making all 11 current scope tokens discoverable via heuristics.
+- **Scope token coverage complete:** Decision 6 adds `assume`, `motifs`, `stable` to § Choosing Scope, making all 11 current scope tokens discoverable via heuristics.
 
 ### Negative / Tradeoffs
 
-- **Flexibility reduced:** Output-exclusive validation (Decision 1) will error on combinations that were previously permitted. Some combinations that a creative user might have found productive (e.g., using visual form alongside an ADR channel for a mixed-format response) will be blocked. The tradeoff is acceptable given the 25% defect rate.
+- **Implementation work required:** Decisions 4 and 5 require changes to `help_llm.go` (Decision 4 already implemented). Decisions 1, 2, 3, and 6 are documentation-only changes and are lower cost.
 
-- **Implementation work required:** Decisions 1, 5, and 7 require binary and/or skill implementation work. Decisions 2, 3, 4, and 6 require documentation-only changes and are lower cost.
+- **Decision 1 rephrasing requires follow-up evaluation:** The revised `visual` and `taxonomy` descriptions need a cycle 4 check to confirm they remain composable in practice.
 
 - **Decision 2 rephrasing requires evaluation:** The revised `visual` and `taxonomy` descriptions will need a follow-up evaluation cycle to confirm they perform as composable tokens without introducing new ambiguities. A cycle 4 evaluation should track whether these tokens still produce conflicts under the new descriptions.
 
@@ -261,40 +212,33 @@ This update is low-cost (three lines) and should be combined with Decision 5 (he
 
 ## Follow-up Work
 
-### Decision 1: Output-Exclusive Validation
-**Files to change:**
-- `bar` binary: add `output_exclusive: true` tag to form tokens (`code`, `html`, `shellscript`) in token definitions
-- `bar` binary: add validation rule in `bar build` / `bar shuffle` that rejects combinations with two or more output-exclusive tokens (form or channel)
-- Token definition file (wherever form tokens are defined): tag code, html, shellscript as output_exclusive
-- Error message copy: write the conflict error message as specified in Decision 1
-
-### Decision 2: Rephrase `visual` and `taxonomy`
+### Decision 1: Rephrase `visual` and `taxonomy`
 **Files to change:**
 - Token definition file: update `visual` form token description to add conditional clause ("where the subject lends itself to visual representation")
 - Token definition file: update `taxonomy` form token description to add conditional clause ("where the subject admits classification")
 - Do NOT tag these as output_exclusive after rephrasing
 
-### Decision 3: Codetour and Gherkin Task Affinity
+### Decision 2: Codetour and Gherkin Task Affinity
 **Files to change:**
 - Token definition file: update `codetour` channel description to add task-affinity guidance
 - Token definition file: update `gherkin` channel description to add task-affinity guidance
 - `bar` binary (optional): add soft warning when codetour or gherkin is combined with an out-of-affinity task
 
-### Decision 4: `make` + `rewrite` Semantic Conflict
+### Decision 3: `make` + `rewrite` Semantic Conflict
 **Files to change:**
 - Token definition file: update `rewrite` form token description to add note about task compatibility
 - `bar` binary (optional): add soft warning when make + rewrite(form) appear together
 
-### Decision 5: Fix `bar help llm` Token Selection Heuristics
+### Decision 4: Fix `bar help llm` Token Selection Heuristics
 **Files to change:**
 - `internal/barcli/help_llm.go` (or wherever the heuristics content is generated): rewrite § Choosing Method to use only real method tokens; rewrite § Choosing Form to use only real form tokens; remove deprecated `constraints` token reference
 - Verify against `bar help tokens method` and `bar help tokens form` output after change
 
-### Decision 6: Populate `bar help llm` § Composition Rules § Incompatibilities
+### Decision 5: Populate `bar help llm` § Composition Rules § Incompatibilities
 **Files to change:**
 - `internal/barcli/help_llm.go`: add output-exclusive conflict rules, codetour/gherkin task-affinity rules, and rewrite+make semantic conflict to § Incompatibilities
 
-### Decision 7: Add Missing Scope Tokens to `bar help llm` § Choosing Scope
+### Decision 6: Add Missing Scope Tokens to `bar help llm` § Choosing Scope
 **Files to change:**
 - `internal/barcli/help_llm.go`: add `assume`, `motifs`, `stable` entries to § Choosing Scope in Token Selection Heuristics
 

@@ -1,0 +1,434 @@
+# Recommendations: Seeds 0041–0060
+# Evaluation cycle 3 (validation cycle, post-ADR-0091 and post-ADR-0104)
+# Evaluation date: 2026-02-10
+# Evaluator: Claude Sonnet 4.5
+#
+# Focus: New evidence and new issues only. Does not re-recommend items already
+# in recommendations-post-refactor.yaml unless there is new evidence to add.
+
+# =============================================================================
+# CRITICAL: Output-Exclusive Validation Still Unimplemented
+# =============================================================================
+# The output_exclusive_mutual_exclusion rule proposed in recommendations-post-refactor.yaml
+# was NOT implemented before this corpus was generated. All 5 conflicts in this
+# cycle are predictable consequences of that gap. New evidence below.
+
+- action: add_validation_rule
+  name: output_exclusive_mutual_exclusion
+  priority: critical
+  status: STILL UNIMPLEMENTED — new evidence from cycle 3 confirms urgency
+  new_evidence:
+    - seed: 0047
+      conflict: visual(form) + adr(channel)
+      note: "New variant: visual form (abstract layout) vs ADR document structure. Confirms visual should be tagged output_exclusive."
+    - seed: 0057
+      conflict: taxonomy(form) + diagram(channel)
+      note: "Taxonomy requires definitional prose; diagram requires Mermaid code only. Confirms taxonomy should be tagged output_exclusive."
+  cumulative_evidence: [seed_0028, seed_0034, seed_0036, seed_0039, seed_0040, seed_0047, seed_0057]
+  cycle_conflict_rate:
+    cycle_1: "~15%"
+    cycle_2: "25%"
+    cycle_3: "25%"
+  details:
+    extend_affected_tokens:
+      add_to_output_exclusive_list:
+        - visual  # "abstract visual/metaphorical layout" — prescribes complete visual output
+        - taxonomy  # "classification system / type hierarchy with definitions" — requires prose definitions incompatible with Mermaid-only
+
+- action: add_metadata
+  token: visual
+  axis: form
+  metadata_key: output_exclusive
+  metadata_value: true
+  priority: critical
+  reason: "visual(form) + adr(channel) conflict (seed 0047) confirms that visual prescribes a complete output structure incompatible with structural channels"
+  evidence: [seed_0047]
+  incompatible_with: [adr, gherkin, diagram, codetour, sync, presenterm]
+  note: "visual(form) without an output-exclusive channel works correctly — see seed 0052 for positive example"
+
+- action: add_metadata
+  token: taxonomy
+  axis: form
+  metadata_key: output_exclusive
+  metadata_value: true
+  priority: critical
+  reason: "taxonomy(form) + diagram(channel) conflict (seed 0057): taxonomy's definitional prose requirements are incompatible with Mermaid-code-only output"
+  evidence: [seed_0057]
+  incompatible_with: [diagram, gherkin, codetour]
+  alternative: "If a taxonomy-as-diagram is desired, use diagram(channel) alone and describe taxonomy structure in the subject/addendum"
+
+# =============================================================================
+# CRITICAL: make + rewrite(form) Semantic Conflict
+# =============================================================================
+# New recurring pattern in cycle 3 not seen in previous cycles.
+# rewrite(form) implies existing content to transform; make implies creating from nothing.
+
+- action: add_validation_rule
+  name: make_rewrite_conflict
+  priority: critical
+  reason: "make(task) and rewrite(form) are semantically incompatible: make creates from nothing, rewrite transforms existing content"
+  evidence: [seed_0053, seed_0055]
+  rule_type: error
+  condition: "static == 'make' AND 'rewrite' IN form"
+  message: "Cannot combine make (create new content) with rewrite form (transform existing content)"
+  suggestion: "Use fix or diff task instead of make when transforming existing content, or remove rewrite form if creating new content"
+
+- action: edit
+  token: rewrite
+  axis: form
+  priority: critical
+  current: "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation."
+  proposed: "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation. Requires existing content to be present in the subject. Incompatible with make task (no existing content to rewrite)."
+  reason: "Clarify that rewrite requires existing content; prevent make + rewrite combination"
+  evidence: [seed_0053, seed_0055]
+  task_affinity:
+    works_best_with: [fix, diff]
+    incompatible_with: [make]
+  note: "Consider reclassifying rewrite from form to method axis — it describes a transformation activity, not a presentation structure"
+
+- action: add_metadata
+  token: rewrite
+  axis: form
+  metadata_key: task_affinity
+  metadata_value:
+    works_best_with: [fix, diff]
+    incompatible_with: [make]
+    note: "Rewrite implies existing content to transform. Make implies no prior content. These are logically exclusive."
+  priority: critical
+  evidence: [seed_0053, seed_0055]
+
+# =============================================================================
+# HIGH PRIORITY: Codetour Task-Affinity Metadata
+# =============================================================================
+# codetour appeared twice in this corpus (seeds 0054, 0055) and both times
+# with non-code tasks. The pattern is now documented with sufficient evidence.
+
+- action: add_metadata
+  token: codetour
+  axis: channel
+  metadata_key: task_affinity
+  metadata_value:
+    description: "CodeTour is a VS Code extension format for guided code walkthroughs. It requires actual source files and line references to be meaningful."
+    works_best_with: [fix, make, show, pull]
+    requires_code_subject: true
+    incompatible_tasks: [sim, sort, probe, plan, diff, check]
+    incompatible_intents: [persuade, entertain, announce]
+    note: "CodeTour steps reference specific file paths and line numbers. Non-code tasks cannot produce valid CodeTour output."
+  priority: high
+  evidence: [seed_0054, seed_0055]
+
+- action: edit
+  token: codetour
+  axis: channel
+  priority: high
+  current: "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation."
+  proposed: "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps that reference source file paths and line numbers. Use only when the subject is a code repository or codebase. Not appropriate for scenario simulation, planning, comparison, or non-code subjects."
+  reason: "Two consecutive instances of codetour applied to non-code tasks (sim, diff+persuade) confirm the task-affinity gap in the current description"
+  evidence: [seed_0054, seed_0055]
+
+# =============================================================================
+# HIGH PRIORITY: Gherkin Task-Affinity Metadata
+# =============================================================================
+# gherkin appeared once (seed 0060) with a sort task and scored 3.0.
+# This is a task-affinity mismatch distinct from output-exclusive conflicts:
+# only one output-exclusive token present, but it is the wrong type for the task.
+
+- action: add_metadata
+  token: gherkin
+  axis: channel
+  metadata_key: task_affinity
+  metadata_value:
+    description: "Gherkin format (Given/When/Then) is designed for behavioral specification of system behavior. Meaningful only for tasks where behavior specification is the goal."
+    works_best_with: [fix, check, make]
+    requires_behavior_subject: true
+    incompatible_tasks: [sort, sim, probe, plan, diff]
+    incompatible_intents: [entertain, appreciate, announce]
+    note: "Gherkin scenarios test system behavior. Applying to non-behavior tasks (categorization, scenario simulation, analysis) produces awkward or invalid Gherkin."
+  priority: high
+  evidence: [seed_0060]
+
+- action: edit
+  token: gherkin
+  axis: channel
+  priority: high
+  current: "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation."
+  proposed: "The response outputs only Gherkin format (Given/When/Then scenarios) as the complete output. Use when the task is to specify system behavior or acceptance criteria. Not appropriate for categorization, simulation, analysis, or comparison tasks."
+  reason: "seed 0060 confirms that gherkin applied to non-behavior tasks (sort) produces ill-formed output"
+  evidence: [seed_0060]
+
+# =============================================================================
+# MEDIUM PRIORITY: Intent-Task Affinity Rules
+# =============================================================================
+# Cycle 3 identified intent-task affinity gaps in three seeds (0050, 0052, 0060).
+# No cycle-2 recommendations addressed this; this is a new finding.
+
+- action: add_metadata
+  token: appreciate
+  axis: intent
+  metadata_key: task_affinity
+  metadata_value:
+    description: "Appreciate expresses thanks, recognition, or positive regard. Requires a social/communicative context."
+    works_best_with: [show, announce, teach, coach]
+    awkward_with: [pick, check, sort, diff]
+    note: "Appreciation is an emotional communicative intent. Selection, evaluation, and comparison tasks are cognitive; the appreciative framing feels incongruous."
+  priority: medium
+  evidence: [seed_0050]
+
+- action: add_metadata
+  token: announce
+  axis: intent
+  metadata_key: task_affinity
+  metadata_value:
+    description: "Announce shares news or updates. Implies a completed state being communicated, not a process under construction."
+    works_best_with: [show, make, fix]
+    awkward_with: [plan, probe]
+    note: "Announcing a plan implies the plan is finalized (completion state). Plan task implies the plan is being constructed (in-progress state). This creates a temporal contradiction."
+  priority: medium
+  evidence: [seed_0052]
+  historical_evidence: [seed_0037]
+  evaluator_note: "This same tension was noted in seed_0037 (cycle 2: announce + chat). Two cycles of evidence. Consider documenting as a known weak combination rather than a validation error."
+
+- action: add_metadata
+  token: entertain
+  axis: intent
+  metadata_key: task_affinity
+  metadata_value:
+    description: "Entertain engages or amuses the audience. Requires delivery format flexibility for creative, playful expression."
+    works_best_with: [show, make, teach]
+    awkward_with: [check, sort]
+    incompatible_with_channels: [gherkin, codetour, adr]
+    note: "Entertainment requires tonal flexibility. Schema-constrained output formats (gherkin, codetour) prevent the playfulness that entertain intent requires."
+  priority: medium
+  evidence: [seed_0060]
+
+- action: add_validation_rule
+  name: intent_exclusive_channel_check
+  priority: medium
+  rule_type: warning
+  specific_patterns:
+    - tokens: [entertain, gherkin]
+      reason: "Gherkin's rigid Given/When/Then format prevents entertainment-oriented delivery"
+      suggestion: "Remove gherkin channel to allow expressive, entertaining output format"
+    - tokens: [entertain, codetour]
+      reason: "CodeTour JSON format cannot express entertainment intent"
+      suggestion: "Remove codetour channel to allow expressive delivery"
+    - tokens: [appreciate, pick]
+      reason: "Appreciation intent is incongruous with selection task in most contexts"
+      suggestion: "Consider announce or show task if the intent is to express appreciation while communicating a choice already made"
+    - tokens: [appreciate, check]
+      reason: "Appreciation intent is incongruous with pass/fail evaluation task"
+    - tokens: [announce, plan]
+      reason: "Announce implies completed communication; plan implies construction in progress"
+      suggestion: "Use show or make task if the plan is already complete and being announced"
+
+# =============================================================================
+# MEDIUM PRIORITY: Rewrite Form Reclassification Consideration
+# =============================================================================
+# rewrite(form) appears in two failing prompts this cycle. Its behavior is
+# more like a method (how to proceed: by rewriting) than a form (how to
+# structure the response). This is a new architectural observation.
+
+- action: consider_reclassification
+  token: rewrite
+  current_axis: form
+  proposed_axis: method
+  priority: medium
+  reason: >
+    rewrite(form) describes a transformation activity ("rewrites or refactors while preserving
+    original intent") which is characteristic of a method (HOW to approach the task) rather
+    than a form (HOW to structure the response output). When in form axis, it creates semantic
+    conflicts with make task (cycle 3 seeds 0053, 0055). As a method token, it would naturally
+    complement fix task and be clearly incompatible with make task.
+  evidence: [seed_0053, seed_0055]
+  historical_analogy: "Similar to how 'dimension' method was identified as blurring the probe task boundary in cycle 2"
+  recommendation: "Evaluate reclassifying rewrite from form to method in next ADR. If reclassified, update validation rules accordingly."
+
+# =============================================================================
+# MEDIUM PRIORITY: Sync + Executive Brief Delivery Mismatch
+# =============================================================================
+# New variant of the sync conflict pattern (previously adr + sync in seed 0034).
+# This is a softer, persona-based version of the delivery modality mismatch.
+
+- action: add_metadata
+  token: sync
+  axis: channel
+  metadata_key: persona_affinity
+  metadata_value:
+    note: "sync channel produces live session plans (agenda, steps, cues) designed for facilitation contexts. Not appropriate for personas that imply document-reading audiences."
+    awkward_with_presets: [executive_brief]
+    awkward_with_voices: [as_principal_engineer, as_scientist]
+    works_best_with_presets: [product_manager_to_team, teach_junior_dev, peer_engineer_explanation]
+    rationale: "Executive briefs and senior technical personas are typically consumed as documents, not as facilitation scripts."
+  priority: medium
+  evidence: [seed_0043]
+  historical_evidence: [seed_0034]
+  note: "This is a softer version of the output-exclusive conflict: sync is not technically output-exclusive, but it implies a delivery modality (live session) incompatible with executive document consumption."
+
+# =============================================================================
+# POSITIVE PATTERNS TO DOCUMENT
+# =============================================================================
+
+- action: document_pattern
+  pattern: check_good_canonical_quality_evaluation
+  priority: medium
+  finding: "check(task) + good(scope) is the semantically precise quality evaluation combination"
+  evidence: [seed_0056]
+  score: 5.0
+  explanation: >
+    "check" asks "does this pass the condition?"; "good" asks "pass against what quality
+    criteria?" They are mutually completing: check provides the evaluation verb, good provides
+    the evaluation axis. Together they specify a complete quality evaluation task without ambiguity.
+  recommendation: "Document as canonical quality evaluation pattern in examples library"
+
+- action: document_pattern
+  pattern: make_diagram_single_channel_clarity
+  priority: medium
+  finding: "make(task) + diagram(channel) is the prototypical single-channel creation prompt"
+  evidence: [seed_0051]
+  score: 5.0
+  explanation: >
+    When task and channel name the same deliverable (make = create something new; diagram = Mermaid
+    diagram), all ambiguity about the output is removed. Every other token can then shape quality
+    and approach rather than fighting over what the deliverable is.
+  recommendation: "Document as exemplar of single-channel clarity in examples library"
+
+- action: document_pattern
+  pattern: grove_fail_failure_mode_analysis
+  priority: medium
+  finding: "probe(task) + fail(scope) + grove(method) is a strong failure-mode analysis combination"
+  evidence: [seed_0058]
+  score: 5.0
+  explanation: >
+    grove(method) examines accumulation, decay, and compounding effects. fail(scope) focuses on
+    breakdown conditions and failure modes. These are semantically precise complements: grove asks
+    "how do small failures compound?" and fail asks "what are the conditions of breakdown?" The
+    scientist_to_analyst preset reinforces rigorous, evidence-based failure analysis.
+  recommendation: "Document grove as a strong method for fail-scoped analysis tasks"
+
+- action: document_pattern
+  pattern: make_spec_criteria_first_creation
+  priority: medium
+  finding: "make(task) + spec(method) is a strong specification-driven creation combination"
+  evidence: [seed_0059]
+  score: 5.0
+  explanation: >
+    spec(method) defines correctness criteria before creating artifacts. make(task) creates new
+    content. Together they enforce a define-then-build discipline. Principal engineer voice and
+    stakeholder audience reinforce the context where this rigor is most valued.
+  recommendation: "Document spec as the canonical method for disciplined make tasks"
+
+- action: document_pattern
+  pattern: scaffold_prioritize_pedagogical_depth
+  priority: medium
+  finding: "probe(task) + deep + scaffold(form) + prioritize(method) is a strong pedagogical deep-dive combination"
+  evidence: [seed_0041]
+  score: 5.0
+  explanation: >
+    scaffold(form) starts from first principles and introduces ideas gradually. prioritize(method)
+    ensures the most important ideas are foregrounded. deep completeness provides the depth needed
+    for scaffolded explanation. These three tokens are mutually reinforcing: they describe the
+    same goal (clear, prioritized deep explanation) from different angles (structure, order, depth).
+  recommendation: "Document scaffold + prioritize as a strong pedagogical combination"
+
+- action: document_pattern
+  pattern: plan_shift_multiperspective_planning
+  priority: medium
+  finding: "plan(task) + shift(method) + rog(directional) is a strong multi-perspective planning combination"
+  evidence: [seed_0045]
+  score: 5.0
+  explanation: >
+    shift(method) deliberately rotates through distinct cognitive modes, preventing single-
+    perspective planning blind spots. rog(directional) examines the plan's structural organization
+    and reflects on why it exists, adding metacognitive framing. Together they produce plans that
+    are both multi-perspective and structurally self-aware.
+  recommendation: "Document shift as the strongest method for plan tasks requiring perspective diversity"
+
+- action: document_pattern
+  pattern: make_resilience_robust_creation
+  priority: medium
+  finding: "make(task) + resilience(method) is a strong robust-creation combination"
+  evidence: [seed_0048]
+  score: 5.0
+  explanation: >
+    resilience(method) focuses creation on stress behavior, fragility vs robustness, margin of
+    safety, and tail risks. Applied to make task, it produces artifacts designed for failure
+    awareness from the start rather than retrofitted robustness. Designer voice with teach intent
+    makes the robustness concerns visible and learnable.
+  recommendation: "Document resilience as a strong method for make tasks where durability matters"
+
+# =============================================================================
+# SUMMARY AND IMPLEMENTATION PRIORITY
+# =============================================================================
+
+summary:
+  cycle: 3
+  evaluation_date: "2026-02-10"
+  seeds: "0041-0060"
+
+  statistics:
+    excellent_rate: "65% (13/20)"
+    average_score: 4.09
+    output_exclusive_conflict_rate: "25% (5/20)"
+
+  vs_targets:
+    excellent_rate: "65% vs 70% target — approaching but not yet met"
+    average_score: "4.09 vs 4.30 target — below target, stable vs cycle 2 (4.16)"
+    conflict_rate: "25% vs 5% target — unchanged; validation implementation is the blocker"
+
+  new_findings:
+    - "make + rewrite(form) semantic conflict — new recurring pattern (2 instances)"
+    - "codetour task-affinity failure — 2 instances, now pattern-confirmed"
+    - "gherkin task-affinity failure — 1 instance, confirms channel-specific concern"
+    - "intent-task affinity gaps — appreciate/pick, announce/plan, entertain/gherkin"
+    - "visual(form) output-exclusive confirmed — new variant of format collision"
+    - "taxonomy(form) output-exclusive confirmed — new variant of format collision"
+
+  confirmed_findings:
+    - "Output-exclusive conflicts at 25% (same as cycle 2) — validation still not implemented"
+    - "Persona presets remain most reliable quality predictor"
+    - "Scope axis remains conflict-free and universally reinforcing"
+    - "Directional tokens remain consistently valuable"
+
+  key_recommendation: >
+    Implement the output_exclusive_mutual_exclusion validation rule from
+    recommendations-post-refactor.yaml immediately. Add visual and taxonomy to the
+    output_exclusive token list. Also add make + rewrite conflict rule. These three
+    changes would have prevented 4 of the 5 conflicts in this cycle. The 5th conflict
+    (codetour task-affinity) requires metadata, not a mutual-exclusion rule.
+
+implementation_order:
+  phase_1_critical:
+    duration: "1-2 weeks"
+    actions:
+      - "Add output_exclusive: true to visual(form) and taxonomy(form)"
+      - "Implement make + rewrite validation rule"
+      - "Add task_affinity metadata to codetour(channel) and gherkin(channel)"
+      - "Apply all rules from recommendations-post-refactor.yaml (still pending)"
+
+  phase_2_high_priority:
+    duration: "3-5 days"
+    actions:
+      - "Add intent-task affinity metadata (appreciate, announce, entertain)"
+      - "Add intent-channel incompatibility warnings (entertain + gherkin/codetour)"
+      - "Add persona-channel affinity metadata to sync(channel)"
+
+  phase_3_reclassification:
+    duration: "1 week"
+    actions:
+      - "Evaluate reclassifying rewrite(form) to method axis"
+      - "If reclassified, update all validation rules accordingly"
+      - "Document positive patterns in examples library"
+
+  phase_4_next_evaluation:
+    duration: "2-3 weeks"
+    actions:
+      - "Generate seeds 0061-0080 with all validation rules active"
+      - "Evaluate using same rubric"
+      - "Target: ≥70% excellent, ≤5% conflicts, ≥4.30 average"
+      - "Measure impact of make+rewrite and output_exclusive rules specifically"
+
+  confidence_level: >
+    High. The same conflict patterns have now appeared across 3 cycles. The root causes
+    are well-understood: output-exclusive format tokens, task-affinity mismatches for
+    codetour/gherkin, and the rewrite/make semantic conflict. Targeted validation rules
+    will address all five recurring conflict types.

@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response creates new content that did not previously exist, based on the input and constraints.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"resilience\"): The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "resilience",
+      "description": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks."
+    }
+  ],
+  "axes": {
+    "static": "make",
+    "completeness": "full",
+    "method": [
+      "resilience"
+    ]
+  },
+  "persona": {
+    "voice": "as designer",
+    "intent": "teach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "intent",
+      "token": "teach",
+      "description": "Help the audience understand and learn material."
+    }
+  ],
+  "tokens": [
+    "teach",
+    "as designer",
+    "make",
+    "resilience"
+  ]
+}

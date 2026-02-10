@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"view\"): The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action.",
+    "Form (\"visual\"): The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose.",
+    "Channel (\"adr\"): The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "view",
+      "description": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
+    },
+    {
+      "axis": "form",
+      "token": "visual",
+      "description": "The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose."
+    },
+    {
+      "axis": "channel",
+      "token": "adr",
+      "description": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control."
+    }
+  ],
+  "axes": {
+    "static": "fix",
+    "completeness": "full",
+    "scope": [
+      "view"
+    ],
+    "form": [
+      "visual"
+    ],
+    "channel": [
+      "adr"
+    ]
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "fix",
+    "view",
+    "visual",
+    "adr"
+  ]
+}

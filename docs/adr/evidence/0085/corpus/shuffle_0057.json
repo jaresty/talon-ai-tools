@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"thing\"): The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+    "Method (\"operations\"): The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+    "Form (\"taxonomy\"): The response structures ideas as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly.",
+    "Channel (\"diagram\"): The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
+    "Directional (\"dip bog\"): The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and extensions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "thing",
+      "description": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective."
+    },
+    {
+      "axis": "method",
+      "token": "operations",
+      "description": "The response enhances the task by identifying operations research or management science concepts that frame the situation."
+    },
+    {
+      "axis": "form",
+      "token": "taxonomy",
+      "description": "The response structures ideas as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly."
+    },
+    {
+      "axis": "channel",
+      "token": "diagram",
+      "description": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
+    },
+    {
+      "axis": "directional",
+      "token": "dip bog",
+      "description": "The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and extensions."
+    }
+  ],
+  "axes": {
+    "static": "fix",
+    "completeness": "full",
+    "scope": [
+      "thing"
+    ],
+    "method": [
+      "operations"
+    ],
+    "form": [
+      "taxonomy"
+    ],
+    "channel": [
+      "diagram"
+    ],
+    "directional": "dip bog"
+  },
+  "persona": {
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "casually",
+    "fix",
+    "thing",
+    "operations",
+    "taxonomy",
+    "diagram",
+    "dip bog"
+  ]
+}

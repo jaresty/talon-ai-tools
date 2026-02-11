@@ -31,17 +31,34 @@ validation_targets:
     (regression: all existing tests must pass)
 
 evidence:
-  - red | 2026-02-10 | exit 1 | go test -run TestLLMHelpChannelAffinityAndTokenClarity
-      (TBD — recorded after test written)
-  - green | TBD
-  - removal | TBD
+  - red | 2026-02-10T00:00:00Z | exit 1 | go test ./internal/barcli/... -run TestLLMHelpChannelAffinityAndTokenClarity
+      helper:diff-snapshot=0 files changed (before implementation)
+      Fails: D1 (sim/prose absent), D2 (prose/case absent), D3 (compound/fly rog absent), D5 (reformat absent) | inline
+
+  - green | 2026-02-10T01:00:00Z | exit 0 | go test ./internal/barcli/...
+      helper:diff-snapshot=11 files changed, 274 insertions(+), 41 deletions(-)
+      All 100+ tests pass including TestLLMHelpChannelAffinityAndTokenClarity | inline
+      commit: c394a2b
+
+  - removal | 2026-02-10T00:45:00Z | exit 1 | git stash impl files && go test -run TestLLMHelpChannelAffinityAndTokenClarity
+      helper:diff-snapshot=0 files changed (stashed)
+      Fails with same 3 errors (D1, D2, D3) after reverting implementation | inline
+      git stash pop restored
 
 rollback_plan: git restore --source=HEAD lib/axisConfig.py lib/staticPromptConfig.py
   internal/barcli/embed/prompt-grammar.json internal/barcli/help_llm.go
   internal/barcli/help_llm_test.go internal/barcli/skills/bar-manual/skill.md &&
   go test ./internal/barcli/... -run TestLLMHelpChannelAffinityAndTokenClarity (expect exit 1)
 
-delta_summary: TBD after implementation
+delta_summary: helper:diff-snapshot=11 files changed, 274 insertions(+), 41 deletions(-)
+  - lib/axisConfig.py: code/html/shellscript + sim/probe affinity; taxonomy/visual + channel caveats; order + sort disambiguation
+  - lib/staticPromptConfig.py: fix task + reformat disambiguation
+  - internal/barcli/embed/prompt-grammar.json + build/ + testdata/: grammar regenerated
+  - internal/barcli/help_llm.go: prose-form conflict rule + sim/probe in task-affinity + compound directional note
+  - internal/barcli/help_llm_test.go: TestLLMHelpChannelAffinityAndTokenClarity specifying test
+  - internal/barcli/skills/bar-manual/skill.md: compound directionals discovery note
+  - .claude/skills/bar-manual/skill.md: synced via bar install-skills --force
+  Depth-first rung: D1+D2 (form+channel conflicts) were active constraint; D3-D6 bundled as same-pass updates.
 
 loops_remaining_forecast: 0 loops after this one — all 6 decisions covered in Loop 1.
   Confidence: high (all changes are token description updates + help_llm.go + skill text).

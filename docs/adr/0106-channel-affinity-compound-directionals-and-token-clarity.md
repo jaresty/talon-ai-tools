@@ -1,7 +1,7 @@
 # ADR-0106: Channel Affinity, Compound Directionals, and Token Clarity
 
 ## Status
-Accepted
+Completed
 
 ## Context
 

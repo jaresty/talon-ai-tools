@@ -74,11 +74,11 @@
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
-        "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly, where the subject admits classification. Composable with non-exclusive channels (`jira`, `slack`, `sketch`, `plain`) or with no channel. Avoid pairing with output-exclusive channels (`gherkin`, `codetour`, `code`, `adr`, `html`, `shellscript`, `diagram`, `presenterm`, `sync`) — both would attempt to define the complete output structure.",
+        "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly. Adapts to the channel: when combined with a code channel, the taxonomy is expressed through the type system (interfaces, enums, inheritance hierarchies); with a markup channel, as hierarchical markup structure; without a channel, as prose classification sections.",
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives.",
-        "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising big-picture structure over dense prose. Composable with non-exclusive channels (`jira`, `slack`, `sketch`, `plain`) or with no channel. Avoid pairing with output-exclusive channels — both would attempt to define the complete output structure.",
+        "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising big-picture structure over dense prose. Adapts to the channel: when combined with a code channel, visual structure is expressed through code organization, comments, or inline ASCII; without a channel, through prose metaphors and spatial layout.",
         "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
@@ -1552,7 +1552,7 @@
     }
   },
   "checksums": {
-    "axes": "b2918e711280c92aaa86707b301bf8876c05d3884958d1ad7e33033caa3040cf",
+    "axes": "64a11402bf0203964f04cfb7afb2bc74df6153871949f757448411eead4a61b8",
     "tasks": "ea51cc14aa99fab797fd588560072eb5a357595e589386116115bba6e10c2140",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

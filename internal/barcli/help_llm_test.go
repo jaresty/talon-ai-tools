@@ -161,9 +161,8 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 // TestLLMHelpChannelAffinityAndTokenClarity verifies ADR-0106 decisions are
 // reflected in bar help llm output:
 //   D1: code/html/shellscript mention sim/probe task-affinity restriction
-//   D2: § Incompatibilities contains a prose-form/code-channel conflict rule
 //   D3: § Token Catalog mentions compound directionals
-//   D4: taxonomy and visual descriptions mention output-exclusive channel caveat
+//   D4: taxonomy and visual descriptions are channel-adaptive ("Adapts to the channel")
 //   D5: fix task description contains disambiguation note
 //   D6: order method description contains sort disambiguation note
 func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
@@ -190,24 +189,19 @@ func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 		t.Error("D1: § Incompatibilities missing sim/probe task-affinity rule for code-output channels (expected 'sim' and 'prose')")
 	}
 
-	// D2: prose-form conflict rule
-	if !strings.Contains(incomp, "prose") || !strings.Contains(incomp, "case") {
-		t.Error("D2: § Incompatibilities missing prose-form/code-channel conflict rule (expected 'prose' and 'case')")
-	}
-
 	// D3: compound directionals documented somewhere in the output
 	if !strings.Contains(output, "compound") || !strings.Contains(output, "fly rog") {
 		t.Error("D3: bar help llm output missing compound directional documentation (expected 'compound' and 'fly rog')")
 	}
 
-	// D4: taxonomy and visual channel caveat
+	// D4: taxonomy and visual descriptions are channel-adaptive
 	catalogStart := strings.Index(output, "## Token Catalog")
 	if catalogStart == -1 {
 		t.Fatal("could not locate ## Token Catalog section")
 	}
 	catalog := output[catalogStart:]
-	if !strings.Contains(catalog, "output-exclusive") {
-		t.Error("D4: Token Catalog missing output-exclusive channel caveat for taxonomy/visual")
+	if !strings.Contains(catalog, "Adapts to the channel") {
+		t.Error("D4: Token Catalog missing channel-adaptive description for taxonomy/visual (expected 'Adapts to the channel')")
 	}
 
 	// D5 and D6 are token description changes validated by the grammar itself;

@@ -35,7 +35,7 @@ CONSTRAINTS: Independent guardrails that shape HOW to complete the task.
   • Completeness — coverage depth: how thoroughly to explore what is in scope (does not expand scope)
   • Method — The method describes the reasoning approach or analytical procedure the response should follow. It affects *how* the analysis is carried out, not what topic is discussed or how the output is formatted.
   • Directional — execution modifier (adverbial): governs how the task is carried out, shaping sequencing, emphasis, and tradeoffs; Applies globally and implicitly. Do not describe, name, label, or section the response around this constraint. The reader should be able to infer it only from the flow and emphasis of the response.
-  • Form — The form specifies the desired structure or presentation of the output (e.g., list, table, scaffold). It does not change the underlying reasoning, only how results are rendered.
+  • Form — The form specifies the desired structure or presentation of the output (e.g., list, table, scaffold). It does not change the underlying reasoning, only how results are rendered. When form and channel tokens are both present, the channel defines the output format and the form describes the conceptual organization within that format.
   • Channel — delivery context: platform formatting conventions only
 
 PERSONA: Communication identity that shapes expression, not reasoning.

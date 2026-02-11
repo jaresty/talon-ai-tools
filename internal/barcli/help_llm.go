@@ -661,12 +661,6 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`.\n")
 	fmt.Fprintf(w, "- `code`, `html`, `shellscript` channels: not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.\n\n")
 
-	fmt.Fprintf(w, "**Prose-form conflicts:**\n")
-	fmt.Fprintf(w, "Form tokens that produce structured prose (`case`, `formats`, `walkthrough`, `scaffold`, `recipe`, `faq`, `table`, `taxonomy`, `visual`, `variants`, `checklist`, `actions`) ")
-	fmt.Fprintf(w, "conflict with channels that mandate code or markup as the complete output (`code`, `html`, `shellscript`). ")
-	fmt.Fprintf(w, "Use prose-producing forms only with channels that support natural language (`jira`, `slack`, `sketch`, `plain`) or with no channel token. ")
-	fmt.Fprintf(w, "Exception: `test` form produces test case code and is compatible with `code` channel.\n\n")
-
 	fmt.Fprintf(w, "**Semantic conflicts:**\n")
 	fmt.Fprintf(w, "- `rewrite` form implies existing content to transform. ")
 	fmt.Fprintf(w, "Pairing with `make` is semantically incoherent: `make` implies creating from nothing while `rewrite` implies transforming existing content.\n\n")

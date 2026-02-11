@@ -296,13 +296,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "feasible, keeping columns and rows compact.",
         "taxonomy": "The response organizes the main content as a classification "
         "system, type hierarchy, or category taxonomy, defining types, "
-        "their relationships, and distinguishing attributes clearly, "
-        "where the subject admits classification. Composable with "
-        "non-exclusive channels (`jira`, `slack`, `sketch`, `plain`) or "
-        "with no channel. Avoid pairing with output-exclusive channels "
-        "(`gherkin`, `codetour`, `code`, `adr`, `html`, `shellscript`, "
-        "`diagram`, `presenterm`, `sync`) — both would attempt to define "
-        "the complete output structure.",
+        "their relationships, and distinguishing attributes clearly. "
+        "Adapts to the channel: when combined with a code channel, the "
+        "taxonomy is expressed through the type system (interfaces, enums, "
+        "inheritance hierarchies); with a markup channel, as hierarchical "
+        "markup structure; without a channel, as prose classification sections.",
         "test": "The response presents test cases in a structured format with clear "
         "setup, execution, and assertion sections, organized by scenario "
         "type (happy path, edge cases, errors, boundaries) and including "
@@ -316,10 +314,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "visual": "The response presents the main answer as an abstract visual or "
         "metaphorical layout with a short legend where the subject lends "
         "itself to visual representation, emphasising big-picture "
-        "structure over dense prose. Composable with non-exclusive "
-        "channels (`jira`, `slack`, `sketch`, `plain`) or with no channel. "
-        "Avoid pairing with output-exclusive channels — both would attempt "
-        "to define the complete output structure.",
+        "structure over dense prose. Adapts to the channel: when combined "
+        "with a code channel, visual structure is expressed through code "
+        "organization, comments, or inline ASCII; without a channel, "
+        "through prose metaphors and spatial layout.",
         "walkthrough": "The response guides the audience step by step by outlining "
         "stages and walking through them in order so understanding "
         "builds gradually.",

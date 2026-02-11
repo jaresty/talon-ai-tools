@@ -5,9 +5,20 @@ description: Automatically detect and apply bar structuring to responses for bet
 
 # Bar Autopilot Skill
 
+## MANDATORY: You Must Run Bar Before Responding
+
+**Running `bar build` before answering is not optional.** This skill does not provide suggestions for when bar might help — it requires you to invoke bar for every request.
+
+- Do NOT answer the user directly, even if you already know the answer.
+- Do NOT skip bar because the request seems simple or the answer feels obvious.
+- Do NOT compose a response before completing steps 1–5 of the High-level Workflow below.
+- The **only** permitted exception: `bar` is not installed (`command not found`). In that case fall back to a normal response and inform the user.
+
+If you find yourself drafting a response without having run `bar build`, stop and run it first.
+
 ## Purpose and Preconditions
 
-This skill enables Claude to **automatically detect when a user request benefits from bar structuring** and apply it proactively. The skill teaches Claude to use bar as a thinking tool to structure better responses without requiring the user to know about bar.
+This skill requires Claude to **run `bar build` before every response** and use bar's structured output as the prompt it responds to. Bar is a thinking tool that structures responses — skip it and the structuring benefit is lost entirely.
 
 Assumes:
 - `bar` CLI is installed and accessible
@@ -16,21 +27,23 @@ Assumes:
 
 ## High-level Workflow
 
-1. **Analyze user request** for implicit structure needs
+Each step is a required gate. Do not advance to the next step until the current one is complete.
+
+1. **Analyze user request** for task type, scope, and desired output structure
 2. **Load comprehensive reference** via `bar help llm` once per conversation (cache for reuse)
 3. **Select tokens** by consulting reference sections (Usage Patterns, Token Selection Heuristics, Token Catalog)
-4. **Build appropriate bar command** based on discovered tokens
-5. **Execute bar command** and use output as prompt structure
-6. **Return well-structured response** to user
+4. **Build and execute bar command** — run `bar build <tokens> [--subject ...] [--addendum ...]` via Bash tool
+5. **Read bar output** — the printed text is now your instruction for this response
+6. **Return well-structured response** following the bar output exactly
 
 ## Skill Behavior Rules
 
+- **REQUIRED: Always invoke bar before responding.** No response without a prior `bar build` call.
 - **Never hardcode tokens.** Always discover them via `bar help llm` (preferred) or `bar help tokens` (fallback).
 - **Be version-agnostic.** Tokens evolve; discover them dynamically from the current bar version.
 - **Use kebab-case for multi-word tokens.** When tokens contain spaces (e.g., "as kent beck"), convert to kebab-case: "as-kent-beck".
-- **Work proactively.** Users should not need to ask for bar structuring.
 - **Be transparent about usage.** After using bar, briefly explain which command you used and why it fits the request type.
-- **Graceful degradation.** If bar is unavailable, fall back to normal responses.
+- **Fallback only on command-not-found.** If bar is unavailable, fall back to normal response and tell the user. A failed bar command is not a reason to skip; retry once with corrections.
 - **Cross-agent compatible.** Must work across all Claude agent types (general-purpose, Explore, Plan, etc.).
 - **Use Bash tool.** Execute bar commands via the Bash tool.
 - **Parse output reliably.** Extract the prompt structure from bar's output.

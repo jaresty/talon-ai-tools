@@ -5,9 +5,20 @@ description: Build and execute multi-step bar command sequences for complex task
 
 # Bar Workflow Skill
 
+## MANDATORY: You Must Run Bar Commands Before Responding
+
+**Executing a bar command sequence before answering is not optional.** This skill does not describe an approach you might take — it requires you to run bar for every request covered by this skill.
+
+- Do NOT answer the user directly, even for the first step.
+- Do NOT skip bar because you already know what to say.
+- Do NOT compose a response before completing the planned bar sequence.
+- The **only** permitted exception: `bar` is not installed (`command not found`). In that case fall back to a normal response and inform the user.
+
+If you find yourself drafting an answer without having run at least one `bar build` command, stop and run it first.
+
 ## Purpose and Preconditions
 
-This skill enables Claude to **build and execute multi-step bar command sequences** for complex tasks that require multiple perspectives or progressive refinement.
+This skill requires Claude to **execute a sequence of `bar build` commands** for complex tasks that require multiple perspectives or progressive refinement. Each command's output becomes the authoritative instruction for that step — skip a command and the reasoning depth is lost.
 
 Assumes:
 - `bar` CLI is installed and accessible
@@ -16,21 +27,24 @@ Assumes:
 
 ## High-level Workflow
 
-1. **Identify complex request** requiring multiple perspectives
+Each step is a required gate. Do not advance to the next step until the current one is complete.
+
+1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load comprehensive reference** via `bar help llm` once per conversation
-3. **Plan workflow sequence** using method categorization and patterns from reference
-4. **Execute bar commands in sequence**, using output of each to inform the next
-5. **Synthesize results** into comprehensive response
+3. **Plan the full command sequence** — token choices for each step — before executing any
+4. **Execute bar commands in sequence** via Bash tool, treating each output as your instruction for that step
+5. **Synthesize results** into a comprehensive response that reflects all steps
 
 ## Skill Behavior Rules
 
+- **REQUIRED: Run every planned bar command before synthesizing.** No synthesis without all commands executed.
 - **Chain commands thoughtfully.** Each step should build on the previous one.
 - **Never hardcode tokens.** Always discover via `bar help llm` (preferred) or `bar help tokens` (fallback).
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "dip-bog", "fly-rog").
 - **Use progressive refinement.** Start broad, then narrow focus.
 - **Be transparent about usage.** After completing a workflow, explain the sequence and rationale.
 - **Cross-agent compatible.** Works across all Claude agent types.
-- **Graceful degradation.** If workflow fails mid-sequence, return partial results.
+- **Fallback only on command-not-found.** If a step fails, retry once with corrections before falling back to partial results.
 
 ## Discovery Workflow
 

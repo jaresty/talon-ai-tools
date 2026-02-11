@@ -298,9 +298,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "system, type hierarchy, or category taxonomy, defining types, "
         "their relationships, and distinguishing attributes clearly. "
         "Adapts to the channel: when combined with a code channel, the "
-        "taxonomy is expressed through the type system (interfaces, enums, "
-        "inheritance hierarchies); with a markup channel, as hierarchical "
-        "markup structure; without a channel, as prose classification sections.",
+        "taxonomy is expressed through the type system (interfaces, "
+        "enums, inheritance hierarchies); with a markup channel, as "
+        "hierarchical markup structure; without a channel, as prose "
+        "classification sections.",
         "test": "The response presents test cases in a structured format with clear "
         "setup, execution, and assertion sections, organized by scenario "
         "type (happy path, edge cases, errors, boundaries) and including "

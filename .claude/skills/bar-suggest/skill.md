@@ -88,7 +88,7 @@ Use bar-suggest when the request is:
    - Specific methods within each category
    - How categories represent different thinking modes
 
-2. **Select static prompts for options** - **REQUIRED: Select a static prompt token** for each option to give clear task direction. Discover available static prompt tokens from the reference § "Token Catalog" § "Static Prompts". The grammar marks static prompts as optional (0-1), but this is a technical specification—automated usage MUST include a static prompt to make options distinct and focused. See reference § "Usage Guidance for Automated/Agent Contexts".
+2. **Select task for options** - **REQUIRED: Select a task token** for each option to give clear task direction. Discover available task tokens from the reference § "Token Catalog" § "Tasks". The grammar marks tasks as optional (0-1), but this is a technical specification—automated usage MUST include a task to make options distinct and focused. See reference § "Usage Guidance for Automated/Agent Contexts".
 
 3. **Create cross-category options** - Generate options using methods from different categories:
    - **Option 1**: Use methods from Exploration category (discover from reference)
@@ -172,7 +172,7 @@ bar help llm
 # Option 4 (Freeform): bar shuffle
 
 # Step 4: Execute user's choice with discovered tokens
-bar build <user-chosen-tokens> --prompt "microservices architecture"
+bar build <user-chosen-tokens> --subject "microservices architecture"
 ```
 
 **Legacy approach:**
@@ -188,7 +188,7 @@ bar help tokens scope method form
 # Option 4: bar shuffle
 
 # Step 3: Execute user's choice
-bar build <discovered-tokens-for-choice> --prompt "topic"
+bar build <discovered-tokens-for-choice> --subject "topic"
 ```
 
 ## Integration with Other Skills

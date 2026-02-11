@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Method (\"dimension\"): The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
+    "Form (\"direct\"): The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "method",
+      "token": "dimension",
+      "description": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact."
+    },
+    {
+      "axis": "form",
+      "token": "direct",
+      "description": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "narrow",
+    "method": [
+      "dimension"
+    ],
+    "form": [
+      "direct"
+    ]
+  },
+  "persona": {
+    "voice": "as writer",
+    "tone": "kindly",
+    "intent": "entertain"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as writer",
+      "description": "The response speaks as a writer, focusing on narrative clarity and flow."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    },
+    {
+      "axis": "intent",
+      "token": "entertain",
+      "description": "Engage or amuse the audience."
+    }
+  ],
+  "tokens": [
+    "entertain",
+    "as writer",
+    "kindly",
+    "pull",
+    "narrow",
+    "dimension",
+    "direct"
+  ]
+}

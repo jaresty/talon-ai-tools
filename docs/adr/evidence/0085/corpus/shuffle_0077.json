@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Scope (\"act\"): The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+    "Channel (\"sketch\"): The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI.",
+    "Directional (\"fip ong\"): The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
+    },
+    {
+      "axis": "scope",
+      "token": "act",
+      "description": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting."
+    },
+    {
+      "axis": "channel",
+      "token": "sketch",
+      "description": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
+    },
+    {
+      "axis": "directional",
+      "token": "fip ong",
+      "description": "The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "deep",
+    "scope": [
+      "act"
+    ],
+    "channel": [
+      "sketch"
+    ],
+    "directional": "fip ong"
+  },
+  "persona": {
+    "voice": "as designer",
+    "audience": "to team"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    }
+  ],
+  "tokens": [
+    "as designer",
+    "to team",
+    "check",
+    "deep",
+    "act",
+    "sketch",
+    "fip ong"
+  ]
+}

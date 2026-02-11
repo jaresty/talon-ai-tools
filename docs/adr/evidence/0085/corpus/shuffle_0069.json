@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Method (\"verify\"): The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment.",
+    "Form (\"taxonomy\"): The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly, where the subject admits classification.",
+    "Channel (\"gherkin\"): The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject)."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "method",
+      "token": "verify",
+      "description": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment."
+    },
+    {
+      "axis": "form",
+      "token": "taxonomy",
+      "description": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly, where the subject admits classification."
+    },
+    {
+      "axis": "channel",
+      "token": "gherkin",
+      "description": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject)."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "max",
+    "method": [
+      "verify"
+    ],
+    "form": [
+      "taxonomy"
+    ],
+    "channel": [
+      "gherkin"
+    ]
+  },
+  "persona": {
+    "preset": "stakeholder_facilitator",
+    "preset_label": "Stakeholder facilitator",
+    "voice": "as facilitator",
+    "audience": "to stakeholders",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "stakeholder_facilitator",
+      "description": "Stakeholder facilitator"
+    },
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    },
+    {
+      "axis": "audience",
+      "token": "to stakeholders",
+      "description": "The response addresses stakeholders, focusing on impact, decisions, and clarity."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "stakeholder_facilitator",
+    "plan",
+    "max",
+    "verify",
+    "taxonomy",
+    "gherkin"
+  ]
+}

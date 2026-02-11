@@ -1,0 +1,151 @@
+# ADR-0085 Cycle 4 Recommendations — Seeds 0061-0080
+# Date: 2026-02-10
+# Cycle mean: 3.4/5 | Excellent: 50% | Problematic: 25%
+
+# ── R1: sim task-affinity for code/html/shellscript channels ─────────────────
+- id: R1
+  action: edit
+  tokens: [code, html, shellscript]
+  axis: channel
+  reason: >
+    sim task (narrative scenario playback) is incompatible with code/html/shellscript
+    channels that mandate code/markup-only output. Same pattern as gherkin+sim
+    (ADR-0105 D2). Seed 0072 (sim+code) scored 2/5.
+  evidence: [seed_0072]
+  proposed: >
+    Add to each description: "Not appropriate for narrative tasks (`sim`, `probe`)
+    that produce prose rather than code or markup."
+  files:
+    - lib/axisConfig.py  # code, html, shellscript channel descriptions
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R2: Populate Incompatibilities with prose-form + code-channel rule ────────
+- id: R2
+  action: edit
+  target: bar help llm § Incompatibilities
+  reason: >
+    A general rule is missing: prose-producing form tokens (case, formats, scaffold,
+    walkthrough, etc.) conflict with code/html/shellscript channels that mandate
+    code-only output. Seeds 0075 (case+code=2) and 0076 (formats+slack=2) are
+    instances. The current Incompatibilities section covers codetour/gherkin
+    task-affinity and rewrite+make but not this broader form+channel class.
+  evidence: [seed_0075, seed_0076, seed_0061]
+  proposed: >
+    Add to § Incompatibilities: "Prose-form conflicts: form tokens that produce
+    structured prose (case, formats, walkthrough, scaffold, etc.) conflict with
+    channel tokens that mandate code or markup-only output (code, html, shellscript).
+    Use prose-producing forms only with channels that support natural language
+    (jira, slack, sketch, plain, or no channel)."
+  files:
+    - internal/barcli/help_llm.go  # renderCompositionRules
+
+# ── R3: Document compound directional tokens ─────────────────────────────────
+- id: R3
+  action: add
+  axis: directional
+  reason: >
+    Compound directionals (fly rog, fip rog, dip ong, dip bog, fip ong, etc.) render
+    as single tokens with merged descriptions and appear across multiple seeds
+    (0070, 0071, 0074, 0075, 0077, 0079). They are not axis violations — they are
+    legitimate composite tokens. However, they are completely absent from bar help llm
+    § Token Catalog and from skill guidance, making them invisible to manual prompt
+    builders. A user following bar-manual would never discover these tokens exist.
+  evidence: [seed_0070, seed_0071, seed_0074, seed_0075, seed_0077, seed_0079]
+  proposed: >
+    Add a § Compound Directionals subsection to bar help llm § Token Catalog §
+    Directional, explaining that primitive directional tokens can be combined
+    (e.g., "fly rog" = fly+rog merged) and listing the available compound forms
+    discovered via `bar shuffle`. Also mention in bar-manual skill that `bar shuffle`
+    is the discovery path for compound directionals.
+  files:
+    - internal/barcli/help_llm.go
+    - internal/barcli/skills/bar-manual/skill.md
+
+# ── R4: sort + order redundancy note ─────────────────────────────────────────
+- id: R4
+  action: edit
+  token: order
+  axis: method
+  reason: >
+    sort task already means "arrange into categories or an order." When the method
+    token is also `order`, the combination reads as tautological. Seed 0068
+    (sort+order+direct) scored 3/5 with the note that order doesn't visibly
+    differentiate from the task. Either the order method description should clarify
+    what it adds beyond the sort task, or it should note that it is redundant with sort.
+  evidence: [seed_0068]
+  proposed: >
+    Add to order method description: "When paired with `sort` task, adds emphasis
+    on the scheme used for ordering (criteria-driven sequencing) rather than the
+    categorization itself — consider whether the distinction is needed."
+  files:
+    - lib/axisConfig.py
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R5: taxonomy + channel composability caveat ───────────────────────────────
+- id: R5
+  action: edit
+  token: taxonomy
+  axis: form
+  reason: >
+    ADR-0105 D1 rephrased taxonomy as composable ("where the subject admits
+    classification"). However, seed 0069 (plan+verify+taxonomy+gherkin=2/5) shows
+    that taxonomy still conflicts with output-exclusive channels in practice —
+    both taxonomy and gherkin attempt to define the entire output structure.
+    The composability rephrasing works when taxonomy is combined with non-exclusive
+    channels or no channel, but pairing it with any output-exclusive channel still
+    produces incoherence.
+  evidence: [seed_0069]
+  proposed: >
+    Add to taxonomy description: "Composable with non-exclusive channels (jira, slack,
+    sketch). Avoid pairing with output-exclusive channels (gherkin, codetour, code,
+    adr, etc.) — both would attempt to define the complete output structure."
+  files:
+    - lib/axisConfig.py
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R6: fix task naming clarification ────────────────────────────────────────
+- id: R6
+  action: edit
+  token: fix
+  axis: task
+  reason: >
+    The fix task description ("changes the form or presentation of given content
+    while keeping its intended meaning") matches the conventional meaning of
+    rewrite/refactor, not the conventional meaning of "fix" (correct a defect).
+    Seeds 0066, 0071, 0075, 0078 all show fix with this meaning. Users encountering
+    `fix` in `bar help tokens` may expect it to mean "correct a bug or error"
+    and be surprised by its actual definition.
+  evidence: [seed_0066, seed_0071, seed_0075, seed_0078]
+  proposed: >
+    Either: (a) add a clarification note — "Note: in bar's grammar, `fix` means
+    'transform form or presentation while preserving meaning,' not 'correct a defect'
+    — use `probe` + diagnostic methods for debugging tasks"; or (b) rename to
+    `reformat` or `transform` with a `fix` alias for backwards compatibility.
+    Naming rename is higher cost; clarification note is low-cost and immediately
+    actionable.
+  files:
+    - lib/axisConfig.py  # or lib/promptConfig.py depending on where task tokens live
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R7: sim task-affinity in bar help llm § Incompatibilities ─────────────────
+- id: R7
+  action: edit
+  target: bar help llm § Incompatibilities
+  reason: >
+    The existing task-affinity section covers codetour and gherkin but not the
+    broader sim+code/markup pattern. Since R1 adds per-token notes to channel
+    descriptions, R7 adds the counterpart rule to the § Incompatibilities section
+    to make it discoverable in one place.
+  evidence: [seed_0072]
+  proposed: >
+    Add to § Task-affinity restrictions: "`code`, `html`, `shellscript` channels:
+    not appropriate for narrative tasks (`sim`, `probe`) that produce prose output
+    rather than code or markup."
+  files:
+    - internal/barcli/help_llm.go  # renderCompositionRules
+
+# ── Priority summary ──────────────────────────────────────────────────────────
+priority:
+  high:   [R2, R7]   # fill gaps in Incompatibilities — immediate usability fix
+  medium: [R1, R5]   # token description updates — prevent repeat failures
+  low:    [R3, R4, R6]  # documentation and naming — valuable but lower urgency

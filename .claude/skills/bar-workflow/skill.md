@@ -12,6 +12,7 @@ description: Build and execute multi-step bar command sequences for complex task
 - Do NOT answer the user directly, even for the first step.
 - Do NOT skip bar because you already know what to say.
 - Do NOT compose a response before completing the planned bar sequence.
+- **Do NOT run bar commands in parallel.** Run one command, write a complete response to its output, then run the next command.
 - The **only** permitted exception: `bar` is not installed (`command not found`). In that case fall back to a normal response and inform the user.
 
 If you find yourself drafting an answer without having run at least one `bar build` command, stop and run it first.
@@ -32,7 +33,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load comprehensive reference** via `bar help llm` once per conversation
 3. **Plan the full command sequence** — token choices for each step — before executing any
-4. **Execute bar commands in sequence** via Bash tool, treating each output as your instruction for that step
+4. **Execute bar commands in sequence** via Bash tool — run command 1, write a **complete response** following its TASK/CONSTRAINTS/PERSONA, then run command 2, write a complete response to it, and so on
 5. **Synthesize results** into a comprehensive response that reflects all steps
 
 ## Skill Behavior Rules
@@ -151,10 +152,18 @@ If the request doesn't fit standard progressions:
 
 ### Execute Sequence and Explain
 
-1. Run each bar command in sequence
-2. **Treat bar output as the next user prompt.** Interpret each bar response exactly as if the user typed it next — the full text bar prints is your authoritative instruction for that step. Do not paraphrase or substitute previous instructions.
-3. Use output from step N to inform step N+1
-4. After completion, explain: "I used a [N]-step workflow: [step 1 tokens] to [reason], then [step 2 tokens] to [reason], etc."
+**The loop for each step:**
+1. Run one `bar build` command
+2. **Stop. Read the output completely.**
+3. **Write a full response** following that output's TASK, CONSTRAINTS, and PERSONA — as if the user had typed that entire bar output as their next message to you
+4. Only after writing that complete response: run the next `bar build` command
+5. Repeat until all steps are done, then synthesize
+
+**Treat bar output as the next user prompt.** Each bar response completely replaces the user's original message for that step. The full text bar prints is your authoritative instruction — do not paraphrase, substitute, or carry forward instructions from a previous step.
+
+Use output from step N to inform step N+1's `--subject` or `--addendum`, but the bar output from step N+1 is the new instruction.
+
+After completion, explain: "I used a [N]-step workflow: [step 1 tokens] to [reason], then [step 2 tokens] to [reason], etc."
 
 ## Example Workflow Planning
 
@@ -255,6 +264,9 @@ Each bar command produces fresh instructions for that step. Do not carry forward
 
 **(c) Always include a task token.**
 Every `bar build` command in a workflow must include a task token (e.g., `show`, `make`, `fix`). The grammar technically marks tasks as optional, but automated usage without a task produces unfocused output. Discover available tasks from `bar help llm` § Token Catalog § Tasks.
+
+**(d) Don't run bar commands in parallel.**
+Running all bar commands at once — even with a plan to "execute each output" afterward — is wrong. The output of step 1 must exist before you can execute it, and executing it produces insights that should inform step 2's `--subject`. Run one command, respond completely, then run the next. If you find yourself calling multiple `bar build` commands in a single response, stop and correct course.
 
 ## Error Handling
 

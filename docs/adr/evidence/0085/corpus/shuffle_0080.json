@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response chooses one or more options from a set of alternatives.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Scope (\"motifs\"): The response enhances the task by identifying recurring patterns, themes, or clusters.",
+    "Method (\"analog\"): The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "scope",
+      "token": "motifs",
+      "description": "The response enhances the task by identifying recurring patterns, themes, or clusters."
+    },
+    {
+      "axis": "method",
+      "token": "analog",
+      "description": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks."
+    }
+  ],
+  "axes": {
+    "task": "pick",
+    "completeness": "minimal",
+    "scope": [
+      "motifs"
+    ],
+    "method": [
+      "analog"
+    ]
+  },
+  "persona": {
+    "voice": "as prompt engineer",
+    "audience": "to CEO",
+    "intent": "entertain"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as prompt engineer",
+      "description": "The response reflects a prompt-engineer stance, explicitly designing and refining prompts."
+    },
+    {
+      "axis": "audience",
+      "token": "to CEO",
+      "description": "The response addresses a CEO, surfacing business impact, risk, and crisp asks."
+    },
+    {
+      "axis": "intent",
+      "token": "entertain",
+      "description": "Engage or amuse the audience."
+    }
+  ],
+  "tokens": [
+    "entertain",
+    "as prompt engineer",
+    "to CEO",
+    "pick",
+    "minimal",
+    "motifs",
+    "analog"
+  ]
+}

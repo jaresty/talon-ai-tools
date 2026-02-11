@@ -4,16 +4,16 @@
     "definitions": {
       "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control.",
-        "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
+        "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation. Appropriate for tasks that produce or reference navigable code artifacts: `fix`, `make` when creating code, `show` when exposing code structure, `pull` when extracting from code. Not appropriate for non-code tasks such as `sim`, `sort`, `probe`, `diff` (without code subject), or `plan`.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject).",
-        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks.",
         "presenterm": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: <descriptive title based on the input with colons encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"<!-- end_slide -->\", \"<!-- pause -->\", \"<!-- column_layout: [7, 3] -->\", \"<!-- column: 0 -->\", \"<!-- reset_layout -->\", and \"<!-- jump_to_middle -->\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image. The response emits \"<!-- snippet_output: name -->\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"<\", \"#62;\" for \">\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"&\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies.",
         "remote": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
-        "shellscript": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation.",
+        "shellscript": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.",
         "sketch": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
@@ -74,11 +74,11 @@
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
-        "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly, where the subject admits classification.",
+        "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly, where the subject admits classification. Composable with non-exclusive channels (`jira`, `slack`, `sketch`, `plain`) or with no channel. Avoid pairing with output-exclusive channels (`gherkin`, `codetour`, `code`, `adr`, `html`, `shellscript`, `diagram`, `presenterm`, `sync`) — both would attempt to define the complete output structure.",
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives.",
-        "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising big-picture structure over dense prose.",
+        "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising big-picture structure over dense prose. Composable with non-exclusive channels (`jira`, `slack`, `sketch`, `plain`) or with no channel. Avoid pairing with output-exclusive channels — both would attempt to define the complete output structure.",
         "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
@@ -118,7 +118,7 @@
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
-        "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence.",
+        "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
         "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
@@ -312,7 +312,7 @@
           "axes": {
             "completeness": "full"
           },
-          "description": "The response changes the form or presentation of given content while keeping its intended meaning.",
+          "description": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
           "name": "fix"
         },
         {
@@ -395,7 +395,7 @@
       },
       "fix": {
         "completeness": "full",
-        "description": "The response changes the form or presentation of given content while keeping its intended meaning."
+        "description": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`)."
       },
       "make": {
         "completeness": "full",
@@ -429,7 +429,7 @@
     "descriptions": {
       "check": "The response evaluates the subject against a condition and reports whether it passes or fails.",
       "diff": "The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
-      "fix": "The response changes the form or presentation of given content while keeping its intended meaning.",
+      "fix": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
       "make": "The response creates new content that did not previously exist, based on the input and constraints.",
       "pick": "The response chooses one or more options from a set of alternatives.",
       "plan": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
@@ -1552,8 +1552,8 @@
     }
   },
   "checksums": {
-    "axes": "1df65d58a68a9c61966eeb00ae2927bbaf041f131157975a9d4d39f902e23a02",
-    "tasks": "54ed317d24d384a67aa16b19b8557be1e1c951e426afc9b76cb7a2392fa4f345",
+    "axes": "b2918e711280c92aaa86707b301bf8876c05d3884958d1ad7e33033caa3040cf",
+    "tasks": "ea51cc14aa99fab797fd588560072eb5a357595e589386116115bba6e10c2140",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"

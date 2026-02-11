@@ -503,6 +503,15 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 			fmt.Fprintf(w, "| `%s` | %s |\n", slug, desc)
 		}
 		fmt.Fprintf(w, "\n")
+
+		if axisName == "directional" && !compact {
+			fmt.Fprintf(w, "**Compound directionals:** Primitive directional tokens can be combined ")
+			fmt.Fprintf(w, "into compound tokens (e.g., `fly rog`, `fip rog`, `dip ong`, `dip bog`, `fip ong`). ")
+			fmt.Fprintf(w, "A compound token merges the two directional pressures into a single constraint — ")
+			fmt.Fprintf(w, "the compound counts as one directional token and does not exceed the axis cap. ")
+			fmt.Fprintf(w, "Compound tokens appear in the table above. They are most easily discovered via ")
+			fmt.Fprintf(w, "`bar shuffle --json` by inspecting the `directional` field in shuffled output.\n\n")
+		}
 	}
 }
 
@@ -649,7 +658,14 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- `codetour` channel: appropriate for tasks producing navigable code artifacts (`fix`, `make` with code, `show` with code structure, `pull` from code). ")
 	fmt.Fprintf(w, "Not appropriate for non-code tasks: `sim`, `sort`, `probe`, `diff` without code subject, `plan`.\n")
 	fmt.Fprintf(w, "- `gherkin` channel: appropriate for tasks mapping to scenario-based behavior specification (`check` for acceptance criteria, `plan` with BDD context, `make` when defining system behavior). ")
-	fmt.Fprintf(w, "Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`.\n\n")
+	fmt.Fprintf(w, "Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`.\n")
+	fmt.Fprintf(w, "- `code`, `html`, `shellscript` channels: not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.\n\n")
+
+	fmt.Fprintf(w, "**Prose-form conflicts:**\n")
+	fmt.Fprintf(w, "Form tokens that produce structured prose (`case`, `formats`, `walkthrough`, `scaffold`, `recipe`, `faq`, `table`, `taxonomy`, `visual`, `variants`, `checklist`, `actions`) ")
+	fmt.Fprintf(w, "conflict with channels that mandate code or markup as the complete output (`code`, `html`, `shellscript`). ")
+	fmt.Fprintf(w, "Use prose-producing forms only with channels that support natural language (`jira`, `slack`, `sketch`, `plain`) or with no channel token. ")
+	fmt.Fprintf(w, "Exception: `test` form produces test case code and is compatible with `code` channel.\n\n")
 
 	fmt.Fprintf(w, "**Semantic conflicts:**\n")
 	fmt.Fprintf(w, "- `rewrite` form implies existing content to transform. ")

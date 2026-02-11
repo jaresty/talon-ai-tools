@@ -39,7 +39,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "completeness": "full",
     },
     "fix": {
-        "description": "The response changes the form or presentation of given content while keeping its intended meaning.",
+        "description": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
         "completeness": "full",
     },
     "pull": {

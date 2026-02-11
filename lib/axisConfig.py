@@ -15,7 +15,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "version control.",
         "code": "The response consists only of code or markup as the complete "
         "output, with no surrounding natural-language explanation or "
-        "narrative.",
+        "narrative. Not appropriate for narrative tasks (`sim`, `probe`) "
+        "that produce prose output rather than code or markup.",
         "codetour": "The response is delivered as a valid VS Code CodeTour "
         "`.tour` JSON file (schema-compatible) with steps and fields "
         "appropriate to the task, omitting extra prose or surrounding "
@@ -39,7 +40,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "appropriate for tasks that don't involve system behavior: "
         "`sort`, `sim`, `probe`, `diff` (without behavioral subject).",
         "html": "The response consists solely of semantic HTML as the complete "
-        "output, with no surrounding prose or explanation.",
+        "output, with no surrounding prose or explanation. Not appropriate "
+        "for narrative tasks (`sim`, `probe`) that produce prose output "
+        "rather than code or markup.",
         "jira": "The response formats the content using Jira markup (headings, "
         "lists, panels) where relevant and avoids extra explanation "
         "beyond the main material.",
@@ -104,7 +107,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "voice, or screen sharing.",
         "shellscript": "The response is delivered as a shell script output "
         "format, focusing on correct, executable shell code rather "
-        "than prose or explanation.",
+        "than prose or explanation. Not appropriate for narrative tasks "
+        "(`sim`, `probe`) that produce prose output rather than code "
+        "or markup.",
         "sketch": "The response emits only pure D2 diagram source as the complete "
         "output. The response must use valid D2 syntax and only "
         "documented D2 shapes (e.g., rectangle, circle, cylinder, "
@@ -292,7 +297,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "taxonomy": "The response organizes the main content as a classification "
         "system, type hierarchy, or category taxonomy, defining types, "
         "their relationships, and distinguishing attributes clearly, "
-        "where the subject admits classification.",
+        "where the subject admits classification. Composable with "
+        "non-exclusive channels (`jira`, `slack`, `sketch`, `plain`) "
+        "or with no channel. Avoid pairing with output-exclusive channels "
+        "(`gherkin`, `codetour`, `code`, `adr`, `html`, `shellscript`, "
+        "`diagram`, `presenterm`, `sync`) — both would attempt to define "
+        "the complete output structure.",
         "test": "The response presents test cases in a structured format with clear "
         "setup, execution, and assertion sections, organized by scenario "
         "type (happy path, edge cases, errors, boundaries) and including "
@@ -306,7 +316,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "visual": "The response presents the main answer as an abstract visual or "
         "metaphorical layout with a short legend where the subject lends "
         "itself to visual representation, emphasising big-picture "
-        "structure over dense prose.",
+        "structure over dense prose. Composable with non-exclusive "
+        "channels (`jira`, `slack`, `sketch`, `plain`) or with no "
+        "channel. Avoid pairing with output-exclusive channels — both "
+        "would attempt to define the complete output structure.",
         "walkthrough": "The response guides the audience step by step by outlining "
         "stages and walking through them in order so understanding "
         "builds gradually.",
@@ -426,7 +439,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "research or management science concepts that frame the "
         "situation.",
         "order": "The response enhances the task by applying abstract structural "
-        "reasoning such as hierarchy, dominance, or recurrence.",
+        "reasoning such as hierarchy, dominance, or recurrence. When "
+        "paired with `sort` task, `order` adds emphasis on the criteria "
+        "and scheme driving the sequencing rather than merely producing "
+        "the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject "
         "arose, why it looks this way now, and how past decisions shaped "
         "the present state.",

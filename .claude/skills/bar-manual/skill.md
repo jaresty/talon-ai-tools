@@ -130,7 +130,13 @@ bar shuffle --seed 42                 # Reproducible
 bar shuffle --include scope,method    # Focus axes
 bar shuffle --exclude persona         # Exclude axes
 bar shuffle --fill 0.8                # Adjust density
+bar shuffle --json                    # JSON output to inspect full token set
 ```
+
+**Note on compound directionals:** `bar help tokens directional` lists only primitive
+directional tokens. Compound tokens (e.g., `fly rog`, `fip rog`, `dip ong`, `dip bog`)
+also exist and are listed in `bar help llm` § Token Catalog § Directional. Run
+`bar shuffle --json` and inspect the `directional` field to discover compound forms in use.
 
 ## Command Patterns
 

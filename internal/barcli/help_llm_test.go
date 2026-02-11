@@ -158,6 +158,70 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 	}
 }
 
+// TestLLMHelpChannelAffinityAndTokenClarity verifies ADR-0106 decisions are
+// reflected in bar help llm output:
+//   D1: code/html/shellscript mention sim/probe task-affinity restriction
+//   D2: § Incompatibilities contains a prose-form/code-channel conflict rule
+//   D3: § Token Catalog mentions compound directionals
+//   D4: taxonomy and visual descriptions mention output-exclusive channel caveat
+//   D5: fix task description contains disambiguation note
+//   D6: order method description contains sort disambiguation note
+func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	incompStart := strings.Index(output, "### Incompatibilities")
+	if incompStart == -1 {
+		t.Fatal("could not locate ### Incompatibilities section")
+	}
+	sectionStart := incompStart + len("### Incompatibilities")
+	sectionEnd := strings.Index(output[sectionStart:], "\n##")
+	var incomp string
+	if sectionEnd == -1 {
+		incomp = output[sectionStart:]
+	} else {
+		incomp = output[sectionStart : sectionStart+sectionEnd]
+	}
+
+	// D1: sim/probe task-affinity for code-output channels
+	if !strings.Contains(incomp, "sim") || !strings.Contains(incomp, "prose") {
+		t.Error("D1: § Incompatibilities missing sim/probe task-affinity rule for code-output channels (expected 'sim' and 'prose')")
+	}
+
+	// D2: prose-form conflict rule
+	if !strings.Contains(incomp, "prose") || !strings.Contains(incomp, "case") {
+		t.Error("D2: § Incompatibilities missing prose-form/code-channel conflict rule (expected 'prose' and 'case')")
+	}
+
+	// D3: compound directionals documented somewhere in the output
+	if !strings.Contains(output, "compound") || !strings.Contains(output, "fly rog") {
+		t.Error("D3: bar help llm output missing compound directional documentation (expected 'compound' and 'fly rog')")
+	}
+
+	// D4: taxonomy and visual channel caveat
+	catalogStart := strings.Index(output, "## Token Catalog")
+	if catalogStart == -1 {
+		t.Fatal("could not locate ## Token Catalog section")
+	}
+	catalog := output[catalogStart:]
+	if !strings.Contains(catalog, "output-exclusive") {
+		t.Error("D4: Token Catalog missing output-exclusive channel caveat for taxonomy/visual")
+	}
+
+	// D5 and D6 are token description changes validated by the grammar itself;
+	// the grammar load and TestLLMHelpHeuristicsTokensExist cover regressions.
+	// Spot-check that fix and order descriptions contain new guidance by checking
+	// the catalog section contains the key phrases.
+	if !strings.Contains(catalog, "reformat") {
+		t.Error("D5: Token Catalog missing 'reformat' disambiguation in fix task description")
+	}
+	if !strings.Contains(catalog, "sort") || !strings.Contains(strings.ToLower(catalog), "order") {
+		t.Error("D6: Token Catalog missing sort/order disambiguation text")
+	}
+}
+
 func TestEmbeddedSkillsUseTaskTerminology(t *testing.T) {
 	err := fs.WalkDir(embeddedSkills, "skills", func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {

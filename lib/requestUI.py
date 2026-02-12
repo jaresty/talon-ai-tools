@@ -176,6 +176,11 @@ def _on_retry(request_id: Optional[str]) -> None:
 def _on_state_change(state: RequestState) -> None:
     """Notify on terminal states so failures/cancels are visible."""
     try:
+        from .gptBusyTag import update as _update_busy_tag
+        _update_busy_tag(state)
+    except Exception:
+        pass
+    try:
         if state.phase is RequestPhase.ERROR:
             detail = state.last_error or "unknown error"
             _notify(f"Model failed: {detail}")

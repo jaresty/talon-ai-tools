@@ -100,4 +100,54 @@
 
 **next_work:**
 - Behaviour: guardrail regeneration for ADR-054 close-out (Workstream 4). Validation: `make axis-guardrails-ci` exits 0; check generated docs reference `model run … preset …`.
+  → **Completed in Loop 3** (no diff — already clean).
 - Behaviour: grammar-level busy tag (Workstream 3 / ADR-035). Validation: `.venv/bin/python -m pytest` with new tests asserting `gpt_busy` tag toggles on request lifecycle transitions.
+  → **Completed in Loop 3** (see below).
+
+---
+
+## Loop 3 — 2026-02-11
+
+**focus:** ADR-0080 Workstream 4 (ADR-054 close-out) + Workstream 3 (ADR-035 busy tag lifecycle)
+
+**Workstream 4 observation (no diff):** `make axis-guardrails-ci` ran clean — 2 tests passed, 0 files changed. The preset runtime changes (from ADR-054 Loop 1) did not introduce any axis-catalog drift. ADR-054 validation criterion met.
+
+**active_constraint (Workstream 3):** No `user.gpt_busy` tag exists anywhere in the codebase. When a request is in-flight, Talon grammar continues matching `model run …` commands; the Python `_reject_if_request_in_flight` guard is the only protection, leaving the voice recognizer free to consume the phrase and produce spurious drop notifications.
+
+**context cited:** ADR-035 § Implementation sketch; ADR-0080 work-log Loop 2 `next_work`; `lib/requestUI.py:_on_state_change` (existing phase-change hook); `_tests/stubs/talon/__init__.py` (Context stub pattern); `_tests/test_model_suggestion_overlay_lifecycle.py` (ctx.tags test pattern).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | High | Eliminates spurious recognition during in-flight requests; closes a real user-trust gap |
+| Probability | High | Tag toggle is a well-defined state machine; hooks into existing _on_state_change path |
+| Time Sensitivity | Medium | No deadline, but foundational for grammar gating (next loop) |
+
+**validation_targets:**
+- `.venv/bin/python -m pytest _tests/test_gpt_busy_tag.py -v`
+
+**evidence:**
+- red | 2026-02-11T02:00:00Z | exit 1 | `.venv/bin/python -m pytest _tests/test_gpt_busy_tag.py -v`
+  - helper:diff-snapshot=0 files changed (test file added, no gptBusyTag module)
+  - `ModuleNotFoundError: No module named 'talon_user.lib.gptBusyTag'` — 9 tests fail | inline
+- green | 2026-02-11T02:08:00Z | exit 0 | `.venv/bin/python -m pytest _tests/test_gpt_busy_tag.py -v`
+  - helper:diff-snapshot=2 files changed (lib/gptBusyTag.py new + lib/requestUI.py +5 lines)
+  - All 9 tests pass; full suite 1223 passed | inline
+- removal | 2026-02-11T02:09:00Z | exit 1 | `git restore lib/requestUI.py && rm lib/gptBusyTag.py && .venv/bin/python -m pytest _tests/test_gpt_busy_tag.py -v`
+  - helper:diff-snapshot=0 files changed (revert only)
+  - 9 tests fail with ModuleNotFoundError | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/requestUI.py && rm -f lib/gptBusyTag.py && git restore _tests/test_gpt_busy_tag.py` then verify 9 tests fail red.
+
+**delta_summary:** 3 files changed (lib/gptBusyTag.py new 55 lines, lib/requestUI.py +5 lines, _tests/test_gpt_busy_tag.py new). gptBusyTag.py defines `mod.tag("gpt_busy")`, clears tag on module load (startup/reload safety), exposes `update(state)` that sets `["user.gpt_busy"]` for SENDING/STREAMING/TRANSCRIBING/LISTENING/CONFIRMING and clears for all other phases. requestUI._on_state_change calls `gptBusyTag.update(state)` on every transition. Full suite: 1223 passed.
+
+**loops_remaining_forecast:** 2 (medium confidence).
+- Workstream 3 residual: grammar gating — scope `model run` contexts to `not user.gpt_busy` in .talon files (requires identifying which grammar files contain the run commands and adding context guards).
+- Workstream 2 (ADR-0073): CLI discoverability — all items still outstanding; larger scope.
+
+**residual_constraints:**
+- severity: Medium | Workstream 3 grammar gating: `user.gpt_busy` tag is now set on active phases but no Talon grammar file gates run commands on `not user.gpt_busy`. The tag exists but is not yet used to block recognition. Mitigation: next loop adds `not user.gpt_busy` context guards to gpt.talon run commands. Monitoring: ADR-035 status remains Proposed until grammar gating ships. Owning ADR: ADR-035.
+- severity: Low | Workstream 2 (ADR-0073): CLI discoverability unimplemented. Owning ADR: ADR-0073.
+- severity: Low | ADR-054 close-out: guardrails clean; ADR-054 can be marked Accepted pending support docs owners confirmation.
+
+**next_work:**
+- Behaviour: gate `model run` grammar on `not user.gpt_busy` (Workstream 3 final item). Validation: `.venv/bin/python -m pytest _tests/test_response_viewer_grammar.py` extended with a test that `gpt.talon` (or equivalent run-grammar file) includes a `not user.gpt_busy` context guard.

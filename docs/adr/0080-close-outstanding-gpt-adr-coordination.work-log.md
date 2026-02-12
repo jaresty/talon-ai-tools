@@ -199,3 +199,51 @@
 **next_work:**
 - Behaviour: mark ADR-035 Accepted and update ADR-0080 Workstream 3 status (documentation closure).
 - Behaviour: Workstream 2 (ADR-0073) CLI discoverability. Validation: `go test ./cmd/bar ./internal/barcli` with new tests covering concise banner and flag validation.
+  → **Completed first slice in Loop 5** (see below).
+
+---
+
+## Loop 5 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 (ADR-0073) first slice — advertise `bar tui2` in `generalHelpText` USAGE and COMMANDS sections
+
+**active_constraint:** `generalHelpText` in `internal/barcli/app.go` mentions only `bar tui`; new users receive no signal that `bar tui2` exists as the recommended command-centric grammar learning surface (ADR-0081). First-time users following `bar help` cannot discover tui2 without reading ADR docs.
+
+**context cited:** ADR-0080 work-log Loop 4 `next_work`; ADR-0073 § Decision (advertise `bar tui2` in `generalHelpText`); ADR-0081 § Migration Path (tui2 as preferred surface); `internal/barcli/app.go:70–187` (generalHelpText string).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Medium | Every `bar help` invocation omits the preferred interactive surface; direct discoverability gap |
+| Probability | High | Two-string additions to generalHelpText + two Go tests; no schema change |
+| Time Sensitivity | Medium | Foundational for further ADR-0073 work; unblocks `--command` and `--no-input` test scaffolding |
+
+**validation_targets:**
+- `go test ./internal/barcli -run "TestHelpAdvertisesTUI2|TestHelpTUI2IsRecommended" -v`
+
+**evidence:**
+- red | 2026-02-12T00:00:00Z | exit 1 | `go test ./internal/barcli -run "TestHelpAdvertisesTUI2|TestHelpTUI2IsRecommended" -v`
+  - helper:diff-snapshot=0 files changed (test file added, app.go untouched)
+  - `bar help output must mention tui2 as an interactive surface` — both tests fail | inline
+- green | 2026-02-12T00:10:00Z | exit 0 | `go test ./internal/barcli -run "TestHelpAdvertisesTUI2|TestHelpTUI2IsRecommended" -v`
+  - helper:diff-snapshot=2 files changed (app.go +7 lines, ADR-0073 doc updated)
+  - Both tests pass; `internal/barcli` full suite passes | inline
+- removal | 2026-02-12T00:11:00Z | exit 1 | `git stash && go test ./internal/barcli -run "TestHelpAdvertisesTUI2|TestHelpTUI2IsRecommended" -v`
+  - helper:diff-snapshot=0 files changed (stash reverts app.go)
+  - both tests fail: `tui2 as an interactive surface` / `tui2 must appear in the COMMANDS section` | inline
+  - (restored with `git stash pop`)
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/app.go && rm -f internal/barcli/app_help_cli_test.go` then verify both tests fail red.
+
+**delta_summary:** 3 files changed. Added `bar tui2` to `generalHelpText` USAGE line and COMMANDS entry (marked "recommended for new users") in `internal/barcli/app.go`. Added `internal/barcli/app_help_cli_test.go` with 2 specifying validations: `TestHelpAdvertisesTUI2` (tui2 present in output) and `TestHelpTUI2IsRecommended` (tui2 with "recommended" in COMMANDS section). Also updated `docs/adr/0073-cli-discoverability-and-surface-parity.md` to redirect interactive surface references to `bar tui2` (ADR-0081). Pre-existing failure: `cmd/bar/TestTUIFixtureEmitsSnapshot` fails due to update banner on stderr — unrelated to this loop. `internal/barcli` full suite: passes.
+
+**loops_remaining_forecast:** 3 (low confidence).
+- ADR-0073 Workstream 2 residual: `--no-input` global flag, `--plain` formatter, `--command` flag for `bar tui2`, conversation-loops section in help — each a separate Go implementation loop.
+- Pre-existing `TestTUIFixtureEmitsSnapshot` failure in `cmd/bar` should be addressed before full suite gates pass.
+
+**residual_constraints:**
+- severity: Medium | ADR-0073 remaining: `--no-input`, `--plain`, `--command` flags not yet implemented; help not yet tiered into sections. Mitigation: implement in subsequent loops, one flag per loop. Monitoring: ADR-0073 Proposed until all items ship. Owning ADR: ADR-0073.
+- severity: Low | Pre-existing `cmd/bar/TestTUIFixtureEmitsSnapshot` failure: update banner prints to stderr, test asserts no stderr. Mitigation: suppress update banner in fixture/test mode or move banner to stdout. Owning ADR: none assigned.
+- severity: Low | ADR-035 optional: notify when run command is blocked by gpt_busy. No Talon hook available. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: Workstream 2 — implement `--no-input` global flag in `bar build`, `bar preset use`, `bar tui`, `bar tui2` (ADR-0073 Decision item 3). Validation: `go test ./internal/barcli -run TestNoInput` with new tests asserting non-zero exit and guidance message when `--no-input` is passed and input would be prompted.

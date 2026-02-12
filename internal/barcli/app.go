@@ -76,6 +76,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
+  bar tui2 [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen]
   bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen] [--no-clipboard] [--env NAME]...
  
    bar completion <shell> [--grammar PATH] [--output FILE]
@@ -147,7 +148,11 @@ var generalHelpText = strings.TrimSpace(`USAGE
     help         Show this message.
     help tokens  List available tasks, contract axes, persona presets, and multi-word tokens
                  using the exported prompt grammar.
-    tui          Launch the Bubble Tea prompt editor to capture subject text and preview recipes.
+    tui2         Launch the redesigned command-centric prompt editor (recommended for new users).
+                 Stage-based token selection teaches the bar build grammar through direct interaction.
+                 Use --fixture PATH to emit a deterministic transcript for smoke testing and
+                 --no-alt-screen to keep the TUI in the primary terminal buffer.
+    tui          Launch the original Bubble Tea prompt editor to capture subject text and preview recipes.
                  Use --fixture PATH to emit a deterministic transcript for smoke testing and
                  --no-alt-screen to keep the TUI in the primary terminal buffer.
                  --no-clipboard to disable system clipboard calls (useful for headless testing).

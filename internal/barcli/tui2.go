@@ -25,6 +25,10 @@ func defaultTUI2Starter(opts bartui2.Options) error {
 }
 
 func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
+	if opts.NoInput {
+		writeError(stderr, "tui2 requires an interactive terminal; use --fixture PATH for non-interactive testing or --no-input is not supported by tui2")
+		return 1
+	}
 	if opts.JSON {
 		writeError(stderr, "tui2 does not support --json output")
 		return 1

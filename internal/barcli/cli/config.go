@@ -41,6 +41,9 @@ type Config struct {
 	// help llm specific flags
 	Section string
 	Compact bool
+
+	// NoInput prevents interactive prompting; TUI commands exit with guidance.
+	NoInput bool
 }
 
 // Parse converts argv-like input into a Config.
@@ -267,6 +270,8 @@ func Parse(args []string) (*Config, error) {
 			cfg.Section = strings.TrimPrefix(arg, "--section=")
 		case arg == "--compact":
 			cfg.Compact = true
+		case arg == "--no-input":
+			cfg.NoInput = true
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
 		default:

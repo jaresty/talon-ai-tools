@@ -14,6 +14,7 @@ import (
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
+	"github.com/talonvoice/talon-ai-tools/internal/updater"
 )
 
 func TestTUICommandLaunchesProgram(t *testing.T) {
@@ -109,6 +110,13 @@ func TestTUICommandSurfacesProgramErrors(t *testing.T) {
 }
 
 func TestTUIFixtureEmitsSnapshot(t *testing.T) {
+	// Suppress background update check: redirect cache dir so no stale
+	// "update available" notice leaks into stderr, and use a no-release
+	// mock client so any live check also stays silent.
+	t.Setenv("BAR_CONFIG_DIR", t.TempDir())
+	barcli.SetUpdateClient(&updater.MockGitHubClient{Releases: nil})
+	defer barcli.SetUpdateClient(nil)
+
 	subject := "Smoke subject"
 	tokens := []string{"make", "struct"}
 	grammarPath := filepath.Join("testdata", "grammar.json")

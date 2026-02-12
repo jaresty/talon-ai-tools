@@ -247,3 +247,52 @@
 
 **next_work:**
 - Behaviour: Workstream 2 — implement `--no-input` global flag in `bar build`, `bar preset use`, `bar tui`, `bar tui2` (ADR-0073 Decision item 3). Validation: `go test ./internal/barcli -run TestNoInput` with new tests asserting non-zero exit and guidance message when `--no-input` is passed and input would be prompted.
+  → **Completed in Loop 6** (see below).
+
+---
+
+## Loop 6 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 (ADR-0073) second slice — implement `--no-input` flag; fix pre-existing `TestTUIFixtureEmitsSnapshot` failure
+
+**active_constraint:** `--no-input` is not a recognised flag in `cli/config.go`; passing it to any `bar` subcommand produces `error: unknown flag --no-input` rather than a purposeful guidance message. Automation scripts cannot use `bar tui --no-input` to fail fast instead of launching an interactive session.
+
+**context cited:** ADR-0080 work-log Loop 5 `next_work`; ADR-0073 § Decision item 3 (`--no-input` guard); `internal/barcli/cli/config.go` (Parse switch — no `--no-input` case); `internal/barcli/tui.go` / `tui2.go` (flag rejection pattern); `cmd/bar/main_test.go:177` (pre-existing stderr assertion failing due to cached update banner).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Medium | Automation scripts and CI fixtures can now pass `--no-input` to get fast failure instead of a hung interactive session |
+| Probability | High | Direct flag addition + guard in runTUI/runTUI2; well-established pattern in codebase |
+| Time Sensitivity | Medium | Unblocks future `--fixture … --no-input` smoke-test recipes referenced in ADR-0073 Validation |
+
+**validation_targets:**
+- `go test ./internal/barcli -run "TestNoInputRejectsTUI|TestNoInputRejectsTUI2|TestNoInputParsed" -v`
+- `go test ./cmd/bar -run TestTUIFixtureEmitsSnapshot -v` (pre-existing failure fixed as part of this loop)
+
+**evidence:**
+- red | 2026-02-12T01:00:00Z | exit 1 | `go test ./internal/barcli -run "TestNoInputRejectsTUI|TestNoInputRejectsTUI2|TestNoInputParsed" -v`
+  - helper:diff-snapshot=0 files changed (test file added, no implementation)
+  - all 3 tests fail: `--no-input must be a recognised flag that produces guidance, not 'unknown flag'` | inline
+- green | 2026-02-12T01:10:00Z | exit 0 | `go test ./internal/barcli/... ./cmd/bar/... -v`
+  - helper:diff-snapshot=4 files changed, 21 insertions(+) — config.go +5, tui.go +4, tui2.go +4, main_test.go +8
+  - all 3 no-input tests pass; `TestTUIFixtureEmitsSnapshot` passes; full suite green | inline
+- removal | 2026-02-12T01:11:00Z | exit 1 | `git stash && go test ./internal/barcli -run "TestNoInputRejectsTUI|TestNoInputRejectsTUI2|TestNoInputParsed" -v`
+  - helper:diff-snapshot=0 files changed (stash reverts)
+  - all 3 fail: `unknown flag --no-input` | inline
+  - (restored with `git stash pop`)
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/cli/config.go internal/barcli/tui.go internal/barcli/tui2.go cmd/bar/main_test.go && rm -f internal/barcli/app_no_input_cli_test.go` then verify 3 tests fail red.
+
+**delta_summary:** 5 files changed. Added `NoInput bool` field + `--no-input` parse case to `cli/config.go`. Added `NoInput` guard (exit 1 + `--fixture` guidance) at top of `runTUI` and `runTUI2`. Added `internal/barcli/app_no_input_cli_test.go` with 3 specifying validations. Fixed pre-existing `TestTUIFixtureEmitsSnapshot` failure by adding `t.Setenv("BAR_CONFIG_DIR", t.TempDir())` + mock update client to suppress cached update banner on stderr. Full suite: `internal/barcli` + `cmd/bar` both pass.
+
+**loops_remaining_forecast:** 2 (low confidence).
+- ADR-0073 residual: `--plain` formatter, `--command` flag for `bar tui2`, tiered help sections, conversation-loops section.
+- Pre-existing `TestTUIFixtureEmitsSnapshot` fixed in this loop — no longer a blocker.
+
+**residual_constraints:**
+- severity: Medium | ADR-0073 remaining: `--plain` formatter, `--command` for `bar tui2` (`bartui2.Options.InitialCommand` field needed), tiered help sections. Mitigation: implement one per loop. Owning ADR: ADR-0073.
+- severity: Low | `--no-input` for `bar build` with piped stdin not yet gated (test requires real pipe fixture). Defer until `--no-input` semantics are confirmed with automation teams. Owning ADR: ADR-0073.
+- severity: Low | ADR-035 optional: notify when run command blocked by gpt_busy; no Talon hook available. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: Workstream 2 — implement `--command` flag for `bar tui2` (`bartui2.Options.InitialCommand` field + `cli/config.go` parse case). Validation: `go test ./internal/barcli -run TestTUI2Command` with new tests asserting initial command is seeded into the TUI options.

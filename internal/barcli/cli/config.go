@@ -44,6 +44,9 @@ type Config struct {
 
 	// NoInput prevents interactive prompting; TUI commands exit with guidance.
 	NoInput bool
+
+	// InitialCommand seeds the Run Command field in bar tui2 at launch time.
+	InitialCommand string
 }
 
 // Parse converts argv-like input into a Config.
@@ -272,6 +275,16 @@ func Parse(args []string) (*Config, error) {
 			cfg.Compact = true
 		case arg == "--no-input":
 			cfg.NoInput = true
+		case arg == "--command", arg == "--cmd":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("%s requires a value", arg)
+			}
+			cfg.InitialCommand = args[i]
+		case strings.HasPrefix(arg, "--command="):
+			cfg.InitialCommand = strings.TrimPrefix(arg, "--command=")
+		case strings.HasPrefix(arg, "--cmd="):
+			cfg.InitialCommand = strings.TrimPrefix(arg, "--cmd=")
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
 		default:

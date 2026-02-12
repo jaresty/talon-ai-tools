@@ -46,6 +46,9 @@ type Options struct {
 
 	// NoAltScreen keeps output in the primary terminal buffer.
 	NoAltScreen bool
+
+	// InitialCommand seeds the Run Command text input at launch time.
+	InitialCommand string
 }
 
 // completion represents a single completion option with metadata.
@@ -230,6 +233,10 @@ func newModel(opts Options) model {
 	sci.Placeholder = "Enter shell command (e.g., pbcopy, claude)"
 	sci.CharLimit = 512
 	sci.Width = 60
+	if opts.InitialCommand != "" {
+		sci.SetValue(opts.InitialCommand)
+		sci.CursorEnd()
+	}
 
 	// Default timeout
 	timeout := opts.CommandTimeout

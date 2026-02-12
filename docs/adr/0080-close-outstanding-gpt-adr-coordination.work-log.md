@@ -296,3 +296,52 @@
 
 **next_work:**
 - Behaviour: Workstream 2 — implement `--command` flag for `bar tui2` (`bartui2.Options.InitialCommand` field + `cli/config.go` parse case). Validation: `go test ./internal/barcli -run TestTUI2Command` with new tests asserting initial command is seeded into the TUI options.
+  → **Completed in Loop 7** (see below).
+
+---
+
+## Loop 7 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 (ADR-0073) third slice — implement `--command`/`--cmd` flag for `bar tui2`; add `SetTUI2Starter` for testability
+
+**active_constraint:** `bartui2.Options` has no `InitialCommand` field; `cli/config.go` has no `--command`/`--cmd` parse case; `tui2.go` has no exported `SetTUI2Starter`. Passing `--command echo hello` to `bar tui2` fails with `unknown flag`. Operators cannot seed the Run Command field at launch time for reproducible demos or CI fixtures.
+
+**context cited:** ADR-0080 work-log Loop 6 `next_work`; ADR-0073 § Decision (`--command` alias `--cmd` for `bar tui2`); `internal/bartui2/program.go` Options struct (no `InitialCommand` field); `internal/barcli/tui2.go` (no `SetTUI2Starter` export); `internal/barcli/cli/config.go` (no `--command` parse case).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Medium | Enables reproducible demos and CI fixtures that pre-fill the Run Command field; ADR-0073 Decision item |
+| Probability | High | Direct field addition + parse cases + model seed; follows established pattern in codebase |
+| Time Sensitivity | Low | No deadline dependency; next ADR-0073 items (`--plain`, tiered help) are independent |
+
+**validation_targets:**
+- `go test ./internal/barcli -run "TestTUI2CommandSeedsInitialCommand|TestTUI2CMDAlias|TestTUI2CommandParsed" -v`
+
+**evidence:**
+- red | 2026-02-12T02:00:00Z | exit 1 | `go test ./internal/barcli -run "TestTUI2CommandSeedsInitialCommand|TestTUI2CMDAlias|TestTUI2CommandParsed" -v`
+  - helper:diff-snapshot=0 files changed (test file added, no implementation)
+  - build failed: `undefined: barcli.SetTUI2Starter`, `opts.InitialCommand undefined`, `cfg.InitialCommand undefined` | inline
+- green | 2026-02-12T02:10:00Z | exit 0 | `go test ./internal/barcli/... ./cmd/bar/... -v`
+  - helper:diff-snapshot=3 files changed, 36 insertions(+)
+  - all 3 tests pass; full suite passes (`internal/barcli` + `cmd/bar`) | inline
+- removal | 2026-02-12T02:11:00Z | exit 1 | `git stash && go test ./internal/barcli -run "TestTUI2CommandSeedsInitialCommand|TestTUI2CMDAlias|TestTUI2CommandParsed" -v`
+  - helper:diff-snapshot=0 files changed (stash reverts 3 modified files)
+  - build failed: `undefined: barcli.SetTUI2Starter` / `opts.InitialCommand undefined` | inline
+  - (restored with `git stash pop`)
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/cli/config.go internal/barcli/tui2.go internal/bartui2/program.go && rm -f internal/barcli/app_tui2_command_cli_test.go` then verify 3 tests fail red.
+
+**delta_summary:** 3 files changed, 36 insertions(+). Added `InitialCommand string` field + `--command`/`--cmd` parse cases (including `=` forms) to `cli/config.go`. Added `InitialCommand string` to `bartui2.Options` and seeded `shellCommandInput` with `opts.InitialCommand` in `newModel`. Added `InitialCommand` to `tuiOpts` in `runTUI2`, and added `SetTUI2Starter` export (mirrors `SetTUIStarter` pattern). Added `internal/barcli/app_tui2_command_cli_test.go` with 3 specifying validations. Full suite: `internal/barcli` + `cmd/bar` both pass.
+
+**loops_remaining_forecast:** 2 (low confidence).
+- ADR-0073 residual: `--plain` formatter for token/preset listings, tiered help sections, conversation-loops section, `bar help llm` automation flags documentation.
+- Each remaining item is independent; 1–2 loops expected.
+
+**residual_constraints:**
+- severity: Medium | ADR-0073 remaining: `--plain` formatter (shared textual output mode), tiered help sections (grouped COMMANDS), conversation-loops section not yet in generalHelpText. Mitigation: implement in subsequent loops. Owning ADR: ADR-0073.
+- severity: Low | `bar help llm` does not document `--no-input` or automation flags for TUI surfaces; LLMs consuming the reference cannot discover these flags. Mitigation: add an "Automation Flags" or "Non-interactive Usage" section to `help_llm.go`. Monitoring: user flagged this in session; defer to next loop. Owning ADR: ADR-0073.
+- severity: Low | `--no-input` for `bar build` with piped stdin not yet gated. Defer until semantics confirmed. Owning ADR: ADR-0073.
+- severity: Low | ADR-035 optional: notify when run command blocked by gpt_busy; no Talon hook available. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: Workstream 2 — document `--no-input` and `bar tui2 --command` in `bar help llm` output (add "Automation Flags" section to `internal/barcli/help_llm.go`). Validation: `go test ./internal/barcli -run TestHelpLLMAutomationFlags` with a test asserting `--no-input` and `--command` appear in the LLM reference.

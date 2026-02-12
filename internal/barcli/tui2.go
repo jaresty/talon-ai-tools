@@ -88,6 +88,7 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		InitialWidth:    opts.FixtureWidth,
 		InitialHeight:   opts.FixtureHeight,
 		NoAltScreen:     opts.NoAltScreen,
+		InitialCommand:  opts.InitialCommand,
 	}
 
 	if err := startTUI2(tuiOpts); err != nil {
@@ -96,4 +97,19 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	return 0
+}
+
+// SetTUI2Starter overrides the Bubble Tea starter for testing. It returns a restore
+// function that resets the previous starter when invoked. Passing nil restores the
+// default starter immediately.
+func SetTUI2Starter(starter func(bartui2.Options) error) func() {
+	previous := startTUI2
+	if starter == nil {
+		startTUI2 = defaultTUI2Starter
+	} else {
+		startTUI2 = starter
+	}
+	return func() {
+		startTUI2 = previous
+	}
 }

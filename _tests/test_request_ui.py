@@ -1022,6 +1022,26 @@ if bootstrap is not None:
             self.assertGreaterEqual(refresh_mock.call_count, 2)
             self.assertTrue(run_mock.called)
             open_mock.assert_called()
+
+        def test_response_canvas_hint_references_show_response_command(self) -> None:
+            """Specifying validation: _show_response_canvas_hint must reference
+            'model show response', not 'model last response' (ADR-0057 D4,
+            ADR-0080 Workstream 1 Loop 2)."""
+            notified: list[str] = []
+            with patch.object(requestUI, "_notify", side_effect=notified.append):
+                requestUI._show_response_canvas_hint()
+            self.assertEqual(len(notified), 1, "expected exactly one notification")
+            self.assertIn(
+                "model show response",
+                notified[0],
+                "hint should reference the dedicated open command, not the toggle",
+            )
+            self.assertNotIn(
+                "model last response",
+                notified[0],
+                "hint must not reference the toggle command",
+            )
+
 else:
     if not TYPE_CHECKING:
 

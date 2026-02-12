@@ -297,12 +297,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "content.",
         "scaffold": "The response explains with scaffolding: it starts from first "
         "principles, introduces ideas gradually, uses concrete examples "
-        "and analogies, and revisits key points so a beginner can follow "
+        "and analogies, and revisits key points so a learner can follow "
         "and retain the concepts. Most effective with learning-oriented "
-        "audiences (`teach_junior_dev`, junior engineer, student). May "
-        "conflict with senior executive or expert personas "
-        "(`executive_brief`, CEO audience) where first-principles "
-        "exposition contradicts expected expertise.",
+        "audiences (student, entry-level engineer). May conflict with "
+        "expert-level or brevity-first personas where first-principles "
+        "exposition contradicts assumed expertise.",
         "socratic": "The response employs a Socratic, question-led method by asking "
         "short, targeted questions that surface assumptions, "
         "definitions, and gaps in understanding, withholding full "

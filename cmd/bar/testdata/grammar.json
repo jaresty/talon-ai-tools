@@ -69,7 +69,7 @@
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange: poses questions, waits for responses, then clarifies or deepens. With an output-exclusive channel, structures the output itself as a quiz — question headings with revealed answers, test sections, knowledge checks — without requiring live interaction.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation. Best paired with `fix`, `pull`, `diff`, or `show` tasks that supply existing content to transform. Pairing with `make` is semantically incoherent: `make` implies creating from nothing while `rewrite` implies transforming existing content.",
-        "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts. Most effective with learning-oriented audiences (`teach_junior_dev`, junior engineer, student). May conflict with senior executive or expert personas (`executive_brief`, CEO audience) where first-principles exposition contradicts expected expertise.",
+        "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas where first-principles exposition contradicts assumed expertise.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
@@ -1552,7 +1552,7 @@
     }
   },
   "checksums": {
-    "axes": "85b8cf40e4644493d2ed3833c573a5065f52c98759e6edb9edfa9f65ba4cb916",
+    "axes": "2b04d76cec8914c4cf10e5f290b85063006c6b19829c9f18a4bed7aca49aa076",
     "tasks": "ea51cc14aa99fab797fd588560072eb5a357595e589386116115bba6e10c2140",
     "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

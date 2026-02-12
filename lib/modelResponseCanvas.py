@@ -2232,6 +2232,14 @@ class UserActions:
             _release_response_canvas()
         else:
             _capture_previous_focus()
+            # Set suppress_response_canvas_close before closing other overlays so
+            # that confirmation_gui_close (called inside close_common_overlays) does
+            # not cascade into model_response_canvas_close and release the canvas we
+            # are about to show.
+            try:
+                GPTState.suppress_response_canvas_close = True
+            except Exception:
+                pass
             close_common_overlays(
                 actions.user, exclude={"model_response_canvas_close"}, passive=True
             )
@@ -2256,10 +2264,6 @@ class UserActions:
             ResponseCanvasState.lines_cache = None
             ResponseCanvasState.meta_expanded = False
             ResponseCanvasState.meta_pinned_request_id = ""
-            try:
-                GPTState.suppress_response_canvas_close = True
-            except Exception:
-                pass
             canvas_obj.show()
 
         if state and getattr(state, "phase", None) in (

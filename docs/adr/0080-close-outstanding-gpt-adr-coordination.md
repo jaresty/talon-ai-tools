@@ -1,8 +1,9 @@
 
 # 080 – Coordination plan to close outstanding GPT surface ADRs
 
-Status: Proposed
+Status: In Progress
 Date: 2026-01-12
+Updated: 2026-02-11
 Owners: GPT Surface Coordination Pod
 
 ## Context
@@ -24,34 +25,64 @@ Owners: GPT Surface Coordination Pod
 - Bundle cross-cutting doc/help updates into a shared documentation refresh sprint to avoid repeated guardrail regeneration.
 
 ## Workstreams
-1. **ADR-0057: Canvas reminder & grammar parity**
-   - Implement delayed streaming reminder toast referencing `model show response` (Request UI controller + notification helpers).
-   - Add `model pass response` (and related variants) to Talon grammar, delegating to existing paste destination logic.
-   - Refresh help surfaces (Help Hub, quickstart) to mention the toast, pill affordance, and explicit follow-up commands.
-   - Validation: `python3 -m pytest` suites covering request UI, grammar guardrails, plus regenerated documentation snapshots.
 
-2. **ADR-0073: CLI discoverability upgrade**
-   - Introduce concise top-level help output and short usage hints when running `bar` with no subcommand.
-   - Implement global `--no-input` and `--plain` flags, propagating through build, preset, and TUI entry points.
-   - Update Go tests to cover help output, flag validation, and automation pathways; refresh README/help text accordingly.
-   - Validation: `go test ./cmd/bar ./internal/barcli`, regenerated CLI docs, and updated quickstart snippets.
+### 1. ADR-0057: Canvas reminder & grammar parity
 
-3. **ADR-035: Grammar-level busy gating**
-   - Define `tag: gpt_busy`, toggle it when the request lifecycle enters/leaves active states, and scope run grammars to `not gpt_busy`.
-   - Keep non-run commands (help, canvas controls) available by isolating their contexts from the new tag.
-   - Add telemetry/log hooks to confirm reduced duplicate-run notifications.
-   - Validation: Talon grammar smoke checks, updated unit tests ensuring busy tag toggles, and a short usability capture demonstrating silent suppression of duplicate commands.
+**Completed (as of 2026-02):**
+- Pill dual-action affordance with "Show response" button implemented (`lib/pillCanvas.py`).
+- Shared `prepare_destination_surface` helper in `lib/modelDestination.py` for focus re-check before paste.
+- `paste response` command wired in `GPT/gpt-confirmation-gui.talon`.
+- Tests covering destination promotion and pill/canvas toggling.
 
-4. **ADR-054: Documentation close-out**
-   - Regenerate Help Hub, quickstart, and guardrail artefacts to reference `model run [source] [destination] preset <name>`.
-   - Audit README/CLI docs for legacy `model preset run` references and update accordingly.
-   - Validation: guardrail regeneration (`make axis-guardrails-ci`), doc diff review, and confirmation from support docs owners.
+**Remaining:**
+- Implement delayed streaming reminder toast referencing `model show response` (Request UI controller + notification helpers).
+- Add `model pass response` (and related variants) to Talon grammar, delegating to existing paste destination logic.
+- Refresh help surfaces (Help Hub, quickstart) to mention the toast, pill affordance, and explicit follow-up commands.
+- Validation: `python3 -m pytest` suites covering request UI, grammar guardrails, plus regenerated documentation snapshots.
+
+### 2. ADR-0073: CLI discoverability upgrade
+
+**Completed:** ADR documented only.
+
+**Remaining (all items outstanding):**
+- Introduce concise top-level help output and short usage hints when running `bar` with no subcommand.
+- Implement global `--no-input` and `--plain` flags, propagating through build, preset, and TUI entry points.
+- Implement `--command` flag for `bar tui` (documented in ADR but not yet in Config struct).
+- Update Go tests to cover help output, flag validation, and automation pathways; refresh README/help text accordingly.
+- Validation: `go test ./cmd/bar ./internal/barcli`, regenerated CLI docs, and updated quickstart snippets.
+
+### 3. ADR-035: Grammar-level busy gating
+
+**Completed:** ADR documented only.
+
+**Remaining (all items outstanding):**
+- Define `tag: gpt_busy`, toggle it when the request lifecycle enters/leaves active states, and scope run grammars to `not gpt_busy`.
+- Keep non-run commands (help, canvas controls) available by isolating their contexts from the new tag.
+- Add startup/reload tag cleanup to prevent stranded tags on Talon reload.
+- Add telemetry/log hooks to confirm reduced duplicate-run notifications.
+- Validation: Talon grammar smoke checks, updated unit tests ensuring busy tag toggles, and a short usability capture demonstrating silent suppression of duplicate commands.
+
+### 4. ADR-054: Documentation close-out
+
+**Completed (as of 2026-01):**
+- `model run [source] [destination] preset <name>` grammar and `gpt_run_preset_with_source` action implemented.
+- Source-agnostic preset execution with cleared source cache on preset runs.
+- Legacy `model preset run` alias removed.
+- 81 regression tests added covering preset behavior.
+
+**Remaining:**
+- Regenerate Help Hub, quickstart, and guardrail artefacts to reference `model run [source] [destination] preset <name>`.
+- Audit README/CLI docs for any remaining legacy `model preset run` references.
+- Validation: guardrail regeneration (`make axis-guardrails-ci`), doc diff review, and confirmation from support docs owners.
 
 ## Execution Timeline
-- **Week 1 (kick-off)**: finalize staffing, produce detailed task lists per workstream, and confirm tooling/guardrail requirements.
-- **Weeks 2–3 (implementation)**: parallelize Workstreams 1–3; Workstream 4 begins once preset doc changes are ready to batch with other guardrail updates.
-- **Week 4 (integration & validation)**: complete doc regenerations, run regression suites, and collect evidence snapshots for ADR archives.
-- **Week 5 (close-out)**: review outcomes with stakeholders, archive work logs, and update ADR statuses to "Accepted" upon verifying artifacts.
+
+The original 5-week window (starting 2026-01-12) has elapsed. Revised schedule:
+
+- **Now – Week 1**: Complete Workstream 1 remaining items (toast + `model pass response` grammar) and Workstream 4 docs regeneration.
+- **Weeks 2–3**: Implement Workstreams 2 and 3 (CLI flags, busy tag).
+- **Week 4**: Integration, validation evidence collection, doc refresh.
+- **Week 5 (close-out)**: Review outcomes, archive work logs, update ADR statuses to "Accepted".
 
 ## Dependencies & Risks
 - Guardrail regeneration is shared across Workstreams 1 and 4; coordinate to avoid conflicting snapshots.

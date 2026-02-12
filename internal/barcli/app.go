@@ -345,7 +345,7 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 			writeError(stderr, err.Error())
 			return 1
 		}
-		renderTokensHelp(stdout, grammar, filters)
+		renderTokensHelp(stdout, grammar, filters, opts.Plain)
 		return 0
 	case "llm", "reference":
 		// Validate section if provided
@@ -964,7 +964,7 @@ func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
 	return filters, nil
 }
 
-func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
+func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, plain bool) {
 	shouldShow := func(key string) bool {
 		if len(filters) == 0 {
 			return true
@@ -974,6 +974,9 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 
 	printed := false
 	writeHeader := func(header string) {
+		if plain {
+			return
+		}
 		if printed {
 			fmt.Fprintln(w)
 		}
@@ -989,9 +992,19 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		}
 		sort.Strings(staticNames)
 		if len(staticNames) == 0 {
-			fmt.Fprintln(w, "  (none)")
+			if !plain {
+				fmt.Fprintln(w, "  (none)")
+			}
 		} else {
 			for _, name := range staticNames {
+				if plain {
+					slug := grammar.slugForToken(name)
+					if slug == "" {
+						slug = name
+					}
+					fmt.Fprintln(w, slug)
+					continue
+				}
 				desc := strings.TrimSpace(grammar.TaskDescription(name))
 				if desc == "" {
 					desc = "(no description)"
@@ -1069,9 +1082,18 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 					tokens = append(tokens, token)
 				}
 				sort.Strings(tokens)
-				fmt.Fprintf(w, "  %s:\n", axis)
+				if !plain {
+					fmt.Fprintf(w, "  %s:\n", axis)
+				}
 				for _, token := range tokens {
 					slug := grammar.slugForToken(token)
+					if plain {
+						if slug == "" {
+							slug = token
+						}
+						fmt.Fprintln(w, slug)
+						continue
+					}
 					display := token
 					if slug != "" && slug != token {
 						display = fmt.Sprintf("%s (canonical: %s)", slug, token)
@@ -1095,7 +1117,9 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		}
 		sort.Strings(presetNames)
 		if len(presetNames) == 0 {
-			fmt.Fprintln(w, "  (none)")
+			if !plain {
+				fmt.Fprintln(w, "  (none)")
+			}
 		} else {
 			readField := func(value *string) string {
 				if value == nil {
@@ -1104,6 +1128,14 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 				return strings.TrimSpace(*value)
 			}
 			for _, name := range presetNames {
+				if plain {
+					slug := strings.TrimSpace(grammar.slugForToken(fmt.Sprintf("persona=%s", name)))
+					if slug == "" {
+						slug = fmt.Sprintf("persona=%s", name)
+					}
+					fmt.Fprintln(w, slug)
+					continue
+				}
 				preset := grammar.Persona.Presets[name]
 				label := strings.TrimSpace(preset.Label)
 				if label == "" {
@@ -1152,15 +1184,26 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		}
 		sort.Strings(personaAxes)
 		if len(personaAxes) == 0 {
-			fmt.Fprintln(w, "  (none)")
+			if !plain {
+				fmt.Fprintln(w, "  (none)")
+			}
 		} else {
 			for _, axis := range personaAxes {
 				tokens := append([]string(nil), grammar.Persona.Axes[axis]...)
 				sort.Strings(tokens)
-				fmt.Fprintf(w, "  %s:\n", axis)
+				if !plain {
+					fmt.Fprintf(w, "  %s:\n", axis)
+				}
 				for _, token := range tokens {
 					display := strings.TrimSpace(token)
 					slug := strings.TrimSpace(grammar.slugForToken(token))
+					if plain {
+						if slug == "" || strings.EqualFold(slug, display) {
+							slug = display
+						}
+						fmt.Fprintln(w, slug)
+						continue
+					}
 					displayParts := []string{display}
 					if slug != "" && !strings.EqualFold(slug, display) {
 						displayParts = append(displayParts, fmt.Sprintf("slug: %s", slug))
@@ -1186,11 +1229,20 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		sort.Strings(intentTokens)
 		writeHeader("PERSONA INTENTS (why)")
 		if len(intentTokens) == 0 {
-			fmt.Fprintln(w, "  (none)")
+			if !plain {
+				fmt.Fprintln(w, "  (none)")
+			}
 		} else {
 			for _, token := range intentTokens {
 				display := strings.TrimSpace(token)
 				slug := strings.TrimSpace(grammar.slugForToken(token))
+				if plain {
+					if slug == "" || strings.EqualFold(slug, display) {
+						slug = display
+					}
+					fmt.Fprintln(w, slug)
+					continue
+				}
 				displayParts := []string{display}
 				if slug != "" && !strings.EqualFold(slug, display) {
 					displayParts = append(displayParts, fmt.Sprintf("slug: %s", slug))
@@ -1206,10 +1258,12 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		}
 	}
 
-	if printed {
-		fmt.Fprintln(w)
+	if !plain {
+		if printed {
+			fmt.Fprintln(w)
+		}
+		fmt.Fprintln(w, "Multi-word tokens (e.g., \"fly rog\") should be supplied exactly as listed above.")
 	}
-	fmt.Fprintln(w, "Multi-word tokens (e.g., \"fly rog\") should be supplied exactly as listed above.")
 }
 
 func readPrompt(opts *cli.Config, stdin io.Reader) (string, error) {

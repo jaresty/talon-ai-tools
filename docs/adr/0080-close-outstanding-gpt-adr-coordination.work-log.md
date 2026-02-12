@@ -442,3 +442,52 @@
 
 **next_work:**
 - Behaviour: Workstream 2 — implement `--plain` output formatter for `bar help tokens` and token listings (strip colour, headings, and multi-line cells for machine-readable textual output). Validation: `go test ./internal/barcli -run TestPlainOutput` with tests asserting `--plain` strips ANSI and section headings from token listing output.
+  → **Completed in Loop 10** (see below).
+
+---
+
+## Loop 10 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 (ADR-0073) sixth slice — implement `--plain` formatter for `bar help tokens`
+
+**active_constraint:** `cli.Config` has no `Plain` field; `--plain` fails with `unknown flag`. `bar help tokens` emits section headers (TASKS, CONTRACT AXES, PERSONA PRESETS, etc.) and bullet decorations (`•`, `-`) that impede piping to `grep`/`fzf`. ADR-0073 Decision item for a shared `--plain` formatter is undelivered.
+
+**context cited:** ADR-0080 work-log Loop 9 `next_work`; ADR-0073 § Decision (`--plain` formatter); `internal/barcli/app.go:967` (`renderTokensHelp` — no `plain` param); `internal/barcli/cli/config.go` (no `--plain` case).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Low | Automation scripts and fzf pipelines can already grep decorated output; plain mode is a convenience |
+| Probability | High | Bool param threaded through existing render function; no schema change |
+| Time Sensitivity | Low | Last remaining ADR-0073 Decision item; no dependency blocks further work |
+
+**validation_targets:**
+- `go test ./internal/barcli -run "TestPlainOutputTokensHelp" -v`
+
+**evidence:**
+- red | 2026-02-12T05:00:00Z | exit 1 | `go test ./internal/barcli -run "TestPlainOutputTokensHelp" -v`
+  - helper:diff-snapshot=0 files changed (test added, no implementation)
+  - `error: unknown flag --plain` — flag not recognised | inline
+- green | 2026-02-12T05:15:00Z | exit 0 | `go test ./internal/barcli/... ./cmd/bar/... -count=1`
+  - helper:diff-snapshot=4 files changed, 109 insertions(+), 14 deletions(-)
+  - `TestPlainOutputTokensHelp` passes; full suite passes | inline
+- removal | 2026-02-12T05:16:00Z | exit 1 | `git restore --source=HEAD internal/barcli/app.go internal/barcli/cli/config.go internal/barcli/app_test.go && go test ./internal/barcli -run "TestPlainOutputTokensHelp" -v`
+  - helper:diff-snapshot=0 files changed (revert implementation; test retained)
+  - `error: unknown flag --plain` — flag absent | inline
+  - (restored with re-edit of all three files)
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/app.go internal/barcli/cli/config.go internal/barcli/app_test.go internal/barcli/app_help_cli_test.go` then verify `TestPlainOutputTokensHelp` fails red.
+
+**delta_summary:** 4 files changed, 109 insertions(+), 14 deletions(-). Added `Plain bool` field + `--plain` parse case to `cli/config.go`. Added `plain bool` parameter to `renderTokensHelp`; in plain mode: `writeHeader` is a no-op, each token emits its slug as a bare line with no bullets, descriptions, section headers, axis prefixes, or trailing note. Updated three existing `app_test.go` call sites to pass `false`. Added `TestPlainOutputTokensHelp` specifying validation. Full suite passes.
+
+**loops_remaining_forecast:** 1 (low confidence).
+- ADR-0073 core Decision items are now all delivered. Residual: `bar tui2 --help` tiered sections, `--no-input` for `bar build` stdin — both deferred.
+- `bar help llm` and `bar skills` may need updating to document `--plain` (user question pending).
+
+**residual_constraints:**
+- severity: Low | `bar tui2 --help` tiered sections not yet mirrored from generalHelpText. Mitigation: defer; ADR-0073 anti-goals exclude TUI layout changes. Owning ADR: ADR-0073.
+- severity: Low | `bar help llm` does not mention `--plain`; `bar-workflow` / `bar-autopilot` skills may not reference it. Mitigation: update `help_llm.go` automation section and skills in a follow-up loop if warranted. Owning ADR: ADR-0073.
+- severity: Low | `--no-input` for `bar build` with piped stdin not yet gated. Owning ADR: ADR-0073.
+- severity: Low | ADR-035 optional: notify when run command blocked by gpt_busy; no Talon hook available. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: Workstream 2 close-out — update `bar help llm` Automation Flags section to document `--plain`, and review `bar-workflow`/`bar-autopilot` skills for any needed reference updates. Validation: `go test ./internal/barcli -run TestHelpLLMAutomationFlags` must still pass after updating the section; skill content review is manual.

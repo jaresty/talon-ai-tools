@@ -11,7 +11,7 @@ import (
 func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderTokensHelp(&buf, grammar, nil)
+	renderTokensHelp(&buf, grammar, nil, false)
 	output := buf.String()
 
 	presetSlug := grammar.slugForToken("persona=teach_junior_dev")
@@ -90,7 +90,7 @@ func TestRenderTokensHelpFiltersStaticSection(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	filters := map[string]bool{"task": true}
 	var buf bytes.Buffer
-	renderTokensHelp(&buf, grammar, filters)
+	renderTokensHelp(&buf, grammar, filters, false)
 
 	output := buf.String()
 	if !strings.Contains(output, "TASKS") {
@@ -111,7 +111,7 @@ func TestRenderTokensHelpPersonaFilterIncludesPresetsAndAxes(t *testing.T) {
 	}
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderTokensHelp(&buf, grammar, filters)
+	renderTokensHelp(&buf, grammar, filters, false)
 
 	output := buf.String()
 	if !strings.Contains(output, "PERSONA PRESETS") {

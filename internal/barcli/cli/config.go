@@ -42,6 +42,10 @@ type Config struct {
 	Section string
 	Compact bool
 
+	// Plain strips decorations (headers, bullets, descriptions) from token
+	// listings, emitting one slug per line for piping to grep/fzf.
+	Plain bool
+
 	// NoInput prevents interactive prompting; TUI commands exit with guidance.
 	NoInput bool
 
@@ -273,6 +277,8 @@ func Parse(args []string) (*Config, error) {
 			cfg.Section = strings.TrimPrefix(arg, "--section=")
 		case arg == "--compact":
 			cfg.Compact = true
+		case arg == "--plain":
+			cfg.Plain = true
 		case arg == "--no-input":
 			cfg.NoInput = true
 		case arg == "--command", arg == "--cmd":

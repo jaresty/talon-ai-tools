@@ -24,6 +24,41 @@ func TestHelpAdvertisesTUI2(t *testing.T) {
 	}
 }
 
+// TestPlainOutputTokensHelp specifies that --plain strips section headers and
+// bullet decorations from bar help tokens output, leaving one slug per line
+// suitable for piping to grep/fzf (ADR-0073).
+func TestPlainOutputTokensHelp(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	exit := Run([]string{"help", "tokens", "--plain"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected bar help tokens --plain exit 0, got %d: %s", exit, stderr.String())
+	}
+	output := stdout.String()
+
+	if strings.Contains(output, "TASKS") {
+		t.Error("--plain must not emit TASKS section header")
+	}
+	if strings.Contains(output, "CONTRACT AXES") {
+		t.Error("--plain must not emit CONTRACT AXES section header")
+	}
+	if strings.Contains(output, "•") {
+		t.Error("--plain must not emit bullet characters")
+	}
+	// Core task tokens must still be present
+	if !strings.Contains(output, "make") {
+		t.Error("--plain output must include token slug 'make'")
+	}
+	// Each line must be non-empty slug text (no leading spaces from bullets)
+	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+		if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+			t.Errorf("--plain output must not indent lines; got: %q", line)
+			break
+		}
+	}
+}
+
 // TestHelpConversationLoops specifies that bar help includes a CONVERSATION LOOPS
 // section that bridges CLI and bar tui2 for grammar discovery (ADR-0073).
 func TestHelpConversationLoops(t *testing.T) {

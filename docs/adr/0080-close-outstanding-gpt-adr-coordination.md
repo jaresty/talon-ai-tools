@@ -42,14 +42,15 @@ Owners: GPT Surface Coordination Pod
 
 ### 2. ADR-0073: CLI discoverability upgrade
 
-**Completed:** ADR documented only.
-
-**Remaining (all items outstanding):**
-- Introduce concise top-level help output and short usage hints when running `bar` with no subcommand.
-- Implement global `--no-input` and `--plain` flags, propagating through build, preset, and TUI entry points.
-- Implement `--command` flag for `bar tui` (documented in ADR but not yet in Config struct).
-- Update Go tests to cover help output, flag validation, and automation pathways; refresh README/help text accordingly.
-- Validation: `go test ./cmd/bar ./internal/barcli`, regenerated CLI docs, and updated quickstart snippets.
+**Completed (as of 2026-02-12):**
+- `bar tui2` advertised in `generalHelpText` USAGE and COMMANDS sections (Loop 5).
+- Global `--no-input` flag implemented for `bar tui` and `bar tui2`; guards emit `--fixture` guidance (Loop 6).
+- `--command`/`--cmd` flag for `bar tui2` implemented; seeds Run Command field at launch via `bartui2.Options.InitialCommand` (Loop 7).
+- "Automation Flags" section added to `bar help llm` documenting `--no-input`, `--command`, `--fixture`, and `--plain` (Loops 8, 11).
+- "Conversation Loops" section added to `generalHelpText` covering CLI → `bar tui2` → CLI hand-off workflow (Loop 9).
+- `--plain` formatter implemented for `bar help tokens`; emits `category:slug` lines (no headers, no bullets) for `grep`/`fzf` pipelines (Loops 10–11).
+- ADR-0073 status updated to Accepted (Loop 12).
+- Validation: `go test ./internal/barcli/... ./cmd/bar/...` — all pass.
 
 ### 3. ADR-035: Grammar-level busy gating
 

@@ -1,5 +1,6 @@
-Proposed — CLI discoverability and surface parity alignment (2026-01-10)
+Accepted — CLI discoverability and surface parity alignment (2026-01-10)
 Updated 2026-02-12 — redirected interactive surface references to `bar tui2` (ADR-0081).
+Updated 2026-02-12 — all Decision items delivered; status updated to Accepted (ADR-0080 Loops 5–11).
 
 ## Context
 - ADR 0065 and 0070 positioned the `bar` CLI as the grammar-driven entry point, but the default invocation still prints a usage error followed by a dense help wall.

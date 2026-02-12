@@ -539,3 +539,47 @@
 
 **next_work:**
 - Behaviour: ADR-0080 coordination close-out — update ADR-0073 status to Accepted, update ADR-0080 Workstream 2 entry to Completed, and archive with final validation evidence. Validation: `go test ./internal/barcli/... ./cmd/bar/...` green; ADR status fields updated.
+  → **Completed in Loop 12** (see below).
+
+---
+
+## Loop 12 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 close-out — update ADR-0073 status to Accepted; update ADR-0080 Workstream 2 to Completed
+
+**active_constraint:** ADR-0073 status field reads `Proposed`; ADR-0080 Workstream 2 entry reads "Remaining (all items outstanding)". Both contradict seven loops of shipped, tested implementation. The coordination goal of closing Workstream 2 cannot be recorded without updating these status fields.
+
+**context cited:** ADR-0080 work-log Loop 11 `next_work`; ADR-0073 line 1 (`Proposed`); ADR-0080 § Workstream 2 (stale "Remaining" list); full suite `go test ./internal/barcli/... ./cmd/bar/...` last confirmed green at Loop 11.
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Low | Status fields are governance records; not user-facing |
+| Probability | High | Mechanical text update; all implementation evidence already exists |
+| Time Sensitivity | Low | No downstream dependency blocks on this status change |
+
+**validation_targets:**
+- `go test ./internal/barcli/... ./cmd/bar/... -count=1` (canonical green path; confirms all shipped implementations hold)
+
+**evidence:**
+- red | 2026-02-12T07:00:00Z | exit 0 | pre-flight `go test ./internal/barcli/... ./cmd/bar/... -count=1`
+  - helper:diff-snapshot=0 files changed (no edits yet)
+  - ADR-0073 line 1 reads `Proposed` — status field contradicts delivered implementations | inline
+  - (this loop's blocker is the stale status field; the validation command is already green pre-edit)
+- green | 2026-02-12T07:05:00Z | exit 0 | `go test ./internal/barcli/... ./cmd/bar/... -count=1`
+  - helper:diff-snapshot=3 files changed (ADR-0073 +2 lines, ADR-0080 +9 lines, work-log +entry)
+  - all tests pass; ADR-0073 status line updated to Accepted | inline
+
+**rollback_plan:** `git restore --source=HEAD docs/adr/0073-cli-discoverability-and-surface-parity.md docs/adr/0080-close-outstanding-gpt-adr-coordination.md` then verify ADR-0073 line 1 reads `Proposed` again.
+
+**delta_summary:** 3 files changed. ADR-0073 first line changed from `Proposed` to `Accepted`; second dateline added recording the close-out. ADR-0080 Workstream 2 section rewritten from "Remaining (all items outstanding)" to "Completed (as of 2026-02-12)" with a bulleted record of each delivered item (Loops 5–11) and the canonical validation command. Work-log Loop 12 entry appended. No executable artefacts changed; test suite confirmed green before and after.
+
+**loops_remaining_forecast:** 0 for Workstream 2. ADR-035 (Workstream 3) and ADR-054 (Workstream 4) remain open per ADR-0080; Workstream 1 (ADR-0057) toast/grammar items are partially open. ADR-0080 itself stays open until all four workstreams are closed.
+
+**residual_constraints:**
+- severity: Medium | ADR-0057 Workstream 1 residual: streaming reminder toast and `model pass response` grammar still not shipped. Owning ADR: ADR-0057.
+- severity: Low | ADR-054 Workstream 4: guardrail regeneration (`make axis-guardrails-ci`) not yet run post preset-runtime changes. Owning ADR: ADR-054.
+- severity: Low | `bar tui2 --help` tiered sections not mirrored; deferred per ADR-0073 anti-goals. Owning ADR: ADR-0073.
+- severity: Low | ADR-035 optional telemetry hook for busy-tag suppression not yet implemented. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: ADR-0080 Workstream 1 residual — implement streaming reminder toast referencing `model show response` in `lib/requestUI.py`. Validation: `.venv/bin/python -m pytest _tests/test_request_ui.py -v` (or equivalent specifying test confirming toast fires after streaming completes).

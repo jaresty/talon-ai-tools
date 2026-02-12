@@ -2,7 +2,8 @@
 
 ## Status
 
-Proposed
+Accepted (2026-02-11) — tag lifecycle, grammar gating, and startup cleanup shipped;
+see ADR-0080 work-log Loops 3–4 for evidence.
 
 ## Context / Problem
 

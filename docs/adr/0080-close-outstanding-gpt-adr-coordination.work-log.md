@@ -150,4 +150,52 @@
 - severity: Low | ADR-054 close-out: guardrails clean; ADR-054 can be marked Accepted pending support docs owners confirmation.
 
 **next_work:**
-- Behaviour: gate `model run` grammar on `not user.gpt_busy` (Workstream 3 final item). Validation: `.venv/bin/python -m pytest _tests/test_response_viewer_grammar.py` extended with a test that `gpt.talon` (or equivalent run-grammar file) includes a `not user.gpt_busy` context guard.
+- Behaviour: gate `model run` grammar on `not user.gpt_busy` (Workstream 3 final item).
+  → **Completed in Loop 4** (see below).
+
+---
+
+## Loop 4 — 2026-02-11
+
+**focus:** ADR-0080 Workstream 3 final item — gate `model run` grammar on `not user.gpt_busy` (ADR-035)
+
+**active_constraint:** `user.gpt_busy` tag is toggled by the request lifecycle but no `.talon` file guards run commands against it. Talon grammar continues matching `{user.model} run …` phrases during in-flight requests; only the Python `_reject_if_request_in_flight` guard blocks execution.
+
+**context cited:** ADR-035 § Decision (scope run contexts to `not gpt_busy`); ADR-0080 work-log Loop 3 `next_work`; `GPT/gpt.talon` (pre-loop: all run + non-run commands ungated); `_tests/test_request_history_talon_commands.py` (talon file content test pattern).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | High | Eliminates recognition-layer duplicate runs; Talon stops matching the phrase entirely |
+| Probability | High | Direct file split — context guard in new file header |
+| Time Sensitivity | Medium | Completes ADR-035 definition of done |
+
+**validation_targets:**
+- `.venv/bin/python -m pytest _tests/test_gpt_run_busy_guard.py -v`
+
+**evidence:**
+- red | 2026-02-11T03:00:00Z | exit 1 | `.venv/bin/python -m pytest _tests/test_gpt_run_busy_guard.py -v`
+  - helper:diff-snapshot=0 files changed (test file added, grammar unchanged)
+  - `gpt-run-commands.talon does not exist` — 5 of 6 tests fail | inline
+- green | 2026-02-11T03:08:00Z | exit 0 | `.venv/bin/python -m pytest _tests/test_gpt_run_busy_guard.py -v`
+  - helper:diff-snapshot=3 files changed (gpt-run-commands.talon new, gpt.talon trimmed, test file)
+  - All 6 tests pass; full suite 1229 passed | inline
+- removal | 2026-02-11T03:09:00Z | exit 1 | `git restore GPT/gpt.talon && rm GPT/gpt-run-commands.talon && .venv/bin/python -m pytest _tests/test_gpt_run_busy_guard.py -v`
+  - helper:diff-snapshot=0 files changed (revert only)
+  - 5 tests fail; `gpt-run-commands.talon does not exist` | inline
+
+**rollback_plan:** `git restore --source=HEAD GPT/gpt.talon && rm -f GPT/gpt-run-commands.talon && git restore _tests/test_gpt_run_busy_guard.py` then verify 5 tests fail red.
+
+**delta_summary:** 3 files changed. Created `GPT/gpt-run-commands.talon` with `not user.gpt_busy` context header containing all 12 `{user.model} run` grammar rules. Removed those same run rules from `GPT/gpt.talon`, leaving only non-run commands (help, cancel, settings, last recipe, provider, persona, etc.) in the ungated file. Added `_tests/test_gpt_run_busy_guard.py` with 6 specifying validations. Full suite: 1229 passed.
+
+**loops_remaining_forecast:** 1 (low confidence — depends on whether ADR-035 startup/reload cleanup and notification are required in the same ADR).
+- ADR-035 definition of done is met: tag toggled, run grammar gated, Python guard intact, tag cleared on reload.
+- Workstream 2 (ADR-0073): CLI discoverability — all items still outstanding; larger scope, future loops.
+
+**residual_constraints:**
+- severity: Low | ADR-035 optional item: notify when a run command is blocked by gpt_busy. The ADR marks this optional ("if Talon offers a hook"). No current Talon mechanism exposes a grammar-match-but-gated event. Mitigation: defer unless a hook becomes available. Owning ADR: ADR-035.
+- severity: Low | Workstream 2 (ADR-0073): CLI discoverability unimplemented. Owning ADR: ADR-0073.
+- severity: Low | ADR-035, ADR-0080 Workstream 3: mark ADR-035 Accepted pending stakeholder review.
+
+**next_work:**
+- Behaviour: mark ADR-035 Accepted and update ADR-0080 Workstream 3 status (documentation closure).
+- Behaviour: Workstream 2 (ADR-0073) CLI discoverability. Validation: `go test ./cmd/bar ./internal/barcli` with new tests covering concise banner and flag validation.

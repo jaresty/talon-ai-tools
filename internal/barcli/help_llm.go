@@ -968,13 +968,24 @@ func renderAutomationFlags(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "bar tui --grammar path/to/grammar.json --fixture path/to/fixture.json\n")
 	fmt.Fprintf(w, "```\n\n")
 
+	fmt.Fprintf(w, "### `--plain`\n\n")
+	fmt.Fprintf(w, "Recognized by `bar help tokens`. Strips section headers, bullets, and descriptions;\n")
+	fmt.Fprintf(w, "emits one `category:slug` line per token — ideal for piping to `grep` or `fzf`.\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "bar help tokens --plain             # all tokens as category:slug\n")
+	fmt.Fprintf(w, "bar help tokens scope --plain       # scope axis only: scope:mean, scope:struct …\n")
+	fmt.Fprintf(w, "bar help tokens --plain | grep '^task:'   # just tasks\n")
+	fmt.Fprintf(w, "bar help tokens --plain | fzf            # interactive picker\n")
+	fmt.Fprintf(w, "```\n\n")
+
 	fmt.Fprintf(w, "### Usage Guidance for Automated/Agent Contexts\n\n")
 	fmt.Fprintf(w, "- Use `bar build` for all non-interactive prompt generation; it is fully scriptable.\n")
 	fmt.Fprintf(w, "- Pass `--no-input` to TUI commands in environments without a TTY to get a fast,\n")
 	fmt.Fprintf(w, "  actionable failure rather than a hung process.\n")
 	fmt.Fprintf(w, "- Use `--command` to seed the Run Command field when demoing `bar tui2` in\n")
 	fmt.Fprintf(w, "  recorded walkthroughs or CI fixture runs.\n")
-	fmt.Fprintf(w, "- Use `--fixture` for deterministic snapshot assertions in test suites.\n\n")
+	fmt.Fprintf(w, "- Use `--fixture` for deterministic snapshot assertions in test suites.\n")
+	fmt.Fprintf(w, "- Use `--plain` to consume token listings in scripts; each line is `category:slug`.\n\n")
 }
 
 func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {

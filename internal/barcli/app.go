@@ -1002,7 +1002,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					if slug == "" {
 						slug = name
 					}
-					fmt.Fprintln(w, slug)
+					fmt.Fprintf(w, "task:%s\n", slug)
 					continue
 				}
 				desc := strings.TrimSpace(grammar.TaskDescription(name))
@@ -1091,7 +1091,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 						if slug == "" {
 							slug = token
 						}
-						fmt.Fprintln(w, slug)
+						fmt.Fprintf(w, "%s:%s\n", axis, slug)
 						continue
 					}
 					display := token
@@ -1131,9 +1131,9 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 				if plain {
 					slug := strings.TrimSpace(grammar.slugForToken(fmt.Sprintf("persona=%s", name)))
 					if slug == "" {
-						slug = fmt.Sprintf("persona=%s", name)
+						slug = name
 					}
-					fmt.Fprintln(w, slug)
+					fmt.Fprintf(w, "persona:%s\n", slug)
 					continue
 				}
 				preset := grammar.Persona.Presets[name]
@@ -1201,7 +1201,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 						if slug == "" || strings.EqualFold(slug, display) {
 							slug = display
 						}
-						fmt.Fprintln(w, slug)
+						fmt.Fprintf(w, "%s:%s\n", axis, slug)
 						continue
 					}
 					displayParts := []string{display}
@@ -1240,7 +1240,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					if slug == "" || strings.EqualFold(slug, display) {
 						slug = display
 					}
-					fmt.Fprintln(w, slug)
+					fmt.Fprintf(w, "intent:%s\n", slug)
 					continue
 				}
 				displayParts := []string{display}

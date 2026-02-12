@@ -24,9 +24,9 @@ func TestHelpAdvertisesTUI2(t *testing.T) {
 	}
 }
 
-// TestPlainOutputTokensHelp specifies that --plain strips section headers and
-// bullet decorations from bar help tokens output, leaving one slug per line
-// suitable for piping to grep/fzf (ADR-0073).
+// TestPlainOutputTokensHelp specifies that --plain emits category:slug lines —
+// no section headers, no bullets, no descriptions — suitable for piping to
+// grep/fzf with category-aware filtering (ADR-0073).
 func TestPlainOutputTokensHelp(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -46,16 +46,28 @@ func TestPlainOutputTokensHelp(t *testing.T) {
 	if strings.Contains(output, "•") {
 		t.Error("--plain must not emit bullet characters")
 	}
-	// Core task tokens must still be present
-	if !strings.Contains(output, "make") {
-		t.Error("--plain output must include token slug 'make'")
-	}
-	// Each line must be non-empty slug text (no leading spaces from bullets)
+
+	// Every non-empty line must have category:slug format
 	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
+		if line == "" {
+			continue
+		}
+		if !strings.Contains(line, ":") {
+			t.Errorf("--plain output must use category:slug format; got bare line: %q", line)
+			break
+		}
 		if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
 			t.Errorf("--plain output must not indent lines; got: %q", line)
 			break
 		}
+	}
+
+	// Specific expected entries
+	if !strings.Contains(output, "task:make") {
+		t.Error("--plain output must include 'task:make'")
+	}
+	if !strings.Contains(output, "scope:") {
+		t.Error("--plain output must include scope category entries (e.g. 'scope:mean')")
 	}
 }
 

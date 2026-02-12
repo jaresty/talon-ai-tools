@@ -491,3 +491,51 @@
 
 **next_work:**
 - Behaviour: Workstream 2 close-out — update `bar help llm` Automation Flags section to document `--plain`, and review `bar-workflow`/`bar-autopilot` skills for any needed reference updates. Validation: `go test ./internal/barcli -run TestHelpLLMAutomationFlags` must still pass after updating the section; skill content review is manual.
+  → **Completed in Loop 11** (see below).
+
+---
+
+## Loop 11 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 (ADR-0073) seventh slice — strengthen `--plain` output to `category:slug` format; document `--plain` in `bar help llm`
+
+**active_constraint:** `--plain` emits bare slugs with no category prefix; `grep '^scope:'` and `fzf` results are ambiguous. ADR-0073 Automation Flags in `bar help llm` do not mention `--plain`. Both gaps make the flag less useful than its design intent.
+
+**context cited:** ADR-0080 work-log Loop 10 `next_work`; user session feedback (category:slug is more useful); `internal/barcli/app.go` plain-mode `fmt.Fprintln` calls (bare slug); `internal/barcli/help_llm.go` Automation Flags section (no `--plain` paragraph).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Low | `category:slug` improves grep/fzf ergonomics; `--plain` documentation unblocks LLM consumers |
+| Probability | High | Mechanical string prefix additions + `help_llm.go` paragraph; no schema change |
+| Time Sensitivity | Low | No downstream dependency; quality improvement |
+
+**validation_targets:**
+- `go test ./internal/barcli -run "TestPlainOutputTokensHelp" -v` (tightened to require `category:slug` format)
+
+**evidence:**
+- red | 2026-02-12T06:00:00Z | exit 1 | `go test ./internal/barcli -run "TestPlainOutputTokensHelp" -v`
+  - helper:diff-snapshot=0 files changed (test strengthened, app.go untouched)
+  - `bare line: "check"` / `must include 'task:make'` / `must include scope category` | inline
+- green | 2026-02-12T06:10:00Z | exit 0 | `go test ./internal/barcli/... ./cmd/bar/... -count=1`
+  - helper:diff-snapshot=3 files changed, 38 insertions(+), 15 deletions(-)
+  - `TestPlainOutputTokensHelp` passes; `TestHelpLLMAutomationFlags` passes; full suite passes | inline
+- removal | 2026-02-12T06:11:00Z | exit 1 | `git restore --source=HEAD internal/barcli/app.go && go test ./internal/barcli -run "TestPlainOutputTokensHelp" -v`
+  - helper:diff-snapshot=0 files changed (revert implementation; test retained)
+  - `bare line: "check"` / `must include 'task:make'` | inline
+  - (restored with re-edits)
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/app.go internal/barcli/app_help_cli_test.go internal/barcli/help_llm.go` then verify `TestPlainOutputTokensHelp` fails red.
+
+**delta_summary:** 3 files changed, 38 insertions(+), 15 deletions(-). Changed all plain-mode `fmt.Fprintln(w, slug)` calls in `renderTokensHelp` to `fmt.Fprintf(w, "category:slug\n")` — `task:` for tasks, axis name for contract axes, `persona:` for presets, persona axis name (voice/audience/tone) for persona axes, `intent:` for intents. Tightened `TestPlainOutputTokensHelp` to assert `category:slug` format on every line and `task:make` specifically. Added `--plain` paragraph + examples to `renderAutomationFlags` in `help_llm.go`. All tests pass.
+
+**loops_remaining_forecast:** 1 (low confidence).
+- ADR-0073 Decision items are all delivered. Workstream 2 ready for close-out.
+- ADR-0080 coordination ADR needs final status update.
+
+**residual_constraints:**
+- severity: Low | `bar tui2 --help` tiered sections not yet mirrored. Mitigation: out of ADR-0073 scope (anti-goals §). Owning ADR: ADR-0073.
+- severity: Low | `--no-input` for `bar build` stdin not yet gated. Defer until semantics confirmed. Owning ADR: ADR-0073.
+- severity: Low | ADR-035 optional: notify when run command blocked by gpt_busy; no Talon hook available. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: ADR-0080 coordination close-out — update ADR-0073 status to Accepted, update ADR-0080 Workstream 2 entry to Completed, and archive with final validation evidence. Validation: `go test ./internal/barcli/... ./cmd/bar/...` green; ADR status fields updated.

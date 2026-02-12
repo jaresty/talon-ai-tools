@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response creates new content that did not previously exist, based on the input and constraints.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Method (\"grow\"): The response enhances the task by starting with the simplest valid behavior and progressively generalizing it, deliberately deferring complexity and edge cases until they are forced by earlier steps. Each stage preserves correctness within its current scope, treating premature generalization as a failure mode rather than progress.",
+    "Directional (\"dip bog\"): The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and extensions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "method",
+      "token": "grow",
+      "description": "The response enhances the task by starting with the simplest valid behavior and progressively generalizing it, deliberately deferring complexity and edge cases until they are forced by earlier steps. Each stage preserves correctness within its current scope, treating premature generalization as a failure mode rather than progress."
+    },
+    {
+      "axis": "directional",
+      "token": "dip bog",
+      "description": "The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and extensions."
+    }
+  ],
+  "axes": {
+    "task": "make",
+    "completeness": "max",
+    "method": [
+      "grow"
+    ],
+    "directional": "dip bog"
+  },
+  "persona": {
+    "preset": "peer_engineer_explanation",
+    "preset_label": "Peer engineer explanation",
+    "voice": "as programmer",
+    "audience": "to programmer"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "peer_engineer_explanation",
+      "description": "Peer engineer explanation"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    }
+  ],
+  "tokens": [
+    "peer_engineer_explanation",
+    "make",
+    "max",
+    "grow",
+    "dip bog"
+  ]
+}

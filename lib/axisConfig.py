@@ -214,7 +214,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "than abstract description.",
         "bug": "The response structures ideas as a bug report with sections for "
         "Steps to Reproduce, Expected Behavior, Actual Behavior, and "
-        "Environment or Context, emphasizing concise, testable details.",
+        "Environment or Context, emphasizing concise, testable details. "
+        "Strongest with diagnostic and debugging tasks (`probe`, or "
+        "`make`/`show` paired with diagnostic methods: `diagnose`, "
+        "`inversion`, `adversarial`). Creates semantic friction with "
+        "non-debugging tasks (e.g., `fix`, which is a reformat task in bar's "
+        "grammar). Conflicts with session-plan channels (`sync`) — a bug "
+        "report is a static artifact, not a live session agenda.",
         "bullets": "The response organizes ideas as concise bullet points, avoiding "
         "long paragraphs.",
         "cards": "The response organizes ideas as discrete cards or items, each with "
@@ -226,9 +232,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "checklist": "The response organizes ideas as an actionable checklist whose "
         "items are clear imperative tasks rather than descriptive "
         "prose.",
-        "cocreate": "The response structures interaction collaboratively, proposing "
-        "small moves, checking alignment, and iterating together instead "
-        "of delivering a one-shot answer.",
+        "cocreate": "The response structures itself as a collaborative process — "
+        "small moves, explicit decision points, and alignment checks "
+        "rather than a one-shot answer. Without an output-exclusive "
+        "channel, conducts this interactively: proposes, pauses for "
+        "feedback, and iterates. With an output-exclusive channel, "
+        "formats the artifact to expose decision points, show "
+        "alternative moves, and make the response-inviting structure "
+        "visible within the output.",
         "commit": "The response structures ideas as a conventional commit message "
         "with a short type or scope line and an optional concise body.",
         "contextualise": "The response structures ideas by adding or reshaping "
@@ -238,9 +249,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "direct": "The response structures ideas by leading with the main point or "
         "recommendation, followed only by the most relevant supporting "
         "context, evidence, and next steps.",
-        "facilitate": "The response structures interaction by framing the goal, "
-        "proposing structure, managing turns, and keeping "
-        "participation balanced rather than doing the work solo.",
+        "facilitate": "The response structures itself as a facilitation plan — "
+        "framing the goal, proposing session structure, managing "
+        "participation and turn-taking rather than doing the work "
+        "solo. Without an output-exclusive channel, acts as a live "
+        "facilitator: proposes structure and invites participation "
+        "interactively. With an output-exclusive channel, produces a "
+        "static facilitation guide: agenda, goals, cues, and session "
+        "structure as a deliverable artifact. When combined with "
+        "`sim`, designs a facilitation structure for a simulation "
+        "exercise rather than performing the simulation directly.",
         "faq": "The response organizes ideas as clearly separated question headings "
         "with concise answers beneath each one, keeping content easy to skim "
         "and free of long uninterrupted prose.",
@@ -259,12 +277,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "whole while preserving essential information.",
         "questions": "The response presents the answer as a series of probing or "
         "clarifying questions rather than statements.",
-        "quiz": "The response enhances the task by adopting an instructional flow "
-        "that tests understanding through questions before providing "
-        "explanations. It surfaces assumptions and gaps by prompting the "
-        "user to answer, then uses those responses to clarify, correct, or "
-        "deepen understanding, prioritizing active recall and learning over "
-        "immediate exposition.",
+        "quiz": "The response organizes content as a quiz structure — questions "
+        "posed before explanations, testing understanding through active "
+        "recall before providing answers. Without an output-exclusive "
+        "channel, conducts this as an interactive exchange: poses questions, "
+        "waits for responses, then clarifies or deepens. With an "
+        "output-exclusive channel, structures the output itself as a quiz — "
+        "question headings with revealed answers, test sections, knowledge "
+        "checks — without requiring live interaction.",
         "recipe": "The response expresses the answer as a recipe that includes a "
         "custom, clearly explained mini-language and a short key for "
         "understanding it.",
@@ -278,7 +298,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "scaffold": "The response explains with scaffolding: it starts from first "
         "principles, introduces ideas gradually, uses concrete examples "
         "and analogies, and revisits key points so a beginner can follow "
-        "and retain the concepts.",
+        "and retain the concepts. Most effective with learning-oriented "
+        "audiences (`teach_junior_dev`, junior engineer, student). May "
+        "conflict with senior executive or expert personas "
+        "(`executive_brief`, CEO audience) where first-principles "
+        "exposition contradicts expected expertise.",
         "socratic": "The response employs a Socratic, question-led method by asking "
         "short, targeted questions that surface assumptions, "
         "definitions, and gaps in understanding, withholding full "

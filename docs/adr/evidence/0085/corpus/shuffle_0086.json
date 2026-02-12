@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Method (\"experimental\"): The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
+    "Form (\"walkthrough\"): The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
+    "Directional (\"ong\"): The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "method",
+      "token": "experimental",
+      "description": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses."
+    },
+    {
+      "axis": "form",
+      "token": "walkthrough",
+      "description": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually."
+    },
+    {
+      "axis": "directional",
+      "token": "ong",
+      "description": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+    }
+  ],
+  "axes": {
+    "task": "diff",
+    "completeness": "skim",
+    "method": [
+      "experimental"
+    ],
+    "form": [
+      "walkthrough"
+    ],
+    "directional": "ong"
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "diff",
+    "skim",
+    "experimental",
+    "walkthrough",
+    "ong"
+  ]
+}

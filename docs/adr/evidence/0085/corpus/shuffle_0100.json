@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"grove\"): The response enhances the task by examining accumulation, decay, or rate-of-change effects and how small contributions compound over time.",
+    "Directional (\"fog\"): The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "grove",
+      "description": "The response enhances the task by examining accumulation, decay, or rate-of-change effects and how small contributions compound over time."
+    },
+    {
+      "axis": "directional",
+      "token": "fog",
+      "description": "The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights."
+    }
+  ],
+  "axes": {
+    "task": "probe",
+    "completeness": "full",
+    "method": [
+      "grove"
+    ],
+    "directional": "fog"
+  },
+  "persona": {
+    "voice": "as PM",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "as PM",
+    "kindly",
+    "probe",
+    "grove",
+    "fog"
+  ]
+}

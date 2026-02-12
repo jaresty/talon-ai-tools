@@ -216,6 +216,115 @@ func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 	}
 }
 
+// TestLLMHelpADR0107TokenDescriptions verifies that ADR-0107 token description
+// updates are reflected in the Token Catalog section of bar help llm output.
+// Note: D1c (interactive-form constraint) is superseded by ADR-0108 which
+// rewrites these forms as channel-adaptive; D2–D5 remain in force.
+//
+//	D2:  adr channel description notes task-affinity
+//	D3:  facilitate form description notes sim+facilitate combination
+//	D4:  scaffold form description notes audience guidance
+//	D5:  bug form description notes context-affinity
+func TestLLMHelpADR0107TokenDescriptions(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	catalogStart := strings.Index(output, "## Token Catalog")
+	if catalogStart == -1 {
+		t.Fatal("could not locate ## Token Catalog section")
+	}
+	catalog := output[catalogStart:]
+
+	// D2: adr channel task-affinity in description
+	if !strings.Contains(catalog, "decision-making tasks") {
+		t.Error("D2: Token Catalog missing 'decision-making tasks' note in adr channel description")
+	}
+
+	// D3: sim+facilitate guidance
+	if !strings.Contains(catalog, "facilitation") {
+		t.Error("D3: Token Catalog missing facilitation guidance in facilitate description")
+	}
+
+	// D4: scaffold audience guidance
+	if !strings.Contains(catalog, "learning-oriented") {
+		t.Error("D4: Token Catalog missing 'learning-oriented' audience note in scaffold description")
+	}
+
+	// D5: bug form context-affinity
+	if !strings.Contains(catalog, "diagnostic and debugging") {
+		t.Error("D5: Token Catalog missing 'diagnostic and debugging' note in bug form description")
+	}
+}
+
+// TestLLMHelpADR0107Decisions verifies that ADR-0107 D2 (adr channel
+// task-affinity) is reflected in bar help llm § Incompatibilities.
+// Note: D1 (interactive-form conflicts) is superseded by ADR-0108.
+func TestLLMHelpADR0107Decisions(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	incompStart := strings.Index(output, "### Incompatibilities")
+	if incompStart == -1 {
+		t.Fatal("could not locate ### Incompatibilities section")
+	}
+	sectionStart := incompStart + len("### Incompatibilities")
+	sectionEnd := strings.Index(output[sectionStart:], "\n##")
+	var incomp string
+	if sectionEnd == -1 {
+		incomp = output[sectionStart:]
+	} else {
+		incomp = output[sectionStart : sectionStart+sectionEnd]
+	}
+
+	// D2: adr channel task-affinity restriction
+	if !strings.Contains(incomp, "`adr` channel") {
+		t.Error("D2: § Incompatibilities missing adr channel task-affinity restriction (expected '`adr` channel')")
+	}
+}
+
+// TestLLMHelpADR0108Decisions verifies that ADR-0108 decisions are reflected:
+//
+//	D1: quiz/cocreate/facilitate Token Catalog entries contain channel-adaptive language
+//	D2: § Incompatibilities does NOT contain an interactive-form conflict rule for these tokens
+func TestLLMHelpADR0108Decisions(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	catalogStart := strings.Index(output, "## Token Catalog")
+	if catalogStart == -1 {
+		t.Fatal("could not locate ## Token Catalog section")
+	}
+	catalog := output[catalogStart:]
+
+	// D1: channel-adaptive language in form descriptions
+	if !strings.Contains(catalog, "output-exclusive channel") {
+		t.Error("D1: Token Catalog missing channel-adaptive language (expected 'output-exclusive channel') in quiz/cocreate/facilitate")
+	}
+
+	// D2: interactive-form conflict section is gone from § Incompatibilities
+	incompStart := strings.Index(output, "### Incompatibilities")
+	if incompStart == -1 {
+		t.Fatal("could not locate ### Incompatibilities section")
+	}
+	sectionStart := incompStart + len("### Incompatibilities")
+	sectionEnd := strings.Index(output[sectionStart:], "\n##")
+	var incomp string
+	if sectionEnd == -1 {
+		incomp = output[sectionStart:]
+	} else {
+		incomp = output[sectionStart : sectionStart+sectionEnd]
+	}
+	if strings.Contains(incomp, "Interactive-form conflicts") {
+		t.Error("D2: § Incompatibilities still contains 'Interactive-form conflicts' section — should be removed by ADR-0108")
+	}
+}
+
 func TestEmbeddedSkillsUseTaskTerminology(t *testing.T) {
 	err := fs.WalkDir(embeddedSkills, "skills", func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {

@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"time\"): The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
+    "Method (\"simulation\"): The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
+    "Form (\"bug\"): The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details.",
+    "Channel (\"sync\"): The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "time",
+      "description": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action."
+    },
+    {
+      "axis": "method",
+      "token": "simulation",
+      "description": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects."
+    },
+    {
+      "axis": "form",
+      "token": "bug",
+      "description": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details."
+    },
+    {
+      "axis": "channel",
+      "token": "sync",
+      "description": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "full",
+    "scope": [
+      "time"
+    ],
+    "method": [
+      "simulation"
+    ],
+    "form": [
+      "bug"
+    ],
+    "channel": [
+      "sync"
+    ]
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "fix",
+    "time",
+    "simulation",
+    "bug",
+    "sync"
+  ]
+}

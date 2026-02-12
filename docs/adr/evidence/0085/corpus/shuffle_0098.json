@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response explains or describes the subject for the stated audience.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"act\"): The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+    "Method (\"mod\"): The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "act",
+      "description": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting."
+    },
+    {
+      "axis": "method",
+      "token": "mod",
+      "description": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
+    }
+  ],
+  "axes": {
+    "task": "show",
+    "completeness": "full",
+    "scope": [
+      "act"
+    ],
+    "method": [
+      "mod"
+    ]
+  },
+  "persona": {
+    "voice": "as prompt engineer",
+    "intent": "persuade"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as prompt engineer",
+      "description": "The response reflects a prompt-engineer stance, explicitly designing and refining prompts."
+    },
+    {
+      "axis": "intent",
+      "token": "persuade",
+      "description": "Influence the audience toward a view or action."
+    }
+  ],
+  "tokens": [
+    "persuade",
+    "as prompt engineer",
+    "show",
+    "act",
+    "mod"
+  ]
+}

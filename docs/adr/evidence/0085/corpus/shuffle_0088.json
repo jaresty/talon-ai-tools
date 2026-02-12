@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Scope (\"stable\"): The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid.",
+    "Method (\"abduce\"): The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations.",
+    "Form (\"indirect\"): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "scope",
+      "token": "stable",
+      "description": "The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid."
+    },
+    {
+      "axis": "method",
+      "token": "abduce",
+      "description": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations."
+    },
+    {
+      "axis": "form",
+      "token": "indirect",
+      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "minimal",
+    "scope": [
+      "stable"
+    ],
+    "method": [
+      "abduce"
+    ],
+    "form": [
+      "indirect"
+    ]
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "sim",
+    "minimal",
+    "stable",
+    "abduce",
+    "indirect"
+  ]
+}

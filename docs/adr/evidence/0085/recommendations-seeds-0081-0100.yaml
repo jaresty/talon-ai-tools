@@ -1,0 +1,171 @@
+# ADR-0085 Cycle 5 Recommendations — Seeds 0081-0100
+# Date: 2026-02-11
+# Cycle mean: 3.65/5 | Excellent: 65% | Problematic: 20%
+
+# ── R8: Extend prose-form conflict list to interactive forms ──────────────────
+- id: R8
+  action: edit
+  tokens: [cocreate, quiz, facilitate]
+  axis: form
+  reason: >
+    cocreate(form) (seed 0082, cocreate+svg=2) and quiz(form) (seed 0085, quiz+presenterm=2)
+    are interactive/dialogue forms that require back-and-forth exchange and are therefore
+    incompatible with any output-exclusive static channel (svg, presenterm, code, html,
+    shellscript). facilitate(form) may have the same issue when paired with code-only
+    channels. These extend the prose-form + code-channel conflict class first documented
+    in ADR-0105, which listed case/formats/walkthrough/scaffold but missed interactive forms.
+  evidence: [seed_0082, seed_0085]
+  proposed: >
+    Add to each description: "Note: this is an interactive/dialogue form — it requires
+    back-and-forth exchange and conflicts with output-exclusive static channels (svg, code,
+    html, shellscript, presenterm). Use only with channels that support natural language
+    (jira, slack, sketch, plain, remote, sync, or no channel)."
+    Additionally, add cocreate, quiz, and facilitate to the § Incompatibilities
+    "Prose-form conflicts" list in bar help llm.
+  files:
+    - lib/axisConfig.py  # cocreate, quiz, facilitate form descriptions
+    - internal/barcli/help_llm.go  # renderCompositionRules / incompatibilities section
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R9: Add adr channel to task-affinity restrictions ─────────────────────────
+- id: R9
+  action: edit
+  token: adr
+  axis: channel
+  reason: >
+    sort + adr(channel) scored 2/5 (seed 0091). sort produces a ranked/categorized list;
+    adr produces a structured decision record (Context, Decision, Consequences). These
+    are incompatible output types. The adr channel has implicit task-affinity for
+    decision-making tasks (plan, probe, make) and conflicts with tasks that produce
+    non-decision outputs (sort, pull, diff). This extends the task-affinity pattern
+    documented for codetour and gherkin in ADR-0105 D2.
+  evidence: [seed_0091]
+  proposed: >
+    Add to adr channel description: "Most appropriate with decision-making tasks:
+    `plan` (planning decisions), `probe` (analysis leading to architectural decisions),
+    `make` (creating decision records). Avoid with tasks that produce non-decision
+    outputs — `sort` (ordered list), `pull` (extraction), `diff` (comparison) —
+    as these do not map naturally to the Context/Decision/Consequences structure."
+    Also add to bar help llm § Incompatibilities § Task-affinity restrictions:
+    "`adr` channel: task-affinity for plan/probe/make; conflicts with sort/pull/diff."
+  files:
+    - lib/axisConfig.py  # adr channel description
+    - internal/barcli/help_llm.go  # renderCompositionRules
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R10: Document sim + facilitate combination guidance ───────────────────────
+- id: R10
+  action: edit
+  token: facilitate
+  axis: form
+  reason: >
+    sim + facilitate(form) produced a recurring 3/5 pattern across 2 seeds (0084, 0093),
+    10% of the cycle 5 corpus. sim assumes the LLM performs the scenario playback directly;
+    facilitate(form) assumes the LLM structures others in doing the work. The combination
+    is usable but creates genuine ambiguity about the LLM's role. Users need guidance
+    to set intent clearly.
+  evidence: [seed_0084, seed_0093]
+  proposed: >
+    Add to facilitate(form) description: "When combined with `sim`, the response should
+    be understood as designing a facilitation structure for a simulation exercise (who
+    does what, in what sequence, what the facilitator manages), not as the LLM directly
+    performing the simulation. If you want the LLM to play out the scenario directly,
+    omit facilitate."
+  files:
+    - lib/axisConfig.py  # facilitate form description
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R11: Document scaffold(form) as educational context token ─────────────────
+- id: R11
+  action: edit
+  token: scaffold
+  axis: form
+  reason: >
+    scaffold(form) + executive_brief persona (probe+scaffold+CEO, seed 0092) scored 3/5
+    due to audience mismatch: scaffolding "from first principles" is a beginner-oriented
+    teaching approach, but executive_brief addresses a CEO. This is a persona-form
+    semantic incompatibility distinct from output-exclusive conflicts.
+  evidence: [seed_0092]
+  proposed: >
+    Add to scaffold(form) description: "Most effective when paired with educational or
+    learning-oriented personas (teach_junior_dev, mentor, student audience). May feel
+    mismatched when paired with senior executive personas (CEO, executive_brief) where
+    first-principles scaffolding contradicts the expected expertise level."
+  files:
+    - lib/axisConfig.py  # scaffold form description
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R12: Document bug(form) context-affinity and channel conflicts ─────────────
+- id: R12
+  action: edit
+  token: bug
+  axis: form
+  reason: >
+    bug(form) + sync(channel) scored 2/5 (seed 0099, bug+sync=conflict). bug(form)
+    structures output as a static bug report (Steps to Reproduce, Expected Behavior,
+    Actual Behavior, Environment); sync(channel) requires a live session plan/agenda.
+    These are incompatible output structures. Additionally, bug(form) has strong
+    debugging semantic associations — when paired with non-debugging tasks (fix-as-reformat),
+    it creates friction even when the task description clarifies the reformat meaning.
+  evidence: [seed_0099]
+  proposed: >
+    Add to bug(form) description: "Strongest with diagnostic and debugging tasks
+    (`probe`, `make` paired with diagnostic methods like `diagnose`, `inversion`,
+    `adversarial`). May create semantic confusion when paired with `fix` (which is a
+    reformat task in bar's grammar, not a debugging task). Conflicts with session-plan
+    channels (`sync`) — bug report is a static document, not a live session structure."
+  files:
+    - lib/axisConfig.py  # bug form description
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R13: Confirm R6 (fix task clarification) as implemented ───────────────────
+- id: R13
+  action: close
+  ref: R6
+  reason: >
+    seed 0099 confirms the fix task description now includes the disambiguation note:
+    "Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work
+    that involves correcting defects or errors, use `make` or `show` paired with
+    diagnostic method tokens (`diagnose`, `inversion`, `adversarial`)." R6 is complete.
+  evidence: [seed_0099]
+
+# ── Positive pattern exemplars ────────────────────────────────────────────────
+exemplars:
+  - id: P1
+    seeds: [seed_0094]
+    pattern: make + grow(method) + dip bog(directional) + peer_engineer
+    description: >
+      Canonical incremental construction pattern. Create content starting from simplest
+      valid behavior (grow), grounded in concrete examples that reveal structure, then
+      extend (dip bog). Natural TDD/iterative development approach.
+
+  - id: P2
+    seeds: [seed_0097]
+    pattern: pull + domains(method) + tight(form) + scientist_to_analyst
+    description: >
+      Canonical domain model extraction pattern. Extract domain boundaries and bounded
+      contexts (domains), expressed in concise dense prose (tight), with scientific
+      rigor for analytical audiences (scientist_to_analyst).
+
+  - id: P3
+    seeds: [seed_0100]
+    pattern: probe + grove(method) + fog(directional)
+    description: >
+      Canonical compounding-effects analysis pattern. Analyze accumulation/decay dynamics
+      (grove), then abstract to general principles (fog). Useful for technical debt,
+      user growth, system complexity, organizational dynamics.
+
+  - id: P4
+    seeds: [seed_0088, seed_0093]
+    pattern: sim + stable(scope)
+    description: >
+      Strong scenario + stability dynamics pairing. Useful for system design scenarios,
+      market stability modeling, equilibrium analysis. stable(scope) scopes the simulation
+      to focus on self-reinforcing configurations and perturbation responses.
+
+# ── Priority summary ──────────────────────────────────────────────────────────
+priority:
+  high:   [R8, R9]   # extend incompatibility documentation — prevents known conflict patterns
+  medium: [R10, R12] # form token guidance — clarifies ambiguous combinations
+  low:    [R11]      # persona-form mismatch note — educational value but lower urgency
+  close:  [R13]      # confirms R6 complete

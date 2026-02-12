@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"time\"): The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
+    "Method (\"operations\"): The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+    "Form (\"wasinawa\"): The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
+    "Directional (\"fly bog\"): The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "time",
+      "description": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action."
+    },
+    {
+      "axis": "method",
+      "token": "operations",
+      "description": "The response enhances the task by identifying operations research or management science concepts that frame the situation."
+    },
+    {
+      "axis": "form",
+      "token": "wasinawa",
+      "description": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
+    },
+    {
+      "axis": "directional",
+      "token": "fly bog",
+      "description": "The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "full",
+    "scope": [
+      "time"
+    ],
+    "method": [
+      "operations"
+    ],
+    "form": [
+      "wasinawa"
+    ],
+    "directional": "fly bog"
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "sim",
+    "time",
+    "operations",
+    "wasinawa",
+    "fly bog"
+  ]
+}

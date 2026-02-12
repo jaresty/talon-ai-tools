@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"fail\"): The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+    "Method (\"mod\"): The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
+    "Form (\"scaffold\"): The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts.",
+    "Directional (\"bog\"): The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "fail",
+      "description": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes."
+    },
+    {
+      "axis": "method",
+      "token": "mod",
+      "description": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
+    },
+    {
+      "axis": "form",
+      "token": "scaffold",
+      "description": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts."
+    },
+    {
+      "axis": "directional",
+      "token": "bog",
+      "description": "The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "probe",
+    "completeness": "skim",
+    "scope": [
+      "fail"
+    ],
+    "method": [
+      "mod"
+    ],
+    "form": [
+      "scaffold"
+    ],
+    "directional": "bog"
+  },
+  "persona": {
+    "preset": "executive_brief",
+    "preset_label": "Executive brief",
+    "voice": "as programmer",
+    "audience": "to CEO",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "executive_brief",
+      "description": "Executive brief"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to CEO",
+      "description": "The response addresses a CEO, surfacing business impact, risk, and crisp asks."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "executive_brief",
+    "probe",
+    "skim",
+    "fail",
+    "mod",
+    "scaffold",
+    "bog"
+  ]
+}

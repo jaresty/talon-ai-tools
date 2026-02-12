@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"thing\"): The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+    "Method (\"cluster\"): The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
+    "Form (\"cocreate\"): The response structures interaction collaboratively, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
+    "Channel (\"svg\"): The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
+    "Directional (\"fly ong\"): The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "thing",
+      "description": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective."
+    },
+    {
+      "axis": "method",
+      "token": "cluster",
+      "description": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items."
+    },
+    {
+      "axis": "form",
+      "token": "cocreate",
+      "description": "The response structures interaction collaboratively, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer."
+    },
+    {
+      "axis": "channel",
+      "token": "svg",
+      "description": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+    },
+    {
+      "axis": "directional",
+      "token": "fly ong",
+      "description": "The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "max",
+    "scope": [
+      "thing"
+    ],
+    "method": [
+      "cluster"
+    ],
+    "form": [
+      "cocreate"
+    ],
+    "channel": [
+      "svg"
+    ],
+    "directional": "fly ong"
+  },
+  "persona": {
+    "voice": "as facilitator"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    }
+  ],
+  "tokens": [
+    "as facilitator",
+    "pull",
+    "max",
+    "thing",
+    "cluster",
+    "cocreate",
+    "svg",
+    "fly ong"
+  ]
+}

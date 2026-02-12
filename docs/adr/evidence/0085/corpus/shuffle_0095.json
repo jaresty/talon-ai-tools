@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Channel (\"plain\"): The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "channel",
+      "token": "plain",
+      "description": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "full",
+    "channel": [
+      "plain"
+    ]
+  },
+  "persona": {
+    "audience": "to Kent Beck",
+    "intent": "entertain"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to Kent Beck",
+      "description": "The response addresses Kent Beck, staying concrete, test-minded, and iterative."
+    },
+    {
+      "axis": "intent",
+      "token": "entertain",
+      "description": "Engage or amuse the audience."
+    }
+  ],
+  "tokens": [
+    "entertain",
+    "to Kent Beck",
+    "plan",
+    "plain"
+  ]
+}

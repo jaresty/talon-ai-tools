@@ -659,7 +659,14 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Not appropriate for non-code tasks: `sim`, `sort`, `probe`, `diff` without code subject, `plan`.\n")
 	fmt.Fprintf(w, "- `gherkin` channel: appropriate for tasks mapping to scenario-based behavior specification (`check` for acceptance criteria, `plan` with BDD context, `make` when defining system behavior). ")
 	fmt.Fprintf(w, "Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`.\n")
-	fmt.Fprintf(w, "- `code`, `html`, `shellscript` channels: not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.\n\n")
+	fmt.Fprintf(w, "- `code`, `html`, `shellscript` channels: not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.\n")
+	fmt.Fprintf(w, "- `adr` channel: task-affinity for decision-making tasks (`plan`, `probe`, `make`). ")
+	fmt.Fprintf(w, "The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce non-decision outputs. ")
+	fmt.Fprintf(w, "Avoid with `sort` (sorted list), `pull` (extraction), `diff` (comparison), or `sim` (scenario playback).\n\n")
+
+	fmt.Fprintf(w, "**Prose-form conflicts:**\n")
+	fmt.Fprintf(w, "Form tokens that produce structured prose (`case`, `formats`, `walkthrough`, `scaffold`, `recipe`, `faq`, `table`, `taxonomy`, `visual`, `variants`, `checklist`, `actions`) ")
+	fmt.Fprintf(w, "conflict with channels that mandate a fixed non-prose output format (`code`, `html`, `shellscript`, `svg`, `presenterm`, `adr`, `codetour`, `gherkin`, `diagram`).\n\n")
 
 	fmt.Fprintf(w, "**Semantic conflicts:**\n")
 	fmt.Fprintf(w, "- `rewrite` form implies existing content to transform. ")

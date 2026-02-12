@@ -346,3 +346,19 @@ func TestEmbeddedSkillsUseTaskTerminology(t *testing.T) {
 		t.Fatalf("failed to walk embedded skills: %v", err)
 	}
 }
+
+// TestHelpLLMAutomationFlags verifies that bar help llm documents --no-input and
+// --command so LLMs and automation scripts can discover non-interactive usage.
+func TestHelpLLMAutomationFlags(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	if !strings.Contains(output, "--no-input") {
+		t.Error("bar help llm must document --no-input for automation scripts")
+	}
+	if !strings.Contains(output, "--command") {
+		t.Error("bar help llm must document --command for bar tui2 seeding")
+	}
+}

@@ -51,6 +51,9 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 	if shouldRender("advanced") {
 		renderAdvancedFeatures(w, compact)
 	}
+	if shouldRender("automation") {
+		renderAutomationFlags(w, compact)
+	}
 	if shouldRender("metadata") {
 		renderMetadata(w, grammar, compact)
 	}
@@ -927,6 +930,51 @@ func renderAdvancedFeatures(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- `//next`: Skip current stage in token ordering\n")
 	fmt.Fprintf(w, "- `//:static`: Jump directly to static stage\n")
 	fmt.Fprintf(w, "- `//:completeness`: Jump directly to completeness stage\n\n")
+}
+
+func renderAutomationFlags(w io.Writer, compact bool) {
+	if compact {
+		fmt.Fprintf(w, "## Automation Flags\n\n")
+		fmt.Fprintf(w, "- `--no-input`: TUI fast-fail in non-interactive contexts\n")
+		fmt.Fprintf(w, "- `bar tui2 --command CMD`: seed Run Command field at launch\n")
+		fmt.Fprintf(w, "- `--fixture PATH`: deterministic TUI snapshot for CI\n\n")
+		return
+	}
+	fmt.Fprintf(w, "## Automation Flags\n\n")
+	fmt.Fprintf(w, "These flags enable non-interactive and CI-friendly usage of `bar` surfaces.\n\n")
+
+	fmt.Fprintf(w, "### `--no-input`\n\n")
+	fmt.Fprintf(w, "Recognized by `bar tui` and `bar tui2`. When set, the command exits immediately\n")
+	fmt.Fprintf(w, "with a non-zero status and a guidance message instead of launching the interactive TUI.\n")
+	fmt.Fprintf(w, "Use this in scripts or CI pipelines where an interactive terminal is unavailable.\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "bar tui2 --no-input   # exits with guidance instead of launching the TUI\n")
+	fmt.Fprintf(w, "bar tui  --no-input   # same for the original TUI\n")
+	fmt.Fprintf(w, "```\n\n")
+
+	fmt.Fprintf(w, "### `bar tui2 --command CMD` (alias `--cmd`)\n\n")
+	fmt.Fprintf(w, "Seeds the Run Command text field in `bar tui2` at launch time, keeping demos\n")
+	fmt.Fprintf(w, "and CI fixture runs reproducible without manual typing.\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "bar tui2 --command \"pbcopy\"           # pre-fill clipboard copy command\n")
+	fmt.Fprintf(w, "bar tui2 --cmd \"claude --model sonnet\" # alias form\n")
+	fmt.Fprintf(w, "```\n\n")
+
+	fmt.Fprintf(w, "### `--fixture PATH`\n\n")
+	fmt.Fprintf(w, "Runs `bar tui` or `bar tui2` in deterministic snapshot mode: renders the TUI\n")
+	fmt.Fprintf(w, "at a fixed size, compares against stored expected output, and prints the view\n")
+	fmt.Fprintf(w, "to stdout. No interactive terminal required. Intended for smoke tests and CI.\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "bar tui --grammar path/to/grammar.json --fixture path/to/fixture.json\n")
+	fmt.Fprintf(w, "```\n\n")
+
+	fmt.Fprintf(w, "### Usage Guidance for Automated/Agent Contexts\n\n")
+	fmt.Fprintf(w, "- Use `bar build` for all non-interactive prompt generation; it is fully scriptable.\n")
+	fmt.Fprintf(w, "- Pass `--no-input` to TUI commands in environments without a TTY to get a fast,\n")
+	fmt.Fprintf(w, "  actionable failure rather than a hung process.\n")
+	fmt.Fprintf(w, "- Use `--command` to seed the Run Command field when demoing `bar tui2` in\n")
+	fmt.Fprintf(w, "  recorded walkthroughs or CI fixture runs.\n")
+	fmt.Fprintf(w, "- Use `--fixture` for deterministic snapshot assertions in test suites.\n\n")
 }
 
 func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {

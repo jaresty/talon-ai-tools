@@ -345,3 +345,51 @@
 
 **next_work:**
 - Behaviour: Workstream 2 — document `--no-input` and `bar tui2 --command` in `bar help llm` output (add "Automation Flags" section to `internal/barcli/help_llm.go`). Validation: `go test ./internal/barcli -run TestHelpLLMAutomationFlags` with a test asserting `--no-input` and `--command` appear in the LLM reference.
+  → **Completed in Loop 8** (see below).
+
+---
+
+## Loop 8 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 (ADR-0073) fourth slice — add "Automation Flags" section to `bar help llm` documenting `--no-input` and `--command`
+
+**active_constraint:** `bar help llm` contains no mention of `--no-input` or `--command`; LLMs and automation scripts consuming the reference cannot discover non-interactive usage patterns. The two flags shipped in Loops 6–7 are invisible to any agent that relies on the reference.
+
+**context cited:** ADR-0080 work-log Loop 7 `next_work`; ADR-0073 § Decision (advertise automation flags); `internal/barcli/help_llm.go` (no "Automation Flags" section); user observation in session.
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Medium | LLMs building bar workflows cannot discover `--no-input`/`--command` without reading ADR docs |
+| Probability | High | Append-only section addition to `help_llm.go`; no grammar or token changes |
+| Time Sensitivity | Low | Flags are live; documentation catchup has no deadline |
+
+**validation_targets:**
+- `go test ./internal/barcli -run "TestHelpLLMAutomationFlags" -v`
+
+**evidence:**
+- red | 2026-02-12T03:00:00Z | exit 1 | `go test ./internal/barcli -run "TestHelpLLMAutomationFlags" -v`
+  - helper:diff-snapshot=0 files changed (test added to help_llm_test.go, help_llm.go untouched)
+  - `bar help llm must document --no-input` / `must document --command` — both assertions fail | inline
+- green | 2026-02-12T03:10:00Z | exit 0 | `go test ./internal/barcli/... ./cmd/bar/... -v`
+  - helper:diff-snapshot=2 files changed, 64 insertions(+)
+  - `TestHelpLLMAutomationFlags` passes; full suite passes | inline
+- removal | 2026-02-12T03:11:00Z | exit 1 | `git restore --source=HEAD internal/barcli/help_llm.go && go test ./internal/barcli -run "TestHelpLLMAutomationFlags" -v`
+  - helper:diff-snapshot=0 files changed (revert implementation only; test retained)
+  - both assertions fail: `--no-input` / `--command` absent from output | inline
+  - (restored with re-edit of help_llm.go)
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/help_llm.go internal/barcli/help_llm_test.go` then verify `TestHelpLLMAutomationFlags` fails red.
+
+**delta_summary:** 2 files changed, 64 insertions(+). Added `renderAutomationFlags` function to `help_llm.go` covering `--no-input`, `bar tui2 --command`/`--cmd`, `--fixture`, and a Usage Guidance paragraph for automated/agent contexts. Wired the new section into `renderLLMHelp` dispatcher as `shouldRender("automation")`. Added `TestHelpLLMAutomationFlags` to `help_llm_test.go` as specifying validation. Full suite passes.
+
+**loops_remaining_forecast:** 2 (low confidence).
+- ADR-0073 residual: `--plain` formatter, tiered help sections (grouped COMMANDS), conversation-loops section.
+- These are independent; could be batched or sequenced in 1–2 loops.
+
+**residual_constraints:**
+- severity: Medium | ADR-0073 remaining: `--plain` formatter for token/preset listings not yet implemented; tiered `bar --help` sections (Core / Grammar navigation / Interactive surfaces / Automation flags) not yet restructured; conversation-loops section not in `generalHelpText`. Mitigation: implement one item per loop. Owning ADR: ADR-0073.
+- severity: Low | `--no-input` for `bar build` with piped stdin not yet gated. Defer until semantics confirmed with automation teams. Owning ADR: ADR-0073.
+- severity: Low | ADR-035 optional: notify when run command blocked by gpt_busy; no Talon hook available. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: Workstream 2 — add a "Conversation Loops" section to `generalHelpText` pointing users from CLI → `bar tui2` and back (ADR-0073 Decision last bullet). Validation: `go test ./internal/barcli -run TestHelpConversationLoops` with a test asserting the section appears in `bar help` output.

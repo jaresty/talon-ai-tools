@@ -188,6 +188,23 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
 
 
+  CONVERSATION LOOPS
+
+    Start from the CLI and survey the grammar:
+      bar help tokens                    # list all axes and tasks
+      bar help tokens scope method       # focus on specific axes
+      bar build make full focus          # assemble a prompt with shorthand
+
+    Open bar tui2 to explore interactively:
+      bar tui2                           # stage-based token selection, live preview
+      bar tui2 make full focus           # pre-seed tokens at launch
+      bar tui2 --command "pbcopy"        # pre-fill the Run Command field
+
+    Copy the equivalent bar build command from inside tui2 (Ctrl+Y or
+    the copy keybinding), then paste back into the terminal to run
+    non-interactively or save as a preset:
+      bar preset save my-recipe --force
+
  Flags such as --grammar override the grammar JSON path when necessary.
 `) + "\n\n"
 

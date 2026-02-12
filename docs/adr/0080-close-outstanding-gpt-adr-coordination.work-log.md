@@ -393,3 +393,52 @@
 
 **next_work:**
 - Behaviour: Workstream 2 — add a "Conversation Loops" section to `generalHelpText` pointing users from CLI → `bar tui2` and back (ADR-0073 Decision last bullet). Validation: `go test ./internal/barcli -run TestHelpConversationLoops` with a test asserting the section appears in `bar help` output.
+  → **Completed in Loop 9** (see below).
+
+---
+
+## Loop 9 — 2026-02-12
+
+**focus:** ADR-0080 Workstream 2 (ADR-0073) fifth slice — add CONVERSATION LOOPS section to `generalHelpText`
+
+**active_constraint:** `generalHelpText` has no conversation loops section; the ADR-0073 Decision last bullet (CLI → `bar tui2` → CLI hand-off narrative) is undelivered. New users following `bar help` cannot discover the CLI ↔ tui2 round-trip workflow.
+
+**context cited:** ADR-0080 work-log Loop 8 `next_work`; ADR-0073 § Decision (conversation loops section); `internal/barcli/app.go:188–191` (generalHelpText closing — insertion point).
+
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Low | Discoverability improvement; users can already do this workflow manually |
+| Probability | High | String addition to generalHelpText + one test; no schema change |
+| Time Sensitivity | Low | No deadline dependency; completes the ADR-0073 Decision checklist |
+
+**validation_targets:**
+- `go test ./internal/barcli -run "TestHelpConversationLoops" -v`
+
+**evidence:**
+- red | 2026-02-12T04:00:00Z | exit 1 | `go test ./internal/barcli -run "TestHelpConversationLoops" -v`
+  - helper:diff-snapshot=0 files changed (test added to app_help_cli_test.go, app.go untouched)
+  - `bar help must include a CONVERSATION LOOPS section` — assertion fails | inline
+- green | 2026-02-12T04:05:00Z | exit 0 | `go test ./internal/barcli/... ./cmd/bar/... -v`
+  - helper:diff-snapshot=2 files changed, 39 insertions(+)
+  - `TestHelpConversationLoops` passes; all existing help tests pass; full suite passes | inline
+- removal | 2026-02-12T04:06:00Z | exit 1 | `git restore --source=HEAD internal/barcli/app.go && go test ./internal/barcli -run "TestHelpConversationLoops" -v`
+  - helper:diff-snapshot=0 files changed (revert implementation only; test retained)
+  - `bar help must include a CONVERSATION LOOPS section` — fails again | inline
+  - (restored with re-edit of app.go)
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/app.go internal/barcli/app_help_cli_test.go` then verify `TestHelpConversationLoops` fails red.
+
+**delta_summary:** 2 files changed, 39 insertions(+). Added CONVERSATION LOOPS section to `generalHelpText` in `internal/barcli/app.go` covering three phases: CLI survey (`bar help tokens`, `bar build`), interactive exploration (`bar tui2`, pre-seeded tokens, `--command`), and copy-back to CLI (Ctrl+Y keybinding, `bar preset save`). Added `TestHelpConversationLoops` to `app_help_cli_test.go` as specifying validation. Full suite passes.
+
+**loops_remaining_forecast:** 1–2 (low confidence).
+- ADR-0073 residual: `--plain` formatter for token/preset listings (no-color, no-heading textual output mode) — the only Decision item not yet delivered.
+- Tiered help sections (grouped COMMANDS banner) and `bar tui2 --help` mirroring are also outstanding but lower priority.
+
+**residual_constraints:**
+- severity: Medium | ADR-0073 remaining: `--plain` formatter (shared textual output mode stripping colour, headings, and multi-line cells) not yet implemented. Mitigation: implement in next loop. Owning ADR: ADR-0073.
+- severity: Low | `bar tui2 --help` tiered sections not yet mirrored from generalHelpText. Mitigation: defer until `--plain` lands. Owning ADR: ADR-0073.
+- severity: Low | `--no-input` for `bar build` with piped stdin not yet gated. Owning ADR: ADR-0073.
+- severity: Low | ADR-035 optional: notify when run command blocked by gpt_busy; no Talon hook available. Owning ADR: ADR-035.
+
+**next_work:**
+- Behaviour: Workstream 2 — implement `--plain` output formatter for `bar help tokens` and token listings (strip colour, headings, and multi-line cells for machine-readable textual output). Validation: `go test ./internal/barcli -run TestPlainOutput` with tests asserting `--plain` strips ANSI and section headings from token listing output.

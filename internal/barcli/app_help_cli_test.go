@@ -24,6 +24,28 @@ func TestHelpAdvertisesTUI2(t *testing.T) {
 	}
 }
 
+// TestHelpConversationLoops specifies that bar help includes a CONVERSATION LOOPS
+// section that bridges CLI and bar tui2 for grammar discovery (ADR-0073).
+func TestHelpConversationLoops(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	exit := Run([]string{"help"}, os.Stdin, stdout, stderr)
+
+	if exit != 0 {
+		t.Fatalf("expected bar help exit 0, got %d: %s", exit, stderr.String())
+	}
+	output := stdout.String()
+	loopsIdx := strings.Index(output, "CONVERSATION LOOPS")
+	if loopsIdx < 0 {
+		t.Fatalf("bar help must include a CONVERSATION LOOPS section; got:\n%s", output)
+	}
+	loopsSection := output[loopsIdx:]
+	if !strings.Contains(loopsSection, "tui2") {
+		t.Fatalf("CONVERSATION LOOPS section must reference bar tui2; section:\n%s", loopsSection)
+	}
+}
+
 // TestHelpTUI2IsRecommended specifies that the help text positions tui2 as
 // the recommended interactive surface for new users (ADR-0081 supersedes ADR-0077).
 func TestHelpTUI2IsRecommended(t *testing.T) {

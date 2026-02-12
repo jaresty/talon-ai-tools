@@ -138,6 +138,21 @@ directional tokens. Compound tokens (e.g., `fly rog`, `fip rog`, `dip ong`, `dip
 also exist and are listed in `bar help llm` § Token Catalog § Directional. Run
 `bar shuffle --json` and inspect the `directional` field to discover compound forms in use.
 
+### Step 6: Interactive Grammar Learning (Optional)
+
+For users who prefer to learn through interaction, point them to `bar tui2` — the
+stage-based grammar editor that teaches token selection through direct interaction:
+
+```bash
+bar tui2                        # Launch with live preview
+bar tui2 make full              # Pre-seed tokens at launch
+bar tui2 --command "pbcopy"     # Pre-fill the Run Command field
+```
+
+Inside `bar tui2`, users progress through grammar stages (task → completeness → scope →
+method → form → …) with live preview of the generated prompt. The equivalent `bar build`
+command is shown and copyable at any time, closing the loop back to the CLI.
+
 ## Command Patterns
 
 ### Accessing Help
@@ -199,6 +214,24 @@ bar build <tokens> --input prompt.txt
 
 # Use STDIN
 echo "text" | bar build <tokens>
+```
+
+### Interactive Grammar Exploration
+
+```bash
+# Launch the stage-based grammar editor (recommended for new users)
+bar tui2
+
+# Pre-seed tokens at launch
+bar tui2 make full
+
+# Pre-fill the Run Command field (e.g. for clipboard copy workflow)
+bar tui2 --command "pbcopy"
+
+# Quickly scan all available token slugs by category
+bar help tokens --plain             # category:slug one per line
+bar help tokens scope --plain       # scope axis only
+bar help tokens --plain | grep '^task:'  # just tasks
 ```
 
 ### Saving Presets

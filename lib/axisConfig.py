@@ -403,12 +403,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "grove": "The response enhances the task by examining accumulation, decay, "
         "or rate-of-change effects and how small contributions compound "
         "over time.",
-        "grow": "The response enhances the task by starting with the simplest "
-        "valid behavior and progressively generalizing it, deliberately "
-        "deferring complexity and edge cases until they are forced by "
-        "earlier steps. Each stage preserves correctness within its "
-        "current scope, treating premature generalization as a failure "
-        "mode rather than progress.",
+        "grow": "The response enhances the task by preserving the simplest "
+        "form adequate to the current purpose and expanding only when "
+        "new demands demonstrably outgrow it, so that every abstraction "
+        "arises from necessity rather than anticipation.",
         "induce": "The response enhances the task by applying inductive reasoning, "
         "generalizing patterns from specific observations and assessing "
         "the strength and limits of those generalizations.",

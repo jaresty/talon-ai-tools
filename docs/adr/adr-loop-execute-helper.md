@@ -22,7 +22,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
   - A specifying validation MUST define criteria of correctness *before* or *independently of* implementation changes and is treated as fixed and authoritative for the duration of the loop.
   - Implementations MUST satisfy the specifying validation and MUST NOT redefine, weaken, or reinterpret correctness during construction.
   - Specifying validations SHOULD begin with the smallest set of correctness guarantees sufficient for the targeted outcome.
-  - Generalisation, edge cases, and broader correctness conditions are introduced only when existing guarantees prove insufficient under demonstrated requirements; premature generalisation is treated as a failure mode rather than progress.
+  - Generalisation, edge cases, and broader correctness conditions are introduced only when existing guarantees prove insufficient under demonstrated requirements; premature generalisation and premature edge-case handling are each treated as a failure mode rather than progress.
   - Each strengthening of a specifying validation MUST preserve all previously defined correctness guarantees.
 
 - **Going green** – shorthand for that validation command completing successfully (exit 0) and proving the behaviour works end-to-end, whether the command is a test, CLI, docs generator, or other canonical path.

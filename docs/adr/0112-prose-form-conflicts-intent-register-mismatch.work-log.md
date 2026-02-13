@@ -51,8 +51,7 @@ delta_summary: >
   Grammar regenerated via make bar-grammar-update.
 
 loops_remaining_forecast: >
-  2 loops remaining (D2 social-intent guidance, D3 formally+channel register).
-  Confidence: high — both are contained description + guidance-map edits.
+  0 loops remaining. All three decisions implemented and committed.
 
 residual_constraints:
   - PERSONA_KEY_TO_GUIDANCE does not yet exist in personaConfig.py.
@@ -62,7 +61,87 @@ residual_constraints:
     Owning ADR: 0112 D2.
 
 next_work: >
-  Behaviour: D2 — social-intent token guidance (appreciate, entertain, announce)
-  Validation: go test ./internal/barcli/... -run TestLLMHelp (regression) +
-  new specifying test for intent guidance in personaConfig.py grammar output.
+  None — all three decisions complete. ADR marked Completed.
+
+---
+
+## Loop 2 — 2026-02-13 — D2: PERSONA_KEY_TO_GUIDANCE + intent/tone guidance
+
+```
+helper_version: helper:v20251223.1
+focus: ADR-0112 D2 — create PERSONA_KEY_TO_GUIDANCE in personaConfig.py;
+  wire into promptGrammar.py, grammar.go, app.go; verify guidance displays
+  for appreciate, entertain, announce in bar help tokens.
+
+active_constraint: >
+  PERSONA_KEY_TO_GUIDANCE did not exist; no mechanism to display selection-time
+  guidance for persona tokens in TUI. Falsifiable: PersonaGuidance() method
+  missing from grammar.go (compile-time check) and guidance absent from
+  bar help tokens persona-intents output.
+
+evidence:
+  - green | 2026-02-13T00:00:00Z | exit 0 | go build ./...
+  - green | 2026-02-13T00:00:00Z | exit 0 | go test ./internal/barcli/... -run TestLLMHelp
+  - green | 2026-02-13T00:00:00Z | exit 0 | /tmp/bar help tokens persona-intents
+      appreciate, entertain, announce all show ↳ guidance lines.
+
+rollback_plan: git restore --source=HEAD lib/personaConfig.py lib/promptGrammar.py internal/barcli/grammar.go internal/barcli/app.go internal/barcli/embed/prompt-grammar.json
+
+delta_summary: >
+  personaConfig.py: PERSONA_KEY_TO_GUIDANCE added with intent (appreciate,
+  entertain, announce) and tone (formally) entries; persona_key_to_guidance_map()
+  accessor added.
+  promptGrammar.py: import + guidance export wired into persona section.
+  grammar.go: Guidance field on rawPersona + PersonaSection; PersonaGuidance()
+  accessor; population wired.
+  app.go: ↳ guidance display after persona axis and intent token descriptions.
+  Grammar regenerated.
+
+loops_remaining_forecast: 1 loop remaining (D3 help_llm.go register note).
+
+residual_constraints:
+  - D3 (formally+channel register in bar help llm) not yet implemented.
+    Severity: L — guidance is in PERSONA_KEY_TO_GUIDANCE but not in bar help llm text.
+    Monitoring: TestLLMHelpADR0112D3 will fail red until D3 lands.
+    Owning ADR: 0112 D3.
+
+next_work: >
+  Behaviour: D3 — add tone/channel register conflict note to help_llm.go
+  § Incompatibilities.
+  Validation: go test ./internal/barcli/... -run TestLLMHelpADR0112D3 (specifying).
+```
+
+---
+
+## Loop 3 — 2026-02-13 — D3: tone/channel register conflict in bar help llm
+
+```
+helper_version: helper:v20251223.1
+focus: ADR-0112 D3 — add Tone/channel register conflicts subcategory to
+  renderCompositionRules § Incompatibilities in help_llm.go; add
+  TestLLMHelpADR0112D3 specifying test.
+
+active_constraint: >
+  bar help llm § Incompatibilities contains no tone/channel register conflict
+  note, so users consulting the reference have no signal about formally+slack/
+  sync/remote. Falsifiable: TestLLMHelpADR0112D3 fails red pre-edit, green post.
+
+evidence:
+  - green | 2026-02-13T00:00:00Z | exit 0 | go test ./internal/barcli/... -run TestLLMHelpADR0112D3
+  - green | 2026-02-13T00:00:00Z | exit 0 | go test ./internal/barcli/... -run TestLLMHelp
+
+rollback_plan: git restore --source=HEAD internal/barcli/help_llm.go internal/barcli/help_llm_test.go
+
+delta_summary: >
+  help_llm.go: Tone/channel register conflicts subcategory added before
+  Semantic conflicts in renderCompositionRules.
+  help_llm_test.go: TestLLMHelpADR0112D3 added as specifying validation.
+
+loops_remaining_forecast: 0 — ADR-0112 complete.
+
+residual_constraints:
+  - None. All decisions implemented.
+
+next_work: None — ADR-0112 complete.
+```
 ```

@@ -14,10 +14,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "consequences, formatted as a structured document ready for "
         "version control.",
         "code": "The response consists only of code or markup as the complete "
-        "output, with no surrounding natural-language explanation or narrative.",
+        "output, with no surrounding natural-language explanation or "
+        "narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour "
         "`.tour` JSON file (schema-compatible) with steps and fields "
-        "appropriate to the task, omitting extra prose or surrounding explanation.",
+        "appropriate to the task, omitting extra prose or surrounding "
+        "explanation.",
         "diagram": "The response converts the input into Mermaid diagram code "
         "only: it infers the best diagram type for the task and "
         "respects Mermaid safety constraints (Mermaid diagrams do not "
@@ -25,7 +27,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         'node labels; the text uses numeric encodings such as "#124;" '
         "for '|' instead of raw problematic characters).",
         "gherkin": "The response outputs only Gherkin format as the complete "
-        "output, using Jira markup where appropriate and omitting surrounding explanation.",
+        "output, using Jira markup where appropriate and omitting "
+        "surrounding explanation.",
         "html": "The response consists solely of semantic HTML as the complete "
         "output, with no surrounding prose or explanation.",
         "jira": "The response formats the content using Jira markup (headings, "
@@ -91,7 +94,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "surfacing tooling or interaction hints suitable for video, "
         "voice, or screen sharing.",
         "shellscript": "The response is delivered as a shell script output "
-        "format, focusing on correct, executable shell code rather than prose or explanation.",
+        "format, focusing on correct, executable shell code rather "
+        "than prose or explanation.",
         "sketch": "The response emits only pure D2 diagram source as the complete "
         "output. The response must use valid D2 syntax and only "
         "documented D2 shapes (e.g., rectangle, circle, cylinder, "
@@ -403,10 +407,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "grove": "The response enhances the task by examining accumulation, decay, "
         "or rate-of-change effects and how small contributions compound "
         "over time.",
-        "grow": "The response enhances the task by preserving the simplest "
-        "form adequate to the current purpose and expanding only when "
-        "new demands demonstrably outgrow it, so that every abstraction "
-        "arises from necessity rather than anticipation.",
+        "grow": "The response enhances the task by preserving the simplest form "
+        "adequate to the current purpose and expanding only when new "
+        "demands demonstrably outgrow it, so that every abstraction arises "
+        "from necessity rather than anticipation.",
         "induce": "The response enhances the task by applying inductive reasoning, "
         "generalizing patterns from specific observations and assessing "
         "the strength and limits of those generalizations.",
@@ -546,20 +550,27 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
 }
 
-
-@dataclass(frozen=True)
-class AxisDoc:
-    axis: str
-    key: str
-    description: str
-    group: str | None = None
-    flags: FrozenSet[str] = field(default_factory=frozenset)
-
-
 # Short CLI-facing labels for token selection (ADR-0109).
 # 3-8 words. Audience: selecting agent or human.
 # Distinct from descriptions which are prompt-injection instructions.
 AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
+    "channel": {
+        "adr": "Architecture Decision Record format",
+        "code": "Code or markup only, no prose",
+        "codetour": "VS Code CodeTour JSON file",
+        "diagram": "Mermaid diagram only",
+        "gherkin": "Gherkin scenario format",
+        "html": "Semantic HTML only, no prose",
+        "jira": "Jira markup formatting",
+        "plain": "Plain prose, no structural decoration",
+        "presenterm": "Presenterm slide deck",
+        "remote": "Optimized for remote delivery",
+        "shellscript": "Shell script format",
+        "sketch": "D2 diagram source only",
+        "slack": "Slack-formatted Markdown",
+        "svg": "SVG markup only",
+        "sync": "Synchronous session plan",
+    },
     "completeness": {
         "deep": "Substantial depth within scope",
         "full": "Thorough, all major aspects",
@@ -569,18 +580,60 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "narrow": "Restricted to a very small slice",
         "skim": "Light pass, obvious issues only",
     },
-    "scope": {
-        "act": "Tasks and intended actions",
-        "assume": "Premises and preconditions",
-        "fail": "Breakdowns and failure modes",
-        "good": "Quality criteria and success standards",
-        "mean": "Conceptual meaning and framing",
-        "motifs": "Recurring patterns and themes",
-        "stable": "Stability and persistence of states",
-        "struct": "Arrangement and relationships",
-        "thing": "Entities and bounded units",
-        "time": "Sequences and temporal change",
-        "view": "Stakeholder perspective",
+    "directional": {
+        "bog": "Reflect on structure inward",
+        "dig": "Ground in concrete details",
+        "dip bog": "Concrete first, examine structure, reflect",
+        "dip ong": "Concrete first, then identify actions",
+        "dip rog": "Concrete first, then reflect outward",
+        "fig": "Alternate between abstract and concrete",
+        "fip bog": "Cycle abstract/concrete, examine structure",
+        "fip ong": "Cycle abstract/concrete, then act",
+        "fip rog": "Cycle abstract/concrete, then reflect",
+        "fly bog": "Abstract first, examine structure, reflect",
+        "fly ong": "Abstract first, then identify actions",
+        "fly rog": "Abstract first, then reflect outward",
+        "fog": "Surface abstract patterns and principles",
+        "jog": "Execute intent directly, no clarification",
+        "ong": "Identify concrete actions, extend outward",
+        "rog": "Examine structure, then reflect outward",
+    },
+    "form": {
+        "actions": "Concrete actions and tasks",
+        "activities": "Session activities and segments",
+        "bug": "Bug report format",
+        "bullets": "Concise bullet points",
+        "cards": "Discrete cards with headings",
+        "case": "Build the case before the conclusion",
+        "checklist": "Actionable checklist",
+        "cocreate": "Collaborative small-move process",
+        "commit": "Conventional commit message",
+        "contextualise": "Add or reshape supporting context",
+        "direct": "Lead with main point first",
+        "facilitate": "Facilitation plan and session structure",
+        "faq": "Question-and-answer format",
+        "formats": "Document types and writing formats",
+        "indirect": "Background first, conclusion last",
+        "ladder": "Abstraction ladder up and down",
+        "log": "Work or research log entry",
+        "merge": "Combine multiple sources coherently",
+        "questions": "Answer as probing questions",
+        "quiz": "Quiz structure, questions before answers",
+        "recipe": "Recipe with ingredients and steps",
+        "rewrite": "Rewrite preserving original intent",
+        "scaffold": "First-principles scaffolded explanation",
+        "socratic": "Question-led Socratic dialogue",
+        "spike": "Research spike backlog item",
+        "story": "User story format",
+        "table": "Markdown table presentation",
+        "taxonomy": "Classification or type hierarchy",
+        "test": "Structured test cases",
+        "tight": "Concise dense prose",
+        "variants": "Several distinct labeled options",
+        "visual": "Abstract visual or metaphorical layout",
+        "walkthrough": "Step-by-step guided walkthrough",
+        "wardley": "Wardley map",
+        "wasinawa": "What–So What–Now What reflection",
     },
     "method": {
         "abduce": "Generate explanatory hypotheses",
@@ -634,77 +687,18 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Apply falsification pressure to claims",
     },
-    "form": {
-        "actions": "Concrete actions and tasks",
-        "activities": "Session activities and segments",
-        "bug": "Bug report format",
-        "bullets": "Concise bullet points",
-        "cards": "Discrete cards with headings",
-        "case": "Build the case before the conclusion",
-        "checklist": "Actionable checklist",
-        "cocreate": "Collaborative small-move process",
-        "commit": "Conventional commit message",
-        "contextualise": "Add or reshape supporting context",
-        "direct": "Lead with main point first",
-        "facilitate": "Facilitation plan and session structure",
-        "faq": "Question-and-answer format",
-        "formats": "Document types and writing formats",
-        "indirect": "Background first, conclusion last",
-        "ladder": "Abstraction ladder up and down",
-        "log": "Work or research log entry",
-        "merge": "Combine multiple sources coherently",
-        "questions": "Answer as probing questions",
-        "quiz": "Quiz structure, questions before answers",
-        "recipe": "Recipe with ingredients and steps",
-        "rewrite": "Rewrite preserving original intent",
-        "scaffold": "First-principles scaffolded explanation",
-        "socratic": "Question-led Socratic dialogue",
-        "spike": "Research spike backlog item",
-        "story": "User story format",
-        "table": "Markdown table presentation",
-        "taxonomy": "Classification or type hierarchy",
-        "test": "Structured test cases",
-        "tight": "Concise dense prose",
-        "variants": "Several distinct labeled options",
-        "visual": "Abstract visual or metaphorical layout",
-        "walkthrough": "Step-by-step guided walkthrough",
-        "wardley": "Wardley map",
-        "wasinawa": "What–So What–Now What reflection",
-    },
-    "channel": {
-        "adr": "Architecture Decision Record format",
-        "code": "Code or markup only, no prose",
-        "codetour": "VS Code CodeTour JSON file",
-        "diagram": "Mermaid diagram only",
-        "gherkin": "Gherkin scenario format",
-        "html": "Semantic HTML only, no prose",
-        "jira": "Jira markup formatting",
-        "plain": "Plain prose, no structural decoration",
-        "presenterm": "Presenterm slide deck",
-        "remote": "Optimized for remote delivery",
-        "shellscript": "Shell script format",
-        "sketch": "D2 diagram source only",
-        "slack": "Slack-formatted Markdown",
-        "svg": "SVG markup only",
-        "sync": "Synchronous session plan",
-    },
-    "directional": {
-        "bog": "Reflect on structure inward",
-        "dig": "Ground in concrete details",
-        "dip bog": "Concrete first, examine structure, reflect",
-        "dip ong": "Concrete first, then identify actions",
-        "dip rog": "Concrete first, then reflect outward",
-        "fig": "Alternate between abstract and concrete",
-        "fip bog": "Cycle abstract/concrete, examine structure",
-        "fip ong": "Cycle abstract/concrete, then act",
-        "fip rog": "Cycle abstract/concrete, then reflect",
-        "fly bog": "Abstract first, examine structure, reflect",
-        "fly ong": "Abstract first, then identify actions",
-        "fly rog": "Abstract first, then reflect outward",
-        "fog": "Surface abstract patterns and principles",
-        "jog": "Execute intent directly, no clarification",
-        "ong": "Identify concrete actions, extend outward",
-        "rog": "Examine structure, then reflect outward",
+    "scope": {
+        "act": "Tasks and intended actions",
+        "assume": "Premises and preconditions",
+        "fail": "Breakdowns and failure modes",
+        "good": "Quality criteria and success standards",
+        "mean": "Conceptual meaning and framing",
+        "motifs": "Recurring patterns and themes",
+        "stable": "Stability and persistence of states",
+        "struct": "Arrangement and relationships",
+        "thing": "Entities and bounded units",
+        "time": "Sequences and temporal change",
+        "view": "Stakeholder perspective",
     },
 }
 
@@ -713,25 +707,34 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # Distinct from hard incompatibilities in hierarchy.incompatibilities.
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
-        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "codetour": (
-            "Best for code-navigation tasks: fix, make (code creation), show (code structure), "
-            "pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan."
-        ),
-        "gherkin": (
-            "Best for behavior specification: check, plan, or make when defining system behavior. "
-            "Avoid with sim, sort, probe, or diff (no behavioral subject)."
-        ),
-        "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "shellscript": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
+        "code": "Avoid with narrative tasks (sim, probe) that produce prose "
+        "rather than code.",
+        "codetour": "Best for code-navigation tasks: fix, make (code creation), "
+        "show (code structure), pull (code extraction). Avoid with "
+        "sim, sort, probe, diff (no code subject), or plan.",
+        "gherkin": "Best for behavior specification: check, plan, or make when "
+        "defining system behavior. Avoid with sim, sort, probe, or "
+        "diff (no behavioral subject).",
+        "html": "Avoid with narrative tasks (sim, probe) that produce prose "
+        "rather than code.",
+        "shellscript": "Avoid with narrative tasks (sim, probe) that produce "
+        "prose rather than code.",
     },
     "form": {
-        "facilitate": (
-            "When combined with sim, designs a facilitation structure for a simulation exercise "
-            "rather than performing the simulation directly."
-        ),
+        "facilitate": "When combined with sim, designs a facilitation structure for "
+        "a simulation exercise rather than performing the simulation "
+        "directly."
     },
 }
+
+
+@dataclass(frozen=True)
+class AxisDoc:
+    axis: str
+    key: str
+    description: str
+    group: str | None = None
+    flags: FrozenSet[str] = field(default_factory=frozenset)
 
 
 def axis_key_to_value_map(axis: str) -> dict[str, str]:

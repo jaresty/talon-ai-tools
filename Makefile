@@ -19,7 +19,7 @@ bar-help-llm-test: .venv/bin/pytest
 
 bar-grammar-check:
 	@echo "Regenerating grammar to check for drift..."
-	@python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
 	@echo "Checking for grammar drift..."
 	@git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json || \
@@ -28,7 +28,7 @@ bar-grammar-check:
 
 bar-grammar-update:
 	@echo "Regenerating grammar files..."
-	@python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
 	@echo "✓ Grammar files updated. Review with 'git diff' before committing."
 

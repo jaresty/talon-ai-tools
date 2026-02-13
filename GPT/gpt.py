@@ -421,8 +421,7 @@ def _format_context_lines(snapshot: dict[str, str]) -> list[str]:
             axis_bits.append(f"{label}: {val}")
     if axis_bits:
         lines.append("Defaults: " + " · ".join(axis_bits))
-
- return lines
+    return lines
 
 
 def _suggest_prompt_text(

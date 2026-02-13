@@ -227,7 +227,11 @@ def serialize_axis_config(
     """
 
     catalog = axis_catalog(lists_dir=lists_dir)
-    payload: dict[str, object] = {"axes": catalog["axes"]}
+    payload: dict[str, object] = {
+        "axes": catalog["axes"],
+        "axis_labels": catalog["axis_labels"],
+        "axis_guidance": catalog["axis_guidance"],
+    }
     if include_axis_lists:
         payload["axis_list_tokens"] = catalog["axis_list_tokens"]
     if include_static_prompts:

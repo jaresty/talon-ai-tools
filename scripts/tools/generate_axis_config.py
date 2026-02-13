@@ -23,12 +23,16 @@ if str(ROOT) not in sys.path:
 from lib.axisCatalog import serialize_axis_config  # type: ignore  # noqa: E402
 
 
-def _axis_mapping() -> dict[str, dict[str, str]]:
-    """Return axis token -> description mapping from the SSOT catalog serializer."""
-    payload = serialize_axis_config(
+def _axis_payload() -> dict:
+    """Return the full axis payload from the SSOT catalog serializer."""
+    return serialize_axis_config(
         lists_dir=None, include_axis_lists=False, include_static_prompts=False
     )
-    axes = payload.get("axes", {}) or {}
+
+
+def _axis_mapping() -> dict[str, dict[str, str]]:
+    """Return axis token -> description mapping from the SSOT catalog serializer."""
+    axes = _axis_payload().get("axes", {}) or {}
     # Ensure deterministic ordering for stable renders.
     return {
         axis: dict(sorted((axes.get(axis) or {}).items()))
@@ -36,11 +40,50 @@ def _axis_mapping() -> dict[str, dict[str, str]]:
     }
 
 
+def _axis_label_mapping() -> dict[str, dict[str, str]]:
+    """Return axis token -> label mapping (ADR-0109)."""
+    labels = _axis_payload().get("axis_labels", {}) or {}
+    return {
+        axis: dict(sorted((labels.get(axis) or {}).items()))
+        for axis in sorted(labels.keys())
+        if labels.get(axis)
+    }
+
+
+def _axis_guidance_mapping() -> dict[str, dict[str, str]]:
+    """Return axis token -> guidance mapping (ADR-0110)."""
+    guidance = _axis_payload().get("axis_guidance", {}) or {}
+    return {
+        axis: dict(sorted((guidance.get(axis) or {}).items()))
+        for axis in sorted(guidance.keys())
+        if guidance.get(axis)
+    }
+
+
 def render_axis_config() -> str:
     """Render an axisConfig.py module based on the registry."""
-    mapping = _axis_mapping()
+    payload = _axis_payload()
+    axes = payload.get("axes", {}) or {}
+    mapping = {
+        axis: dict(sorted((axes.get(axis) or {}).items()))
+        for axis in sorted(axes.keys())
+    }
+    labels = payload.get("axis_labels", {}) or {}
+    label_mapping = {
+        axis: dict(sorted((labels.get(axis) or {}).items()))
+        for axis in sorted(labels.keys())
+        if labels.get(axis)
+    }
+    guidance = payload.get("axis_guidance", {}) or {}
+    guidance_mapping = {
+        axis: dict(sorted((guidance.get(axis) or {}).items()))
+        for axis in sorted(guidance.keys())
+        if guidance.get(axis)
+    }
     # Use width=88 to match black's default line length
     body = pprint.pformat(mapping, width=88, sort_dicts=True)
+    label_body = pprint.pformat(label_mapping, width=88, sort_dicts=True)
+    guidance_body = pprint.pformat(guidance_mapping, width=88, sort_dicts=True)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -72,6 +115,16 @@ def render_axis_config() -> str:
             return AXIS_KEY_TO_VALUE.get(axis, {})
 
 
+        def axis_key_to_label_map(axis: str) -> dict[str, str]:
+            \"\"\"Return the key->label map for a given axis (ADR-0109).\"\"\"
+            return AXIS_KEY_TO_LABEL.get(axis, {})
+
+
+        def axis_key_to_guidance_map(axis: str) -> dict[str, str]:
+            \"\"\"Return the key->guidance map for a given axis (ADR-0110).\"\"\"
+            return AXIS_KEY_TO_GUIDANCE.get(axis, {})
+
+
         def axis_docs_for(axis: str) -> list[AxisDoc]:
             \"\"\"Return AxisDoc objects for a given axis.\"\"\"
             mapping = axis_key_to_value_map(axis)
@@ -98,6 +151,14 @@ def render_axis_config() -> str:
             [
                 header.rstrip(),
                 f"AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {body}",
+                f"# Short CLI-facing labels for token selection (ADR-0109).\n"
+                f"# 3-8 words. Audience: selecting agent or human.\n"
+                f"# Distinct from descriptions which are prompt-injection instructions.\n"
+                f"AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {label_body}",
+                f"# Selection guidance for tokens where the description alone is ambiguous or\n"
+                f"# where naming traps exist (ADR-0110). Not all tokens need this.\n"
+                f"# Distinct from hard incompatibilities in hierarchy.incompatibilities.\n"
+                f"AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {guidance_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip(),
             ]

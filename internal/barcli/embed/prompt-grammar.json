@@ -935,6 +935,16 @@
         "persuade": "Influence toward a view",
         "teach": "Help the audience learn"
       }
+    },
+    "guidance": {
+      "tone": {
+        "formally": "May conflict with conversational-register channels. slack, sync, and remote assume informal or spoken language — formal elevated prose will feel bureaucratic. Use directly or no tone for those channels."
+      },
+      "intent": {
+        "announce": "Social-purpose intent: use only when delivering a specific announcement. Not a modifier for analytical or planning tasks.",
+        "appreciate": "Social-purpose intent: use only when the whole response is an expression of thanks or recognition. Does not modify analytical tasks (plan, probe, check, diff) — pair with tone: kindly instead.",
+        "entertain": "Social-purpose intent: use only when amusement is the primary goal. Use tone: casually for an informal register instead."
+      }
     }
   },
   "hierarchy": {
@@ -1780,7 +1790,7 @@
   "checksums": {
     "axes": "3f102e6c189bbc734ef950e2b70eb0e77a323e30124d172cddf7806ccf25a5b1",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
-    "persona": "ee2e177e4d7d0e198f065ee49845cb40025ed6cccbcadc636e5cc675777dfca8",
+    "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"
   }

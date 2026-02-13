@@ -1253,6 +1253,9 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					} else {
 						fmt.Fprintf(w, "    • %s: %s\n", joined, desc)
 					}
+					if guidance := grammar.PersonaGuidance(axis, token); guidance != "" {
+						fmt.Fprintf(w, "      ↳ %s\n", guidance)
+					}
 				}
 			}
 		}
@@ -1296,6 +1299,9 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					fmt.Fprintf(w, "  • %s\n", joined)
 				} else {
 					fmt.Fprintf(w, "  • %s: %s\n", joined, desc)
+				}
+				if guidance := grammar.PersonaGuidance("intent", token); guidance != "" {
+					fmt.Fprintf(w, "      ↳ %s\n", guidance)
 				}
 			}
 		}

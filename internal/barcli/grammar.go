@@ -56,12 +56,13 @@ type StaticProfile struct {
 }
 
 type PersonaSection struct {
-	Axes    map[string][]string
-	Docs    map[string]map[string]string
-	Labels  map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
-	Presets map[string]PersonaPreset
-	Spoken  map[string]string
-	Intent  IntentSection
+	Axes     map[string][]string
+	Docs     map[string]map[string]string
+	Labels   map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
+	Guidance map[string]map[string]string // ADR-0112: selection-oriented prose hints
+	Presets  map[string]PersonaPreset
+	Spoken   map[string]string
+	Intent   IntentSection
 }
 
 type multiWordToken struct {
@@ -131,12 +132,13 @@ type rawStatic struct {
 }
 
 type rawPersona struct {
-	Axes    map[string][]string          `json:"axes"`
-	Docs    map[string]map[string]string `json:"docs"`
-	Labels  map[string]map[string]string `json:"labels"` // ADR-0111
-	Presets map[string]PersonaPreset     `json:"presets"`
-	Spoken  map[string]string            `json:"spoken_map"`
-	Intent  struct {
+	Axes     map[string][]string          `json:"axes"`
+	Docs     map[string]map[string]string `json:"docs"`
+	Labels   map[string]map[string]string `json:"labels"`   // ADR-0111
+	Guidance map[string]map[string]string `json:"guidance"` // ADR-0112
+	Presets  map[string]PersonaPreset     `json:"presets"`
+	Spoken   map[string]string            `json:"spoken_map"`
+	Intent   struct {
 		AxisTokens map[string][]string `json:"axis_tokens"`
 		Docs       map[string]string   `json:"docs"`
 	} `json:"intent"`
@@ -210,10 +212,11 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Guidance:     raw.Static.Guidance,
 		},
 		Persona: PersonaSection{
-			Axes:    raw.Persona.Axes,
-			Docs:    raw.Persona.Docs,
-			Labels:  raw.Persona.Labels,
-			Presets: raw.Persona.Presets,
+			Axes:     raw.Persona.Axes,
+			Docs:     raw.Persona.Docs,
+			Labels:   raw.Persona.Labels,
+			Guidance: raw.Persona.Guidance,
+			Presets:  raw.Persona.Presets,
 			Spoken:  personaSpoken,
 			Intent: IntentSection{
 				AxisTokens: raw.Persona.Intent.AxisTokens,
@@ -860,6 +863,30 @@ func (g *Grammar) PersonaLabel(axis, token string) string {
 	}
 	if label, ok := labels[strings.ToLower(tokenKey)]; ok && label != "" {
 		return label
+	}
+	return ""
+}
+
+// PersonaGuidance returns the optional selection-guidance text for the given persona axis token (ADR-0112).
+// Returns empty string if no guidance is defined.
+func (g *Grammar) PersonaGuidance(axis, token string) string {
+	if g.Persona.Guidance == nil {
+		return ""
+	}
+	axisKey := strings.ToLower(strings.TrimSpace(axis))
+	if axisKey == "" {
+		return ""
+	}
+	guidance, ok := g.Persona.Guidance[axisKey]
+	if !ok {
+		return ""
+	}
+	tokenKey := strings.TrimSpace(token)
+	if text, ok := guidance[tokenKey]; ok && text != "" {
+		return text
+	}
+	if text, ok := guidance[strings.ToLower(tokenKey)]; ok && text != "" {
+		return text
 	}
 	return ""
 }

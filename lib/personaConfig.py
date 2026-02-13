@@ -108,6 +108,32 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 }
 
 
+# Selection guidance for persona/intent/tone tokens where the description alone is
+# ambiguous or where misuse traps exist (ADR-0112). Displayed in the TUI at token-
+# selection time; never injected into the prompt body.
+PERSONA_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
+    "intent": {
+        "appreciate": "Social-purpose intent: use only when the whole response is an "
+        "expression of thanks or recognition. Does not modify analytical tasks "
+        "(plan, probe, check, diff) — pair with tone: kindly instead.",
+        "entertain": "Social-purpose intent: use only when amusement is the primary "
+        "goal. Use tone: casually for an informal register instead.",
+        "announce": "Social-purpose intent: use only when delivering a specific "
+        "announcement. Not a modifier for analytical or planning tasks.",
+    },
+    "tone": {
+        "formally": "May conflict with conversational-register channels. slack, sync, "
+        "and remote assume informal or spoken language — formal elevated prose "
+        "will feel bureaucratic. Use directly or no tone for those channels.",
+    },
+}
+
+
+def persona_key_to_guidance_map(axis: str) -> dict[str, str]:
+    """Return the key->guidance map for a persona/intent axis (ADR-0112)."""
+    return PERSONA_KEY_TO_GUIDANCE.get(axis, {})
+
+
 def persona_key_to_label_map(axis: str) -> dict[str, str]:
     """Return the key->label map for a persona/intent axis (ADR-0111)."""
     return PERSONA_KEY_TO_LABEL.get(axis, {})

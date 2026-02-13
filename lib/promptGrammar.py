@@ -9,7 +9,7 @@ from typing import Any, Iterable, Mapping
 from .axisCatalog import axis_catalog
 from .axisMappings import DEFAULT_COMPLETENESS_TOKEN
 from .personaCatalog import get_persona_intent_catalog
-from .personaConfig import PERSONA_KEY_TO_VALUE, persona_key_to_label_map
+from .personaConfig import PERSONA_KEY_TO_VALUE, persona_key_to_guidance_map, persona_key_to_label_map
 from .staticPromptConfig import STATIC_PROMPT_CONFIG
 from .talonSettings import axis_incompatibilities, axis_priority, axis_soft_caps
 
@@ -291,6 +291,13 @@ def _build_persona_section(
         if label_map:
             persona_labels[axis] = dict(sorted(label_map.items()))
 
+    # Persona axis guidance (ADR-0112): selection hints displayed in TUI, not prompt body.
+    persona_guidance: dict[str, dict[str, str]] = {}
+    for axis in ("voice", "audience", "tone", "intent"):
+        guidance_map = persona_key_to_guidance_map(axis)
+        if guidance_map:
+            persona_guidance[axis] = dict(sorted(guidance_map.items()))
+
     section = {
         "axes": persona_axes,
         "docs": persona_docs,
@@ -300,6 +307,8 @@ def _build_persona_section(
     }
     if persona_labels:
         section["labels"] = persona_labels
+    if persona_guidance:
+        section["guidance"] = persona_guidance
     return section, persona_slug_map
 
 

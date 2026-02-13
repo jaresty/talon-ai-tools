@@ -409,8 +409,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "over time.",
         "grow": "The response enhances the task by preserving the simplest form "
         "adequate to the current purpose and expanding only when new "
-        "demands demonstrably outgrow it, so that every abstraction arises "
-        "from necessity rather than anticipation.",
+        "demands demonstrably outgrow it, so that every abstraction and "
+        "every exception arises from necessity rather than anticipation.",
         "induce": "The response enhances the task by applying inductive reasoning, "
         "generalizing patterns from specific observations and assessing "
         "the strength and limits of those generalizations.",

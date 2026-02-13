@@ -107,7 +107,7 @@
         "explore": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing to a single answer.",
         "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
         "grove": "The response enhances the task by examining accumulation, decay, or rate-of-change effects and how small contributions compound over time.",
-        "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction arises from necessity rather than anticipation.",
+        "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction and every exception arises from necessity rather than anticipation.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
@@ -1776,7 +1776,7 @@
     }
   },
   "checksums": {
-    "axes": "fbf6e61c27be7517d6e5d329afeed3cff90d120089008b3d1de924ecfdd4d4b9",
+    "axes": "5bb6fd1086a91d71d07dcc251b6b7ef3da91740eb2c3dec57291f954cba0b04d",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "ee2e177e4d7d0e198f065ee49845cb40025ed6cccbcadc636e5cc675777dfca8",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

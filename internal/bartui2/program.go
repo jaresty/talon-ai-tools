@@ -1769,8 +1769,15 @@ func (m model) renderTokensPane() string {
 			if strings.TrimSpace(display) == "" {
 				display = c.Value
 			}
-			// Format: "▸ focus       single topic..."
-			entry := fmt.Sprintf("%s%-12s %s", prefix, display, truncate(c.Description, descWidth))
+			// When display includes a label (slug — label), it already conveys context;
+			// omit the inline description to avoid overflow and redundancy (ADR-0111 D4).
+			// When display is just a slug, append description for context.
+			var entry string
+			if strings.Contains(display, "\u2014") {
+				entry = fmt.Sprintf("%s%s", prefix, display)
+			} else {
+				entry = fmt.Sprintf("%s%-12s %s", prefix, display, truncate(c.Description, descWidth))
+			}
 			right.WriteString(style.Render(entry))
 			right.WriteString("\n")
 		}

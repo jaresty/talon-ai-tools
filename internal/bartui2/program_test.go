@@ -181,6 +181,35 @@ func TestCompletionDisplayUsesLabel(t *testing.T) {
 	}
 }
 
+// TestCompletionEntryOmitsDescriptionWhenLabelPresent verifies that when a completion
+// has a label (slug — label format), the rendered view entry does not also append the
+// inline description. The label already provides context; description appears only in
+// the detail pane. This prevents overflow on long labels (ADR-0111 D4 rendering fix).
+func TestCompletionEntryOmitsDescriptionWhenLabelPresent(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+	view, err := Snapshot(opts)
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	// The view must contain the slug-label form.
+	if !strings.Contains(view, "todo — Todo") {
+		t.Error("expected 'todo — Todo' in view (ADR-0111 D4)")
+	}
+
+	// The inline entry must NOT append the description after the label.
+	// "Return a todo list" is the Description for "todo"; it should only appear
+	// in the detail pane (after the separator line), not on the completion entry line.
+	if strings.Contains(view, "todo — Todo  Return a todo list") ||
+		strings.Contains(view, "todo — TodoReturn a todo list") {
+		t.Error("completion entry must not include inline description when label is present (ADR-0111 D4)")
+	}
+}
+
 func TestFuzzyCompletionAllOptions(t *testing.T) {
 	m := newModel(Options{
 		TokenCategories: testCategories(),

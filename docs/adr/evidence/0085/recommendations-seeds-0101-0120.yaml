@@ -1,0 +1,148 @@
+# ADR-0085 Cycle 6 Recommendations — Seeds 0101-0120
+# Date: 2026-02-13
+# Cycle mean: 3.85/5 | Excellent: 35% | Problematic: 15%
+
+# ── R14: Extend form/channel conflict list to include `questions` and `recipe` ──
+- id: R14
+  action: edit
+  tokens: [questions, recipe]
+  axis: form
+  reason: >
+    Three seeds (0109, 0115, 0120) confirm that `questions` form conflicts with
+    all structured-format output channels (diagram, gherkin, codetour, adr, code,
+    shellscript, svg, html, presenterm). `questions` form requires prose sentence
+    output; these channels require non-prose formats. The REFERENCE KEY guidance
+    ("channel defines output format when both present") does not resolve this because
+    questions form is categorically incompatible with non-prose formats, not just
+    dominant.
+    Additionally, seed 0109 confirms that `recipe` form (requires custom prose
+    mini-language + key) is incompatible with code-format channels (codetour, code,
+    shellscript, svg, html, diagram).
+    This extends the form/channel conflict class documented in R8 (interactive forms)
+    to cover output-exclusive prose forms.
+  evidence: [seed_0109, seed_0115, seed_0120]
+  proposed: >
+    Add to `questions` form description:
+    "Note: this form produces prose questions and conflicts with any channel that
+    forces a non-prose output format (diagram/Mermaid, gherkin, codetour, adr,
+    code, shellscript, svg, html, presenterm). Use only with prose-compatible
+    channels (plain, slack, jira, remote, sync) or no channel."
+
+    Add to `recipe` form description:
+    "Note: this form requires a prose mini-language document and conflicts with
+    code-exclusive output channels (code, shellscript, svg, html, diagram,
+    codetour). Use with prose channels or no channel."
+
+    Add both tokens to bar help llm § Incompatibilities § Prose-form conflicts list.
+
+    Also add AXIS_KEY_TO_GUIDANCE entries for these tokens warning about channel
+    conflicts, so TUI displays the warning at selection time.
+  files:
+    - lib/axisConfig.py  # questions and recipe form descriptions + guidance
+    - internal/barcli/help_llm.go  # renderCompositionRules / incompatibilities section
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R15: Add guidance for social-intent tokens to prevent task mismatch ─────────
+- id: R15
+  action: edit
+  tokens: [appreciate, entertain, announce]
+  axis: intent
+  reason: >
+    Seeds 0111 (plan+appreciate) and 0113 (plan+appreciate) both scored 3/5 due to
+    "appreciate" intent creating semantic noise in analytical/structural tasks.
+    "appreciate" means "express thanks or recognition" — it is a social communicative
+    intent, not a style modifier. When paired with analytical tasks (plan, probe,
+    check, diff), it either gets ignored by the LLM or awkwardly injects gratitude
+    into a structural response.
+    The same issue applies to "entertain" (engage/amuse) and "announce" (deliver news)
+    — these are social intents only meaningful when the entire response genuinely serves
+    that function. Randomly selecting them with task-driven analytical tasks produces
+    noise at ~10-15% of corpus frequency.
+  evidence: [seed_0111, seed_0113]
+  proposed: >
+    Add to `appreciate` intent description:
+    "Use only when the response's primary purpose is to thank or recognize the
+    audience — not as a style modifier for analytical or structural tasks (plan,
+    probe, check, diff). Pairing `appreciate` with task-driven prompts creates
+    semantic noise: the LLM will likely ignore it or awkwardly inject gratitude
+    into an otherwise analytical response."
+
+    Add to `entertain` intent description:
+    "Use only when engagement or amusement is the primary purpose. Not a substitute
+    for casual tone — use `tone: casually` for informal register. Pairing with
+    analytical tasks produces a response that feels tonally confused."
+
+    Add to `announce` intent description:
+    "Use only when delivering news or a formal announcement is the response's purpose.
+    Pairing with analytical tasks (plan, probe, check) produces friction: the response
+    will attempt to analyze AND announce simultaneously."
+
+    Add AXIS_KEY_TO_GUIDANCE entries for all three tokens with selection heuristics.
+  files:
+    - lib/personaConfig.py  # appreciate, entertain, announce intent descriptions + guidance
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── R16: Add guidance for `formally` tone + conversational channels ──────────────
+- id: R16
+  action: edit
+  token: formally
+  axis: tone
+  reason: >
+    Seed 0118 (fix+slack+formally) scored 3/5 due to register mismatch.
+    Slack (and similar real-time/conversational channels: remote, sync) have an
+    implicit informal register. "Formally" tone (professional, elevated language,
+    structured) contradicts Slack's expected register — the output will feel
+    bureaucratic for a channel designed for quick, conversational communication.
+    The same issue applies to `remote` (video call scripts) and `sync` (live session
+    plans), which are inherently conversational formats.
+  evidence: [seed_0118]
+  proposed: >
+    Add to `formally` tone description or AXIS_KEY_TO_GUIDANCE:
+    "May conflict with conversational-register channels. Slack (`slack`), live session
+    plans (`sync`), and video call scripts (`remote`) have informal registers —
+    formal elevated language will feel mismatched. For professional-but-accessible
+    output in these channels, use no tone token or `directly` instead of `formally`."
+  files:
+    - lib/personaConfig.py  # formally tone description + guidance
+    - internal/barcli/embed/prompt-grammar.json
+
+# ── New exemplar patterns ────────────────────────────────────────────────────────
+exemplars:
+  - id: P5
+    seeds: [seed_0106]
+    pattern: pick + bias(method) + gist + plain + PM_to_team
+    description: >
+      Canonical bias-aware decision pattern for product managers. Chooses from
+      alternatives while surfacing cognitive biases that might distort judgment.
+      Gist completeness + plain channel keeps it brief and scannable for team
+      communication.
+
+  - id: P6
+    seeds: [seed_0110]
+    pattern: check + fail(scope) + minimal + grow(method) + fly bog + designer_to_pm
+    description: >
+      Canonical design review failure-mode evaluation. Evaluates failure conditions
+      with minimal coverage that grows only where evidence demands it (grow method).
+      Fly bog adds abstract pattern synthesis. Designer-to-PM framing surfaces risk
+      for product decisions.
+
+  - id: P7
+    seeds: [seed_0117]
+    pattern: pull + fail(scope) + deep + fly rog + stakeholder_facilitator
+    description: >
+      Canonical stakeholder risk synthesis pattern. Extracts failure information
+      in depth, abstracts to structural implications (fly rog), delivered by a
+      facilitator directly to stakeholders. High-value for project risk reviews.
+
+  - id: P8
+    seeds: [seed_0119]
+    pattern: make + diagram + fog(directional) + teach_junior_dev
+    description: >
+      Canonical pedagogical diagram. Creates a Mermaid visualization that generalizes
+      from concrete components to abstract principles (fog). Teacher-to-junior persona
+      ensures clear, scaffolded explanation alongside the diagram.
+
+# ── Priority summary ─────────────────────────────────────────────────────────────
+priority:
+  high:   [R14]      # extend form/channel conflict documentation — 3 seeds, 15% conflict rate
+  medium: [R15, R16] # intent token guidance + tone/channel register mismatch

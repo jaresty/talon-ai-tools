@@ -260,7 +260,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "merge": "The response combines multiple sources into a single coherent "
         "whole while preserving essential information.",
         "questions": "The response presents the answer as a series of probing or "
-        "clarifying questions rather than statements.",
+        "clarifying questions rather than statements. "
+        "Conflicts with channels whose syntax cannot accommodate open questions "
+        "(`gherkin`). When combined with `diagram`, channel wins — the output is "
+        "Mermaid code structured as a question tree, decision map, or inquiry flow "
+        "rather than a structural diagram of the subject.",
         "quiz": "The response organizes content as a quiz structure — questions "
         "posed before explanations, testing understanding through active "
         "recall before providing answers. Without an output-exclusive "
@@ -271,7 +275,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "checks — without requiring live interaction.",
         "recipe": "The response expresses the answer as a recipe that includes a "
         "custom, clearly explained mini-language and a short key for "
-        "understanding it.",
+        "understanding it. "
+        "Prose-output form — conflicts with channels whose schema has no slot for "
+        "a prose document (`codetour`, `code`, `html`, `shellscript`, `svg`, "
+        "`presenterm`). Use with prose channels or no channel.",
         "rewrite": "The response rewrites or refactors while preserving the original "
         "intent, treating the work as a mechanical transform rather than "
         "a reinterpretation. Best paired with `fix`, `pull`, `diff`, or "
@@ -723,7 +730,12 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "form": {
         "facilitate": "When combined with sim, designs a facilitation structure for "
         "a simulation exercise rather than performing the simulation "
-        "directly."
+        "directly.",
+        "questions": "Conflicts with gherkin (syntax rigidity). "
+        "With diagram: produces a question-tree Mermaid diagram. "
+        "Use with plain, slack, diagram, or no channel.",
+        "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm "
+        "(schema has no prose slot). Use with plain, slack, or no channel.",
     },
 }
 

@@ -672,8 +672,20 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Avoid with `sort` (sorted list), `pull` (extraction), `diff` (comparison), or `sim` (scenario playback).\n\n")
 
 	fmt.Fprintf(w, "**Prose-form conflicts:**\n")
-	fmt.Fprintf(w, "Form tokens that produce structured prose (`case`, `formats`, `walkthrough`, `scaffold`, `recipe`, `faq`, `table`, `taxonomy`, `visual`, `variants`, `checklist`, `actions`) ")
+	fmt.Fprintf(w, "Form tokens that produce structured prose (`case`, `formats`, `walkthrough`, `scaffold`, `faq`, `table`, `taxonomy`, `visual`, `variants`, `checklist`, `actions`) ")
 	fmt.Fprintf(w, "conflict with channels that mandate a fixed non-prose output format (`code`, `html`, `shellscript`, `svg`, `presenterm`, `adr`, `codetour`, `gherkin`, `diagram`).\n\n")
+
+	fmt.Fprintf(w, "**Prose-output-form conflicts:**\n")
+	fmt.Fprintf(w, "`recipe` form (custom prose mini-language + key) conflicts with channels whose schema leaves no slot for a prose document ")
+	fmt.Fprintf(w, "(`codetour`, `code`, `html`, `shellscript`, `svg`, `presenterm`). ")
+	fmt.Fprintf(w, "`questions` form (probing prose questions) conflicts with channels whose syntax cannot accommodate open questions (`gherkin`). ")
+	fmt.Fprintf(w, "Use both tokens with prose-compatible channels (`plain`, `slack`, `jira`, `remote`, `sync`) or no channel. ")
+	fmt.Fprintf(w, "Note: `questions` + `diagram` is not in this list — see Combination Guidance below.\n\n")
+
+	fmt.Fprintf(w, "**Combination Guidance:**\n")
+	fmt.Fprintf(w, "Some form+channel pairs are coherent but require an explicit interpretation:\n")
+	fmt.Fprintf(w, "- `simulate` + `facilitate` form: channel wins for output format; `facilitate` means the response designs a facilitation structure for others to perform the simulation, not the LLM playing it out directly.\n")
+	fmt.Fprintf(w, "- `questions` + `diagram` channel: channel wins — output is Mermaid code. `questions` form shapes the content: the diagram represents a question structure (decision tree, question map, inquiry flow) rather than a structural diagram of the subject.\n\n")
 
 	fmt.Fprintf(w, "**Semantic conflicts:**\n")
 	fmt.Fprintf(w, "- `rewrite` form implies existing content to transform. ")

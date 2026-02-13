@@ -158,6 +158,44 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 	}
 }
 
+// TestLLMHelpADR0112D1 verifies ADR-0112 D1 decisions are reflected in bar help llm output:
+//   - prose-output-form conflict rule present in § Incompatibilities (recipe+codetour, questions+gherkin)
+//   - questions+diagram combination guidance present
+func TestLLMHelpADR0112D1(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	incompStart := strings.Index(output, "### Incompatibilities")
+	if incompStart == -1 {
+		t.Fatal("could not locate ### Incompatibilities section")
+	}
+	sectionStart := incompStart + len("### Incompatibilities")
+	sectionEnd := strings.Index(output[sectionStart:], "\n##")
+	var incomp string
+	if sectionEnd == -1 {
+		incomp = output[sectionStart:]
+	} else {
+		incomp = output[sectionStart : sectionStart+sectionEnd]
+	}
+
+	checks := []struct {
+		description string
+		contains    string
+	}{
+		{"prose-output-form conflict rule present", "Prose-output-form conflicts"},
+		{"recipe conflict with codetour mentioned", "codetour"},
+		{"questions conflict with gherkin mentioned", "gherkin"},
+		{"questions+diagram combination guidance present", "questions` + `diagram"},
+	}
+	for _, c := range checks {
+		if !strings.Contains(incomp, c.contains) {
+			t.Errorf("ADR-0112 D1: § Incompatibilities missing %s (expected to contain %q)", c.description, c.contains)
+		}
+	}
+}
+
 // TestLLMHelpChannelAffinityAndTokenClarity verifies ADR-0106 decisions are
 // reflected in bar help llm output:
 //   D1: code/html/shellscript mention sim/probe task-affinity restriction

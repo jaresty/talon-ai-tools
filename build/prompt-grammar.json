@@ -65,9 +65,9 @@
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
-        "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements.",
+        "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. Conflicts with channels whose syntax cannot accommodate open questions (`gherkin`). When combined with `diagram`, channel wins — the output is Mermaid code structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange: poses questions, waits for responses, then clarifies or deepens. With an output-exclusive channel, structures the output itself as a quiz — question headings with revealed answers, test sections, knowledge checks — without requiring live interaction.",
-        "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+        "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it. Prose-output form — conflicts with channels whose schema has no slot for a prose document (`codetour`, `code`, `html`, `shellscript`, `svg`, `presenterm`). Use with prose channels or no channel.",
         "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation. Best paired with `fix`, `pull`, `diff`, or `show` tasks that supply existing content to transform. Pairing with `make` is semantically incoherent: `make` implies creating from nothing while `rewrite` implies transforming existing content.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas where first-principles exposition contradicts assumed expertise.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
@@ -454,7 +454,9 @@
         "shellscript": "Avoid with narrative tasks (sim, probe) that produce prose rather than code."
       },
       "form": {
-        "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly."
+        "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
+        "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
+        "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel."
       }
     }
   },
@@ -1776,7 +1778,7 @@
     }
   },
   "checksums": {
-    "axes": "5bb6fd1086a91d71d07dcc251b6b7ef3da91740eb2c3dec57291f954cba0b04d",
+    "axes": "763f3a7d8891b53d2620cd7397a46f4902b19591de40b4d8e6b43ac56cc0856f",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "ee2e177e4d7d0e198f065ee49845cb40025ed6cccbcadc636e5cc675777dfca8",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

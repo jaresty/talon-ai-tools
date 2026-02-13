@@ -687,6 +687,11 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- `simulate` + `facilitate` form: channel wins for output format; `facilitate` means the response designs a facilitation structure for others to perform the simulation, not the LLM playing it out directly.\n")
 	fmt.Fprintf(w, "- `questions` + `diagram` channel: channel wins — output is Mermaid code. `questions` form shapes the content: the diagram represents a question structure (decision tree, question map, inquiry flow) rather than a structural diagram of the subject.\n\n")
 
+	fmt.Fprintf(w, "**Tone/channel register conflicts:**\n")
+	fmt.Fprintf(w, "`formally` tone conflicts with conversational-register channels that assume informal or spoken language (`slack`, `sync`, `remote`). ")
+	fmt.Fprintf(w, "Formal elevated prose will feel bureaucratic in these contexts. ")
+	fmt.Fprintf(w, "Use `directly` or no tone token when a professional register is needed in these channels.\n\n")
+
 	fmt.Fprintf(w, "**Semantic conflicts:**\n")
 	fmt.Fprintf(w, "- `rewrite` form implies existing content to transform. ")
 	fmt.Fprintf(w, "Pairing with `make` is semantically incoherent: `make` implies creating from nothing while `rewrite` implies transforming existing content.\n\n")

@@ -196,6 +196,42 @@ func TestLLMHelpADR0112D1(t *testing.T) {
 	}
 }
 
+// TestLLMHelpADR0112D3 verifies ADR-0112 D3: tone/channel register conflict note present
+// in § Incompatibilities.
+func TestLLMHelpADR0112D3(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	incompStart := strings.Index(output, "### Incompatibilities")
+	if incompStart == -1 {
+		t.Fatal("could not locate ### Incompatibilities section")
+	}
+	sectionStart := incompStart + len("### Incompatibilities")
+	sectionEnd := strings.Index(output[sectionStart:], "\n##")
+	var incomp string
+	if sectionEnd == -1 {
+		incomp = output[sectionStart:]
+	} else {
+		incomp = output[sectionStart : sectionStart+sectionEnd]
+	}
+
+	checks := []struct {
+		description string
+		contains    string
+	}{
+		{"tone/channel register conflict rule present", "Tone/channel register conflicts"},
+		{"formally tone named in register conflict", "formally"},
+		{"slack channel named in register conflict", "slack"},
+	}
+	for _, c := range checks {
+		if !strings.Contains(incomp, c.contains) {
+			t.Errorf("ADR-0112 D3: § Incompatibilities missing %s (expected to contain %q)", c.description, c.contains)
+		}
+	}
+}
+
 // TestLLMHelpChannelAffinityAndTokenClarity verifies ADR-0106 decisions are
 // reflected in bar help llm output:
 //   D1: code/html/shellscript mention sim/probe task-affinity restriction

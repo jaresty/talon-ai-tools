@@ -9,7 +9,7 @@ from typing import Any, Iterable, Mapping
 from .axisCatalog import axis_catalog
 from .axisMappings import DEFAULT_COMPLETENESS_TOKEN
 from .personaCatalog import get_persona_intent_catalog
-from .personaConfig import PERSONA_KEY_TO_VALUE
+from .personaConfig import PERSONA_KEY_TO_VALUE, persona_key_to_label_map
 from .staticPromptConfig import STATIC_PROMPT_CONFIG
 from .talonSettings import axis_incompatibilities, axis_priority, axis_soft_caps
 
@@ -138,13 +138,29 @@ def _build_axis_section(
                 tokens, category=f"axis-{axis}", taken=taken_slugs
             )
 
-    return (
-        {
-            "definitions": axis_definitions,
-            "list_tokens": axis_list_tokens,
-        },
-        axis_slugs,
-    )
+    # Labels (ADR-0109): short CLI-facing selection hints, optional per token.
+    axis_labels_raw = catalog.get("axis_labels") or {}
+    axis_labels: dict[str, dict[str, str]] = {
+        str(axis): {str(k): str(v) for k, v in sorted(tokens.items())}
+        for axis, tokens in sorted(axis_labels_raw.items(), key=lambda i: str(i[0]))
+        if tokens
+    }
+
+    # Guidance (ADR-0110): selection-oriented prose, optional per token.
+    axis_guidance_raw = catalog.get("axis_guidance") or {}
+    axis_guidance: dict[str, dict[str, str]] = {
+        str(axis): {str(k): str(v) for k, v in sorted(tokens.items())}
+        for axis, tokens in sorted(axis_guidance_raw.items(), key=lambda i: str(i[0]))
+        if tokens
+    }
+
+    section: dict[str, Any] = {"definitions": axis_definitions, "list_tokens": axis_list_tokens}
+    if axis_labels:
+        section["labels"] = axis_labels
+    if axis_guidance:
+        section["guidance"] = axis_guidance
+
+    return (section, axis_slugs)
 
 
 def _build_static_section(
@@ -154,11 +170,18 @@ def _build_static_section(
     static_profiles = catalog.get("static_prompt_profiles") or {}
     static_descriptions = catalog.get("static_prompt_descriptions") or {}
 
-    section = {
+    static_labels = catalog.get("static_prompt_labels") or {}
+    static_guidance = catalog.get("static_prompt_guidance") or {}
+
+    section: dict[str, Any] = {
         "catalog": _normalize(_strip_none(static_catalog)),
         "profiles": _canonicalize_mapping(static_profiles),
         "descriptions": _canonicalize_mapping(static_descriptions),
     }
+    if static_labels:
+        section["labels"] = _canonicalize_mapping(static_labels)
+    if static_guidance:
+        section["guidance"] = _canonicalize_mapping(static_guidance)
 
     labels: set[str] = set(section["profiles"].keys()) | set(
         section["descriptions"].keys()
@@ -261,6 +284,13 @@ def _build_persona_section(
         "presets": persona_preset_slugs,
     }
 
+    # Persona axis labels (ADR-0111): parallel to docs, one map per axis.
+    persona_labels: dict[str, dict[str, str]] = {}
+    for axis in ("voice", "audience", "tone", "intent"):
+        label_map = persona_key_to_label_map(axis)
+        if label_map:
+            persona_labels[axis] = dict(sorted(label_map.items()))
+
     section = {
         "axes": persona_axes,
         "docs": persona_docs,
@@ -268,6 +298,8 @@ def _build_persona_section(
         "spoken_map": persona_spoken_map,
         "intent": intent_section,
     }
+    if persona_labels:
+        section["labels"] = persona_labels
     return section, persona_slug_map
 
 

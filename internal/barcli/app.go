@@ -997,23 +997,36 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 			}
 		} else {
 			for _, name := range staticNames {
+				slug := grammar.slugForToken(name)
+				if slug == "" {
+					slug = name
+				}
 				if plain {
-					slug := grammar.slugForToken(name)
-					if slug == "" {
-						slug = name
+					label := grammar.TaskLabel(name)
+					if label != "" {
+						fmt.Fprintf(w, "task:%s\t%s\n", slug, label)
+					} else {
+						fmt.Fprintf(w, "task:%s\n", slug)
 					}
-					fmt.Fprintf(w, "task:%s\n", slug)
 					continue
 				}
+				label := grammar.TaskLabel(name)
 				desc := strings.TrimSpace(grammar.TaskDescription(name))
 				if desc == "" {
 					desc = "(no description)"
 				}
 				display := name
-				if slug := grammar.slugForToken(name); slug != "" && slug != name {
+				if slug != "" && slug != name {
 					display = fmt.Sprintf("%s (canonical: %s)", slug, name)
 				}
-				fmt.Fprintf(w, "  - %s: %s\n", display, desc)
+				if label != "" {
+					fmt.Fprintf(w, "  - %s [%s]: %s\n", display, label, desc)
+				} else {
+					fmt.Fprintf(w, "  - %s: %s\n", display, desc)
+				}
+				if guidance := grammar.TaskGuidance(name); guidance != "" {
+					fmt.Fprintf(w, "    ↳ %s\n", guidance)
+				}
 			}
 		}
 	}
@@ -1087,22 +1100,36 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 				}
 				for _, token := range tokens {
 					slug := grammar.slugForToken(token)
+					if slug == "" {
+						slug = token
+					}
 					if plain {
-						if slug == "" {
-							slug = token
+						label := grammar.AxisLabel(axis, token)
+						if label != "" {
+							fmt.Fprintf(w, "%s:%s\t%s\n", axis, slug, label)
+						} else {
+							fmt.Fprintf(w, "%s:%s\n", axis, slug)
 						}
-						fmt.Fprintf(w, "%s:%s\n", axis, slug)
 						continue
 					}
 					display := token
 					if slug != "" && slug != token {
 						display = fmt.Sprintf("%s (canonical: %s)", slug, token)
 					}
+					label := grammar.AxisLabel(axis, token)
 					desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
-					if desc == "" {
+					if label != "" {
+						fmt.Fprintf(w, "    • %s [%s]\n", display, label)
+						if desc != "" {
+							fmt.Fprintf(w, "      %s\n", desc)
+						}
+					} else if desc == "" {
 						fmt.Fprintf(w, "    • %s\n", display)
 					} else {
 						fmt.Fprintf(w, "    • %s: %s\n", display, desc)
+					}
+					if guidance := grammar.AxisGuidance(axis, token); guidance != "" {
+						fmt.Fprintf(w, "      ↳ %s\n", guidance)
 					}
 				}
 			}
@@ -1133,7 +1160,13 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					if slug == "" {
 						slug = name
 					}
-					fmt.Fprintf(w, "persona:%s\n", slug)
+					preset := grammar.Persona.Presets[name]
+					presetLabel := strings.TrimSpace(preset.Label)
+					if presetLabel != "" {
+						fmt.Fprintf(w, "persona:%s\t%s\n", slug, presetLabel)
+					} else {
+						fmt.Fprintf(w, "persona:%s\n", slug)
+					}
 					continue
 				}
 				preset := grammar.Persona.Presets[name]
@@ -1201,7 +1234,12 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 						if slug == "" || strings.EqualFold(slug, display) {
 							slug = display
 						}
-						fmt.Fprintf(w, "%s:%s\n", axis, slug)
+						axisLabel := grammar.PersonaLabel(axis, token)
+						if axisLabel != "" {
+							fmt.Fprintf(w, "%s:%s\t%s\n", axis, slug, axisLabel)
+						} else {
+							fmt.Fprintf(w, "%s:%s\n", axis, slug)
+						}
 						continue
 					}
 					displayParts := []string{display}
@@ -1240,7 +1278,12 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					if slug == "" || strings.EqualFold(slug, display) {
 						slug = display
 					}
-					fmt.Fprintf(w, "intent:%s\n", slug)
+					intentLabel := grammar.PersonaLabel("intent", token)
+					if intentLabel != "" {
+						fmt.Fprintf(w, "intent:%s\t%s\n", slug, intentLabel)
+					} else {
+						fmt.Fprintf(w, "intent:%s\n", slug)
+					}
 					continue
 				}
 				displayParts := []string{display}

@@ -445,8 +445,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	if !compact {
 		fmt.Fprintf(w, "Pre-composed prompt strategies:\n\n")
 	}
-	fmt.Fprintf(w, "| Token | Description |\n")
-	fmt.Fprintf(w, "|-------|-------------|\n")
+	fmt.Fprintf(w, "| Token | Label | Description | Notes |\n")
+	fmt.Fprintf(w, "|-------|-------|-------------|-------|\n")
 
 	staticNames := make([]string, 0, len(grammar.Static.Profiles))
 	for name := range grammar.Static.Profiles {
@@ -463,7 +463,9 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 		if slug == "" {
 			slug = name
 		}
-		fmt.Fprintf(w, "| `%s` | %s |\n", slug, desc)
+		label := grammar.TaskLabel(name)
+		guidance := grammar.TaskGuidance(name)
+		fmt.Fprintf(w, "| `%s` | %s | %s | %s |\n", slug, label, desc, guidance)
 	}
 	fmt.Fprintf(w, "\n")
 
@@ -485,8 +487,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 
 		fmt.Fprintf(w, "### %s (%s token)\n\n", strings.Title(axisName), capacity)
 
-		fmt.Fprintf(w, "| Token | Description |\n")
-		fmt.Fprintf(w, "|-------|-------------|\n")
+		fmt.Fprintf(w, "| Token | Label | Description | Notes |\n")
+		fmt.Fprintf(w, "|-------|-------|-------------|-------|\n")
 
 		tokenNames := make([]string, 0, len(tokens))
 		for token := range tokens {
@@ -503,7 +505,9 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 			if slug == "" {
 				slug = token
 			}
-			fmt.Fprintf(w, "| `%s` | %s |\n", slug, desc)
+			label := grammar.AxisLabel(axisName, token)
+			guidance := grammar.AxisGuidance(axisName, token)
+			fmt.Fprintf(w, "| `%s` | %s | %s | %s |\n", slug, label, desc, guidance)
 		}
 		fmt.Fprintf(w, "\n")
 

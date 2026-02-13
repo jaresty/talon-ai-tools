@@ -39,7 +39,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "completeness": "full",
     },
     "fix": {
-        "description": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+        "description": "The response changes the form or presentation of given content while keeping its intended meaning.",
         "completeness": "full",
     },
     "pull": {
@@ -146,6 +146,41 @@ def static_prompt_description_overrides() -> dict[str, str]:
         if description:
             overrides[name] = description
     return overrides
+
+
+# Short CLI-facing labels for task token selection (ADR-0109).
+_STATIC_PROMPT_LABELS: dict[str, str] = {
+    "check": "Evaluate or verify against criteria",
+    "diff": "Compare and contrast subjects",
+    "fix": "Reformat existing content",
+    "make": "Create new content",
+    "pick": "Select from a set of alternatives",
+    "plan": "Propose steps, structure, or strategy",
+    "probe": "Surface assumptions and implications",
+    "pull": "Extract a subset of information",
+    "show": "Explain or describe for an audience",
+    "sim": "Play out a scenario over time",
+    "sort": "Arrange items into categories or order",
+}
+
+# Selection guidance for task tokens where the description alone is ambiguous
+# or where naming traps exist (ADR-0110).
+_STATIC_PROMPT_GUIDANCE: dict[str, str] = {
+    "fix": (
+        "In bar's grammar, fix means reformat — not debug. "
+        "To correct defects, use make or show with diagnose, inversion, or adversarial."
+    ),
+}
+
+
+def static_prompt_label_overrides() -> dict[str, str]:
+    """Return name->label map for static prompts (ADR-0109)."""
+    return dict(_STATIC_PROMPT_LABELS)
+
+
+def static_prompt_guidance_overrides() -> dict[str, str]:
+    """Return name->guidance map for static prompts (ADR-0110)."""
+    return dict(_STATIC_PROMPT_GUIDANCE)
 
 
 def _read_static_prompt_tokens(

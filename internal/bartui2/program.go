@@ -836,10 +836,16 @@ func (m *model) updateCompletions() {
 			continue
 		}
 
-		// Fuzzy match against partial
+		// Fuzzy match against partial (also match against label when set — ADR-0111 D4)
 		if partial == "" || fuzzyMatch(strings.ToLower(opt.Value), partial) ||
-			fuzzyMatch(strings.ToLower(opt.Slug), partial) {
-			display := m.formatCompletionDisplay(category.Key, opt.Value, opt.Slug)
+			fuzzyMatch(strings.ToLower(opt.Slug), partial) ||
+			(opt.Label != "" && fuzzyMatch(strings.ToLower(opt.Label), partial)) {
+			// Use "slug — label" format when label available (ADR-0111 D4)
+			slugDisplay := m.formatCompletionDisplay(category.Key, opt.Value, opt.Slug)
+			display := slugDisplay
+			if opt.Label != "" {
+				display = slugDisplay + " \u2014 " + opt.Label
+			}
 			results = append(results, completion{
 				Value:       opt.Value,
 				Display:     display,

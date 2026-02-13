@@ -4,16 +4,16 @@
     "definitions": {
       "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control.",
-        "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.",
-        "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation. Appropriate for tasks that produce or reference navigable code artifacts: `fix`, `make` when creating code, `show` when exposing code structure, `pull` when extracting from code. Not appropriate for non-code tasks such as `sim`, `sort`, `probe`, `diff` (without code subject), or `plan`.",
+        "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
+        "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
-        "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject).",
-        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.",
+        "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation.",
+        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks.",
         "presenterm": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: <descriptive title based on the input with colons encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"<!-- end_slide -->\", \"<!-- pause -->\", \"<!-- column_layout: [7, 3] -->\", \"<!-- column: 0 -->\", \"<!-- reset_layout -->\", and \"<!-- jump_to_middle -->\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image. The response emits \"<!-- snippet_output: name -->\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"<\", \"#62;\" for \">\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"&\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies.",
         "remote": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
-        "shellscript": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.",
+        "shellscript": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation.",
         "sketch": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
@@ -58,7 +58,7 @@
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
-        "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact. When combined with `sim`, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
+        "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
@@ -296,6 +296,166 @@
         "time",
         "view"
       ]
+    },
+    "labels": {
+      "channel": {
+        "adr": "Architecture Decision Record format",
+        "code": "Code or markup only, no prose",
+        "codetour": "VS Code CodeTour JSON file",
+        "diagram": "Mermaid diagram only",
+        "gherkin": "Gherkin scenario format",
+        "html": "Semantic HTML only, no prose",
+        "jira": "Jira markup formatting",
+        "plain": "Plain prose, no structural decoration",
+        "presenterm": "Presenterm slide deck",
+        "remote": "Optimized for remote delivery",
+        "shellscript": "Shell script format",
+        "sketch": "D2 diagram source only",
+        "slack": "Slack-formatted Markdown",
+        "svg": "SVG markup only",
+        "sync": "Synchronous session plan"
+      },
+      "completeness": {
+        "deep": "Substantial depth within scope",
+        "full": "Thorough, all major aspects",
+        "gist": "Brief but complete summary",
+        "max": "Exhaustive, treat omissions as errors",
+        "minimal": "Smallest satisfying answer only",
+        "narrow": "Restricted to a very small slice",
+        "skim": "Light pass, obvious issues only"
+      },
+      "directional": {
+        "bog": "Reflect on structure inward",
+        "dig": "Ground in concrete details",
+        "dip bog": "Concrete first, examine structure, reflect",
+        "dip ong": "Concrete first, then identify actions",
+        "dip rog": "Concrete first, then reflect outward",
+        "fig": "Alternate between abstract and concrete",
+        "fip bog": "Cycle abstract/concrete, examine structure",
+        "fip ong": "Cycle abstract/concrete, then act",
+        "fip rog": "Cycle abstract/concrete, then reflect",
+        "fly bog": "Abstract first, examine structure, reflect",
+        "fly ong": "Abstract first, then identify actions",
+        "fly rog": "Abstract first, then reflect outward",
+        "fog": "Surface abstract patterns and principles",
+        "jog": "Execute intent directly, no clarification",
+        "ong": "Identify concrete actions, extend outward",
+        "rog": "Examine structure, then reflect outward"
+      },
+      "form": {
+        "actions": "Concrete actions and tasks",
+        "activities": "Session activities and segments",
+        "bug": "Bug report format",
+        "bullets": "Concise bullet points",
+        "cards": "Discrete cards with headings",
+        "case": "Build the case before the conclusion",
+        "checklist": "Actionable checklist",
+        "cocreate": "Collaborative small-move process",
+        "commit": "Conventional commit message",
+        "contextualise": "Add or reshape supporting context",
+        "direct": "Lead with main point first",
+        "facilitate": "Facilitation plan and session structure",
+        "faq": "Question-and-answer format",
+        "formats": "Document types and writing formats",
+        "indirect": "Background first, conclusion last",
+        "ladder": "Abstraction ladder up and down",
+        "log": "Work or research log entry",
+        "merge": "Combine multiple sources coherently",
+        "questions": "Answer as probing questions",
+        "quiz": "Quiz structure, questions before answers",
+        "recipe": "Recipe with ingredients and steps",
+        "rewrite": "Rewrite preserving original intent",
+        "scaffold": "First-principles scaffolded explanation",
+        "socratic": "Question-led Socratic dialogue",
+        "spike": "Research spike backlog item",
+        "story": "User story format",
+        "table": "Markdown table presentation",
+        "taxonomy": "Classification or type hierarchy",
+        "test": "Structured test cases",
+        "tight": "Concise dense prose",
+        "variants": "Several distinct labeled options",
+        "visual": "Abstract visual or metaphorical layout",
+        "walkthrough": "Step-by-step guided walkthrough",
+        "wardley": "Wardley map",
+        "wasinawa": "What–So What–Now What reflection"
+      },
+      "method": {
+        "abduce": "Generate explanatory hypotheses",
+        "actors": "Center people, roles, and agents",
+        "adversarial": "Constructive stress-testing",
+        "analog": "Reasoning by analogy",
+        "analysis": "Describe and structure the situation",
+        "argue": "Explicit argument structure",
+        "bias": "Identify cognitive biases",
+        "boom": "Explore behavior at extremes of scale",
+        "branch": "Parallel reasoning paths",
+        "calc": "Quantitative or executable reasoning",
+        "cite": "Include sources and references",
+        "cluster": "Group items by shared characteristics",
+        "converge": "Narrow from broad to focused",
+        "deduce": "Deductive logical reasoning",
+        "depends": "Trace dependency relationships",
+        "diagnose": "Identify likely root causes",
+        "dimension": "Explore multiple analytical axes",
+        "domains": "Identify bounded contexts",
+        "effects": "Trace second and third-order effects",
+        "experimental": "Propose concrete experiments",
+        "explore": "Survey option space broadly",
+        "flow": "Step-by-step sequential progression",
+        "grove": "Accumulation and rate-of-change effects",
+        "grow": "Build up from simplest valid base",
+        "induce": "Generalize patterns from examples",
+        "inversion": "Reason from catastrophic outcomes back",
+        "jobs": "Jobs-to-be-done analysis",
+        "mapping": "Surface elements and relationships",
+        "meld": "Explore combinations and overlaps",
+        "melody": "Coordination across components or time",
+        "mod": "Equivalence classes and cyclic reasoning",
+        "models": "Apply named mental models explicitly",
+        "objectivity": "Separate facts from opinions",
+        "operations": "Operations research frameworks",
+        "order": "Abstract structural and ordering reasoning",
+        "origin": "Uncover how the subject arose",
+        "prioritize": "Rank items by importance or impact",
+        "probability": "Probabilistic and statistical reasoning",
+        "product": "Product lens — features, users, value",
+        "resilience": "Behavior under stress and recovery",
+        "rigor": "Disciplined, well-justified reasoning",
+        "risks": "Potential problems and failure modes",
+        "robust": "Reason under deep uncertainty",
+        "shift": "Rotate through distinct perspectives",
+        "simulation": "Thought experiments and scenario walkthroughs",
+        "spec": "Define correctness criteria first",
+        "split": "Decompose into parts or components",
+        "systemic": "Interacting whole and feedback loops",
+        "unknowns": "Surface critical unknown unknowns",
+        "verify": "Apply falsification pressure to claims"
+      },
+      "scope": {
+        "act": "Tasks and intended actions",
+        "assume": "Premises and preconditions",
+        "fail": "Breakdowns and failure modes",
+        "good": "Quality criteria and success standards",
+        "mean": "Conceptual meaning and framing",
+        "motifs": "Recurring patterns and themes",
+        "stable": "Stability and persistence of states",
+        "struct": "Arrangement and relationships",
+        "thing": "Entities and bounded units",
+        "time": "Sequences and temporal change",
+        "view": "Stakeholder perspective"
+      }
+    },
+    "guidance": {
+      "channel": {
+        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
+        "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan.",
+        "gherkin": "Best for behavior specification: check, plan, or make when defining system behavior. Avoid with sim, sort, probe, or diff (no behavioral subject).",
+        "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
+        "shellscript": "Avoid with narrative tasks (sim, probe) that produce prose rather than code."
+      },
+      "form": {
+        "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly."
+      }
     }
   },
   "tasks": {
@@ -312,7 +472,7 @@
           "axes": {
             "completeness": "full"
           },
-          "description": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+          "description": "The response changes the form or presentation of given content while keeping its intended meaning.",
           "name": "fix"
         },
         {
@@ -395,7 +555,7 @@
       },
       "fix": {
         "completeness": "full",
-        "description": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`)."
+        "description": "The response changes the form or presentation of given content while keeping its intended meaning."
       },
       "make": {
         "completeness": "full",
@@ -429,7 +589,7 @@
     "descriptions": {
       "check": "The response evaluates the subject against a condition and reports whether it passes or fails.",
       "diff": "The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
-      "fix": "The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+      "fix": "The response changes the form or presentation of given content while keeping its intended meaning.",
       "make": "The response creates new content that did not previously exist, based on the input and constraints.",
       "pick": "The response chooses one or more options from a set of alternatives.",
       "plan": "The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
@@ -438,6 +598,22 @@
       "show": "The response explains or describes the subject for the stated audience.",
       "sim": "The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
       "sort": "The response arranges items into categories or an order using a specified or inferred scheme."
+    },
+    "labels": {
+      "check": "Evaluate or verify against criteria",
+      "diff": "Compare and contrast subjects",
+      "fix": "Reformat existing content",
+      "make": "Create new content",
+      "pick": "Select from a set of alternatives",
+      "plan": "Propose steps, structure, or strategy",
+      "probe": "Surface assumptions and implications",
+      "pull": "Extract a subset of information",
+      "show": "Explain or describe for an audience",
+      "sim": "Play out a scenario over time",
+      "sort": "Arrange items into categories or order"
+    },
+    "guidance": {
+      "fix": "In bar's grammar, fix means reformat — not debug. To correct defects, use make or show with diagnose, inversion, or adversarial."
     }
   },
   "persona": {
@@ -708,6 +884,54 @@
         "inform": "Provide clear, relevant information the audience needs.",
         "persuade": "Influence the audience toward a view or action.",
         "teach": "Help the audience understand and learn material."
+      }
+    },
+    "labels": {
+      "voice": {
+        "as Kent Beck": "Kent Beck pragmatic style",
+        "as PM": "Product manager focus",
+        "as designer": "Designer's UX perspective",
+        "as facilitator": "Facilitation and process",
+        "as junior engineer": "Junior engineer curiosity",
+        "as principal engineer": "Principal engineer systems view",
+        "as programmer": "Programmer stance",
+        "as prompt engineer": "Prompt engineering focus",
+        "as scientist": "Scientific, evidence-based",
+        "as teacher": "Teaching and scaffolding",
+        "as writer": "Writer's narrative voice"
+      },
+      "audience": {
+        "to CEO": "Business impact and crisp asks",
+        "to Kent Beck": "Test-minded and iterative",
+        "to LLM": "Explicit and unambiguous",
+        "to XP enthusiast": "Small batches, XP values",
+        "to analyst": "Structured for analysts",
+        "to designer": "UX-focused for designers",
+        "to junior engineer": "Clear guidance for juniors",
+        "to managers": "Outcome-focused for managers",
+        "to platform team": "Reliability and paved path",
+        "to principal engineer": "Architectural and concise",
+        "to product manager": "Value and scope for PM",
+        "to programmer": "Technical, implementation-ready",
+        "to stakeholders": "Impact-focused for stakeholders",
+        "to stream aligned team": "Flow and local ownership",
+        "to team": "Actionable for the team"
+      },
+      "tone": {
+        "casually": "Casual, conversational",
+        "directly": "Direct, straightforward",
+        "formally": "Formal, professional",
+        "gently": "Gentle, supportive",
+        "kindly": "Kind, warm"
+      },
+      "intent": {
+        "announce": "Share news or updates",
+        "appreciate": "Express thanks or recognition",
+        "coach": "Guide growth and development",
+        "entertain": "Engage or amuse",
+        "inform": "Convey information clearly",
+        "persuade": "Influence toward a view",
+        "teach": "Help the audience learn"
       }
     }
   },
@@ -1552,9 +1776,9 @@
     }
   },
   "checksums": {
-    "axes": "2b04d76cec8914c4cf10e5f290b85063006c6b19829c9f18a4bed7aca49aa076",
-    "tasks": "ea51cc14aa99fab797fd588560072eb5a357595e589386116115bba6e10c2140",
-    "persona": "1448e594a766833b30b5453f3d4428d6b9102a21cac4beb8c4ef5d6ceb3b98c0",
+    "axes": "ef1692d42843df51ab2633dc614df5850286cc2dbffc91a5b9020c3637103369",
+    "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
+    "persona": "ee2e177e4d7d0e198f065ee49845cb40025ed6cccbcadc636e5cc675777dfca8",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"
   }

@@ -159,6 +159,28 @@ func testCategories() []bartui.TokenCategory {
 	}
 }
 
+// TestCompletionDisplayUsesLabel specifies that when a TokenOption.Label is set,
+// the completion Display uses it rather than the raw slug or value (ADR-0111 D4 tui2 fix).
+func TestCompletionDisplayUsesLabel(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.commandInput.SetValue("bar build ")
+	m.updateCompletions()
+
+	// testCategories task options have Value "todo", Slug "todo", Label "Todo"
+	// Display must be "slug — label" format (ADR-0111 D4)
+	for _, c := range m.completions {
+		if c.Value == "todo" {
+			if c.Display != "todo — Todo" {
+				t.Errorf("completion Display for 'todo' must be 'todo — Todo'; got %q (ADR-0111 D4)", c.Display)
+			}
+		}
+	}
+}
+
 func TestFuzzyCompletionAllOptions(t *testing.T) {
 	m := newModel(Options{
 		TokenCategories: testCategories(),
@@ -1652,9 +1674,10 @@ func TestCompletionListScrolling(t *testing.T) {
 		t.Error("expected scroll offset to increase after navigating past visible area")
 	}
 
-	// The selected item should still be visible in the view
+	// The selected item should still be visible in the view.
+	// Options display as "slug — label" format (ADR-0111 D4).
 	view := m.View()
-	expectedOption := fmt.Sprintf("option%d", maxShow+3) // 1-indexed
+	expectedOption := fmt.Sprintf("option%d — Option %d", maxShow+3, maxShow+3) // slug — label format
 	if !strings.Contains(view, expectedOption) {
 		t.Errorf("expected view to contain selected option %q after scrolling", expectedOption)
 	}

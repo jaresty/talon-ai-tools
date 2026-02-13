@@ -228,10 +228,11 @@ bar tui2 make full
 # Pre-fill the Run Command field (e.g. for clipboard copy workflow)
 bar tui2 --command "pbcopy"
 
-# Quickly scan all available token slugs by category
-bar help tokens --plain             # category:slug one per line
+# Quickly scan all available token slugs with labels (ADR-0109)
+bar help tokens --plain             # category:slug<TAB>label — tab-separated when labels exist
 bar help tokens scope --plain       # scope axis only
-bar help tokens --plain | grep '^task:'  # just tasks
+bar help tokens --plain | grep '^task:'  # just task lines (label included if present)
+bar help tokens --plain | cut -f1        # slugs only, strip labels
 ```
 
 ### Saving Presets

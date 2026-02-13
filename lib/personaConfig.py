@@ -56,6 +56,63 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
 }
 
+# Short CLI-facing labels for persona/audience/tone/voice/intent token selection (ADR-0111).
+# Keys match the canonical token form used in PERSONA_KEY_TO_VALUE.
+PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
+    "voice": {
+        "as programmer": "Programmer stance",
+        "as prompt engineer": "Prompt engineering focus",
+        "as scientist": "Scientific, evidence-based",
+        "as writer": "Writer's narrative voice",
+        "as designer": "Designer's UX perspective",
+        "as teacher": "Teaching and scaffolding",
+        "as facilitator": "Facilitation and process",
+        "as PM": "Product manager focus",
+        "as junior engineer": "Junior engineer curiosity",
+        "as principal engineer": "Principal engineer systems view",
+        "as Kent Beck": "Kent Beck pragmatic style",
+    },
+    "audience": {
+        "to managers": "Outcome-focused for managers",
+        "to team": "Actionable for the team",
+        "to stakeholders": "Impact-focused for stakeholders",
+        "to product manager": "Value and scope for PM",
+        "to designer": "UX-focused for designers",
+        "to analyst": "Structured for analysts",
+        "to programmer": "Technical, implementation-ready",
+        "to LLM": "Explicit and unambiguous",
+        "to junior engineer": "Clear guidance for juniors",
+        "to principal engineer": "Architectural and concise",
+        "to Kent Beck": "Test-minded and iterative",
+        "to CEO": "Business impact and crisp asks",
+        "to platform team": "Reliability and paved path",
+        "to stream aligned team": "Flow and local ownership",
+        "to XP enthusiast": "Small batches, XP values",
+    },
+    "tone": {
+        "casually": "Casual, conversational",
+        "formally": "Formal, professional",
+        "directly": "Direct, straightforward",
+        "gently": "Gentle, supportive",
+        "kindly": "Kind, warm",
+    },
+    "intent": {
+        "inform": "Convey information clearly",
+        "entertain": "Engage or amuse",
+        "persuade": "Influence toward a view",
+        "appreciate": "Express thanks or recognition",
+        "announce": "Share news or updates",
+        "coach": "Guide growth and development",
+        "teach": "Help the audience learn",
+    },
+}
+
+
+def persona_key_to_label_map(axis: str) -> dict[str, str]:
+    """Return the key->label map for a persona/intent axis (ADR-0111)."""
+    return PERSONA_KEY_TO_LABEL.get(axis, {})
+
+
 INTENT_CANONICAL_TOKENS: set[str] = set(PERSONA_KEY_TO_VALUE["intent"].keys())
 
 ALLOWED_PERSONA_AXES = frozenset({"voice", "audience", "tone"})

@@ -39,11 +39,15 @@ type Grammar struct {
 type AxisSection struct {
 	Definitions map[string]map[string]string
 	ListTokens  map[string][]string
+	Labels      map[string]map[string]string // ADR-0109: short CLI-facing selection labels
+	Guidance    map[string]map[string]string // ADR-0110: selection-oriented prose hints
 }
 
 type StaticSection struct {
 	Profiles     map[string]StaticProfile
 	Descriptions map[string]string
+	Labels       map[string]string // ADR-0109: short CLI-facing selection labels
+	Guidance     map[string]string // ADR-0110: selection-oriented prose hints
 }
 
 type StaticProfile struct {
@@ -54,6 +58,7 @@ type StaticProfile struct {
 type PersonaSection struct {
 	Axes    map[string][]string
 	Docs    map[string]map[string]string
+	Labels  map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
 	Presets map[string]PersonaPreset
 	Spoken  map[string]string
 	Intent  IntentSection
@@ -107,6 +112,8 @@ type rawGrammar struct {
 type rawAxisSection struct {
 	Definitions map[string]map[string]string `json:"definitions"`
 	ListTokens  map[string][]string          `json:"list_tokens"`
+	Labels      map[string]map[string]string `json:"labels"`   // ADR-0109
+	Guidance    map[string]map[string]string `json:"guidance"` // ADR-0110
 }
 
 type rawStatic struct {
@@ -119,11 +126,14 @@ type rawStatic struct {
 	} `json:"catalog"`
 	Profiles     map[string]StaticProfile `json:"profiles"`
 	Descriptions map[string]string        `json:"descriptions"`
+	Labels       map[string]string        `json:"labels"`   // ADR-0109
+	Guidance     map[string]string        `json:"guidance"` // ADR-0110
 }
 
 type rawPersona struct {
 	Axes    map[string][]string          `json:"axes"`
 	Docs    map[string]map[string]string `json:"docs"`
+	Labels  map[string]map[string]string `json:"labels"` // ADR-0111
 	Presets map[string]PersonaPreset     `json:"presets"`
 	Spoken  map[string]string            `json:"spoken_map"`
 	Intent  struct {
@@ -190,14 +200,19 @@ func LoadGrammar(path string) (*Grammar, error) {
 		Axes: AxisSection{
 			Definitions: raw.Axes.Definitions,
 			ListTokens:  raw.Axes.ListTokens,
+			Labels:      raw.Axes.Labels,
+			Guidance:    raw.Axes.Guidance,
 		},
 		Static: StaticSection{
 			Profiles:     profiles,
 			Descriptions: raw.Static.Descriptions,
+			Labels:       raw.Static.Labels,
+			Guidance:     raw.Static.Guidance,
 		},
 		Persona: PersonaSection{
 			Axes:    raw.Persona.Axes,
 			Docs:    raw.Persona.Docs,
+			Labels:  raw.Persona.Labels,
 			Presets: raw.Persona.Presets,
 			Spoken:  personaSpoken,
 			Intent: IntentSection{
@@ -756,6 +771,95 @@ func (g *Grammar) PersonaDescription(axis, token string) string {
 	}
 	if desc, ok := docs[strings.ToLower(tokenKey)]; ok && desc != "" {
 		return desc
+	}
+	return ""
+}
+
+// AxisLabel returns the short CLI-facing label for the given axis token (ADR-0109).
+// Returns empty string if no label is defined.
+func (g *Grammar) AxisLabel(axis, token string) string {
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	if axisKey == "" || tokenKey == "" {
+		return ""
+	}
+	if labels, ok := g.Axes.Labels[axisKey]; ok {
+		if label, ok := labels[tokenKey]; ok {
+			return label
+		}
+		if label, ok := labels[strings.ToLower(tokenKey)]; ok {
+			return label
+		}
+	}
+	return ""
+}
+
+// TaskLabel returns the short CLI-facing label for the given task token (ADR-0109).
+// Returns empty string if no label is defined.
+func (g *Grammar) TaskLabel(name string) string {
+	key := normalizeToken(name)
+	if label, ok := g.Static.Labels[key]; ok {
+		return label
+	}
+	if label, ok := g.Static.Labels[strings.ToLower(key)]; ok {
+		return label
+	}
+	return ""
+}
+
+// AxisGuidance returns the optional selection-guidance text for the given axis token (ADR-0110).
+// Returns empty string if no guidance is defined.
+func (g *Grammar) AxisGuidance(axis, token string) string {
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	if axisKey == "" || tokenKey == "" {
+		return ""
+	}
+	if guidance, ok := g.Axes.Guidance[axisKey]; ok {
+		if text, ok := guidance[tokenKey]; ok {
+			return text
+		}
+		if text, ok := guidance[strings.ToLower(tokenKey)]; ok {
+			return text
+		}
+	}
+	return ""
+}
+
+// TaskGuidance returns the optional selection-guidance text for the given task token (ADR-0110).
+// Returns empty string if no guidance is defined.
+func (g *Grammar) TaskGuidance(name string) string {
+	key := normalizeToken(name)
+	if text, ok := g.Static.Guidance[key]; ok {
+		return text
+	}
+	if text, ok := g.Static.Guidance[strings.ToLower(key)]; ok {
+		return text
+	}
+	return ""
+}
+
+// PersonaLabel returns the short CLI-facing label for the given persona axis token (ADR-0111).
+// Returns empty string if no label is defined.
+func (g *Grammar) PersonaLabel(axis, token string) string {
+	if g.Persona.Labels == nil {
+		return ""
+	}
+	axisKey := strings.ToLower(strings.TrimSpace(axis))
+	if axisKey == "" {
+		return ""
+	}
+	labels, ok := g.Persona.Labels[axisKey]
+	if !ok {
+		return ""
+	}
+	// Try exact key, then lowercased.
+	tokenKey := strings.TrimSpace(token)
+	if label, ok := labels[tokenKey]; ok && label != "" {
+		return label
+	}
+	if label, ok := labels[strings.ToLower(tokenKey)]; ok && label != "" {
+		return label
 	}
 	return ""
 }

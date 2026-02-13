@@ -421,7 +421,8 @@ def _format_context_lines(snapshot: dict[str, str]) -> list[str]:
             axis_bits.append(f"{label}: {val}")
     if axis_bits:
         lines.append("Defaults: " + " · ".join(axis_bits))
-    return lines
+
+ return lines
 
 
 def _suggest_prompt_text(
@@ -2494,7 +2495,7 @@ class UserActions:
             # Always emit base once per rerun so we can see diffs.
             print(
                 "[gpt again] base",
-                f"task={base_static!r} C={base_completeness!r} "
+                f"static={base_static!r} C={base_completeness!r} "
                 f"S={base_scope!r} M={base_method!r} "
                 f"F={base_form_tokens_raw!r} Ch={base_channel_tokens_raw!r} "
                 f"D={base_directional!r}",
@@ -2627,7 +2628,7 @@ class UserActions:
             print(
                 "[gpt again] stored",
                 f"recipe={GPTState.last_recipe!r} "
-                f"task={GPTState.last_static_prompt!r} "
+                f"static={GPTState.last_static_prompt!r} "
                 f"C={GPTState.last_completeness!r} "
                 f"S={GPTState.last_scope!r} "
                 f"M={GPTState.last_method!r} "

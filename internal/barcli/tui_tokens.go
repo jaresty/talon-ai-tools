@@ -184,10 +184,15 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 	options := make([]bartui.TokenOption, 0, len(values))
 	for _, value := range values {
 		description := strings.TrimSpace(grammar.TaskDescription(value))
+		shortLabel := grammar.TaskLabel(value)
+		label := shortLabel
+		if label == "" {
+			label = displayLabel(value, description)
+		}
 		options = append(options, bartui.TokenOption{
 			Value:       value,
 			Slug:        grammar.slugForToken(value),
-			Label:       displayLabel(value, description),
+			Label:       label,
 			Description: description,
 		})
 	}
@@ -215,10 +220,15 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 	options := make([]bartui.TokenOption, 0, len(values))
 	for _, value := range values {
 		description := strings.TrimSpace(grammar.AxisDescription(axis, value))
+		shortLabel := grammar.AxisLabel(axis, value)
+		label := shortLabel
+		if label == "" {
+			label = displayLabel(value, description)
+		}
 		options = append(options, bartui.TokenOption{
 			Value:       value,
 			Slug:        grammar.slugForToken(value),
-			Label:       displayLabel(value, description),
+			Label:       label,
 			Description: description,
 		})
 	}
@@ -239,10 +249,15 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 	options := make([]bartui.TokenOption, 0, len(values))
 	for _, value := range values {
 		description := strings.TrimSpace(grammar.PersonaDescription(axis, value))
+		shortLabel := grammar.PersonaLabel(axis, value)
+		label := shortLabel
+		if label == "" {
+			label = displayLabel(value, description)
+		}
 		options = append(options, bartui.TokenOption{
 			Value:       value,
 			Slug:        grammar.slugForToken(value),
-			Label:       displayLabel(value, description),
+			Label:       label,
 			Description: description,
 		})
 	}

@@ -1,3 +1,4 @@
+import sys
 import unittest
 from pathlib import Path
 import subprocess
@@ -28,7 +29,7 @@ class AxisRegenAllTests(unittest.TestCase):
                 except FileNotFoundError:
                     pass
         subprocess.check_call(
-            ["python3", "scripts/tools/axis_regen_all.py"],
+            [sys.executable, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         outputs = [
@@ -55,7 +56,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            ["python3", "scripts/tools/axis_regen_all.py"],
+            [sys.executable, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         axis_config = (tmp_dir / "axisConfig.generated.py").read_text(encoding="utf-8")
@@ -68,7 +69,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            ["python3", "scripts/tools/axis_regen_all.py"],
+            [sys.executable, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         generated = (tmp_dir / "axisConfig.generated.py").read_text(encoding="utf-8")
@@ -81,7 +82,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            ["python3", "scripts/tools/axis_regen_all.py"],
+            [sys.executable, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         catalog = json.loads((tmp_dir / "axisCatalog.json").read_text(encoding="utf-8"))
@@ -109,7 +110,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            ["python3", "scripts/tools/axis_regen_all.py"],
+            [sys.executable, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         docs = (tmp_dir / "static-prompt-docs.md").read_text(encoding="utf-8")
@@ -123,7 +124,7 @@ class AxisRegenContentTests(unittest.TestCase):
         cleanup_axis_regen_outputs(repo_root)
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         output = subprocess.check_output(
-            ["python3", "scripts/tools/axis_regen_all.py"],
+            [sys.executable, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
             text=True,
         )

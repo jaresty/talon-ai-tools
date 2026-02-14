@@ -27,7 +27,7 @@ def main() -> int:
     env["PYTHONPATH"] = str(repo_root)
 
     def _run_rel(args: list[str]) -> None:
-        run(["python3", *args], env=env)
+        run([sys.executable, *args], env=env)
 
     # axisConfig and catalog outputs
     _run_rel(["scripts/tools/generate_axis_config.py", "--out", str(tmp_dir / "axisConfig.generated.py")])
@@ -58,7 +58,7 @@ def main() -> int:
 
     # Validate the catalog/regenerated assets to catch drift early.
     validate_cmd = [
-        "python3",
+        sys.executable,
         "scripts/tools/axis-catalog-validate.py",
         "--skip-list-files",
     ]

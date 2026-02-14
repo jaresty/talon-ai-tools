@@ -10,7 +10,7 @@ description: Present users with bar-based approach options when multiple valid a
 This skill enables the LLM to **present users with bar-based choices** for how to approach their request when multiple valid approaches exist.
 
 Assumes:
-- `bar` CLI is installed and accessible
+- **REQUIRED:** `bar` CLI is installed and accessible — this skill cannot function without it
 - The LLM can run `bar help llm` (or `bar help tokens` for older versions) to discover available tokens
 - The LLM has access to a tool for executing bar commands (Bash or equivalent)
 
@@ -302,16 +302,16 @@ When `bar build` fails (either during option generation or execution), follow th
    - Reduce token count if over capacity
    - Retry the command once with corrections
 
-3. **Fall back strategically** - Depending on when the error occurs:
-   - If error during option generation: Still present options conceptually (Mode A or B), just without bar token structure
-   - If error after user selects option: Retry once, then fall back to executing the intent without bar structure
-   - If retry fails: Use common patterns to fulfill user's selected approach
+3. **Handle errors appropriately** - Depending on when the error occurs:
+   - If error during option generation: Fix the token issue and retry; do not present options without valid bar commands
+   - If error after user selects option: Retry once with corrections
+   - If retry fails: Inform the user that the bar command failed and cannot proceed
 
 4. **Never fail silently** - Always execute bar commands and check for errors. Don't assume success.
 
 **Additional error handling:**
-- If bar unavailable: Still present options conceptually using Mode A or B, without bar token structure
-- If token discovery fails: Still present options using common patterns
+- If bar unavailable: This skill cannot function without the bar CLI — inform the user that bar is required
+- If token discovery fails: Check bar installation and try again; do not proceed without valid tokens
 
 ## Version Detection
 

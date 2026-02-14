@@ -1,0 +1,297 @@
+# ADR-0113 Cycle 1 — Recommendations
+# Format mirrors ADR-0085 recommendation format for consistent review pipeline
+# Date: 2026-02-13
+
+---
+
+# === CATALOG ADDITIONS ===
+
+- id: R-01
+  action: add
+  gap_id: G-01
+  priority: high
+  axis: scope
+  proposed_token: cross
+  proposed_description: >
+    The response focuses on concerns that span multiple modules or components —
+    patterns applied repeatedly across the codebase (logging, error handling,
+    authentication, observability, caching) — examining their consistency,
+    distribution, and coupling characteristics. Use when the question is about
+    where a concern lives across the system, not just within one place.
+  rationale: >
+    No existing scope token addresses cross-cutting concerns as a distinct structural
+    lens. The struct+motifs combination approximates it but does not precisely target
+    the horizontal-cut nature of concerns that span module boundaries. This is a
+    common analysis type in large codebases with no dedicated representation.
+  evidence:
+    - T07
+
+---
+
+# === TOKEN DESCRIPTION EDITS ===
+
+- id: R-02
+  action: edit
+  gap_id: G-02
+  priority: medium
+  axis: method
+  token: inversion
+  append_to_description: >
+    Well-suited for architecture evaluation: starting from known failure modes
+    (cascade failure, split-brain, thundering herd, data loss scenarios) and asking
+    which design choices create or amplify them. Use when failure patterns are named
+    and the question is whether the architecture protects against them.
+  rationale: >
+    The inversion method is precisely suited for architecture evaluation against named
+    failure patterns, but this use case is absent from the description. Bar-autopilot
+    routes such tasks to adversarial, missing the richer backward-reasoning approach.
+  evidence:
+    - T12
+
+- id: R-03
+  action: edit
+  gap_id: G-03
+  priority: medium
+  axis: method
+  token: actors
+  append_to_description: >
+    Well-suited for security threat modelling: identifying threat actors (external
+    attackers, insiders, automated bots, compromised dependencies), their motivations
+    (data theft, service disruption, privilege escalation), and how their capabilities
+    interact with system attack surfaces. Use alongside adversarial for complete threat
+    models that cover both what can be attacked and who would attack it.
+  rationale: >
+    The actors method description focuses on generic "entities and motivations" without
+    mentioning security threat actors. This prevents bar-autopilot from surfacing it
+    for threat modelling, producing threat models that lack the actor-centric dimension.
+  evidence:
+    - T22
+
+---
+
+# === SKILL UPDATES ===
+
+- id: R-04
+  action: skill-update
+  gap_id: G-04
+  priority: high
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: split "Risk Assessment" pattern into two subtypes
+  proposed_addition: |
+    ### Risk Extraction
+    Use when the user wants a risk list, risk summary, or risk register extracted
+    from a subject.
+
+    **Pattern:**
+    ```bash
+    bar build pull full fail risks checklist --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build pull full fail risks checklist --subject "Deploy payment service on Friday"
+    ```
+
+    ### Risk Analysis
+    Use when the user wants open-ended analysis of risks, threat posture, or failure posture.
+
+    **Pattern:**
+    ```bash
+    bar build probe full fail adversarial checklist --subject "..."
+    ```
+
+    **Heuristic**: "what are the risks?" → pull (extraction); "how risky is this?" → probe (analysis)
+  rationale: >
+    The current Risk Assessment pattern uses probe for all risk tasks. Risk extraction
+    ("produce a risk summary", "list risks") is better served by pull+fail+risks because
+    pull = extract a targeted subset. The distinction produces sharper prompts.
+  evidence:
+    - T08
+
+- id: R-05
+  action: skill-update
+  gap_id: G-05
+  priority: high
+  skill: bar-autopilot
+  section: "Token Selection Heuristics — Choosing Form"
+  change: add exclusion rule for scaffold in design/artifact contexts
+  proposed_addition: |
+    **When NOT to use scaffold:**
+    - When task is `make` producing a design artifact (API spec, schema, architecture)
+    - When channel is `code`, `diagram`, or `adr` — the channel already specifies output structure
+    - When the user wants a thing produced, not explained
+
+    `scaffold` is for EXPLANATION tasks (show, probe + learning audience).
+    `make + code/diagram` is for producing artifacts — do not add scaffold.
+
+    Example of wrong: `bar build make full struct scaffold code` (conflicting: make artifact + explain from first principles)
+    Example of correct: `bar build make full struct code` (produce structured code artifact)
+  rationale: >
+    The "Building understanding → scaffold" heuristic fires incorrectly for design tasks
+    (make+struct+code, make+struct+diagram). Scaffold is pedagogical; design tasks need
+    artifact production without an educational overlay.
+  evidence:
+    - T10
+    - T19
+
+- id: R-06
+  action: skill-update
+  gap_id: G-06
+  priority: medium
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Summarisation / Extraction" pattern
+  proposed_addition: |
+    ### Summarisation / Extraction
+
+    Use when compressing a long source document into a shorter form.
+
+    **Pattern:**
+    ```bash
+    bar build pull gist [scope] --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build pull gist mean --subject "[long RFC or document]"
+    ```
+
+    **Heuristic:**
+    - Long SUBJECT to be compressed → `pull` (extract a subset)
+    - Concept to be explained without a specific source → `show` (describe)
+    - "Summarise this document" → pull; "Explain what X means" → show
+  rationale: >
+    Summarisation is extraction, not explanation. Bar-autopilot routes summarisation to
+    show because it feels like describing/explaining, but pull+gist more precisely
+    instructs the LLM to extract from a source.
+  evidence:
+    - T16
+
+- id: R-07
+  action: skill-update
+  gap_id: G-07
+  priority: medium
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add disambiguation for test-related tasks
+  proposed_addition: |
+    ### Test Coverage Gap Analysis
+
+    Use when evaluating what tests are missing from existing coverage.
+
+    **Pattern:**
+    ```bash
+    bar build check full good fail checklist --subject "..."
+    ```
+
+    ### Test Plan Creation
+
+    Use when creating a new test plan or test cases from scratch.
+
+    **Pattern:**
+    ```bash
+    bar build make full act fail checklist --subject "..."
+    ```
+
+    **Heuristic:**
+    - "What tests are missing?" / "Where are the gaps?" → `check` (evaluate coverage)
+    - "Write a test plan" / "Create test cases" → `make` (produce an artifact)
+  rationale: >
+    "Create a test plan" and "identify coverage gaps" are different operations that need
+    different task tokens (make vs check). Bar-autopilot conflates them under quality
+    evaluation. The disambiguation heuristic is straightforward.
+  evidence:
+    - T18
+
+- id: R-08
+  action: skill-update
+  gap_id: G-08
+  priority: low
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Pre-mortem / Inversion" usage pattern
+  proposed_addition: |
+    ### Pre-mortem / Inversion Exercise
+
+    Use when assuming failure has occurred and working backward to identify causes.
+    Also use for "assume the worst happened — what went wrong?" planning exercises.
+
+    **Pattern:**
+    ```bash
+    bar build probe full fail inversion variants --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build probe full fail inversion variants --subject "Our Q4 launch plan"
+    ```
+  rationale: >
+    The pre-mortem technique is widely used in planning but has no dedicated usage pattern.
+    Bar-autopilot routes pre-mortem tasks to adversarial, missing the more specific
+    inversion method which is designed for backward-from-catastrophe reasoning.
+  evidence:
+    - T28
+
+---
+
+# === DOCUMENTATION ADDITIONS ===
+
+- id: R-09
+  action: document
+  gap_id: G-09
+  priority: low
+  target: bar help llm
+  section: Add "Scope note" or "Boundary conditions" section
+  proposed_addition: |
+    ## Scope note
+
+    Bar constructs **single-turn structured prompts**. It does not model multi-turn
+    interactive sessions or stateful collaboration loops.
+
+    For iterative work, use the `cocreate` form to structure the response with explicit
+    decision points and iteration-inviting checkpoints. Then continue the conversation
+    manually — bar cannot maintain state across turns.
+
+    Tasks that inherently require statefulness (real-time collaborative brainstorming,
+    iterative negotiation, live code review sessions) are outside bar's representational
+    scope. Bar can produce a strong starting prompt for these interactions, but cannot
+    replace the conversation itself.
+  rationale: >
+    The out-of-scope boundary is not documented. Users may not understand why bar
+    produces a cocreate prompt rather than enabling actual collaboration.
+  evidence:
+    - T30
+
+---
+
+# === TOOLING / COMPATIBILITY ===
+
+- id: R-10
+  action: fix
+  priority: high
+  component: bar CLI
+  description: >
+    Persona token key=value syntax inconsistency: audience tokens reject slug format
+    (audience=to-product-manager fails; requires "to product manager" with spaces)
+    while other token axes accept slugs. Additionally, shorthand persona tokens before
+    static token appear to trigger interactive TUI behavior in bar build.
+
+    Fix: normalize persona token slug lookup to accept dashed slugs consistently.
+    Fix: ensure persona tokens in shorthand mode are parsed non-interactively by bar build.
+  evidence:
+    - SF-01
+
+- id: R-11
+  action: fix
+  priority: medium
+  component: bar CLI / grammar
+  description: >
+    The `case` form hangs when combined with `fail time origin` tokens. The CLI
+    should fail with a clear error message if an incompatibility exists, not hang.
+
+    Investigate whether case form has undocumented incompatibilities with these scope/method
+    combinations. If incompatible, add to grammar conflict list and emit clean error.
+    If compatible but buggy, fix the parsing.
+  evidence:
+    - SF-02

@@ -404,10 +404,14 @@ func (s *buildState) applyPersonaPreset(value string, override bool) *CLIError {
 }
 
 func (s *buildState) applyPersonaAxis(axis, token string, override bool) *CLIError {
-	if axis == "intent" && !s.isPersonaToken(axis, token) {
+	// Resolve slug form (e.g. "to-product-manager") to canonical form
+	// (e.g. "to product manager") so both forms are accepted consistently.
+	if canonical := s.canonicalPersonaToken(axis, token); canonical != "" {
+		token = canonical
+	} else if axis != "intent" {
 		return s.unknownValue(axis, token)
 	}
-	if axis != "intent" && !s.isPersonaToken(axis, token) {
+	if axis == "intent" && !s.isPersonaToken(axis, token) {
 		return s.unknownValue(axis, token)
 	}
 
@@ -475,17 +479,32 @@ func (s *buildState) isAxisToken(axis, token string) bool {
 }
 
 func (s *buildState) isPersonaToken(axis, token string) bool {
+	return s.canonicalPersonaToken(axis, token) != ""
+}
+
+// canonicalPersonaToken returns the canonical form of a persona token for the
+// given axis, or "" if not found. Accepts exact match, lowercase match, or
+// slug form (dashes converted to spaces, e.g. "to-product-manager" → "to product manager").
+func (s *buildState) canonicalPersonaToken(axis, token string) string {
 	set := s.grammar.personaTokens[axis]
 	if set == nil {
-		return false
+		return ""
 	}
 	if _, ok := set[token]; ok {
-		return true
+		return token
 	}
-	if _, ok := set[strings.ToLower(token)]; ok {
-		return true
+	lower := strings.ToLower(token)
+	if _, ok := set[lower]; ok {
+		return lower
 	}
-	return false
+	// De-slugify: replace dashes with spaces to match canonical multi-word tokens.
+	deslug := strings.ReplaceAll(lower, "-", " ")
+	if deslug != lower {
+		if _, ok := set[deslug]; ok {
+			return deslug
+		}
+	}
+	return ""
 }
 
 func (s *buildState) axisCap(axis string) int {

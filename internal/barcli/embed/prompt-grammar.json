@@ -138,6 +138,7 @@
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
         "assume": "The response enhances the task by attending to premises that must already hold for the reasoning or system to function.",
+        "cross": "The response focuses on concerns that span multiple modules or components — patterns applied repeatedly across the codebase (logging, error handling, authentication, observability, caching) — examining their consistency, distribution, and coupling characteristics.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
         "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
@@ -286,6 +287,7 @@
       "scope": [
         "act",
         "assume",
+        "cross",
         "fail",
         "good",
         "mean",
@@ -434,6 +436,7 @@
       "scope": {
         "act": "Tasks and intended actions",
         "assume": "Premises and preconditions",
+        "cross": "Cross-cutting concerns spanning modules",
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
@@ -457,6 +460,13 @@
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel."
+      },
+      "method": {
+        "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact with system attack surfaces. Use alongside adversarial for complete threat models.",
+        "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. Use when failure patterns are named and the question is whether the design protects against them."
+      },
+      "scope": {
+        "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
       }
     }
   },
@@ -1111,6 +1121,7 @@
       "scope": {
         "act": "act",
         "assume": "assume",
+        "cross": "cross",
         "fail": "fail",
         "good": "good",
         "mean": "mean",
@@ -1226,6 +1237,7 @@
       "scope": {
         "scope=act": "scope-act",
         "scope=assume": "scope-assume",
+        "scope=cross": "scope-cross",
         "scope=fail": "scope-fail",
         "scope=good": "scope-good",
         "scope=mean": "scope-mean",
@@ -1492,6 +1504,7 @@
       "completion": "completion",
       "contextualise": "contextualise",
       "converge": "converge",
+      "cross": "cross",
       "deduce": "deduce",
       "deep": "deep",
       "depends": "depends",
@@ -1700,6 +1713,7 @@
       "scaffold": "scaffold",
       "scope=act": "scope-act",
       "scope=assume": "scope-assume",
+      "scope=cross": "scope-cross",
       "scope=fail": "scope-fail",
       "scope=good": "scope-good",
       "scope=mean": "scope-mean",
@@ -1788,10 +1802,10 @@
     }
   },
   "checksums": {
-    "axes": "3f102e6c189bbc734ef950e2b70eb0e77a323e30124d172cddf7806ccf25a5b1",
+    "axes": "d5005bf0bbcf268cc199f071c0d8cd612749645fabd65b7a246a9506716cdf88",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"
+    "slugs": "b5f428920ea6a34aac9cae25cd2d1caf7f16728ca6c3fce141ec605715fa3b1f"
   }
 }

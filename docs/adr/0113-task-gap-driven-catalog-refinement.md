@@ -435,3 +435,9 @@ to be human-driven with Claude assistance.
 - **Automated skill testing harness**: Script the bar-autopilot skill application step using the
   Claude API to allow faster, repeatable cycle runs
 - **Coverage heatmap**: Visualise which task domains are well-covered vs. gapped across cycles
+
+---
+
+*In-flight loop progress is tracked in the sibling work-log file:
+`0113-task-gap-driven-catalog-refinement.work-log.md`.
+Detailed evidence is under `docs/adr/evidence/0113/`.*

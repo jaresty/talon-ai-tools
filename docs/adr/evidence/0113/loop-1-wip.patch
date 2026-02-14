@@ -1,0 +1,500 @@
+diff --git a/build/prompt-grammar.json b/build/prompt-grammar.json
+index b30db2f..ab47940 100644
+--- a/build/prompt-grammar.json
++++ b/build/prompt-grammar.json
+@@ -138,6 +138,7 @@
+       "scope": {
+         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+         "assume": "The response enhances the task by attending to premises that must already hold for the reasoning or system to function.",
++        "cross": "The response focuses on concerns that span multiple modules or components — patterns applied repeatedly across the codebase (logging, error handling, authentication, observability, caching) — examining their consistency, distribution, and coupling characteristics.",
+         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
+         "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+@@ -286,6 +287,7 @@
+       "scope": [
+         "act",
+         "assume",
++        "cross",
+         "fail",
+         "good",
+         "mean",
+@@ -434,6 +436,7 @@
+       "scope": {
+         "act": "Tasks and intended actions",
+         "assume": "Premises and preconditions",
++        "cross": "Cross-cutting concerns spanning modules",
+         "fail": "Breakdowns and failure modes",
+         "good": "Quality criteria and success standards",
+         "mean": "Conceptual meaning and framing",
+@@ -457,6 +460,13 @@
+         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
+         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
+         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel."
++      },
++      "method": {
++        "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact with system attack surfaces. Use alongside adversarial for complete threat models.",
++        "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. Use when failure patterns are named and the question is whether the design protects against them."
++      },
++      "scope": {
++        "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
+       }
+     }
+   },
+@@ -1111,6 +1121,7 @@
+       "scope": {
+         "act": "act",
+         "assume": "assume",
++        "cross": "cross",
+         "fail": "fail",
+         "good": "good",
+         "mean": "mean",
+@@ -1226,6 +1237,7 @@
+       "scope": {
+         "scope=act": "scope-act",
+         "scope=assume": "scope-assume",
++        "scope=cross": "scope-cross",
+         "scope=fail": "scope-fail",
+         "scope=good": "scope-good",
+         "scope=mean": "scope-mean",
+@@ -1492,6 +1504,7 @@
+       "completion": "completion",
+       "contextualise": "contextualise",
+       "converge": "converge",
++      "cross": "cross",
+       "deduce": "deduce",
+       "deep": "deep",
+       "depends": "depends",
+@@ -1700,6 +1713,7 @@
+       "scaffold": "scaffold",
+       "scope=act": "scope-act",
+       "scope=assume": "scope-assume",
++      "scope=cross": "scope-cross",
+       "scope=fail": "scope-fail",
+       "scope=good": "scope-good",
+       "scope=mean": "scope-mean",
+@@ -1788,10 +1802,10 @@
+     }
+   },
+   "checksums": {
+-    "axes": "3f102e6c189bbc734ef950e2b70eb0e77a323e30124d172cddf7806ccf25a5b1",
++    "axes": "d5005bf0bbcf268cc199f071c0d8cd612749645fabd65b7a246a9506716cdf88",
+     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
+     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
+     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
+-    "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"
++    "slugs": "b5f428920ea6a34aac9cae25cd2d1caf7f16728ca6c3fce141ec605715fa3b1f"
+   }
+ }
+diff --git a/cmd/bar/testdata/grammar.json b/cmd/bar/testdata/grammar.json
+index b30db2f..ab47940 100644
+--- a/cmd/bar/testdata/grammar.json
++++ b/cmd/bar/testdata/grammar.json
+@@ -138,6 +138,7 @@
+       "scope": {
+         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+         "assume": "The response enhances the task by attending to premises that must already hold for the reasoning or system to function.",
++        "cross": "The response focuses on concerns that span multiple modules or components — patterns applied repeatedly across the codebase (logging, error handling, authentication, observability, caching) — examining their consistency, distribution, and coupling characteristics.",
+         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
+         "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+@@ -286,6 +287,7 @@
+       "scope": [
+         "act",
+         "assume",
++        "cross",
+         "fail",
+         "good",
+         "mean",
+@@ -434,6 +436,7 @@
+       "scope": {
+         "act": "Tasks and intended actions",
+         "assume": "Premises and preconditions",
++        "cross": "Cross-cutting concerns spanning modules",
+         "fail": "Breakdowns and failure modes",
+         "good": "Quality criteria and success standards",
+         "mean": "Conceptual meaning and framing",
+@@ -457,6 +460,13 @@
+         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
+         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
+         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel."
++      },
++      "method": {
++        "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact with system attack surfaces. Use alongside adversarial for complete threat models.",
++        "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. Use when failure patterns are named and the question is whether the design protects against them."
++      },
++      "scope": {
++        "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
+       }
+     }
+   },
+@@ -1111,6 +1121,7 @@
+       "scope": {
+         "act": "act",
+         "assume": "assume",
++        "cross": "cross",
+         "fail": "fail",
+         "good": "good",
+         "mean": "mean",
+@@ -1226,6 +1237,7 @@
+       "scope": {
+         "scope=act": "scope-act",
+         "scope=assume": "scope-assume",
++        "scope=cross": "scope-cross",
+         "scope=fail": "scope-fail",
+         "scope=good": "scope-good",
+         "scope=mean": "scope-mean",
+@@ -1492,6 +1504,7 @@
+       "completion": "completion",
+       "contextualise": "contextualise",
+       "converge": "converge",
++      "cross": "cross",
+       "deduce": "deduce",
+       "deep": "deep",
+       "depends": "depends",
+@@ -1700,6 +1713,7 @@
+       "scaffold": "scaffold",
+       "scope=act": "scope-act",
+       "scope=assume": "scope-assume",
++      "scope=cross": "scope-cross",
+       "scope=fail": "scope-fail",
+       "scope=good": "scope-good",
+       "scope=mean": "scope-mean",
+@@ -1788,10 +1802,10 @@
+     }
+   },
+   "checksums": {
+-    "axes": "3f102e6c189bbc734ef950e2b70eb0e77a323e30124d172cddf7806ccf25a5b1",
++    "axes": "d5005bf0bbcf268cc199f071c0d8cd612749645fabd65b7a246a9506716cdf88",
+     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
+     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
+     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
+-    "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"
++    "slugs": "b5f428920ea6a34aac9cae25cd2d1caf7f16728ca6c3fce141ec605715fa3b1f"
+   }
+ }
+diff --git a/docs/adr/0113-task-gap-driven-catalog-refinement.md b/docs/adr/0113-task-gap-driven-catalog-refinement.md
+index 21e9c36..de1301d 100644
+--- a/docs/adr/0113-task-gap-driven-catalog-refinement.md
++++ b/docs/adr/0113-task-gap-driven-catalog-refinement.md
+@@ -435,3 +435,41 @@ to be human-driven with Claude assistance.
+ - **Automated skill testing harness**: Script the bar-autopilot skill application step using the
+   Claude API to allow faster, repeatable cycle runs
+ - **Coverage heatmap**: Visualise which task domains are well-covered vs. gapped across cycles
++
++---
++
++## Work Log
++
++### Cycle 1 — 2026-02-13
++
++**Scope**: 30-task taxonomy covering code, analysis, writing, planning, and design domains.
++
++**Evidence artifacts**: `docs/adr/evidence/0113/`
++
++**Coverage result**: 77% well-served (score 4–5), 23% gapped (score ≤3), 1 known out-of-scope.
++
++**Gaps found**:
++
++| ID | Type | Description |
++|----|------|-------------|
++| G-01 | missing-token | No scope token for cross-cutting concerns |
++| G-02 | undiscoverable-token | `inversion` not surfaced for architecture evaluation |
++| G-03 | undiscoverable-token | `actors` not surfaced for security threat modelling |
++| G-04 | skill-guidance-wrong | Risk tasks: probe vs pull disambiguation missing |
++| G-05 | skill-guidance-wrong | `scaffold` form wrongly applied to design artifact tasks |
++| G-06 | skill-guidance-wrong | Summarisation should route to `pull`, not `show` |
++| G-07 | skill-guidance-wrong | Test tasks need create (make) vs evaluate (check) disambiguation |
++| G-08 | skill-guidance-wrong | Pre-mortem technique has no usage pattern |
++| G-09 | out-of-scope | Multi-turn brainstorming not representable by bar |
++| SF-01 | tooling | Persona token slug inconsistency (`audience=to-product-manager` rejected) |
++| SF-02 | false-positive | `case` form apparent hang was bar reading stdin (not a bug) |
++
++**Applied**:
++- `lib/axisConfig.py`: Added `cross` scope token; added guidance for `inversion` and `actors`
++- `make bar-grammar-update`: Regenerated `internal/barcli/embed/prompt-grammar.json`
++- `internal/barcli/help_llm.go`: Added 6 usage patterns (Risk Extraction, Summarisation, Test Coverage Gap Analysis, Test Plan Creation, Pre-mortem/Inversion); updated scaffold heuristic exclusion; added `cross` to scope heuristics; added scope note on single-turn boundary
++- `internal/barcli/build.go`: Fixed persona token slug resolution — `audience=to-product-manager` now accepted, normalised to canonical `to product manager`
++
++**Recommendations not applied**:
++- R-09 out-of-scope note: Added to `bar help llm` scope note section (applied via help_llm.go)
++- R-11 case form: Not a bug — bar reads stdin when no `--subject` provided; no fix needed
+diff --git a/internal/barcli/build.go b/internal/barcli/build.go
+index ffef77f..a479623 100644
+--- a/internal/barcli/build.go
++++ b/internal/barcli/build.go
+@@ -404,10 +404,14 @@ func (s *buildState) applyPersonaPreset(value string, override bool) *CLIError {
+ }
+ 
+ func (s *buildState) applyPersonaAxis(axis, token string, override bool) *CLIError {
+-	if axis == "intent" && !s.isPersonaToken(axis, token) {
++	// Resolve slug form (e.g. "to-product-manager") to canonical form
++	// (e.g. "to product manager") so both forms are accepted consistently.
++	if canonical := s.canonicalPersonaToken(axis, token); canonical != "" {
++		token = canonical
++	} else if axis != "intent" {
+ 		return s.unknownValue(axis, token)
+ 	}
+-	if axis != "intent" && !s.isPersonaToken(axis, token) {
++	if axis == "intent" && !s.isPersonaToken(axis, token) {
+ 		return s.unknownValue(axis, token)
+ 	}
+ 
+@@ -475,17 +479,32 @@ func (s *buildState) isAxisToken(axis, token string) bool {
+ }
+ 
+ func (s *buildState) isPersonaToken(axis, token string) bool {
++	return s.canonicalPersonaToken(axis, token) != ""
++}
++
++// canonicalPersonaToken returns the canonical form of a persona token for the
++// given axis, or "" if not found. Accepts exact match, lowercase match, or
++// slug form (dashes converted to spaces, e.g. "to-product-manager" → "to product manager").
++func (s *buildState) canonicalPersonaToken(axis, token string) string {
+ 	set := s.grammar.personaTokens[axis]
+ 	if set == nil {
+-		return false
++		return ""
+ 	}
+ 	if _, ok := set[token]; ok {
+-		return true
++		return token
+ 	}
+-	if _, ok := set[strings.ToLower(token)]; ok {
+-		return true
++	lower := strings.ToLower(token)
++	if _, ok := set[lower]; ok {
++		return lower
+ 	}
+-	return false
++	// De-slugify: replace dashes with spaces to match canonical multi-word tokens.
++	deslug := strings.ReplaceAll(lower, "-", " ")
++	if deslug != lower {
++		if _, ok := set[deslug]; ok {
++			return deslug
++		}
++	}
++	return ""
+ }
+ 
+ func (s *buildState) axisCap(axis string) int {
+diff --git a/internal/barcli/embed/prompt-grammar.json b/internal/barcli/embed/prompt-grammar.json
+index b30db2f..ab47940 100644
+--- a/internal/barcli/embed/prompt-grammar.json
++++ b/internal/barcli/embed/prompt-grammar.json
+@@ -138,6 +138,7 @@
+       "scope": {
+         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+         "assume": "The response enhances the task by attending to premises that must already hold for the reasoning or system to function.",
++        "cross": "The response focuses on concerns that span multiple modules or components — patterns applied repeatedly across the codebase (logging, error handling, authentication, observability, caching) — examining their consistency, distribution, and coupling characteristics.",
+         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
+         "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+@@ -286,6 +287,7 @@
+       "scope": [
+         "act",
+         "assume",
++        "cross",
+         "fail",
+         "good",
+         "mean",
+@@ -434,6 +436,7 @@
+       "scope": {
+         "act": "Tasks and intended actions",
+         "assume": "Premises and preconditions",
++        "cross": "Cross-cutting concerns spanning modules",
+         "fail": "Breakdowns and failure modes",
+         "good": "Quality criteria and success standards",
+         "mean": "Conceptual meaning and framing",
+@@ -457,6 +460,13 @@
+         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
+         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
+         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel."
++      },
++      "method": {
++        "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact with system attack surfaces. Use alongside adversarial for complete threat models.",
++        "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. Use when failure patterns are named and the question is whether the design protects against them."
++      },
++      "scope": {
++        "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
+       }
+     }
+   },
+@@ -1111,6 +1121,7 @@
+       "scope": {
+         "act": "act",
+         "assume": "assume",
++        "cross": "cross",
+         "fail": "fail",
+         "good": "good",
+         "mean": "mean",
+@@ -1226,6 +1237,7 @@
+       "scope": {
+         "scope=act": "scope-act",
+         "scope=assume": "scope-assume",
++        "scope=cross": "scope-cross",
+         "scope=fail": "scope-fail",
+         "scope=good": "scope-good",
+         "scope=mean": "scope-mean",
+@@ -1492,6 +1504,7 @@
+       "completion": "completion",
+       "contextualise": "contextualise",
+       "converge": "converge",
++      "cross": "cross",
+       "deduce": "deduce",
+       "deep": "deep",
+       "depends": "depends",
+@@ -1700,6 +1713,7 @@
+       "scaffold": "scaffold",
+       "scope=act": "scope-act",
+       "scope=assume": "scope-assume",
++      "scope=cross": "scope-cross",
+       "scope=fail": "scope-fail",
+       "scope=good": "scope-good",
+       "scope=mean": "scope-mean",
+@@ -1788,10 +1802,10 @@
+     }
+   },
+   "checksums": {
+-    "axes": "3f102e6c189bbc734ef950e2b70eb0e77a323e30124d172cddf7806ccf25a5b1",
++    "axes": "d5005bf0bbcf268cc199f071c0d8cd612749645fabd65b7a246a9506716cdf88",
+     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
+     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
+     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
+-    "slugs": "5c58d54a927c924c5f55bd336a218becdb683a4e219222ff5c532ae460654a16"
++    "slugs": "b5f428920ea6a34aac9cae25cd2d1caf7f16728ca6c3fce141ec605715fa3b1f"
+   }
+ }
+diff --git a/internal/barcli/help_llm.go b/internal/barcli/help_llm.go
+index 685eddf..f2d686b 100644
+--- a/internal/barcli/help_llm.go
++++ b/internal/barcli/help_llm.go
+@@ -787,10 +787,16 @@ func renderUsagePatterns(w io.Writer, compact bool) {
+ 			desc:    "Use for side-by-side comparison of alternatives with tradeoffs",
+ 		},
+ 		{
+-			title:   "Risk Assessment",
++			title:   "Risk Analysis",
+ 			command: "bar build probe fail full adversarial checklist --subject \"...\"",
+-			example: "bar build probe fail full adversarial checklist --subject \"Assess risks of migrating to Kubernetes\"",
+-			desc:    "Use for identifying and evaluating potential risks",
++			example: "bar build probe fail full adversarial checklist --subject \"Assess the risk posture of migrating to Kubernetes\"",
++			desc:    "Use for open-ended risk analysis: 'how risky is this?' or 'assess failure posture'",
++		},
++		{
++			title:   "Risk Extraction",
++			command: "bar build pull fail full risks checklist --subject \"...\"",
++			example: "bar build pull fail full risks checklist --subject \"Deploy payment service on Friday\"",
++			desc:    "Use when extracting a bounded risk list or summary: 'what are the risks?'. Prefer pull over probe when a risk register or checklist is the deliverable, not an open-ended analysis.",
+ 		},
+ 		{
+ 			title:   "Quality Evaluation",
+@@ -870,6 +876,30 @@ func renderUsagePatterns(w io.Writer, compact bool) {
+ 			example: "bar build probe struct full depends mapping --subject \"Map service dependencies in the microservices architecture\"",
+ 			desc:    "Use for understanding and visualizing dependencies and relationships",
+ 		},
++		{
++			title:   "Summarisation / Extraction",
++			command: "bar build pull gist mean --subject \"...\"",
++			example: "bar build pull gist mean --subject \"[long RFC or design document]\"",
++			desc:    "Use when compressing a long source document into a shorter summary. Prefer pull over show when a SUBJECT document is being compressed: pull extracts a subset, show explains a concept. Heuristic: long SUBJECT to compress → pull; concept to explain without a source → show.",
++		},
++		{
++			title:   "Test Coverage Gap Analysis",
++			command: "bar build check fail full checklist --subject \"...\"",
++			example: "bar build check fail full checklist --subject \"Feature: user registration flow\"",
++			desc:    "Use when identifying missing tests or coverage gaps in existing code. Heuristic: 'what tests are missing?' → check; 'write a test plan' → make.",
++		},
++		{
++			title:   "Test Plan Creation",
++			command: "bar build make act fail full checklist --subject \"...\"",
++			example: "bar build make act fail full checklist --subject \"Payment integration feature\"",
++			desc:    "Use when creating a new test plan or test cases from scratch. Produces a test plan artifact rather than evaluating existing coverage.",
++		},
++		{
++			title:   "Pre-mortem / Inversion Exercise",
++			command: "bar build probe fail full inversion variants --subject \"...\"",
++			example: "bar build probe fail full inversion variants --subject \"Our Q4 launch plan\"",
++			desc:    "Use when assuming failure and working backward to identify causes. Frames the exercise as: 'assume this has failed — what went wrong?' Pairs naturally with planning and architecture review tasks.",
++		},
+ 	}
+ 
+ 	for _, p := range patterns {
+@@ -897,7 +927,8 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
+ 	fmt.Fprintf(w, "- **Perspectives** → `view`\n")
+ 	fmt.Fprintf(w, "- **Premises/preconditions** → `assume`\n")
+ 	fmt.Fprintf(w, "- **Recurring patterns** → `motifs`\n")
+-	fmt.Fprintf(w, "- **Invariants/stable states** → `stable`\n\n")
++	fmt.Fprintf(w, "- **Invariants/stable states** → `stable`\n")
++	fmt.Fprintf(w, "- **Cross-cutting concerns** → `cross`\n\n")
+ 
+ 	fmt.Fprintf(w, "### Choosing Method\n\n")
+ 	fmt.Fprintf(w, "**Decision Methods:**\n")
+@@ -922,7 +953,7 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
+ 	fmt.Fprintf(w, "- **Multiple alternatives** → `variants`\n")
+ 	fmt.Fprintf(w, "- **Step-by-step guidance** → `walkthrough`, `recipe`\n")
+ 	fmt.Fprintf(w, "- **Structured comparison** → `table`\n")
+-	fmt.Fprintf(w, "- **Building understanding** → `scaffold`\n")
++	fmt.Fprintf(w, "- **Building understanding** → `scaffold` (explanation/education tasks only; do NOT use with `make` when producing a design artifact — code, diagram, or adr channel already defines the output structure)\n")
+ 	fmt.Fprintf(w, "- **Decision documentation** → `case`\n\n")
+ }
+ 
+@@ -1027,5 +1058,10 @@ func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {
+ 	fmt.Fprintf(w, "- **Persona presets**: %d\n", len(grammar.Persona.Presets))
+ 
+ 	fmt.Fprintf(w, "\n---\n\n")
++	fmt.Fprintf(w, "## Scope note\n\n")
++	fmt.Fprintf(w, "Bar constructs **single-turn structured prompts**. It does not model multi-turn interactive sessions or stateful collaboration loops.\n\n")
++	fmt.Fprintf(w, "For iterative work, use the `cocreate` form to structure the response with explicit decision points and iteration-inviting checkpoints. Then continue the conversation manually — bar cannot maintain state across turns.\n\n")
++	fmt.Fprintf(w, "Tasks that inherently require statefulness (real-time brainstorming, live negotiation) are outside bar's representational scope. Bar can produce a strong single-turn starting prompt for these interactions.\n\n")
++	fmt.Fprintf(w, "---\n\n")
+ 	fmt.Fprintf(w, "*This reference is generated from the current grammar state. Use `bar help llm` to regenerate.*\n")
+ }
+diff --git a/lib/axisConfig.py b/lib/axisConfig.py
+index dcb5c0b..7cbacca 100644
+--- a/lib/axisConfig.py
++++ b/lib/axisConfig.py
+@@ -515,6 +515,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
+         "perspective-shifting.",
+         "assume": "The response enhances the task by attending to premises that "
+         "must already hold for the reasoning or system to function.",
++        "cross": "The response focuses on concerns that span multiple modules or "
++        "components — patterns applied repeatedly across the codebase "
++        "(logging, error handling, authentication, observability, "
++        "caching) — examining their consistency, distribution, and "
++        "coupling characteristics.",
+         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits "
+         "by examining how and under what conditions something stops "
+         "working—risks, edge cases, fragility, or failure modes rather than "
+@@ -693,6 +698,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
+     "scope": {
+         "act": "Tasks and intended actions",
+         "assume": "Premises and preconditions",
++        "cross": "Cross-cutting concerns spanning modules",
+         "fail": "Breakdowns and failure modes",
+         "good": "Quality criteria and success standards",
+         "mean": "Conceptual meaning and framing",
+@@ -709,6 +715,24 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
+ # where naming traps exist (ADR-0110). Not all tokens need this.
+ # Distinct from hard incompatibilities in hierarchy.incompatibilities.
+ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
++    "method": {
++        "actors": "Well-suited for security threat modelling: identifying threat "
++        "actors (external attackers, insiders, automated bots), their "
++        "motivations, and how their capabilities interact with system "
++        "attack surfaces. Use alongside adversarial for complete "
++        "threat models.",
++        "inversion": "Well-suited for architecture evaluation: start from named "
++        "failure modes (cascade failure, split-brain, thundering herd) "
++        "and ask which design choices create or amplify them. Use when "
++        "failure patterns are named and the question is whether the "
++        "design protects against them.",
++    },
++    "scope": {
++        "cross": "Use when the question is about where a concern lives across "
++        "the system, not just within one place. Prefer over struct "
++        "when the focus is on horizontal span and consistency of a "
++        "concern rather than structural arrangement.",
++    },
+     "channel": {
+         "code": "Avoid with narrative tasks (sim, probe) that produce prose "
+         "rather than code.",

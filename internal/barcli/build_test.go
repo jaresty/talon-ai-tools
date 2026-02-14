@@ -5,6 +5,37 @@ import (
 	"testing"
 )
 
+// TestPersonaSlugNormalization specifies that Build accepts persona axis tokens
+// in slug form (e.g. "to-product-manager") and normalises them to canonical
+// multi-word form (e.g. "to product manager"). This is the specifying validation
+// for the R-10 persona-slug fix in ADR-0113 cycle 1.
+func TestPersonaSlugNormalization(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	// Verify the test grammar has the audience axis with "to product manager"
+	if _, ok := grammar.personaTokens["audience"]["to product manager"]; !ok {
+		t.Skip("test grammar does not have audience token 'to product manager'")
+	}
+
+	result, err := Build(grammar, []string{"show", "audience=to-product-manager"})
+	if err != nil {
+		t.Fatalf("expected slug-form audience token 'to-product-manager' to be accepted, got error: %v", err)
+	}
+	if result.Persona.Audience != "to product manager" {
+		t.Fatalf("expected canonical form 'to product manager', got %q", result.Persona.Audience)
+	}
+}
+
+// TestCrossTokenExistsInGrammar specifies that the 'cross' scope token exists
+// in the grammar. This is the specifying validation for the R-01 catalog change
+// in ADR-0113 cycle 1.
+func TestCrossTokenExistsInGrammar(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	if _, ok := grammar.axisTokens["scope"]["cross"]; !ok {
+		t.Fatal("expected 'cross' scope token in grammar (R-01, ADR-0113 cycle 1)")
+	}
+}
+
 func TestApplyOverrideTokenScope(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	state := newBuildState(grammar)

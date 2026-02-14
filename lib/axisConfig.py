@@ -515,6 +515,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "perspective-shifting.",
         "assume": "The response enhances the task by attending to premises that "
         "must already hold for the reasoning or system to function.",
+        "cross": "The response focuses on concerns that span multiple modules or "
+        "components — patterns applied repeatedly across the codebase "
+        "(logging, error handling, authentication, observability, "
+        "caching) — examining their consistency, distribution, and "
+        "coupling characteristics.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits "
         "by examining how and under what conditions something stops "
         "working—risks, edge cases, fragility, or failure modes rather than "
@@ -693,6 +698,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "scope": {
         "act": "Tasks and intended actions",
         "assume": "Premises and preconditions",
+        "cross": "Cross-cutting concerns spanning modules",
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
@@ -709,6 +715,24 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # where naming traps exist (ADR-0110). Not all tokens need this.
 # Distinct from hard incompatibilities in hierarchy.incompatibilities.
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
+    "method": {
+        "actors": "Well-suited for security threat modelling: identifying threat "
+        "actors (external attackers, insiders, automated bots), their "
+        "motivations, and how their capabilities interact with system "
+        "attack surfaces. Use alongside adversarial for complete "
+        "threat models.",
+        "inversion": "Well-suited for architecture evaluation: start from named "
+        "failure modes (cascade failure, split-brain, thundering herd) "
+        "and ask which design choices create or amplify them. Use when "
+        "failure patterns are named and the question is whether the "
+        "design protects against them.",
+    },
+    "scope": {
+        "cross": "Use when the question is about where a concern lives across "
+        "the system, not just within one place. Prefer over struct "
+        "when the focus is on horizontal span and consistency of a "
+        "concern rather than structural arrangement.",
+    },
     "channel": {
         "code": "Avoid with narrative tasks (sim, probe) that produce prose "
         "rather than code.",

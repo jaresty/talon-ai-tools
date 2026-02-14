@@ -787,10 +787,16 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 			desc:    "Use for side-by-side comparison of alternatives with tradeoffs",
 		},
 		{
-			title:   "Risk Assessment",
+			title:   "Risk Analysis",
 			command: "bar build probe fail full adversarial checklist --subject \"...\"",
-			example: "bar build probe fail full adversarial checklist --subject \"Assess risks of migrating to Kubernetes\"",
-			desc:    "Use for identifying and evaluating potential risks",
+			example: "bar build probe fail full adversarial checklist --subject \"Assess the risk posture of migrating to Kubernetes\"",
+			desc:    "Use for open-ended risk analysis: 'how risky is this?' or 'assess failure posture'",
+		},
+		{
+			title:   "Risk Extraction",
+			command: "bar build pull fail full risks checklist --subject \"...\"",
+			example: "bar build pull fail full risks checklist --subject \"Deploy payment service on Friday\"",
+			desc:    "Use when extracting a bounded risk list or summary: 'what are the risks?'. Prefer pull over probe when a risk register or checklist is the deliverable, not an open-ended analysis.",
 		},
 		{
 			title:   "Quality Evaluation",
@@ -870,6 +876,30 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 			example: "bar build probe struct full depends mapping --subject \"Map service dependencies in the microservices architecture\"",
 			desc:    "Use for understanding and visualizing dependencies and relationships",
 		},
+		{
+			title:   "Summarisation / Extraction",
+			command: "bar build pull gist mean --subject \"...\"",
+			example: "bar build pull gist mean --subject \"[long RFC or design document]\"",
+			desc:    "Use when compressing a long source document into a shorter summary. Prefer pull over show when a SUBJECT document is being compressed: pull extracts a subset, show explains a concept. Heuristic: long SUBJECT to compress → pull; concept to explain without a source → show.",
+		},
+		{
+			title:   "Test Coverage Gap Analysis",
+			command: "bar build check fail full checklist --subject \"...\"",
+			example: "bar build check fail full checklist --subject \"Feature: user registration flow\"",
+			desc:    "Use when identifying missing tests or coverage gaps in existing code. Heuristic: 'what tests are missing?' → check; 'write a test plan' → make.",
+		},
+		{
+			title:   "Test Plan Creation",
+			command: "bar build make act fail full checklist --subject \"...\"",
+			example: "bar build make act fail full checklist --subject \"Payment integration feature\"",
+			desc:    "Use when creating a new test plan or test cases from scratch. Produces a test plan artifact rather than evaluating existing coverage.",
+		},
+		{
+			title:   "Pre-mortem / Inversion Exercise",
+			command: "bar build probe fail full inversion variants --subject \"...\"",
+			example: "bar build probe fail full inversion variants --subject \"Our Q4 launch plan\"",
+			desc:    "Use when assuming failure and working backward to identify causes. Frames the exercise as: 'assume this has failed — what went wrong?' Pairs naturally with planning and architecture review tasks.",
+		},
 	}
 
 	for _, p := range patterns {
@@ -897,7 +927,8 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Perspectives** → `view`\n")
 	fmt.Fprintf(w, "- **Premises/preconditions** → `assume`\n")
 	fmt.Fprintf(w, "- **Recurring patterns** → `motifs`\n")
-	fmt.Fprintf(w, "- **Invariants/stable states** → `stable`\n\n")
+	fmt.Fprintf(w, "- **Invariants/stable states** → `stable`\n")
+	fmt.Fprintf(w, "- **Cross-cutting concerns** → `cross`\n\n")
 
 	fmt.Fprintf(w, "### Choosing Method\n\n")
 	fmt.Fprintf(w, "**Decision Methods:**\n")
@@ -922,7 +953,7 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Multiple alternatives** → `variants`\n")
 	fmt.Fprintf(w, "- **Step-by-step guidance** → `walkthrough`, `recipe`\n")
 	fmt.Fprintf(w, "- **Structured comparison** → `table`\n")
-	fmt.Fprintf(w, "- **Building understanding** → `scaffold`\n")
+	fmt.Fprintf(w, "- **Building understanding** → `scaffold` (explanation/education tasks only; do NOT use with `make` when producing a design artifact — code, diagram, or adr channel already defines the output structure)\n")
 	fmt.Fprintf(w, "- **Decision documentation** → `case`\n\n")
 }
 
@@ -1027,5 +1058,10 @@ func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- **Persona presets**: %d\n", len(grammar.Persona.Presets))
 
 	fmt.Fprintf(w, "\n---\n\n")
+	fmt.Fprintf(w, "## Scope note\n\n")
+	fmt.Fprintf(w, "Bar constructs **single-turn structured prompts**. It does not model multi-turn interactive sessions or stateful collaboration loops.\n\n")
+	fmt.Fprintf(w, "For iterative work, use the `cocreate` form to structure the response with explicit decision points and iteration-inviting checkpoints. Then continue the conversation manually — bar cannot maintain state across turns.\n\n")
+	fmt.Fprintf(w, "Tasks that inherently require statefulness (real-time brainstorming, live negotiation) are outside bar's representational scope. Bar can produce a strong single-turn starting prompt for these interactions.\n\n")
+	fmt.Fprintf(w, "---\n\n")
 	fmt.Fprintf(w, "*This reference is generated from the current grammar state. Use `bar help llm` to regenerate.*\n")
 }

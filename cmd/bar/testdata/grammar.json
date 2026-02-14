@@ -96,6 +96,7 @@
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
+        "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision factors. Use when the user presents options and asks which to choose or how they differ.",
         "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
@@ -245,6 +246,7 @@
         "calc",
         "cite",
         "cluster",
+        "compare",
         "converge",
         "deduce",
         "depends",
@@ -394,6 +396,7 @@
         "calc": "Quantitative or executable reasoning",
         "cite": "Include sources and references",
         "cluster": "Group items by shared characteristics",
+        "compare": "Compare alternatives against criteria",
         "converge": "Narrow from broad to focused",
         "deduce": "Deductive logical reasoning",
         "depends": "Trace dependency relationships",
@@ -1079,6 +1082,7 @@
         "calc": "calc",
         "cite": "cite",
         "cluster": "cluster",
+        "compare": "compare",
         "converge": "converge",
         "deduce": "deduce",
         "depends": "depends",
@@ -1261,6 +1265,7 @@
         "method=calc": "method-calc",
         "method=cite": "method-cite",
         "method=cluster": "method-cluster",
+        "method=compare": "method-compare",
         "method=converge": "method-converge",
         "method=deduce": "method-deduce",
         "method=depends": "method-depends",
@@ -1494,6 +1499,7 @@
       "code": "code",
       "codetour": "codetour",
       "commit": "commit",
+      "compare": "compare",
       "completeness=deep": "completeness-deep",
       "completeness=full": "completeness-full",
       "completeness=gist": "completeness-gist",
@@ -1634,6 +1640,7 @@
       "method=calc": "method-calc",
       "method=cite": "method-cite",
       "method=cluster": "method-cluster",
+      "method=compare": "method-compare",
       "method=converge": "method-converge",
       "method=deduce": "method-deduce",
       "method=depends": "method-depends",
@@ -1802,10 +1809,10 @@
     }
   },
   "checksums": {
-    "axes": "d5005bf0bbcf268cc199f071c0d8cd612749645fabd65b7a246a9506716cdf88",
+    "axes": "6d59f20a7950ead79599ee780039c487d2ff2e361b30f38b5b374aadd6ba480b",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "b5f428920ea6a34aac9cae25cd2d1caf7f16728ca6c3fce141ec605715fa3b1f"
+    "slugs": "ee85c96f170a200c071271f3e569ed07eb972cf3b2d97dcdb2555e1a0d5dc3d3"
   }
 }

@@ -1,0 +1,74 @@
+# ADR-0113 Loop 2 — Recommendations
+# Date: 2026-02-14
+# Previous: Loop 1 (11 recommendations, all applied)
+# Status: Loop 1 fixes validated; 1 optional recommendation
+
+---
+
+# === LOOP 1 VALIDATION ===
+
+All 7 re-test tasks show improvement:
+
+| Rec ID | Fix | Re-test Tasks | Old Score | New Score | Status |
+|--------|-----|---------------|-----------|-----------|--------|
+| R-01 | Add `cross` scope token | T07, T31 | 3, — | 5, 5 | ✅ Validated |
+| R-03 | Update `actors` method guidance | T22 | 4 | 5 | ✅ Validated |
+| R-04 | Add Risk Extraction pattern | T08, T32 | 3, — | 5, 5 | ✅ Validated |
+| R-05 | Scaffold exclusion for design artifacts | T10, T19, T33 | 3, 3, — | 5, 5, 5 | ✅ Validated |
+| R-06 | Add Summarization pattern | T16, T34 | 3, — | 5, 5 | ✅ Validated |
+| R-07 | Test disambiguation pattern | T18 | 3 | 5 | ✅ Validated |
+| R-08 | Add Pre-mortem pattern | T35 | — | 5 | ✅ Validated |
+
+**Validation Result:** All Loop 1 recommendations working as intended. Mean score improved from 4.27 → 4.82.
+
+---
+
+# === OPTIONAL RECOMMENDATION ===
+
+- id: R-L2-01
+  action: consider-add
+  priority: low
+  gap_type: missing-token
+  observation: >
+    Tasks requiring "compare alternatives" or "decision support" (e.g., T37: Kafka vs RabbitMQ)
+    require multiple tokens (probe+delta+good+adversarial) to approximate the concept.
+    No single token targets comparison/decision-making explicitly.
+  current_workaround: |
+    `bar build probe full delta good adversarial checklist` — works but verbose
+  proposed_token: "compare" (method) or "versus" (scope)
+  proposed_description: >
+    The response systematically compares alternatives against criteria, surfacing
+    tradeoffs, relative strengths, and decision factors. Use when the user presents
+    options and asks which to choose or how they differ.
+  evidence:
+    - T37
+  note: >
+    This is a LOW priority observation, not a gap. Current coverage is acceptable (score 4).
+    Consider only if comparison tasks become frequent or if verbosity becomes problematic.
+
+---
+
+# === RESIDUAL CONSTRAINTS UPDATE ===
+
+**From Loop 1:**
+- RC-01 (Medium): Scaffold form still not explicitly excluded in skill.md for make+design-artifact tasks.
+  **Status:** Mitigated in code (help_llm.go). Skill.md update deferred — monitoring shows no issues in cycles.
+  
+- RC-02 (Low): Multi-turn brainstorming (T30) genuinely out of scope.
+  **Status:** Scope note (R-09) covers it. No change needed.
+  
+- RC-03 (Medium): bar-autopilot/skill.md static guidance not updated with R-04–R-08 patterns.
+  **Status:** Agents using skill.md exclusively may miss new patterns. However, help_llm.go updates are working.
+  **Recommendation:** Update skill.md when convenient; not urgent given validation results.
+
+---
+
+# === LOOP 2 SUMMARY ===
+
+**New gaps found:** 0  
+**Minor observations:** 1 (comparison token — optional)  
+**Mean score achieved:** 4.82/5.0  
+**Target met:** Yes (> 4.5 target exceeded)
+
+**Conclusion:** Loop 1 fixes are solid and generalize well. Catalog coverage is strong. Optional consideration: add comparison/decision token if task frequency warrants it.
+

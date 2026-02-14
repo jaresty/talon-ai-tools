@@ -376,6 +376,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "based on shared characteristics, relationships, or criteria, "
         "without altering the underlying content or meaning of the "
         "items.",
+        "compare": "The response enhances the task by systematically comparing "
+        "alternatives against explicit criteria, surfacing tradeoffs, "
+        "relative strengths and weaknesses, and decision factors. "
+        "Use when the user presents options and asks which to choose "
+        "or how they differ.",
         "converge": "The response enhances the task by systematically narrowing "
         "from broad exploration to focused recommendations, weighing "
         "trade-offs explicitly as options are filtered.",
@@ -656,6 +661,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "calc": "Quantitative or executable reasoning",
         "cite": "Include sources and references",
         "cluster": "Group items by shared characteristics",
+        "compare": "Compare alternatives against criteria",
         "converge": "Narrow from broad to focused",
         "deduce": "Deductive logical reasoning",
         "depends": "Trace dependency relationships",

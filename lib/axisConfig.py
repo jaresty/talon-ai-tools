@@ -739,6 +739,9 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "facilitate": "When combined with sim, designs a facilitation structure for "
         "a simulation exercise rather than performing the simulation "
         "directly.",
+        "faq": "Question-and-answer prose format. Conflicts with executable "
+        "output channels: shellscript, code, codetour (output format "
+        "mismatch). Use with plain, slack, diagram, or no channel.",
         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: "
         "produces a question-tree Mermaid diagram. Use with plain, "
         "slack, diagram, or no channel.",

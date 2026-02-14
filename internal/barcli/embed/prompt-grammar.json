@@ -461,6 +461,7 @@
       },
       "form": {
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
+        "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",
         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel."
       },
@@ -1809,7 +1810,7 @@
     }
   },
   "checksums": {
-    "axes": "6d59f20a7950ead79599ee780039c487d2ff2e361b30f38b5b374aadd6ba480b",
+    "axes": "089f5172407c324750a6c3f29d4d31ee354ab5108d46bd29781c4f60a07b09c5",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

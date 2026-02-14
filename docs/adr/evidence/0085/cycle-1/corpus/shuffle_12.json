@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"mean\"): The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+    "Directional (\"dip rog\"): The response modifies the task to examine concrete details and grounded examples, then reflects on their structural patterns and what they reveal."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "mean",
+      "description": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective."
+    },
+    {
+      "axis": "directional",
+      "token": "dip rog",
+      "description": "The response modifies the task to examine concrete details and grounded examples, then reflects on their structural patterns and what they reveal."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "full",
+    "scope": [
+      "mean"
+    ],
+    "directional": "dip rog"
+  },
+  "persona": {
+    "voice": "as principal engineer",
+    "audience": "to XP enthusiast",
+    "intent": "announce"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as principal engineer",
+      "description": "The response speaks as a principal engineer, bringing systems thinking, trade-offs, and pragmatic guidance."
+    },
+    {
+      "axis": "audience",
+      "token": "to XP enthusiast",
+      "description": "The response addresses an XP enthusiast, valuing small batches, social programming, and production validation."
+    },
+    {
+      "axis": "intent",
+      "token": "announce",
+      "description": "Share news or updates with the audience."
+    }
+  ],
+  "tokens": [
+    "announce",
+    "as principal engineer",
+    "to XP enthusiast",
+    "sim",
+    "full",
+    "mean",
+    "dip rog"
+  ]
+}

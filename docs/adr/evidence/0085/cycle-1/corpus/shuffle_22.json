@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Method (\"mod\"): The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
+    "Form (\"table\"): The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "method",
+      "token": "mod",
+      "description": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
+    },
+    {
+      "axis": "form",
+      "token": "table",
+      "description": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "minimal",
+    "method": [
+      "mod"
+    ],
+    "form": [
+      "table"
+    ]
+  },
+  "persona": {
+    "preset": "peer_engineer_explanation",
+    "preset_label": "Peer engineer explanation",
+    "voice": "as programmer",
+    "audience": "to programmer"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "peer_engineer_explanation",
+      "description": "Peer engineer explanation"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    }
+  ],
+  "tokens": [
+    "peer_engineer_explanation",
+    "pull",
+    "minimal",
+    "mod",
+    "table"
+  ]
+}

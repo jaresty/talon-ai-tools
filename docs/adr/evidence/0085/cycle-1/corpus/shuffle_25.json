@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"good\"): The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
+    "Directional (\"ong\"): The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "good",
+      "description": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective."
+    },
+    {
+      "axis": "directional",
+      "token": "ong",
+      "description": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "max",
+    "scope": [
+      "good"
+    ],
+    "directional": "ong"
+  },
+  "persona": {
+    "tone": "casually",
+    "intent": "coach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    },
+    {
+      "axis": "intent",
+      "token": "coach",
+      "description": "Support the audience’s growth through guidance and feedback."
+    }
+  ],
+  "tokens": [
+    "coach",
+    "casually",
+    "fix",
+    "max",
+    "good",
+    "ong"
+  ]
+}

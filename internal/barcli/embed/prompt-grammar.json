@@ -56,7 +56,7 @@
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output.",
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
-        "contextualise": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
+        "contextualise": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself. With sort/plan tasks: adds clarifying context about criteria before output. With pull: frames extracted content with additional context. With make/fix: adds framing before the main content.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
@@ -68,9 +68,8 @@
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange: poses questions, waits for responses, then clarifies or deepens. With an output-exclusive channel, structures the output itself as a quiz — question headings with revealed answers, test sections, knowledge checks — without requiring live interaction.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
-        "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation. Best paired with `fix`, `pull`, `diff`, or `show` tasks that supply existing content to transform. Pairing with `make` is semantically incoherent: `make` implies creating from nothing while `rewrite` implies transforming existing content.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas where first-principles exposition contradicts assumed expertise.",
-        "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
+        "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
@@ -218,7 +217,6 @@
         "questions",
         "quiz",
         "recipe",
-        "rewrite",
         "scaffold",
         "socratic",
         "spike",
@@ -368,7 +366,6 @@
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
-        "rewrite": "Rewrite preserving original intent",
         "scaffold": "First-principles scaffolded explanation",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
@@ -460,10 +457,12 @@
         "shellscript": "Avoid with narrative tasks (sim, probe) that produce prose rather than code."
       },
       "form": {
+        "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
         "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",
         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
-        "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel."
+        "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel.",
+        "socratic": "With sort/plan: ask clarifying questions about criteria before output. With make/fix: pairs well with diagnostic methods (asks questions then provides solution). Avoid with code channels (shellscript, codetour) - cannot render questions as code."
       },
       "method": {
         "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact with system attack surfaces. Use alongside adversarial for complete threat models.",
@@ -1055,7 +1054,6 @@
         "questions": "questions",
         "quiz": "quiz",
         "recipe": "recipe",
-        "rewrite": "rewrite",
         "scaffold": "scaffold",
         "socratic": "socratic",
         "spike": "spike",
@@ -1328,7 +1326,6 @@
         "form=questions": "form-questions",
         "form=quiz": "form-quiz",
         "form=recipe": "form-recipe",
-        "form=rewrite": "form-rewrite",
         "form=scaffold": "form-scaffold",
         "form=socratic": "form-socratic",
         "form=spike": "form-spike",
@@ -1580,7 +1577,6 @@
       "form=questions": "form-questions",
       "form=quiz": "form-quiz",
       "form=recipe": "form-recipe",
-      "form=rewrite": "form-rewrite",
       "form=scaffold": "form-scaffold",
       "form=socratic": "form-socratic",
       "form=spike": "form-spike",
@@ -1713,7 +1709,6 @@
       "recipe": "recipe",
       "remote": "remote",
       "resilience": "resilience",
-      "rewrite": "rewrite",
       "rigor": "rigor",
       "risks": "risks",
       "robust": "robust",
@@ -1810,10 +1805,10 @@
     }
   },
   "checksums": {
-    "axes": "b7b595cb1fe585e21889b4225cad960a68ca474ee20d02bf5c022232e32c5512",
+    "axes": "0ebb822558f074ab06bf9f4f8b4063258049443da5e150bb276ad3f81fb87e43",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "ee85c96f170a200c071271f3e569ed07eb972cf3b2d97dcdb2555e1a0d5dc3d3"
+    "slugs": "3a6c64159005b71939e79cfcbd090a23a764877171c12c2ab892d6f939f9a7c7"
   }
 }

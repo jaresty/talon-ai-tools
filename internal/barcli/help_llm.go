@@ -687,7 +687,11 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "**Combination Guidance:**\n")
 	fmt.Fprintf(w, "Some form+channel pairs are coherent but require an explicit interpretation:\n")
 	fmt.Fprintf(w, "- `simulate` + `facilitate` form: channel wins for output format; `facilitate` means the response designs a facilitation structure for others to perform the simulation, not the LLM playing it out directly.\n")
-	fmt.Fprintf(w, "- `questions` + `diagram` channel: channel wins — output is Mermaid code. `questions` form shapes the content: the diagram represents a question structure (decision tree, question map, inquiry flow) rather than a structural diagram of the subject.\n\n")
+	fmt.Fprintf(w, "- `questions` + `diagram` channel: channel wins — output is Mermaid code. `questions` form shapes the content: the diagram represents a question structure (decision tree, question map, inquiry flow) rather than a structural diagram of the subject.\n")
+	fmt.Fprintf(w, "- `socratic` form with `sort`/`plan` tasks: ask clarifying questions about criteria before producing output.\n")
+	fmt.Fprintf(w, "- `socratic` form with production tasks (`make`, `fix`): pairs well with diagnostic methods; the response asks diagnostic questions then provides the solution.\n")
+	fmt.Fprintf(w, "- `socratic` form: avoid with code channels (`shellscript`, `codetour`) since they cannot render questions as code output.\n")
+	fmt.Fprintf(w, "- `contextualise` form: works well with text-friendly channels (`plain`, `sync`, `jira`, `slack`). Avoid with output-only channels (`gherkin`, `shellscript`, `codetour`) since they cannot render explanatory context alongside structured output.\n\n")
 
 	fmt.Fprintf(w, "**Tone/channel register conflicts:**\n")
 	fmt.Fprintf(w, "`formally` tone conflicts with conversational-register channels that assume informal or spoken language (`slack`, `sync`, `remote`). ")

@@ -902,6 +902,12 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 			example: "bar build probe fail full inversion variants --subject \"Our Q4 launch plan\"",
 			desc:    "Use when assuming failure and working backward to identify causes. Frames the exercise as: 'assume this has failed — what went wrong?' Pairs naturally with planning and architecture review tasks.",
 		},
+		{
+			title:   "Comprehensive Assessment (Multi-Scope)",
+			command: "bar build check <scope> full <method> --subject \"...\"",
+			example: "bar build check good full analysis --subject \"Assess codebase quality\"",
+			desc:    "Use for multi-faceted assessments that span quality (good), fragility (fail), and structure (struct). When the task requires multiple analytical lenses, prioritize by primary concern or analyze sequentially: quality-first (good), risk-first (fail), or architecture-first (struct).",
+		},
 	}
 
 	for _, p := range patterns {

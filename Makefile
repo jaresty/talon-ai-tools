@@ -21,16 +21,20 @@ bar-grammar-check:
 	@echo "Regenerating grammar to check for drift..."
 	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
+	@echo "Regenerating TUI fixture..."
+	@go run scripts/tools/regenerate-tui-fixture.go cmd/bar/testdata/tui_smoke.json cmd/bar/testdata/grammar.json
 	@echo "Checking for grammar drift..."
-	@git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json || \
-		(echo "ERROR: Grammar files are out of sync. Run 'make bar-grammar-update' to fix." && exit 1)
-	@echo "✓ Grammar files are in sync"
+	@git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json cmd/bar/testdata/tui_smoke.json || \
+		(echo "ERROR: Grammar files or TUI fixture are out of sync. Run 'make bar-grammar-update' to fix." && exit 1)
+	@echo "✓ Grammar files and TUI fixture are in sync"
 
 bar-grammar-update:
 	@echo "Regenerating grammar files..."
 	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
-	@echo "✓ Grammar files updated. Review with 'git diff' before committing."
+	@echo "Regenerating TUI fixture..."
+	@go run scripts/tools/regenerate-tui-fixture.go cmd/bar/testdata/tui_smoke.json cmd/bar/testdata/grammar.json
+	@echo "✓ Grammar files and TUI fixture updated. Review with 'git diff' before committing."
 
 grammar-update-all: bar-grammar-update axis-regenerate-apply
 	@echo "Updating README axis modifier lines..."

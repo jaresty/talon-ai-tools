@@ -462,7 +462,7 @@
         "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",
         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel.",
-        "socratic": "With sort/plan: ask clarifying questions about criteria before output. With make/fix: pairs well with diagnostic methods (asks questions then provides solution). Avoid with code channels (shellscript, codetour) - cannot render questions as code."
+        "socratic": "Avoid with code channels (shellscript, codetour) - they cannot render questions as code output."
       },
       "method": {
         "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact with system attack surfaces. Use alongside adversarial for complete threat models.",
@@ -1805,7 +1805,7 @@
     }
   },
   "checksums": {
-    "axes": "0ebb822558f074ab06bf9f4f8b4063258049443da5e150bb276ad3f81fb87e43",
+    "axes": "7fa252c537ee479ee8ab180e97b494e6bfaf3c087be4f03e59ecbd6b964cf232",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

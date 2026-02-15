@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"motifs\"): The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution.",
+    "Method (\"order\"): The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
+    "Form (\"quiz\"): The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange: poses questions, waits for responses, then clarifies or deepens. With an output-exclusive channel, structures the output itself as a quiz — question headings with revealed answers, test sections, knowledge checks — without requiring live interaction.",
+    "Channel (\"presenterm\"): The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: \u003cdescriptive title based on the input with colons encoded as \u0026#58; and angle brackets encoded as \u0026lt; and \u0026gt;\u003e newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"\u003c!-- end_slide --\u003e\", \"\u003c!-- pause --\u003e\", \"\u003c!-- column_layout: [7, 3] --\u003e\", \"\u003c!-- column: 0 --\u003e\", \"\u003c!-- reset_layout --\u003e\", and \"\u003c!-- jump_to_middle --\u003e\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:\u003cname\u003e) or +exec_replace or +image. The response emits \"\u003c!-- snippet_output: name --\u003e\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '\u003c' becomes \u0026lt; and every literal '\u003e' becomes \u0026gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"\u0026#126;\" (so \"~/foo\" becomes \"\u0026#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"\u003c\", \"#62;\" for \"\u003e\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"\u0026\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies.",
+    "Directional (\"fog\"): The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "motifs",
+      "description": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution."
+    },
+    {
+      "axis": "method",
+      "token": "order",
+      "description": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed."
+    },
+    {
+      "axis": "form",
+      "token": "quiz",
+      "description": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange: poses questions, waits for responses, then clarifies or deepens. With an output-exclusive channel, structures the output itself as a quiz — question headings with revealed answers, test sections, knowledge checks — without requiring live interaction."
+    },
+    {
+      "axis": "channel",
+      "token": "presenterm",
+      "description": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: \u003cdescriptive title based on the input with colons encoded as \u0026#58; and angle brackets encoded as \u0026lt; and \u0026gt;\u003e newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"\u003c!-- end_slide --\u003e\", \"\u003c!-- pause --\u003e\", \"\u003c!-- column_layout: [7, 3] --\u003e\", \"\u003c!-- column: 0 --\u003e\", \"\u003c!-- reset_layout --\u003e\", and \"\u003c!-- jump_to_middle --\u003e\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:\u003cname\u003e) or +exec_replace or +image. The response emits \"\u003c!-- snippet_output: name --\u003e\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '\u003c' becomes \u0026lt; and every literal '\u003e' becomes \u0026gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"\u0026#126;\" (so \"~/foo\" becomes \"\u0026#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"\u003c\", \"#62;\" for \"\u003e\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"\u0026\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies."
+    },
+    {
+      "axis": "directional",
+      "token": "fog",
+      "description": "The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "max",
+    "scope": [
+      "motifs"
+    ],
+    "method": [
+      "order"
+    ],
+    "form": [
+      "quiz"
+    ],
+    "channel": [
+      "presenterm"
+    ],
+    "directional": "fog"
+  },
+  "persona": {
+    "preset": "stakeholder_facilitator",
+    "preset_label": "Stakeholder facilitator",
+    "voice": "as facilitator",
+    "audience": "to stakeholders",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "stakeholder_facilitator",
+      "description": "Stakeholder facilitator"
+    },
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    },
+    {
+      "axis": "audience",
+      "token": "to stakeholders",
+      "description": "The response addresses stakeholders, focusing on impact, decisions, and clarity."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "stakeholder_facilitator",
+    "pull",
+    "max",
+    "motifs",
+    "order",
+    "quiz",
+    "presenterm",
+    "fog"
+  ]
+}

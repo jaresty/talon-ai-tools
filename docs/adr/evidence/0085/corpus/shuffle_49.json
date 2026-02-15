@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"resilience\"): The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "resilience",
+      "description": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "full",
+    "method": [
+      "resilience"
+    ]
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "designer_to_pm",
+    "fix",
+    "resilience"
+  ]
+}

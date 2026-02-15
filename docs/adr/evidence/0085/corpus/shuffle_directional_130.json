@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"view\"): The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action.",
+    "Method (\"mod\"): The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
+    "Form (\"wasinawa\"): The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+    "Directional (\"ong\"): The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "view",
+      "description": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
+    },
+    {
+      "axis": "method",
+      "token": "mod",
+      "description": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
+    },
+    {
+      "axis": "form",
+      "token": "wasinawa",
+      "description": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
+    },
+    {
+      "axis": "channel",
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+    },
+    {
+      "axis": "directional",
+      "token": "ong",
+      "description": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "skim",
+    "scope": [
+      "view"
+    ],
+    "method": [
+      "mod"
+    ],
+    "form": [
+      "wasinawa"
+    ],
+    "channel": [
+      "jira"
+    ],
+    "directional": "ong"
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "designer_to_pm",
+    "check",
+    "skim",
+    "view",
+    "mod",
+    "wasinawa",
+    "jira",
+    "ong"
+  ]
+}

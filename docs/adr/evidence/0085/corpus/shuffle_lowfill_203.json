@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Channel (\"shellscript\"): The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "channel",
+      "token": "shellscript",
+      "description": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "full",
+    "channel": [
+      "shellscript"
+    ]
+  },
+  "persona": {},
+  "tokens": [
+    "sort",
+    "shellscript"
+  ]
+}

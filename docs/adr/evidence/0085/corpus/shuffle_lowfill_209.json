@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"effects\"): The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+    "Form (\"taxonomy\"): The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly. Adapts to the channel: when combined with a code channel, the taxonomy is expressed through the type system (interfaces, enums, inheritance hierarchies); with a markup channel, as hierarchical markup structure; without a channel, as prose classification sections."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "effects",
+      "description": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences."
+    },
+    {
+      "axis": "form",
+      "token": "taxonomy",
+      "description": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly. Adapts to the channel: when combined with a code channel, the taxonomy is expressed through the type system (interfaces, enums, inheritance hierarchies); with a markup channel, as hierarchical markup structure; without a channel, as prose classification sections."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "full",
+    "method": [
+      "effects"
+    ],
+    "form": [
+      "taxonomy"
+    ]
+  },
+  "persona": {},
+  "tokens": [
+    "fix",
+    "effects",
+    "taxonomy"
+  ]
+}

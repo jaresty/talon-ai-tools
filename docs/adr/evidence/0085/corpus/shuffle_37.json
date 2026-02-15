@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Form (\"facilitate\"): The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact.",
+    "Channel (\"html\"): The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "form",
+      "token": "facilitate",
+      "description": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact."
+    },
+    {
+      "axis": "channel",
+      "token": "html",
+      "description": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "full",
+    "form": [
+      "facilitate"
+    ],
+    "channel": [
+      "html"
+    ]
+  },
+  "persona": {
+    "voice": "as PM",
+    "audience": "to Kent Beck",
+    "intent": "announce"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to Kent Beck",
+      "description": "The response addresses Kent Beck, staying concrete, test-minded, and iterative."
+    },
+    {
+      "axis": "intent",
+      "token": "announce",
+      "description": "Share news or updates with the audience."
+    }
+  ],
+  "tokens": [
+    "announce",
+    "as PM",
+    "to Kent Beck",
+    "check",
+    "facilitate",
+    "html"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"cross\"): The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
+    "Method (\"verify\"): The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment.",
+    "Directional (\"fip rog\"): The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "cross",
+      "description": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form."
+    },
+    {
+      "axis": "method",
+      "token": "verify",
+      "description": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment."
+    },
+    {
+      "axis": "directional",
+      "token": "fip rog",
+      "description": "The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "skim",
+    "scope": [
+      "cross"
+    ],
+    "method": [
+      "verify"
+    ],
+    "directional": "fip rog"
+  },
+  "persona": {
+    "intent": "inform"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "intent",
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
+    }
+  ],
+  "tokens": [
+    "inform",
+    "sort",
+    "skim",
+    "cross",
+    "verify",
+    "fip rog"
+  ]
+}

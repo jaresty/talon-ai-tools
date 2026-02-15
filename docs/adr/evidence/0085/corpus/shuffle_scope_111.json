@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response creates new content that did not previously exist, based on the input and constraints.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"thing\"): The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+    "Method (\"actors\"): The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
+    "Form (\"contextualise\"): The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself. With sort/plan tasks: adds clarifying context about criteria before output. With pull: frames extracted content with additional context. With make/fix: adds framing before the main content.",
+    "Directional (\"rog\"): The response modifies the task to examine the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "thing",
+      "description": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective."
+    },
+    {
+      "axis": "method",
+      "token": "actors",
+      "description": "The response enhances the task by identifying and centering people, roles, or agents involved in the system."
+    },
+    {
+      "axis": "form",
+      "token": "contextualise",
+      "description": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself. With sort/plan tasks: adds clarifying context about criteria before output. With pull: frames extracted content with additional context. With make/fix: adds framing before the main content."
+    },
+    {
+      "axis": "directional",
+      "token": "rog",
+      "description": "The response modifies the task to examine the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
+    }
+  ],
+  "axes": {
+    "task": "make",
+    "completeness": "skim",
+    "scope": [
+      "thing"
+    ],
+    "method": [
+      "actors"
+    ],
+    "form": [
+      "contextualise"
+    ],
+    "directional": "rog"
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "designer_to_pm",
+    "make",
+    "skim",
+    "thing",
+    "actors",
+    "contextualise",
+    "rog"
+  ]
+}

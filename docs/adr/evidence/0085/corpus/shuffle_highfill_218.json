@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"motifs\"): The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution.",
+    "Method (\"systemic\"): The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
+    "Form (\"bug\"): The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda.",
+    "Channel (\"sketch\"): The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI.",
+    "Directional (\"jog\"): The response modifies the task to interpret the intent and carry it out directly without asking follow-up questions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "motifs",
+      "description": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution."
+    },
+    {
+      "axis": "method",
+      "token": "systemic",
+      "description": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation."
+    },
+    {
+      "axis": "form",
+      "token": "bug",
+      "description": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda."
+    },
+    {
+      "axis": "channel",
+      "token": "sketch",
+      "description": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
+    },
+    {
+      "axis": "directional",
+      "token": "jog",
+      "description": "The response modifies the task to interpret the intent and carry it out directly without asking follow-up questions."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "max",
+    "scope": [
+      "motifs"
+    ],
+    "method": [
+      "systemic"
+    ],
+    "form": [
+      "bug"
+    ],
+    "channel": [
+      "sketch"
+    ],
+    "directional": "jog"
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "fix",
+    "max",
+    "motifs",
+    "systemic",
+    "bug",
+    "sketch",
+    "jog"
+  ]
+}

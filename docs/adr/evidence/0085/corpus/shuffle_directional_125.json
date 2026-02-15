@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+  "constraints": [
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Scope (\"cross\"): The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
+    "Method (\"jobs\"): The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
+    "Form (\"cocreate\"): The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output.",
+    "Channel (\"svg\"): The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
+    "Directional (\"dip ong\"): The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
+    },
+    {
+      "axis": "scope",
+      "token": "cross",
+      "description": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form."
+    },
+    {
+      "axis": "method",
+      "token": "jobs",
+      "description": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices."
+    },
+    {
+      "axis": "form",
+      "token": "cocreate",
+      "description": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output."
+    },
+    {
+      "axis": "channel",
+      "token": "svg",
+      "description": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+    },
+    {
+      "axis": "directional",
+      "token": "dip ong",
+      "description": "The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+    }
+  ],
+  "axes": {
+    "task": "diff",
+    "completeness": "deep",
+    "scope": [
+      "cross"
+    ],
+    "method": [
+      "jobs"
+    ],
+    "form": [
+      "cocreate"
+    ],
+    "channel": [
+      "svg"
+    ],
+    "directional": "dip ong"
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "diff",
+    "deep",
+    "cross",
+    "jobs",
+    "cocreate",
+    "svg",
+    "dip ong"
+  ]
+}

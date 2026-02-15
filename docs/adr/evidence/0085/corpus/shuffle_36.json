@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Form (\"wardley\"): The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
+    "Channel (\"code\"): The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "form",
+      "token": "wardley",
+      "description": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity."
+    },
+    {
+      "axis": "channel",
+      "token": "code",
+      "description": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative."
+    }
+  ],
+  "axes": {
+    "task": "diff",
+    "completeness": "full",
+    "form": [
+      "wardley"
+    ],
+    "channel": [
+      "code"
+    ]
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "diff",
+    "wardley",
+    "code"
+  ]
+}

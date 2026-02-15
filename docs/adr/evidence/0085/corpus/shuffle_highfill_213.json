@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Method (\"models\"): The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
+    "Form (\"cards\"): The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
+    "Channel (\"plain\"): The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks.",
+    "Directional (\"ong\"): The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "method",
+      "token": "models",
+      "description": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them."
+    },
+    {
+      "axis": "form",
+      "token": "cards",
+      "description": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose."
+    },
+    {
+      "axis": "channel",
+      "token": "plain",
+      "description": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks."
+    },
+    {
+      "axis": "directional",
+      "token": "ong",
+      "description": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "narrow",
+    "method": [
+      "models"
+    ],
+    "form": [
+      "cards"
+    ],
+    "channel": [
+      "plain"
+    ],
+    "directional": "ong"
+  },
+  "persona": {
+    "preset": "peer_engineer_explanation",
+    "preset_label": "Peer engineer explanation",
+    "voice": "as programmer",
+    "audience": "to programmer"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "peer_engineer_explanation",
+      "description": "Peer engineer explanation"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    }
+  ],
+  "tokens": [
+    "peer_engineer_explanation",
+    "sort",
+    "narrow",
+    "models",
+    "cards",
+    "plain",
+    "ong"
+  ]
+}

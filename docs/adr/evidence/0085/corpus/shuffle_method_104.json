@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Scope (\"cross\"): The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
+    "Method (\"mapping\"): The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
+    "Form (\"spike\"): The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
+    "Channel (\"diagram\"): The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "scope",
+      "token": "cross",
+      "description": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form."
+    },
+    {
+      "axis": "method",
+      "token": "mapping",
+      "description": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative."
+    },
+    {
+      "axis": "form",
+      "token": "spike",
+      "description": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks."
+    },
+    {
+      "axis": "channel",
+      "token": "diagram",
+      "description": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "gist",
+    "scope": [
+      "cross"
+    ],
+    "method": [
+      "mapping"
+    ],
+    "form": [
+      "spike"
+    ],
+    "channel": [
+      "diagram"
+    ]
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "fun_mode",
+    "sim",
+    "gist",
+    "cross",
+    "mapping",
+    "spike",
+    "diagram"
+  ]
+}

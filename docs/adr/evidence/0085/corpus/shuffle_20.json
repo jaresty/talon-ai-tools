@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"simulation\"): The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
+    "Form (\"story\"): The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "simulation",
+      "description": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects."
+    },
+    {
+      "axis": "form",
+      "token": "story",
+      "description": "The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "full",
+    "method": [
+      "simulation"
+    ],
+    "form": [
+      "story"
+    ]
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "designer_to_pm",
+    "check",
+    "simulation",
+    "story"
+  ]
+}

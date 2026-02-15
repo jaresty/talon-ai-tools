@@ -39,8 +39,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "for '|' instead of raw problematic characters).",
         "gherkin": "The response outputs only Gherkin format as the complete "
         "output, using Jira markup where appropriate and omitting "
-        "surrounding explanation. Works with presenterm/diagram channels "
-        "when wrapped in markdown code blocks.",
+        "surrounding explanation. Works with presenterm/diagram "
+        "channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete "
         "output, with no surrounding prose or explanation.",
         "jira": "The response formats the content using Jira markup (headings, "
@@ -424,9 +424,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "progression over time or sequence, showing how control, data, or "
         "narrative moves through the system.",
         "grove": "The response enhances the task by examining how small effects "
-        "compound into larger outcomes through feedback loops, network effects, "
-        "or iterative growth—asking not just what fails or succeeds, but how "
-        "failures OR successes accumulate through systemic mechanisms.",
+        "compound into larger outcomes through feedback loops, network "
+        "effects, or iterative growth—asking not just what fails or "
+        "succeeds, but how failures OR successes accumulate through "
+        "systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form "
         "adequate to the current purpose and expanding only when new "
         "demands demonstrably outgrow it, so that every abstraction and "

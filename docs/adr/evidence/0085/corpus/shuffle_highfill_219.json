@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"act\"): The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+    "Method (\"depends\"): The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
+    "Form (\"variants\"): The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives.",
+    "Channel (\"html\"): The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+    "Directional (\"fly bog\"): The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "act",
+      "description": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting."
+    },
+    {
+      "axis": "method",
+      "token": "depends",
+      "description": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system."
+    },
+    {
+      "axis": "form",
+      "token": "variants",
+      "description": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives."
+    },
+    {
+      "axis": "channel",
+      "token": "html",
+      "description": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "fly bog",
+      "description": "The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "skim",
+    "scope": [
+      "act"
+    ],
+    "method": [
+      "depends"
+    ],
+    "form": [
+      "variants"
+    ],
+    "channel": [
+      "html"
+    ],
+    "directional": "fly bog"
+  },
+  "persona": {
+    "preset": "scientist_to_analyst",
+    "preset_label": "Scientist to analyst",
+    "voice": "as scientist",
+    "audience": "to analyst",
+    "tone": "formally"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "scientist_to_analyst",
+      "description": "Scientist to analyst"
+    },
+    {
+      "axis": "voice",
+      "token": "as scientist",
+      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+    },
+    {
+      "axis": "audience",
+      "token": "to analyst",
+      "description": "The response addresses an analyst, providing structure, data framing, and ways to visualise results."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    }
+  ],
+  "tokens": [
+    "scientist_to_analyst",
+    "pull",
+    "skim",
+    "act",
+    "depends",
+    "variants",
+    "html",
+    "fly bog"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"mean\"): The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
+    "Form (\"bug\"): The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda.",
+    "Channel (\"html\"): The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+    "Directional (\"fly bog\"): The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "mean",
+      "description": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective."
+    },
+    {
+      "axis": "form",
+      "token": "bug",
+      "description": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda."
+    },
+    {
+      "axis": "channel",
+      "token": "html",
+      "description": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "fly bog",
+      "description": "The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "probe",
+    "completeness": "max",
+    "scope": [
+      "mean"
+    ],
+    "form": [
+      "bug"
+    ],
+    "channel": [
+      "html"
+    ],
+    "directional": "fly bog"
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "probe",
+    "max",
+    "mean",
+    "bug",
+    "html",
+    "fly bog"
+  ]
+}

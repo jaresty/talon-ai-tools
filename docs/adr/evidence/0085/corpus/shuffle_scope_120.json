@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"assume\"): The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
+    "Method (\"cite\"): The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
+    "Form (\"indirect\"): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+    "Channel (\"html\"): The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+    "Directional (\"dip rog\"): The response modifies the task to examine concrete details and grounded examples, then reflects on their structural patterns and what they reveal."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "assume",
+      "description": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function."
+    },
+    {
+      "axis": "method",
+      "token": "cite",
+      "description": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration."
+    },
+    {
+      "axis": "form",
+      "token": "indirect",
+      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    },
+    {
+      "axis": "channel",
+      "token": "html",
+      "description": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "dip rog",
+      "description": "The response modifies the task to examine concrete details and grounded examples, then reflects on their structural patterns and what they reveal."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "max",
+    "scope": [
+      "assume"
+    ],
+    "method": [
+      "cite"
+    ],
+    "form": [
+      "indirect"
+    ],
+    "channel": [
+      "html"
+    ],
+    "directional": "dip rog"
+  },
+  "persona": {
+    "voice": "as teacher",
+    "audience": "to programmer",
+    "tone": "formally",
+    "intent": "coach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    },
+    {
+      "axis": "intent",
+      "token": "coach",
+      "description": "Support the audience’s growth through guidance and feedback."
+    }
+  ],
+  "tokens": [
+    "coach",
+    "as teacher",
+    "to programmer",
+    "formally",
+    "check",
+    "max",
+    "assume",
+    "cite",
+    "indirect",
+    "html",
+    "dip rog"
+  ]
+}

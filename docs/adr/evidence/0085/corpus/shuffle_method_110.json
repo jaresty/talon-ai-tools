@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Scope (\"assume\"): The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
+    "Method (\"verify\"): The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment.",
+    "Form (\"socratic\"): The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry.",
+    "Channel (\"sync\"): The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
+    "Directional (\"fip rog\"): The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "scope",
+      "token": "assume",
+      "description": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function."
+    },
+    {
+      "axis": "method",
+      "token": "verify",
+      "description": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment."
+    },
+    {
+      "axis": "form",
+      "token": "socratic",
+      "description": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry."
+    },
+    {
+      "axis": "channel",
+      "token": "sync",
+      "description": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+    },
+    {
+      "axis": "directional",
+      "token": "fip rog",
+      "description": "The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "minimal",
+    "scope": [
+      "assume"
+    ],
+    "method": [
+      "verify"
+    ],
+    "form": [
+      "socratic"
+    ],
+    "channel": [
+      "sync"
+    ],
+    "directional": "fip rog"
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "designer_to_pm",
+    "check",
+    "minimal",
+    "assume",
+    "verify",
+    "socratic",
+    "sync",
+    "fip rog"
+  ]
+}

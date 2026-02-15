@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Scope (\"time\"): The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
+    "Method (\"grow\"): The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction and every exception arises from necessity rather than anticipation.",
+    "Form (\"test\"): The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
+    "Channel (\"svg\"): The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
+    "Directional (\"ong\"): The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "scope",
+      "token": "time",
+      "description": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action."
+    },
+    {
+      "axis": "method",
+      "token": "grow",
+      "description": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction and every exception arises from necessity rather than anticipation."
+    },
+    {
+      "axis": "form",
+      "token": "test",
+      "description": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names."
+    },
+    {
+      "axis": "channel",
+      "token": "svg",
+      "description": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+    },
+    {
+      "axis": "directional",
+      "token": "ong",
+      "description": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "narrow",
+    "scope": [
+      "time"
+    ],
+    "method": [
+      "grow"
+    ],
+    "form": [
+      "test"
+    ],
+    "channel": [
+      "svg"
+    ],
+    "directional": "ong"
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "fun_mode",
+    "pull",
+    "narrow",
+    "time",
+    "grow",
+    "test",
+    "svg",
+    "ong"
+  ]
+}

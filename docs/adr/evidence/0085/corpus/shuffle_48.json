@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response creates new content that did not previously exist, based on the input and constraints.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"depends\"): The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "depends",
+      "description": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system."
+    }
+  ],
+  "axes": {
+    "task": "make",
+    "completeness": "full",
+    "method": [
+      "depends"
+    ]
+  },
+  "persona": {
+    "voice": "as designer",
+    "intent": "teach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "intent",
+      "token": "teach",
+      "description": "Help the audience understand and learn material."
+    }
+  ],
+  "tokens": [
+    "teach",
+    "as designer",
+    "make",
+    "depends"
+  ]
+}

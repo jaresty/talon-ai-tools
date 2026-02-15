@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response chooses one or more options from a set of alternatives.",
+  "constraints": [
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Scope (\"assume\"): The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
+    "Form (\"indirect\"): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+    "Channel (\"sketch\"): The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
+    },
+    {
+      "axis": "scope",
+      "token": "assume",
+      "description": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function."
+    },
+    {
+      "axis": "form",
+      "token": "indirect",
+      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    },
+    {
+      "axis": "channel",
+      "token": "sketch",
+      "description": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
+    }
+  ],
+  "axes": {
+    "task": "pick",
+    "completeness": "deep",
+    "scope": [
+      "assume"
+    ],
+    "form": [
+      "indirect"
+    ],
+    "channel": [
+      "sketch"
+    ]
+  },
+  "persona": {
+    "voice": "as programmer",
+    "audience": "to managers",
+    "intent": "appreciate"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to managers",
+      "description": "The response addresses managers, highlighting outcomes, risk, and staffing."
+    },
+    {
+      "axis": "intent",
+      "token": "appreciate",
+      "description": "Express thanks, recognition, or positive regard."
+    }
+  ],
+  "tokens": [
+    "appreciate",
+    "as programmer",
+    "to managers",
+    "pick",
+    "deep",
+    "assume",
+    "indirect",
+    "sketch"
+  ]
+}

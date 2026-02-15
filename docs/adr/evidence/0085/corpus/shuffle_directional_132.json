@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response chooses one or more options from a set of alternatives.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Scope (\"stable\"): The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how perturbations affect their continuity.",
+    "Method (\"adversarial\"): The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions.",
+    "Form (\"facilitate\"): The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact.",
+    "Channel (\"remote\"): The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
+    "Directional (\"dig\"): The response modifies the task to examine concrete details and grounding examples, focusing on specifics rather than abstractions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "scope",
+      "token": "stable",
+      "description": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how perturbations affect their continuity."
+    },
+    {
+      "axis": "method",
+      "token": "adversarial",
+      "description": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions."
+    },
+    {
+      "axis": "form",
+      "token": "facilitate",
+      "description": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact."
+    },
+    {
+      "axis": "channel",
+      "token": "remote",
+      "description": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing."
+    },
+    {
+      "axis": "directional",
+      "token": "dig",
+      "description": "The response modifies the task to examine concrete details and grounding examples, focusing on specifics rather than abstractions."
+    }
+  ],
+  "axes": {
+    "task": "pick",
+    "completeness": "narrow",
+    "scope": [
+      "stable"
+    ],
+    "method": [
+      "adversarial"
+    ],
+    "form": [
+      "facilitate"
+    ],
+    "channel": [
+      "remote"
+    ],
+    "directional": "dig"
+  },
+  "persona": {
+    "preset": "executive_brief",
+    "preset_label": "Executive brief",
+    "voice": "as programmer",
+    "audience": "to CEO",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "executive_brief",
+      "description": "Executive brief"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to CEO",
+      "description": "The response addresses a CEO, surfacing business impact, risk, and crisp asks."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "executive_brief",
+    "pick",
+    "narrow",
+    "stable",
+    "adversarial",
+    "facilitate",
+    "remote",
+    "dig"
+  ]
+}

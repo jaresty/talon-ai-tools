@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Scope (\"cross\"): The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
+    "Method (\"rigor\"): The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
+    "Form (\"bug\"): The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda.",
+    "Channel (\"gherkin\"): The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation.",
+    "Directional (\"bog\"): The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "scope",
+      "token": "cross",
+      "description": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form."
+    },
+    {
+      "axis": "method",
+      "token": "rigor",
+      "description": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit."
+    },
+    {
+      "axis": "form",
+      "token": "bug",
+      "description": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda."
+    },
+    {
+      "axis": "channel",
+      "token": "gherkin",
+      "description": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "bog",
+      "description": "The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "narrow",
+    "scope": [
+      "cross"
+    ],
+    "method": [
+      "rigor"
+    ],
+    "form": [
+      "bug"
+    ],
+    "channel": [
+      "gherkin"
+    ],
+    "directional": "bog"
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "fun_mode",
+    "fix",
+    "narrow",
+    "cross",
+    "rigor",
+    "bug",
+    "gherkin",
+    "bog"
+  ]
+}

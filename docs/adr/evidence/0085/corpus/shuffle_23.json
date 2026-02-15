@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    }
+  ],
+  "axes": {
+    "task": "probe",
+    "completeness": "full"
+  },
+  "persona": {
+    "voice": "as Kent Beck",
+    "audience": "to stakeholders"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as Kent Beck",
+      "description": "The response channels Kent Beck's pragmatic, iterative style with an emphasis on tests and simplicity."
+    },
+    {
+      "axis": "audience",
+      "token": "to stakeholders",
+      "description": "The response addresses stakeholders, focusing on impact, decisions, and clarity."
+    }
+  ],
+  "tokens": [
+    "as Kent Beck",
+    "to stakeholders",
+    "probe"
+  ]
+}

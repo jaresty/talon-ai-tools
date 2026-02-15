@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Channel (\"codetour\"): The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "channel",
+      "token": "codetour",
+      "description": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "full",
+    "channel": [
+      "codetour"
+    ]
+  },
+  "persona": {
+    "voice": "as teacher",
+    "tone": "casually",
+    "intent": "inform"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    },
+    {
+      "axis": "intent",
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
+    }
+  ],
+  "tokens": [
+    "inform",
+    "as teacher",
+    "casually",
+    "pull",
+    "codetour"
+  ]
+}

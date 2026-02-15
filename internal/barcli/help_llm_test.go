@@ -171,9 +171,10 @@ func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
 }
 
 // TestLLMHelpIncompatibilitiesPopulated verifies that the § Incompatibilities
-// section in bar help llm is not empty and contains the three documented conflict
-// categories from ADR-0105: output-exclusive channel conflicts, codetour/gherkin
-// task-affinity restrictions, and the make+rewrite semantic conflict.
+// section in bar help llm is not empty and contains the documented conflict
+// categories: output-exclusive channel conflicts, codetour/gherkin
+// task-affinity restrictions. Note: make+rewrite conflict was retired with
+// the rewrite form in ADR 0085-Cycle-2.
 func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
@@ -202,7 +203,7 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 		{"output-exclusive channel conflict rule", "output-exclusive"},
 		{"codetour task-affinity restriction", "codetour"},
 		{"gherkin task-affinity restriction", "gherkin"},
-		{"rewrite+make semantic conflict", "rewrite"},
+		// rewrite form was retired per ADR 0085-Cycle-2
 	}
 	for _, c := range checks {
 		if !strings.Contains(incompatibilities, c.contains) {

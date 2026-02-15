@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Channel (\"diagram\"): The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
+    "Directional (\"fip rog\"): The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "channel",
+      "token": "diagram",
+      "description": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
+    },
+    {
+      "axis": "directional",
+      "token": "fip rog",
+      "description": "The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "full",
+    "channel": [
+      "diagram"
+    ],
+    "directional": "fip rog"
+  },
+  "persona": {
+    "voice": "as prompt engineer",
+    "audience": "to managers",
+    "tone": "gently"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as prompt engineer",
+      "description": "The response reflects a prompt-engineer stance, explicitly designing and refining prompts."
+    },
+    {
+      "axis": "audience",
+      "token": "to managers",
+      "description": "The response addresses managers, highlighting outcomes, risk, and staffing."
+    },
+    {
+      "axis": "tone",
+      "token": "gently",
+      "description": "The response keeps the tone gentle and supportive."
+    }
+  ],
+  "tokens": [
+    "as prompt engineer",
+    "to managers",
+    "gently",
+    "plan",
+    "diagram",
+    "fip rog"
+  ]
+}

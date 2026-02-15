@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response chooses one or more options from a set of alternatives.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"time\"): The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
+    "Channel (\"svg\"): The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "time",
+      "description": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action."
+    },
+    {
+      "axis": "channel",
+      "token": "svg",
+      "description": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+    }
+  ],
+  "axes": {
+    "task": "pick",
+    "completeness": "full",
+    "scope": [
+      "time"
+    ],
+    "channel": [
+      "svg"
+    ]
+  },
+  "persona": {
+    "voice": "as prompt engineer",
+    "intent": "appreciate"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as prompt engineer",
+      "description": "The response reflects a prompt-engineer stance, explicitly designing and refining prompts."
+    },
+    {
+      "axis": "intent",
+      "token": "appreciate",
+      "description": "Express thanks, recognition, or positive regard."
+    }
+  ],
+  "tokens": [
+    "appreciate",
+    "as prompt engineer",
+    "pick",
+    "time",
+    "svg"
+  ]
+}

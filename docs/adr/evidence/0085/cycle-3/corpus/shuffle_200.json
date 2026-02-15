@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Form (\"questions\"): The response presents the answer as a series of probing or clarifying questions rather than statements."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "form",
+      "token": "questions",
+      "description": "The response presents the answer as a series of probing or clarifying questions rather than statements."
+    }
+  ],
+  "axes": {
+    "task": "diff",
+    "completeness": "full",
+    "form": [
+      "questions"
+    ]
+  },
+  "persona": {
+    "audience": "to Kent Beck",
+    "intent": "inform"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to Kent Beck",
+      "description": "The response addresses Kent Beck, staying concrete, test-minded, and iterative."
+    },
+    {
+      "axis": "intent",
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
+    }
+  ],
+  "tokens": [
+    "inform",
+    "to Kent Beck",
+    "diff",
+    "questions"
+  ]
+}

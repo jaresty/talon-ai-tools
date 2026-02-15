@@ -684,6 +684,13 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Use all with prose-compatible channels (`plain`, `slack`, `jira`, `remote`, `sync`) or no channel. ")
 	fmt.Fprintf(w, "Note: `questions` + `diagram` is not in this list — see Combination Guidance below.\n\n")
 
+	fmt.Fprintf(w, "**Precedence Examples:**\n")
+	fmt.Fprintf(w, "General precedence rules are documented in the Reference Key. Here are practical examples:\n\n")
+	fmt.Fprintf(w, "- `svg` + `test` form → SVG visualization of test structure\n")
+	fmt.Fprintf(w, "- `codetour` + `plan` task → Plan as CodeTour navigation steps\n")
+	fmt.Fprintf(w, "- `appreciate` intent + `pick` task → Intent ignored, pick proceeds\n")
+	fmt.Fprintf(w, "- `test` form + `plan` task → Plan becomes test plan/acceptance criteria\n\n")
+
 	fmt.Fprintf(w, "**Token Guidance:**\n")
 	fmt.Fprintf(w, "Guidance for specific tokens (from axis configuration):\n\n")
 

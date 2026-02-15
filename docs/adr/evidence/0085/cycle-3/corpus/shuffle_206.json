@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"mean\"): The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+    "Form (\"questions\"): The response presents the answer as a series of probing or clarifying questions rather than statements.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+    "Directional (\"fog\"): The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "mean",
+      "description": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective."
+    },
+    {
+      "axis": "form",
+      "token": "questions",
+      "description": "The response presents the answer as a series of probing or clarifying questions rather than statements."
+    },
+    {
+      "axis": "channel",
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+    },
+    {
+      "axis": "directional",
+      "token": "fog",
+      "description": "The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "full",
+    "scope": [
+      "mean"
+    ],
+    "form": [
+      "questions"
+    ],
+    "channel": [
+      "jira"
+    ],
+    "directional": "fog"
+  },
+  "persona": {
+    "voice": "as scientist",
+    "audience": "to team"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as scientist",
+      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    }
+  ],
+  "tokens": [
+    "as scientist",
+    "to team",
+    "fix",
+    "mean",
+    "questions",
+    "jira",
+    "fog"
+  ]
+}

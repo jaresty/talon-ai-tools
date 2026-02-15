@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"motifs\"): The response enhances the task by identifying recurring patterns, themes, or clusters.",
+    "Method (\"spec\"): The response enhances the task by explicitly defining criteria of correctness before proposing implementations, treating those criteria as fixed and authoritative. Implementations must satisfy the prior definition and are not permitted to redefine correctness during construction, shifting progress from building artifacts to securing meaning.",
+    "Form (\"actions\"): The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "motifs",
+      "description": "The response enhances the task by identifying recurring patterns, themes, or clusters."
+    },
+    {
+      "axis": "method",
+      "token": "spec",
+      "description": "The response enhances the task by explicitly defining criteria of correctness before proposing implementations, treating those criteria as fixed and authoritative. Implementations must satisfy the prior definition and are not permitted to redefine correctness during construction, shifting progress from building artifacts to securing meaning."
+    },
+    {
+      "axis": "form",
+      "token": "actions",
+      "description": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "full",
+    "scope": [
+      "motifs"
+    ],
+    "method": [
+      "spec"
+    ],
+    "form": [
+      "actions"
+    ]
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "pull",
+    "motifs",
+    "spec",
+    "actions"
+  ]
+}

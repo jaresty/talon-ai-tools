@@ -462,3 +462,73 @@ evaluation_metadata:
 
   confidence_level: "high"
   confidence_reasoning: "20-prompt sample shows clear patterns; multiple instances of each conflict type; recommendations are evidence-based and actionable"
+
+---
+# CYCLE-3: PRECEDENCE RULES (2026-02-15)
+# Philosophy: Define behavior, not blocks
+
+cycle_3_precedence:
+  - rule: channel_takes_precedence
+    priority: P1
+    area: channel_form
+    combinations:
+      - "svg + test -> Test as SVG visualization"
+      - "svg + cards -> Cards as visual elements"
+      - "diagram + cards -> Cards within diagram"
+      - "gherkin + any form -> Pure Gherkin output"
+    evidence: [seed_207, seed_220, seed_228]
+
+  - rule: channel_adapts_to_task
+    priority: P1
+    area: channel_task
+    combinations:
+      - "codetour + plan -> Plan as CodeTour steps"
+      - "codetour + sort -> Sort as CodeTour navigation"
+      - "svg + pick -> Options as SVG visualization"
+    evidence: [seed_214, seed_220, seed_228]
+
+  - rule: task_takes_precedence
+    priority: P2
+    area: intent_task
+    combinations:
+      - "appreciate + pick -> Intent ignored"
+      - "appreciate + check -> Intent ignored"
+      - "entertain + diff -> Engaging comparison"
+    evidence: [seed_204, seed_227]
+
+  - rule: form_guides_output_structure
+    priority: P2
+    area: form_task
+    combinations:
+      - "test + plan -> Test plan/acceptance criteria"
+      - "questions + sim -> Socratic exploration"
+      - "questions + fix -> Clarifying questions first"
+    evidence: [seed_206, seed_223, seed_224]
+
+  - rule: audience_adjusts_tone
+    priority: P3
+    area: persona_tone
+    combinations:
+      - "casually + Kent Beck -> Precise despite casually"
+      - "formally + junior -> Relaxed for clarity"
+    evidence: [seed_226]
+
+cycle_3_documentation:
+  bar_help_llm:
+    priority: P1
+    change: "Expand Composition Rules with precedence: channel > form > task > intent > persona"
+
+  token_descriptions:
+    priority: P2
+    change: "Add When_combined_with clauses to token descriptions"
+
+cycle_3_summary:
+  evaluator: Claude Code
+  seeds: 200-229
+  mean_score: 4.0
+  success_rate: "63%"
+  approach: "Define behavior, not blocks"
+  score_comparison:
+    cycle_1: "4.37/5 (90%)"
+    cycle_2: "3.7/5 (60%)"
+    cycle_3: "4.0/5 (63%)"

@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Method (\"converge\"): The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
+    "Directional (\"fig\"): The response modifies the task to alternate between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "method",
+      "token": "converge",
+      "description": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered."
+    },
+    {
+      "axis": "directional",
+      "token": "fig",
+      "description": "The response modifies the task to alternate between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "gist",
+    "method": [
+      "converge"
+    ],
+    "directional": "fig"
+  },
+  "persona": {
+    "voice": "as principal engineer",
+    "audience": "to programmer"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as principal engineer",
+      "description": "The response speaks as a principal engineer, bringing systems thinking, trade-offs, and pragmatic guidance."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    }
+  ],
+  "tokens": [
+    "as principal engineer",
+    "to programmer",
+    "check",
+    "gist",
+    "converge",
+    "fig"
+  ]
+}

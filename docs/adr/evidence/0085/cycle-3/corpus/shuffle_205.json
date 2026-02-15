@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "minimal"
+  },
+  "persona": {
+    "preset": "scientist_to_analyst",
+    "preset_label": "Scientist to analyst",
+    "voice": "as scientist",
+    "audience": "to analyst",
+    "tone": "formally"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "scientist_to_analyst",
+      "description": "Scientist to analyst"
+    },
+    {
+      "axis": "voice",
+      "token": "as scientist",
+      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+    },
+    {
+      "axis": "audience",
+      "token": "to analyst",
+      "description": "The response addresses an analyst, providing structure, data framing, and ways to visualise results."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    }
+  ],
+  "tokens": [
+    "scientist_to_analyst",
+    "plan",
+    "minimal"
+  ]
+}

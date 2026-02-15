@@ -454,7 +454,8 @@
         "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan.",
         "gherkin": "Best for behavior specification: check, plan, or make when defining system behavior. Avoid with sim, sort, probe, or diff (no behavioral subject).",
         "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "shellscript": "Avoid with narrative tasks (sim, probe) that produce prose rather than code."
+        "shellscript": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
+        "svg": "Visual output format. When combined with other output tokens, channel takes precedence - output will be SVG. Works well with tasks that produce visualizable content (sorting, comparison, selection). May produce unexpected results with text-heavy forms."
       },
       "form": {
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",

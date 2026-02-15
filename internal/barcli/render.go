@@ -38,6 +38,11 @@ CONSTRAINTS: Independent guardrails that shape HOW to complete the task.
   • Form — The form specifies the desired structure or presentation of the output (e.g., list, table, scaffold). It does not change the underlying reasoning, only how results are rendered. When form and channel tokens are both present, the channel defines the output format and the form describes the conceptual organization within that format.
   • Channel — delivery context: platform formatting conventions only
 
+**Precedence:** When tokens from different axes combine:
+  • Channel tokens take precedence over form tokens (output format is fixed)
+  • Task tokens take precedence over intent tokens (action is primary)
+  • Persona audience may override tone preference (audience expertise matters)
+
 PERSONA: Communication identity that shapes expression, not reasoning.
   • Voice — who is speaking
   • Audience — who the message is for

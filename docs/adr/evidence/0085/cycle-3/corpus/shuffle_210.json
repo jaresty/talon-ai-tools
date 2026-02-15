@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Scope (\"time\"): The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
+    "Form (\"questions\"): The response presents the answer as a series of probing or clarifying questions rather than statements.",
+    "Directional (\"fly rog\"): The response modifies the task to identify abstract patterns and general principles, then examines their structural relationships and reflect on their implications."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "scope",
+      "token": "time",
+      "description": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action."
+    },
+    {
+      "axis": "form",
+      "token": "questions",
+      "description": "The response presents the answer as a series of probing or clarifying questions rather than statements."
+    },
+    {
+      "axis": "directional",
+      "token": "fly rog",
+      "description": "The response modifies the task to identify abstract patterns and general principles, then examines their structural relationships and reflect on their implications."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "gist",
+    "scope": [
+      "time"
+    ],
+    "form": [
+      "questions"
+    ],
+    "directional": "fly rog"
+  },
+  "persona": {
+    "preset": "executive_brief",
+    "preset_label": "Executive brief",
+    "voice": "as programmer",
+    "audience": "to CEO",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "executive_brief",
+      "description": "Executive brief"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to CEO",
+      "description": "The response addresses a CEO, surfacing business impact, risk, and crisp asks."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "executive_brief",
+    "fix",
+    "gist",
+    "time",
+    "questions",
+    "fly rog"
+  ]
+}

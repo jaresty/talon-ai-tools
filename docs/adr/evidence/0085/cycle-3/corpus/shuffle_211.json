@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"unknowns\"): The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
+    "Form (\"cocreate\"): The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output.",
+    "Directional (\"fig\"): The response modifies the task to alternate between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "unknowns",
+      "description": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
+    },
+    {
+      "axis": "form",
+      "token": "cocreate",
+      "description": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output."
+    },
+    {
+      "axis": "directional",
+      "token": "fig",
+      "description": "The response modifies the task to alternate between abstract principles and concrete examples, using each to illuminate the other (figure-ground reversal)."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "full",
+    "method": [
+      "unknowns"
+    ],
+    "form": [
+      "cocreate"
+    ],
+    "directional": "fig"
+  },
+  "persona": {
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "casually",
+    "sim",
+    "unknowns",
+    "cocreate",
+    "fig"
+  ]
+}

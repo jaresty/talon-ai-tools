@@ -17,6 +17,7 @@ Guidance exists in Python maps but is not surfaced in any UI. bartui2 needs to d
 ### Validation Targets
 - `go build ./...` - Go build passes
 - `go test ./internal/bartui2/... -run TestCompletion -v` - Completion tests pass
+- Specifying validation: `python3 -m pytest _tests/test_bar_completion_cli.py -v -k guidance` - Guidance in completions test
 
 ### Evidence
 - red | 2026-02-15T17:25:00Z | exit 0 | grep "Guidance" internal/bartui/tokens.go
@@ -58,6 +59,7 @@ Guidance maps exist in axisCatalog but are not consumed by helpHub.
 
 ### Validation Targets
 - `python3 -m pytest _tests/test_help_hub.py -v -k cheat_sheet` - Cheat sheet tests pass
+- Specifying validation: `python3 -m pytest _tests/test_help_hub.py::test_cheat_sheet_includes_guidance_when_present` - Guidance in cheat sheet test
 
 ### Evidence
 - red | 2026-02-15T17:35:00Z | exit 0 | grep -c "guidance" lib/helpHub.py

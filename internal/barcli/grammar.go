@@ -217,7 +217,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Labels:   raw.Persona.Labels,
 			Guidance: raw.Persona.Guidance,
 			Presets:  raw.Persona.Presets,
-			Spoken:  personaSpoken,
+			Spoken:   personaSpoken,
 			Intent: IntentSection{
 				AxisTokens: raw.Persona.Intent.AxisTokens,
 				Docs:       raw.Persona.Intent.Docs,
@@ -827,6 +827,19 @@ func (g *Grammar) AxisGuidance(axis, token string) string {
 		}
 	}
 	return ""
+}
+
+// AxisGuidanceMap returns all guidance text for a given axis as a map.
+// Used to render guidance section dynamically from axis configuration.
+func (g *Grammar) AxisGuidanceMap(axis string) map[string]string {
+	axisKey := normalizeAxis(axis)
+	if axisKey == "" {
+		return nil
+	}
+	if guidance, ok := g.Axes.Guidance[axisKey]; ok {
+		return guidance
+	}
+	return nil
 }
 
 // TaskGuidance returns the optional selection-guidance text for the given task token (ADR-0110).

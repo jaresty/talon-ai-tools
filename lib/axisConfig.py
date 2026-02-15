@@ -764,10 +764,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "slack, diagram, or no channel.",
         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm "
         "(schema has no prose slot). Use with plain, slack, or no channel.",
-        "socratic": "With sort/plan: ask clarifying questions about criteria before "
-        "output. With make/fix: pairs well with diagnostic methods (asks "
-        "questions then provides solution). Avoid with code channels "
-        "(shellscript, codetour) - cannot render questions as code.",
+        "socratic": "Avoid with code channels (shellscript, codetour) - they cannot "
+        "render questions as code output.",
     },
     "method": {
         "actors": "Well-suited for security threat modelling: identifying threat "

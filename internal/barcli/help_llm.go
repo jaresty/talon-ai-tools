@@ -684,12 +684,25 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Use all with prose-compatible channels (`plain`, `slack`, `jira`, `remote`, `sync`) or no channel. ")
 	fmt.Fprintf(w, "Note: `questions` + `diagram` is not in this list — see Combination Guidance below.\n\n")
 
-	fmt.Fprintf(w, "**Combination Guidance:**\n")
-	fmt.Fprintf(w, "Some form+channel pairs are coherent but require an explicit interpretation:\n")
-	fmt.Fprintf(w, "- `simulate` + `facilitate` form: channel wins for output format; `facilitate` means the response designs a facilitation structure for others to perform the simulation, not the LLM playing it out directly.\n")
-	fmt.Fprintf(w, "- `questions` + `diagram` channel: channel wins — output is Mermaid code. `questions` form shapes the content: the diagram represents a question structure (decision tree, question map, inquiry flow) rather than a structural diagram of the subject.\n")
-	fmt.Fprintf(w, "- `socratic` form: avoid with code channels (`shellscript`, `codetour`) - they cannot render questions as code output.\n")
-	fmt.Fprintf(w, "- `contextualise` form: avoid with output-only channels (`gherkin`, `shellscript`, `codetour`) - they cannot render explanatory context alongside structured output.\n\n")
+	fmt.Fprintf(w, "**Token Guidance:**\n")
+	fmt.Fprintf(w, "Guidance for specific tokens (from axis configuration):\n\n")
+
+	// Render guidance from AXIS_KEY_TO_GUIDANCE
+	axesWithGuidance := []string{"form", "method", "channel", "directional", "completeness", "scope"}
+	for _, axisName := range axesWithGuidance {
+		axisGuidance := grammar.AxisGuidanceMap(axisName)
+		if len(axisGuidance) > 0 {
+			fmt.Fprintf(w, "*%s:*\n", strings.Title(axisName))
+			for token, guidance := range axisGuidance {
+				if guidance != "" {
+					fmt.Fprintf(w, "- `%s`: %s\n", token, guidance)
+				}
+			}
+			fmt.Fprintf(w, "\n")
+		}
+	}
+
+	fmt.Fprintf(w, "\n")
 
 	fmt.Fprintf(w, "**Tone/channel register conflicts:**\n")
 	fmt.Fprintf(w, "`formally` tone conflicts with conversational-register channels that assume informal or spoken language (`slack`, `sync`, `remote`). ")

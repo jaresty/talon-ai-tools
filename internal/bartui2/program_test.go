@@ -159,6 +159,30 @@ func testCategories() []bartui.TokenCategory {
 	}
 }
 
+// testCategoriesWithGuidance returns test categories that include guidance for testing ADR-0114.
+func testCategoriesWithGuidance() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "task",
+			Label:         "Task",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "fix", Slug: "fix", Label: "Fix", Description: "Reformat content", Guidance: "In bar's grammar, fix means reformat — not debug."},
+				{Value: "make", Slug: "make", Label: "Make", Description: "Create new content"},
+			},
+		},
+		{
+			Key:           "channel",
+			Label:         "Channel",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "codetour", Slug: "codetour", Label: "CodeTour", Description: "Code tour format", Guidance: "Best for code-navigation: fix, make, show. Avoid with sim, probe."},
+				{Value: "slack", Slug: "slack", Label: "Slack", Description: "Slack format"},
+			},
+		},
+	}
+}
+
 // TestCompletionDisplayUsesLabel specifies that when a TokenOption.Label is set,
 // the completion Display uses it rather than the raw slug or value (ADR-0111 D4 tui2 fix).
 func TestCompletionDisplayUsesLabel(t *testing.T) {
@@ -178,6 +202,40 @@ func TestCompletionDisplayUsesLabel(t *testing.T) {
 				t.Errorf("completion Display for 'todo' must be 'todo — Todo'; got %q (ADR-0111 D4)", c.Display)
 			}
 		}
+	}
+}
+
+// TestCompletionGuidanceRenderedInDetailPane specifies that when a completion has Guidance,
+// it appears in the detail pane when selected (ADR-0114).
+func TestCompletionGuidanceRenderedInDetailPane(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategoriesWithGuidance(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+	m := newModel(opts)
+	m.commandInput.SetValue("bar build ")
+	m.updateCompletions()
+
+	// Select the first completion (fix, which has guidance)
+	if len(m.completions) == 0 {
+		t.Fatal("expected completions")
+	}
+	m.selectCompletion(m.completions[0])
+
+	// Render the view
+	view := m.View()
+
+	// Guidance should appear in the detail pane with the arrow indicator
+	// (The guidance shown is for the next stage's completions after selecting task)
+	if !strings.Contains(view, "→ Best for code-navigation") {
+		t.Errorf("expected guidance to appear in detail pane, got: %s", view)
+	}
+
+	// Verify the task completion was added
+	tokens := m.getCommandTokens()
+	if len(tokens) != 1 || tokens[0] != "fix" {
+		t.Errorf("expected 'fix' token, got: %v", tokens)
 	}
 }
 

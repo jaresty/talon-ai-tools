@@ -216,23 +216,23 @@ Use case: Structured decision-making with specification
 
 ## Implementation Plan
 
-### Phase 1: Retire `rewrite` Form (Immediate)
-- [ ] Remove `rewrite` from axisConfig.py form axis
-- [ ] Update help_llm.go to remove rewrite references
-- [ ] Add migration note: "Use `fix` task for transformations"
-- [ ] Regenerate grammar
+### Phase 1: Retire `rewrite` Form ✓ DONE
+- [x] Remove `rewrite` from axisConfig.py form axis
+- [x] Update help_llm.go to remove rewrite references
+- [x] Add migration note: "Use `fix` task for transformations"
+- [x] Regenerate grammar
 
-### Phase 2: Define Interactions (Next Sprint)
-- [ ] Add interaction definitions to promptConfig.py
-- [ ] Update help_llm.go with form-task interaction documentation
-- [ ] Update bar help llm --section tokens to show interaction guidance
+### Phase 2: Define Interactions ✓ DONE
+- [x] Add interaction behavior to axisConfig.py prompts
+- [x] Update help_llm.go with avoid warnings
+- [x] Add to AXIS_KEY_TO_GUIDANCE in axisConfig.py
 
-### Phase 3: Documentation (Following Sprint)
-- [ ] Create exemplar pattern documentation
-- [ ] Add "Interactions" section to token docs
-- [ ] Document anti-patterns from evaluation
+### Phase 3: Documentation ✓ DONE (partial)
+- [x] Create exemplar pattern documentation (in evaluation file)
+- [x] Add interaction definitions to token descriptions
+- [ ] Add "Anti-patterns" section - deferred to future cycles
 
-### Phase 4: Quality Improvements
+### Phase 4: Quality Improvements - DEFERRED
 - [ ] Track shuffle statistics to identify problematic tokens
 - [ ] Consider adding `--quality` flag to shuffle for filtering
 

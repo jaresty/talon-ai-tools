@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+**Accepted** - Phase 1 implemented. Phase 2 deferred (canvas surfaces too constrained for inline guidance).
 
 ## Context
 
@@ -81,20 +81,14 @@ Modify `lib/helpHub.py` `_cheat_sheet_text()` to:
 - Append guidance text next to tokens that have it
 - Use a distinctive marker (e.g., "[!]" or "→") to indicate guidance exists
 
-### Phase 2: Medium-Impact Surfaces (Priority 2)
+### Phase 2: Medium-Impact Surfaces (Priority 2) - DEFERRED
 
-#### 2.1: modelHelpCanvas Axis Help
+**Status: Deferred** - Canvas surfaces (modelHelpCanvas, modelPatternGUI) are too space-constrained for inline guidance text. The canvas UI paradigm doesn't support expandable tooltips or hover states needed to display guidance without clutter.
 
-Modify `lib/modelHelpCanvas.py` to:
-- Include guidance when displaying axis-specific help
-- Show warnings for tokens with selection hints
-- Add "guidance" section in the axis help view
-
-#### 2.2: modelPatternGUI Pattern Suggestions
-
-Modify `lib/modelPatternGUI.py` to:
-- Surface guidance about why certain token combinations work
-- Show warnings when patterns contain potentially conflicting tokens
+Future work could explore:
+- On-demand guidance via keypress when token is focused
+- Separate guidance panel/drawer
+- Voice command to read guidance for selected token
 
 ---
 

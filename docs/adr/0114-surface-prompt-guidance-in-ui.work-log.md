@@ -83,3 +83,39 @@ Guidance maps exist in axisCatalog but are not consumed by helpHub.
 
 ### Next Work
 - Phase 2.1: modelHelpCanvas axis help with guidance
+
+---
+
+## Loop 3: Phase 2 - Deferred (Canvas Space Constraints)
+
+**Date:** 2026-02-15
+
+### Focus
+ADR-0114 Phase 2: Investigate modelHelpCanvas for guidance display.
+
+### Active Constraint
+Canvas UI surfaces are too space-constrained for inline guidance text.
+
+### Validation Targets
+- N/A - Deferred due to design constraints
+
+### Evidence
+- red | 2026-02-15T17:50:00Z | exit 0 | Attempted inline guidance in modelHelpCanvas
+    - helper:diff-snapshot=Canvas too crowded - would clutter the UI
+    - guidance would require significant vertical space, disrupting the compact layout
+
+### Rollback Plan
+N/A - Change was reverted before commit
+
+### Delta Summary
+Deferred Phase 2 (modelHelpCanvas, modelPatternGUI) - Canvas UI paradigm doesn't support tooltips or hover states needed to display guidance without clutter. bartui2 and helpHub provide adequate guidance surfaces for Phase 1.
+
+### Loops Remaining Forecast
+0 loops remaining - ADR complete
+
+### Residual Constraints
+- Phase 2 surfaces deferred - could revisit with on-demand guidance via keypress or separate drawer
+
+### Next Work
+- Mark ADR as Accepted
+- Run all tests and push

@@ -1138,6 +1138,43 @@ def _copy_metadata_snapshot_json() -> None:
         pass
 
 
+def _axis_guidance_lines() -> List[str]:
+    """Get guidance lines for axes that have guidance defined."""
+    lines: List[str] = []
+    try:
+        catalog = axis_catalog()
+        axis_guidance = catalog.get("axis_guidance", {})
+        static_guidance = catalog.get("static_prompt_guidance", {})
+
+        # Collect guidance for each axis
+        all_guidance: List[tuple[str, str, str]] = []
+
+        for axis, guidance_map in axis_guidance.items():
+            if not guidance_map:
+                continue
+            for token, guidance in guidance_map.items():
+                if guidance:
+                    all_guidance.append((axis, token, guidance))
+
+        # Add static prompt guidance (e.g., "fix" task)
+        for token, guidance in static_guidance.items():
+            if guidance:
+                all_guidance.append(("task", token, guidance))
+
+        # Format guidance lines
+        if all_guidance:
+            lines.append("Guidance (selection hints):")
+            for axis, token, guidance in sorted(all_guidance):
+                # Truncate long guidance to first sentence or ~60 chars
+                if len(guidance) > 60:
+                    guidance = guidance[:60].rsplit(" ", 1)[0] + "..."
+                lines.append(f"- {token}: {guidance}")
+
+    except Exception:
+        pass
+    return lines
+
+
 def _cheat_sheet_text() -> str:
     def _axis_examples(axis: str, fallback: List[str], limit: int = 6) -> List[str]:
         try:
@@ -1149,42 +1186,6 @@ def _cheat_sheet_text() -> str:
         except Exception:
             pass
         return fallback[:limit]
-
-    def _axis_guidance_lines() -> List[str]:
-        """Get guidance lines for axes that have guidance defined."""
-        lines: List[str] = []
-        try:
-            catalog = axis_catalog()
-            axis_guidance = catalog.get("axis_guidance", {})
-            static_guidance = catalog.get("static_prompt_guidance", {})
-
-            # Collect guidance for each axis
-            all_guidance: List[tuple[str, str, str]] = []
-
-            for axis, guidance_map in axis_guidance.items():
-                if not guidance_map:
-                    continue
-                for token, guidance in guidance_map.items():
-                    if guidance:
-                        all_guidance.append((axis, token, guidance))
-
-            # Add static prompt guidance (e.g., "fix" task)
-            for token, guidance in static_guidance.items():
-                if guidance:
-                    all_guidance.append(("task", token, guidance))
-
-            # Format guidance lines
-            if all_guidance:
-                lines.append("Guidance (selection hints):")
-                for axis, token, guidance in sorted(all_guidance):
-                    # Truncate long guidance to first sentence or ~60 chars
-                    if len(guidance) > 60:
-                        guidance = guidance[:60].rsplit(" ", 1)[0] + "..."
-                    lines.append(f"- {token}: {guidance}")
-
-        except Exception:
-            pass
-        return lines
 
     def _persona_presets() -> List[str]:
         names: List[str] = []

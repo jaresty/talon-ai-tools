@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+  "constraints": [
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Scope (\"motifs\"): The response enhances the task by identifying recurring patterns, themes, or clusters.",
+    "Method (\"unknowns\"): The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
+    "Form (\"table\"): The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
+    "Channel (\"svg\"): The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
+    },
+    {
+      "axis": "scope",
+      "token": "motifs",
+      "description": "The response enhances the task by identifying recurring patterns, themes, or clusters."
+    },
+    {
+      "axis": "method",
+      "token": "unknowns",
+      "description": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
+    },
+    {
+      "axis": "form",
+      "token": "table",
+      "description": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact."
+    },
+    {
+      "axis": "channel",
+      "token": "svg",
+      "description": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "deep",
+    "scope": [
+      "motifs"
+    ],
+    "method": [
+      "unknowns"
+    ],
+    "form": [
+      "table"
+    ],
+    "channel": [
+      "svg"
+    ]
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "fix",
+    "deep",
+    "motifs",
+    "unknowns",
+    "table",
+    "svg"
+  ]
+}

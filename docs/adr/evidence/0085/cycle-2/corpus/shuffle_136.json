@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+  "constraints": [
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Channel (\"gherkin\"): The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject)."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
+    },
+    {
+      "axis": "channel",
+      "token": "gherkin",
+      "description": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject)."
+    }
+  ],
+  "axes": {
+    "task": "diff",
+    "completeness": "deep",
+    "channel": [
+      "gherkin"
+    ]
+  },
+  "persona": {
+    "voice": "as writer",
+    "tone": "kindly",
+    "intent": "teach"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as writer",
+      "description": "The response speaks as a writer, focusing on narrative clarity and flow."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    },
+    {
+      "axis": "intent",
+      "token": "teach",
+      "description": "Help the audience understand and learn material."
+    }
+  ],
+  "tokens": [
+    "teach",
+    "as writer",
+    "kindly",
+    "diff",
+    "deep",
+    "gherkin"
+  ]
+}

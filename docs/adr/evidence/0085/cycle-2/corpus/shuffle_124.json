@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"motifs\"): The response enhances the task by identifying recurring patterns, themes, or clusters.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+    "Directional (\"dip ong\"): The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "motifs",
+      "description": "The response enhances the task by identifying recurring patterns, themes, or clusters."
+    },
+    {
+      "axis": "channel",
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+    },
+    {
+      "axis": "directional",
+      "token": "dip ong",
+      "description": "The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+    }
+  ],
+  "axes": {
+    "task": "probe",
+    "completeness": "full",
+    "scope": [
+      "motifs"
+    ],
+    "channel": [
+      "jira"
+    ],
+    "directional": "dip ong"
+  },
+  "persona": {
+    "preset": "peer_engineer_explanation",
+    "preset_label": "Peer engineer explanation",
+    "voice": "as programmer",
+    "audience": "to programmer"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "peer_engineer_explanation",
+      "description": "Peer engineer explanation"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    }
+  ],
+  "tokens": [
+    "peer_engineer_explanation",
+    "probe",
+    "motifs",
+    "jira",
+    "dip ong"
+  ]
+}

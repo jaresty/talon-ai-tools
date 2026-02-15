@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"mod\"): The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
+    "Form (\"contextualise\"): The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
+    "Channel (\"gherkin\"): The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject).",
+    "Directional (\"fip ong\"): The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "mod",
+      "description": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
+    },
+    {
+      "axis": "form",
+      "token": "contextualise",
+      "description": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself."
+    },
+    {
+      "axis": "channel",
+      "token": "gherkin",
+      "description": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject)."
+    },
+    {
+      "axis": "directional",
+      "token": "fip ong",
+      "description": "The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "full",
+    "method": [
+      "mod"
+    ],
+    "form": [
+      "contextualise"
+    ],
+    "channel": [
+      "gherkin"
+    ],
+    "directional": "fip ong"
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "fun_mode",
+    "fix",
+    "mod",
+    "contextualise",
+    "gherkin",
+    "fip ong"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Method (\"diagnose\"): The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
+    "Form (\"table\"): The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
+    "Channel (\"codetour\"): The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation. Appropriate for tasks that produce or reference navigable code artifacts: `fix`, `make` when creating code, `show` when exposing code structure, `pull` when extracting from code. Not appropriate for non-code tasks such as `sim`, `sort`, `probe`, `diff` (without code subject), or `plan`."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "method",
+      "token": "diagnose",
+      "description": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes."
+    },
+    {
+      "axis": "form",
+      "token": "table",
+      "description": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact."
+    },
+    {
+      "axis": "channel",
+      "token": "codetour",
+      "description": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation. Appropriate for tasks that produce or reference navigable code artifacts: `fix`, `make` when creating code, `show` when exposing code structure, `pull` when extracting from code. Not appropriate for non-code tasks such as `sim`, `sort`, `probe`, `diff` (without code subject), or `plan`."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "max",
+    "method": [
+      "diagnose"
+    ],
+    "form": [
+      "table"
+    ],
+    "channel": [
+      "codetour"
+    ]
+  },
+  "persona": {
+    "audience": "to team",
+    "tone": "casually",
+    "intent": "appreciate"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    },
+    {
+      "axis": "intent",
+      "token": "appreciate",
+      "description": "Express thanks, recognition, or positive regard."
+    }
+  ],
+  "tokens": [
+    "appreciate",
+    "to team",
+    "casually",
+    "pull",
+    "max",
+    "diagnose",
+    "table",
+    "codetour"
+  ]
+}

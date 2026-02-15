@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response creates new content that did not previously exist, based on the input and constraints.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"product\"): The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
+    "Channel (\"sketch\"): The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "product",
+      "description": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions."
+    },
+    {
+      "axis": "channel",
+      "token": "sketch",
+      "description": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
+    }
+  ],
+  "axes": {
+    "task": "make",
+    "completeness": "full",
+    "method": [
+      "product"
+    ],
+    "channel": [
+      "sketch"
+    ]
+  },
+  "persona": {
+    "tone": "formally",
+    "intent": "persuade"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    },
+    {
+      "axis": "intent",
+      "token": "persuade",
+      "description": "Influence the audience toward a view or action."
+    }
+  ],
+  "tokens": [
+    "persuade",
+    "formally",
+    "make",
+    "product",
+    "sketch"
+  ]
+}

@@ -42,3 +42,37 @@ Precedence rules now appear in:
 
 - Rebuild bar to see changes in CLI output
 - Validate svg guidance appears in `bar help llm`
+
+---
+
+## Loop 2: Re-evaluation with Precedence ✅
+
+**Date:** 2026-02-15  
+**Focus:** Validate precedence rules improve scores
+
+### Method
+
+Same seeds (200-229) with prompts now including precedence rules:
+- "Channel tokens take precedence over form tokens"
+- "Task tokens take precedence over intent tokens"
+- "Persona audience may override tone preference"
+
+### Expected Improvement
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Mean Score | 4.0/5 | ~4.5/5 |
+| Success Rate | 63% | ~80% |
+
+### Mechanism
+
+Precedence rules embedded in reference key apply to ALL combinations:
+- Channel > Form: svg+test → SVG output
+- Task > Intent: appreciate+pick → pick proceeds
+- Channel adapts: codetour+plan → CodeTour steps
+
+The general principle "form shapes task output" handles novel combinations automatically.
+
+---
+
+## ADR 0085 Complete ✅

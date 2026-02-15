@@ -1150,6 +1150,42 @@ def _cheat_sheet_text() -> str:
             pass
         return fallback[:limit]
 
+    def _axis_guidance_lines() -> List[str]:
+        """Get guidance lines for axes that have guidance defined."""
+        lines: List[str] = []
+        try:
+            catalog = axis_catalog()
+            axis_guidance = catalog.get("axis_guidance", {})
+            static_guidance = catalog.get("static_prompt_guidance", {})
+
+            # Collect guidance for each axis
+            all_guidance: List[tuple[str, str, str]] = []
+
+            for axis, guidance_map in axis_guidance.items():
+                if not guidance_map:
+                    continue
+                for token, guidance in guidance_map.items():
+                    if guidance:
+                        all_guidance.append((axis, token, guidance))
+
+            # Add static prompt guidance (e.g., "fix" task)
+            for token, guidance in static_guidance.items():
+                if guidance:
+                    all_guidance.append(("task", token, guidance))
+
+            # Format guidance lines
+            if all_guidance:
+                lines.append("Guidance (selection hints):")
+                for axis, token, guidance in sorted(all_guidance):
+                    # Truncate long guidance to first sentence or ~60 chars
+                    if len(guidance) > 60:
+                        guidance = guidance[:60].rsplit(" ", 1)[0] + "..."
+                    lines.append(f"- {token}: {guidance}")
+
+        except Exception:
+            pass
+        return lines
+
     def _persona_presets() -> List[str]:
         names: List[str] = []
         try:
@@ -1446,6 +1482,12 @@ def _cheat_sheet_text() -> str:
         "- Form and channel are optional singletons; set/override explicitly. Current stance/defaults appear in quick help and the response recap.",
         "- Every run needs exactly one directional lens (fog/fig/dig/ong/rog/bog/jog).",
     ]
+
+    # Add guidance lines if any exist
+    guidance_lines = _axis_guidance_lines()
+    if guidance_lines:
+        lines.append("")
+        lines.extend(guidance_lines)
 
     if persona_lines:
         lines.append("")

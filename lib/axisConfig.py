@@ -286,13 +286,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "recipe": "The response expresses the answer as a recipe that includes a "
         "custom, clearly explained mini-language and a short key for "
         "understanding it.",
-        "rewrite": "The response rewrites or refactors while preserving the original "
-        "intent, treating the work as a mechanical transform rather than "
-        "a reinterpretation. Best paired with `fix`, `pull`, `diff`, or "
-        "`show` tasks that supply existing content to transform. Pairing "
-        "with `make` is semantically incoherent: `make` implies creating "
-        "from nothing while `rewrite` implies transforming existing "
-        "content.",
         "scaffold": "The response explains with scaffolding: it starts from first "
         "principles, introduces ideas gradually, uses concrete examples "
         "and analogies, and revisits key points so a learner can follow "
@@ -648,7 +641,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
-        "rewrite": "Rewrite preserving original intent",
         "scaffold": "First-principles scaffolded explanation",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",

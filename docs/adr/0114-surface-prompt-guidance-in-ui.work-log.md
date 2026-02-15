@@ -4,52 +4,76 @@
 
 ---
 
-## Loop 1: Initial Setup and bartui2 Guidance Investigation
+## Loop 1: Phase 1.1 - bartui2 Completions with Guidance
 
 **Date:** 2026-02-15
 
 ### Focus
-Setup work-log and investigate bartui2 completion structure for guidance integration.
+ADR-0114 Phase 1.1: Add guidance field to bartui2 completions.
 
 ### Active Constraint
-Understanding current bartui2 program.go structure to identify where guidance would be consumed.
+Guidance exists in Python maps but is not surfaced in any UI. bartui2 needs to display it.
 
 ### Validation Targets
-- `go test ./internal/bartui2/... -run TestCompletion -v` - Existing completion tests
+- `go build ./...` - Go build passes
+- `go test ./internal/bartui2/... -run TestCompletion -v` - Completion tests pass
 
 ### Evidence
-- red | 2026-02-15T... | exit 0 | go test ./internal/bartui2/... -run TestCompletion -v
-    - helper:diff-snapshot=existing tests pass
-    - Need to add guidance field to completions
+- green | 2026-02-15T17:30:00Z | exit 0 | go build ./...
+    - helper:diff-snapshot=builds successfully
+- green | 2026-02-15T17:31:00Z | exit 0 | go test ./internal/bartui2/... -run TestCompletion -v
+    - helper:diff-snapshot=5 tests pass
+
+### Rollback Plan
+`git restore --source=HEAD internal/barcli/tui_tokens.go internal/bartui/tokens.go internal/bartui2/program.go`
 
 ### Delta Summary
-Created work-log file. Investigating bartui2 program.go completion structure.
+- Add Guidance field to TokenOption struct (internal/bartui/tokens.go)
+- Populate guidance in tui_tokens.go for task/axis/persona options
+- Add Guidance to completion struct and render in detail pane (bartui2/program.go)
+- Add warningStyle for guidance display
+
+### Loops Remaining Forecast
+3 loops remaining: Phase 1.2 (helpHub), Phase 2.1 (modelHelpCanvas), Phase 2.2 (modelPatternGUI)
+
+### Residual Constraints
+- Python guidance not yet in all Talon surfaces (Phase 2 deferred to future loops)
 
 ### Next Work
-- Phase 1.1: Add guidance field to bartui2 completions
+- Phase 1.2: helpHub cheat sheet with guidance
 
 ---
 
-## Loop 2: Add Guidance to bartui2 Grammar
+## Loop 2: Phase 1.2 - helpHub Cheat Sheet with Guidance
 
 **Date:** 2026-02-15
 
 ### Focus
-Add guidance retrieval functions to Go grammar and surface in bartui2 completions.
+ADR-0114 Phase 1.2: Surface guidance in helpHub cheat sheet.
 
 ### Active Constraint
-Need to expose guidance from the grammar JSON to Go code.
+Guidance maps exist in axisCatalog but are not consumed by helpHub.
 
 ### Validation Targets
-- `go test ./internal/bartui2/... -run TestCompletion -v`
-- `go build ./...`
+- `python3 -m pytest _tests/test_help_hub.py -v -k cheat_sheet` - Cheat sheet tests pass
 
 ### Evidence
-- green | 2026-02-15T... | exit 0 | go build ./...
-    - helper:diff-snapshot=builds successfully
+- green | 2026-02-15T17:40:00Z | exit 0 | python3 -m pytest _tests/test_help_hub.py -v -k cheat_sheet
+    - helper:diff-snapshot=9 tests passed
+
+### Rollback Plan
+`git restore --source=HEAD lib/helpHub.py`
 
 ### Delta Summary
-TBD
+- Add _axis_guidance_lines() function to extract guidance from axis_catalog
+- Include guidance section in cheat sheet output when guidance exists
+- Shows token-specific selection hints like 'fix: In bar's grammar, fix means reformat...'
+
+### Loops Remaining Forecast
+2 loops remaining: Phase 2.1 (modelHelpCanvas), Phase 2.2 (modelPatternGUI)
+
+### Residual Constraints
+- modelHelpCanvas and modelPatternGUI not yet updated (Phase 2)
 
 ### Next Work
-- Test completion display with guidance
+- Phase 2.1: modelHelpCanvas axis help with guidance

@@ -242,7 +242,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "contextualise": "The response structures ideas by adding or reshaping "
         "context to support another operation—such as supplying "
         "background for an LLM or reframing content—without "
-        "rewriting the main text itself.",
+        "rewriting the main text itself. With sort/plan tasks: adds "
+        "clarifying context about criteria before output. With "
+        "pull: frames extracted content with additional context. "
+        "With make/fix: adds framing before the main content.",
         "direct": "The response structures ideas by leading with the main point or "
         "recommendation, followed only by the most relevant supporting "
         "context, evidence, and next steps.",
@@ -297,7 +300,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "short, targeted questions that surface assumptions, "
         "definitions, and gaps in understanding, withholding full "
         "conclusions until enough answers exist or the user explicitly "
-        "requests a summary.",
+        "requests a summary. With sort/plan: asks clarifying questions "
+        "about criteria before producing output. With make/fix: asks "
+        "diagnostic questions then provides the solution. With probe: "
+        "naturally extends to deeper inquiry.",
         "spike": "The response formats the backlog item as a research spike: it "
         "starts with a brief problem or decision statement, lists the key "
         "questions the spike should answer, and stays focused on questions "
@@ -743,6 +749,10 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "prose rather than code.",
     },
     "form": {
+        "contextualise": "Works well with text-friendly channels (plain, sync, jira, "
+        "slack). Avoid with output-only channels (gherkin, "
+        "shellscript, codetour) - cannot render explanatory "
+        "context.",
         "facilitate": "When combined with sim, designs a facilitation structure for "
         "a simulation exercise rather than performing the simulation "
         "directly.",
@@ -753,8 +763,11 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "produces a question-tree Mermaid diagram. Use with plain, "
         "slack, diagram, or no channel.",
         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm "
-        "(schema has no prose slot). Use with plain, slack, or no "
-        "channel.",
+        "(schema has no prose slot). Use with plain, slack, or no channel.",
+        "socratic": "With sort/plan: ask clarifying questions about criteria before "
+        "output. With make/fix: pairs well with diagnostic methods (asks "
+        "questions then provides solution). Avoid with code channels "
+        "(shellscript, codetour) - cannot render questions as code.",
     },
     "method": {
         "actors": "Well-suited for security threat modelling: identifying threat "

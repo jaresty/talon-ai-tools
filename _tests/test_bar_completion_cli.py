@@ -280,6 +280,34 @@ if bootstrap is not None:
                         f"{earlier!r} should appear before {later!r}",
                     )
 
+        def test_bar_tui_completions_include_guidance(self) -> None:
+            """Test that guidance is included in TUI2 completions for tokens that have it (ADR-0114)."""
+            result = self._run(
+                [
+                    "go",
+                    "run",
+                    "./cmd/bar",
+                    "__complete",
+                    "bash",
+                    "2",
+                    "bar",
+                    "build",
+                    "",
+                ]
+            )
+
+            output = result.stdout
+            self.assertIn(
+                "codetour",
+                output,
+                "codetour should be in completions",
+            )
+            self.assertIn(
+                "fix",
+                output,
+                "fix should be in completions",
+            )
+
 
 else:
     if not TYPE_CHECKING:

@@ -1349,3 +1349,36 @@ def test_help_hub_search_results_for_is_pure_and_label_based():
 
     results = helpHub.search_results_for("PAT", index)
     assert [item.label for item in results] == ["Patterns"]
+
+
+def test_cheat_sheet_includes_guidance_when_present(monkeypatch):
+    """Test that cheat sheet includes guidance section when axis_guidance is defined (ADR-0114)."""
+    from lib import axisConfig
+    from lib import staticPromptConfig
+
+    captured_guidance = {}
+
+    def mock_axis_guidance_map(axis):
+        return captured_guidance.get(axis, {})
+
+    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
+    monkeypatch.setattr(
+        staticPromptConfig,
+        "static_prompt_guidance_overrides",
+        lambda: captured_guidance.get("task", {}),
+    )
+
+    captured_guidance["channel"] = {
+        "codetour": "Best for code-navigation: fix, make, show. Avoid with sim, probe.",
+    }
+    captured_guidance["task"] = {
+        "fix": "In bar's grammar, fix means reformat - not debug.",
+    }
+
+    lines = helpHub._axis_guidance_lines()
+
+    assert len(lines) > 0, "Guidance lines should be returned when guidance is defined"
+    assert any("codetour" in line for line in lines), (
+        "codetour guidance should be in output"
+    )
+    assert any("fix" in line for line in lines), "fix guidance should be in output"

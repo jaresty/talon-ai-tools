@@ -711,6 +711,10 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	}
 }
 
+// renderUsagePatterns generates hardcoded usage pattern examples.
+// SYNC_CHECK: When adding patterns, ensure all tokens exist in axisConfig.py.
+// VALIDATION: TestLLMHelpUsagePatternsTokensExist validates these tokens.
+// Related: .opencode/skills/bar-workflow/skill.md references these patterns.
 func renderUsagePatterns(w io.Writer, compact bool) {
 	if compact {
 		// Skip usage patterns in compact mode

@@ -1,6 +1,17 @@
 """Axis configuration as static Python maps (token -> description).
 
-Generated from the axis registry; keep in sync with list edits."""
+Generated from the axis registry; keep in sync with list edits.
+
+SYNC_WARNING: Changes to token names/descriptions affect:
+- internal/barcli/help_llm.go (hardcoded heuristics and usage patterns)
+- .opencode/skills/bar-workflow/skill.md (method categorization)
+- internal/barcli/help_llm_test.go (validation tests)
+
+When renaming/removing tokens:
+1. Update help_llm.go hardcoded references
+2. Update skill.md if method categories change
+3. Run `go test ./internal/barcli/ -run TestLLMHelp` to validate
+"""
 
 from __future__ import annotations
 

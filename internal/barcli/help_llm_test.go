@@ -67,10 +67,63 @@ func TestEmbeddedSkillsUseSubjectFlag(t *testing.T) {
 	}
 }
 
+// TestLLMHelpUsagePatternsTokensExist verifies that all tokens referenced in
+// hardcoded Usage Patterns actually exist in the grammar. This prevents drift
+// when tokens are renamed or removed from axisConfig.py.
+// Related: TestLLMHelpHeuristicsTokensExist validates the heuristics section.
+func TestLLMHelpUsagePatternsTokensExist(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	// Build set of known tokens
+	knownTokens := make(map[string]bool)
+	for _, tokenDefs := range grammar.Axes.Definitions {
+		for token := range tokenDefs {
+			if !strings.Contains(token, " ") {
+				knownTokens[token] = true
+			}
+		}
+	}
+	for token := range grammar.Static.Descriptions {
+		knownTokens[token] = true
+	}
+
+	// Extract tokens from usage patterns (hardcoded in renderUsagePatterns)
+	// If you add a pattern, add its tokens here
+	patternTokens := []string{
+		"diff", "thing", "full", "branch", "variants",
+		"make", "struct", "explore", "case",
+		"show", "time", "flow", "walkthrough",
+		"mean", "scaffold",
+		"probe", "mapping",
+		"fail", "diagnose", "checklist",
+		"plan", "act", "converge", "actions",
+		"table",
+		"pull", "risks",
+		"check", "good", "analysis",
+		"gist",
+		"adversarial",
+		"view",
+		"effects",
+		"dimension",
+		"cite",
+		"sim",
+		"depends",
+		"inversion",
+	}
+
+	for _, token := range patternTokens {
+		if !knownTokens[token] {
+			t.Errorf("Usage pattern references unknown token %q — update renderUsagePatterns in help_llm.go or add token to grammar", token)
+		}
+	}
+}
+
 // TestLLMHelpHeuristicsTokensExist verifies that every token name cited in the
 // Token Selection Heuristics section of bar help llm is a recognized token in
 // the current grammar. This prevents stale references (e.g. deprecated tokens
 // or phantom names) from silently persisting in the heuristics.
+// SYNC: When modifying renderTokenSelectionHeuristics, ensure all mentioned
+// tokens exist in axisConfig.py. This test validates the synchronization.
 func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
@@ -234,11 +287,12 @@ func TestLLMHelpADR0112D3(t *testing.T) {
 
 // TestLLMHelpChannelAffinityAndTokenClarity verifies ADR-0106 decisions are
 // reflected in bar help llm output:
-//   D1: code/html/shellscript mention sim/probe task-affinity restriction
-//   D3: § Token Catalog mentions compound directionals
-//   D4: taxonomy and visual descriptions are channel-adaptive ("Adapts to the channel")
-//   D5: fix task description contains disambiguation note
-//   D6: order method description contains sort disambiguation note
+//
+//	D1: code/html/shellscript mention sim/probe task-affinity restriction
+//	D3: § Token Catalog mentions compound directionals
+//	D4: taxonomy and visual descriptions are channel-adaptive ("Adapts to the channel")
+//	D5: fix task description contains disambiguation note
+//	D6: order method description contains sort disambiguation note
 func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer

@@ -1382,3 +1382,65 @@ def test_cheat_sheet_includes_guidance_when_present(monkeypatch):
         "codetour guidance should be in output"
     )
     assert any("fix" in line for line in lines), "fix guidance should be in output"
+
+
+def test_cheat_sheet_guidance_truncation(monkeypatch):
+    """Test that long guidance text is truncated to ~60 chars (ADR-0114)."""
+    from lib import axisConfig, staticPromptConfig
+
+    captured_guidance = {}
+
+    def mock_axis_guidance_map(axis):
+        return captured_guidance.get(axis, {})
+
+    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
+    monkeypatch.setattr(
+        staticPromptConfig,
+        "static_prompt_guidance_overrides",
+        lambda: captured_guidance.get("task", {}),
+    )
+
+    long_guidance = "This is a very long guidance text that definitely exceeds sixty characters and should be truncated appropriately."
+
+    captured_guidance["scope"] = {
+        "cross": long_guidance,
+    }
+
+    lines = helpHub._axis_guidance_lines()
+
+    assert any("cross" in line for line in lines), "cross guidance should be in output"
+    for line in lines:
+        if "cross" in line:
+            assert len(line) < 80, f"Line should be truncated: {line}"
+
+
+def test_cheat_sheet_guidance_empty_and_special_chars(monkeypatch):
+    """Test guidance handling with empty strings and special characters (ADR-0114)."""
+    from lib import axisConfig, staticPromptConfig
+
+    captured_guidance = {}
+
+    def mock_axis_guidance_map(axis):
+        return captured_guidance.get(axis, {})
+
+    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
+    monkeypatch.setattr(
+        staticPromptConfig,
+        "static_prompt_guidance_overrides",
+        lambda: captured_guidance.get("task", {}),
+    )
+
+    captured_guidance["method"] = {
+        "actors": "",  # Empty string - should be filtered
+        "inversion": "Well-suited for architecture evaluation.",
+    }
+
+    lines = helpHub._axis_guidance_lines()
+
+    assert any("inversion" in line for line in lines), (
+        "inversion guidance should be in output"
+    )
+    for line in lines:
+        assert "actors" not in line or "guidance" not in line, (
+            "Empty guidance should not appear"
+        )

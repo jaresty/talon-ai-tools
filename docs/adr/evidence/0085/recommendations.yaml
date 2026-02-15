@@ -532,3 +532,55 @@ cycle_3_summary:
     cycle_1: "4.37/5 (90%)"
     cycle_2: "3.7/5 (60%)"
     cycle_3: "4.0/5 (63%)"
+
+---
+# CYCLE-4: NEW EVALUATION (2026-02-15)
+# Focus: grove token investigation, form/channel precedence
+
+cycle_4_findings:
+  evaluator: Claude Code (opencode)
+  seeds_evaluated: [0001, 0002, 0003, 0005, 0010, 0015, 0020, 0100, 0111]
+  mean_score: 3.3
+  approach: "ADR 0085 Phase 2 evaluation"
+
+  key_issues:
+    - token: grove
+      issue: "Description anchors to 'over time' which overlaps with scope=time"
+      recommendation: "Edit description to be scope-agnostic: 'examining accumulation, decay, or rate-of-change effects and how small contributions compound—focusing on how systems grow, shrink, or evolve through incremental changes'"
+
+    - issue: semantic_overlap
+      detail: "fail (scope), grove (method), fip rog (directional) can create redundant combinations"
+      evidence: seed_0005
+      recommendation: "Add skill guidance to avoid combining these"
+
+    - token: contextualise
+      issue: "Complex description confuses users"
+      evidence: seed_0111
+      recommendation: "Simplify description"
+
+  positive_findings:
+    - seed_0020: "Excellent combination - plan + deep + act + adversarial demonstrates good token design"
+    - skills_coverage: "Skills documentation provides good coverage"
+    - reference_quality: "bar help llm generally adequate"
+
+  recommendations:
+    - action: edit
+      area: token_descriptions
+      token: grove
+      change: |
+        Remove 'over time' anchor. Make about compounding MECHANISM, not temporal focus:
+        "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms."
+
+        This makes grove complementary to fail (what fails) rather than overlapping with time (when things change). Now fail+grove can work together: "examine what fails AND how those failures compound."
+
+    - action: edit
+      area: reference_key
+      section: Precedence Rules
+      change: "Rule already exists (line 41-44 in render.go) but clarify: 'When form and channel are both present, the channel format takes precedence - form describes conceptual organization WITHIN that format. For example: gherkin+presenterm produces presenterm slides, not Gherkin.'"
+
+    - action: edit
+      area: token_descriptions
+      token: gherkin
+      change: "Add compatibility note: 'Works with presenterm/diagram channels when wrapped in markdown code blocks—e.g., Gherkin scenarios as embedded code blocks within slides'"
+
+    # Removed: fail+grove+fip rog warning - grove redefinition makes them complementary now

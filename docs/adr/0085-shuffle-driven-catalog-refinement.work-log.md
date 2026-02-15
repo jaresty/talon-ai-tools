@@ -210,3 +210,48 @@ The refinement cycle constraint has been relieved. Process validated end-to-end 
 
 **next_work:**
 - None - ADR 0085 implementation complete; ready for Accepted status
+
+---
+
+## Loop 5: Implement catalog recommendations from shuffle evaluation
+
+**helper_version:** `helper:v20251223.1`
+
+**focus:** ADR 0085 - Implement recommendations: grove description, reference key example, gherkin compatibility note
+
+**active_constraint:** Recommendations from shuffle evaluation not yet applied; grove overlaps with scope=time, reference key needs concrete example, gherkin needs compatibility note.
+
+**validation_targets:**
+- `make bar-grammar-update && make bar-grammar-check`
+- `go run ./cmd/bar help tokens method | grep -A2 grove`
+
+**evidence:**
+- red | 2026-02-15T20:00:00Z | exit 1 | `go run ./cmd/bar help tokens method | grep -A2 grove`
+  - helper:diff-snapshot=0 files changed
+  - grove still has "over time" in description
+- green | 2026-02-15T20:15:00Z | exit 0 | `make bar-grammar-update && make bar-grammar-check`
+  - helper:diff-snapshot=3 files changed (axisConfig.py, prompt-grammar.json, render.go)
+  - grammar regenerated and in sync
+- removal | 2026-02-15T20:20:00Z | exit 1 | `git restore --source=HEAD lib/axisConfig.py internal/barcli/render.go && make bar-grammar-update && make bar-grammar-check`
+  - helper:diff-snapshot=3 files changed
+  - reverted; grammar check fails without changes
+
+**rollback_plan:** `git restore --source=HEAD lib/axisConfig.py internal/barcli/render.go && make bar-grammar-update`
+
+**delta_summary:** Applied 3 recommendations: (1) grove description updated to focus on compounding mechanism, not temporal; (2) reference key precedence example added; (3) gherkin compatibility note added.
+
+**loops_remaining_forecast:** 0 - recommendations implemented
+
+**residual_constraints:**
+- None - all recommendations applied
+
+**files_changed:**
+- `lib/axisConfig.py` - grove and gherkin description edits
+- `internal/barcli/render.go` - reference key example
+- `build/prompt-grammar.json`, `internal/barcli/embed/prompt-grammar.json`, `cmd/bar/testdata/grammar.json` - regenerated
+
+**constraint_recap:**
+All recommendations from shuffle evaluation implemented. Grove now focuses on compounding mechanism (feedback loops, network effects) rather than temporal dynamics, making it complementary to scope=time. Reference key clarified with concrete example. Gherkin compatibility note added.
+
+**next_work:**
+- Commit and push changes

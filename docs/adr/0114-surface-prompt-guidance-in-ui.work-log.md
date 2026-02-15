@@ -19,6 +19,8 @@ Guidance exists in Python maps but is not surfaced in any UI. bartui2 needs to d
 - `go test ./internal/bartui2/... -run TestCompletion -v` - Completion tests pass
 
 ### Evidence
+- red | 2026-02-15T17:25:00Z | exit 0 | grep "Guidance" internal/bartui/tokens.go
+    - helper:diff-snapshot=0 matches - Guidance field not present in TokenOption struct
 - green | 2026-02-15T17:30:00Z | exit 0 | go build ./...
     - helper:diff-snapshot=builds successfully
 - green | 2026-02-15T17:31:00Z | exit 0 | go test ./internal/bartui2/... -run TestCompletion -v
@@ -58,6 +60,8 @@ Guidance maps exist in axisCatalog but are not consumed by helpHub.
 - `python3 -m pytest _tests/test_help_hub.py -v -k cheat_sheet` - Cheat sheet tests pass
 
 ### Evidence
+- red | 2026-02-15T17:35:00Z | exit 0 | grep -c "guidance" lib/helpHub.py
+    - helper:diff-snapshot=0 matches - no guidance references in helpHub before changes
 - green | 2026-02-15T17:40:00Z | exit 0 | python3 -m pytest _tests/test_help_hub.py -v -k cheat_sheet
     - helper:diff-snapshot=9 tests passed
 

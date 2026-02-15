@@ -242,6 +242,35 @@ reason: "No existing directional for critical/skeptical lens"
 evidence: [seed_8, seed_19]  # prompts where this would have helped
 ```
 
+#### Phase 3b: Cross-Validate with ADR-0113
+
+If ADR-0113 (task-driven refinement) has been run, compare findings before finalizing recommendations:
+
+```markdown
+## Cross-Validation: ADR-0085 ↔ ADR-0113
+
+**ADR-0085 run:** {date / seed range}
+**ADR-0113 run:** {date / task sample}
+
+### Correlation Table
+
+| Finding | ADR-0085 | ADR-0113 | Correlation | Action |
+|---------|----------|----------|-------------|--------|
+| Token: {X} | retire (redundancy) | absent from all tasks | **Confirmed** | Proceed |
+| Token: {Y} | edit (description) | gap: undiscoverable | **Aligned** | Priority |
+| Skill: {S} | n/a | gap: skill-guidance-wrong | **Single-signal** | Validate with shuffle |
+| Token: {Z} | score 5 (coherent) | gap: missing-token | **Contradictory** | Skill fix, not catalog |
+
+### Findings Summary
+
+- **Confirmed:** {both processes agree}
+- **Aligned:** {related issues, same root cause}
+- **Contradictory:** {one process found, other missed — investigate}
+- **ADR-0113-only:** {task gaps not in shuffle — validate with next shuffle run}
+```
+
+Store: `docs/adr/evidence/cross-validation/{date}.md`
+
 ### Evaluation Template
 
 For each shuffled prompt, capture:
@@ -259,6 +288,17 @@ For each shuffled prompt, capture:
 
 **Generated prompt preview:**
 > {first 200 chars of rendered prompt}
+
+**LLM Execution Outcome:**
+- [ ] Executed successfully
+- [ ] Refusal or safety filter triggered
+- [ ] Output malformed / unparseable
+- [ ] Quality degraded (valid tokens, off-prompt output)
+
+**If degraded/failure:**
+- Failure mode: {refusal / hallucination / format / quality / context}
+- Root cause: {static prompt / token combo / token description / model limitation}
+- Signal: {catalog / skill / model issue to flag}
 
 **Scores (vs Prompt Key):**
 - Task clarity: {1-5}
@@ -317,15 +357,127 @@ The refinement cycle produces:
 
 Run this process periodically or when catalog drift is suspected:
 
-1. **Generate**: Create 50+ shuffled prompts across sampling strategies
-2. **Evaluate**: Score each against prompt key rubric, capture notes
-3. **Meta-Evaluate Skills**: Score each against bar skills, identify skill gaps and catalog issues
-4. **Meta-Evaluate Reference**: Score `bar help llm` utility for each prompt, identify documentation gaps
-5. **Aggregate**: Group low-scoring tokens, identify patterns, collect feedback for skills/catalog/help
-6. **Recommend**: Produce actionable list with evidence for catalog, skills, and help documentation
-7. **Review**: Human review of recommendations before implementing
-8. **Apply**: Edit catalog files, skill documentation, and/or help_llm.go, regenerate grammar
-9. **Validate**: Re-run shuffle samples to confirm improvement
+1. **Calibrate**: Run calibration check with multiple evaluators to establish scoring consistency
+2. **Generate**: Create 50+ shuffled prompts across sampling strategies
+3. **Evaluate**: Score each against prompt key rubric, capture notes, record LLM execution outcome
+4. **Meta-Evaluate Skills**: Score each against bar skills, identify skill gaps and catalog issues
+5. **Meta-Evaluate Reference**: Score `bar help llm` utility for each prompt, identify documentation gaps
+6. **Aggregate**: Group low-scoring tokens, identify patterns, collect feedback for skills/catalog/help
+7. **Recommend**: Produce actionable list with evidence for catalog, skills, and help documentation
+8. **Cross-Validate**: If ADR-0113 (task-driven) has been run, correlate findings between processes
+9. **Review**: Human review of recommendations before implementing
+10. **Apply**: Edit catalog files, skill documentation, and/or help_llm.go, regenerate grammar
+11. **Post-Apply Validate**: Re-test original evidence cases against new catalog state
+12. **Validate**: Re-run shuffle samples to confirm improvement
+
+#### Phase 0: Calibrate
+
+Before evaluating any prompts, establish evaluator consistency:
+
+```markdown
+## Calibration (this run)
+
+**Date:** {YYYY-MM-DD}
+**Evaluators:** {names or "single-evaluator"}
+
+### Procedure
+
+Both evaluators independently scored the same 10 prompts without consulting each other.
+
+### Results
+
+**Agreement rate:** {X}/10 = {Y}%
+**Score delta average:** {Z} (mean absolute difference)
+
+### Resolution
+
+- [ ] **Calibrated (agreement ≥ 80%):** Proceed with full evaluation
+- [ ] **Discuss and re-score:** Below threshold — resolve discrepancies, clarify rubric
+```
+
+Store: `docs/adr/evidence/0085/evaluations/00-calibration.md`
+
+### Post-Apply Validation
+
+After applying changes, re-test original evidence cases to confirm the fix worked:
+
+```markdown
+## Post-Apply Validation
+
+**Applied changes:** {list from recommendations.yaml}
+**Validation date:** {YYYY-MM-DD}
+
+### Regression Check
+
+| Recommendation | Original evidence | Re-test result | Status |
+|----------------|-------------------|----------------|--------|
+| retire: token X | seed_12, seed_34 | Token X no longer appears | ✓ Pass |
+| edit: token Y | seed_7, seed_22 | Re-evaluated with new description | ✓ Pass |
+| skill-update: {S} | task_T19 | Re-ran task with updated skill | ✓ Pass |
+| add: token Z | seed_8 | New token available and selected | ✗ Fail |
+
+### Failed Validations
+
+- {list any failures with likely cause and action}
+```
+
+Store: `docs/adr/evidence/0085/post-apply/{date}.md`
+
+### Skill Update Impact Tracking
+
+If the applied changes include skill updates (heuristics, Usage Patterns), track whether they improved outcomes:
+
+```markdown
+## Skill Update Impact: {skill name}
+
+**Original recommendation:** {date from recommendations.yaml}
+**Update applied:** {date}
+**File modified:** {path to skill file}
+
+### Pre-Update Baseline
+
+Original evidence used for gap detection:
+- Seeds: {seed_12, seed_34}
+- Pre-update scores: {list average}
+
+### Post-Update: Original Evidence Re-Test
+
+| Seed | Pre-update score | Post-update score | Delta |
+|------|------------------|-------------------|-------|
+| seed_12 | 2 | 4 | +2 |
+| seed_34 | 3 | 3 | 0 |
+
+### Post-Update: Fresh Sample
+
+To avoid overfitting to original evidence, generate 5 new seeds and re-evaluate:
+
+| Seed | Coverage score | Notes |
+|------|----------------|-------|
+| seed_100 | 4 | Good coverage |
+| seed_101 | 3 | Similar gap to original |
+| seed_102 | 5 | Full coverage |
+| seed_103 | 3 | Gap persists: {reason} |
+| seed_104 | 4 | Good coverage |
+
+### Analysis
+
+- Original evidence improved: {X}/2
+- Fresh sample average: {Y}/5
+- Fresh sample vs pre-update average: {comparison}
+
+### Verdict
+
+- [ ] **Effective:** Fresh sample average ≥ pre-update average AND original evidence improved
+- [ ] **Partial:** Some improvement but gaps remain
+- [ ] **Ineffective:** No meaningful improvement
+
+**Next steps:**
+- {for effective: document improvement, close tracking}
+- {for partial: iterate on skill update}
+- {for ineffective: revert or try catalog-level fix instead}
+```
+
+Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
 
 ### Automation Opportunities
 
@@ -380,17 +532,24 @@ Run this process periodically or when catalog drift is suspected:
 - Initial corpus generation and evaluation is time-intensive
 - May surface uncomfortable truths about beloved tokens
 - Recommendations still require careful human review
+- Calibration phase adds upfront time but improves score quality
+- Cross-validation requires ADR-0113 to also be run
 
 ### Risks
 
 - Over-pruning: Removing tokens that are valuable in rare contexts
 - Churn: Frequent changes destabilize user muscle memory
 - Subjectivity: Different evaluators may score differently
+- LLM quality gaps: Catalog fixes don't address model execution failures
+- Cross-validation contradiction: Processes disagree, unclear which to trust
 
 **Mitigations:**
 - Require multiple low scores before recommending retirement
 - Batch changes into quarterly refinement cycles
 - Use multiple evaluators for ambiguous cases
+- Run calibration before each evaluation cycle
+- Capture LLM execution outcomes as separate signal from token selection
+- Investigate contradictory cross-validation findings before applying fixes
 
 ---
 
@@ -424,3 +583,5 @@ bar shuffle --seed 123
 - **Token affinity matrix**: Identify which tokens pair well/poorly
 - **Coverage heatmap**: Visualize which combinations are over/under-represented
 - **Skill improvement tracking**: Monitor how skill feedback impacts subsequent shuffle evaluations
+- **LLM execution quality tracking**: Aggregate failure modes across cycles to identify systematic model issues
+- **Cross-process automation**: Script the correlation between ADR-0085 and ADR-0113 findings

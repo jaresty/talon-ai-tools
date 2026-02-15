@@ -323,6 +323,20 @@ Aggregate gap diagnoses into actionable recommendations following the same taxon
 **Bar command constructed:**
 bar build {tokens}
 
+**Bar output preview:**
+> {first 200 chars of rendered prompt}
+
+**LLM Execution Outcome:**
+- [ ] Executed successfully
+- [ ] Refusal or safety filter triggered
+- [ ] Output malformed / unparseable
+- [ ] Quality degraded (valid tokens, off-prompt output)
+
+**If degraded/failure:**
+- Failure mode: {refusal / hallucination / format / quality / context}
+- Root cause: {static prompt / token combo / skill selection / model limitation}
+- Signal: {catalog / skill / model issue to flag}
+
 **Coverage scores:**
 - Token fitness: {1-5}
 - Token completeness: {1-5}
@@ -361,16 +375,19 @@ Run this process when:
 - ADR-0085 shuffle cycles show consistently high scores (noise is low) but user feedback suggests gaps
 
 Steps:
-1. **Generate taxonomy** — run bar probe + variants, capture task list with weights
-2. **Sample** — draw 20-30 tasks proportional to weight
-3. **Apply skills** — for each task, run bar-autopilot to select tokens and build prompt
-4. **Score** — evaluate coverage on four dimensions
-5. **Diagnose** — classify gaps by type for all tasks scoring ≤3
-6. **Aggregate** — group by gap type, identify recurring patterns
-7. **Recommend** — produce actionable list with evidence
-8. **Review** — human review before implementing
-9. **Apply** — edit catalog, skills, or help_llm.go; regenerate grammar
-10. **Validate** — re-run a sample of gapped tasks to confirm improvement
+1. **Calibrate** — run calibration check with multiple evaluators to establish scoring consistency
+2. **Generate taxonomy** — run bar probe + variants, capture task list with weights
+3. **Sample** — draw 20-30 tasks proportional to weight
+4. **Apply skills** — for each task, run bar-autopilot to select tokens and build prompt
+5. **Score** — evaluate coverage on four dimensions, capture LLM execution outcome
+6. **Diagnose** — classify gaps by type for all tasks scoring ≤3
+7. **Aggregate** — group by gap type, identify recurring patterns
+8. **Recommend** — produce actionable list with evidence
+9. **Cross-Validate** — if ADR-0085 (shuffle-driven) has been run, correlate findings between processes
+10. **Review** — human review before implementing
+11. **Apply** — edit catalog, skills, or help_llm.go; regenerate grammar
+12. **Post-Apply Validate** — re-test original evidence cases against new catalog state
+13. **Validate** — re-run a sample of gapped tasks to confirm improvement
 
 ### Automation Note
 
@@ -387,6 +404,145 @@ to be human-driven with Claude assistance.
 - Recommendations from both processes feed the same YAML format and review pipeline
 - A finding in ADR-0113 (undiscoverable token) may surface a token description that ADR-0085
   later validates or invalidates in combination
+- **Cross-validate findings**: Before applying recommendations, compare what each process found
+
+#### Phase 0: Calibrate
+
+Before evaluating any tasks, establish evaluator consistency:
+
+```markdown
+## Calibration (this run)
+
+**Date:** {YYYY-MM-DD}
+**Evaluators:** {names or "single-evaluator"}
+
+### Procedure
+
+Both evaluators independently scored the same 10 tasks without consulting each other.
+
+### Results
+
+**Agreement rate:** {X}/10 = {Y}%
+**Score delta average:** {Z} (mean absolute difference)
+
+### Resolution
+
+- [ ] **Calibrated (agreement ≥ 80%):** Proceed with full evaluation
+- [ ] **Discuss and re-score:** Below threshold — resolve discrepancies, clarify rubric
+```
+
+Store: `docs/adr/evidence/0113/evaluations/00-calibration.md`
+
+#### Phase 5b: Cross-Validate with ADR-0085
+
+If ADR-0085 (shuffle-driven) has been run, compare findings before finalizing recommendations:
+
+```markdown
+## Cross-Validation: ADR-0113 ↔ ADR-0085
+
+**ADR-0113 run:** {date / task sample}
+**ADR-0085 run:** {date / seed range}
+
+### Correlation Table
+
+| Finding | ADR-0113 | ADR-0085 | Correlation | Action |
+|---------|----------|----------|-------------|--------|
+| Token: {X} | gap: missing-token | score 5 (coherent) | **Task-only signal** | Validate with next shuffle |
+| Token: {Y} | gap: undiscoverable | edit recommended | **Aligned** | Proceed with priority |
+| Skill: {S} | gap: skill-guidance-wrong | n/a | **Single-signal** | Validate with shuffle |
+| Method: {M} | gap: missing-token | no issues | **Confirmed gap** | Add to recommendations |
+
+### Findings Summary
+
+- **Confirmed:** {both processes agree on gap}
+- **Aligned:** {related issues, same root cause}
+- **Task-only:** {gaps found only in task analysis — validate with shuffle}
+- **Shuffle-only:** {coherence issues not affecting real tasks — lower priority}
+```
+
+Store: `docs/adr/evidence/cross-validation/{date}.md`
+
+#### Post-Apply Validation
+
+After applying changes, re-test original evidence cases to confirm the fix worked:
+
+```markdown
+## Post-Apply Validation
+
+**Applied changes:** {list from recommendations.yaml}
+**Validation date:** {YYYY-MM-DD}
+
+### Regression Check
+
+| Recommendation | Original evidence | Re-test result | Status |
+|----------------|-------------------|----------------|--------|
+| add: token X | task_T07, task_T14 | New token available | ✓ Pass |
+| edit: token Y | task_T12 | Re-evaluated with new description | ✓ Pass |
+| skill-update: {S} | task_T19 | Re-ran task with updated skill | ✗ Fail |
+
+### Failed Validations
+
+- {list any failures with likely cause and action}
+```
+
+Store: `docs/adr/evidence/0113/post-apply/{date}.md`
+
+### Skill Update Impact Tracking
+
+If the applied changes include skill updates (heuristics, Usage Patterns), track whether they improved outcomes:
+
+```markdown
+## Skill Update Impact: {skill name}
+
+**Original recommendation:** {date from recommendations.yaml}
+**Update applied:** {date}
+**File modified:** {path to skill file}
+
+### Pre-Update Baseline
+
+Original task sample used for gap detection:
+- Tasks: {T01, T07, T12}
+- Pre-update coverage scores: {list}
+
+### Post-Update: Original Evidence Re-Test
+
+| Task | Pre-update score | Post-update score | Delta |
+|------|------------------|-------------------|-------|
+| T01  | 2                | 4                 | +2    |
+| T07  | 3                | 3                 | 0     |
+| T12  | 1                | 2                 | +1    |
+
+### Post-Update: Fresh Task Sample
+
+To avoid overfitting to original sample, generate 5 new tasks from the same domain:
+
+| Task | Coverage score | Notes |
+|------|----------------|-------|
+| T_new_01 | 4 | Good coverage |
+| T_new_02 | 3 | Similar gap to original |
+| T_new_03 | 5 | Full coverage |
+| T_new_04 | 3 | Gap persists: {reason} |
+| T_new_05 | 4 | Good coverage |
+
+### Analysis
+
+- Original tasks improved: {X}/3
+- Fresh sample average: {Y}/5
+- Fresh sample vs pre-update average: {comparison}
+
+### Verdict
+
+- [ ] **Effective:** Fresh sample average ≥ pre-update average AND original tasks improved
+- [ ] **Partial:** Some improvement but gaps remain
+- [ ] **Ineffective:** No meaningful improvement or regressions
+
+**Next steps:**
+- {for effective: document improvement, close tracking}
+- {for partial: iterate on skill update}
+- {for ineffective: revert or try catalog-level fix instead}
+```
+
+Store: `docs/adr/evidence/0113/skill-updates/{skill-name}-{date}.md`
 
 ---
 
@@ -415,6 +571,8 @@ to be human-driven with Claude assistance.
 - **Skill evaluation is noisy**: Different LLM runs may select different tokens for the same task.
   Run each task through the skill at least twice and note selection variance as part of the
   evaluation.
+- **Calibration phase adds upfront time**: But improves score quality and inter-evaluator reliability
+- **Cross-validation requires ADR-0085**: Both processes need to run for full correlation
 
 ### Risks
 
@@ -423,6 +581,8 @@ to be human-driven with Claude assistance.
 - **Conflating skill error with catalog gap**: A skill that misroutes a task (gap type 3) and a
   catalog that lacks the right token (gap type 1) can look identical from the outside. Careful
   gap diagnosis is required: check whether a token *exists* before concluding it is missing.
+- **LLM quality gaps**: Catalog and skill fixes don't address model execution failures
+- **Cross-validation contradiction**: Processes may disagree on findings, unclear which to trust
 
 ---
 
@@ -435,6 +595,8 @@ to be human-driven with Claude assistance.
 - **Automated skill testing harness**: Script the bar-autopilot skill application step using the
   Claude API to allow faster, repeatable cycle runs
 - **Coverage heatmap**: Visualise which task domains are well-covered vs. gapped across cycles
+- **LLM execution quality tracking**: Aggregate failure modes across cycles to identify systematic model issues
+- **Skill update impact tracking**: Measure whether skill changes improve coverage on new task samples
 
 ---
 

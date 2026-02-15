@@ -29,7 +29,7 @@ class TestBarHelpLLMExamples(unittest.TestCase):
     def extract_example_commands(self):
         """Extract all example bar build commands from patterns output."""
         # Match code blocks under **Example:** headers
-        example_pattern = r'\*\*Example:\*\*\n```bash\n(bar build [^\n]+)\n```'
+        example_pattern = r"\*\*Example:\*\*\n```bash\n(bar build [^\n]+)\n```"
         matches = re.findall(example_pattern, self.patterns_output)
         return matches
 
@@ -63,7 +63,9 @@ class TestBarHelpLLMExamples(unittest.TestCase):
 
             # Test that bar can parse these tokens
             # We don't need actual subject text for validation
-            test_cmd = ["go", "run", "./cmd/bar", "build"] + tokens + ["--subject", "test"]
+            test_cmd = (
+                ["go", "run", "./cmd/bar", "build"] + tokens + ["--subject", "test"]
+            )
 
             try:
                 result = subprocess.run(
@@ -96,11 +98,11 @@ class TestBarHelpLLMExamples(unittest.TestCase):
         """Test that we have the expected number of examples."""
         examples = self.extract_example_commands()
 
-        # 23 patterns from Loop 8 + 5 added in ADR-0113 cycle 1 (R-04–R-08) = 28
+        # 23 patterns from Loop 8 + 5 added in ADR-0113 cycle 1 (R-04–R-08) + 1 added later = 29
         self.assertEqual(
             len(examples),
-            28,
-            f"Expected 28 example commands in patterns section, found {len(examples)}. "
+            29,
+            f"Expected 29 example commands in patterns section, found {len(examples)}. "
             f"If you added/removed patterns, update this test.",
         )
 

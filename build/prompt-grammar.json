@@ -138,14 +138,14 @@
       },
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
-        "assume": "The response enhances the task by attending to premises that must already hold for the reasoning or system to function.",
-        "cross": "The response focuses on concerns that span multiple modules or components — patterns applied repeatedly across the codebase (logging, error handling, authentication, observability, caching) — examining their consistency, distribution, and coupling characteristics.",
+        "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
+        "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
-        "mean": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
-        "motifs": "The response enhances the task by identifying recurring patterns, themes, or clusters.",
-        "stable": "The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid.",
-        "struct": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint.",
+        "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
+        "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution.",
+        "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how perturbations affect their continuity.",
+        "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
         "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
         "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
@@ -1810,7 +1810,7 @@
     }
   },
   "checksums": {
-    "axes": "089f5172407c324750a6c3f29d4d31ee354ab5108d46bd29781c4f60a07b09c5",
+    "axes": "b7b595cb1fe585e21889b4225cad960a68ca474ee20d02bf5c022232e32c5512",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
     "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

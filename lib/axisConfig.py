@@ -378,9 +378,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "items.",
         "compare": "The response enhances the task by systematically comparing "
         "alternatives against explicit criteria, surfacing tradeoffs, "
-        "relative strengths and weaknesses, and decision factors. "
-        "Use when the user presents options and asks which to choose "
-        "or how they differ.",
+        "relative strengths and weaknesses, and decision factors. Use "
+        "when the user presents options and asks which to choose or how "
+        "they differ.",
         "converge": "The response enhances the task by systematically narrowing "
         "from broad exploration to focused recommendations, weighing "
         "trade-offs explicitly as options are filtered.",
@@ -518,13 +518,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "activities, operations, or work to be performed—suppressing "
         "interpretation, evaluation, structural explanation, or "
         "perspective-shifting.",
-        "assume": "The response enhances the task by attending to premises that "
-        "must already hold for the reasoning or system to function.",
-        "cross": "The response focuses on concerns that span multiple modules or "
-        "components — patterns applied repeatedly across the codebase "
-        "(logging, error handling, authentication, observability, caching) "
-        "— examining their consistency, distribution, and coupling "
-        "characteristics.",
+        "assume": "The response focuses on explicit or implicit premises that must "
+        "hold for the reasoning, system, or argument to function.",
+        "cross": "The response focuses on concerns or forces that propagate across "
+        "otherwise distinct units, layers, or domains—examining how they "
+        "traverse boundaries or become distributed across "
+        "partitions—without primarily analyzing internal arrangement or "
+        "recurring structural form.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits "
         "by examining how and under what conditions something stops "
         "working—risks, edge cases, fragility, or failure modes rather than "
@@ -532,22 +532,26 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "good": "The response focuses on how quality, success, or goodness is "
         "judged—criteria, metrics, standards, values, or taste—assuming a "
         "framing rather than defining it or shifting perspective.",
-        "mean": "The response focuses on how something should be understood prior "
-        "to judgment—its purpose, assumptions, framing, terminology, or "
-        "conceptual role—without evaluating its success, prescribing "
-        "action, or adopting a specific stakeholder perspective.",
-        "motifs": "The response enhances the task by identifying recurring "
-        "patterns, themes, or clusters.",
-        "stable": "The response enhances the task by analyzing stability and "
-        "persistence of states within the system. It requires identifying "
-        "self-reinforcing configurations, explaining the forces that "
-        "maintain them, and examining how perturbations impact these "
-        "states. Narrative motivation or shallow incentive talk is "
-        "forbidden; only structural, persistent-state reasoning is valid.",
-        "struct": "The response focuses on how things are arranged or "
+        "mean": "The response focuses on how something is conceptually framed or "
+        "understood prior to evaluation or action—its purpose, "
+        "interpretation, definitions, categorization, or theoretical "
+        "role—without asserting required premises, judging quality, "
+        "prescribing action, or adopting a specific stakeholder "
+        "perspective.",
+        "motifs": "The response focuses on recurring structural or thematic forms "
+        "that appear in multiple places, identifying repeated "
+        "configurations or isomorphic patterns without analyzing their "
+        "internal topology in detail or their boundary-spanning "
+        "distribution.",
+        "stable": "The response focuses on equilibrium, persistence, and "
+        "self-reinforcing states within a system—identifying "
+        "configurations that maintain themselves and analyzing how "
+        "perturbations affect their continuity.",
+        "struct": "The response focuses on how parts of a system are arranged and "
         "related—dependencies, coordination, constraints, incentives, or "
-        "organizing patterns—independent of sequence, value judgment, or "
-        "viewpoint.",
+        "organizing configurations—analyzing the internal topology of "
+        "units without emphasizing repetition across instances or "
+        "boundary-spanning propagation.",
         "thing": "The response focuses on what entities are in view—objects, "
         "people, roles, systems, domains, or bounded units—and what is "
         "excluded, without emphasizing actions, relationships, evaluation, "
@@ -739,9 +743,9 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "facilitate": "When combined with sim, designs a facilitation structure for "
         "a simulation exercise rather than performing the simulation "
         "directly.",
-        "faq": "Question-and-answer prose format. Conflicts with executable "
-        "output channels: shellscript, code, codetour (output format "
-        "mismatch). Use with plain, slack, diagram, or no channel.",
+        "faq": "Question-and-answer prose format. Conflicts with executable output "
+        "channels: shellscript, code, codetour (output format mismatch). Use "
+        "with plain, slack, diagram, or no channel.",
         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: "
         "produces a question-tree Mermaid diagram. Use with plain, "
         "slack, diagram, or no channel.",

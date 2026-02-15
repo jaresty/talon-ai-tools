@@ -57,6 +57,7 @@ type completion struct {
 	Display     string
 	Category    string
 	Description string
+	Guidance    string
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	Fills map[string]string
 }
@@ -71,7 +72,7 @@ var stageOrder = []string{
 	"voice",          // Speaking style (optional) - Path 2 continued
 	"audience",       // Target audience (optional) - Path 2 continued
 	"tone",           // Emotional tone (optional) - Path 2 continued
-	"task",            // Task - the main task type
+	"task",           // Task - the main task type
 	"completeness",   // How thorough
 	"scope",          // How focused
 	"method",         // How to approach
@@ -850,7 +851,8 @@ func (m *model) updateCompletions() {
 				Value:       opt.Value,
 				Display:     display,
 				Category:    category.Label,
-				Description: opt.Description, // Store full description; truncate during display
+				Description: opt.Description,
+				Guidance:    opt.Guidance,
 				Fills:       opt.Fills,
 			})
 		}
@@ -1617,6 +1619,10 @@ var (
 				Foreground(lipgloss.Color("212")).
 				Bold(true)
 
+	// warningStyle for guidance text - uses yellow/amber to draw attention
+	warningStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("220"))
+
 	toastStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("78")).
 			Bold(true)
@@ -1729,7 +1735,8 @@ func (m model) renderTokensPane() string {
 	if descWidth < 20 {
 		descWidth = 20
 	}
-	var selectedDesc string // Store full description of selected item
+	var selectedDesc string     // Store full description of selected item
+	var selectedGuidance string // Store guidance of selected item
 
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
@@ -1763,7 +1770,8 @@ func (m model) renderTokensPane() string {
 			if i == m.completionIndex {
 				prefix = "▸ "
 				style = completionSelectedStyle
-				selectedDesc = c.Description // Capture full description
+				selectedDesc = c.Description  // Capture full description
+				selectedGuidance = c.Guidance // Capture guidance if present
 			}
 			display := c.Display
 			if strings.TrimSpace(display) == "" {
@@ -1805,14 +1813,21 @@ func (m model) renderTokensPane() string {
 	}
 
 	// Add selected item description area (truncated description preview)
-	if selectedDesc != "" {
+	if selectedDesc != "" || selectedGuidance != "" {
 		right.WriteString("\n")
 		right.WriteString(dimStyle.Render("─"))
 		right.WriteString("\n")
-		// Wrap and truncate description to prevent screen overflow
-		// Limit to 3 lines to keep the UI compact
-		wrappedDesc := wrapAndTruncateText(selectedDesc, rightWidth-2, 3)
-		right.WriteString(dimStyle.Render(wrappedDesc))
+		// Show guidance first if present (higher priority for decision-making)
+		if selectedGuidance != "" {
+			right.WriteString(warningStyle.Render("→ " + selectedGuidance))
+			right.WriteString("\n")
+		}
+		if selectedDesc != "" {
+			// Wrap and truncate description to prevent screen overflow
+			// Limit to 3 lines to keep the UI compact
+			wrappedDesc := wrapAndTruncateText(selectedDesc, rightWidth-2, 3)
+			right.WriteString(dimStyle.Render(wrappedDesc))
+		}
 	}
 
 	// Split horizontally - give 1/3 to token tree, 2/3 to completions

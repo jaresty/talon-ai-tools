@@ -194,6 +194,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 			Slug:        grammar.slugForToken(value),
 			Label:       label,
 			Description: description,
+			Guidance:    grammar.TaskGuidance(value),
 		})
 	}
 
@@ -230,6 +231,7 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			Slug:        grammar.slugForToken(value),
 			Label:       label,
 			Description: description,
+			Guidance:    grammar.AxisGuidance(axis, value),
 		})
 	}
 	return options
@@ -259,6 +261,7 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			Slug:        grammar.slugForToken(value),
 			Label:       label,
 			Description: description,
+			Guidance:    grammar.PersonaGuidance(axis, value),
 		})
 	}
 	return options

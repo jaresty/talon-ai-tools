@@ -35,7 +35,6 @@ CONSTRAINTS (system prompt and user prompt): Independent guardrails that shape H
   • For example: gherkin+presenterm produces presenterm slides, not pure Gherkin—the channel format wins and the form describes conceptual organization within it
   • Task (static prompt) takes precedence over intent (intent clarifies why, not what)
   • Persona audience overrides tone preference (audience expertise matters)
-  • Directional applies globally to all combinations—shapes emphasis without redefining the task
 
 PERSONA (system prompt): Communication identity that shapes expression, not reasoning.
   • Voice — who is speaking

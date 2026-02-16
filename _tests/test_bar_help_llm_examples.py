@@ -98,11 +98,11 @@ class TestBarHelpLLMExamples(unittest.TestCase):
         """Test that we have the expected number of examples."""
         examples = self.extract_example_commands()
 
-        # 23 patterns from Loop 8 + 5 added in ADR-0113 cycle 1 (R-04–R-08) + 1 added later = 29
+        # 23 patterns from Loop 8 + 5 added in ADR-0113 cycle 1 (R-04–R-08) + 1 added later + 1 from ADR-0128 = 30
         self.assertEqual(
             len(examples),
-            29,
-            f"Expected 29 example commands in patterns section, found {len(examples)}. "
+            30,
+            f"Expected 30 example commands in patterns section, found {len(examples)}. "
             f"If you added/removed patterns, update this test.",
         )
 

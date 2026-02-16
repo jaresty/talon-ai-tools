@@ -33,7 +33,7 @@ CONSTRAINTS (system prompt and user prompt): Independent guardrails that shape H
 **Precedence:** When tokens from different axes combine:
   • Channel tokens take precedence over form tokens (output format is fixed)
   • For example: gherkin+presenterm produces presenterm slides, not pure Gherkin—the channel format wins and the form describes conceptual organization within it
-  • Task takes precedence over intent (task defines what, intent explains why)
+  • Task takes precedence over intent (task defines what, intent explains why for the audience)
   • Persona audience overrides tone preference (audience expertise matters)
 
 PERSONA (system prompt): Communication identity that shapes expression, not reasoning.

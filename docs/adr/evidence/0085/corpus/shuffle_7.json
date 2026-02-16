@@ -45,7 +45,7 @@
   },
   "persona": {
     "tone": "formally",
-    "intent": "coach"
+    "intent": "inform"
   },
   "hydrated_persona": [
     {
@@ -55,12 +55,12 @@
     },
     {
       "axis": "intent",
-      "token": "coach",
-      "description": "Support the audience’s growth through guidance and feedback."
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
     }
   ],
   "tokens": [
-    "coach",
+    "inform",
     "formally",
     "sort",
     "gist",

@@ -28,7 +28,7 @@
   "persona": {
     "voice": "as designer",
     "tone": "casually",
-    "intent": "entertain"
+    "intent": "appreciate"
   },
   "hydrated_persona": [
     {
@@ -43,12 +43,12 @@
     },
     {
       "axis": "intent",
-      "token": "entertain",
-      "description": "Engage or amuse the audience."
+      "token": "appreciate",
+      "description": "Express thanks, recognition, or positive regard."
     }
   ],
   "tokens": [
-    "entertain",
+    "appreciate",
     "as designer",
     "casually",
     "sort",

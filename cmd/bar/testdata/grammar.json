@@ -944,6 +944,12 @@
       "intent": {
         "announce": "Social-purpose intent: use only when delivering a specific announcement. Not a modifier for analytical or planning tasks.",
         "appreciate": "Social-purpose intent: use only when the whole response is an expression of thanks or recognition. Does not modify analytical tasks (plan, probe, check, diff) — pair with tone: kindly instead."
+      },
+      "presets": {
+        "designer_to_pm": "Strong with sim (stability analysis), probe (design reviews). Good for scenarios, flow analysis.",
+        "peer_engineer_explanation": "Strong with sim (technical scenarios), show (code structure). Good for walkthroughs, debugging.",
+        "product_manager_to_team": "Strong with probe (quality analysis), check (requirements validation). Good for retrospectives, estimation.",
+        "scientist_to_analyst": "Strong with check (evidence-based verification), probe (analysis). Good for data-driven decisions."
       }
     }
   },
@@ -1790,7 +1796,7 @@
   "checksums": {
     "axes": "103e707f9424ab80a70a51e38e70386217757a179490626793b4f890b640f6ca",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
-    "persona": "04e8c3f03b00c123c6f3d42a5747af046f4d77df9b3cfd9bcd5d86760f285fe8",
+    "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "9adf1fd81f175794a6270e5dbad40b4f4ce596ed3de4e7701961013c9d5096b5"
   }

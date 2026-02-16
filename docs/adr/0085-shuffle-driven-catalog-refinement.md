@@ -78,6 +78,15 @@ For each generated prompt, evaluate against the prompt key (ADR 0083):
 - **2 - Problematic**: Confusion about intent or category overlap
 - **1 - Broken**: Contradictory, nonsensical, or misleading combination
 
+**Evaluation principle — Channel × Form composition**:
+
+Channel defines output medium (code, prose, diagram), form defines structure within that medium.
+They compose additively, not in conflict. Evaluate whether the combination makes semantic sense,
+not whether tokens seem redundant.
+
+For example: `test + code` = "test structure in code format" (valid, not redundant).
+`sim + code` = "simulation expressed as code" (valid, not narrative conflict).
+
 #### Phase 2b: Meta-Evaluation Against Bar Skills
 
 After evaluating prompts against the prompt key, perform a secondary evaluation by checking them against the bar skills themselves (bar-autopilot, bar-manual, bar-workflow, bar-suggest). This meta-evaluation serves dual purposes:

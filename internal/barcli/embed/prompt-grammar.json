@@ -129,7 +129,7 @@
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response enhances the task by explicitly defining criteria of correctness before proposing implementations, treating those criteria as fixed and authoritative. Implementations must satisfy the prior definition and are not permitted to redefine correctness during construction, shifting progress from building artifacts to securing meaning.",
+        "spec": "The response defines explicit criteria of correctness before proposing implementations and treats those criteria as fixed and authoritative. Implementations must satisfy the prior definition and may not redefine correctness during construction. Progress is measured by compliance with the specification rather than by artifact production.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
@@ -1814,7 +1814,7 @@
     }
   },
   "checksums": {
-    "axes": "3158c52c18d61585ce1a68247cb3003f846cdbcba7711f6f4915f824a0e76dde",
+    "axes": "d44f8da7a4ccf59cfe40d2dd7a7313a2ad53f5a6213a36a653873239d14dbcfe",
     "tasks": "f8b887c1bce2bc3683ef686dfefeefda03ccf6d6c5a214adac8f7f0b3f875a52",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

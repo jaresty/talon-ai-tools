@@ -499,12 +499,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "thought experiments or scenario walkthroughs that project "
         "evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response enhances the task by explicitly defining criteria of "
-        "correctness before proposing implementations, treating those "
-        "criteria as fixed and authoritative. Implementations must satisfy "
-        "the prior definition and are not permitted to redefine "
-        "correctness during construction, shifting progress from building "
-        "artifacts to securing meaning.",
+        "spec": "The response defines explicit criteria of correctness before "
+        "proposing implementations and treats those criteria as fixed and "
+        "authoritative. Implementations must satisfy the prior definition "
+        "and may not redefine correctness during construction. Progress is "
+        "measured by compliance with the specification rather than by "
+        "artifact production.",
         "split": "The response enhances the task by deliberately decomposing the "
         "subject into parts or components, analyzing each in isolation "
         "while intentionally bracketing interactions, treating the "

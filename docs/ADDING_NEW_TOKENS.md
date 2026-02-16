@@ -27,6 +27,39 @@ Adding a token requires updating the Python source, regenerating artifacts, and 
 - Go toolchain for bar CLI (if updating embedded grammar)
 - Make available for running Makefile targets
 
+## Before You Begin: Token Design Checklist
+
+Before adding a new token, verify:
+
+### 1. Distinctiveness
+- [ ] Does this token produce a **different effect** from existing tokens in this axis?
+- [ ] Can a user distinguish the output from similar tokens?
+- [ ] Does the description avoid overlap with other axes (e.g., no "over time" in method if scope handles time)?
+
+### 2. Axis Purity
+- [ ] Does this token belong in the axis I'm adding it to?
+- [ ] Would it make more sense in a different axis? (e.g., "tight" as completeness, not form)
+
+### 3. Compatibility
+- [ ] What happens when combined with each other axis? (document the behavior, don't just forbid)
+- [ ] Does it work with the primary task types (static prompts)?
+- [ ] Are there known conflicts that need documentation in the description?
+
+### 4. Precedence Awareness
+- [ ] If this token conflicts with another axis, which wins? (see reference key precedence)
+- [ ] Channel > Form > Task > Intent > Persona — does this token override or get overridden?
+
+### 5. Description Quality
+- [ ] Description starts with "The response..." and describes the effect on output
+- [ ] Description includes "Works best with..." or "Incompatible with..." clauses if needed
+- [ ] Description avoids anchoring to other axes' territory
+
+### 6. Meta-Evaluation
+- [ ] Can bar-autopilot skills explain when to use this token?
+- [ ] Would `bar help llm` provide adequate guidance for this token?
+
+> **Why this matters:** Most issues discovered in shuffle/task refinement cycles (ADR-0085/0113) could have been caught at token creation if these questions had been asked.
+
 ## Step-by-Step Process
 
 ### 1. Add Token to Python Configuration

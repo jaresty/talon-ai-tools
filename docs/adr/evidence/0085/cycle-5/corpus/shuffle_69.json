@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"fail\"): The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+    "Method (\"grove\"): The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
+    "Form (\"story\"): The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
+    "Channel (\"html\"): The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+    "Directional (\"bog\"): The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "fail",
+      "description": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes."
+    },
+    {
+      "axis": "method",
+      "token": "grove",
+      "description": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms."
+    },
+    {
+      "axis": "form",
+      "token": "story",
+      "description": "The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax."
+    },
+    {
+      "axis": "channel",
+      "token": "html",
+      "description": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "bog",
+      "description": "The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "max",
+    "scope": [
+      "fail"
+    ],
+    "method": [
+      "grove"
+    ],
+    "form": [
+      "story"
+    ],
+    "channel": [
+      "html"
+    ],
+    "directional": "bog"
+  },
+  "persona": {
+    "preset": "stakeholder_facilitator",
+    "preset_label": "Stakeholder facilitator",
+    "voice": "as facilitator",
+    "audience": "to stakeholders",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "stakeholder_facilitator",
+      "description": "Stakeholder facilitator"
+    },
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    },
+    {
+      "axis": "audience",
+      "token": "to stakeholders",
+      "description": "The response addresses stakeholders, focusing on impact, decisions, and clarity."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "stakeholder_facilitator",
+    "plan",
+    "max",
+    "fail",
+    "grove",
+    "story",
+    "html",
+    "bog"
+  ]
+}

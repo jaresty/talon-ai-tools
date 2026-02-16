@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Scope (\"thing\"): The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+    "Method (\"spec\"): The response enhances the task by explicitly defining criteria of correctness before proposing implementations, treating those criteria as fixed and authoritative. Implementations must satisfy the prior definition and are not permitted to redefine correctness during construction, shifting progress from building artifacts to securing meaning.",
+    "Channel (\"svg\"): The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "scope",
+      "token": "thing",
+      "description": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective."
+    },
+    {
+      "axis": "method",
+      "token": "spec",
+      "description": "The response enhances the task by explicitly defining criteria of correctness before proposing implementations, treating those criteria as fixed and authoritative. Implementations must satisfy the prior definition and are not permitted to redefine correctness during construction, shifting progress from building artifacts to securing meaning."
+    },
+    {
+      "axis": "channel",
+      "token": "svg",
+      "description": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
+    }
+  ],
+  "axes": {
+    "task": "probe",
+    "completeness": "minimal",
+    "scope": [
+      "thing"
+    ],
+    "method": [
+      "spec"
+    ],
+    "channel": [
+      "svg"
+    ]
+  },
+  "persona": {
+    "preset": "scientist_to_analyst",
+    "preset_label": "Scientist to analyst",
+    "voice": "as scientist",
+    "audience": "to analyst",
+    "tone": "formally"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "scientist_to_analyst",
+      "description": "Scientist to analyst"
+    },
+    {
+      "axis": "voice",
+      "token": "as scientist",
+      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+    },
+    {
+      "axis": "audience",
+      "token": "to analyst",
+      "description": "The response addresses an analyst, providing structure, data framing, and ways to visualise results."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    }
+  ],
+  "tokens": [
+    "scientist_to_analyst",
+    "probe",
+    "minimal",
+    "thing",
+    "spec",
+    "svg"
+  ]
+}

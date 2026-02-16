@@ -642,7 +642,7 @@
     "guidance": {
       "check": "Works well with: log, gherkin, test. For test coverage gaps: use check, not make ('check' = evaluate existing; 'make' = create new).",
       "diff": "Works well with: jira (comparison tables), log (structured diff), codetour (code comparison).",
-      "fix": "In bar's grammar, fix means reformat — not debug. To correct defects, use make or show with diagnose, inversion, or adversarial.",
+      "fix": "In bar's grammar, fix means reformat — not debug. To analyze/debug: use probe with diagnose, inversion, or adversarial. To implement the fix: use fix (reformat) or make (create new).",
       "make": "Works well with: svg, adr, diagram, codetour. For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
       "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), jira (backlog items).",
       "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. probe = analyze broadly; pull = extract subset.",
@@ -1815,7 +1815,7 @@
   },
   "checksums": {
     "axes": "d44f8da7a4ccf59cfe40d2dd7a7313a2ad53f5a6213a36a653873239d14dbcfe",
-    "tasks": "f8b887c1bce2bc3683ef686dfefeefda03ccf6d6c5a214adac8f7f0b3f875a52",
+    "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "9adf1fd81f175794a6270e5dbad40b4f4ce596ed3de4e7701961013c9d5096b5"

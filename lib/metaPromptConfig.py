@@ -40,7 +40,7 @@ PERSONA (system prompt): Communication identity that shapes expression, not reas
   • Voice — who is speaking
   • Audience — who the message is for
   • Tone — emotional modulation
-  • Intent — why this response exists for the audience (does not redefine task)
+  • Intent — purpose or motivation (e.g., persuade, inform, entertain)—explains why for the audience, not what to do
   • Applied after task and constraints are satisfied
 
 SUBJECT (user prompt): The content to work with.

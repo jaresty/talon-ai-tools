@@ -692,8 +692,7 @@
       "intent": {
         "announce": "Share news or updates with the audience.",
         "appreciate": "Express thanks, recognition, or positive regard.",
-        "coach": "Support the audience’s growth through guidance and feedback.",
-        "entertain": "Engage or amuse the audience.",
+        "coach": "Support the audience's growth through guidance and feedback.",
         "inform": "Provide clear, relevant information the audience needs.",
         "persuade": "Influence the audience toward a view or action.",
         "teach": "Help the audience understand and learn material."
@@ -817,7 +816,6 @@
           "announce",
           "appreciate",
           "coach",
-          "entertain",
           "inform",
           "persuade",
           "teach"
@@ -839,11 +837,6 @@
           "key": "coach",
           "label": "Coach"
         },
-        "entertain": {
-          "intent": "entertain",
-          "key": "entertain",
-          "label": "Entertain"
-        },
         "inform": {
           "intent": "inform",
           "key": "inform",
@@ -864,7 +857,6 @@
         "announce": "announce",
         "appreciate": "appreciate",
         "coach": "coach",
-        "entertain": "entertain",
         "inform": "inform",
         "persuade": "persuade",
         "teach": "teach"
@@ -873,8 +865,7 @@
         "relational": [
           "appreciate",
           "persuade",
-          "coach",
-          "entertain"
+          "coach"
         ],
         "task": [
           "inform",
@@ -886,7 +877,6 @@
         "announce": "Announce",
         "appreciate": "Appreciate / thank",
         "coach": "Coach",
-        "entertain": "Entertain",
         "inform": "Inform",
         "persuade": "Persuade",
         "teach": "Teach / explain"
@@ -894,8 +884,7 @@
       "docs": {
         "announce": "Share news or updates with the audience.",
         "appreciate": "Express thanks, recognition, or positive regard.",
-        "coach": "Support the audience’s growth through guidance and feedback.",
-        "entertain": "Engage or amuse the audience.",
+        "coach": "Support the audience's growth through guidance and feedback.",
         "inform": "Provide clear, relevant information the audience needs.",
         "persuade": "Influence the audience toward a view or action.",
         "teach": "Help the audience understand and learn material."
@@ -943,7 +932,6 @@
         "announce": "Share news or updates",
         "appreciate": "Express thanks or recognition",
         "coach": "Guide growth and development",
-        "entertain": "Engage or amuse",
         "inform": "Convey information clearly",
         "persuade": "Influence toward a view",
         "teach": "Help the audience learn"
@@ -955,8 +943,7 @@
       },
       "intent": {
         "announce": "Social-purpose intent: use only when delivering a specific announcement. Not a modifier for analytical or planning tasks.",
-        "appreciate": "Social-purpose intent: use only when the whole response is an expression of thanks or recognition. Does not modify analytical tasks (plan, probe, check, diff) — pair with tone: kindly instead.",
-        "entertain": "Social-purpose intent: use only when amusement is the primary goal. Use tone: casually for an informal register instead."
+        "appreciate": "Social-purpose intent: use only when the whole response is an expression of thanks or recognition. Does not modify analytical tasks (plan, probe, check, diff) — pair with tone: kindly instead."
       }
     }
   },
@@ -1192,7 +1179,6 @@
           "announce": "announce",
           "appreciate": "appreciate",
           "coach": "coach",
-          "entertain": "entertain",
           "inform": "inform",
           "persuade": "persuade",
           "teach": "teach"
@@ -1416,7 +1402,6 @@
         "intent=announce": "intent-announce",
         "intent=appreciate": "intent-appreciate",
         "intent=coach": "intent-coach",
-        "intent=entertain": "intent-entertain",
         "intent=inform": "intent-inform",
         "intent=persuade": "intent-persuade",
         "intent=teach": "intent-teach"
@@ -1540,7 +1525,6 @@
       "directly": "directly",
       "domains": "domains",
       "effects": "effects",
-      "entertain": "entertain",
       "experimental": "experimental",
       "explore": "explore",
       "facilitate": "facilitate",
@@ -1607,7 +1591,6 @@
       "intent=announce": "intent-announce",
       "intent=appreciate": "intent-appreciate",
       "intent=coach": "intent-coach",
-      "intent=entertain": "intent-entertain",
       "intent=inform": "intent-inform",
       "intent=persuade": "intent-persuade",
       "intent=teach": "intent-teach",
@@ -1807,8 +1790,8 @@
   "checksums": {
     "axes": "103e707f9424ab80a70a51e38e70386217757a179490626793b4f890b640f6ca",
     "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
-    "persona": "4c7241cac6175b2839729b7e9a56bd98fee70fc44c03bd1cacc2c9c20bcad15a",
+    "persona": "04e8c3f03b00c123c6f3d42a5747af046f4d77df9b3cfd9bcd5d86760f285fe8",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "3a6c64159005b71939e79cfcbd090a23a764877171c12c2ab892d6f939f9a7c7"
+    "slugs": "9adf1fd81f175794a6270e5dbad40b4f4ce596ed3de4e7701961013c9d5096b5"
   }
 }

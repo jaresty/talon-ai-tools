@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response explains or describes the subject for the stated audience.",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Scope (\"stable\"): The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid.",
+    "Method (\"unknowns\"): The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
+    "Form (\"indirect\"): The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+    "Channel (\"shellscript\"): The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.",
+    "Directional (\"jog\"): The response modifies the task to interpret the intent and carry it out directly without asking follow-up questions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "scope",
+      "token": "stable",
+      "description": "The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid."
+    },
+    {
+      "axis": "method",
+      "token": "unknowns",
+      "description": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
+    },
+    {
+      "axis": "form",
+      "token": "indirect",
+      "description": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
+    },
+    {
+      "axis": "channel",
+      "token": "shellscript",
+      "description": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation. Not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup."
+    },
+    {
+      "axis": "directional",
+      "token": "jog",
+      "description": "The response modifies the task to interpret the intent and carry it out directly without asking follow-up questions."
+    }
+  ],
+  "axes": {
+    "task": "show",
+    "completeness": "gist",
+    "scope": [
+      "stable"
+    ],
+    "method": [
+      "unknowns"
+    ],
+    "form": [
+      "indirect"
+    ],
+    "channel": [
+      "shellscript"
+    ],
+    "directional": "jog"
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "designer_to_pm",
+    "show",
+    "gist",
+    "stable",
+    "unknowns",
+    "indirect",
+    "shellscript",
+    "jog"
+  ]
+}

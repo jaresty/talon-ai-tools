@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint.",
+    "Method (\"boom\"): The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
+    "Form (\"taxonomy\"): The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly. Adapts to the channel: when combined with a code channel, the taxonomy is expressed through the type system (interfaces, enums, inheritance hierarchies); with a markup channel, as hierarchical markup structure; without a channel, as prose classification sections.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+    "Directional (\"dip bog\"): The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and extensions."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    },
+    {
+      "axis": "scope",
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint."
+    },
+    {
+      "axis": "method",
+      "token": "boom",
+      "description": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes."
+    },
+    {
+      "axis": "form",
+      "token": "taxonomy",
+      "description": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly. Adapts to the channel: when combined with a code channel, the taxonomy is expressed through the type system (interfaces, enums, inheritance hierarchies); with a markup channel, as hierarchical markup structure; without a channel, as prose classification sections."
+    },
+    {
+      "axis": "channel",
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+    },
+    {
+      "axis": "directional",
+      "token": "dip bog",
+      "description": "The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and extensions."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "minimal",
+    "scope": [
+      "struct"
+    ],
+    "method": [
+      "boom"
+    ],
+    "form": [
+      "taxonomy"
+    ],
+    "channel": [
+      "jira"
+    ],
+    "directional": "dip bog"
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "sim",
+    "minimal",
+    "struct",
+    "boom",
+    "taxonomy",
+    "jira",
+    "dip bog"
+  ]
+}

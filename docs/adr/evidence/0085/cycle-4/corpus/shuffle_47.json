@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+  "constraints": [
+    "Completeness (\"deep\"): The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+    "Scope (\"thing\"): The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+    "Method (\"converge\"): The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
+    "Form (\"actions\"): The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
+    "Channel (\"remote\"): The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
+    "Directional (\"rog\"): The response modifies the task to examine the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "deep",
+      "description": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
+    },
+    {
+      "axis": "scope",
+      "token": "thing",
+      "description": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective."
+    },
+    {
+      "axis": "method",
+      "token": "converge",
+      "description": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered."
+    },
+    {
+      "axis": "form",
+      "token": "actions",
+      "description": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation."
+    },
+    {
+      "axis": "channel",
+      "token": "remote",
+      "description": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing."
+    },
+    {
+      "axis": "directional",
+      "token": "rog",
+      "description": "The response modifies the task to examine the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "deep",
+    "scope": [
+      "thing"
+    ],
+    "method": [
+      "converge"
+    ],
+    "form": [
+      "actions"
+    ],
+    "channel": [
+      "remote"
+    ],
+    "directional": "rog"
+  },
+  "persona": {
+    "preset": "teach_junior_dev",
+    "preset_label": "Teach junior dev",
+    "voice": "as teacher",
+    "audience": "to junior engineer",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "teach_junior_dev",
+      "description": "Teach junior dev"
+    },
+    {
+      "axis": "voice",
+      "token": "as teacher",
+      "description": "The response speaks as a teacher, breaking concepts down and scaffolding understanding."
+    },
+    {
+      "axis": "audience",
+      "token": "to junior engineer",
+      "description": "The response addresses a junior engineer, explaining clearly and offering gentle guidance."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "teach_junior_dev",
+    "fix",
+    "deep",
+    "thing",
+    "converge",
+    "actions",
+    "remote",
+    "rog"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"view\"): The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action.",
+    "Method (\"deduce\"): The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit.",
+    "Form (\"log\"): The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
+    "Directional (\"fip bog\"): The response modifies the task to move between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "view",
+      "description": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
+    },
+    {
+      "axis": "method",
+      "token": "deduce",
+      "description": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit."
+    },
+    {
+      "axis": "form",
+      "token": "log",
+      "description": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative."
+    },
+    {
+      "axis": "directional",
+      "token": "fip bog",
+      "description": "The response modifies the task to move between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "full",
+    "scope": [
+      "view"
+    ],
+    "method": [
+      "deduce"
+    ],
+    "form": [
+      "log"
+    ],
+    "directional": "fip bog"
+  },
+  "persona": {
+    "voice": "as facilitator",
+    "audience": "to platform team"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    },
+    {
+      "axis": "audience",
+      "token": "to platform team",
+      "description": "The response addresses a platform team, emphasising reliability, leverage, and paved-path fit."
+    }
+  ],
+  "tokens": [
+    "as facilitator",
+    "to platform team",
+    "sort",
+    "view",
+    "deduce",
+    "log",
+    "fip bog"
+  ]
+}

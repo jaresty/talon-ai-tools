@@ -652,6 +652,12 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	}
 	fmt.Fprintf(w, "\n")
 
+	fmt.Fprintf(w, "### General Guidance\n\n")
+	fmt.Fprintf(w, "**More tokens does not equal better prompts.** The clearest prompts often use fewer tokens.\n\n")
+	fmt.Fprintf(w, "- Prefer 2-4 tokens for straightforward tasks\n")
+	fmt.Fprintf(w, "- Use 5+ tokens only when the task genuinely requires multiple dimensions\n")
+	fmt.Fprintf(w, "- Example: A simple extraction task needs only `pull` + persona. A complex persona + method + channel combination may need more.\n\n")
+
 	fmt.Fprintf(w, "### Incompatibilities\n\n")
 	fmt.Fprintf(w, "Certain token combinations are not allowed or produce low-quality results:\n\n")
 

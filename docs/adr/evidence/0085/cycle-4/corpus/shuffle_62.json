@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response chooses one or more options from a set of alternatives.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"fail\"): The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+    "Method (\"melody\"): The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "fail",
+      "description": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes."
+    },
+    {
+      "axis": "method",
+      "token": "melody",
+      "description": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment."
+    },
+    {
+      "axis": "channel",
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+    }
+  ],
+  "axes": {
+    "task": "pick",
+    "completeness": "full",
+    "scope": [
+      "fail"
+    ],
+    "method": [
+      "melody"
+    ],
+    "channel": [
+      "jira"
+    ]
+  },
+  "persona": {
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "directly",
+    "pick",
+    "fail",
+    "melody",
+    "jira"
+  ]
+}

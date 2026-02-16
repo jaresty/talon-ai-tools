@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Method (\"actors\"): The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
+    "Form (\"wasinawa\"): The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
+    "Directional (\"fly ong\"): The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "method",
+      "token": "actors",
+      "description": "The response enhances the task by identifying and centering people, roles, or agents involved in the system."
+    },
+    {
+      "axis": "form",
+      "token": "wasinawa",
+      "description": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
+    },
+    {
+      "axis": "directional",
+      "token": "fly ong",
+      "description": "The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "max",
+    "method": [
+      "actors"
+    ],
+    "form": [
+      "wasinawa"
+    ],
+    "directional": "fly ong"
+  },
+  "persona": {
+    "preset": "stakeholder_facilitator",
+    "preset_label": "Stakeholder facilitator",
+    "voice": "as facilitator",
+    "audience": "to stakeholders",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "stakeholder_facilitator",
+      "description": "Stakeholder facilitator"
+    },
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    },
+    {
+      "axis": "audience",
+      "token": "to stakeholders",
+      "description": "The response addresses stakeholders, focusing on impact, decisions, and clarity."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "stakeholder_facilitator",
+    "plan",
+    "max",
+    "actors",
+    "wasinawa",
+    "fly ong"
+  ]
+}

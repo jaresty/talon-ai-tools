@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Scope (\"act\"): The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+    "Method (\"cite\"): The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
+    "Channel (\"jira\"): The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+    "Directional (\"fly ong\"): The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "scope",
+      "token": "act",
+      "description": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting."
+    },
+    {
+      "axis": "method",
+      "token": "cite",
+      "description": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration."
+    },
+    {
+      "axis": "channel",
+      "token": "jira",
+      "description": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
+    },
+    {
+      "axis": "directional",
+      "token": "fly ong",
+      "description": "The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "gist",
+    "scope": [
+      "act"
+    ],
+    "method": [
+      "cite"
+    ],
+    "channel": [
+      "jira"
+    ],
+    "directional": "fly ong"
+  },
+  "persona": {},
+  "tokens": [
+    "plan",
+    "gist",
+    "act",
+    "cite",
+    "jira",
+    "fly ong"
+  ]
+}

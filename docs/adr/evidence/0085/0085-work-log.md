@@ -75,4 +75,47 @@ The general principle "form shapes task output" handles novel combinations autom
 
 ---
 
+## Cycle 4: Feedback Loop Enhancements + Evaluation
+
+**Date:** 2026-02-15  
+**Focus:** Exercise new ADR-0085 feedback loop phases
+
+### Enhancements Applied
+
+1. **Phase 0: Calibrate** — Scored 10 seeds with subagent as second evaluator
+   - Agreement: 60% (below 80% threshold)
+   - Resolution: Proceed with JARESTY scores as anchor
+
+2. **Phase 2: Evaluate** — Evaluated 20 seeds across sampling strategies
+   - Broad sweep (1-10): 3.9/5
+   - Low-fill (31-35): 3.6/5
+   - High-fill (41-45): 3.6/5
+   - **Overall: 3.7/5**
+
+### Key Findings
+
+1. **Persona-task alignment is the biggest predictor of score**
+2. **Too many tokens hurts coherence** — High-fill (10 tokens) scored lower than low-fill (2 tokens)
+3. **`entertain` intent is problematic** — Creates awkward combinations
+4. **Channel conflicts exist** — SVG+log, diagram+verbatim create tension
+5. **Stable scope + sim task = excellent** — Consistently scores 5/5
+
+### Recommendations
+
+| ID | Action | Target | Reason |
+|----|--------|--------|--------|
+| R-01 | Deprecate | `entertain` intent | Creates awkward combos more often than good |
+| R-02 | Add guidance | bar help llm | "Fewer tokens often produce clearer prompts" |
+| R-03 | Document | Channel conflicts | SVG+log, diagram+verbatim tension |
+| R-04 | Update | bar-autopilot skills | Add strong persona-task pairs |
+
+### Next Steps
+
+- Apply R-02, R-03 to bar help llm
+- Apply R-04 to bar-autopilot
+- Consider R-01 deprecation in next grammar update
+- Run ADR-0113 for cross-validation
+
+---
+
 ## ADR 0085 Complete ✅

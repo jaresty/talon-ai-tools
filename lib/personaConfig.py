@@ -47,11 +47,10 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
     "intent": {
         "inform": "Provide clear, relevant information the audience needs.",
-        "entertain": "Engage or amuse the audience.",
         "persuade": "Influence the audience toward a view or action.",
         "appreciate": "Express thanks, recognition, or positive regard.",
         "announce": "Share news or updates with the audience.",
-        "coach": "Support the audience’s growth through guidance and feedback.",
+        "coach": "Support the audience's growth through guidance and feedback.",
         "teach": "Help the audience understand and learn material.",
     },
 }
@@ -98,7 +97,6 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     },
     "intent": {
         "inform": "Convey information clearly",
-        "entertain": "Engage or amuse",
         "persuade": "Influence toward a view",
         "appreciate": "Express thanks or recognition",
         "announce": "Share news or updates",
@@ -112,12 +110,16 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # ambiguous or where misuse traps exist (ADR-0112). Displayed in the TUI at token-
 # selection time; never injected into the prompt body.
 PERSONA_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
+    "presets": {
+        "designer_to_pm": "Strong with sim (stability analysis), probe (design reviews). Good for scenarios, flow analysis.",
+        "product_manager_to_team": "Strong with probe (quality analysis), check (requirements validation). Good for retrospectives, estimation.",
+        "peer_engineer_explanation": "Strong with sim (technical scenarios), show (code structure). Good for walkthroughs, debugging.",
+        "scientist_to_analyst": "Strong with check (evidence-based verification), probe (analysis). Good for data-driven decisions.",
+    },
     "intent": {
         "appreciate": "Social-purpose intent: use only when the whole response is an "
         "expression of thanks or recognition. Does not modify analytical tasks "
         "(plan, probe, check, diff) — pair with tone: kindly instead.",
-        "entertain": "Social-purpose intent: use only when amusement is the primary "
-        "goal. Use tone: casually for an informal register instead.",
         "announce": "Social-purpose intent: use only when delivering a specific "
         "announcement. Not a modifier for analytical or planning tasks.",
     },
@@ -378,7 +380,7 @@ PERSONA_PRESET_IMPLICIT_INTENTS: Dict[str, str] = {
     "designer_to_pm": "inform",
     "product_manager_to_team": "inform",  # PMs help teams inform on product direction
     "executive_brief": "inform",
-    "fun_mode": "entertain",
+    "fun_mode": "inform",  # Changed from entertain - fun_mode provides tone (casually) without requiring entertain intent
 }
 
 
@@ -398,7 +400,6 @@ Option 2: Build custom with explicit intent
 Mixing preset + explicit intent is usually redundant or confusing:
   - Redundant: teach_junior_dev + teach (preset already teaches)
   - Conflicting: scientist_to_analyst + coach (inform vs teach)
-  - Confusing: fun_mode + inform (entertainment vs information)
 
 When in doubt: Use preset alone OR custom voice/audience/tone + intent.
 """
@@ -426,11 +427,6 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         intent="coach",
     ),
     IntentPreset(
-        key="entertain",
-        label="Entertain",
-        intent="entertain",
-    ),
-    IntentPreset(
         key="inform",
         label="Inform",
         intent="inform",
@@ -449,7 +445,7 @@ INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
         "announce",
         "teach",
     ),
-    "relational": ("appreciate", "persuade", "coach", "entertain"),
+    "relational": ("appreciate", "persuade", "coach"),
 }
 
 

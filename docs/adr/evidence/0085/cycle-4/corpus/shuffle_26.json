@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response evaluates the subject against a condition and reports whether it passes or fails.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Form (\"recipe\"): The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+    "Directional (\"dip ong\"): The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "form",
+      "token": "recipe",
+      "description": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it."
+    },
+    {
+      "axis": "directional",
+      "token": "dip ong",
+      "description": "The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+    }
+  ],
+  "axes": {
+    "task": "check",
+    "completeness": "full",
+    "form": [
+      "recipe"
+    ],
+    "directional": "dip ong"
+  },
+  "persona": {
+    "preset": "peer_engineer_explanation",
+    "preset_label": "Peer engineer explanation",
+    "voice": "as programmer",
+    "audience": "to programmer"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "peer_engineer_explanation",
+      "description": "Peer engineer explanation"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    }
+  ],
+  "tokens": [
+    "peer_engineer_explanation",
+    "check",
+    "recipe",
+    "dip ong"
+  ]
+}

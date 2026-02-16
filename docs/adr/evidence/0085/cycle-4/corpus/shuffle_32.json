@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "scope",
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "max",
+    "scope": [
+      "struct"
+    ]
+  },
+  "persona": {},
+  "tokens": [
+    "sort",
+    "max",
+    "struct"
+  ]
+}

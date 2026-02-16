@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Form (\"story\"): The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "form",
+      "token": "story",
+      "description": "The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax."
+    }
+  ],
+  "axes": {
+    "task": "diff",
+    "completeness": "full",
+    "form": [
+      "story"
+    ]
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "diff",
+    "story"
+  ]
+}

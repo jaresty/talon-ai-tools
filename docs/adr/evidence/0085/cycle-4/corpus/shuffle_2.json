@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning. Note: in bar's grammar, `fix` is a reformat task, not a debugging task. For work that involves correcting defects or errors, use `make` or `show` paired with diagnostic method tokens (`diagnose`, `inversion`, `adversarial`).",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Method (\"depends\"): The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
+    "Form (\"log\"): The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "method",
+      "token": "depends",
+      "description": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system."
+    },
+    {
+      "axis": "form",
+      "token": "log",
+      "description": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "skim",
+    "method": [
+      "depends"
+    ],
+    "form": [
+      "log"
+    ]
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "fun_mode",
+    "fix",
+    "skim",
+    "depends",
+    "log"
+  ]
+}

@@ -1,0 +1,32 @@
+# Cycle-4 Recommendations YAML
+
+- id: R-01
+  action: remove
+  token: entertain
+  axis: intent
+  reason: Creates awkward combinations more often than good ones. When paired with task tokens (make, sort, check), produces semantically unclear prompts.
+  evidence:
+    - seed_10
+    - seed_34
+  proposed: Remove from grammar. Users wanting engagement should use specific persona presets (fun_mode, designer_to_pm).
+
+- id: R-02
+  action: edit
+  target: bar help llm
+  section: Composition Rules
+  proposed: |
+    Add General Guidance section:
+    "More tokens does not equal better prompts. The clearest prompts often use fewer tokens.
+    Prefer 2-4 tokens for straightforward tasks; 5+ tokens only when the task genuinely requires
+    multiple dimensions."
+
+- id: R-04
+  action: edit
+  target: Token-level guidance (prompt-grammar.json)
+  tokens: [designer_to_pm, product_manager_to_team, peer_engineer_explanation, scientist_to_analyst]
+  proposed: |
+    Add "Strong pairs" to each persona token's guidance:
+    - designer_to_pm + sim → Stability analysis, design reviews
+    - product_manager_to_team + probe → Quality analysis, retrospectives
+    - peer_engineer_explanation + sim → Technical scenarios, walkthroughs
+    - scientist_to_analyst + check → Evidence-based verification

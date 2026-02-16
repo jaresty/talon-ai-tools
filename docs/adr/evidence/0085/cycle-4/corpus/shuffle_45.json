@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"mean\"): The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective.",
+    "Form (\"direct\"): The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
+    "Directional (\"fip bog\"): The response modifies the task to move between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "mean",
+      "description": "The response focuses on how something should be understood prior to judgment—its purpose, assumptions, framing, terminology, or conceptual role—without evaluating its success, prescribing action, or adopting a specific stakeholder perspective."
+    },
+    {
+      "axis": "form",
+      "token": "direct",
+      "description": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps."
+    },
+    {
+      "axis": "directional",
+      "token": "fip bog",
+      "description": "The response modifies the task to move between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "skim",
+    "scope": [
+      "mean"
+    ],
+    "form": [
+      "direct"
+    ],
+    "directional": "fip bog"
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "plan",
+    "skim",
+    "mean",
+    "direct",
+    "fip bog"
+  ]
+}

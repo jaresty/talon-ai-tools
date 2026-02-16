@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response creates new content that did not previously exist, based on the input and constraints.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"stable\"): The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid.",
+    "Form (\"questions\"): The response presents the answer as a series of probing or clarifying questions rather than statements."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "stable",
+      "description": "The response enhances the task by analyzing stability and persistence of states within the system. It requires identifying self-reinforcing configurations, explaining the forces that maintain them, and examining how perturbations impact these states. Narrative motivation or shallow incentive talk is forbidden; only structural, persistent-state reasoning is valid."
+    },
+    {
+      "axis": "form",
+      "token": "questions",
+      "description": "The response presents the answer as a series of probing or clarifying questions rather than statements."
+    }
+  ],
+  "axes": {
+    "task": "make",
+    "completeness": "full",
+    "scope": [
+      "stable"
+    ],
+    "form": [
+      "questions"
+    ]
+  },
+  "persona": {},
+  "tokens": [
+    "make",
+    "stable",
+    "questions"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"struct\"): The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint.",
+    "Form (\"activities\"): The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+    "Channel (\"gherkin\"): The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject).",
+    "Directional (\"ong\"): The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "struct",
+      "description": "The response focuses on how things are arranged or related—dependencies, coordination, constraints, incentives, or organizing patterns—independent of sequence, value judgment, or viewpoint."
+    },
+    {
+      "axis": "form",
+      "token": "activities",
+      "description": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description."
+    },
+    {
+      "axis": "channel",
+      "token": "gherkin",
+      "description": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Appropriate for tasks that map naturally to scenario-based behavior specification: `check` for acceptance criteria, `plan` for BDD-style feature planning, `make` when defining system behavior. Not appropriate for tasks that don't involve system behavior: `sort`, `sim`, `probe`, `diff` (without behavioral subject)."
+    },
+    {
+      "axis": "directional",
+      "token": "ong",
+      "description": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "skim",
+    "scope": [
+      "struct"
+    ],
+    "form": [
+      "activities"
+    ],
+    "channel": [
+      "gherkin"
+    ],
+    "directional": "ong"
+  },
+  "persona": {
+    "preset": "peer_engineer_explanation",
+    "preset_label": "Peer engineer explanation",
+    "voice": "as programmer",
+    "audience": "to programmer"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "peer_engineer_explanation",
+      "description": "Peer engineer explanation"
+    },
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    }
+  ],
+  "tokens": [
+    "peer_engineer_explanation",
+    "sort",
+    "skim",
+    "struct",
+    "activities",
+    "gherkin",
+    "ong"
+  ]
+}

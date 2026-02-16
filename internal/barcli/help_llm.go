@@ -531,8 +531,8 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 		if !compact {
 			fmt.Fprintf(w, "Pre-configured combinations of voice, audience, and tone:\n\n")
 		}
-		fmt.Fprintf(w, "| Preset | Voice | Audience | Tone | Spoken Alias |\n")
-		fmt.Fprintf(w, "|--------|-------|----------|------|--------------|\n")
+		fmt.Fprintf(w, "| Preset | Voice | Audience | Tone | Guidance |\n")
+		fmt.Fprintf(w, "|--------|-------|----------|------|----------|\n")
 
 		presetNames := make([]string, 0, len(grammar.Persona.Presets))
 		for name := range grammar.Persona.Presets {
@@ -558,12 +558,12 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 				tone = *preset.Tone
 			}
 
-			spokenAlias := "-"
-			if preset.Label != "" {
-				spokenAlias = preset.Label
+			guidance := grammar.PersonaGuidance("presets", name)
+			if guidance == "" {
+				guidance = "-"
 			}
 
-			fmt.Fprintf(w, "| `persona=%s` | %s | %s | %s | %s |\n", name, voice, audience, tone, spokenAlias)
+			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s |\n", name, voice, audience, tone, guidance)
 		}
 		fmt.Fprintf(w, "\n")
 	}

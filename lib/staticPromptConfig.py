@@ -170,6 +170,16 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
         "In bar's grammar, fix means reformat — not debug. "
         "To correct defects, use make or show with diagnose, inversion, or adversarial."
     ),
+    "diff": "Works well with: jira (comparison tables), log (structured diff), "
+    "codetour (code comparison).",
+    "make": "Works well with: svg (SVG diagrams), adr (decision records), "
+    "diagram (Mermaid), codetour (code artifacts).",
+    "check": "Works well with: log (validation output), gherkin (acceptance criteria), "
+    "test (test plan).",
+    "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), "
+    "jira (backlog items).",
+    "sim": "Works well with: diagram (Mermaid scenarios), slack (session format), "
+    "sync (agenda format).",
 }
 
 

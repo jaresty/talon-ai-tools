@@ -452,9 +452,10 @@
       "channel": {
         "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
         "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan.",
-        "gherkin": "Best for behavior specification: check, plan, or make when defining system behavior. Avoid with sim, sort, probe, or diff (no behavioral subject).",
+        "gherkin": "Best for behavior specification: check, plan, or make when defining system behavior. Avoid with sim, sort, probe, diff, fix, or make (non-behavioral tasks).",
         "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "shellscript": "Avoid with narrative tasks (sim, probe) that produce prose rather than code."
+        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code.",
+        "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both."
       },
       "form": {
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
@@ -628,7 +629,12 @@
       "sort": "Arrange items into categories or order"
     },
     "guidance": {
-      "fix": "In bar's grammar, fix means reformat — not debug. To correct defects, use make or show with diagnose, inversion, or adversarial."
+      "check": "Works well with: log (validation output), gherkin (acceptance criteria), test (test plan).",
+      "diff": "Works well with: jira (comparison tables), log (structured diff), codetour (code comparison).",
+      "fix": "In bar's grammar, fix means reformat — not debug. To correct defects, use make or show with diagnose, inversion, or adversarial.",
+      "make": "Works well with: svg (SVG diagrams), adr (decision records), diagram (Mermaid), codetour (code artifacts).",
+      "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), jira (backlog items).",
+      "sim": "Works well with: diagram (Mermaid scenarios), slack (session format), sync (agenda format)."
     }
   },
   "persona": {
@@ -1794,8 +1800,8 @@
     }
   },
   "checksums": {
-    "axes": "103e707f9424ab80a70a51e38e70386217757a179490626793b4f890b640f6ca",
-    "tasks": "73e9b58eb3b22b1ef2ae4b85bff98b66210addc0b6211496d393650c2ab65d22",
+    "axes": "f7ff54d09b2aa9d6e6bfec187526dc6d39d17ded13ff5a1d754e7067f2f89a7f",
+    "tasks": "88c8920e5f2562f760caf14bd32d5fcbdc7eb3c9f56984bed9dc046ec0a07773",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "9adf1fd81f175794a6270e5dbad40b4f4ce596ed3de4e7701961013c9d5096b5"

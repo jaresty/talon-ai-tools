@@ -744,12 +744,16 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "show (code structure), pull (code extraction). Avoid with "
         "sim, sort, probe, diff (no code subject), or plan.",
         "gherkin": "Best for behavior specification: check, plan, or make when "
-        "defining system behavior. Avoid with sim, sort, probe, or "
-        "diff (no behavioral subject).",
+        "defining system behavior. Avoid with sim, sort, probe, diff, "
+        "fix, or make (non-behavioral tasks).",
         "html": "Avoid with narrative tasks (sim, probe) that produce prose "
         "rather than code.",
-        "shellscript": "Avoid with narrative tasks (sim, probe) that produce "
-        "prose rather than code.",
+        "shellscript": "Shell script output. Avoid with narrative tasks (sim, "
+        "probe) and selection tasks (pick, diff, sort) - these "
+        "don't produce code.",
+        "sketch": "D2 diagram output only. Avoid with prose forms (indirect, "
+        "case, walkthrough, variants) - choose diagram OR prose, not "
+        "both.",
     },
     "form": {
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, "

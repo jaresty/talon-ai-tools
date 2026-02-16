@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response explains or describes the subject for the stated audience.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Directional (\"fip rog\"): The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "directional",
+      "token": "fip rog",
+      "description": "The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal."
+    }
+  ],
+  "axes": {
+    "task": "show",
+    "completeness": "full",
+    "directional": "fip rog"
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "fun_mode",
+    "show",
+    "fip rog"
+  ]
+}

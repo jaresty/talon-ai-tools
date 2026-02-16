@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response chooses one or more options from a set of alternatives.",
+  "constraints": [
+    "Completeness (\"minimal\"): The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "minimal",
+      "description": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
+    }
+  ],
+  "axes": {
+    "task": "pick",
+    "completeness": "minimal"
+  },
+  "persona": {
+    "voice": "as prompt engineer",
+    "intent": "inform"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as prompt engineer",
+      "description": "The response reflects a prompt-engineer stance, explicitly designing and refining prompts."
+    },
+    {
+      "axis": "intent",
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
+    }
+  ],
+  "tokens": [
+    "inform",
+    "as prompt engineer",
+    "pick",
+    "minimal"
+  ]
+}

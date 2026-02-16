@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"cross\"): The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
+    "Method (\"mapping\"): The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "cross",
+      "description": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form."
+    },
+    {
+      "axis": "method",
+      "token": "mapping",
+      "description": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "full",
+    "scope": [
+      "cross"
+    ],
+    "method": [
+      "mapping"
+    ]
+  },
+  "persona": {
+    "voice": "as facilitator"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as facilitator",
+      "description": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum."
+    }
+  ],
+  "tokens": [
+    "as facilitator",
+    "pull",
+    "cross",
+    "mapping"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Method (\"inversion\"): The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
+    "Form (\"socratic\"): The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "method",
+      "token": "inversion",
+      "description": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths."
+    },
+    {
+      "axis": "form",
+      "token": "socratic",
+      "description": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "narrow",
+    "method": [
+      "inversion"
+    ],
+    "form": [
+      "socratic"
+    ]
+  },
+  "persona": {
+    "voice": "as writer",
+    "tone": "kindly",
+    "intent": "inform"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as writer",
+      "description": "The response speaks as a writer, focusing on narrative clarity and flow."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    },
+    {
+      "axis": "intent",
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
+    }
+  ],
+  "tokens": [
+    "inform",
+    "as writer",
+    "kindly",
+    "pull",
+    "narrow",
+    "inversion",
+    "socratic"
+  ]
+}

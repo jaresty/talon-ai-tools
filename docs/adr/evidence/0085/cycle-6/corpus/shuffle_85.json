@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Scope (\"fail\"): The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
+    "Method (\"prioritize\"): The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
+    "Form (\"test\"): The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names.",
+    "Channel (\"slack\"): The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "scope",
+      "token": "fail",
+      "description": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes."
+    },
+    {
+      "axis": "method",
+      "token": "prioritize",
+      "description": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit."
+    },
+    {
+      "axis": "form",
+      "token": "test",
+      "description": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names."
+    },
+    {
+      "axis": "channel",
+      "token": "slack",
+      "description": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "narrow",
+    "scope": [
+      "fail"
+    ],
+    "method": [
+      "prioritize"
+    ],
+    "form": [
+      "test"
+    ],
+    "channel": [
+      "slack"
+    ]
+  },
+  "persona": {
+    "preset": "product_manager_to_team",
+    "preset_label": "Product manager to team",
+    "voice": "as PM",
+    "audience": "to team",
+    "tone": "kindly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "product_manager_to_team",
+      "description": "Product manager to team"
+    },
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    }
+  ],
+  "tokens": [
+    "product_manager_to_team",
+    "plan",
+    "narrow",
+    "fail",
+    "prioritize",
+    "test",
+    "slack"
+  ]
+}

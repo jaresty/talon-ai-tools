@@ -61,7 +61,6 @@ if bootstrap is not None:
                     "appreciate",
                     "persuade",
                     "coach",
-                    "entertain",
                     "inform",
                     "announce",
                 }

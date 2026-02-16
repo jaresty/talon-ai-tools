@@ -168,7 +168,8 @@ _STATIC_PROMPT_LABELS: dict[str, str] = {
 _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     "fix": (
         "In bar's grammar, fix means reformat — not debug. "
-        "To correct defects, use make or show with diagnose, inversion, or adversarial."
+        "To analyze/debug: use probe with diagnose, inversion, or adversarial. "
+        "To implement the fix: use fix (reformat) or make (create new)."
     ),
     "diff": "Works well with: jira (comparison tables), log (structured diff), "
     "codetour (code comparison).",

@@ -779,16 +779,37 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "render questions as code output.",
     },
     "method": {
+        "abduce": "Distinguish from: deduce (premises→conclusion) and induce "
+        "(examples→pattern). Abduce generates hypotheses from evidence.",
         "actors": "Well-suited for security threat modelling: identifying threat "
         "actors (external attackers, insiders, automated bots), their "
         "motivations, and how their capabilities interact with system "
         "attack surfaces. Use alongside adversarial for complete threat "
         "models.",
+        "branch": "Distinguish from: explore (generating options). Branch explores "
+        "multiple reasoning paths in parallel with evaluation.",
+        "cluster": "Distinguish from: meld (balancing constraints). Cluster groups "
+        "items by shared characteristics.",
+        "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce "
+        "(examples→pattern). Deduce derives conclusions from premises.",
+        "explore": "Distinguish from: branch (parallel reasoning with evaluation). "
+        "Explore generates options without premature commitment.",
+        "induce": "Distinguish from: abduce (evidence→hypothesis) and deduce "
+        "(premises→conclusion). Induce generalizes from examples.",
         "inversion": "Well-suited for architecture evaluation: start from named "
         "failure modes (cascade failure, split-brain, thundering "
         "herd) and ask which design choices create or amplify them. "
         "Use when failure patterns are named and the question is "
         "whether the design protects against them.",
+        "meld": "Distinguish from: cluster (grouping by characteristics). Meld "
+        "balances constraints between elements.",
+        "resilience": "Distinguish from: robust (selecting options that work "
+        "across futures). Resilience focuses on system behavior "
+        "under stress.",
+        "robust": "Distinguish from: resilience (behavior under stress). Robust "
+        "favors options that perform acceptably across futures.",
+        "systemic": "Distinguish from: analysis (decomposition/structure). "
+        "Systemic focuses on feedback loops and interactions.",
     },
     "scope": {
         "cross": "Use when the question is about where a concern lives across the "

@@ -67,7 +67,7 @@ Already present in `internal/barcli/help_llm.go` (lines 1097-1100).
 
 ---
 
-### Pending
+### Completed (Pre-ADR)
 
-- **SF-01**: Persona token slug format bug
-- **SF-02**: Case form hang fix
+- **SF-01**: Persona token slug format - already fixed
+- **SF-02**: Case form hang - user error (not a bug)

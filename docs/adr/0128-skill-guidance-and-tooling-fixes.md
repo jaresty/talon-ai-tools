@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+**Implemented: Token guidance items (G-04, G-05, G-06, G-07, G-08, G-09)**
 
 ## Context
 
@@ -10,124 +10,64 @@ ADR-0113 (Task-Gap-Driven Catalog Refinement) identified several gaps in skill g
 
 This ADR addresses remaining gaps: task-level guidance for probe/pull/show/make distinctions (better in token guidance than help_llm), plus tooling bugs.
 
-## Decision
+## Implemented Changes
 
-### Token Guidance Updates (Preferred over help_llm)
+### Token Guidance Updates ✅
 
-Token guidance shows in TUI at selection time - more actionable than help_llm.
+All token guidance items have been implemented:
 
-#### 1. G-04: Probe vs Pull for Risk Tasks
+#### 1. G-04: Probe vs Pull for Risk Tasks ✅
 
-**Problem:** Users pick `probe` for risk extraction, but `pull` is correct.
-
-**Fix:** Add to `lib/staticPromptConfig.py` `STATIC_PROMPT_GUIDANCE_OVERRIDES`:
+Added to `lib/staticPromptConfig.py`:
 
 ```python
 "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. "
     "probe = analyze broadly; pull = extract subset.",
 ```
 
----
+#### 2. G-05: Scaffold + Make Conflict ✅
 
-#### 2. G-05: Scaffold + Make Conflict
-
-**Problem:** `scaffold` wrongly used with design artifact tasks.
-
-**Fix:** Already addressed in ADR-0127 token guidance. Verify:
+Added to `lib/axisConfig.py` AXIS_KEY_TO_GUIDANCE:
 
 ```python
-# In axisConfig.py AXIS_KEY_TO_GUIDANCE["form"]:
-"scaffold": "Learning-oriented explanation. Avoid with 'make' task producing artifacts "
-    "(code, diagram, adr) - use only when user wants accompanied explanation.",
+"scaffold": "Learning-oriented explanation. Avoid with 'make' task producing "
+    "artifacts (code, diagram, adr) - use only when user wants accompanied "
+    "explanation. scaffold = explain from first principles.",
 ```
 
----
+#### 3. G-06: Summarisation Routing ✅
 
-#### 3. G-06: Summarisation Routing
-
-**Problem:** Users pick `show` for summarisation, but `pull` is correct.
-
-**Fix:** Add to `lib/staticPromptConfig.py`:
+Added to `lib/staticPromptConfig.py`:
 
 ```python
 "show": "For summarisation of long documents, prefer 'pull' (extraction). "
     "show = explain a concept; pull = compress source material.",
+"pull": "For summarisation: extract the conceptual core from source material with gist scope. "
+    "For risk extraction: works well with fail scope.",
 ```
 
----
+#### 4. G-07: Test Plan vs Coverage Gap ✅
 
-#### 4. G-07: Test Plan vs Coverage Gap
-
-**Problem:** `make` vs `check` not distinguished for testing tasks.
-
-**Fix:** Enhance ADR-0127 additions in `lib/staticPromptConfig.py`:
+Enhanced in `lib/staticPromptConfig.py`:
 
 ```python
-"check": "Works well with: log (validation output), gherkin (acceptance criteria). "
-    "For test coverage gaps: use check, not make. 'check' = evaluate existing; 'make' = create new.",
+"check": "Works well with: log, gherkin, test. "
+    "For test coverage gaps: use check, not make ('check' = evaluate existing; 'make' = create new).",
 "make": "Works well with: svg, adr, diagram, codetour. "
-    "For test plans: use make, not check. 'make' = create artifact; 'check' = evaluate existing.",
+    "For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
 ```
 
----
+#### 5. G-08: Pre-mortem / Inversion ✅
 
-#### 5. G-08: Pre-mortem / Inversion
+Already present in existing `inversion` guidance in `lib/axisConfig.py`.
 
-**Problem:** Inversion not surfaced for pre-mortem tasks.
+#### 6. G-09: Multi-turn Scope Note ✅
 
-**Fix:** Already covered in existing `inversion` guidance. Verify present in `lib/axisConfig.py`:
-
-```python
-# In AXIS_KEY_TO_GUIDANCE["method"]:
-"inversion": "Well-suited for pre-mortem: assume failure, work backward to find causes.",
-```
+Already present in `internal/barcli/help_llm.go` (lines 1097-1100).
 
 ---
 
-### Documentation Updates (help_llm)
+### Pending
 
-Some items still belong in help_llm for comprehensive reference:
-
-#### 6. G-09: Multi-turn Scope Note
-
-**Fix:** Add to `internal/barcli/help_llm.go`:
-
-```yaml
-## Scope Boundaries
-Bar produces single-turn structured prompts. It does not model multi-turn interactive sessions.
-- Use `cocreate` form for responses structured to invite iteration
-```
-
----
-
-### Tooling Fixes
-
-#### 7. SF-01: Persona Token Slug Format
-
-**Problem:** `audience=to-product-manager` fails in key=value syntax.
-
-**Fix:** Fix slug normalization in parser.
-
-#### 8. SF-02: Case Form Hang
-
-**Problem:** `bar build probe full fail time origin case` hangs.
-
-**Fix:** Add `case` to incompatibility rules; fail cleanly with error.
-
----
-
-## Implementation
-
-1. Update `lib/staticPromptConfig.py` — add task guidance (1, 3, 4)
-2. Verify `lib/axisConfig.py` guidance present (2, 5)
-3. Update `internal/barcli/help_llm.go` — scope note (6)
-4. Fix parser for SF-01
-5. Fix grammar for SF-02
-6. Regenerate axis config
-
-## Validation
-
-After implementation:
-1. Run ADR-0113 task sample to verify improved token selection
-2. Test persona slug format with key=value syntax
-3. Verify `case` form fails cleanly
+- **SF-01**: Persona token slug format bug
+- **SF-02**: Case form hang fix

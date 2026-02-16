@@ -164,7 +164,7 @@ _STATIC_PROMPT_LABELS: dict[str, str] = {
 }
 
 # Selection guidance for task tokens where the description alone is ambiguous
-# or where naming traps exist (ADR-0110).
+# or where naming traps exist (ADR-0110, ADR-0128).
 _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     "fix": (
         "In bar's grammar, fix means reformat — not debug. "
@@ -172,14 +172,20 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     ),
     "diff": "Works well with: jira (comparison tables), log (structured diff), "
     "codetour (code comparison).",
-    "make": "Works well with: svg (SVG diagrams), adr (decision records), "
-    "diagram (Mermaid), codetour (code artifacts).",
-    "check": "Works well with: log (validation output), gherkin (acceptance criteria), "
-    "test (test plan).",
+    "make": "Works well with: svg, adr, diagram, codetour. "
+    "For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
+    "check": "Works well with: log, gherkin, test. "
+    "For test coverage gaps: use check, not make ('check' = evaluate existing; 'make' = create new).",
     "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), "
     "jira (backlog items).",
     "sim": "Works well with: diagram (Mermaid scenarios), slack (session format), "
     "sync (agenda format).",
+    "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. "
+    "probe = analyze broadly; pull = extract subset.",
+    "show": "For summarisation of long documents, prefer 'pull' (extraction). "
+    "show = explain a concept; pull = compress source material.",
+    "pull": "For summarisation: extract the conceptual core from source material with gist scope. "
+    "For risk extraction: works well with fail scope.",
 }
 
 

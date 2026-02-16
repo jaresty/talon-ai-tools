@@ -771,6 +771,10 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "slack, diagram, or no channel.",
         "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm "
         "(schema has no prose slot). Use with plain, slack, or no channel.",
+        "scaffold": "Learning-oriented explanation. Avoid with 'make' task producing "
+        "artifacts (code, diagram, adr) - use only when user wants "
+        "accompanied explanation. scaffold = explain from first "
+        "principles.",
         "socratic": "Avoid with code channels (shellscript, codetour) - they cannot "
         "render questions as code output.",
     },

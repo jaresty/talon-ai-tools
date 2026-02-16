@@ -144,6 +144,7 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 			Slug:        personaSlug,
 			Label:       label,
 			Description: label,
+			Guidance:    grammar.PersonaGuidance("presets", value),
 			Fills:       fills,
 		})
 	}

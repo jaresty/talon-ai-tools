@@ -936,6 +936,12 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 			example: "bar build check good full analysis --subject \"Assess codebase quality\"",
 			desc:    "Use for multi-faceted assessments that span quality (good), fragility (fail), and structure (struct). When the task requires multiple analytical lenses, prioritize by primary concern or analyze sequentially: quality-first (good), risk-first (fail), or architecture-first (struct).",
 		},
+		{
+			title:   "Evaluation with Falsification",
+			command: "bar build check <scope> full verify risks --subject \"...\"",
+			example: "bar build check thing full verify risks --subject \"Evaluate the proposed caching strategy\"",
+			desc:    "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with risks (systematic problem identification). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
+		},
 	}
 
 	for _, p := range patterns {
@@ -983,7 +989,7 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "**Diagnostic Methods:**\n")
 	fmt.Fprintf(w, "- Root cause analysis → `diagnose`, `inversion`, `adversarial`\n")
 	fmt.Fprintf(w, "- Risk/resilience → `risks`, `resilience`\n\n")
-
+	fmt.Fprintf(w, "**For detailed differentiation guidance** on similar methods (e.g., `explore` vs `branch`, `abduce` vs `deduce`, `robust` vs `resilience`), see \"Guidance for specific tokens\" section below.\n\n")
 	fmt.Fprintf(w, "### Choosing Form\n\n")
 	fmt.Fprintf(w, "- **Actionable next steps** → `actions`, `checklist`\n")
 	fmt.Fprintf(w, "- **Multiple alternatives** → `variants`\n")

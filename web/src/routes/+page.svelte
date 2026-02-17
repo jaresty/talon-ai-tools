@@ -6,6 +6,7 @@
 	import LLMPanel from '$lib/LLMPanel.svelte';
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
+	import { parseCommand } from '$lib/parseCommand.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -149,6 +150,26 @@
 	function loadPattern(pattern: GrammarPattern) {
 		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...pattern.tokens };
 	}
+
+	let cmdInput = $state('');
+	let cmdInputOpen = $state(false);
+	let cmdInputWarnings = $state<string[]>([]);
+
+	function loadCommand() {
+		if (!grammar || !cmdInput.trim()) return;
+		const result = parseCommand(cmdInput, grammar);
+		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...result.selected };
+		if (result.subject) subject = result.subject;
+		if (result.addendum) addendum = result.addendum;
+		if (result.persona.preset || result.persona.voice || result.persona.audience || result.persona.tone) {
+			persona = result.persona;
+		}
+		cmdInputWarnings = result.unrecognized;
+		if (result.unrecognized.length === 0) {
+			cmdInput = '';
+			cmdInputOpen = false;
+		}
+	}
 </script>
 
 <div class="layout">
@@ -164,6 +185,33 @@
 	{:else}
 		<div class="main">
 			<section class="selector-panel">
+				<!-- Load command input (collapsible) -->
+				<div class="load-cmd-section">
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div class="load-cmd-toggle" onclick={() => { cmdInputOpen = !cmdInputOpen; cmdInputWarnings = []; }}>
+						<span class="load-cmd-toggle-label">Load command</span>
+						<span class="load-cmd-caret">{cmdInputOpen ? '▲' : '▼'}</span>
+					</div>
+					{#if cmdInputOpen}
+						<div class="load-cmd-body">
+							<input
+								class="load-cmd-input"
+								type="text"
+								placeholder="bar build show mean full plain --subject &quot;…&quot;"
+								bind:value={cmdInput}
+								onkeydown={(e) => e.key === 'Enter' && loadCommand()}
+							/>
+							<button class="load-cmd-btn" onclick={loadCommand}>Load</button>
+							{#if cmdInputWarnings.length > 0}
+								<div class="load-cmd-warnings">
+									Unrecognized tokens: {cmdInputWarnings.map(t => `"${t}"`).join(', ')}
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
+
 				<PatternsLibrary {patterns} onLoad={loadPattern} />
 
 				<!-- Persona -->
@@ -557,4 +605,81 @@
 	}
 
 	.persona-select:focus { outline: none; border-color: var(--color-accent-muted); }
+
+	/* Load command section */
+	.load-cmd-section {
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		margin-bottom: 1rem;
+		overflow: hidden;
+	}
+
+	.load-cmd-toggle {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.5rem 0.75rem;
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.load-cmd-toggle:hover { background: var(--color-surface); }
+
+	.load-cmd-toggle-label {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-text-muted);
+		font-weight: 600;
+	}
+
+	.load-cmd-caret {
+		font-size: 0.6rem;
+		color: var(--color-text-muted);
+	}
+
+	.load-cmd-body {
+		padding: 0.5rem 0.75rem 0.75rem;
+		border-top: 1px solid var(--color-border);
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.load-cmd-input {
+		width: 100%;
+		padding: 0.35rem 0.5rem;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		font-size: 0.8rem;
+		font-family: var(--font-mono);
+	}
+
+	.load-cmd-input:focus {
+		outline: none;
+		border-color: var(--color-accent-muted);
+	}
+
+	.load-cmd-btn {
+		align-self: flex-end;
+		padding: 0.25rem 0.75rem;
+		background: var(--color-accent-muted);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		cursor: pointer;
+		font-size: 0.8rem;
+	}
+
+	.load-cmd-btn:hover { background: var(--color-accent); }
+
+	.load-cmd-warnings {
+		font-size: 0.78rem;
+		color: var(--color-warning);
+		padding: 0.3rem 0.4rem;
+		background: #2a1f10;
+		border-radius: calc(var(--radius) - 2px);
+	}
 </style>

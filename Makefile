@@ -21,10 +21,11 @@ bar-grammar-check:
 	@echo "Regenerating grammar to check for drift..."
 	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
+	@cp build/prompt-grammar.json web/static/prompt-grammar.json
 	@echo "Regenerating TUI fixture..."
 	@NO_COLOR=1 go run scripts/tools/regenerate-tui-fixture.go cmd/bar/testdata/tui_smoke.json cmd/bar/testdata/grammar.json
 	@echo "Checking for grammar drift..."
-	@git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json cmd/bar/testdata/tui_smoke.json || \
+	@git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json cmd/bar/testdata/tui_smoke.json web/static/prompt-grammar.json || \
 		(echo "ERROR: Grammar files or TUI fixture are out of sync. Run 'make bar-grammar-update' to fix." && exit 1)
 	@echo "✓ Grammar files and TUI fixture are in sync"
 
@@ -32,6 +33,7 @@ bar-grammar-update:
 	@echo "Regenerating grammar files..."
 	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
+	@cp build/prompt-grammar.json web/static/prompt-grammar.json
 	@echo "Regenerating TUI fixture..."
 	@NO_COLOR=1 go run scripts/tools/regenerate-tui-fixture.go cmd/bar/testdata/tui_smoke.json cmd/bar/testdata/grammar.json
 	@echo "✓ Grammar files and TUI fixture updated. Review with 'git diff' before committing."

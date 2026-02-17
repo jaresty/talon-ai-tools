@@ -5,6 +5,7 @@
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
+	import { renderPrompt } from '$lib/renderPrompt.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -25,6 +26,7 @@
 	let addendum = $state('');
 	let copied = $state(false);
 	let shared = $state(false);
+	let copiedPrompt = $state(false);
 
 	// Serialize/deserialize prompt state
 	function serialize(): string {
@@ -103,6 +105,14 @@
 		setTimeout(() => (copied = false), 1500);
 	}
 
+	function copyPrompt() {
+		if (!grammar) return;
+		const text = renderPrompt(grammar, selected, subject, addendum);
+		navigator.clipboard.writeText(text);
+		copiedPrompt = true;
+		setTimeout(() => (copiedPrompt = false), 1500);
+	}
+
 	function sharePrompt() {
 		const encoded = serialize();
 		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
@@ -178,7 +188,10 @@
 					<code class="command">{command}</code>
 					<div class="action-row">
 						<button class="copy-btn" onclick={copyCommand}>
-							{copied ? '✓ Copied' : 'Copy'}
+							{copied ? '✓ Copied' : 'Copy cmd'}
+						</button>
+						<button class="copy-prompt-btn" onclick={copyPrompt}>
+							{copiedPrompt ? '✓ Copied' : 'Copy prompt'}
 						</button>
 						<button class="share-btn" onclick={sharePrompt}>
 							{shared ? '✓ Link copied' : 'Share'}
@@ -314,7 +327,7 @@
 		flex-wrap: wrap;
 	}
 
-	.copy-btn, .share-btn, .clear-btn {
+	.copy-btn, .copy-prompt-btn, .share-btn, .clear-btn {
 		padding: 0.3rem 0.75rem;
 		background: var(--color-accent-muted);
 		border: 1px solid var(--color-accent);
@@ -324,7 +337,14 @@
 		font-size: 0.8rem;
 	}
 
-	.copy-btn:hover, .share-btn:hover { background: var(--color-accent); }
+	.copy-btn:hover, .copy-prompt-btn:hover, .share-btn:hover { background: var(--color-accent); }
+
+	.copy-prompt-btn {
+		border-color: var(--color-success);
+		color: var(--color-success);
+	}
+
+	.copy-prompt-btn:hover { background: var(--color-success); color: var(--color-bg); }
 
 	.clear-btn {
 		background: transparent;

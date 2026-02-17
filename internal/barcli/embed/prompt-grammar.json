@@ -480,7 +480,8 @@
         "scaffold": "Learning-oriented explanation. Avoid with 'make' task producing artifacts (code, diagram, adr) - use only when user wants accompanied explanation. scaffold = explain from first principles.",
         "socratic": "Avoid with code channels (shellscript, codetour) - they cannot render questions as code output.",
         "spike": "Research spike: problem statement and exploratory questions. Conflicts with code-format channels (codetour, shellscript, svg, html, diagram/sketch, gherkin) — research spikes are prose question-documents. Use with no channel or prose-compatible channels.",
-        "story": "User story prose (As a / I want / so that). Explicitly avoids Gherkin or test-case syntax — conflicts with gherkin channel. Use with no channel or prose-compatible channels."
+        "story": "User story prose (As a / I want / so that). Explicitly avoids Gherkin or test-case syntax — conflicts with gherkin channel. Use with no channel or prose-compatible channels.",
+        "visual": "Distinct from the diagram channel: visual = abstract/metaphorical prose layout with a short legend; diagram = precise Mermaid code with exact nodes and edges. Use visual when conceptual overview or spatial metaphor is more useful than diagrammatic precision (e.g., non-technical audience, big-picture emphasis). Use diagram when exact topology, dependency mapping, or architecture review requires precise structure."
       },
       "method": {
         "abduce": "Distinguish from: deduce (premises→conclusion) and induce (examples→pattern). Abduce generates hypotheses from evidence.",
@@ -1851,7 +1852,7 @@
     }
   },
   "checksums": {
-    "axes": "2a5d0778114a99ed6bfc88ead0f9b1f96d5521340481fc99b98a8d9ebcba13af",
+    "axes": "29a4b8e4c83cb9332e72aa9c72e4941dd0136c99cebb8446383cb0d0a4f7521b",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

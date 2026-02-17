@@ -832,6 +832,13 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "story": "User story prose (As a / I want / so that). Explicitly avoids "
         "Gherkin or test-case syntax — conflicts with gherkin channel. Use "
         "with no channel or prose-compatible channels.",
+        "visual": "Distinct from the diagram channel: visual = abstract/metaphorical "
+        "prose layout with a short legend; diagram = precise Mermaid code "
+        "with exact nodes and edges. Use visual when conceptual overview or "
+        "spatial metaphor is more useful than diagrammatic precision (e.g., "
+        "non-technical audience, big-picture emphasis). Use diagram when exact "
+        "topology, dependency mapping, or architecture review requires precise "
+        "structure.",
     },
     "method": {
         "abduce": "Distinguish from: deduce (premises→conclusion) and induce "
@@ -874,9 +881,22 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     },
 }
 
-# Task-type heuristics for when to apply each token (ADR-0132).
-# Surfaces as 'When to use' helper text in UIs.
-AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {}
+# Task-type discoverability hints per token (ADR-0132).
+# Answers: "What user task types should trigger selection of this token?"
+# Distinct from guidance (ADR-0110) which covers constraints/conflicts.
+AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
+    "form": {
+        "cocreate": "Iterative design with explicit decision points and alignment checks at each step rather than a one-shot response. Heuristic: 'work through incrementally', 'with decision points', 'iterative design' → cocreate. Distinct from variants (choice of designs) and make (one-shot artifact).",
+        "facilitate": "Planning a workshop, retrospective, or collaborative session with session structure, participation cues, and facilitation agenda. Heuristic: 'facilitate a X', 'run a retrospective', 'workshop planning' → facilitate. Distinct from walkthrough (linear narrated steps).",
+        "ladder": "Analyzing causes or effects across multiple levels of abstraction: step up to systemic causes, step down to concrete consequences. Heuristic: 'step up and down abstraction levels', 'root cause hierarchy', 'why at a systems level' → ladder.",
+        "recipe": "Documenting a process as a structured recipe with a custom mini-language and short key — best when the process has a recurring structure that benefits from a custom notation. Heuristic: 'document as recipe', 'structured setup guide with repeating patterns' → recipe. Distinct from walkthrough (linear narrated steps without custom notation).",
+        "spike": "Framing a technology investigation or adoption decision as a backlog spike artifact (problem statement + exploratory questions). Use make task (not plan) — the spike IS the artifact. Heuristic: 'should we adopt X?', 'spike on Y', 'investigation backlog item' → make + spike.",
+        "taxonomy": "Producing a type hierarchy, category classification, or taxonomy of entities. Pair with thing scope for concrete entities. Heuristic: 'classify all types of X', 'what kinds of Y exist', 'type hierarchy' → taxonomy + thing scope. Distinct from table (flat comparison).",
+        "visual": "Abstract or metaphorical representation of a subject as prose layout with a legend — when diagrammatic precision (Mermaid) is less useful than conceptual overview. Heuristic: 'abstract visual', 'conceptual layout', 'big-picture structure for non-technical audience' → visual. Distinct from diagram channel (precise Mermaid output).",
+        "wardley": "Strategic mapping: user wants to position components on an evolution axis (genesis → custom → product → commodity). Heuristic: 'Wardley map', 'map on evolution axis', 'genesis to commodity' → wardley.",
+        "wasinawa": "Post-incident reflection or retrospective on past events. Structures output as: what happened, why it matters, next steps. Heuristic: 'reflect on incident', 'what went wrong and what to do next', 'lessons learned' → wasinawa. Distinct from pre-mortem (inversion method): pre-mortem assumes future failure; wasinawa reflects on past events.",
+    }
+}
 
 
 @dataclass(frozen=True)

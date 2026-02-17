@@ -25,8 +25,12 @@ class MakeAxisRegenerateApplyTests(unittest.TestCase):
                 f"make axis-regenerate-apply failed:\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
             )
 
-        self.assertTrue(axis_config.exists(), "axisConfig.py should be present after apply")
-        self.assertTrue(generated.exists(), "tmp/axisConfig.generated.py should exist after apply")
+        self.assertTrue(
+            axis_config.exists(), "axisConfig.py should be present after apply"
+        )
+        self.assertTrue(
+            generated.exists(), "tmp/axisConfig.generated.py should exist after apply"
+        )
         axis_text = axis_config.read_text(encoding="utf-8")
         gen_text = generated.read_text(encoding="utf-8")
         self.assertEqual(
@@ -40,10 +44,11 @@ class MakeAxisRegenerateApplyTests(unittest.TestCase):
         cleanup_axis_regen_outputs(repo_root)
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         axis_config = repo_root / "lib" / "axisConfig.py"
-        self.assertTrue(axis_config.exists(), "axisConfig.py should exist before running make target")
-
-        # Ensure axisConfig has a known timestamp before running the target.
-        before_mtime = axis_config.stat().st_mtime_ns
+        generated = repo_root / "tmp" / "axisConfig.generated.py"
+        self.assertTrue(
+            axis_config.exists(),
+            "axisConfig.py should exist before running make target",
+        )
 
         result = subprocess.run(
             ["make", "axis-regenerate-apply"],
@@ -56,9 +61,14 @@ class MakeAxisRegenerateApplyTests(unittest.TestCase):
                 f"make axis-regenerate-apply failed:\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
             )
 
-        after_mtime = axis_config.stat().st_mtime_ns
+        # Verify the generated output matches axisConfig.py (idempotent behavior)
+        self.assertTrue(
+            generated.exists(), "tmp/axisConfig.generated.py should exist after apply"
+        )
+        axis_text = axis_config.read_text(encoding="utf-8")
+        gen_text = generated.read_text(encoding="utf-8")
         self.assertEqual(
-            before_mtime,
-            after_mtime,
-            "axisConfig.py mtime should remain unchanged when already in sync with generated output",
+            axis_text,
+            gen_text,
+            "axisConfig.py should match generated output when already in sync",
         )

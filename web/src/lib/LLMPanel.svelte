@@ -10,7 +10,7 @@
 
 	const DEFAULT_MODELS: Record<LLMConfig['provider'], string> = {
 		anthropic: 'claude-opus-4-6',
-		openai: 'gpt-4o',
+		openai: 'gpt-5',
 		ollama: 'llama3.2'
 	};
 

@@ -80,10 +80,17 @@ def render_axis_config() -> str:
         for axis in sorted(guidance.keys())
         if guidance.get(axis)
     }
+    use_when = payload.get("axis_use_when", {}) or {}
+    use_when_mapping = {
+        axis: dict(sorted((use_when.get(axis) or {}).items()))
+        for axis in sorted(use_when.keys())
+        if use_when.get(axis)
+    }
     # Use width=88 to match black's default line length
     body = pprint.pformat(mapping, width=88, sort_dicts=True)
     label_body = pprint.pformat(label_mapping, width=88, sort_dicts=True)
     guidance_body = pprint.pformat(guidance_mapping, width=88, sort_dicts=True)
+    use_when_body = pprint.pformat(use_when_mapping, width=88, sort_dicts=True)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -136,6 +143,11 @@ def render_axis_config() -> str:
             return AXIS_KEY_TO_GUIDANCE.get(axis, {})
 
 
+        def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
+            \"\"\"Return the key->use_when map for a given axis (ADR-0132).\"\"\"
+            return AXIS_KEY_TO_USE_WHEN.get(axis, {})
+
+
         def axis_docs_for(axis: str) -> list[AxisDoc]:
             \"\"\"Return AxisDoc objects for a given axis.\"\"\"
             mapping = axis_key_to_value_map(axis)
@@ -170,6 +182,9 @@ def render_axis_config() -> str:
                 f"# where naming traps exist (ADR-0110). Not all tokens need this.\n"
                 f"# Distinct from hard incompatibilities in hierarchy.incompatibilities.\n"
                 f"AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {guidance_body}",
+                f"# Task-type heuristics for when to apply each token (ADR-0132).\n"
+                f"# Surfaces as 'When to use' helper text in UIs.\n"
+                f"AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {use_when_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip(),
             ]

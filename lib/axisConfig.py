@@ -536,7 +536,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "activities, operations, or work to be performed—suppressing "
         "interpretation, evaluation, structural explanation, or "
         "perspective-shifting.",
-        "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
+        "agent": "The response explains outcomes in terms of identifiable actors "
+        "with the capacity to select among alternatives, specifying who "
+        "can act, what options are available, and how their choices "
+        "influence results, rather than attributing outcomes solely to "
+        "impersonal structure or equilibrium dynamics.",
         "assume": "The response focuses on explicit or implicit premises that must "
         "hold for the reasoning, system, or argument to function.",
         "cross": "The response focuses on concerns or forces that propagate across "

@@ -3,6 +3,7 @@
 	import { loadGrammar, getAxisTokens, getTaskTokens, AXES, type Grammar } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
+	import LLMPanel from '$lib/LLMPanel.svelte';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -213,6 +214,8 @@
 						{/each}
 					</div>
 				{/if}
+
+				<LLMPanel {command} {subject} {addendum} />
 			</section>
 		</div>
 	{/if}

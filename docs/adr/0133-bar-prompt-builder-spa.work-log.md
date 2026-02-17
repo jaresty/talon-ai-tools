@@ -7,6 +7,54 @@ VCS_REVERT: git restore --source=HEAD web/
 
 ---
 
+## Loop 5 — 2026-02-17 — LLM integration panel green
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0133 D6 — direct LLM API calls from browser; provider config stored in localStorage; Anthropic, OpenAI, Ollama support
+active_constraint: >
+  No LLM integration exists — users cannot send bar prompts directly to an LLM from the UI.
+  Falsifiable: grep for 'bar-llm-config\|anthropic-version' in build/_app exits 1 before, 0 after.
+validation_targets:
+  - "cd web && npm run build && grep -r 'bar-llm-config\\|anthropic-version' build/_app --include='*.js' -l"
+evidence:
+  - "red    | 2026-02-17T05:40:00Z | exit 1 | grep bar-llm-config|anthropic-version build/_app — no matches"
+  - "green  | 2026-02-17T05:42:00Z | exit 0 | build/_app/immutable/nodes/2.BHrLxOHM.js matched"
+  - "removal| 2026-02-17T05:43:00Z | exit 1 | git stash + npm run build + grep — no matches; git stash pop restores green"
+rollback_plan: "git restore --source=HEAD web/src/routes/+page.svelte && rm web/src/lib/LLMPanel.svelte"
+delta_summary: >
+  helper:diff-snapshot: web/src/lib/LLMPanel.svelte (new, ~200 lines),
+  web/src/routes/+page.svelte: +3 lines (import LLMPanel, <LLMPanel> usage)
+  LLMPanel.svelte: provider dropdown (anthropic/openai/ollama), model text input,
+  API key password field with show/hide toggle, temperature range slider,
+  all config persisted to localStorage under bar-llm-config,
+  Send button calls provider-specific fetch (Anthropic messages API with
+  anthropic-dangerous-direct-browser-access header, OpenAI chat completions,
+  Ollama generate), response displayed in scrollable pre block with Copy button.
+  Build composites command + subject + addendum into a single user message.
+loops_remaining_forecast: "0 loops: Phase 1-4 of MVP are complete. Phase 5 (usage patterns library) and deploy verification are low-priority residuals. Confidence: high."
+residual_constraints:
+  - id: RC-05
+    description: >
+      LLM API calls require CORS headers from providers. Anthropic requires
+      anthropic-dangerous-direct-browser-access:true header. OpenAI allows browser
+      direct access. Ollama requires CORS configured on localhost server.
+    severity: Low
+    mitigation: Documented in ADR D6; user-facing notes can be added if needed
+    monitoring: User reports if API calls fail with CORS errors
+    owning_adr: ADR-0133 D6
+  - id: RC-04
+    description: >
+      Deploy workflow (deploy-spa.yml) untested end-to-end on GitHub Actions.
+    severity: Low
+    mitigation: Push to origin/main will trigger first real deploy run
+    monitoring: GitHub Actions run
+    owning_adr: ADR-0133 D2
+next_work:
+  - "Behaviour: deploy-spa.yml runs green on GitHub Actions | Validation: gh run view after push"
+  - "Behaviour: usage patterns library (Phase 5) | Validation: build + grep for template tokens"
+```
+
 ## Loop 4 — 2026-02-17 — localStorage persistence + URL hash sharing green
 
 ```yaml

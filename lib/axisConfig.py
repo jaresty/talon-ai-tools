@@ -750,6 +750,11 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # Distinct from hard incompatibilities in hierarchy.incompatibilities.
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
+        "adr": "Task-affinity for decision-making tasks (plan, probe, make). "
+        "The ADR format (Context, Decision, Consequences) is a decision "
+        "artifact — it does not accommodate tasks that produce non-decision "
+        "outputs. Avoid with sort (sorted list), pull (extraction), diff "
+        "(comparison), or sim (scenario playback).",
         "code": "Avoid with narrative tasks (sim, probe) that produce prose "
         "rather than code.",
         "codetour": "Best for code-navigation tasks: fix, make (code creation), "

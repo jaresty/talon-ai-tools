@@ -664,37 +664,11 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "**Output-exclusive conflicts:**\n")
 	fmt.Fprintf(w, "All channel tokens are output-exclusive — they mandate the entire response format. ")
 	fmt.Fprintf(w, "At most one channel token may appear per prompt. ")
-	fmt.Fprintf(w, "Similarly, form tokens `code`, `html`, and `shellscript` are output-exclusive. ")
 	fmt.Fprintf(w, "Combining two output-exclusive tokens produces contradictory instructions the LLM cannot reconcile.\n\n")
-
-	fmt.Fprintf(w, "**Task-affinity restrictions:**\n")
-	fmt.Fprintf(w, "- `codetour` channel: appropriate for tasks producing navigable code artifacts (`fix`, `make` with code, `show` with code structure, `pull` from code). ")
-	fmt.Fprintf(w, "Not appropriate for non-code tasks: `sim`, `sort`, `probe`, `diff` without code subject, `plan`. ")
-	fmt.Fprintf(w, "Audience-affinity: requires a developer audience — produces a VS Code CodeTour JSON file that non-developers cannot use. ")
-	fmt.Fprintf(w, "Avoid with manager, PM, executive, CEO, stakeholder, analyst, or designer audiences.\n")
-	fmt.Fprintf(w, "- `gherkin` channel: primary use is behavior specification with `make` tasks (acceptance tests, feature specs). ")
-	fmt.Fprintf(w, "With analysis or comparison tasks (`probe`, `diff`, `check`, `sort`), output is reframed: the analysis is performed first, then findings are expressed as Gherkin scenarios that specify the analyzed properties. ")
-	fmt.Fprintf(w, "Avoid with prose-structure forms (`story`, `case`, `log`, `questions`, `recipe`) — these forms cannot be expressed in Gherkin syntax.\n")
-	fmt.Fprintf(w, "- `code`, `html`, `shellscript` channels: not appropriate for narrative tasks (`sim`, `probe`) that produce prose output rather than code or markup.\n")
-	fmt.Fprintf(w, "- `adr` channel: task-affinity for decision-making tasks (`plan`, `probe`, `make`). ")
-	fmt.Fprintf(w, "The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce non-decision outputs. ")
-	fmt.Fprintf(w, "Avoid with `sort` (sorted list), `pull` (extraction), `diff` (comparison), or `sim` (scenario playback).\n\n")
 
 	fmt.Fprintf(w, "**Prose-form conflicts:**\n")
 	fmt.Fprintf(w, "Form tokens that produce structured prose (`case`, `formats`, `walkthrough`, `scaffold`, `faq`, `table`, `taxonomy`, `visual`, `variants`, `checklist`, `actions`) ")
 	fmt.Fprintf(w, "conflict with channels that mandate a fixed non-prose output format (`code`, `html`, `shellscript`, `svg`, `presenterm`, `adr`, `codetour`, `gherkin`, `diagram`).\n\n")
-
-	fmt.Fprintf(w, "**Prose-output-form conflicts:**\n")
-	fmt.Fprintf(w, "The following form tokens produce structured prose and conflict with channels that mandate a fixed non-prose output format ")
-	fmt.Fprintf(w, "(`gherkin`, `codetour`, `code`, `html`, `shellscript`, `svg`, `diagram`/`sketch`, `presenterm`). ")
-	fmt.Fprintf(w, "Use with prose-compatible channels (`plain`, `slack`, `jira`, `remote`, `sync`) or no channel.\n\n")
-	fmt.Fprintf(w, "- `log` form: work/research log entry (date markers, bullet updates). Conflicts with any non-text output channel.\n")
-	fmt.Fprintf(w, "- `spike` form: research spike (problem statement + exploratory questions). Conflicts with code-format channels.\n")
-	fmt.Fprintf(w, "- `case` form: layered argument prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels.\n")
-	fmt.Fprintf(w, "- `story` form: user story prose (As a / I want / so that). Explicitly avoids Gherkin syntax — conflicts with `gherkin` channel.\n")
-	fmt.Fprintf(w, "- `faq` form: question-and-answer prose. Conflicts with executable-output channels (`shellscript`, `code`, `codetour`).\n")
-	fmt.Fprintf(w, "- `recipe` form: custom prose mini-language + key. Conflicts with channels whose schema has no prose slot (`codetour`, `code`, `html`, `shellscript`, `svg`, `presenterm`).\n")
-	fmt.Fprintf(w, "- `questions` form: probing prose questions. Conflicts with `gherkin` channel (syntax rigidity). Note: `questions` + `diagram` is valid — see Combination Guidance below.\n\n")
 
 	fmt.Fprintf(w, "**Precedence Examples:**\n")
 	fmt.Fprintf(w, "General precedence rules are documented in the Reference Key. Here are practical examples:\n\n")
@@ -722,11 +696,6 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	}
 
 	fmt.Fprintf(w, "\n")
-
-	fmt.Fprintf(w, "**Tone/channel register conflicts:**\n")
-	fmt.Fprintf(w, "`formally` tone conflicts with conversational-register channels that assume informal or spoken language (`slack`, `sync`, `remote`). ")
-	fmt.Fprintf(w, "Formal elevated prose will feel bureaucratic in these contexts. ")
-	fmt.Fprintf(w, "Use `directly` or no tone token when a professional register is needed in these channels.\n\n")
 
 	if len(grammar.Hierarchy.AxisIncompatibilities) > 0 {
 		fmt.Fprintf(w, "**Grammar-enforced restrictions:**\n")

@@ -159,6 +159,27 @@ Run ADR-0085 Cycle 8 after applying these changes:
 
 ---
 
+## Amendments
+
+### Amendment 1: help_llm.go § Incompatibilities cleanup
+
+During implementation review, the § Incompatibilities section of `help_llm.go` was found to contain four blocks of per-token guidance that duplicate `AXIS_KEY_TO_GUIDANCE` (rendered in the same document's "Token Guidance" section) or `PersonaGuidance` (available in the TUI):
+
+| Block removed | Reason |
+|---|---|
+| Line 667: "Similarly, form tokens `code`, `html`, and `shellscript` are output-exclusive" | Misclassification — these are channel tokens, already covered by the preceding sentence "all channel tokens are output-exclusive" |
+| Task-affinity restrictions (`codetour`, `gherkin`, `code`/`html`/`shellscript`, `adr`) | All per-token notes already exist in `AXIS_KEY_TO_GUIDANCE["channel"]` (or moved there — see below) |
+| Prose-output-form conflicts (`log`, `spike`, `case`, `story`, `faq`, `recipe`, `questions`) | All already in `AXIS_KEY_TO_GUIDANCE["form"]`, rendered in the "Token Guidance" section |
+| Tone/channel register conflicts (`formally`) | Already in `PersonaGuidance["tone"]["formally"]` in `lib/personaConfig.py`, shown in TUI at selection time |
+
+The `adr` channel guidance was not yet in `AXIS_KEY_TO_GUIDANCE` — it was moved there from the removed block:
+
+> "Task-affinity for decision-making tasks (`plan`, `probe`, `make`). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce non-decision outputs. Avoid with `sort` (sorted list), `pull` (extraction), `diff` (comparison), or `sim` (scenario playback)."
+
+**Files changed:** `lib/axisConfig.py` (add `adr` to `AXIS_KEY_TO_GUIDANCE["channel"]`), `internal/barcli/help_llm.go` (remove four blocks), regenerate grammar.
+
+---
+
 ## Evidence
 
 - `docs/adr/evidence/0085/evaluations-seeds-0121-0140.md`

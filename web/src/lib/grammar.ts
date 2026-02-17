@@ -1,3 +1,12 @@
+export interface PersonaPreset {
+	key: string;
+	label: string;
+	voice: string;
+	audience: string;
+	tone: string;
+	spoken: string;
+}
+
 export interface Grammar {
 	axes: {
 		definitions: Record<string, Record<string, string>>;
@@ -14,6 +23,14 @@ export interface Grammar {
 		axis_priority: string[];
 		axis_soft_caps: Record<string, number>;
 		axis_incompatibilities: Record<string, Record<string, string[]>>;
+	};
+	persona: {
+		presets: Record<string, PersonaPreset>;
+		axes: {
+			voice: string[];
+			audience: string[];
+			tone: string[];
+		};
 	};
 }
 
@@ -69,3 +86,18 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 }
 
 export const AXES = ['completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+
+/** Convert a human-readable persona value to a bar slug ("as designer" → "as-designer"). */
+export function toPersonaSlug(s: string): string {
+	return s.toLowerCase().replace(/\s+/g, '-');
+}
+
+export function getPersonaPresets(grammar: Grammar): PersonaPreset[] {
+	return Object.values(grammar.persona?.presets ?? {}).sort((a, b) =>
+		a.label.localeCompare(b.label)
+	);
+}
+
+export function getPersonaAxisTokens(grammar: Grammar, axis: 'voice' | 'audience' | 'tone'): string[] {
+	return [...(grammar.persona?.axes?.[axis] ?? [])].sort();
+}

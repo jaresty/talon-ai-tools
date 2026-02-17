@@ -69,6 +69,13 @@ function writeSection(heading: string, body: string): string {
 	return `${heading}\n${trimmed}\n\n`;
 }
 
+export interface PersonaState {
+	preset: string;
+	voice: string;
+	audience: string;
+	tone: string;
+}
+
 /**
  * Render the full structured prompt — mirrors RenderPlainText() from render.go.
  */
@@ -76,7 +83,8 @@ export function renderPrompt(
 	grammar: Grammar,
 	selected: Record<string, string[]>,
 	subject: string,
-	addendum: string
+	addendum: string,
+	persona?: PersonaState
 ): string {
 	const parts: string[] = [];
 
@@ -115,8 +123,21 @@ export function renderPrompt(
 		parts.push(constraints.map((c) => `- ${c}`).join('\n') + '\n\n');
 	}
 
-	// PERSONA section (none — persona tokens not yet in UI)
-	parts.push(writeSection('=== PERSONA (STANCE) ===', '(none)'));
+	// PERSONA section
+	const personaLines: string[] = [];
+	if (persona?.preset) {
+		const preset = grammar.persona?.presets?.[persona.preset];
+		if (preset) {
+			if (preset.voice) personaLines.push(`Voice: ${preset.voice}`);
+			if (preset.audience) personaLines.push(`Audience: ${preset.audience}`);
+			if (preset.tone) personaLines.push(`Tone: ${preset.tone}`);
+		}
+	} else if (persona) {
+		if (persona.voice) personaLines.push(`Voice: ${persona.voice}`);
+		if (persona.audience) personaLines.push(`Audience: ${persona.audience}`);
+		if (persona.tone) personaLines.push(`Tone: ${persona.tone}`);
+	}
+	parts.push(writeSection('=== PERSONA (STANCE) ===', personaLines.join('\n') || '(none)'));
 
 	// REFERENCE KEY section
 	parts.push(writeSection('=== REFERENCE KEY ===', REFERENCE_KEY_TEXT));

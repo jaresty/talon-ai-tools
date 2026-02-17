@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, AXES, type Grammar } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, toPersonaSlug, AXES, type Grammar } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
-	import { renderPrompt } from '$lib/renderPrompt.js';
+	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -22,6 +22,8 @@
 		directional: []
 	});
 
+	let persona = $state<PersonaState>({ preset: '', voice: '', audience: '', tone: '' });
+
 	let subject = $state('');
 	let addendum = $state('');
 	let copied = $state(false);
@@ -30,7 +32,7 @@
 
 	// Serialize/deserialize prompt state
 	function serialize(): string {
-		return btoa(JSON.stringify({ selected, subject, addendum }));
+		return btoa(JSON.stringify({ selected, subject, addendum, persona }));
 	}
 
 	function deserialize(raw: string): void {
@@ -40,6 +42,9 @@
 				if (parsed.selected) selected = { ...selected, ...parsed.selected };
 				if (typeof parsed.subject === 'string') subject = parsed.subject;
 				if (typeof parsed.addendum === 'string') addendum = parsed.addendum;
+				if (parsed.persona && typeof parsed.persona === 'object') {
+					persona = { preset: '', voice: '', audience: '', tone: '', ...parsed.persona };
+				}
 			}
 		} catch {
 			// ignore malformed state
@@ -91,8 +96,16 @@
 
 	let command = $derived.by(() => {
 		if (!grammar) return '';
+		const personaTokens: string[] = [];
+		if (persona.preset) {
+			personaTokens.push(`persona=${persona.preset}`);
+		} else {
+			if (persona.voice) personaTokens.push(`voice=${toPersonaSlug(persona.voice)}`);
+			if (persona.audience) personaTokens.push(`audience=${toPersonaSlug(persona.audience)}`);
+			if (persona.tone) personaTokens.push(`tone=${persona.tone}`);
+		}
 		const order = ['task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
-		const tokens = order.flatMap((axis) => selected[axis] ?? []);
+		const tokens = [...personaTokens, ...order.flatMap((axis) => selected[axis] ?? [])];
 		let cmd = tokens.length === 0 ? 'bar build' : `bar build ${tokens.join(' ')}`;
 		if (subject.trim()) cmd += ` --subject "${subject.trim().replace(/"/g, '\\"')}"`;
 		if (addendum.trim()) cmd += ` --addendum "${addendum.trim().replace(/"/g, '\\"')}"`;
@@ -107,7 +120,7 @@
 
 	function copyPrompt() {
 		if (!grammar) return;
-		const text = renderPrompt(grammar, selected, subject, addendum);
+		const text = renderPrompt(grammar, selected, subject, addendum, persona);
 		navigator.clipboard.writeText(text);
 		copiedPrompt = true;
 		setTimeout(() => (copiedPrompt = false), 1500);
@@ -124,6 +137,7 @@
 
 	function clearState() {
 		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
+		persona = { preset: '', voice: '', audience: '', tone: '' };
 		subject = '';
 		addendum = '';
 		window.history.replaceState(null, '', window.location.pathname);
@@ -151,6 +165,78 @@
 		<div class="main">
 			<section class="selector-panel">
 				<PatternsLibrary onLoad={loadPattern} />
+
+				<!-- Persona -->
+				<div class="persona-section">
+					<div class="persona-header">Persona</div>
+
+					<!-- Presets -->
+					<div class="persona-group">
+						<div class="persona-group-label">Preset</div>
+						<div class="persona-chips">
+							{#each getPersonaPresets(grammar) as preset (preset.key)}
+								<button
+									class="persona-chip"
+									class:active={persona.preset === preset.key}
+									onclick={() => {
+										if (persona.preset === preset.key) {
+											persona = { preset: '', voice: '', audience: '', tone: '' };
+										} else {
+											persona = { preset: preset.key, voice: '', audience: '', tone: '' };
+										}
+									}}
+								>{preset.label}</button>
+							{/each}
+						</div>
+					</div>
+
+					<!-- Custom axes -->
+					<div class="persona-group">
+						<div class="persona-group-label">Custom</div>
+						<div class="persona-selects">
+							<label class="persona-select-label">
+								<span>Voice</span>
+								<select
+									class="persona-select"
+									value={persona.voice}
+									onchange={(e) => { persona = { preset: '', voice: (e.target as HTMLSelectElement).value, audience: persona.audience, tone: persona.tone }; }}
+								>
+									<option value="">—</option>
+									{#each getPersonaAxisTokens(grammar, 'voice') as v (v)}
+										<option value={v}>{v}</option>
+									{/each}
+								</select>
+							</label>
+							<label class="persona-select-label">
+								<span>Audience</span>
+								<select
+									class="persona-select"
+									value={persona.audience}
+									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: (e.target as HTMLSelectElement).value, tone: persona.tone }; }}
+								>
+									<option value="">—</option>
+									{#each getPersonaAxisTokens(grammar, 'audience') as a (a)}
+										<option value={a}>{a}</option>
+									{/each}
+								</select>
+							</label>
+							<label class="persona-select-label">
+								<span>Tone</span>
+								<select
+									class="persona-select"
+									value={persona.tone}
+									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: persona.audience, tone: (e.target as HTMLSelectElement).value }; }}
+								>
+									<option value="">—</option>
+									{#each getPersonaAxisTokens(grammar, 'tone') as t (t)}
+										<option value={t}>{t}</option>
+									{/each}
+								</select>
+							</label>
+						</div>
+					</div>
+				</div>
+
 				<TokenSelector
 					axis="task"
 					tokens={getTaskTokens(grammar)}
@@ -404,4 +490,71 @@
 	}
 
 	.selected-chip:hover { background: #6b3040; border-color: #f7768e; }
+
+	/* Persona */
+	.persona-section {
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		padding: 0.75rem;
+		margin-bottom: 1rem;
+	}
+
+	.persona-header {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-accent);
+		font-weight: 600;
+		margin-bottom: 0.6rem;
+	}
+
+	.persona-group { margin-bottom: 0.6rem; }
+	.persona-group:last-child { margin-bottom: 0; }
+
+	.persona-group-label {
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		margin-bottom: 0.35rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.persona-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+	.persona-chip {
+		padding: 0.2rem 0.55rem;
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		font-size: 0.78rem;
+		font-family: system-ui;
+	}
+
+	.persona-chip:hover { border-color: var(--color-accent-muted); color: var(--color-text); }
+	.persona-chip.active { background: var(--color-accent-muted); border-color: var(--color-accent); color: var(--color-text); }
+
+	.persona-selects { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+	.persona-select-label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		font-size: 0.72rem;
+		color: var(--color-text-muted);
+		flex: 1;
+		min-width: 90px;
+	}
+
+	.persona-select {
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		font-size: 0.78rem;
+		padding: 0.2rem 0.35rem;
+	}
+
+	.persona-select:focus { outline: none; border-color: var(--color-accent-muted); }
 </style>

@@ -105,6 +105,7 @@
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
         "explore": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing to a single answer.",
+        "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction and every exception arises from necessity rather than anticipation.",
@@ -254,6 +255,7 @@
         "effects",
         "experimental",
         "explore",
+        "field",
         "flow",
         "grove",
         "grow",
@@ -1104,6 +1106,7 @@
         "effects": "effects",
         "experimental": "experimental",
         "explore": "explore",
+        "field": "field",
         "flow": "flow",
         "grove": "grove",
         "grow": "grow",
@@ -1286,6 +1289,7 @@
         "method=effects": "method-effects",
         "method=experimental": "method-experimental",
         "method=explore": "method-explore",
+        "method=field": "method-field",
         "method=flow": "method-flow",
         "method=grove": "method-grove",
         "method=grow": "method-grow",
@@ -1556,6 +1560,7 @@
       "facilitate": "facilitate",
       "fail": "fail",
       "faq": "faq",
+      "field": "field",
       "fig": "fig",
       "fip bog": "fip-bog",
       "fip ong": "fip-ong",
@@ -1656,6 +1661,7 @@
       "method=effects": "method-effects",
       "method=experimental": "method-experimental",
       "method=explore": "method-explore",
+      "method=field": "method-field",
       "method=flow": "method-flow",
       "method=grove": "method-grove",
       "method=grow": "method-grow",
@@ -1814,10 +1820,10 @@
     }
   },
   "checksums": {
-    "axes": "d44f8da7a4ccf59cfe40d2dd7a7313a2ad53f5a6213a36a653873239d14dbcfe",
+    "axes": "f04585ff57d0deb3a6c3aef46558affc36f6c0ae87f6be65691d7f2298aad921",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "9adf1fd81f175794a6270e5dbad40b4f4ce596ed3de4e7701961013c9d5096b5"
+    "slugs": "2b35d58674ed1860a85eef68020e0d1e0d0a2f50657c3acb46e017f1528609f4"
   }
 }

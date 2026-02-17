@@ -420,6 +420,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "explore": "The response enhances the task by opening and surveying the "
         "option space, generating and comparing multiple plausible "
         "approaches without prematurely committing to a single answer.",
+        "field": "The response models interaction as occurring through a shared "
+        "structured medium in which effects arise from structural "
+        "compatibility rather than direct reference between actors. "
+        "Explanations must make the medium and its selection rules "
+        "explicit.",
         "flow": "The response enhances the task by explaining step-by-step "
         "progression over time or sequence, showing how control, data, or "
         "narrative moves through the system.",

@@ -618,6 +618,38 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 			fmt.Fprintf(w, "\n")
 		}
 	}
+
+	// Persona guidance for individual axes (ADR-0112)
+	fmt.Fprintf(w, "**Persona Guidance:**\n")
+	fmt.Fprintf(w, "Guidance for specific persona tokens:\n\n")
+
+	axesWithGuidance := []string{"voice", "audience", "tone", "intent"}
+	for _, axisName := range axesWithGuidance {
+		tokenList, exists := grammar.Persona.Axes[axisName]
+		if !exists {
+			continue
+		}
+		hasGuidance := false
+		var guidedTokens []string
+		for _, token := range tokenList {
+			guidance := grammar.PersonaGuidance(axisName, token)
+			if guidance != "" {
+				hasGuidance = true
+				slug := grammar.slugForToken(token)
+				if slug == "" {
+					slug = token
+				}
+				guidedTokens = append(guidedTokens, slug, guidance)
+			}
+		}
+		if hasGuidance {
+			fmt.Fprintf(w, "*%s:*\n", strings.Title(axisName))
+			for i := 0; i < len(guidedTokens); i += 2 {
+				fmt.Fprintf(w, "- `%s`: %s\n", guidedTokens[i], guidedTokens[i+1])
+			}
+			fmt.Fprintf(w, "\n")
+		}
+	}
 }
 
 func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {

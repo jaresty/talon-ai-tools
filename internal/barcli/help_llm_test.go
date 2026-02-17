@@ -213,75 +213,76 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 }
 
 // TestLLMHelpADR0112D1 verifies ADR-0112 D1 decisions are reflected in bar help llm output:
-//   - prose-output-form conflict rule present in § Incompatibilities (recipe+codetour, questions+gherkin)
-//   - questions+diagram combination guidance present
+//   - prose-output-form conflict guidance present in § Token Guidance (AXIS_KEY_TO_GUIDANCE)
 func TestLLMHelpADR0112D1(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
 	renderLLMHelp(&buf, grammar, "", false)
 	output := buf.String()
 
-	incompStart := strings.Index(output, "### Incompatibilities")
-	if incompStart == -1 {
-		t.Fatal("could not locate ### Incompatibilities section")
+	// Check Token Guidance section for form token guidance
+	tokenGuidanceStart := strings.Index(output, "**Token Guidance:**")
+	if tokenGuidanceStart == -1 {
+		t.Fatal("could not locate **Token Guidance:** section")
 	}
-	sectionStart := incompStart + len("### Incompatibilities")
+	sectionStart := tokenGuidanceStart + len("**Token Guidance:**")
 	sectionEnd := strings.Index(output[sectionStart:], "\n##")
-	var incomp string
+	var tokenGuidance string
 	if sectionEnd == -1 {
-		incomp = output[sectionStart:]
+		tokenGuidance = output[sectionStart:]
 	} else {
-		incomp = output[sectionStart : sectionStart+sectionEnd]
+		tokenGuidance = output[sectionStart : sectionStart+sectionEnd]
 	}
 
 	checks := []struct {
 		description string
 		contains    string
 	}{
-		{"prose-output-form conflict rule present", "Prose-output-form conflicts"},
+		{"recipe guidance present", "recipe"},
 		{"recipe conflict with codetour mentioned", "codetour"},
+		{"questions guidance present", "questions"},
 		{"questions conflict with gherkin mentioned", "gherkin"},
-		{"questions+diagram combination guidance present", "questions` + `diagram"},
 	}
 	for _, c := range checks {
-		if !strings.Contains(incomp, c.contains) {
-			t.Errorf("ADR-0112 D1: § Incompatibilities missing %s (expected to contain %q)", c.description, c.contains)
+		if !strings.Contains(tokenGuidance, c.contains) {
+			t.Errorf("ADR-0112 D1: § Token Guidance missing %s (expected to contain %q)", c.description, c.contains)
 		}
 	}
 }
 
 // TestLLMHelpADR0112D3 verifies ADR-0112 D3: tone/channel register conflict note present
-// in § Incompatibilities.
+// in § Persona Guidance (from PERSONA_KEY_TO_GUIDANCE).
 func TestLLMHelpADR0112D3(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
 	renderLLMHelp(&buf, grammar, "", false)
 	output := buf.String()
 
-	incompStart := strings.Index(output, "### Incompatibilities")
-	if incompStart == -1 {
-		t.Fatal("could not locate ### Incompatibilities section")
+	// Check Persona Guidance section for tone guidance
+	personaGuidanceStart := strings.Index(output, "**Persona Guidance:**")
+	if personaGuidanceStart == -1 {
+		t.Fatal("could not locate **Persona Guidance:** section")
 	}
-	sectionStart := incompStart + len("### Incompatibilities")
+	sectionStart := personaGuidanceStart + len("**Persona Guidance:**")
 	sectionEnd := strings.Index(output[sectionStart:], "\n##")
-	var incomp string
+	var personaGuidance string
 	if sectionEnd == -1 {
-		incomp = output[sectionStart:]
+		personaGuidance = output[sectionStart:]
 	} else {
-		incomp = output[sectionStart : sectionStart+sectionEnd]
+		personaGuidance = output[sectionStart : sectionStart+sectionEnd]
 	}
 
 	checks := []struct {
 		description string
 		contains    string
 	}{
-		{"tone/channel register conflict rule present", "Tone/channel register conflicts"},
-		{"formally tone named in register conflict", "formally"},
-		{"slack channel named in register conflict", "slack"},
+		{"tone guidance present", "Tone"},
+		{"formally tone guidance present", "formally"},
+		{"slack mentioned in register conflict", "slack"},
 	}
 	for _, c := range checks {
-		if !strings.Contains(incomp, c.contains) {
-			t.Errorf("ADR-0112 D3: § Incompatibilities missing %s (expected to contain %q)", c.description, c.contains)
+		if !strings.Contains(personaGuidance, c.contains) {
+			t.Errorf("ADR-0112 D3: § Persona Guidance missing %s (expected to contain %q)", c.description, c.contains)
 		}
 	}
 }
@@ -388,7 +389,7 @@ func TestLLMHelpADR0107TokenDescriptions(t *testing.T) {
 }
 
 // TestLLMHelpADR0107Decisions verifies that ADR-0107 D2 (adr channel
-// task-affinity) is reflected in bar help llm § Incompatibilities.
+// task-affinity) is reflected in bar help llm § Token Guidance.
 // Note: D1 (interactive-form conflicts) is superseded by ADR-0108.
 func TestLLMHelpADR0107Decisions(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
@@ -396,22 +397,23 @@ func TestLLMHelpADR0107Decisions(t *testing.T) {
 	renderLLMHelp(&buf, grammar, "", false)
 	output := buf.String()
 
-	incompStart := strings.Index(output, "### Incompatibilities")
-	if incompStart == -1 {
-		t.Fatal("could not locate ### Incompatibilities section")
+	// Check Token Guidance section for channel token guidance
+	tokenGuidanceStart := strings.Index(output, "**Token Guidance:**")
+	if tokenGuidanceStart == -1 {
+		t.Fatal("could not locate **Token Guidance:** section")
 	}
-	sectionStart := incompStart + len("### Incompatibilities")
+	sectionStart := tokenGuidanceStart + len("**Token Guidance:**")
 	sectionEnd := strings.Index(output[sectionStart:], "\n##")
-	var incomp string
+	var tokenGuidance string
 	if sectionEnd == -1 {
-		incomp = output[sectionStart:]
+		tokenGuidance = output[sectionStart:]
 	} else {
-		incomp = output[sectionStart : sectionStart+sectionEnd]
+		tokenGuidance = output[sectionStart : sectionStart+sectionEnd]
 	}
 
 	// D2: adr channel task-affinity restriction
-	if !strings.Contains(incomp, "`adr` channel") {
-		t.Error("D2: § Incompatibilities missing adr channel task-affinity restriction (expected '`adr` channel')")
+	if !strings.Contains(tokenGuidance, "`adr`") {
+		t.Error("D2: § Token Guidance missing adr channel task-affinity restriction (expected '`adr`')")
 	}
 }
 

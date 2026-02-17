@@ -60,6 +60,46 @@ func TestAxisGuidanceAccessorReturnsNonEmpty(t *testing.T) {
 	}
 }
 
+// TestAxisUseWhenAccessorReturnsNonEmpty specifies that Grammar.AxisUseWhen returns
+// non-empty discoverability hints for the 9 specialist form tokens identified in ADR-0132.
+func TestAxisUseWhenAccessorReturnsNonEmpty(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+	specialistForms := []string{
+		"wardley", "wasinawa", "spike", "cocreate", "ladder",
+		"taxonomy", "facilitate", "recipe", "visual",
+	}
+	for _, token := range specialistForms {
+		if hint := grammar.AxisUseWhen("form", token); hint == "" {
+			t.Errorf("form:%s must have use_when defined (ADR-0132)", token)
+		}
+	}
+}
+
+// TestHelpLLMIncludesUseWhenColumn specifies that bar help llm renders a
+// "When to use" column in the Form token catalog table (ADR-0132).
+func TestHelpLLMIncludesUseWhenColumn(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	output := stdout.String()
+	if !strings.Contains(output, "When to use") {
+		t.Error("bar help llm must include 'When to use' column header (ADR-0132)")
+	}
+	// Spot-check: wardley and wasinawa must have non-empty use_when text in output.
+	if !strings.Contains(output, "genesis to commodity") {
+		t.Error("bar help llm must include wardley use_when text (ADR-0132)")
+	}
+	if !strings.Contains(output, "Post-incident reflection") {
+		t.Error("bar help llm must include wasinawa use_when text (ADR-0132)")
+	}
+}
+
 // TestPlainOutputWithLabelTabSeparated specifies that --plain emits
 // category:slug<TAB>label when a label is available for that token (ADR-0109 D3).
 // Backwards compatibility: cut -f1 must still yield bare category:slug.

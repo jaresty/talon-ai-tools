@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    }
+  ],
+  "axes": {
+    "task": "diff",
+    "completeness": "max"
+  },
+  "persona": {
+    "preset": "scientist_to_analyst",
+    "preset_label": "Scientist to analyst",
+    "voice": "as scientist",
+    "audience": "to analyst",
+    "tone": "formally"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "scientist_to_analyst",
+      "description": "Scientist to analyst"
+    },
+    {
+      "axis": "voice",
+      "token": "as scientist",
+      "description": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor."
+    },
+    {
+      "axis": "audience",
+      "token": "to analyst",
+      "description": "The response addresses an analyst, providing structure, data framing, and ways to visualise results."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    }
+  ],
+  "tokens": [
+    "scientist_to_analyst",
+    "diff",
+    "max"
+  ]
+}

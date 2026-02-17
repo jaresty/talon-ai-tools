@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response selects or extracts a subset of the given information without altering its substance.",
+  "constraints": [
+    "Completeness (\"max\"): The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+    "Method (\"operations\"): The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+    "Form (\"spike\"): The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
+    "Channel (\"codetour\"): The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "max",
+      "description": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
+    },
+    {
+      "axis": "method",
+      "token": "operations",
+      "description": "The response enhances the task by identifying operations research or management science concepts that frame the situation."
+    },
+    {
+      "axis": "form",
+      "token": "spike",
+      "description": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks."
+    },
+    {
+      "axis": "channel",
+      "token": "codetour",
+      "description": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation."
+    }
+  ],
+  "axes": {
+    "task": "pull",
+    "completeness": "max",
+    "method": [
+      "operations"
+    ],
+    "form": [
+      "spike"
+    ],
+    "channel": [
+      "codetour"
+    ]
+  },
+  "persona": {
+    "audience": "to team",
+    "tone": "casually",
+    "intent": "appreciate"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    },
+    {
+      "axis": "intent",
+      "token": "appreciate",
+      "description": "Express thanks, recognition, or positive regard."
+    }
+  ],
+  "tokens": [
+    "appreciate",
+    "to team",
+    "casually",
+    "pull",
+    "max",
+    "operations",
+    "spike",
+    "codetour"
+  ]
+}

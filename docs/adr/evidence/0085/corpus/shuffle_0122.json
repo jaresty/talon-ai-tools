@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response changes the form or presentation of given content while keeping its intended meaning.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"cite\"): The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
+    "Form (\"story\"): The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
+    "Channel (\"gherkin\"): The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks.",
+    "Directional (\"fip ong\"): The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "cite",
+      "description": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration."
+    },
+    {
+      "axis": "form",
+      "token": "story",
+      "description": "The response formats the backlog item as a user story using \"As a \u003cpersona\u003e, I want \u003ccapability\u003e, so that \u003cvalue\u003e.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax."
+    },
+    {
+      "axis": "channel",
+      "token": "gherkin",
+      "description": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks."
+    },
+    {
+      "axis": "directional",
+      "token": "fip ong",
+      "description": "The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations."
+    }
+  ],
+  "axes": {
+    "task": "fix",
+    "completeness": "full",
+    "method": [
+      "cite"
+    ],
+    "form": [
+      "story"
+    ],
+    "channel": [
+      "gherkin"
+    ],
+    "directional": "fip ong"
+  },
+  "persona": {
+    "preset": "fun_mode",
+    "preset_label": "Fun mode",
+    "tone": "casually"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "fun_mode",
+      "description": "Fun mode"
+    },
+    {
+      "axis": "tone",
+      "token": "casually",
+      "description": "The response uses a casual, conversational tone."
+    }
+  ],
+  "tokens": [
+    "fun_mode",
+    "fix",
+    "cite",
+    "story",
+    "gherkin",
+    "fip ong"
+  ]
+}

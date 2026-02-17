@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Scope (\"thing\"): The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
+    "Form (\"cocreate\"): The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "scope",
+      "token": "thing",
+      "description": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective."
+    },
+    {
+      "axis": "form",
+      "token": "cocreate",
+      "description": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "gist",
+    "scope": [
+      "thing"
+    ],
+    "form": [
+      "cocreate"
+    ]
+  },
+  "persona": {
+    "voice": "as PM",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as PM",
+      "description": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "as PM",
+    "directly",
+    "sim",
+    "gist",
+    "thing",
+    "cocreate"
+  ]
+}

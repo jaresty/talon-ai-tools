@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"skim\"): The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+    "Scope (\"view\"): The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action.",
+    "Form (\"bug\"): The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda.",
+    "Channel (\"html\"): The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+    "Directional (\"bog\"): The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "skim",
+      "description": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+    },
+    {
+      "axis": "scope",
+      "token": "view",
+      "description": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
+    },
+    {
+      "axis": "form",
+      "token": "bug",
+      "description": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda."
+    },
+    {
+      "axis": "channel",
+      "token": "html",
+      "description": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "bog",
+      "description": "The response modifies the task to examine the subject's structure and reflect on it, then identifies actions to take and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "skim",
+    "scope": [
+      "view"
+    ],
+    "form": [
+      "bug"
+    ],
+    "channel": [
+      "html"
+    ],
+    "directional": "bog"
+  },
+  "persona": {
+    "voice": "as programmer",
+    "audience": "to team",
+    "tone": "kindly",
+    "intent": "persuade"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to team",
+      "description": "The response addresses the team, keeping the guidance actionable and collaborative."
+    },
+    {
+      "axis": "tone",
+      "token": "kindly",
+      "description": "The response uses a kind, warm tone."
+    },
+    {
+      "axis": "intent",
+      "token": "persuade",
+      "description": "Influence the audience toward a view or action."
+    }
+  ],
+  "tokens": [
+    "persuade",
+    "as programmer",
+    "to team",
+    "kindly",
+    "sort",
+    "skim",
+    "view",
+    "bug",
+    "html",
+    "bog"
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response proposes steps, structure, or strategy to move from the current state toward a stated goal.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Scope (\"time\"): The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
+    "Method (\"deduce\"): The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit.",
+    "Form (\"socratic\"): The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry.",
+    "Directional (\"dip ong\"): The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "scope",
+      "token": "time",
+      "description": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action."
+    },
+    {
+      "axis": "method",
+      "token": "deduce",
+      "description": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit."
+    },
+    {
+      "axis": "form",
+      "token": "socratic",
+      "description": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry."
+    },
+    {
+      "axis": "directional",
+      "token": "dip ong",
+      "description": "The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations."
+    }
+  ],
+  "axes": {
+    "task": "plan",
+    "completeness": "full",
+    "scope": [
+      "time"
+    ],
+    "method": [
+      "deduce"
+    ],
+    "form": [
+      "socratic"
+    ],
+    "directional": "dip ong"
+  },
+  "persona": {
+    "preset": "designer_to_pm",
+    "preset_label": "Designer to PM",
+    "voice": "as designer",
+    "audience": "to product manager",
+    "tone": "directly"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "persona_preset",
+      "token": "designer_to_pm",
+      "description": "Designer to PM"
+    },
+    {
+      "axis": "voice",
+      "token": "as designer",
+      "description": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity."
+    },
+    {
+      "axis": "audience",
+      "token": "to product manager",
+      "description": "The response addresses a product manager, connecting user value, scope, and trade-offs."
+    },
+    {
+      "axis": "tone",
+      "token": "directly",
+      "description": "The response speaks directly and straightforwardly while remaining respectful."
+    }
+  ],
+  "tokens": [
+    "designer_to_pm",
+    "plan",
+    "time",
+    "deduce",
+    "socratic",
+    "dip ong"
+  ]
+}

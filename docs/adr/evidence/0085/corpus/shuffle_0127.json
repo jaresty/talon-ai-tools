@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+  "constraints": [
+    "Completeness (\"narrow\"): The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+    "Scope (\"mean\"): The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
+    "Method (\"cluster\"): The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
+    "Form (\"direct\"): The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
+    "Channel (\"gherkin\"): The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "narrow",
+      "description": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
+    },
+    {
+      "axis": "scope",
+      "token": "mean",
+      "description": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective."
+    },
+    {
+      "axis": "method",
+      "token": "cluster",
+      "description": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items."
+    },
+    {
+      "axis": "form",
+      "token": "direct",
+      "description": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps."
+    },
+    {
+      "axis": "channel",
+      "token": "gherkin",
+      "description": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks."
+    }
+  ],
+  "axes": {
+    "task": "probe",
+    "completeness": "narrow",
+    "scope": [
+      "mean"
+    ],
+    "method": [
+      "cluster"
+    ],
+    "form": [
+      "direct"
+    ],
+    "channel": [
+      "gherkin"
+    ]
+  },
+  "persona": {},
+  "tokens": [
+    "probe",
+    "narrow",
+    "mean",
+    "cluster",
+    "direct",
+    "gherkin"
+  ]
+}

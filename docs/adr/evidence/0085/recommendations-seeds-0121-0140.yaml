@@ -1,0 +1,230 @@
+# ADR-0085 Cycle 7 Recommendations — Seeds 0121-0140
+# Date: 2026-02-16
+# Cycle mean: 3.30/5 | Excellent: 40% | Problematic/Broken: 40%
+# Regression from Cycle 6 (3.85/5, 15% problematic) driven by gherkin over-selection + new conflict pairs
+#
+# Implementation approach: two-layer
+#   Layer 1 — Reference key (metaPromptConfig.py): general rules that resolve conflicts gracefully
+#              at execution time for any combination, including novel ones not yet documented
+#   Layer 2 — Documentation guidance (axisConfig.py, help_llm.go): token-level warnings that
+#              help users make better selections before building the prompt
+# R17 and R18 use both layers. R19-R21 use layer 2 only (conflicts not gracefully resolvable).
+
+# ── R17: Form-as-content-lens rule (reference key) + prose-form conflict docs ──────────
+- id: R17
+  priority: high
+  evidence: [seed_0122, seed_0123, seed_0126, seed_0133]
+
+  layer_1_reference_key:
+    action: edit
+    file: lib/metaPromptConfig.py
+    section: PROMPT_REFERENCE_KEY > CONSTRAINTS > Form bullet
+    current: >
+      When form and channel tokens are both present, the channel defines the output format
+      and the form describes the conceptual organization within that format.
+    proposed: >
+      When form and channel tokens are both present, the channel defines the output format
+      and the form describes the conceptual organization within that format. When the
+      form's structural template cannot be expressed in the channel's format (e.g., a prose
+      log in SVG, a question-document as a CodeTour JSON), treat the form as a content
+      lens: it shapes the informational character of the response — what to emphasize and
+      how to organize ideas — rather than the literal output structure.
+    rationale: >
+      Generalizes channel > form precedence to handle cases where the form's structure is
+      incompatible with the channel format. Instead of producing a broken hybrid or ignoring
+      the form entirely, the LLM demotes it to a content lens. Covers any future novel
+      combination without needing to enumerate pairs.
+
+  layer_2_documentation:
+    action: edit
+    tokens: [log, spike, case, story]
+    axis: form
+    reason: >
+      Cycle 7 reveals four new instances of prose-form + exclusive-code-channel conflict:
+      - seed_0126: log(form) + svg(channel) — score 1
+      - seed_0123: spike(form) + codetour(channel) — score 2
+      - seed_0133: case(form) + gherkin(channel) — score 1
+      - seed_0122: story(form) + gherkin(channel) — score 2
+
+      These extend the documented prose-form conflict list (questions, recipe from R14).
+      Layer 1 handles them at execution time; layer 2 warns at selection time.
+    proposed:
+      log: >
+        "Conflicts with any non-text output channel (svg, diagram/sketch, codetour,
+        gherkin, shellscript, html). Log entries are prose-text artifacts. Use with no
+        channel or with prose-compatible channels (jira, slack, remote, sync)."
+      spike: >
+        "Conflicts with code-format channels (codetour, shellscript, svg, html, diagram/
+        sketch, gherkin). Research spikes are prose question-documents. Use with no channel
+        or with prose-compatible channels."
+      case: >
+        "Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html,
+        diagram/sketch). Case-building requires layered prose structure that code channels
+        cannot accommodate. Use with no channel or with prose-compatible channels."
+      story: >
+        "Explicitly avoids Gherkin syntax (see description). Conflicts with gherkin channel.
+        Surfacing existing description constraint as an incompatibility warning."
+    files:
+      - lib/axisConfig.py       # log, spike, case, story AXIS_KEY_TO_GUIDANCE entries + descriptions
+      - internal/barcli/help_llm.go  # § Composition Rules § Prose-form conflicts list
+
+# ── R18: Specification-channel reframing rule (reference key) + gherkin guidance ────────
+- id: R18
+  priority: high
+  evidence: [seed_0122, seed_0127, seed_0133, seed_0136]
+
+  layer_1_reference_key:
+    action: edit
+    file: lib/metaPromptConfig.py
+    section: PROMPT_REFERENCE_KEY > Precedence block
+    proposed_addition: >
+      When a channel produces a specification artifact (gherkin, codetour, adr), analysis
+      or comparison tasks are reframed as: perform the analysis, then express findings as
+      that artifact type. probe+gherkin = Gherkin scenarios that specify the structural
+      properties or assumptions the analysis revealed. diff+gherkin = Gherkin scenarios
+      expressing differences as behavioral distinctions. diff+codetour = CodeTour steps
+      walking through the differences.
+    rationale: >
+      Transforms what currently scores 2 (incoherent) into a specific, interpretable
+      output pattern. The analysis task provides the substance; the specification channel
+      provides the artifact form. Covers probe/diff/check/sort with gherkin/codetour/adr
+      without enumerating every pair.
+
+  layer_2_documentation:
+    action: edit
+    token: gherkin
+    axis: channel
+    reason: >
+      Gherkin appeared 4/20 times in Cycle 7 and scored ≤2 in all 4 instances. Across
+      7 evaluation cycles, gherkin + non-specification task is a consistent failure.
+      The existing ADR-0105 D2 guidance documents specific failures but hasn't reduced
+      the frequency or score. Layer 1 now provides graceful execution; layer 2 should
+      set expectations about the reframing that will occur.
+    proposed: >
+      Strengthen AXIS_KEY_TO_GUIDANCE for gherkin:
+      "Outputs only Gherkin Given/When/Then syntax. Primary use: make tasks creating
+      acceptance tests or feature specifications. With analysis tasks (probe, diff, check,
+      sort), output is reframed as Gherkin scenarios that specify the analyzed properties —
+      the analysis becomes evidence; scenarios express what should be true given that
+      evidence. Avoid with prose-structure forms (story, case, log, questions, recipe)."
+    files:
+      - lib/axisConfig.py       # gherkin AXIS_KEY_TO_GUIDANCE entry
+      - internal/barcli/help_llm.go  # § Incompatibilities § Channel task-affinity
+
+# ── R19: Codetour audience-affinity guidance (layer 2 only) ──────────────────────────
+- id: R19
+  priority: medium
+  evidence: [seed_0132]
+  layer_1_reference_key: null  # artifact is produced correctly; audience mismatch not
+                                # resolvable by reference key — it's a user selection error
+  layer_2_documentation:
+    action: edit
+    token: codetour
+    axis: channel
+    reason: >
+      seed_0132 (fix+codetour+to managers, score 2): VS Code CodeTour JSON is a
+      developer-facing artifact. Any combination with non-developer audiences produces
+      a correctly-formed but useless artifact. The reference key cannot fix this —
+      the output is technically valid, just inappropriate for the stated audience.
+    proposed: >
+      Add to AXIS_KEY_TO_GUIDANCE:
+      "Produces a VS Code CodeTour JSON file for interactive code walkthroughs in VS Code.
+      Requires a developer audience. Avoid with: manager, PM, executive, CEO, stakeholder,
+      analyst, designer audiences — these roles do not use VS Code CodeTour files."
+    files:
+      - lib/axisConfig.py       # codetour AXIS_KEY_TO_GUIDANCE entry
+      - internal/barcli/help_llm.go  # § Token Catalog § channel
+
+# ── R20: Commit form depth-conflict guidance (layer 2 only) ──────────────────────────
+- id: R20
+  priority: medium
+  evidence: [seed_0121]
+  layer_1_reference_key: null  # not incoherent — commit form wins cleanly; the problem
+                                # is wasted tokens, not broken execution
+  layer_2_documentation:
+    action: edit
+    token: commit
+    axis: form
+    reason: >
+      seed_0121 (make+deep+commit+fip rog, score 3): commit form is a brief artifact
+      (type/scope header + optional short body). deep/max completeness and complex
+      directionals (fip rog, fly rog, bog) have nowhere to express within a commit
+      message. The tokens aren't broken — commit simply truncates them. This is a
+      wasted-token problem, not an incoherence problem.
+    proposed: >
+      Add to AXIS_KEY_TO_GUIDANCE:
+      "Produces a conventional commit message (type: scope header + optional body).
+      Commit messages are brief — avoid deep or max completeness (no room to express)
+      and complex directionals (fip rog, fly rog, bog, fog). Best with gist or minimal
+      completeness and a simple or absent directional."
+    files:
+      - lib/axisConfig.py       # commit form AXIS_KEY_TO_GUIDANCE entry
+
+# ── R21: Skim + complex directional conflict guidance (layer 2 only) ─────────────────
+- id: R21
+  priority: low
+  evidence: [seed_0138]
+  layer_1_reference_key: null  # contradictory depth signals; reference key cannot
+                                # determine which to honor without user intent
+  layer_2_documentation:
+    action: edit
+    tokens: [skim, minimal]
+    axis: completeness
+    reason: >
+      seed_0138 (sort+skim+bog, score 2): skim (quick pass) + bog (structure → reflect
+      → actions → extend) send contradictory depth signals. The reference key has no
+      principled basis to choose between them — both are valid constraints. Guidance
+      at selection time prevents the ambiguity from arising.
+    proposed: >
+      Add to skim (and consider minimal) AXIS_KEY_TO_GUIDANCE:
+      "Quick-pass constraint. Avoid pairing with multi-phase directionals (bog, fip rog,
+      fly rog, fog) that require structural depth and sustained examination. Use with
+      simple directionals (jog, rog) or none."
+    files:
+      - lib/axisConfig.py       # skim, minimal AXIS_KEY_TO_GUIDANCE entries
+
+# ── New exemplar patterns ─────────────────────────────────────────────────────────────
+exemplars:
+  - id: P9
+    seeds: [seed_0131]
+    pattern: plan + time(scope) + deduce(method) + socratic(form) + dip_ong + designer_to_pm
+    description: >
+      Canonical Socratic temporal planning pattern. Deductively-structured planning on
+      phases/evolution with question-led discovery. Concrete-to-action-to-extension
+      directional. Designer-to-PM grounding. 6 tokens, all compatible — confirms high
+      token count is fine when constraints are complementary.
+
+  - id: P10
+    seeds: [seed_0137]
+    pattern: probe + motifs(scope) + boom(method) + adr(channel) + scientist_to_analyst
+    description: >
+      Canonical scale-behavior pattern analysis. Recurring structural patterns at
+      extremes, documented as ADR, with scientific voice for analyst review.
+
+  - id: P11
+    seeds: [seed_0139]
+    pattern: pick + operations(method) + taxonomy(form) + scientist_to_analyst
+    description: >
+      Canonical scientific option selection with OR taxonomy. Choose from alternatives
+      using OR concepts, organized as classification hierarchy for analyst review.
+
+  - id: P12
+    seeds: [seed_0130]
+    pattern: sim + gist + thing(scope) + cocreate(form) + as_PM + directly
+    description: >
+      Canonical PM collaborative scenario simulation. Brief, entity-focused, interactive,
+      with decision points exposed. PM voice grounds simulation in scope/stakeholder thinking.
+
+# ── Priority summary ─────────────────────────────────────────────────────────────────
+priority:
+  high:   [R17, R18]   # reference key + documentation — form-as-content-lens + gherkin reframing
+  medium: [R19, R20]   # documentation only — codetour audience-affinity + commit depth-conflict
+  low:    [R21]        # documentation only — skim + complex directional depth tension
+
+# ── Gherkin selection frequency note ─────────────────────────────────────────────────
+note_gherkin_frequency:
+  observation: >
+    Gherkin appeared 4/20 times in Cycle 7 (20%). Investigated: 15 channel tokens in
+    grammar, base rate 6.7%. Prior 120 seeds: gherkin in 8/120 = 6.7% — exactly at
+    expected rate. Cycle 7's 4/20 is statistical noise from small sample, not a
+    weighting issue. No action needed on selection frequency.

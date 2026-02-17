@@ -118,4 +118,61 @@ The general principle "form shapes task output" handles novel combinations autom
 
 ---
 
+---
+
+## Cycle 7: Prose-Form/Channel Conflicts + Gherkin Saturation
+
+**Date:** 2026-02-16
+**Focus:** Fresh broad sweep — seeds 0121-0140 (20 prompts)
+
+### Context
+
+All Cycle 6 recommendations (R14-R16) were confirmed implemented before running:
+- R14: questions/recipe form channel conflict guidance ✅
+- R15: appreciate/entertain/announce social intent guidance ✅
+- R16: formally tone + conversational channels guidance ✅
+
+### Results
+
+| Metric | Cycle 6 | Cycle 7 | Delta |
+|--------|---------|---------|-------|
+| Excellent (≥4) | 35% | 40% | +5pp |
+| Problematic (≤2) | 15% | 40% | **+25pp regression** |
+| Average | 3.85 | 3.30 | -0.55 |
+
+### Root Causes of Regression
+
+1. **Gherkin over-selection**: gherkin appeared 4/20 (20%) and scored ≤2 in ALL 4 instances
+   — diff+gherkin (0136), probe+gherkin (0127), story+gherkin (0122), case+gherkin (0133)
+2. **New form/channel conflict pairs** (4 new):
+   — log+svg (0126, score 1), spike+codetour (0123, score 2), case+gherkin (0133, score 1),
+     story+gherkin (0122, score 2)
+
+### Recommendations (R17-R21)
+
+| ID | Action | Target | Priority |
+|----|--------|--------|----------|
+| R17 | Edit | log/spike/case/story form conflict docs | High |
+| R18 | Edit | Gherkin task-affinity guidance (strengthen) | High |
+| R19 | Edit | Codetour audience-affinity guidance | Medium |
+| R20 | Edit | Commit form depth-conflict guidance | Medium |
+| R21 | Edit | Skim + complex directional guidance | Low |
+
+### Positive Patterns (Confirmed)
+
+- Minimal combinations (≤3 tokens) score 5: 0128, 0135, 0140
+- probe+analysis+adr: excellent (0137 — motifs+boom+adr)
+- pick+operations+taxonomy: excellent (0139)
+- sim+cocreate: reliable (0130)
+- Complex complementary constraints can score 5 (0131: 6 tokens, all compatible)
+
+### Next Steps
+
+- Apply R17 (prose-form conflicts) — highest impact, most evidence
+- Apply R18 (gherkin guidance) — consistent failure pattern across 7 cycles
+- Investigate gherkin selection frequency (possibly overweighted in token pool)
+- Run Cycle 8 after applying R17/R18 to validate improvement
+
+---
+
 ## ADR 0085 Complete ✅

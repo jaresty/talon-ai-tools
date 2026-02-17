@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response arranges items into categories or an order using a specified or inferred scheme.",
+  "constraints": [
+    "Completeness (\"full\"): The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+    "Method (\"split\"): The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
+    "Form (\"merge\"): The response combines multiple sources into a single coherent whole while preserving essential information."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "full",
+      "description": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
+    },
+    {
+      "axis": "method",
+      "token": "split",
+      "description": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final."
+    },
+    {
+      "axis": "form",
+      "token": "merge",
+      "description": "The response combines multiple sources into a single coherent whole while preserving essential information."
+    }
+  ],
+  "axes": {
+    "task": "sort",
+    "completeness": "full",
+    "method": [
+      "split"
+    ],
+    "form": [
+      "merge"
+    ]
+  },
+  "persona": {
+    "audience": "to stream aligned team",
+    "tone": "formally"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "audience",
+      "token": "to stream aligned team",
+      "description": "The response addresses a stream-aligned team, emphasising flow, delivery, and local ownership."
+    },
+    {
+      "axis": "tone",
+      "token": "formally",
+      "description": "The response uses a formal, professional tone."
+    }
+  ],
+  "tokens": [
+    "to stream aligned team",
+    "formally",
+    "sort",
+    "split",
+    "merge"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "subject": "",
+  "task": "Task:\n  The response plays out a concrete or hypothetical scenario over time under stated or inferred conditions.",
+  "constraints": [
+    "Completeness (\"gist\"): The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+    "Form (\"cocreate\"): The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output.",
+    "Channel (\"shellscript\"): The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation.",
+    "Directional (\"fly ong\"): The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+  ],
+  "hydrated_constraints": [
+    {
+      "axis": "completeness",
+      "token": "gist",
+      "description": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
+    },
+    {
+      "axis": "form",
+      "token": "cocreate",
+      "description": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output."
+    },
+    {
+      "axis": "channel",
+      "token": "shellscript",
+      "description": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation."
+    },
+    {
+      "axis": "directional",
+      "token": "fly ong",
+      "description": "The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts."
+    }
+  ],
+  "axes": {
+    "task": "sim",
+    "completeness": "gist",
+    "form": [
+      "cocreate"
+    ],
+    "channel": [
+      "shellscript"
+    ],
+    "directional": "fly ong"
+  },
+  "persona": {
+    "voice": "as programmer",
+    "audience": "to programmer",
+    "intent": "inform"
+  },
+  "hydrated_persona": [
+    {
+      "axis": "voice",
+      "token": "as programmer",
+      "description": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer."
+    },
+    {
+      "axis": "audience",
+      "token": "to programmer",
+      "description": "The response addresses a programmer, remaining technical, precise, and implementation-ready."
+    },
+    {
+      "axis": "intent",
+      "token": "inform",
+      "description": "Provide clear, relevant information the audience needs."
+    }
+  ],
+  "tokens": [
+    "inform",
+    "as programmer",
+    "to programmer",
+    "sim",
+    "gist",
+    "cocreate",
+    "shellscript",
+    "fly ong"
+  ]
+}

@@ -21,6 +21,7 @@ const (
 // BuildResult captures the structured output of `bar build`.
 type BuildResult struct {
 	SchemaVersion       string              `json:"schema_version"`
+	ReferenceKey        string              `json:"reference_key,omitempty"`
 	Subject             string              `json:"subject"`
 	Addendum            string              `json:"addendum,omitempty"`
 	Task                string              `json:"task"`
@@ -874,6 +875,7 @@ func (s *buildState) toResult() *BuildResult {
 
 	result := &BuildResult{
 		SchemaVersion: s.grammar.SchemaVersion,
+		ReferenceKey:  s.grammar.ReferenceKey,
 		Task:          task,
 		Constraints:   constraints,
 		Axes: AxesResult{

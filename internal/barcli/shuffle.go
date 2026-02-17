@@ -85,6 +85,7 @@ func Shuffle(g *Grammar, opts ShuffleOptions) (*BuildResult, *CLIError) {
 
 	result.Subject = opts.Subject
 	result.Tokens = tokens
+	result.ReferenceKey = g.ReferenceKey
 	result.PlainText = RenderPlainText(result)
 
 	return result, nil

@@ -47,3 +47,21 @@ func TestRenderPlainTextSections(t *testing.T) {
 		t.Fatalf("expected plain text output to omit legacy promptlets block, got:\n%s", output)
 	}
 }
+
+// TestRenderPlainTextUsesResultReferenceKey specifies that RenderPlainText uses
+// result.ReferenceKey when it is non-empty, rather than the hardcoded constant
+// (ADR-0131, Loop 3). This is the specifying validation for the render.go change.
+func TestRenderPlainTextUsesResultReferenceKey(t *testing.T) {
+	customKey := "CUSTOM_REFERENCE_KEY_ADR0131_SENTINEL"
+	result := &BuildResult{
+		Task:         "make something",
+		Constraints:  []string{},
+		ReferenceKey: customKey,
+	}
+
+	output := RenderPlainText(result)
+
+	if !strings.Contains(output, customKey) {
+		t.Fatalf("expected RenderPlainText to use result.ReferenceKey %q, but output does not contain it:\n%s", customKey, output)
+	}
+}

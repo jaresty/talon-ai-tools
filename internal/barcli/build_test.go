@@ -2,6 +2,7 @@ package barcli
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -94,5 +95,26 @@ func TestApplyOverrideTokenPersonaConflict(t *testing.T) {
 		t.Fatalf("expected persona override conflict")
 	} else if err.Type != errorPresetConflict {
 		t.Fatalf("expected preset conflict error, got %s", err.Type)
+	}
+}
+
+// TestBuildResultCarriesReferenceKey specifies that Build() propagates the
+// grammar's ReferenceKey into the returned BuildResult (ADR-0131, Loop 3).
+func TestBuildResultCarriesReferenceKey(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	if strings.TrimSpace(grammar.ReferenceKey) == "" {
+		t.Skip("embedded grammar has no ReferenceKey; run python3 -m prompts.export first")
+	}
+
+	result, cliErr := Build(grammar, []string{"make"})
+	if cliErr != nil {
+		t.Fatalf("Build returned error: %v", cliErr)
+	}
+	if result.ReferenceKey != grammar.ReferenceKey {
+		t.Fatalf("expected BuildResult.ReferenceKey == grammar.ReferenceKey, got %q", result.ReferenceKey)
 	}
 }

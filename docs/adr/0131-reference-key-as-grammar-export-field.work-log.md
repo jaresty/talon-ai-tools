@@ -131,3 +131,79 @@ next_work:
     Validation: go test ./internal/barcli/... (with new specifying tests for build and render)
     Future-shaping: render.go reads result.ReferenceKey with fallback to referenceKeyText constant
 ```
+
+## Loop 3 — 2026-02-17T07:20:00Z
+
+```
+helper_version: helper:v20251223.1
+focus: ADR-0131 §Implementation.3-5 — propagate ReferenceKey through BuildResult (build.go,
+  shuffle.go) and read it in RenderPlainText (render.go) with fallback to referenceKeyText constant
+
+active_constraint: BuildResult lacks a ReferenceKey field; Build() does not populate it from
+  the grammar; RenderPlainText() ignores result.ReferenceKey and always uses the hardcoded
+  referenceKeyText constant; falsifiable by:
+  go test ./internal/barcli/... -run "TestBuildResultCarriesReferenceKey|TestRenderPlainTextUsesResultReferenceKey"
+  → build failure before changes, exit 0 after.
+
+expected_value:
+  | Factor           | Value | Rationale                                               |
+  | Impact           | High  | Without propagation, render always uses hardcoded text; |
+  |                  |       | single-edit-point benefit of ADR-0131 is not realised   |
+  | Probability      | High  | Deterministic: add field, set it, read it               |
+  | Time Sensitivity | High  | ADR completion requires all 5 implementation items done |
+  | Uncertainty note | None  | render.go fallback to referenceKeyText handles cached   |
+  |                  |       | builds without breaking backward compat                 |
+
+validation_targets:
+  - go test ./internal/barcli/... -run "TestBuildResultCarriesReferenceKey|TestRenderPlainTextUsesResultReferenceKey"
+  - go test ./internal/barcli/... (full suite)
+
+evidence:
+  - red    | 2026-02-17T07:16:00Z | exit 1 |
+      go test ./internal/barcli/... -run "TestBuildResultCarriesReferenceKey|TestRenderPlainTextUsesResultReferenceKey"
+      helper:diff-snapshot=0 files changed
+      build_test.go:117:12: result.ReferenceKey undefined (type *BuildResult has no field)
+      render_test.go:59:3: unknown field ReferenceKey in struct literal of type BuildResult | inline
+
+  - green  | 2026-02-17T07:19:00Z | exit 0 |
+      go test ./internal/barcli/...
+      helper:diff-snapshot=5 files changed, 48 insertions(+), 1 deletion(-)
+      ok github.com/talonvoice/talon-ai-tools/internal/barcli 1.058s | inline
+
+  - removal | 2026-02-17T07:20:00Z | exit 1 |
+      git stash -- internal/barcli/build.go internal/barcli/shuffle.go internal/barcli/render.go && go test ./internal/barcli/... -run "TestBuildResultCarriesReferenceKey|TestRenderPlainTextUsesResultReferenceKey"
+      helper:diff-snapshot=0 files changed (after stash of 3 files)
+      result.ReferenceKey undefined / unknown field ReferenceKey | inline
+      (stash popped and green state restored)
+
+rollback_plan: git restore --source=HEAD -- internal/barcli/build.go internal/barcli/shuffle.go internal/barcli/render.go && go test ./internal/barcli/... to verify red.
+
+delta_summary:
+  helper:diff-snapshot=5 files changed, 48 insertions(+), 1 deletion(-)
+  - internal/barcli/build.go: added ReferenceKey string json:"reference_key,omitempty" to
+    BuildResult; set ReferenceKey: s.grammar.ReferenceKey in result literal.
+  - internal/barcli/shuffle.go: added result.ReferenceKey = g.ReferenceKey after Build() call,
+    before PlainText rendering (so render uses the populated value).
+  - internal/barcli/render.go: replaced direct referenceKeyText with refKey := result.ReferenceKey;
+    fallback to referenceKeyText when empty (backward compat for cached builds pre-ADR-0131).
+  - internal/barcli/build_test.go: added TestBuildResultCarriesReferenceKey specifying validation.
+  - internal/barcli/render_test.go: added TestRenderPlainTextUsesResultReferenceKey specifying validation.
+  Depth-first rung: ADR-0131 §3-5 (build + shuffle + render) → complete.
+
+loops_remaining_forecast:
+  0 loops remaining (all ADR-0131 behaviours landed green).
+  ADR-0131 is complete: all 5 implementation items done, all specifying validations green.
+
+residual_constraints:
+  - referenceKeyText constant lingers in render.go as fallback for cached builds pre-ADR-0131
+    — severity: Low; mitigation: future cleanup when state schema version is bumped (per ADR-0131
+    §Tradeoffs); monitoring: no active risk; owning ADR: 0131 §Tradeoffs.
+  - test grammar at cmd/bar/testdata/grammar.json lacks reference_key — severity: Low;
+    TestBuildResultCarriesReferenceKey uses embedded grammar instead; monitoring: if test grammar
+    is ever regenerated, it will gain the field automatically; owning ADR: 0131.
+
+next_work:
+  ADR-0131 complete. No further loops required.
+  Cleanup opportunity (future): remove referenceKeyText constant and fallback when state schema
+    version is bumped; this is deferred per ADR-0131 §Tradeoffs.
+```

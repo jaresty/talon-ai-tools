@@ -87,36 +87,13 @@ func TestLLMHelpUsagePatternsTokensExist(t *testing.T) {
 		knownTokens[token] = true
 	}
 
-	// Extract tokens from usage patterns (hardcoded in renderUsagePatterns)
-	// If you add a pattern, add its tokens here
-	patternTokens := []string{
-		"diff", "thing", "full", "branch", "variants",
-		"make", "struct", "explore", "case",
-		"show", "time", "flow", "walkthrough",
-		"mean", "scaffold",
-		"probe", "mapping",
-		"fail", "diagnose", "checklist",
-		"plan", "act", "converge", "actions",
-		"table",
-		"pull", "risks",
-		"check", "good", "analysis",
-		"gist",
-		"adversarial",
-		"view",
-		"effects",
-		"dimension",
-		"cite",
-		"sim",
-		"depends",
-		"inversion",
-		// Loop-10: channel discoverability patterns
-		"plain",
-		"sync",
-	}
-
-	for _, token := range patternTokens {
-		if !knownTokens[token] {
-			t.Errorf("Usage pattern references unknown token %q — update renderUsagePatterns in help_llm.go or add token to grammar", token)
+	for _, pattern := range grammar.Patterns {
+		for _, tokens := range pattern.Tokens {
+			for _, token := range tokens {
+				if !knownTokens[token] {
+					t.Errorf("Pattern %q references unknown token %q — update USAGE_PATTERNS in axisConfig.py", pattern.Title, token)
+				}
+			}
 		}
 	}
 }

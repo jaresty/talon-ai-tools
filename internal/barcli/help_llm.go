@@ -43,7 +43,7 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 		renderCompositionRules(w, grammar, compact)
 	}
 	if shouldRender("patterns") {
-		renderUsagePatterns(w, compact)
+		renderUsagePatterns(w, grammar, compact)
 	}
 	if shouldRender("heuristics") {
 		renderTokenSelectionHeuristics(w, compact)
@@ -747,7 +747,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 // SYNC_CHECK: When adding patterns, ensure all tokens exist in axisConfig.py.
 // VALIDATION: TestLLMHelpUsagePatternsTokensExist validates these tokens.
 // Related: .opencode/skills/bar-workflow/skill.md references these patterns.
-func renderUsagePatterns(w io.Writer, compact bool) {
+func renderUsagePatterns(w io.Writer, grammar *Grammar, compact bool) {
 	if compact {
 		// Skip usage patterns in compact mode
 		return
@@ -764,211 +764,12 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "The full token space supports many more combinations than shown here.\n\n")
 	fmt.Fprintf(w, "---\n\n")
 
-	patterns := []struct {
-		title   string
-		command string
-		example string
-		desc    string
-	}{
-		{
-			title:   "Decision-Making",
-			command: "bar build diff thing full branch variants --subject \"...\"",
-			example: "bar build diff thing full branch variants --subject \"Choose between Redis and Postgres for caching\"",
-			desc:    "Use when choosing between options or evaluating alternatives",
-		},
-		{
-			title:   "Architecture Documentation",
-			command: "bar build make struct full explore case --subject \"...\"",
-			example: "bar build make struct full explore case --subject \"Document the microservices architecture\"",
-			desc:    "Use for creating ADRs or documenting architectural decisions",
-		},
-		{
-			title:   "Explanation/Understanding (Process)",
-			command: "bar build show time full flow walkthrough --subject \"...\"",
-			example: "bar build show time full flow walkthrough --subject \"Explain the OAuth authentication flow\"",
-			desc:    "Use when explaining how something works over time or in sequence",
-		},
-		{
-			title:   "Explanation/Understanding (Concepts)",
-			command: "bar build show mean full scaffold --subject \"...\"",
-			example: "bar build show mean full scaffold --subject \"What is eventual consistency?\"",
-			desc:    "Use when explaining what something means or building conceptual understanding",
-		},
-		{
-			title:   "Structural Analysis",
-			command: "bar build probe struct full mapping --subject \"...\"",
-			example: "bar build probe struct full mapping --subject \"Analyze the database schema relationships\"",
-			desc:    "Use for understanding relationships, boundaries, and structure",
-		},
-		{
-			title:   "Problem Diagnosis",
-			command: "bar build probe fail full diagnose checklist --subject \"...\"",
-			example: "bar build probe fail full diagnose checklist --subject \"Debug production memory leak\"",
-			desc:    "Use for troubleshooting and root cause analysis",
-		},
-		{
-			title:   "Task Planning",
-			command: "bar build plan act full converge actions --subject \"...\"",
-			example: "bar build plan act full converge actions --subject \"Plan the database migration steps\"",
-			desc:    "Use when breaking down work into actionable steps",
-		},
-		{
-			title:   "Exploratory Analysis",
-			command: "bar build probe thing full explore variants --subject \"...\"",
-			example: "bar build probe thing full explore variants --subject \"What are different approaches to state management?\"",
-			desc:    "Use when surveying possibilities or generating alternatives",
-		},
-		{
-			title:   "Comparison/Tradeoff Analysis",
-			command: "bar build diff thing full table --subject \"...\"",
-			example: "bar build diff thing full table --subject \"Compare REST vs GraphQL vs gRPC for our API\"",
-			desc:    "Use for side-by-side comparison of alternatives with tradeoffs",
-		},
-		{
-			title:   "Risk Analysis",
-			command: "bar build probe fail full adversarial checklist --subject \"...\"",
-			example: "bar build probe fail full adversarial checklist --subject \"Assess the risk posture of migrating to Kubernetes\"",
-			desc:    "Use for open-ended risk analysis: 'how risky is this?' or 'assess failure posture'",
-		},
-		{
-			title:   "Risk Extraction",
-			command: "bar build pull fail full risks checklist --subject \"...\"",
-			example: "bar build pull fail full risks checklist --subject \"Deploy payment service on Friday\"",
-			desc:    "Use when extracting a bounded risk list or summary: 'what are the risks?'. Prefer pull over probe when a risk register or checklist is the deliverable, not an open-ended analysis.",
-		},
-		{
-			title:   "Quality Evaluation",
-			command: "bar build check good full analysis checklist --subject \"...\"",
-			example: "bar build check good full analysis checklist --subject \"Evaluate code review quality standards\"",
-			desc:    "Use when assessing quality, standards, or success criteria",
-		},
-		{
-			title:   "Progressive Refinement Workflow",
-			command: "bar build probe thing gist explore variants --subject \"...\" && bar build probe struct full mapping table --subject \"...\"",
-			example: "bar build probe thing gist explore variants --subject \"API design approaches\" && bar build probe struct full mapping table --subject \"Selected REST API structure\"",
-			desc:    "Use for multi-step workflows: explore broadly, then analyze deeply",
-		},
-		{
-			title:   "Conceptual Scaffolding",
-			command: "bar build show mean full scaffold --subject \"...\"",
-			example: "bar build show mean full scaffold --subject \"Explain CQRS pattern for beginners\"",
-			desc:    "Use for building understanding from fundamentals to complex concepts",
-		},
-		{
-			title:   "Failure Mode Analysis",
-			command: "bar build probe fail full adversarial variants --subject \"...\"",
-			example: "bar build probe fail full adversarial variants --subject \"How could the payment system fail under load?\"",
-			desc:    "Use for systematic analysis of how systems can break",
-		},
-		{
-			title:   "Success Criteria Definition",
-			command: "bar build make good full analysis checklist --subject \"...\"",
-			example: "bar build make good full analysis checklist --subject \"Define success criteria for the dashboard redesign\"",
-			desc:    "Use when establishing measurable quality or success standards",
-		},
-		{
-			title:   "Perspective Analysis",
-			command: "bar build probe view full explore variants --subject \"...\"",
-			example: "bar build probe view full explore variants --subject \"How do different stakeholders view the monolith migration?\"",
-			desc:    "Use for understanding multiple viewpoints or stakeholder perspectives",
-		},
-		{
-			title:   "Impact Assessment",
-			command: "bar build probe struct full effects table --subject \"...\"",
-			example: "bar build probe struct full effects table --subject \"Assess downstream impacts of changing the auth service\"",
-			desc:    "Use for analyzing ripple effects and dependencies",
-		},
-		{
-			title:   "Constraint Mapping",
-			command: "bar build probe thing full dimension table --subject \"...\"",
-			example: "bar build probe thing full dimension table --subject \"Map technical and business constraints for the mobile app\"",
-			desc:    "Use for identifying and documenting limitations and requirements",
-		},
-		{
-			title:   "Evidence Building",
-			command: "bar build make thing full cite case --subject \"...\"",
-			example: "bar build make thing full cite case --subject \"Build the case for adopting TypeScript\"",
-			desc:    "Use when making a persuasive argument with supporting evidence",
-		},
-		{
-			title:   "Option Generation with Reasoning",
-			command: "bar build probe thing full branch variants --subject \"...\"",
-			example: "bar build probe thing full branch variants --subject \"Generate database sharding approaches with pros/cons\"",
-			desc:    "Use for generating alternatives with detailed reasoning for each",
-		},
-		{
-			title:   "Sequential Process Documentation",
-			command: "bar build make time full flow recipe --subject \"...\"",
-			example: "bar build make time full flow recipe --subject \"Document the CI/CD pipeline stages\"",
-			desc:    "Use for documenting step-by-step processes or workflows",
-		},
-		{
-			title:   "Scenario Simulation",
-			command: "bar build sim time full walkthrough --subject \"...\"",
-			example: "bar build sim time full walkthrough --subject \"Simulate what happens during a database failover\"",
-			desc:    "Use for playing out hypothetical or contingency scenarios",
-		},
-		{
-			title:   "Dependency Analysis",
-			command: "bar build probe struct full depends mapping --subject \"...\"",
-			example: "bar build probe struct full depends mapping --subject \"Map service dependencies in the microservices architecture\"",
-			desc:    "Use for understanding and visualizing dependencies and relationships",
-		},
-		{
-			title:   "Summarisation / Extraction",
-			command: "bar build pull gist mean --subject \"...\"",
-			example: "bar build pull gist mean --subject \"[long RFC or design document]\"",
-			desc:    "Use when compressing a long source document into a shorter summary. Prefer pull over show when a SUBJECT document is being compressed: pull extracts a subset, show explains a concept. Heuristic: long SUBJECT to compress → pull; concept to explain without a source → show.",
-		},
-		{
-			title:   "Test Coverage Gap Analysis",
-			command: "bar build check fail full checklist --subject \"...\"",
-			example: "bar build check fail full checklist --subject \"Feature: user registration flow\"",
-			desc:    "Use when identifying missing tests or coverage gaps in existing code. Heuristic: 'what tests are missing?' → check; 'write a test plan' → make.",
-		},
-		{
-			title:   "Test Plan Creation",
-			command: "bar build make act fail full checklist --subject \"...\"",
-			example: "bar build make act fail full checklist --subject \"Payment integration feature\"",
-			desc:    "Use when creating a new test plan or test cases from scratch. Produces a test plan artifact rather than evaluating existing coverage.",
-		},
-		{
-			title:   "Pre-mortem / Inversion Exercise",
-			command: "bar build probe fail full inversion variants --subject \"...\"",
-			example: "bar build probe fail full inversion variants --subject \"Our Q4 launch plan\"",
-			desc:    "Use when assuming failure and working backward to identify causes. Frames the exercise as: 'assume this has failed — what went wrong?' Pairs naturally with planning and architecture review tasks.",
-		},
-		{
-			title:   "Comprehensive Assessment (Multi-Scope)",
-			command: "bar build check <scope> full <method> --subject \"...\"",
-			example: "bar build check good full analysis --subject \"Assess codebase quality\"",
-			desc:    "Use for multi-faceted assessments that span quality (good), fragility (fail), and structure (struct). When the task requires multiple analytical lenses, prioritize by primary concern or analyze sequentially: quality-first (good), risk-first (fail), or architecture-first (struct).",
-		},
-		{
-			title:   "Evaluation with Falsification",
-			command: "bar build check <scope> full verify risks --subject \"...\"",
-			example: "bar build check thing full verify risks --subject \"Evaluate the proposed caching strategy\"",
-			desc:    "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with risks (systematic problem identification). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
-		},
-		{
-			title:   "Plain Prose Output",
-			command: "bar build show <scope> full plain --subject \"...\"",
-			example: "bar build show mean full plain --subject \"Explain the authorization model\"",
-			desc:    "Use when the response must be plain prose — no lists, bullets, or tables. The plain channel explicitly suppresses structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain prose', 'flowing paragraphs' → add plain channel to any task.",
-		},
-		{
-			title:   "Synchronous Session Plan",
-			command: "bar build plan act full sync --subject \"...\"",
-			example: "bar build plan act full sync --subject \"Design sprint kickoff — 3h with context, problem framing, and ideation\"",
-			desc:    "Use when the output should be a synchronous session plan with agenda, timing slots, and facilitation cues for real-time use. Heuristic: 'session plan', 'live workshop', 'meeting agenda with timing', 'facilitation script for live session' → sync channel. Combine with facilitate form when facilitator role is explicit.",
-		},
-	}
 
-	for _, p := range patterns {
-		fmt.Fprintf(w, "### %s\n\n", p.title)
-		fmt.Fprintf(w, "%s\n\n", p.desc)
-		fmt.Fprintf(w, "**Pattern:**\n```bash\n%s\n```\n\n", p.command)
-		fmt.Fprintf(w, "**Example:**\n```bash\n%s\n```\n\n", p.example)
+	for _, p := range grammar.Patterns {
+		fmt.Fprintf(w, "### %s\n\n", p.Title)
+		fmt.Fprintf(w, "%s\n\n", p.Desc)
+		fmt.Fprintf(w, "**Pattern:**\n```bash\n%s\n```\n\n", p.Command)
+		fmt.Fprintf(w, "**Example:**\n```bash\n%s\n```\n\n", p.Example)
 	}
 }
 

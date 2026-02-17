@@ -899,6 +899,29 @@ def axis_key_to_guidance_map(axis: str) -> dict[str, str]:
     return AXIS_KEY_TO_GUIDANCE.get(axis, {})
 
 
+# Task-type discoverability hints per token (ADR-0132).
+# Answers: "What user task types should trigger selection of this token?"
+# Distinct from guidance (ADR-0110) which covers constraints/conflicts.
+AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
+    "form": {
+        "wardley": "Strategic mapping: user wants to position components on an evolution axis (genesis → custom → product → commodity). Heuristic: 'Wardley map', 'map on evolution axis', 'genesis to commodity' → wardley.",
+        "wasinawa": "Post-incident reflection or retrospective on past events. Structures output as: what happened, why it matters, next steps. Heuristic: 'reflect on incident', 'what went wrong and what to do next', 'lessons learned' → wasinawa. Distinct from pre-mortem (inversion method): pre-mortem assumes future failure; wasinawa reflects on past events.",
+        "spike": "Framing a technology investigation or adoption decision as a backlog spike artifact (problem statement + exploratory questions). Use make task (not plan) — the spike IS the artifact. Heuristic: 'should we adopt X?', 'spike on Y', 'investigation backlog item' → make + spike.",
+        "cocreate": "Iterative design with explicit decision points and alignment checks at each step rather than a one-shot response. Heuristic: 'work through incrementally', 'with decision points', 'iterative design' → cocreate. Distinct from variants (choice of designs) and make (one-shot artifact).",
+        "ladder": "Analyzing causes or effects across multiple levels of abstraction: step up to systemic causes, step down to concrete consequences. Heuristic: 'step up and down abstraction levels', 'root cause hierarchy', 'why at a systems level' → ladder.",
+        "taxonomy": "Producing a type hierarchy, category classification, or taxonomy of entities. Pair with thing scope for concrete entities. Heuristic: 'classify all types of X', 'what kinds of Y exist', 'type hierarchy' → taxonomy + thing scope. Distinct from table (flat comparison).",
+        "facilitate": "Planning a workshop, retrospective, or collaborative session with session structure, participation cues, and facilitation agenda. Heuristic: 'facilitate a X', 'run a retrospective', 'workshop planning' → facilitate. Distinct from walkthrough (linear narrated steps).",
+        "recipe": "Documenting a process as a structured recipe with a custom mini-language and short key — best when the process has a recurring structure that benefits from a custom notation. Heuristic: 'document as recipe', 'structured setup guide with repeating patterns' → recipe. Distinct from walkthrough (linear narrated steps without custom notation).",
+        "visual": "Abstract or metaphorical representation of a subject as prose layout with a legend — when diagrammatic precision (Mermaid) is less useful than conceptual overview. Heuristic: 'abstract visual', 'conceptual layout', 'big-picture structure for non-technical audience' → visual. Distinct from diagram channel (precise Mermaid output).",
+    }
+}
+
+
+def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
+    """Return the key->use_when map for a given axis (ADR-0132)."""
+    return AXIS_KEY_TO_USE_WHEN.get(axis, {})
+
+
 def axis_docs_for(axis: str) -> list[AxisDoc]:
     """Return AxisDoc objects for a given axis."""
     mapping = axis_key_to_value_map(axis)

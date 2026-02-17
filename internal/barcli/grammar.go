@@ -42,6 +42,7 @@ type AxisSection struct {
 	ListTokens  map[string][]string
 	Labels      map[string]map[string]string // ADR-0109: short CLI-facing selection labels
 	Guidance    map[string]map[string]string // ADR-0110: selection-oriented prose hints
+	UseWhen     map[string]map[string]string // ADR-0132: task-type discoverability hints
 }
 
 type StaticSection struct {
@@ -115,8 +116,9 @@ type rawGrammar struct {
 type rawAxisSection struct {
 	Definitions map[string]map[string]string `json:"definitions"`
 	ListTokens  map[string][]string          `json:"list_tokens"`
-	Labels      map[string]map[string]string `json:"labels"`   // ADR-0109
-	Guidance    map[string]map[string]string `json:"guidance"` // ADR-0110
+	Labels      map[string]map[string]string `json:"labels"`    // ADR-0109
+	Guidance    map[string]map[string]string `json:"guidance"`  // ADR-0110
+	UseWhen     map[string]map[string]string `json:"use_when"`  // ADR-0132
 }
 
 type rawStatic struct {
@@ -207,6 +209,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			ListTokens:  raw.Axes.ListTokens,
 			Labels:      raw.Axes.Labels,
 			Guidance:    raw.Axes.Guidance,
+			UseWhen:     raw.Axes.UseWhen,
 		},
 		Static: StaticSection{
 			Profiles:     profiles,
@@ -843,6 +846,28 @@ func (g *Grammar) AxisGuidanceMap(axis string) map[string]string {
 		return guidance
 	}
 	return nil
+}
+
+// AxisUseWhen returns the use_when discoverability hint for a token (ADR-0132).
+// Returns empty string if no hint is defined.
+func (g *Grammar) AxisUseWhen(axis, token string) string {
+	if g.Axes.UseWhen == nil {
+		return ""
+	}
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	if axisKey == "" || tokenKey == "" {
+		return ""
+	}
+	if hints, ok := g.Axes.UseWhen[axisKey]; ok {
+		if text, ok := hints[tokenKey]; ok {
+			return text
+		}
+		if text, ok := hints[strings.ToLower(tokenKey)]; ok {
+			return text
+		}
+	}
+	return ""
 }
 
 // TaskGuidance returns the optional selection-guidance text for the given task token (ADR-0110).

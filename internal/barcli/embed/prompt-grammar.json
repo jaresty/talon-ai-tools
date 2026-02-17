@@ -499,6 +499,19 @@
       "scope": {
         "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
       }
+    },
+    "use_when": {
+      "form": {
+        "cocreate": "Iterative design with explicit decision points and alignment checks at each step rather than a one-shot response. Heuristic: 'work through incrementally', 'with decision points', 'iterative design' → cocreate. Distinct from variants (choice of designs) and make (one-shot artifact).",
+        "facilitate": "Planning a workshop, retrospective, or collaborative session with session structure, participation cues, and facilitation agenda. Heuristic: 'facilitate a X', 'run a retrospective', 'workshop planning' → facilitate. Distinct from walkthrough (linear narrated steps).",
+        "ladder": "Analyzing causes or effects across multiple levels of abstraction: step up to systemic causes, step down to concrete consequences. Heuristic: 'step up and down abstraction levels', 'root cause hierarchy', 'why at a systems level' → ladder.",
+        "recipe": "Documenting a process as a structured recipe with a custom mini-language and short key — best when the process has a recurring structure that benefits from a custom notation. Heuristic: 'document as recipe', 'structured setup guide with repeating patterns' → recipe. Distinct from walkthrough (linear narrated steps without custom notation).",
+        "spike": "Framing a technology investigation or adoption decision as a backlog spike artifact (problem statement + exploratory questions). Use make task (not plan) — the spike IS the artifact. Heuristic: 'should we adopt X?', 'spike on Y', 'investigation backlog item' → make + spike.",
+        "taxonomy": "Producing a type hierarchy, category classification, or taxonomy of entities. Pair with thing scope for concrete entities. Heuristic: 'classify all types of X', 'what kinds of Y exist', 'type hierarchy' → taxonomy + thing scope. Distinct from table (flat comparison).",
+        "visual": "Abstract or metaphorical representation of a subject as prose layout with a legend — when diagrammatic precision (Mermaid) is less useful than conceptual overview. Heuristic: 'abstract visual', 'conceptual layout', 'big-picture structure for non-technical audience' → visual. Distinct from diagram channel (precise Mermaid output).",
+        "wardley": "Strategic mapping: user wants to position components on an evolution axis (genesis → custom → product → commodity). Heuristic: 'Wardley map', 'map on evolution axis', 'genesis to commodity' → wardley.",
+        "wasinawa": "Post-incident reflection or retrospective on past events. Structures output as: what happened, why it matters, next steps. Heuristic: 'reflect on incident', 'what went wrong and what to do next', 'lessons learned' → wasinawa. Distinct from pre-mortem (inversion method): pre-mortem assumes future failure; wasinawa reflects on past events."
+      }
     }
   },
   "tasks": {
@@ -1838,7 +1851,7 @@
     }
   },
   "checksums": {
-    "axes": "343b353d8cda400799b6a89413a8386d69154da865edb6ecd63af149f09c2a29",
+    "axes": "2a5d0778114a99ed6bfc88ead0f9b1f96d5521340481fc99b98a8d9ebcba13af",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

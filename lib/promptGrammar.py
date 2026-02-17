@@ -159,6 +159,14 @@ def _build_axis_section(
         if tokens
     }
 
+    # UseWhen (ADR-0132): task-type discoverability hints, optional per token.
+    axis_use_when_raw = catalog.get("axis_use_when") or {}
+    axis_use_when: dict[str, dict[str, str]] = {
+        str(axis): {str(k): str(v) for k, v in sorted(tokens.items())}
+        for axis, tokens in sorted(axis_use_when_raw.items(), key=lambda i: str(i[0]))
+        if tokens
+    }
+
     section: dict[str, Any] = {
         "definitions": axis_definitions,
         "list_tokens": axis_list_tokens,
@@ -167,6 +175,8 @@ def _build_axis_section(
         section["labels"] = axis_labels
     if axis_guidance:
         section["guidance"] = axis_guidance
+    if axis_use_when:
+        section["use_when"] = axis_use_when
 
     return (section, axis_slugs)
 

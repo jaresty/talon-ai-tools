@@ -46,7 +46,7 @@ Assumes:
 3. **Option generation strategy:**
    - Consult **"Usage Patterns by Task Type"** section for diverse examples
    - Reference **"Choosing Method"** section to understand method categorization
-   - Use **"Token Catalog"** to discover tokens across all axes
+   - Use **"Token Catalog"** to discover tokens across all axes; for form tokens, check the **"When to use"** column for task-type selection heuristics
    - Check **"Composition Rules"** for valid combinations
 
 **Performance benefit:** Single reference load enables generating multiple diverse options
@@ -99,6 +99,7 @@ Use bar-suggest when the request is:
 4. **Vary scope and form** - Read reference § "Choosing Scope" and § "Choosing Form" to:
    - Discover available scope tokens for different focus areas
    - Discover available form tokens for different output structures
+   - For specialist forms (wardley, wasinawa, spike, cocreate, ladder, taxonomy, facilitate, recipe, visual): read the **"When to use"** column in the Token Catalog § "Form" — these can make options distinctively structured rather than defaulting to walkthrough/table/checklist
    - Combine with method variation for truly distinct options
 
 5. **Check patterns** - Reference § "Usage Patterns by Task Type" to:

@@ -487,8 +487,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 
 		fmt.Fprintf(w, "### %s (%s token)\n\n", strings.Title(axisName), capacity)
 
-		fmt.Fprintf(w, "| Token | Label | Description | Notes |\n")
-		fmt.Fprintf(w, "|-------|-------|-------------|-------|\n")
+		fmt.Fprintf(w, "| Token | Label | Description | Notes | When to use |\n")
+		fmt.Fprintf(w, "|-------|-------|-------------|-------|-------------|\n")
 
 		tokenNames := make([]string, 0, len(tokens))
 		for token := range tokens {
@@ -507,7 +507,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 			}
 			label := grammar.AxisLabel(axisName, token)
 			guidance := grammar.AxisGuidance(axisName, token)
-			fmt.Fprintf(w, "| `%s` | %s | %s | %s |\n", slug, label, desc, guidance)
+			useWhen := grammar.AxisUseWhen(axisName, token)
+			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s |\n", slug, label, desc, guidance, useWhen)
 		}
 		fmt.Fprintf(w, "\n")
 

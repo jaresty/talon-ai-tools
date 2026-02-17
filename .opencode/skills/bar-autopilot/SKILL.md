@@ -59,7 +59,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 3. **Token selection strategy:**
    - Consult **"Usage Patterns by Task Type"** section for similar use case examples
    - Reference **"Token Selection Heuristics"** section for scope/method/form guidance
-   - Use **"Token Catalog"** section to discover available tokens across all 7 axes
+   - Use **"Token Catalog"** section to discover available tokens across all 7 axes; for form tokens, check the **"When to use"** column for task-type selection heuristics
    - Check **"Composition Rules"** section for ordering, caps, and incompatibilities
 
 **Performance benefit:** 1 reference load per conversation (vs 3-5 queries per request with legacy approach)
@@ -67,7 +67,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 **Reference structure includes:**
 - Quick Start with example commands
 - Grammar Architecture (ordering rules)
-- Token Catalog (all 7 axes: static, completeness, scope, method, form, channel, directional)
+- Token Catalog (all 7 axes: static, completeness, scope, method, form, channel, directional) — form tokens include a "When to use" column with task-type selection heuristics
 - Persona System (presets + custom axes)
 - Composition Rules (constraints)
 - Usage Patterns by Task Type (8 examples: decision-making, architecture, diagnosis, etc.)
@@ -110,6 +110,7 @@ Each step is a required gate. Do not advance to the next step until the current 
    - What form tokens are available
    - How forms map to different output structures
    - Which form best matches the desired response format
+   - For specialist forms (wardley, wasinawa, spike, cocreate, ladder, taxonomy, facilitate, recipe, visual): read the **"When to use"** column in the Token Catalog § "Form" — it contains task-type heuristics for when to reach for each form instead of defaulting to walkthrough/table/checklist
 
 6. **Discover available tokens** - Read reference § "Token Catalog" to see:
    - All tokens available for each axis

@@ -58,7 +58,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 3. **Workflow planning strategy:**
    - Consult **"Choosing Method"** section to understand method categorization
    - Reference **"Usage Patterns by Task Type"** for multi-step examples
-   - Use **"Token Catalog"** to discover available tokens for each step
+   - Use **"Token Catalog"** to discover available tokens for each step; for form tokens, check the **"When to use"** column for task-type selection heuristics
    - Check **"Composition Rules"** for constraints
 
 **Performance benefit:** Single reference load enables planning multiple workflow steps
@@ -101,6 +101,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 5. **Select forms for each step** - Read reference § "Choosing Form" to discover:
    - Appropriate output structures for intermediate steps
    - Final form for synthesized result
+   - For specialist forms (wardley, wasinawa, spike, cocreate, ladder, taxonomy, facilitate, recipe, visual): read the **"When to use"** column in the Token Catalog § "Form" for task-type heuristics
 
 6. **Verify composition** - Read reference § "Composition Rules" to check:
    - Token ordering requirements for each step

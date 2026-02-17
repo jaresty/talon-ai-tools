@@ -1,0 +1,291 @@
+# ADR-0113 Loop-8 Recommendations — Specialist Form Token Usage Patterns
+# Date: 2026-02-17
+# Root cause: 8 specialist form tokens have no usage patterns in bar help llm,
+# making them invisible to bar-autopilot. All tokens produce good prompts when
+# selected; the gap is entirely in discoverability.
+
+---
+
+# === SKILL UPDATES ===
+
+- id: L8-R-01
+  action: skill-update
+  gap_id: G-L8-01
+  priority: high
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Strategic Landscape / Wardley Mapping" pattern
+  proposed_addition: |
+    ### Strategic Landscape / Wardley Mapping
+
+    Use when mapping product, system, or market components along an evolution axis
+    (genesis → custom → product → commodity).
+
+    **Pattern:**
+    ```bash
+    bar build make full struct wardley --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build make full struct wardley --subject "E-commerce components: checkout, payment gateway, CDN, recommendation engine"
+    ```
+
+    **Heuristic:**
+    - "Wardley map", "map components on evolution axis", "genesis to commodity" → wardley form
+    - Without wardley cue, autopilot defaults to diagram channel (Mermaid) — use wardley for evolutionary positioning
+  rationale: >
+    wardley form is the only form for strategic evolutionary mapping but has no usage
+    pattern. Autopilot defaults to diagram channel (Mermaid structural diagram) which
+    does not capture evolution positioning. wardley form is a standard strategy tool
+    with no substitute in the catalog.
+  evidence:
+    - T170
+
+- id: L8-R-02
+  action: skill-update
+  gap_id: G-L8-02
+  priority: high
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Post-Incident Reflection / Retrospective" pattern
+  proposed_addition: |
+    ### Post-Incident Reflection / Retrospective
+
+    Use when reflecting on an incident, deployment failure, or past decision to
+    extract learning and define next steps.
+
+    **Pattern:**
+    ```bash
+    bar build show full wasinawa --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build show full wasinawa --subject "DB migration dropped FK constraint; 300% query slowdown for 4 hours"
+    ```
+
+    **Heuristic:**
+    - "what happened + why it matters + what to do next" → wasinawa form
+    - Distinguish from pre-mortem (inversion method): pre-mortem *assumes* future failure;
+      wasinawa *reflects* on past events
+    - "reflect on this incident" → wasinawa; "assume we fail — what goes wrong?" → inversion
+  rationale: >
+    wasinawa is the ideal form for post-incident reflection but has no usage pattern.
+    Autopilot routes incident review to walkthrough (step-by-step narrative) or
+    probe+fail (failure analysis), neither of which produces the What/So What/Now What
+    structure that makes retrospectives actionable.
+  evidence:
+    - T171
+
+- id: L8-R-03
+  action: skill-update
+  gap_id: G-L8-03
+  priority: high
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Research Spike (Technology Investigation)" pattern
+  proposed_addition: |
+    ### Research Spike (Technology Investigation)
+
+    Use when framing a technology adoption decision, investigation, or proof-of-concept
+    as a structured backlog spike item.
+
+    **Pattern:**
+    ```bash
+    bar build make full mean spike --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build make full mean spike --subject "Should we adopt GraphQL? Current REST+OpenAPI stack; mobile clients want flexibility"
+    ```
+
+    **Heuristic:**
+    - "should we adopt X?", "spike on Y", "investigation backlog item", "proof of concept" → make + spike
+    - Use make (artifact production), NOT plan: a spike is a backlog artifact, not a plan
+    - "Should we adopt X?" → make+mean+spike (frame as investigation); to compare options → diff+variants
+  rationale: >
+    Research spikes are a common agile artifact with no usage pattern. Autopilot routes
+    "should we adopt X?" to diff (comparison) or probe (analysis), neither of which
+    produces a spike backlog item. Additionally, the correct task token is make (artifact),
+    not plan (strategy).
+  evidence:
+    - T172
+
+- id: L8-R-04
+  action: skill-update
+  gap_id: G-L8-04
+  priority: medium
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Collaborative / Iterative Design" pattern
+  proposed_addition: |
+    ### Collaborative / Iterative Design
+
+    Use when the design process requires explicit decision points, small moves, and
+    user alignment at each step rather than a one-shot design output.
+
+    **Pattern:**
+    ```bash
+    bar build make full [scope] cocreate --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build make full struct cocreate --subject "Rate-limiting API for multi-tenant SaaS: per-tenant quotas, burst allowances, graceful degradation"
+    ```
+
+    **Heuristic:**
+    - "work through incrementally", "with explicit decision points", "iterative design" → cocreate form
+    - cocreate = small moves + alignment checks; make+variants = options to choose from
+    - Use cocreate when the design *process* matters; use variants when you want a choice of designs
+  rationale: >
+    cocreate form enables iterative design with explicit checkpoints but has no usage pattern.
+    Autopilot routes design tasks to make+variants (choices) or make+code (artifact), both
+    of which produce one-shot responses without the collaborative structure cocreate enables.
+  evidence:
+    - T173
+
+- id: L8-R-05
+  action: skill-update
+  gap_id: G-L8-05
+  priority: medium
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Classification / Type Taxonomy" pattern with thing scope
+  proposed_addition: |
+    ### Classification / Type Taxonomy
+
+    Use when producing a type hierarchy, category classification, or taxonomy of
+    entities, patterns, or concepts.
+
+    **Pattern:**
+    ```bash
+    bar build show full thing taxonomy --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build show full thing taxonomy --subject "All error types in a distributed payment service"
+    ```
+
+    **Heuristic:**
+    - "classify all X", "what types of Y exist", "type hierarchy", "categories of Z" → taxonomy form + thing scope
+    - thing scope: for concrete entities/types that exist in a system
+    - struct scope: for how components are *arranged* — not for classification of kinds
+    - taxonomy form vs table: taxonomy = hierarchical type system; table = flat comparison of items
+  rationale: >
+    Classification tasks have no usage pattern. Autopilot defaults to table form (flat
+    list comparison) or checklist. taxonomy form is more precise for hierarchical type
+    systems. Additionally, thing scope (physical/conceptual entities in a system) is
+    more appropriate than struct scope (structural arrangement) for classification tasks.
+  evidence:
+    - T175
+
+- id: L8-R-06
+  action: skill-update
+  gap_id: G-L8-06
+  priority: high
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Facilitation Planning" pattern
+  proposed_addition: |
+    ### Facilitation Planning
+
+    Use when planning a workshop, retrospective, design sprint, or collaborative
+    session that requires session structure, participation cues, and explicit facilitation.
+
+    **Pattern:**
+    ```bash
+    bar build plan full act facilitate --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build plan full act facilitate --subject "Q4 deployment failures retrospective: 3 incidents in 8 weeks, need root causes and process improvements"
+    ```
+
+    **Heuristic:**
+    - "facilitate a X", "run a retrospective", "workshop planning", "plan a session" → facilitate form
+    - facilitate = session structure + participation cues; walkthrough = linear narrated steps
+    - Use plan+facilitate for a static facilitation guide deliverable
+    - For a live facilitation (TUI context), use facilitate form alone in bar tui2
+  rationale: >
+    facilitate form produces facilitation plans (agenda, goals, participation cues, session
+    structure) but has no usage pattern. Autopilot routes retrospective/workshop planning
+    to plan+walkthrough which produces an agenda without facilitation structure or
+    participation management.
+  evidence:
+    - T176
+
+- id: L8-R-07
+  action: skill-update
+  gap_id: G-L8-07
+  priority: low
+  skill: bar-autopilot
+  section: "Usage Patterns by Task Type"
+  change: add "Process-as-Recipe Documentation" pattern
+  proposed_addition: |
+    ### Process-as-Recipe Documentation
+
+    Use when documenting a process that has a recurring structure or benefits from
+    a custom mini-language notation (the recipe form produces a custom notation with key).
+
+    **Pattern:**
+    ```bash
+    bar build show full flow recipe --subject "..."
+    ```
+
+    **Example:**
+    ```bash
+    bar build show full flow recipe --subject "Dev environment setup: Docker, pnpm workspaces, postgres seeding, env vars, SSL certs"
+    ```
+
+    **Heuristic:**
+    - "document as recipe", "process with structured steps", "setup guide with repeating patterns" → recipe form
+    - recipe form creates a custom mini-language with a short key — good for complex setup with patterns
+    - walkthrough = linear narrated steps; recipe = structured with custom notation
+    - recipe adds most value when the process has a recurring structure that benefits from labeling
+  rationale: >
+    recipe form is the most distinctive specialist form (produces a custom mini-language with
+    key) but has no usage pattern. Autopilot always routes process documentation to
+    show+walkthrough. The recipe form adds value specifically when the process has structure
+    that benefits from a custom notation.
+  evidence:
+    - T177
+
+- id: L8-R-08
+  action: skill-update
+  gap_id: G-L8-08
+  priority: medium
+  skill: bar-autopilot
+  section: "Token Selection Heuristics — Choosing Form"
+  change: add visual vs diagram distinction heuristic
+  proposed_addition: |
+    **visual form vs diagram channel:**
+
+    These serve different purposes and should not be conflated:
+
+    - **diagram channel**: precise structural diagram as Mermaid code (nodes, edges, exact topology)
+      Use when: architecture review, dependency mapping, exact relationships needed
+      Output: Mermaid diagram code
+
+    - **visual form**: abstract/metaphorical layout with a short legend in prose
+      Use when: conceptual overview for non-technical audience, spatial metaphor
+      more useful than precise diagram, emphasizing big-picture over details
+      Output: prose with spatial/visual description and legend
+
+    **Default behavior:** Without explicit instruction, autopilot selects `diagram` channel
+    for "show relationships" tasks. Use `visual` form only when abstract representation
+    is preferred over diagrammatic precision.
+
+    **Example:** "Show microservices at a glance for the exec team" → visual form
+    "Map the dependency graph for our services" → diagram channel
+  rationale: >
+    visual form (abstract/metaphorical prose layout) is systematically overridden by
+    diagram channel default. The distinction is meaningful: diagram produces precise
+    Mermaid, visual produces conceptual prose layout. Without a usage heuristic,
+    visual form is never selected by autopilot.
+  evidence:
+    - T182

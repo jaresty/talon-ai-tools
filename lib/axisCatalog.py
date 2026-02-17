@@ -204,6 +204,10 @@ def axis_catalog(
             axis: axisConfig.axis_key_to_guidance_map(axis)
             for axis in axis_map
         },
+        "axis_use_when": {
+            axis: axisConfig.axis_key_to_use_when_map(axis)
+            for axis in axis_map
+        },
         "static_prompts": static_prompt_catalog(
             static_prompt_list_path if lists_dir else ""
         ),

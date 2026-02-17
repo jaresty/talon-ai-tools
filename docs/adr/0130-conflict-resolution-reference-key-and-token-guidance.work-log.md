@@ -141,3 +141,67 @@ next_work:
     validation: go build ./cmd/bar && bar help llm | grep -c "log\|spike\|case\|story"
     artefact: internal/barcli/help_llm.go
 ```
+
+---
+
+## Loop 3 — 2026-02-16: Layer 2 help_llm.go documentation (R17-R19)
+
+```yaml
+helper_version: helper:v20251223.1
+focus: >
+  ADR-0130 § Layer 2 — help_llm.go documentation.
+  Update § Composition Rules § Task-affinity restrictions: codetour audience-
+  affinity (R19), gherkin reframing rule (R18).
+  Update § Composition Rules § Prose-output-form conflicts: add log, spike,
+  case, story (R17) with individual conflict descriptions.
+  Target: internal/barcli/help_llm.go.
+
+active_constraint: >
+  help_llm.go prose-output-form conflicts section lists only faq, recipe,
+  questions. It lacks log, spike, case, story — the four new conflict forms
+  identified in ADR-0085 Cycle 7. Task-affinity section for gherkin does not
+  reflect the reframing rule. codetour entry lacks audience-affinity warning.
+  Falsifiable: go test ./internal/barcli/... exits non-zero if help_llm tests
+  break; /tmp/bar_new help llm | grep "log form" returns empty until fixed.
+
+validation_targets:
+  - go test ./internal/barcli/...
+  - /tmp/bar_new help llm | grep -c "log form"
+
+evidence:
+  - red  | 2026-02-16T00:00:30Z | exit 1 (empty output) | /tmp/bar_new help llm | grep "log form"
+      Old binary returns empty — log form not in help output | inline
+  - green | 2026-02-16T00:00:40Z | exit 0 | go test ./internal/barcli/...
+      All barcli tests pass after help_llm.go edits | inline
+  - green | 2026-02-16T00:00:41Z | exit 0 | /tmp/bar_new help llm | grep "log form"
+      "- `log` form: work/research log entry..." present in output | inline
+
+rollback_plan: >
+  git restore internal/barcli/help_llm.go
+  Then replay: go test ./internal/barcli/... → expect exit 0 on old content.
+
+delta_summary: >
+  helper:diff-snapshot: 2 files changed
+  - internal/barcli/help_llm.go:
+    * Task-affinity: codetour gains audience-affinity note (developer only)
+    * Task-affinity: gherkin rewritten to reflect reframing rule for analysis tasks
+    * Prose-output-form conflicts: section rewritten as bulleted list; adds log,
+      spike, case, story alongside existing faq, recipe, questions
+  - docs/adr/0130 work-log: this entry
+
+loops_remaining_forecast: >
+  0 loops remaining. All ADR-0130 behaviours landed green.
+  ADR status should be updated to Accepted.
+
+residual_constraints:
+  - constraint: ADR-0131 (reference_key as grammar export field) not yet implemented
+    severity: L
+    mitigation: Separate ADR; sync risk managed by convention (edit metaPromptConfig.py first)
+    monitoring: grep for referenceKeyText in render.go; should eventually be removed
+    owning_adr: ADR-0131
+
+next_work:
+  - Behaviour: ADR-0130 completion — update ADR status to Accepted
+    validation: n/a (documentation-only)
+    artefact: docs/adr/0130-conflict-resolution-reference-key-and-token-guidance.md
+```

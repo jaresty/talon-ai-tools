@@ -754,10 +754,18 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "rather than code.",
         "codetour": "Best for code-navigation tasks: fix, make (code creation), "
         "show (code structure), pull (code extraction). Avoid with "
-        "sim, sort, probe, diff (no code subject), or plan.",
-        "gherkin": "Best for behavior specification: check, plan, or make when "
-        "defining system behavior. Avoid with sim, sort, probe, diff, "
-        "fix, or make (non-behavioral tasks).",
+        "sim, sort, probe, diff (no code subject), or plan. Requires "
+        "a developer audience — produces a VS Code CodeTour JSON "
+        "file. Avoid with manager, PM, executive, CEO, stakeholder, "
+        "analyst, or designer audiences.",
+        "gherkin": "Outputs only Gherkin Given/When/Then syntax. Primary use: "
+        "make tasks creating acceptance tests or feature "
+        "specifications. With analysis tasks (probe, diff, check, "
+        "sort), output is reframed as Gherkin scenarios that specify "
+        "the analyzed properties — the analysis becomes evidence; "
+        "scenarios express what should be true given that evidence. "
+        "Avoid with prose-structure forms (story, case, log, "
+        "questions, recipe).",
         "html": "Avoid with narrative tasks (sim, probe) that produce prose "
         "rather than code.",
         "shellscript": "Shell script output. Avoid with narrative tasks (sim, "
@@ -767,7 +775,24 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "case, walkthrough, variants) - choose diagram OR prose, not "
         "both.",
     },
+    "completeness": {
+        "skim": "Quick-pass constraint: most obvious or critical issues "
+        "only. Avoid pairing with multi-phase directionals (bog, fip "
+        "rog, fly rog, fog) that require structural depth and "
+        "sustained examination. Use with simple directionals (jog, "
+        "rog) or none."
+    },
     "form": {
+        "case": "Layered argument-building prose (background, evidence, "
+        "alternatives, recommendation). Conflicts with code-format channels "
+        "(gherkin, codetour, shellscript, svg, html, diagram/sketch) — "
+        "case-building requires prose structure those channels cannot "
+        "accommodate. Use with no channel or prose-compatible channels "
+        "(jira, slack, plain, remote, sync).",
+        "commit": "Conventional commit message (type: scope header + optional body). "
+        "Brief artifact by design — avoid deep or max completeness (no "
+        "room to express depth) and complex directionals (fip rog, fly "
+        "rog, bog, fog). Best with gist or minimal completeness.",
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, "
         "slack). Avoid with output-only channels (gherkin, "
         "shellscript, codetour) - cannot render explanatory "
@@ -778,6 +803,11 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "faq": "Question-and-answer prose format. Conflicts with executable output "
         "channels: shellscript, code, codetour (output format mismatch). Use "
         "with plain, slack, diagram, or no channel.",
+        "log": "Work or research log entry with date markers and bullet updates. "
+        "Conflicts with any non-text output channel (svg, diagram/sketch, "
+        "codetour, gherkin, shellscript, html) — log entries are prose-text "
+        "artifacts. Use with no channel or prose-compatible channels (jira, "
+        "slack, remote, sync).",
         "questions": "Conflicts with gherkin (syntax rigidity). With diagram: "
         "produces a question-tree Mermaid diagram. Use with plain, "
         "slack, diagram, or no channel.",
@@ -789,6 +819,14 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "principles.",
         "socratic": "Avoid with code channels (shellscript, codetour) - they cannot "
         "render questions as code output.",
+        "spike": "Research spike: problem statement and exploratory questions. "
+        "Conflicts with code-format channels (codetour, shellscript, svg, "
+        "html, diagram/sketch, gherkin) — research spikes are prose "
+        "question-documents. Use with no channel or prose-compatible "
+        "channels.",
+        "story": "User story prose (As a / I want / so that). Explicitly avoids "
+        "Gherkin or test-case syntax — conflicts with gherkin channel. Use "
+        "with no channel or prose-compatible channels.",
     },
     "method": {
         "abduce": "Distinguish from: deduce (premises→conclusion) and induce "

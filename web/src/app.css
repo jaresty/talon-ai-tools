@@ -1,0 +1,26 @@
+:root {
+	--color-bg: #1a1a1a;
+	--color-surface: #242424;
+	--color-border: #3a3a3a;
+	--color-text: #e8e8e8;
+	--color-text-muted: #888;
+	--color-accent: #7aa2f7;
+	--color-accent-muted: #3d5a9e;
+	--color-warning: #e0af68;
+	--color-success: #9ece6a;
+	--font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+	--radius: 6px;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: system-ui, sans-serif;
+	background: var(--color-bg);
+	color: var(--color-text);
+	min-height: 100vh;
+}

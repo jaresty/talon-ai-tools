@@ -7,6 +7,36 @@ VCS_REVERT: git restore --source=HEAD web/
 
 ---
 
+## Loop 3 — 2026-02-16 — Incompatibility validation + subject/addendum inputs green
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0133 D3/UI — incompatible token conflict warnings; subject/addendum inputs; command --subject/--addendum flags
+active_constraint: >
+  Selected tokens can conflict silently; command has no --subject/--addendum.
+  Falsifiable: grep incompatib and --subject in build/_app JS exits 1 before, 0 after.
+validation_targets:
+  - "cd web && npm run build && grep -r 'incompatib\\|--subject' build/_app --include='*.js' -l"
+evidence:
+  - "red  | 2026-02-16T00:00:00Z | exit 1 | grep incompatib build/ — no matches"
+  - "green| 2026-02-16T00:00:00Z | exit 0 | grep found build/_app/immutable/nodes/2.*.js"
+rollback_plan: "git restore --source=HEAD web/src/"
+delta_summary: >
+  helper:diff-snapshot: incompatibilities.ts (findConflicts using hierarchy.axis_incompatibilities),
+  +page.svelte updated with conflict warning panel (amber border + token pair list),
+  subject/addendum textareas that append --subject/--addendum to command string,
+  copy button with ✓ feedback, command box amber border when conflicts exist.
+loops_remaining_forecast: "~1 loop: URL sharing + localStorage (L4). Phase 1 MVP complete. Confidence: high."
+residual_constraints:
+  - id: RC-04
+    description: No URL sharing or localStorage persistence yet (Phase 2-3)
+    severity: Low
+    mitigation: Loop 4
+    monitoring: n/a
+next_work:
+  - "Behaviour: prompt state persists in localStorage + shareable URL hash | Validation: npm run build + manual verify"
+```
+
 ## Loop 2 — 2026-02-16 — Grammar loading + token selector UI green
 
 ```yaml

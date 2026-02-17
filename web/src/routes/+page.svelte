@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { loadGrammar, getAxisTokens, getTaskTokens, AXES, type Grammar } from '$lib/grammar.js';
+	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 
 	let grammar: Grammar | null = $state(null);
 	let error: string | null = $state(null);
 
-	// Selected tokens per axis
 	let selected = $state<Record<string, string[]>>({
 		task: [],
 		completeness: [],
@@ -16,6 +16,10 @@
 		channel: [],
 		directional: []
 	});
+
+	let subject = $state('');
+	let addendum = $state('');
+	let copied = $state(false);
 
 	onMount(async () => {
 		try {
@@ -42,14 +46,23 @@
 		}
 	}
 
-	// Build bar command from selections
+	let conflicts = $derived(grammar ? findConflicts(grammar, selected) : []);
+
 	let command = $derived.by(() => {
 		if (!grammar) return '';
 		const order = ['task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 		const tokens = order.flatMap((axis) => selected[axis] ?? []);
-		if (tokens.length === 0) return 'bar build';
-		return `bar build ${tokens.join(' ')}`;
+		let cmd = tokens.length === 0 ? 'bar build' : `bar build ${tokens.join(' ')}`;
+		if (subject.trim()) cmd += ` --subject "${subject.trim().replace(/"/g, '\\"')}"`;
+		if (addendum.trim()) cmd += ` --addendum "${addendum.trim().replace(/"/g, '\\"')}"`;
+		return cmd;
 	});
+
+	function copyCommand() {
+		navigator.clipboard.writeText(command);
+		copied = true;
+		setTimeout(() => (copied = false), 1500);
+	}
 </script>
 
 <div class="layout">
@@ -65,7 +78,6 @@
 	{:else}
 		<div class="main">
 			<section class="selector-panel">
-				<!-- Task axis -->
 				<TokenSelector
 					axis="task"
 					tokens={getTaskTokens(grammar)}
@@ -73,8 +85,6 @@
 					maxSelect={1}
 					onToggle={(t) => toggle('task', t)}
 				/>
-
-				<!-- Contract axes -->
 				{#each AXES as axis (axis)}
 					<TokenSelector
 						{axis}
@@ -87,26 +97,62 @@
 			</section>
 
 			<section class="preview-panel">
-				<div class="command-box">
+				<!-- Conflict warnings -->
+				{#if conflicts.length > 0}
+					<div class="conflicts">
+						<div class="conflicts-header">⚠ Incompatible tokens</div>
+						{#each conflicts as c}
+							<div class="conflict-row">
+								<code>{c.tokenA}</code> conflicts with <code>{c.tokenB}</code>
+							</div>
+						{/each}
+					</div>
+				{/if}
+
+				<!-- Command preview -->
+				<div class="command-box" class:has-conflicts={conflicts.length > 0}>
 					<div class="command-label">Command</div>
 					<code class="command">{command}</code>
-					<button
-						class="copy-btn"
-						onclick={() => navigator.clipboard.writeText(command)}
-					>
-						Copy
+					<button class="copy-btn" onclick={copyCommand}>
+						{copied ? '✓ Copied' : 'Copy'}
 					</button>
 				</div>
 
-				<div class="selected-chips">
-					{#each Object.entries(selected) as [axis, tokens]}
-						{#each tokens as token (token)}
-							<span class="selected-chip" onclick={() => toggle(axis, token)}>
-								{token} ×
-							</span>
-						{/each}
-					{/each}
+				<!-- Subject / addendum inputs -->
+				<div class="inputs">
+					<label class="input-group">
+						<span class="input-label">--subject <span class="input-hint">source material</span></span>
+						<textarea
+							class="input-area"
+							rows="3"
+							placeholder="Paste code, document, or topic…"
+							bind:value={subject}
+						></textarea>
+					</label>
+
+					<label class="input-group">
+						<span class="input-label">--addendum <span class="input-hint">task directive</span></span>
+						<textarea
+							class="input-area"
+							rows="2"
+							placeholder="e.g. Focus on error handling, include examples…"
+							bind:value={addendum}
+						></textarea>
+					</label>
 				</div>
+
+				<!-- Selected token chips -->
+				{#if Object.values(selected).some((toks) => toks.length > 0)}
+					<div class="selected-chips">
+						{#each Object.entries(selected) as [axis, tokens]}
+							{#each tokens as token (token)}
+								<span class="selected-chip" onclick={() => toggle(axis, token)}>
+									{token} ×
+								</span>
+							{/each}
+						{/each}
+					</div>
+				{/if}
 			</section>
 		</div>
 	{/if}
@@ -125,48 +171,53 @@
 		padding-bottom: 1rem;
 	}
 
-	h1 {
-		font-size: 1.4rem;
-		color: var(--color-accent);
-	}
+	h1 { font-size: 1.4rem; color: var(--color-accent); }
+	.subtitle { font-size: 0.85rem; color: var(--color-text-muted); margin-top: 0.25rem; }
 
-	.subtitle {
-		font-size: 0.85rem;
-		color: var(--color-text-muted);
-		margin-top: 0.25rem;
-	}
-
-	.loading, .error {
-		color: var(--color-text-muted);
-		padding: 2rem;
-		text-align: center;
-	}
-
+	.loading, .error { color: var(--color-text-muted); padding: 2rem; text-align: center; }
 	.error { color: #f7768e; }
 
 	.main {
 		display: grid;
-		grid-template-columns: 1fr 320px;
+		grid-template-columns: 1fr 340px;
 		gap: 1.5rem;
-	}
-
-	.selector-panel {
-		overflow-y: auto;
+		align-items: start;
 	}
 
 	.preview-panel {
 		position: sticky;
 		top: 1rem;
-		align-self: start;
 	}
 
+	/* Conflicts */
+	.conflicts {
+		background: #2a1f10;
+		border: 1px solid var(--color-warning);
+		border-radius: var(--radius);
+		padding: 0.75rem;
+		margin-bottom: 0.75rem;
+		font-size: 0.82rem;
+	}
+
+	.conflicts-header {
+		color: var(--color-warning);
+		font-weight: 600;
+		margin-bottom: 0.4rem;
+	}
+
+	.conflict-row { color: var(--color-text-muted); margin-top: 0.25rem; }
+	.conflict-row code { color: var(--color-warning); font-family: var(--font-mono); }
+
+	/* Command box */
 	.command-box {
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		padding: 1rem;
-		margin-bottom: 1rem;
+		margin-bottom: 0.75rem;
 	}
+
+	.command-box.has-conflicts { border-color: var(--color-warning); }
 
 	.command-label {
 		font-size: 0.75rem;
@@ -179,10 +230,11 @@
 	.command {
 		display: block;
 		font-family: var(--font-mono);
-		font-size: 0.85rem;
+		font-size: 0.8rem;
 		word-break: break-all;
 		margin-bottom: 0.75rem;
 		color: var(--color-success);
+		line-height: 1.5;
 	}
 
 	.copy-btn {
@@ -197,11 +249,43 @@
 
 	.copy-btn:hover { background: var(--color-accent); }
 
-	.selected-chips {
+	/* Inputs */
+	.inputs { margin-bottom: 0.75rem; }
+
+	.input-group {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
+		flex-direction: column;
+		gap: 0.3rem;
+		margin-bottom: 0.75rem;
 	}
+
+	.input-label {
+		font-size: 0.75rem;
+		font-family: var(--font-mono);
+		color: var(--color-text-muted);
+	}
+
+	.input-hint { color: var(--color-text-muted); font-family: system-ui; font-style: italic; }
+
+	.input-area {
+		width: 100%;
+		padding: 0.4rem 0.5rem;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		font-size: 0.82rem;
+		resize: vertical;
+		font-family: system-ui;
+	}
+
+	.input-area:focus {
+		outline: none;
+		border-color: var(--color-accent-muted);
+	}
+
+	/* Selected chips */
+	.selected-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
 	.selected-chip {
 		padding: 0.2rem 0.5rem;
@@ -211,6 +295,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
 		cursor: pointer;
+		user-select: none;
 	}
 
 	.selected-chip:hover { background: #6b3040; border-color: #f7768e; }

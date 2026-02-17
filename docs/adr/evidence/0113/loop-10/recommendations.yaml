@@ -1,0 +1,129 @@
+# ADR-0113 Loop-10 Recommendations — Output Channel Discoverability
+# Date: 2026-02-17
+
+- id: R-L10-01
+  gap_type: undiscoverable-token
+  axis: channel
+  token: plain
+  action: add-usage-pattern
+  priority: high
+  tasks: [T190]
+  observation: >
+    `plain` channel is not selected when user requests "no lists, no bullets, plain prose".
+    Autopilot routes to a task token without a channel, leaving formatting up to the LLM.
+    No usage pattern or use_when entry routes prose-preference requests to the plain channel.
+  recommendation:
+    add_usage_pattern:
+      title: "Plain Prose Output"
+      command: "bar build show <scope> full plain"
+      example: "bar build show mean full plain --subject \"Explain the authorization model\""
+      desc: >
+        Use when the response must be plain prose — no lists, bullets, or tables.
+        The plain channel explicitly suppresses structural decoration.
+        Heuristic: 'no bullets', 'no formatting', 'plain prose', 'flowing paragraphs'
+        → add plain channel to any task.
+    add_use_when:
+      axis: channel
+      token: plain
+      text: >
+        Suppress structural formatting: when user explicitly requests plain prose,
+        no lists, no bullets, or no structural decoration.
+        Heuristic: 'no bullets', 'no formatting', 'plain prose', 'continuous prose',
+        'flowing paragraphs', 'paragraph form' → plain channel.
+
+- id: R-L10-02
+  gap_type: undiscoverable-token
+  axis: channel
+  token: sync
+  action: add-usage-pattern
+  priority: high
+  tasks: [T188]
+  observation: >
+    `sync` channel (synchronous session plan with agenda, timing, cues) is not selected
+    for "session plan" tasks. Autopilot picks `plan` task + `facilitate` form, which
+    produces a facilitation plan but without the sync channel's session-plan shaping.
+    No usage pattern exists for sync. The channel is invisible unless explicitly named.
+  recommendation:
+    add_usage_pattern:
+      title: "Synchronous Session Plan"
+      command: "bar build plan act full sync"
+      example: "bar build plan act full sync --subject \"Design sprint kickoff — 3h session\""
+      desc: >
+        Use when the output should be a synchronous session plan with agenda,
+        timing slots, and facilitation cues for real-time use.
+        Heuristic: 'session plan', 'live workshop', 'meeting agenda with timing',
+        'facilitation script for live session' → sync channel.
+        Combine with facilitate form when facilitator role is explicit.
+    add_use_when:
+      axis: channel
+      token: sync
+      text: >
+        Live or synchronous session planning: agenda with timing, steps, and cues
+        for real-time delivery.
+        Heuristic: 'session plan', 'live workshop agenda', 'meeting agenda with timing cues',
+        'synchronous workshop plan' → sync channel.
+        Combine with facilitate form for facilitator-role outputs.
+
+- id: R-L10-03
+  gap_type: undiscoverable-token
+  axis: channel
+  token: sketch
+  action: add-use-when
+  priority: medium
+  tasks: [T189]
+  observation: >
+    `sketch` channel (D2 diagram source) is indistinguishable from `diagram` channel
+    (Mermaid) without explicit "D2" mention. The word "diagram" in user requests maps
+    to the `diagram` channel name, pulling autopilot away from `sketch`.
+    No usage pattern or use_when entry disambiguates the two diagram channels.
+  recommendation:
+    add_use_when:
+      axis: channel
+      token: sketch
+      text: >
+        D2 diagram output: when user explicitly requests D2 format or D2 diagram source.
+        Heuristic: 'D2 diagram', 'D2 format', 'sketch diagram', 'd2 source' → sketch.
+        Distinct from diagram channel (Mermaid/mermaid output).
+        If the user just says 'diagram' without specifying D2, use diagram channel (Mermaid).
+
+- id: R-L10-04
+  gap_type: undiscoverable-token
+  axis: channel
+  token: remote
+  action: add-use-when
+  priority: low
+  tasks: [T193]
+  observation: >
+    `remote` channel (remote-delivery optimization) is ambiguous. User saying "remote
+    setting" describes their team situation, not necessarily a format preference.
+    No usage pattern or heuristic disambiguates this. The channel is useful but rarely
+    selected without explicit guidance. Lower priority because the output is still useful
+    without it.
+  recommendation:
+    add_use_when:
+      axis: channel
+      token: remote
+      text: >
+        Optimizing output for remote or distributed delivery contexts
+        (video calls, screen sharing, async participants).
+        Heuristic: 'remote delivery', 'distributed session', 'video call context',
+        'screen sharing', 'remote-friendly' → remote channel.
+        Note: user saying their team is "remote" describes context, not automatically
+        a format preference — use remote channel only when delivery optimization is
+        the explicit goal.
+
+# SSOT fix
+- id: R-L10-05
+  gap_type: infrastructure
+  action: restore-ssot
+  priority: critical
+  observation: >
+    AXIS_KEY_TO_USE_WHEN in lib/axisConfig.py is currently empty in the working tree,
+    despite HEAD (commit a539dd6) containing the form use_when entries.
+    This is the same SSOT regression found and fixed in loop-9 but has recurred.
+    Must be restored before running make bar-grammar-update or the use_when entries
+    will be zeroed out in all regenerated grammar files.
+  recommendation:
+    action: restore form use_when entries + add channel use_when entries
+    file: lib/axisConfig.py
+    then: run make bar-grammar-update to sync all grammar files

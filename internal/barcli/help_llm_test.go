@@ -109,6 +109,9 @@ func TestLLMHelpUsagePatternsTokensExist(t *testing.T) {
 		"sim",
 		"depends",
 		"inversion",
+		// Loop-10: channel discoverability patterns
+		"plain",
+		"sync",
 	}
 
 	for _, token := range patternTokens {

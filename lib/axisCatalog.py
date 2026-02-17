@@ -235,6 +235,7 @@ def serialize_axis_config(
         "axes": catalog["axes"],
         "axis_labels": catalog["axis_labels"],
         "axis_guidance": catalog["axis_guidance"],
+        "axis_use_when": catalog["axis_use_when"],
     }
     if include_axis_lists:
         payload["axis_list_tokens"] = catalog["axis_list_tokens"]

@@ -136,3 +136,59 @@ next_work:
 ```
 
 ---
+
+## loop-10 | 2026-02-17 | Cycle 10: Output channel discoverability + SSOT fix
+
+```
+focus: Output channel token discoverability — whether bar-autopilot selects output channels
+  correctly for 13 tasks spanning code, docs, visual output, and collaboration.
+
+active_constraint: >
+  AXIS_KEY_TO_USE_WHEN in lib/axisConfig.py was empty (SSOT regression, same as loop-9).
+  Must be restored before grammar regeneration or use_when data is lost.
+  The following channel tokens had no routing heuristic: plain, sync, sketch, remote.
+
+validation_targets:
+  - go test ./internal/barcli/ -v (all tests including TestLLMHelpUsagePatternsTokensExist)
+  - /tmp/bar-new help llm | grep -E "When to use" (channel use_when visible)
+
+evidence:
+  - red | 2026-02-17 | pre-change
+      AXIS_KEY_TO_USE_WHEN = {} in working tree despite HEAD having form entries
+      No usage patterns for plain or sync channels
+      Tasks T188, T189, T190, T193 scored 3/5
+
+  - green | 2026-02-17 | post-change
+      command: go test ./internal/barcli/ -v
+      result: ok (1.565s)
+      changes: 3 files (axisConfig.py, help_llm.go, help_llm_test.go) + grammar regen
+
+delta_summary: >
+  5 files changed (lib/axisConfig.py, internal/barcli/help_llm.go,
+  internal/barcli/help_llm_test.go + grammar JSONs regenerated):
+    R-L10-05: Restored 9 form use_when entries to AXIS_KEY_TO_USE_WHEN (SSOT regression fix)
+    R-L10-01: Added plain channel use_when + "Plain Prose Output" usage pattern
+    R-L10-02: Added sync channel use_when + "Synchronous Session Plan" usage pattern
+    R-L10-03: Added sketch channel use_when (D2 vs Mermaid disambiguation)
+    R-L10-04: Added remote channel use_when (delivery-optimization clarification)
+  Test list updated: plain, sync added to patternTokens validation list.
+  Mean score: 4.15/5 (9 tasks at 5, 4 tasks at 3 pre-fix).
+
+residual_constraints:
+  - id: RC-L10-01
+    constraint: >
+      AXIS_KEY_TO_USE_WHEN has now regressed twice (loop-9 fix, loop-10 same regression).
+      The make bar-grammar-update pipeline does not preserve the Python SSOT contents —
+      some step (possibly axis-regenerate-apply) zeros the variable. Risk of future regression.
+    severity: Medium
+    mitigation: Investigate make axis-regenerate-apply target to understand if it overwrites
+      axisConfig.py and add a check to prevent zeroing AXIS_KEY_TO_USE_WHEN.
+
+loops_remaining_forecast: >
+  Estimate: 1-3 loops.
+  Post-apply validation of loop-10 changes (verify channel use_when renders for target tasks).
+  Potential future focus: completeness axis (brief/outline/full selection), cross-domain tasks,
+  or general health check after all loop 1-10 fixes.
+```
+
+---

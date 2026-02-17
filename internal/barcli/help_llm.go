@@ -950,6 +950,18 @@ func renderUsagePatterns(w io.Writer, compact bool) {
 			example: "bar build check thing full verify risks --subject \"Evaluate the proposed caching strategy\"",
 			desc:    "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with risks (systematic problem identification). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
 		},
+		{
+			title:   "Plain Prose Output",
+			command: "bar build show <scope> full plain --subject \"...\"",
+			example: "bar build show mean full plain --subject \"Explain the authorization model\"",
+			desc:    "Use when the response must be plain prose — no lists, bullets, or tables. The plain channel explicitly suppresses structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain prose', 'flowing paragraphs' → add plain channel to any task.",
+		},
+		{
+			title:   "Synchronous Session Plan",
+			command: "bar build plan act full sync --subject \"...\"",
+			example: "bar build plan act full sync --subject \"Design sprint kickoff — 3h with context, problem framing, and ideation\"",
+			desc:    "Use when the output should be a synchronous session plan with agenda, timing slots, and facilitation cues for real-time use. Heuristic: 'session plan', 'live workshop', 'meeting agenda with timing', 'facilitation script for live session' → sync channel. Combine with facilitate form when facilitator role is explicit.",
+		},
 	}
 
 	for _, p := range patterns {

@@ -502,6 +502,12 @@
       }
     },
     "use_when": {
+      "channel": {
+        "plain": "Suppress structural formatting: when user explicitly requests plain prose, no lists, no bullets, or no structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain prose', 'continuous prose', 'flowing paragraphs', 'paragraph form' → plain channel.",
+        "remote": "Optimizing output for remote or distributed delivery contexts (video calls, screen sharing, async participants). Heuristic: 'remote delivery', 'distributed session', 'video call context', 'screen sharing', 'remote-friendly' → remote channel. Note: user saying their team is 'remote' describes context — use remote channel only when delivery optimization is the explicit goal.",
+        "sketch": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source. Heuristic: 'D2 diagram', 'D2 format', 'sketch diagram', 'd2 source' → sketch. Distinct from diagram channel (Mermaid output). If the user just says 'diagram' without specifying D2, use diagram channel.",
+        "sync": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery. Heuristic: 'session plan', 'live workshop agenda', 'meeting agenda with timing cues', 'synchronous workshop plan' → sync channel. Combine with facilitate form for facilitator-role outputs."
+      },
       "form": {
         "cocreate": "Iterative design with explicit decision points and alignment checks at each step rather than a one-shot response. Heuristic: 'work through incrementally', 'with decision points', 'iterative design' → cocreate. Distinct from variants (choice of designs) and make (one-shot artifact).",
         "facilitate": "Planning a workshop, retrospective, or collaborative session with session structure, participation cues, and facilitation agenda. Heuristic: 'facilitate a X', 'run a retrospective', 'workshop planning' → facilitate. Distinct from walkthrough (linear narrated steps).",
@@ -1852,7 +1858,7 @@
     }
   },
   "checksums": {
-    "axes": "29a4b8e4c83cb9332e72aa9c72e4941dd0136c99cebb8446383cb0d0a4f7521b",
+    "axes": "fe0efe13a38f84ac64a806ccbb0cd368e08cf4ed882764632324d7bdcccc7d0e",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

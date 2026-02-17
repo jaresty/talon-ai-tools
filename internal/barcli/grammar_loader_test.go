@@ -22,6 +22,21 @@ func TestLoadGrammarDefaultsToEmbedded(t *testing.T) {
 	}
 }
 
+// TestLoadGrammarHasReferenceKey specifies that the embedded grammar provides a
+// non-empty ReferenceKey field (ADR-0131). This is the specifying validation for
+// Loop 2: Grammar struct must map the reference_key JSON field.
+func TestLoadGrammarHasReferenceKey(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	if strings.TrimSpace(grammar.ReferenceKey) == "" {
+		t.Fatal("expected embedded grammar to provide a non-empty ReferenceKey (ADR-0131)")
+	}
+}
+
 func TestEmbeddedGrammarUsesTaskKeys(t *testing.T) {
 	data, err := embeddedGrammarBytes()
 	if err != nil {

@@ -21,6 +21,7 @@ var (
 // Grammar represents the portable prompt grammar payload exported from Python.
 type Grammar struct {
 	SchemaVersion string
+	ReferenceKey  string
 	Axes          AxisSection
 	Static        StaticSection
 	Persona       PersonaSection
@@ -103,6 +104,7 @@ type DefaultsSection struct {
 
 type rawGrammar struct {
 	SchemaVersion string         `json:"schema_version"`
+	ReferenceKey  string         `json:"reference_key"`
 	Axes          rawAxisSection `json:"axes"`
 	Static        rawStatic      `json:"tasks"`
 	Persona       rawPersona     `json:"persona"`
@@ -199,6 +201,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 
 	grammar := &Grammar{
 		SchemaVersion: raw.SchemaVersion,
+		ReferenceKey:  raw.ReferenceKey,
 		Axes: AxisSection{
 			Definitions: raw.Axes.Definitions,
 			ListTokens:  raw.Axes.ListTokens,

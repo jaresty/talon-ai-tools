@@ -25,11 +25,13 @@ export interface TokenMeta {
 	use_when: string;
 }
 
+import { base } from '$app/paths';
+
 let cached: Grammar | null = null;
 
 export async function loadGrammar(): Promise<Grammar> {
 	if (cached) return cached;
-	const res = await fetch('/prompt-grammar.json');
+	const res = await fetch(`${base}/prompt-grammar.json`);
 	if (!res.ok) throw new Error(`Failed to load grammar: ${res.status}`);
 	cached = await res.json();
 	return cached!;

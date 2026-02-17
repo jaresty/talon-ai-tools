@@ -46,6 +46,8 @@ jobs:
       - name: Build SPA
         run: npm run build
         working-directory: web
+        env:
+          BASE_PATH: /talon-ai-tools
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

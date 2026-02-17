@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, toPersonaSlug, AXES, type Grammar } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, getUsagePatterns } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
@@ -11,6 +11,7 @@
 
 	let grammar: Grammar | null = $state(null);
 	let error: string | null = $state(null);
+	let patterns = $state<GrammarPattern[]>([]);
 
 	let selected = $state<Record<string, string[]>>({
 		task: [],
@@ -63,6 +64,7 @@
 
 		try {
 			grammar = await loadGrammar();
+			if (grammar) patterns = getUsagePatterns(grammar);
 		} catch (e) {
 			error = String(e);
 		}
@@ -144,10 +146,8 @@
 		localStorage.removeItem(STORAGE_KEY);
 	}
 
-	function loadPattern(pattern: { tokens: Record<string, string[]>; subject?: string; addendum?: string }) {
+	function loadPattern(pattern: GrammarPattern) {
 		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...pattern.tokens };
-		if (pattern.subject !== undefined) subject = pattern.subject;
-		if (pattern.addendum !== undefined) addendum = pattern.addendum;
 	}
 </script>
 
@@ -164,7 +164,7 @@
 	{:else}
 		<div class="main">
 			<section class="selector-panel">
-				<PatternsLibrary onLoad={loadPattern} />
+				<PatternsLibrary {patterns} onLoad={loadPattern} />
 
 				<!-- Persona -->
 				<div class="persona-section">

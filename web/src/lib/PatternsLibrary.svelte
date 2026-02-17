@@ -1,57 +1,7 @@
 <script lang="ts">
-	interface Pattern {
-		name: string;
-		description: string;
-		tokens: Record<string, string[]>;
-		subject?: string;
-		addendum?: string;
-	}
+	import type { GrammarPattern } from '$lib/grammar.js';
 
-	// Pre-composed usage patterns drawn from real bar token vocabulary
-	const usagePatterns: Pattern[] = [
-		{
-			name: 'Quick Code Review',
-			description: 'Skim a diff or PR for obvious issues and style problems',
-			tokens: { task: ['check'], completeness: ['skim'], scope: ['struct'], method: ['rigor'], channel: ['code'] }
-		},
-		{
-			name: 'Deep Bug Diagnosis',
-			description: 'Thorough root-cause analysis of a failing behaviour',
-			tokens: { task: ['fix'], completeness: ['deep'], scope: ['fail'], method: ['diagnose'], channel: ['code'] }
-		},
-		{
-			name: 'Architecture Plan',
-			description: 'Full planning pass with structured ADR output',
-			tokens: { task: ['plan'], completeness: ['full'], scope: ['struct'], method: ['spec'], channel: ['adr'] }
-		},
-		{
-			name: 'Risk & Trade-off Exploration',
-			description: 'Identify risks and alternatives before committing to a design',
-			tokens: { task: ['probe'], completeness: ['gist'], scope: ['view'], method: ['risks'], channel: ['plain'] }
-		},
-		{
-			name: 'Diff Summary',
-			description: 'Summarise what changed and why in a diff or commit range',
-			tokens: { task: ['diff'], completeness: ['gist'], scope: ['act'], method: ['analysis'], channel: ['plain'] }
-		},
-		{
-			name: 'Pull Request Write-up',
-			description: 'Draft a detailed PR description from a diff + context',
-			tokens: { task: ['pull'], completeness: ['full'], scope: ['struct'], method: ['spec'], channel: ['plain'] }
-		},
-		{
-			name: 'Feature Prioritisation',
-			description: 'Score and rank a backlog of ideas or tasks',
-			tokens: { task: ['sort'], completeness: ['minimal'], scope: ['thing'], method: ['prioritize'] }
-		},
-		{
-			name: 'Show / Explain',
-			description: 'Explain code or a concept concisely for a non-expert audience',
-			tokens: { task: ['show'], completeness: ['gist'], scope: ['view'], method: ['analog'] }
-		}
-	];
-
-	let { onLoad }: { onLoad: (pattern: Pattern) => void } = $props();
+	let { patterns, onLoad }: { patterns: GrammarPattern[]; onLoad: (pattern: GrammarPattern) => void } = $props();
 
 	let expanded = $state(false);
 </script>
@@ -63,10 +13,10 @@
 
 	{#if expanded}
 		<div class="patterns-grid">
-			{#each usagePatterns as pattern (pattern.name)}
+			{#each patterns as pattern (pattern.title)}
 				<button class="pattern-card" onclick={() => onLoad(pattern)}>
-					<div class="pattern-name">{pattern.name}</div>
-					<div class="pattern-desc">{pattern.description}</div>
+					<div class="pattern-name">{pattern.title}</div>
+					<div class="pattern-desc">{pattern.desc}</div>
 					<div class="pattern-tokens">
 						{#each Object.values(pattern.tokens).flat() as token (token)}
 							<span class="pattern-chip">{token}</span>

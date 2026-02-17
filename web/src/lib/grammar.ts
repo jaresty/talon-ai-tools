@@ -7,6 +7,14 @@ export interface PersonaPreset {
 	spoken: string;
 }
 
+export interface GrammarPattern {
+  title: string;
+  command: string;
+  example: string;
+  desc: string;
+  tokens: Record<string, string[]>;
+}
+
 export interface Grammar {
 	axes: {
 		definitions: Record<string, Record<string, string>>;
@@ -32,6 +40,7 @@ export interface Grammar {
 			tone: string[];
 		};
 	};
+	patterns?: GrammarPattern[];
 }
 
 export interface TokenMeta {
@@ -100,4 +109,8 @@ export function getPersonaPresets(grammar: Grammar): PersonaPreset[] {
 
 export function getPersonaAxisTokens(grammar: Grammar, axis: 'voice' | 'audience' | 'tone'): string[] {
 	return [...(grammar.persona?.axes?.[axis] ?? [])].sort();
+}
+
+export function getUsagePatterns(grammar: Grammar): GrammarPattern[] {
+	return grammar.patterns ?? [];
 }

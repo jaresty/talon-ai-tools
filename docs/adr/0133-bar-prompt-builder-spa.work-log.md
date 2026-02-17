@@ -7,6 +7,44 @@ VCS_REVERT: git restore --source=HEAD web/
 
 ---
 
+## Loop 4 — 2026-02-17 — localStorage persistence + URL hash sharing green
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0133 D4/D5 — localStorage auto-save; URL hash sharing (btoa base64 encode/decode); Share + Clear buttons
+active_constraint: >
+  Prompt state is ephemeral — page reload loses all token selections, subject, and addendum.
+  No URL sharing mechanism exists.
+  Falsifiable: grep for 'bar-prompt-state\|btoa' in build/_app exits 1 before, 0 after.
+validation_targets:
+  - "cd web && npm run build && grep -r 'bar-prompt-state\\|btoa' build/_app --include='*.js' -l"
+evidence:
+  - "red    | 2026-02-17T05:34:00Z | exit 1 | grep bar-prompt-state|btoa build/_app — no matches"
+  - "green  | 2026-02-17T05:35:00Z | exit 0 | build/_app/immutable/nodes/2.CI5OPyHh.js matched"
+  - "removal| 2026-02-17T05:36:00Z | exit 1 | git stash + npm run build + grep — no matches; git stash pop restores green"
+rollback_plan: "git restore --source=HEAD web/src/routes/+page.svelte"
+delta_summary: >
+  helper:diff-snapshot: web/src/routes/+page.svelte — 79 insertions(+), 5 deletions(-)
+  Added: STORAGE_KEY constant, serialize()/deserialize() using btoa/atob,
+  onMount restores from URL hash then localStorage fallback,
+  $effect auto-saves to localStorage on every state change,
+  sharePrompt() encodes state as base64 hash + copies full URL to clipboard,
+  clearState() resets all state + clears hash + removes localStorage entry,
+  Share and Clear buttons added to action-row alongside Copy.
+loops_remaining_forecast: "~1 loop: Phase 1 MVP polish (deploy workflow validation, GitHub Pages CNAME). Confidence: high."
+residual_constraints:
+  - id: RC-04
+    description: >
+      Deploy workflow (deploy-spa.yml) has not been executed end-to-end against GitHub Pages.
+      Grammar copy step and CNAME configuration are untested in CI.
+    severity: Low
+    mitigation: Loop 5 — trigger workflow or document manual deploy steps
+    monitoring: GitHub Actions run on push to main
+    owning_adr: ADR-0133 D2
+next_work:
+  - "Behaviour: deploy-spa.yml workflow runs green on GitHub Actions | Validation: gh run view or manual push trigger"
+```
+
 ## Loop 3 — 2026-02-16 — Incompatibility validation + subject/addendum inputs green
 
 ```yaml

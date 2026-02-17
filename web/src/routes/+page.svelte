@@ -4,6 +4,8 @@
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 
+	const STORAGE_KEY = 'bar-prompt-state';
+
 	let grammar: Grammar | null = $state(null);
 	let error: string | null = $state(null);
 
@@ -20,13 +22,48 @@
 	let subject = $state('');
 	let addendum = $state('');
 	let copied = $state(false);
+	let shared = $state(false);
+
+	// Serialize/deserialize prompt state
+	function serialize(): string {
+		return btoa(JSON.stringify({ selected, subject, addendum }));
+	}
+
+	function deserialize(raw: string): void {
+		try {
+			const parsed = JSON.parse(atob(raw));
+			if (parsed && typeof parsed === 'object') {
+				if (parsed.selected) selected = { ...selected, ...parsed.selected };
+				if (typeof parsed.subject === 'string') subject = parsed.subject;
+				if (typeof parsed.addendum === 'string') addendum = parsed.addendum;
+			}
+		} catch {
+			// ignore malformed state
+		}
+	}
 
 	onMount(async () => {
+		// Restore from URL hash first; fall back to localStorage
+		const hash = window.location.hash.slice(1);
+		if (hash && hash !== '/') {
+			deserialize(hash);
+		} else {
+			const saved = localStorage.getItem(STORAGE_KEY);
+			if (saved) deserialize(saved);
+		}
+
 		try {
 			grammar = await loadGrammar();
 		} catch (e) {
 			error = String(e);
 		}
+	});
+
+	// Auto-save to localStorage on every state change
+	$effect(() => {
+		// Touch reactive dependencies
+		const snap = serialize();
+		localStorage.setItem(STORAGE_KEY, snap);
 	});
 
 	function softCap(axis: string): number {
@@ -62,6 +99,23 @@
 		navigator.clipboard.writeText(command);
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
+	}
+
+	function sharePrompt() {
+		const encoded = serialize();
+		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
+		window.history.replaceState(null, '', `#${encoded}`);
+		navigator.clipboard.writeText(url);
+		shared = true;
+		setTimeout(() => (shared = false), 1500);
+	}
+
+	function clearState() {
+		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
+		subject = '';
+		addendum = '';
+		window.history.replaceState(null, '', window.location.pathname);
+		localStorage.removeItem(STORAGE_KEY);
 	}
 </script>
 
@@ -113,9 +167,15 @@
 				<div class="command-box" class:has-conflicts={conflicts.length > 0}>
 					<div class="command-label">Command</div>
 					<code class="command">{command}</code>
-					<button class="copy-btn" onclick={copyCommand}>
-						{copied ? '✓ Copied' : 'Copy'}
-					</button>
+					<div class="action-row">
+						<button class="copy-btn" onclick={copyCommand}>
+							{copied ? '✓ Copied' : 'Copy'}
+						</button>
+						<button class="share-btn" onclick={sharePrompt}>
+							{shared ? '✓ Link copied' : 'Share'}
+						</button>
+						<button class="clear-btn" onclick={clearState}>Clear</button>
+					</div>
 				</div>
 
 				<!-- Subject / addendum inputs -->
@@ -237,7 +297,13 @@
 		line-height: 1.5;
 	}
 
-	.copy-btn {
+	.action-row {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.copy-btn, .share-btn, .clear-btn {
 		padding: 0.3rem 0.75rem;
 		background: var(--color-accent-muted);
 		border: 1px solid var(--color-accent);
@@ -247,7 +313,15 @@
 		font-size: 0.8rem;
 	}
 
-	.copy-btn:hover { background: var(--color-accent); }
+	.copy-btn:hover, .share-btn:hover { background: var(--color-accent); }
+
+	.clear-btn {
+		background: transparent;
+		border-color: var(--color-border);
+		color: var(--color-text-muted);
+	}
+
+	.clear-btn:hover { border-color: #f7768e; color: #f7768e; }
 
 	/* Inputs */
 	.inputs { margin-bottom: 0.75rem; }

@@ -169,6 +169,34 @@ def render_axis_config() -> str:
             return index
         """
     )
+    patterns = payload.get("usage_patterns", []) or []
+
+    def _format_pattern(p: dict) -> str:
+        """Format a single pattern dict as a one-line Python dict literal."""
+        parts = []
+        for k, v in p.items():
+            if isinstance(v, dict):
+                inner = ", ".join(
+                    f"{repr(ik)}: {repr(iv)}" for ik, iv in sorted(v.items())
+                )
+                parts.append(f"{repr(k)}: {{{inner}}}")
+            else:
+                parts.append(f"{repr(k)}: {repr(v)}")
+        return "{" + ", ".join(parts) + "}"
+
+    pattern_lines = ",\n    ".join(_format_pattern(p) for p in patterns)
+    usage_patterns_block = f"""
+
+USAGE_PATTERNS: list[dict] = [
+    {pattern_lines},
+]
+
+
+def get_usage_patterns() -> list[dict]:
+    \"\"\"Return the USAGE_PATTERNS list (ADR-0134 SSOT).\"\"\"
+    return USAGE_PATTERNS
+"""
+
     return (
         "\n\n".join(
             [
@@ -186,7 +214,7 @@ def render_axis_config() -> str:
                 f"# Surfaces as 'When to use' helper text in UIs.\n"
                 f"AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {use_when_body}",
                 dataclasses.rstrip(),
-                helpers.rstrip(),
+                helpers.rstrip() + usage_patterns_block,
             ]
         ).rstrip()
         + "\n"

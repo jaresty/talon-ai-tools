@@ -215,6 +215,7 @@ def axis_catalog(
         "static_prompt_labels": _static_prompt_label_overrides(),
         "static_prompt_guidance": _static_prompt_guidance_overrides(),
         "static_prompt_profiles": STATIC_PROMPT_CONFIG,
+        "usage_patterns": axisConfig.get_usage_patterns(),
     }
 
 
@@ -243,4 +244,5 @@ def serialize_axis_config(
         payload["static_prompts"] = catalog["static_prompts"]
         payload["static_prompt_descriptions"] = catalog["static_prompt_descriptions"]
         payload["static_prompt_profiles"] = catalog["static_prompt_profiles"]
+    payload["usage_patterns"] = catalog["usage_patterns"]
     return payload

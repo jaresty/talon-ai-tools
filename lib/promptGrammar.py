@@ -352,6 +352,12 @@ def _compute_checksum(section: Any) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+
+def _build_patterns_section(catalog: Mapping[str, Any]) -> list[dict]:
+    """Return usage patterns list from catalog (ADR-0134 D3)."""
+    return list(catalog.get("usage_patterns") or [])
+
+
 def prompt_grammar_payload() -> dict[str, Any]:
     catalog = axis_catalog()
     taken_slugs: set[str] = set()
@@ -426,12 +432,15 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "canonical_to_slug": canonical_to_slug,
     }
 
+    patterns_section = _build_patterns_section(catalog)
+
     sections: dict[str, Any] = {
         "axes": axis_section,
         "tasks": static_section,
         "persona": persona_section,
         "hierarchy": hierarchy_section,
         "slugs": slug_section,
+        "patterns": patterns_section,
     }
 
     checksums = {name: _compute_checksum(content) for name, content in sections.items()}

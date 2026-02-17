@@ -118,3 +118,18 @@ func TestBuildResultCarriesReferenceKey(t *testing.T) {
 		t.Fatalf("expected BuildResult.ReferenceKey == grammar.ReferenceKey, got %q", result.ReferenceKey)
 	}
 }
+
+// TestGrammarPatternsLoaded verifies that the embedded grammar JSON includes
+// the patterns list from the Python SSOT (ADR-0134 D3).
+func TestGrammarPatternsLoaded(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	if len(grammar.Patterns) == 0 {
+		t.Fatal("expected grammar.Patterns to be non-empty — patterns not wired from Python SSOT (ADR-0134 D3)")
+	}
+	if len(grammar.Patterns) < 32 {
+		t.Fatalf("expected at least 32 patterns, got %d", len(grammar.Patterns))
+	}
+}

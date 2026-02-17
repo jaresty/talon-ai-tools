@@ -27,6 +27,7 @@ type Grammar struct {
 	Persona       PersonaSection
 	Hierarchy     HierarchySection
 
+	Patterns        []GrammarPattern
 	axisTokens      map[string]map[string]struct{}
 	axisDocs        map[string]map[string]string
 	axisPriority    []string
@@ -103,6 +104,16 @@ type DefaultsSection struct {
 	Completeness string
 }
 
+// GrammarPattern represents a named usage pattern from the SSOT (ADR-0134 D3).
+type GrammarPattern struct {
+	Title   string              `json:"title"`
+	Command string              `json:"command"`
+	Example string              `json:"example"`
+	Desc    string              `json:"desc"`
+	Tokens  map[string][]string `json:"tokens"`
+}
+
+
 type rawGrammar struct {
 	SchemaVersion string         `json:"schema_version"`
 	ReferenceKey  string         `json:"reference_key"`
@@ -111,6 +122,7 @@ type rawGrammar struct {
 	Persona       rawPersona     `json:"persona"`
 	Hierarchy     rawHierarchy   `json:"hierarchy"`
 	Slugs         rawSlugSection `json:"slugs"`
+	Patterns      []GrammarPattern `json:"patterns"`
 }
 
 type rawAxisSection struct {
@@ -204,6 +216,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 	grammar := &Grammar{
 		SchemaVersion: raw.SchemaVersion,
 		ReferenceKey:  raw.ReferenceKey,
+		Patterns:      raw.Patterns,
 		Axes: AxisSection{
 			Definitions: raw.Axes.Definitions,
 			ListTokens:  raw.Axes.ListTokens,

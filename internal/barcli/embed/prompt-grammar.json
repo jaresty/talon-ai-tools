@@ -1857,11 +1857,704 @@
       "wasinawa": "wasinawa"
     }
   },
+  "patterns": [
+    {
+      "title": "Decision-Making",
+      "command": "bar build diff thing full branch variants --subject \"...\"",
+      "example": "bar build diff thing full branch variants --subject \"Choose between Redis and Postgres for caching\"",
+      "desc": "Use when choosing between options or evaluating alternatives",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "variants"
+        ],
+        "method": [
+          "branch"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "diff"
+        ]
+      }
+    },
+    {
+      "title": "Architecture Documentation",
+      "command": "bar build make struct full explore case --subject \"...\"",
+      "example": "bar build make struct full explore case --subject \"Document the microservices architecture\"",
+      "desc": "Use for creating ADRs or documenting architectural decisions",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "case"
+        ],
+        "method": [
+          "explore"
+        ],
+        "scope": [
+          "struct"
+        ],
+        "task": [
+          "make"
+        ]
+      }
+    },
+    {
+      "title": "Explanation/Understanding (Process)",
+      "command": "bar build show time full flow walkthrough --subject \"...\"",
+      "example": "bar build show time full flow walkthrough --subject \"Explain the OAuth authentication flow\"",
+      "desc": "Use when explaining how something works over time or in sequence",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "walkthrough"
+        ],
+        "method": [
+          "flow"
+        ],
+        "scope": [
+          "time"
+        ],
+        "task": [
+          "show"
+        ]
+      }
+    },
+    {
+      "title": "Explanation/Understanding (Concepts)",
+      "command": "bar build show mean full scaffold --subject \"...\"",
+      "example": "bar build show mean full scaffold --subject \"What is eventual consistency?\"",
+      "desc": "Use when explaining what something means or building conceptual understanding",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "scaffold"
+        ],
+        "scope": [
+          "mean"
+        ],
+        "task": [
+          "show"
+        ]
+      }
+    },
+    {
+      "title": "Structural Analysis",
+      "command": "bar build probe struct full mapping --subject \"...\"",
+      "example": "bar build probe struct full mapping --subject \"Analyze the database schema relationships\"",
+      "desc": "Use for understanding relationships, boundaries, and structure",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "method": [
+          "mapping"
+        ],
+        "scope": [
+          "struct"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Problem Diagnosis",
+      "command": "bar build probe fail full diagnose checklist --subject \"...\"",
+      "example": "bar build probe fail full diagnose checklist --subject \"Debug production memory leak\"",
+      "desc": "Use for troubleshooting and root cause analysis",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "checklist"
+        ],
+        "method": [
+          "diagnose"
+        ],
+        "scope": [
+          "fail"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Task Planning",
+      "command": "bar build plan act full converge actions --subject \"...\"",
+      "example": "bar build plan act full converge actions --subject \"Plan the database migration steps\"",
+      "desc": "Use when breaking down work into actionable steps",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "actions"
+        ],
+        "method": [
+          "converge"
+        ],
+        "scope": [
+          "act"
+        ],
+        "task": [
+          "plan"
+        ]
+      }
+    },
+    {
+      "title": "Exploratory Analysis",
+      "command": "bar build probe thing full explore variants --subject \"...\"",
+      "example": "bar build probe thing full explore variants --subject \"What are different approaches to state management?\"",
+      "desc": "Use when surveying possibilities or generating alternatives",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "variants"
+        ],
+        "method": [
+          "explore"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Comparison/Tradeoff Analysis",
+      "command": "bar build diff thing full table --subject \"...\"",
+      "example": "bar build diff thing full table --subject \"Compare REST vs GraphQL vs gRPC for our API\"",
+      "desc": "Use for side-by-side comparison of alternatives with tradeoffs",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "table"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "diff"
+        ]
+      }
+    },
+    {
+      "title": "Risk Analysis",
+      "command": "bar build probe fail full adversarial checklist --subject \"...\"",
+      "example": "bar build probe fail full adversarial checklist --subject \"Assess the risk posture of migrating to Kubernetes\"",
+      "desc": "Use for open-ended risk analysis: 'how risky is this?' or 'assess failure posture'",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "checklist"
+        ],
+        "method": [
+          "adversarial"
+        ],
+        "scope": [
+          "fail"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Risk Extraction",
+      "command": "bar build pull fail full risks checklist --subject \"...\"",
+      "example": "bar build pull fail full risks checklist --subject \"Deploy payment service on Friday\"",
+      "desc": "Use when extracting a bounded risk list or summary: 'what are the risks?'. Prefer pull over probe when a risk register or checklist is the deliverable, not an open-ended analysis.",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "checklist"
+        ],
+        "method": [
+          "risks"
+        ],
+        "scope": [
+          "fail"
+        ],
+        "task": [
+          "pull"
+        ]
+      }
+    },
+    {
+      "title": "Quality Evaluation",
+      "command": "bar build check good full analysis checklist --subject \"...\"",
+      "example": "bar build check good full analysis checklist --subject \"Evaluate code review quality standards\"",
+      "desc": "Use when assessing quality, standards, or success criteria",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "checklist"
+        ],
+        "method": [
+          "analysis"
+        ],
+        "scope": [
+          "good"
+        ],
+        "task": [
+          "check"
+        ]
+      }
+    },
+    {
+      "title": "Progressive Refinement Workflow",
+      "command": "bar build probe thing gist explore variants --subject \"...\" && bar build probe struct full mapping table --subject \"...\"",
+      "example": "bar build probe thing gist explore variants --subject \"API design approaches\" && bar build probe struct full mapping table --subject \"Selected REST API structure\"",
+      "desc": "Use for multi-step workflows: explore broadly, then analyze deeply",
+      "tokens": {
+        "completeness": [
+          "gist"
+        ],
+        "form": [
+          "variants"
+        ],
+        "method": [
+          "explore"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Conceptual Scaffolding",
+      "command": "bar build show mean full scaffold --subject \"...\"",
+      "example": "bar build show mean full scaffold --subject \"Explain CQRS pattern for beginners\"",
+      "desc": "Use for building understanding from fundamentals to complex concepts",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "scaffold"
+        ],
+        "scope": [
+          "mean"
+        ],
+        "task": [
+          "show"
+        ]
+      }
+    },
+    {
+      "title": "Failure Mode Analysis",
+      "command": "bar build probe fail full adversarial variants --subject \"...\"",
+      "example": "bar build probe fail full adversarial variants --subject \"How could the payment system fail under load?\"",
+      "desc": "Use for systematic analysis of how systems can break",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "variants"
+        ],
+        "method": [
+          "adversarial"
+        ],
+        "scope": [
+          "fail"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Success Criteria Definition",
+      "command": "bar build make good full analysis checklist --subject \"...\"",
+      "example": "bar build make good full analysis checklist --subject \"Define success criteria for the dashboard redesign\"",
+      "desc": "Use when establishing measurable quality or success standards",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "checklist"
+        ],
+        "method": [
+          "analysis"
+        ],
+        "scope": [
+          "good"
+        ],
+        "task": [
+          "make"
+        ]
+      }
+    },
+    {
+      "title": "Perspective Analysis",
+      "command": "bar build probe view full explore variants --subject \"...\"",
+      "example": "bar build probe view full explore variants --subject \"How do different stakeholders view the monolith migration?\"",
+      "desc": "Use for understanding multiple viewpoints or stakeholder perspectives",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "variants"
+        ],
+        "method": [
+          "explore"
+        ],
+        "scope": [
+          "view"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Impact Assessment",
+      "command": "bar build probe struct full effects table --subject \"...\"",
+      "example": "bar build probe struct full effects table --subject \"Assess downstream impacts of changing the auth service\"",
+      "desc": "Use for analyzing ripple effects and dependencies",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "table"
+        ],
+        "method": [
+          "effects"
+        ],
+        "scope": [
+          "struct"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Constraint Mapping",
+      "command": "bar build probe thing full dimension table --subject \"...\"",
+      "example": "bar build probe thing full dimension table --subject \"Map technical and business constraints for the mobile app\"",
+      "desc": "Use for identifying and documenting limitations and requirements",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "table"
+        ],
+        "method": [
+          "dimension"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Evidence Building",
+      "command": "bar build make thing full cite case --subject \"...\"",
+      "example": "bar build make thing full cite case --subject \"Build the case for adopting TypeScript\"",
+      "desc": "Use when making a persuasive argument with supporting evidence",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "case"
+        ],
+        "method": [
+          "cite"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "make"
+        ]
+      }
+    },
+    {
+      "title": "Option Generation with Reasoning",
+      "command": "bar build probe thing full branch variants --subject \"...\"",
+      "example": "bar build probe thing full branch variants --subject \"Generate database sharding approaches with pros/cons\"",
+      "desc": "Use for generating alternatives with detailed reasoning for each",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "variants"
+        ],
+        "method": [
+          "branch"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Sequential Process Documentation",
+      "command": "bar build make time full flow recipe --subject \"...\"",
+      "example": "bar build make time full flow recipe --subject \"Document the CI/CD pipeline stages\"",
+      "desc": "Use for documenting step-by-step processes or workflows",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "recipe"
+        ],
+        "method": [
+          "flow"
+        ],
+        "scope": [
+          "time"
+        ],
+        "task": [
+          "make"
+        ]
+      }
+    },
+    {
+      "title": "Scenario Simulation",
+      "command": "bar build sim time full walkthrough --subject \"...\"",
+      "example": "bar build sim time full walkthrough --subject \"Simulate what happens during a database failover\"",
+      "desc": "Use for playing out hypothetical or contingency scenarios",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "walkthrough"
+        ],
+        "scope": [
+          "time"
+        ],
+        "task": [
+          "sim"
+        ]
+      }
+    },
+    {
+      "title": "Dependency Analysis",
+      "command": "bar build probe struct full depends mapping --subject \"...\"",
+      "example": "bar build probe struct full depends mapping --subject \"Map service dependencies in the microservices architecture\"",
+      "desc": "Use for understanding and visualizing dependencies and relationships",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "mapping"
+        ],
+        "method": [
+          "depends"
+        ],
+        "scope": [
+          "struct"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Summarisation / Extraction",
+      "command": "bar build pull gist mean --subject \"...\"",
+      "example": "bar build pull gist mean --subject \"[long RFC or design document]\"",
+      "desc": "Use when compressing a long source document into a shorter summary. Prefer pull over show when a SUBJECT document is being compressed: pull extracts a subset, show explains a concept. Heuristic: long SUBJECT to compress → pull; concept to explain without a source → show.",
+      "tokens": {
+        "completeness": [
+          "gist"
+        ],
+        "scope": [
+          "mean"
+        ],
+        "task": [
+          "pull"
+        ]
+      }
+    },
+    {
+      "title": "Test Coverage Gap Analysis",
+      "command": "bar build check fail full checklist --subject \"...\"",
+      "example": "bar build check fail full checklist --subject \"Feature: user registration flow\"",
+      "desc": "Use when identifying missing tests or coverage gaps in existing code. Heuristic: 'what tests are missing?' → check; 'write a test plan' → make.",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "checklist"
+        ],
+        "scope": [
+          "fail"
+        ],
+        "task": [
+          "check"
+        ]
+      }
+    },
+    {
+      "title": "Test Plan Creation",
+      "command": "bar build make act fail full checklist --subject \"...\"",
+      "example": "bar build make act fail full checklist --subject \"Payment integration feature\"",
+      "desc": "Use when creating a new test plan or test cases from scratch. Produces a test plan artifact rather than evaluating existing coverage.",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "checklist"
+        ],
+        "scope": [
+          "act",
+          "fail"
+        ],
+        "task": [
+          "make"
+        ]
+      }
+    },
+    {
+      "title": "Pre-mortem / Inversion Exercise",
+      "command": "bar build probe fail full inversion variants --subject \"...\"",
+      "example": "bar build probe fail full inversion variants --subject \"Our Q4 launch plan\"",
+      "desc": "Use when assuming failure and working backward to identify causes. Frames the exercise as: 'assume this has failed — what went wrong?' Pairs naturally with planning and architecture review tasks.",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "form": [
+          "variants"
+        ],
+        "method": [
+          "inversion"
+        ],
+        "scope": [
+          "fail"
+        ],
+        "task": [
+          "probe"
+        ]
+      }
+    },
+    {
+      "title": "Comprehensive Assessment (Multi-Scope)",
+      "command": "bar build check <scope> full <method> --subject \"...\"",
+      "example": "bar build check good full analysis --subject \"Assess codebase quality\"",
+      "desc": "Use for multi-faceted assessments that span quality (good), fragility (fail), and structure (struct). When the task requires multiple analytical lenses, prioritize by primary concern or analyze sequentially: quality-first (good), risk-first (fail), or architecture-first (struct).",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "task": [
+          "check"
+        ]
+      }
+    },
+    {
+      "title": "Evaluation with Falsification",
+      "command": "bar build check <scope> full verify risks --subject \"...\"",
+      "example": "bar build check thing full verify risks --subject \"Evaluate the proposed caching strategy\"",
+      "desc": "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with risks (systematic problem identification). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
+      "tokens": {
+        "completeness": [
+          "full"
+        ],
+        "method": [
+          "verify",
+          "risks"
+        ],
+        "scope": [
+          "thing"
+        ],
+        "task": [
+          "check"
+        ]
+      }
+    },
+    {
+      "title": "Plain Prose Output",
+      "command": "bar build show <scope> full plain --subject \"...\"",
+      "example": "bar build show mean full plain --subject \"Explain the authorization model\"",
+      "desc": "Use when the response must be plain prose — no lists, bullets, or tables. The plain channel explicitly suppresses structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain prose', 'flowing paragraphs' → add plain channel to any task.",
+      "tokens": {
+        "channel": [
+          "plain"
+        ],
+        "completeness": [
+          "full"
+        ],
+        "task": [
+          "show"
+        ]
+      }
+    },
+    {
+      "title": "Synchronous Session Plan",
+      "command": "bar build plan act full sync --subject \"...\"",
+      "example": "bar build plan act full sync --subject \"Design sprint kickoff — 3h with context, problem framing, and ideation\"",
+      "desc": "Use when the output should be a synchronous session plan with agenda, timing slots, and facilitation cues for real-time use. Heuristic: 'session plan', 'live workshop', 'meeting agenda with timing', 'facilitation script for live session' → sync channel. Combine with facilitate form when facilitator role is explicit.",
+      "tokens": {
+        "channel": [
+          "sync"
+        ],
+        "completeness": [
+          "full"
+        ],
+        "scope": [
+          "act"
+        ],
+        "task": [
+          "plan"
+        ]
+      }
+    }
+  ],
   "checksums": {
     "axes": "fe0efe13a38f84ac64a806ccbb0cd368e08cf4ed882764632324d7bdcccc7d0e",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "4b8f6392be4600f7bb998a6c413fa799a0d9b3bf478b3dd53e4d332cb9c8a3c3"
+    "slugs": "4b8f6392be4600f7bb998a6c413fa799a0d9b3bf478b3dd53e4d332cb9c8a3c3",
+    "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1"
   }
 }

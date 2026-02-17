@@ -4,6 +4,7 @@
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
+	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -118,6 +119,12 @@
 		window.history.replaceState(null, '', window.location.pathname);
 		localStorage.removeItem(STORAGE_KEY);
 	}
+
+	function loadPattern(pattern: { tokens: Record<string, string[]>; subject?: string; addendum?: string }) {
+		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...pattern.tokens };
+		if (pattern.subject !== undefined) subject = pattern.subject;
+		if (pattern.addendum !== undefined) addendum = pattern.addendum;
+	}
 </script>
 
 <div class="layout">
@@ -133,6 +140,7 @@
 	{:else}
 		<div class="main">
 			<section class="selector-panel">
+				<PatternsLibrary onLoad={loadPattern} />
 				<TokenSelector
 					axis="task"
 					tokens={getTaskTokens(grammar)}

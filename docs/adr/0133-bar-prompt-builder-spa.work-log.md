@@ -7,6 +7,40 @@ VCS_REVERT: git restore --source=HEAD web/
 
 ---
 
+## Loop 6 — 2026-02-17 — Usage patterns library green (Phase 5 complete — MVP done)
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0133 Phase 5 — pre-composed token template library; one-click load into builder
+active_constraint: >
+  No usage patterns library exists. Users must select every token from scratch.
+  Falsifiable: grep for 'usagePattern|Quick Code Review' in build/_app exits 1 before, 0 after.
+validation_targets:
+  - "cd web && npm run build && grep -r 'usagePattern\\|Quick Code Review' build/_app --include='*.js' -l"
+evidence:
+  - "red  | 2026-02-17T05:46:00Z | exit 1 | grep usagePattern|Quick Code Review build/_app — no matches"
+  - "green| 2026-02-17T05:48:00Z | exit 0 | build/_app/immutable/nodes/2.BaBjBl7U.js matched"
+rollback_plan: "git restore --source=HEAD web/src/routes/+page.svelte && rm web/src/lib/PatternsLibrary.svelte"
+delta_summary: >
+  helper:diff-snapshot: web/src/lib/PatternsLibrary.svelte (new, ~140 lines),
+  web/src/routes/+page.svelte: +8 lines (import, loadPattern(), <PatternsLibrary>)
+  8 pre-composed patterns (Quick Code Review, Deep Bug Diagnosis, Architecture Plan,
+  Risk & Trade-off, Diff Summary, PR Write-up, Feature Prioritisation, Show/Explain)
+  using real bar vocabulary (task/completeness/scope/method/channel tokens).
+  PatternsLibrary collapses by default (▸ toggle); one-click loads tokens into builder.
+loops_remaining_forecast: "0 loops: all 5 ADR phases complete. Only deploy-verification residual remains (RC-04)."
+residual_constraints:
+  - id: RC-04
+    description: >
+      deploy-spa.yml workflow has not yet run on GitHub Actions (no push to origin/main since ADR work began).
+    severity: Low
+    mitigation: User pushes to origin/main to trigger first live deploy; no code changes needed.
+    monitoring: GitHub Actions run
+    owning_adr: ADR-0133 D2
+next_work:
+  - "Behaviour: deploy-spa.yml workflow runs green on GitHub Actions | Action: git push origin main"
+```
+
 ## Loop 5 — 2026-02-17 — LLM integration panel green
 
 ```yaml

@@ -138,6 +138,7 @@
       },
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
+        "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
         "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
@@ -288,6 +289,7 @@
       ],
       "scope": [
         "act",
+        "agent",
         "assume",
         "cross",
         "fail",
@@ -405,6 +407,7 @@
         "effects": "Trace second and third-order effects",
         "experimental": "Propose concrete experiments",
         "explore": "Survey option space broadly",
+        "field": "Model interaction as a shared structured medium",
         "flow": "Step-by-step sequential progression",
         "grove": "Accumulation and rate-of-change effects",
         "grow": "Build up from simplest valid base",
@@ -437,6 +440,7 @@
       },
       "scope": {
         "act": "Tasks and intended actions",
+        "agent": "Actors with agency and decision-making",
         "assume": "Premises and preconditions",
         "cross": "Cross-cutting concerns spanning modules",
         "fail": "Breakdowns and failure modes",
@@ -1139,6 +1143,7 @@
       },
       "scope": {
         "act": "act",
+        "agent": "agent",
         "assume": "assume",
         "cross": "cross",
         "fail": "fail",
@@ -1254,6 +1259,7 @@
       },
       "scope": {
         "scope=act": "scope-act",
+        "scope=agent": "scope-agent",
         "scope=assume": "scope-assume",
         "scope=cross": "scope-cross",
         "scope=fail": "scope-fail",
@@ -1445,6 +1451,7 @@
       "actors": "actors",
       "adr": "adr",
       "adversarial": "adversarial",
+      "agent": "agent",
       "analog": "analog",
       "analysis": "analysis",
       "announce": "announce",
@@ -1730,6 +1737,7 @@
       "rog": "rog",
       "scaffold": "scaffold",
       "scope=act": "scope-act",
+      "scope=agent": "scope-agent",
       "scope=assume": "scope-assume",
       "scope=cross": "scope-cross",
       "scope=fail": "scope-fail",
@@ -1820,10 +1828,10 @@
     }
   },
   "checksums": {
-    "axes": "f04585ff57d0deb3a6c3aef46558affc36f6c0ae87f6be65691d7f2298aad921",
+    "axes": "0c1d368f5d89e39bfed1ce81acecd26b03460c11ae922f7f7f468d4678b56db6",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "2b35d58674ed1860a85eef68020e0d1e0d0a2f50657c3acb46e017f1528609f4"
+    "slugs": "4b8f6392be4600f7bb998a6c413fa799a0d9b3bf478b3dd53e4d332cb9c8a3c3"
   }
 }

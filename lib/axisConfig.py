@@ -536,6 +536,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "activities, operations, or work to be performed—suppressing "
         "interpretation, evaluation, structural explanation, or "
         "perspective-shifting.",
+        "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "assume": "The response focuses on explicit or implicit premises that must "
         "hold for the reasoning, system, or argument to function.",
         "cross": "The response focuses on concerns or forces that propagate across "
@@ -692,6 +693,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "effects": "Trace second and third-order effects",
         "experimental": "Propose concrete experiments",
         "explore": "Survey option space broadly",
+        "field": "Model interaction as a shared structured medium",
         "flow": "Step-by-step sequential progression",
         "grove": "Accumulation and rate-of-change effects",
         "grow": "Build up from simplest valid base",
@@ -724,6 +726,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "act": "Tasks and intended actions",
+        "agent": "Actors with agency and decision-making",
         "assume": "Premises and preconditions",
         "cross": "Cross-cutting concerns spanning modules",
         "fail": "Breakdowns and failure modes",

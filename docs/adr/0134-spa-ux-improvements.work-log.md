@@ -135,6 +135,104 @@ next_work:
     validation: Clicking wardley chip shows use_when text without hover
 ```
 
+---
+
+## loop-4 | 2026-02-17 | D2 metadata panel + vitest test suite
+
+```
+helper_version: helper:v20251223.1
+focus: ADR-0134 §D2 — inline expandable metadata panel in TokenSelector.svelte;
+  vitest infrastructure + 38 tests covering grammar.ts, renderPrompt.ts, TokenSelector.svelte.
+
+active_constraint: >
+  Token use_when/guidance/description visible only via hover title attribute — invisible
+  without mouse interaction, breaking ADR-0132 discoverability mechanism in SPA.
+  Falsifiable: clicking wardley chip shows use_when text in DOM without hover.
+
+validation_targets:
+  - npm test (TokenSelector.test.ts — 11 component tests, D2 falsifiable encoded)
+  - npm test (grammar.test.ts — 15 tests; renderPrompt.test.ts — 12 tests)
+
+evidence:
+  - green | 2026-02-17T19:58:37Z | exit 0 | npm test
+      58 tests passed (4 suites) | inline
+  - green | 2026-02-17T19:58:40Z | exit 0 | go test ./internal/barcli/... && python3 -m pytest
+      all 1233 python + all go tests passed | inline
+
+delta_summary: >
+  e5ee110 — 9 files changed: TokenSelector.svelte (activeToken state, meta-panel markup,
+  active-meta outline); grammar.test.ts (15 tests); renderPrompt.test.ts (12 tests);
+  TokenSelector.test.ts (11 component tests); vite.config.ts (vitest + svelte plugin config);
+  package.json (test script, vitest+@testing-library/svelte deps); src/mocks/app-paths.ts.
+
+rollback_plan: git restore --source=HEAD -- web/src/lib/TokenSelector.svelte
+
+loops_remaining_forecast: >
+  1 loop remaining: Loop-5 (D1 command input parser). ADR-0134 complete after that.
+  Confidence: High.
+
+residual_constraints:
+  - id: RC-0134-02
+    constraint: D1 command input unimplemented — SPA is one-way (cannot parse clipboard commands).
+    severity: Medium
+    mitigation: Loop-5.
+    owning_adr: ADR-0134
+
+next_work:
+  - Behaviour: D1 command input in +page.svelte (Loop-5)
+    validation: parseCommand('bar build show mean full plain') → task=show, scope=mean,
+    completeness=full, channel=plain; UI input loads these into selectors
+```
+
+---
+
+## loop-5 | 2026-02-17 | D1 command input parser
+
+```
+helper_version: helper:v20251223.1
+focus: ADR-0134 §D1 — collapsible 'Load command' input in +page.svelte; parseCommand.ts
+  pure function with 20 tests; D1 falsifiable encoded as first test.
+
+active_constraint: >
+  SPA generates bar build commands but cannot parse them back — clipboard workflow blocked.
+  Falsifiable: parseCommand('bar build show mean full plain', grammar) returns
+  selected.task=['show'], selected.scope=['mean'], etc. and 0 unrecognized tokens.
+
+validation_targets:
+  - npm test (parseCommand.test.ts — 20 tests including D1 falsifiable)
+  - npm test (full suite — 58 tests)
+
+evidence:
+  - green | 2026-02-17T19:58:37Z | exit 0 | npm test
+      58 tests passed (4 suites) including parseCommand D1 falsifiable | inline
+  - green | 2026-02-17T19:58:40Z | exit 0 | go test + python3 -m pytest
+      1233 python + all go tests passed | inline
+
+delta_summary: >
+  8352497 — 3 files changed: parseCommand.ts (parser), parseCommand.test.ts (20 tests),
+  +page.svelte (Load command collapsible panel with input, Load button, warnings).
+
+rollback_plan: >
+  git restore --source=HEAD -- web/src/lib/parseCommand.ts web/src/lib/parseCommand.test.ts
+    web/src/routes/+page.svelte
+
+loops_remaining_forecast: >
+  0 loops remaining. All three ADR-0134 decisions (D1, D2, D3) shipped.
+  ADR-0134 complete pending final adversarial entry.
+  Confidence: High.
+
+residual_constraints:
+  - id: RC-0134-DONE
+    constraint: All D1/D2/D3 behaviours shipped. No open residual constraints.
+    severity: Low
+    mitigation: ADR-0134 can be marked Accepted.
+    owning_adr: ADR-0134
+
+next_work:
+  - Behaviour: Mark ADR-0134 status as Accepted; push changes
+    validation: git log shows all 5 loop commits present
+```
+
 rollback_plan: >
   git restore --source=HEAD -- lib/axisConfig.py lib/axisCatalog.py lib/promptGrammar.py
     internal/barcli/grammar.go internal/barcli/build_test.go

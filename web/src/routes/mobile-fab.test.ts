@@ -42,24 +42,57 @@ describe('Page — Mobile Floating Action Button', () => {
 		document.body.appendChild(container);
 	});
 
-	it('has action buttons in the DOM', async () => {
+	it('FAB button is a direct child of .layout, not inside .preview-panel', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		await new Promise(r => setTimeout(r, 100));
-		
-		const actionRow = container.querySelector('.action-row');
-		expect(actionRow).toBeTruthy();
+
+		const previewPanel = container.querySelector('.preview-panel');
+		const fabBtn = container.querySelector('.fab-btn');
+
+		expect(fabBtn).toBeTruthy();
+		// FAB must NOT be nested inside the preview panel
+		expect(previewPanel?.contains(fabBtn)).toBe(false);
 	});
 
-	it('has copy and share buttons', async () => {
+	it('action-overlay is at layout root, not inside .preview-panel', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		await new Promise(r => setTimeout(r, 100));
-		
-		const copyBtn = container.querySelector('.copy-btn');
-		const shareBtn = container.querySelector('.share-btn');
+
+		const previewPanel = container.querySelector('.preview-panel');
+		const actionOverlay = container.querySelector('.action-overlay');
+
+		expect(actionOverlay).toBeTruthy();
+		// Action overlay must NOT be nested inside the preview panel
+		expect(previewPanel?.contains(actionOverlay)).toBe(false);
+	});
+
+	it('FAB click adds mobile-visible class to action-overlay', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+
+		await new Promise(r => setTimeout(r, 100));
+
+		const fabBtn = container.querySelector('.fab-btn') as HTMLElement;
+		const actionOverlay = container.querySelector('.action-overlay');
+
+		expect(actionOverlay?.classList.contains('mobile-visible')).toBe(false);
+		fabBtn.click();
+		flushSync();
+		expect(actionOverlay?.classList.contains('mobile-visible')).toBe(true);
+	});
+
+	it('has copy and share buttons inside action-overlay', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+
+		await new Promise(r => setTimeout(r, 100));
+
+		const copyBtn = container.querySelector('.action-overlay .copy-btn');
+		const shareBtn = container.querySelector('.action-overlay .share-btn');
 		expect(copyBtn).toBeTruthy();
 		expect(shareBtn).toBeTruthy();
 	});

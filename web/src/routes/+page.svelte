@@ -362,14 +362,8 @@
 				<div class="command-box" class:has-conflicts={conflicts.length > 0}>
 					<div class="command-label">Command</div>
 					<code class="command">{command}</code>
-					
-					<!-- FAB for mobile -->
-					<button class="fab-btn" onclick={() => fabOpen = !fabOpen} aria-label="Actions">
-						{fabOpen ? '✕' : '⋯'}
-					</button>
-					
-					<!-- Action row -->
-					<div class="action-row" class:mobile-visible={fabOpen}>
+					<!-- Desktop action row (always visible on desktop) -->
+					<div class="action-row">
 						<button class="copy-btn" onclick={copyCommand}>
 							{copied ? '✓ Copied' : 'Copy cmd'}
 						</button>
@@ -434,6 +428,28 @@
 			</section>
 		</div>
 	{/if}
+
+	<!-- FAB and mobile action overlay — always accessible, outside preview panel -->
+	<button class="fab-btn" onclick={() => fabOpen = !fabOpen} aria-label="Actions">
+		{fabOpen ? '✕' : '⋯'}
+	</button>
+	{#if fabOpen}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="fab-backdrop" onclick={() => fabOpen = false}></div>
+	{/if}
+	<div class="action-row action-overlay" class:mobile-visible={fabOpen}>
+		<button class="copy-btn" onclick={copyCommand}>
+			{copied ? '✓ Copied' : 'Copy cmd'}
+		</button>
+		<button class="copy-prompt-btn" onclick={copyPrompt}>
+			{copiedPrompt ? '✓ Copied' : 'Copy prompt'}
+		</button>
+		<button class="share-btn" onclick={sharePrompt}>
+			{shared ? '✓ Link copied' : 'Share'}
+		</button>
+		<button class="clear-btn" onclick={clearState} title="Clear all (⌘K / Ctrl+K)">Clear</button>
+	</div>
 </div>
 
 <style>
@@ -566,6 +582,10 @@
 	.clear-btn:hover { border-color: #f7768e; color: #f7768e; }
 
 	.fab-btn {
+		display: none;
+	}
+
+	.fab-backdrop {
 		display: none;
 	}
 
@@ -804,14 +824,16 @@
 
 		.preview-panel {
 			position: static;
-		}
-
-		.preview-panel {
 			display: none;
 		}
 
 		.preview-panel.visible {
 			display: block;
+		}
+
+		/* Desktop action-row inside command-box — hide on mobile (replaced by overlay) */
+		.command-box .action-row {
+			display: none;
 		}
 
 		.main {
@@ -826,6 +848,7 @@
 			min-width: 100%;
 		}
 
+		/* FAB — always visible at layout root, fixed bottom-right */
 		.fab-btn {
 			display: flex;
 			align-items: center;
@@ -841,22 +864,40 @@
 			position: fixed;
 			bottom: 1.5rem;
 			right: 1.5rem;
-			z-index: 100;
+			z-index: 150;
 			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		}
 
-		.action-row {
+		/* Backdrop to dismiss action overlay */
+		.fab-backdrop {
+			display: block;
+			position: fixed;
+			inset: 0;
+			z-index: 140;
+		}
+
+		/* Mobile action overlay — fixed above FAB, always reachable */
+		.action-overlay {
 			display: none;
+		}
+
+		.action-overlay.mobile-visible {
+			display: flex;
 			flex-direction: column;
 			gap: 0.5rem;
-			margin-top: 0.5rem;
+			position: fixed;
+			bottom: 5rem;
+			right: 1rem;
+			z-index: 150;
+			background: var(--color-surface);
+			border: 1px solid var(--color-border);
+			border-radius: var(--radius);
+			padding: 0.5rem;
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+			min-width: 180px;
 		}
 
-		.action-row.mobile-visible {
-			display: flex;
-		}
-
-		.action-row button {
+		.action-overlay button {
 			width: 100%;
 			min-height: 44px;
 			justify-content: center;

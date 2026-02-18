@@ -3,7 +3,7 @@
 ## In-Progress Loops
 
 - **Loop 1**: Fix `showPreview` default bug — [COMPLETE]
-- **Loop 2**: Relocate FAB and action overlay to layout root — [PENDING]
+- **Loop 2**: Relocate FAB and action overlay to layout root — [COMPLETE]
 - **Loop 3**: Show rendered prompt inline; rename panel to "Output" — [PENDING]
 - **Loop 4**: Token guidance bottom drawer on mobile — [PENDING]
 - **Loop 5**: Touch targets (tabs, persona chips, selected chips, load-cmd-toggle) — [PENDING]
@@ -44,3 +44,38 @@
 
 **next_work**:
 - Behaviour: Relocate FAB and action overlay to layout root — `npm test -- mobile-fab`
+
+---
+
+### loop-2
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0138 §Loop 2 — Relocate FAB and action overlay to layout root
+
+**active_constraint**: FAB and action-row nested inside `.preview-panel`; hiding the panel removes access to all actions. Action-row expands inline at command-box position which may be off-screen.
+
+**validation_targets**:
+- `npm test -- mobile-fab` — specifying validation: `.fab-btn` not inside `.preview-panel`; `.action-overlay` not inside `.preview-panel`; FAB click toggles `mobile-visible`; overlay contains copy/share buttons.
+
+**evidence**:
+- red | 2026-02-18T22:24:09Z | exit 1 | npm test -- mobile-fab
+    helper:diff-snapshot=0 files changed (specifying validation updated, implementation unchanged)
+    2 tests fail: action-row found inside preview-panel; mobile-visible not toggled on overlay | inline
+- green | 2026-02-18T22:25:35Z | exit 0 | npm test -- mobile-fab
+    helper:diff-snapshot=2 files changed, 102 insertions(+), 28 deletions(-)
+    All 4 FAB tests pass | inline
+- green | 2026-02-18T22:25:39Z | exit 0 | npm test
+    All 91 tests pass | inline
+
+**rollback_plan**: `git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/mobile-fab.test.ts`
+
+**delta_summary**: helper:diff-snapshot=2 files changed, 102 insertions(+), 28 deletions(-). Moved FAB and action buttons to `.layout` root as a fixed-position `.action-overlay` (distinct class to avoid ambiguity with desktop `.action-row`). Desktop action-row remains inside `.command-box`; hidden on mobile via `.command-box .action-row { display: none }`. FAB backdrop added to dismiss overlay on tap-outside. z-index 150 for FAB and overlay.
+
+**loops_remaining_forecast**: 5 loops remaining (rendered prompt display, guidance drawer, touch targets, iOS zoom, PWA icon). Confidence: high.
+
+**residual_constraints**:
+- Desktop action-row still duplicates buttons; could be unified with the overlay in a future refactor. Severity: Low. Monitoring: no functional impact.
+
+**next_work**:
+- Behaviour: Show rendered prompt inline + rename panel to "Output" — `npm test -- mobile-output`

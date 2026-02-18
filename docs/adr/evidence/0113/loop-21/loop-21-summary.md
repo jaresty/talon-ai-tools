@@ -59,6 +59,32 @@ The catalog note directs users to `bar shuffle --json` for compound discovery.
 
 ---
 
+## Post-Commit Correction: Directional Compass Model
+
+After loop-21 was committed, the directional model was clarified:
+
+**The directionals are a 2D compass, not a sequence:**
+```
+         fog (abstract/general)
+              ↑
+rog (reflect) ←——+——→ ong (act/extend)
+              ↓
+         dig (concrete/specific)
+```
+
+Compound tokens **span the spectrum** in their combined directions — not alternate or sequence:
+- `fig` = fog + dig → span the full vertical range (abstract AND concrete, not alternating)
+- `bog` = rog + ong → span the full horizontal range (reflective AND acting, not sequential)
+- `fly` = fog + ong → diagonal toward abstract-and-acting quadrant
+- `dip` = dig + ong → diagonal toward concrete-and-acting quadrant
+
+**Corrections applied** (separate commit `fix(adr-0113/loop-21)`):
+- `fig` use_when: removed "alternating" → "span the full vertical spectrum (fog + dig)"
+- `bog` use_when: removed "three-phase sequential" → "span the full horizontal spectrum (rog + ong)"
+- `rog`/`ong` use_when: softened sequential "two-phase" language to directional compass framing
+
+---
+
 ## Post-Apply Validation
 
 | Task | Token | Pre-fix | Post-fix | Delta | Verdict |

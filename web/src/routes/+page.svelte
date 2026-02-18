@@ -362,7 +362,18 @@
 					<div class="selected-chips">
 						{#each Object.entries(selected) as [axis, tokens]}
 							{#each tokens as token (token)}
-								<span class="selected-chip" onclick={() => toggle(axis, token)}>
+								<span
+									class="selected-chip"
+									role="button"
+									tabindex="0"
+									onclick={() => toggle(axis, token)}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											e.preventDefault();
+											toggle(axis, token);
+										}
+									}}
+								>
 									{token} ×
 								</span>
 							{/each}

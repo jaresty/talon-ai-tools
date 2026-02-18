@@ -6,8 +6,8 @@
 - **Loop 2**: Relocate FAB and action overlay to layout root — [COMPLETE]
 - **Loop 3**: Show rendered prompt inline; rename panel to "Output" — [COMPLETE]
 - **Loop 4**: Token guidance bottom drawer on mobile — [COMPLETE]
-- **Loop 5**: Touch targets (tabs, persona chips, selected chips, load-cmd-toggle) — [PENDING]
-- **Loop 6**: iOS auto-zoom fix — [PENDING]
+- **Loop 5**: Touch targets (tabs, persona chips, selected chips, load-cmd-toggle) — [COMPLETE]
+- **Loop 6**: iOS auto-zoom fix — [COMPLETE — combined with loop 5]
 - **Loop 7**: PWA icon fix — [PENDING]
 
 ## History
@@ -149,3 +149,38 @@
 
 **next_work**:
 - Behaviour: Touch targets ≥44px — `npm test -- mobile-touch`
+
+---
+
+### loop-5 (covers ADR loops 5 and 6: touch targets + iOS auto-zoom)
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0138 §Loop 5 — Touch targets; §Loop 6 — iOS auto-zoom fix
+
+**active_constraint**: Tab buttons (~28px), persona chips (~16px), selected chips (~16px), and load-cmd-toggle div (~28px, non-button) are below 44px. Textarea and load-cmd-input at ~13px trigger iOS Safari auto-zoom on focus.
+
+**validation_targets**:
+- `npm test -- mobile-touch` — specifying validation: load-cmd-toggle is a `<button>`; tab buttons are `<button>` elements.
+
+**evidence**:
+- red | 2026-02-18T22:30:01Z | exit 1 | npm test -- mobile-touch
+    helper:diff-snapshot=0 files changed (specifying validation added, implementation unchanged)
+    1 test fails: load-cmd-toggle tagName is "div", expected "button" | inline
+- green | 2026-02-18T22:30:33Z | exit 0 | npm test -- mobile-touch
+    helper:diff-snapshot=2 files changed (+page.svelte)
+    All 4 touch tests pass | inline
+- green | 2026-02-18T22:30:39Z | exit 0 | npm test
+    All 99 tests pass | inline
+
+**rollback_plan**: `git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/mobile-touch.test.ts`
+
+**delta_summary**: helper:diff-snapshot=2 files changed. Converted `.load-cmd-toggle` from `<div>` to `<button>` (removed a11y suppression comments). Added `background: none; border: none; width: 100%; text-align: left` to keep visual appearance. Added mobile CSS: `min-height: 44px` for `.tab`, `.persona-chip`, `.selected-chip`, `.load-cmd-toggle`. Added `font-size: 1rem` for `.input-area` and `.load-cmd-input` on mobile.
+
+**loops_remaining_forecast**: 1 loop remaining (PWA icon). Confidence: high.
+
+**residual_constraints**:
+- `.persona-chip` and `.selected-chip` 44px height only enforced via CSS; jsdom tests can't verify pixel sizing. Severity: Low. Monitoring: manual device testing.
+
+**next_work**:
+- Behaviour: PWA icon fix (apple-touch-icon + manifest base paths) — `npm test` (no JS change; verified by app.html and manifest diff)

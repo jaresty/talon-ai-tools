@@ -220,12 +220,10 @@
 			<section class="selector-panel">
 				<!-- Load command input (collapsible) -->
 				<div class="load-cmd-section">
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
-					<div class="load-cmd-toggle" onclick={() => { cmdInputOpen = !cmdInputOpen; cmdInputWarnings = []; }}>
+					<button class="load-cmd-toggle" onclick={() => { cmdInputOpen = !cmdInputOpen; cmdInputWarnings = []; }}>
 						<span class="load-cmd-toggle-label">Load command</span>
 						<span class="load-cmd-caret">{cmdInputOpen ? '▲' : '▼'}</span>
-					</div>
+					</button>
 					{#if cmdInputOpen}
 						<div class="load-cmd-body">
 							<input
@@ -764,6 +762,12 @@
 		padding: 0.5rem 0.75rem;
 		cursor: pointer;
 		user-select: none;
+		background: none;
+		border: none;
+		width: 100%;
+		text-align: left;
+		color: inherit;
+		font-family: inherit;
 	}
 
 	.load-cmd-toggle:hover { background: var(--color-surface); }
@@ -947,6 +951,36 @@
 
 		.copy-btn, .copy-prompt-btn, .share-btn, .clear-btn {
 			min-height: 44px;
+		}
+
+		/* Touch targets: tabs, persona chips, selected chips, load-cmd-toggle */
+		.tab {
+			min-height: 44px;
+		}
+
+		.persona-chip {
+			min-height: 44px;
+			padding: 0.5rem 0.75rem;
+		}
+
+		.selected-chip {
+			min-height: 44px;
+			padding: 0.5rem 0.75rem;
+			display: inline-flex;
+			align-items: center;
+		}
+
+		.load-cmd-toggle {
+			min-height: 44px;
+		}
+
+		/* iOS auto-zoom prevention: font-size must be ≥16px on inputs */
+		.input-area {
+			font-size: 1rem;
+		}
+
+		.load-cmd-input {
+			font-size: 1rem;
 		}
 	}
 </style>

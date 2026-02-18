@@ -13,10 +13,10 @@ export function GET() {
 		background_color: '#1a1a1a',
 		theme_color: '#1a1a1a',
 		icons: [
-			{ src: `${base}/icon-192.png`, sizes: '192x192', type: 'image/png' },
-			{ src: `${base}/icon-512.png`, sizes: '512x512', type: 'image/png' },
+			{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+			{ src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
 			{
-				src: `${base}/icon-512.png`,
+				src: '/icon-512.png',
 				sizes: '512x512',
 				type: 'image/png',
 				purpose: 'maskable'

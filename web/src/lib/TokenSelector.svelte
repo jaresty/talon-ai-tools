@@ -13,6 +13,9 @@
 
 	let filter = $state('');
 	let activeToken = $state<string | null>(null);
+	let focusedIndex = $state(-1);
+	let gridRef = $state<HTMLDivElement | null>(null);
+	let filterInputRef = $state<HTMLInputElement | null>(null);
 
 	let filtered = $derived(
 		filter.trim()
@@ -26,9 +29,51 @@
 
 	let activeMeta = $derived(tokens.find((t) => t.token === activeToken) ?? null);
 
+	// Reset focus index when filtered list changes
+	$effect(() => {
+		void filtered.length;
+		focusedIndex = -1;
+	});
+
+	function chipOptions(): HTMLElement[] {
+		if (!gridRef) return [];
+		return Array.from(gridRef.querySelectorAll<HTMLElement>('[role="option"]'));
+	}
+
+	function focusChip(index: number) {
+		const options = chipOptions();
+		options[index]?.focus();
+	}
+
 	function handleChipClick(meta: TokenMeta, atCap: boolean) {
 		if (!atCap) onToggle(meta.token);
 		activeToken = activeToken === meta.token ? null : meta.token;
+	}
+
+	function handleGridKey(e: KeyboardEvent) {
+		const n = filtered.length;
+		if (n === 0) return;
+		if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+			e.preventDefault();
+			focusedIndex = (focusedIndex + 1) % n;
+			focusChip(focusedIndex);
+		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+			e.preventDefault();
+			focusedIndex = (focusedIndex <= 0 ? n : focusedIndex) - 1;
+			focusChip(focusedIndex);
+		} else if (e.key === 'Home') {
+			e.preventDefault();
+			focusedIndex = 0;
+			focusChip(0);
+		} else if (e.key === 'End') {
+			e.preventDefault();
+			focusedIndex = n - 1;
+			focusChip(n - 1);
+		} else if (e.key === 'Escape') {
+			activeToken = null;
+			focusedIndex = -1;
+			filterInputRef?.focus();
+		}
 	}
 </script>
 
@@ -44,22 +89,51 @@
 			type="text"
 			placeholder="filter…"
 			bind:value={filter}
+			bind:this={filterInputRef}
+			onkeydown={(e) => {
+				if (e.key === 'ArrowDown' && filtered.length > 0) {
+					e.preventDefault();
+					focusedIndex = 0;
+					focusChip(0);
+				}
+			}}
 		/>
 	{/if}
 
-	<div class="token-grid">
-		{#each filtered as meta (meta.token)}
+	<!-- svelte-ignore a11y_interactive_supports_focus -->
+	<div
+		class="token-grid"
+		role="listbox"
+		aria-label="{axis} tokens"
+		aria-multiselectable={maxSelect > 1}
+		onkeydown={handleGridKey}
+		bind:this={gridRef}
+	>
+		{#each filtered as meta, i (meta.token)}
 			{@const isSelected = selected.includes(meta.token)}
 			{@const atCap = !isSelected && selected.length >= maxSelect}
 			{@const isActive = activeToken === meta.token}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				class="token-chip"
 				class:selected={isSelected}
 				class:disabled={atCap}
 				class:active-meta={isActive}
+				role="option"
+				aria-selected={isSelected}
+				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
+	
 				onclick={() => handleChipClick(meta, atCap)}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						handleChipClick(meta, atCap);
+					}
+				}}
+				onfocus={() => {
+					focusedIndex = i;
+					activeToken = meta.token;
+				}}
 			>
 				<code>{meta.token}</code>
 				{#if meta.label}
@@ -79,9 +153,7 @@
 				{#if activeMeta.label}
 					<span class="meta-label">{activeMeta.label}</span>
 				{/if}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<span class="meta-close" onclick={() => (activeToken = null)}>✕</span>
+				<button class="meta-close" onclick={() => (activeToken = null)}>✕</button>
 			</div>
 			{#if activeMeta.description}
 				<p class="meta-description">{activeMeta.description}</p>
@@ -166,9 +238,14 @@
 		border-color: var(--color-accent);
 	}
 
-	.token-chip.active-meta {
+	.token-chip.active-meta:not(:focus-visible) {
 		outline: 2px solid var(--color-accent);
 		outline-offset: 1px;
+	}
+
+	.token-chip:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
 	}
 
 	.token-chip.disabled {
@@ -230,6 +307,8 @@
 		color: var(--color-text-muted);
 		font-size: 0.75rem;
 		padding: 0 0.2rem;
+		background: none;
+		border: none;
 	}
 
 	.meta-close:hover {

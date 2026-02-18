@@ -523,6 +523,7 @@
         "facilitate": "Planning a workshop, retrospective, or collaborative session with session structure, participation cues, and facilitation agenda. Heuristic: 'facilitate a X', 'run a retrospective', 'workshop planning' → facilitate. Distinct from walkthrough (linear narrated steps).",
         "indirect": "Reasoning-first, conclusion-last narrative: user asks for explanation or recommendation that builds up context before landing the point. Heuristic: 'walk me through the reasoning first', 'build up to the recommendation', 'show your thinking before the conclusion', 'give me the context before the answer', 'reasoning before conclusion' → indirect. Distinct from case form (case = structured argument with evidence and objections; indirect = softer narrative reasoning that converges on a bottom-line point).",
         "ladder": "Analyzing causes or effects across multiple levels of abstraction: step up to systemic causes, step down to concrete consequences. Heuristic: 'step up and down abstraction levels', 'root cause hierarchy', 'why at a systems level' → ladder.",
+        "questions": "Response structured as a list of investigation or clarification questions: user wants the response itself to be a set of questions they can pursue, not statements or answers. Heuristic: 'what questions should I ask', 'give me questions to investigate', 'what should I be asking about', 'frame this as questions', 'questions I should explore', 'diagnostic questions for' → questions. Distinct from socratic form (socratic = LLM asks the USER questions interactively to surface their thinking; questions = response IS a question-list artifact the user takes away).",
         "recipe": "Documenting a process as a structured recipe with a custom mini-language and short key — best when the process has a recurring structure that benefits from a custom notation. Heuristic: 'document as recipe', 'structured setup guide with repeating patterns' → recipe. Distinct from walkthrough (linear narrated steps without custom notation).",
         "socratic": "Question-led dialogue to surface the user's own thinking: user wants to be asked questions rather than given answers, or wants to reason through a topic interactively. Heuristic: 'ask me questions', 'help me think through', 'challenge my assumptions with questions', 'Socratic dialogue', 'probe my thinking', 'question me as we work through this', 'help me reason this out' → socratic. Distinct from adversarial method (adversarial = stress-test the design; socratic = question the USER's reasoning via dialogue).",
         "spike": "Framing a technology investigation or adoption decision as a backlog spike artifact (problem statement + exploratory questions). Use make task (not plan) — the spike IS the artifact. Heuristic: 'should we adopt X?', 'spike on Y', 'investigation backlog item' → make + spike.",
@@ -2584,7 +2585,7 @@
     }
   ],
   "checksums": {
-    "axes": "95f5438bec8986589331ce2748970452464a509f0c80879748975b151568bced",
+    "axes": "6263f6a58909848cd280f502351cdece61fa9969f05c08f167602f77b1855b58",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -988,6 +988,14 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "what to do next', 'lessons learned' → wasinawa. Distinct from "
         "pre-mortem (inversion method): pre-mortem assumes future "
         "failure; wasinawa reflects on past events.",
+        "questions": "Response structured as a list of investigation or clarification "
+        "questions: user wants the response itself to be a set of questions they can "
+        "pursue, not statements or answers. Heuristic: 'what questions should I ask', "
+        "'give me questions to investigate', 'what should I be asking about', 'frame "
+        "this as questions', 'questions I should explore', 'diagnostic questions for' "
+        "→ questions. Distinct from socratic form (socratic = LLM asks the USER "
+        "questions interactively to surface their thinking; questions = response IS "
+        "a question-list artifact the user takes away).",
         "activities": "Segment-level session content: user wants the concrete activities "
         "within a session, not the overall facilitation structure. Heuristic: "
         "'what activities should we do', 'activities for each block', 'session "

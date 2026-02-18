@@ -462,3 +462,19 @@ next_trigger: >
 
 **Post-apply:** T03→4, T05→4. Coverage: form 14/~32.
 
+
+---
+
+## Loop-18 — 2026-02-18
+
+**Focus:** Final untested form tokens: questions, direct, cards, quiz, story, log, merge, checklist, table, bullets
+
+**Results (mean 4.6/5 — highest to date):** 1 gap: questions form (counterintuitive — response IS questions; competes with socratic).
+
+**Confirmed discoverable without use_when:** direct, cards, quiz, story, log, merge, checklist, table, bullets — all description-anchored or have explicit names in user phrasing.
+
+**Fix applied:**
+- G-L18-01: questions form use_when — 'what questions should I ask', 'diagnostic questions for' (distinct from socratic)
+
+**Post-apply:** T01→4. form coverage 15/~32. Form axis now systematically covered.
+

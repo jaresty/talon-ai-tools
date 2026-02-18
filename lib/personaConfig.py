@@ -192,6 +192,130 @@ PERSONA_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "use when the audience includes mixed roles and needs clarity on what matters and why. "
         "Heuristic: 'for stakeholders', 'mixed audience', 'cross-functional group', 'impact "
         "and decision clarity' → audience=to-stakeholders.",
+        "to team": "Address your own team with actionable, collaborative framing: use when the "
+        "audience is your immediate team and you want direct, implementation-ready communication. "
+        "Heuristic: 'for the team', 'team update', 'share with my team', 'team-facing' "
+        "→ audience=to-team.",
+        "to designer": "Address a designer with UX and visual clarity framing: use when the "
+        "audience cares about user flows, interaction patterns, and design rationale. Heuristic: "
+        "'for the designer', 'design audience', 'UX framing', 'explain to a designer' "
+        "→ audience=to-designer.",
+        "to analyst": "Address an analyst with structured, data-framed output: use when the "
+        "audience needs evidence, metrics, and structured results for further analysis. "
+        "Heuristic: 'for an analyst', 'data-framed', 'analyst audience', 'structured findings' "
+        "→ audience=to-analyst.",
+        "to programmer": "Address a programmer with technical, implementation-ready output: use "
+        "when the audience is a developer who expects precision and wants to act on the output "
+        "directly. Heuristic: 'for a developer', 'technical audience', 'implementation-ready', "
+        "'programmer framing' → audience=to-programmer.",
+        "to principal engineer": "Address a principal engineer with concise, architectural "
+        "framing: use when the audience is a senior technical leader who wants trade-offs, "
+        "systems thinking, and minimal hand-holding. Heuristic: 'for a principal engineer', "
+        "'senior technical audience', 'architectural framing', 'assume deep expertise' "
+        "→ audience=to-principal-engineer.",
+        "to Kent Beck": "Address Kent Beck's values — concrete, test-minded, iterative: use when "
+        "the audience values small batches, working code, and simplicity over elaboration. "
+        "Heuristic: 'XP framing', 'test-driven', 'Kent Beck style', 'iterative design' "
+        "→ audience=to-Kent-Beck.",
+        "to platform team": "Address a platform team focused on reliability and paved paths: use "
+        "when the audience cares about leverage, reliability contracts, and making the right "
+        "thing easy. Heuristic: 'for the platform team', 'reliability framing', 'paved path', "
+        "'infrastructure audience' → audience=to-platform-team.",
+        "to stream aligned team": "Address a stream-aligned team focused on flow and local "
+        "ownership: use when the audience cares about delivery speed, reducing dependencies, "
+        "and owning their domain end to end. Heuristic: 'stream-aligned team', 'delivery flow', "
+        "'local ownership', 'feature team framing' → audience=to-stream-aligned-team.",
+        "to XP enthusiast": "Address an XP enthusiast who values social programming and "
+        "production validation: use when the audience practices small batches, pair/mob "
+        "programming, and continuous delivery. Heuristic: 'XP framing', 'pair programming "
+        "audience', 'continuous delivery context', 'extreme programming values' "
+        "→ audience=to-XP-enthusiast.",
+    },
+    "voice": {
+        "as programmer": "Adopt a programmer's technical stance: use when you want the response "
+        "to reason and explain like an engineer — precise, implementation-minded, direct. "
+        "Heuristic: 'from a developer perspective', 'engineer stance', 'technical voice', "
+        "'programmer framing' → voice=as-programmer.",
+        "as prompt engineer": "Adopt a prompt-engineering stance: use when the response involves "
+        "designing, critiquing, or refining prompts explicitly. Heuristic: 'from a prompt "
+        "engineer angle', 'prompt design perspective', 'meta-prompt framing' "
+        "→ voice=as-prompt-engineer.",
+        "as scientist": "Adopt a scientific, evidence-first stance: use when you want the "
+        "response to foreground hypotheses, evidence, and rigor. Heuristic: 'scientific "
+        "framing', 'evidence-based stance', 'hypothesis-driven', 'researcher voice' "
+        "→ voice=as-scientist.",
+        "as writer": "Adopt a writer's stance focused on narrative clarity: use when the "
+        "response involves prose, storytelling, or communication craftsmanship. Heuristic: "
+        "'writing perspective', 'narrative clarity', 'writer's eye', 'editorial stance' "
+        "→ voice=as-writer.",
+        "as designer": "Adopt a designer's stance focused on usability and interaction: use when "
+        "the response involves UX decisions, flows, or visual clarity. Heuristic: 'designer "
+        "perspective', 'UX lens', 'design thinking', 'interaction design voice' "
+        "→ voice=as-designer.",
+        "as teacher": "Adopt a teacher's stance that scaffolds understanding: use when the "
+        "response needs to break concepts down gradually for a learner. Heuristic: 'teaching "
+        "voice', 'explain like a teacher', 'pedagogical framing', 'scaffolded explanation' "
+        "→ voice=as-teacher.",
+        "as facilitator": "Adopt a facilitator's stance that guides process: use when the "
+        "response needs to balance voices, structure participation, and maintain momentum. "
+        "Heuristic: 'facilitation perspective', 'group process framing', 'facilitator voice', "
+        "'session guidance' → voice=as-facilitator.",
+        "as PM": "Adopt a product manager's stance focused on outcomes and scope: use when the "
+        "response needs to foreground user value, trade-offs, and stakeholder alignment. "
+        "Heuristic: 'PM framing', 'product perspective', 'outcome-focused voice', "
+        "'product manager stance' → voice=as-PM.",
+        "as junior engineer": "Adopt a junior engineer's curious, candid stance: use when you "
+        "want the response to surface questions, acknowledge uncertainty, and show its work. "
+        "Heuristic: 'junior engineer voice', 'curious framing', 'show uncertainty', "
+        "'beginner perspective' → voice=as-junior-engineer.",
+        "as principal engineer": "Adopt a principal engineer's systems-thinking stance: use when "
+        "the response needs architectural breadth, trade-off reasoning, and pragmatic guidance. "
+        "Heuristic: 'principal engineer perspective', 'architectural voice', 'senior technical "
+        "framing', 'systems thinking stance' → voice=as-principal-engineer.",
+        "as Kent Beck": "Adopt Kent Beck's pragmatic, test-first, iterative stance: use when you "
+        "want the response to favor simplicity, working code, and small steps over elaboration. "
+        "Heuristic: 'Kent Beck style', 'XP voice', 'test-driven framing', 'simplicity-first "
+        "perspective' → voice=as-Kent-Beck.",
+    },
+    "tone": {
+        "casually": "Casual, conversational register: use when formality would feel stiff or "
+        "the subject benefits from a relaxed tone. Heuristic: 'keep it casual', 'conversational "
+        "tone', 'informal', 'relaxed register', 'chat style' → tone=casually.",
+        "formally": "Formal, professional register: use when the output will be shared with "
+        "leadership, external parties, or in a professional document. Heuristic: 'formal tone', "
+        "'professional register', 'official language', 'no colloquialisms' → tone=formally.",
+        "directly": "Direct, no-hedging register: use when the user wants a straight answer "
+        "without softening or qualifications. Heuristic: 'be direct', 'no hedging', 'straight "
+        "answer', 'don't soften it', 'blunt' → tone=directly.",
+        "gently": "Gentle, supportive register: use when the subject involves sensitive feedback, "
+        "personal difficulty, or someone who needs encouragement. Heuristic: 'be gentle', "
+        "'sensitive topic', 'supportive tone', 'soft delivery', 'with care' → tone=gently.",
+        "kindly": "Kind, warm register: use when the response should convey warmth alongside "
+        "substance — often for coaching, junior audiences, or emotionally charged topics. "
+        "Heuristic: 'be kind', 'warm tone', 'encouraging register', 'with warmth' "
+        "→ tone=kindly.",
+    },
+    "intent": {
+        "inform": "Communicate to transfer knowledge or update understanding: use when the goal "
+        "is to give the audience the information they need. Heuristic: 'inform the audience', "
+        "'share findings', 'update them on', 'let them know', 'communicate the status' "
+        "→ intent=inform.",
+        "persuade": "Communicate to influence belief or action: use when the goal is to move "
+        "the audience toward a view or decision. Heuristic: 'convince them', 'make the case', "
+        "'persuade the team', 'get buy-in', 'advocate for' → intent=persuade.",
+        "appreciate": "Communicate gratitude or recognition: use when the goal is to acknowledge "
+        "contribution, celebrate work, or express thanks. Heuristic: 'thank them', 'recognize "
+        "the work', 'show appreciation', 'express gratitude' → intent=appreciate.",
+        "announce": "Communicate news or a change: use when the goal is to share a decision, "
+        "launch, or update with an audience. Heuristic: 'announce the launch', 'share the "
+        "news', 'communicate the change', 'release announcement' → intent=announce.",
+        "coach": "Communicate to develop the audience: use when the goal is growth, capability "
+        "building, or guiding someone through a challenge. Heuristic: 'coach them', 'help "
+        "them grow', 'give developmental feedback', 'guide them through' → intent=coach.",
+        "teach": "Communicate to build understanding: use when the goal is learning and the "
+        "audience needs to internalize concepts, not just receive information. Heuristic: "
+        "'teach this concept', 'help them understand', 'learning goal', 'make it stick' "
+        "→ intent=teach.",
     },
 }
 

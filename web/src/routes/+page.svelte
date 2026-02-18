@@ -295,6 +295,9 @@
 										<option value={v}>{v}</option>
 									{/each}
 								</select>
+								{#if persona.voice && grammar.persona.use_when?.voice?.[persona.voice]}
+									<span class="persona-hint">{grammar.persona.use_when.voice[persona.voice]}</span>
+								{/if}
 							</label>
 							<label class="persona-select-label">
 								<span>Audience</span>
@@ -324,6 +327,9 @@
 										<option value={t}>{t}</option>
 									{/each}
 								</select>
+								{#if persona.tone && grammar.persona.use_when?.tone?.[persona.tone]}
+									<span class="persona-hint">{grammar.persona.use_when.tone[persona.tone]}</span>
+								{/if}
 							</label>
 						</div>
 					</div>

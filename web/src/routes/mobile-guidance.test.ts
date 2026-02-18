@@ -65,7 +65,7 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		expect(panelText).toContain('Use when explaining');
 	});
 
-	it('meta-backdrop appears when a token is active', () => {
+	it('meta-panel appears when a token chip is clicked', () => {
 		mount(TokenSelector, {
 			target: container,
 			props: {
@@ -77,18 +77,18 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 			}
 		});
 
-		// No backdrop before any chip is clicked
-		expect(container.querySelector('.meta-backdrop')).toBeNull();
+		// No panel before any chip is clicked
+		expect(container.querySelector('.meta-panel')).toBeNull();
 
 		const tokenChip = container.querySelector('.token-chip');
 		(tokenChip as HTMLElement).click();
 		flushSync();
 
-		// Backdrop present when guidance drawer is open
-		expect(container.querySelector('.meta-backdrop')).toBeTruthy();
+		// Panel present when guidance drawer is open
+		expect(container.querySelector('.meta-panel')).toBeTruthy();
 	});
 
-	it('clicking meta-backdrop closes the guidance drawer', () => {
+	it('no backdrop element (removed to allow token chip clicks through)', () => {
 		mount(TokenSelector, {
 			target: container,
 			props: {
@@ -104,13 +104,8 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		(tokenChip as HTMLElement).click();
 		flushSync();
 
-		const backdrop = container.querySelector('.meta-backdrop') as HTMLElement;
-		expect(backdrop).toBeTruthy();
-
-		backdrop.click();
-		flushSync();
-
-		expect(container.querySelector('.meta-panel')).toBeNull();
+		// Backdrop removed: it intercepted chip clicks on mobile (onfocus fires before click,
+		// backdrop appears at z-index 190, then synthetic click lands on backdrop not chip)
 		expect(container.querySelector('.meta-backdrop')).toBeNull();
 	});
 

@@ -805,5 +805,13 @@
 		.main {
 			grid-template-columns: 1fr;
 		}
+
+		.persona-selects {
+			flex-direction: column;
+		}
+
+		.persona-select-label {
+			min-width: 100%;
+		}
 	}
 </style>

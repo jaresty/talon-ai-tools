@@ -128,6 +128,43 @@
 - Severity: Medium
 
 **next_work**: 
-- Behaviour: Expand textareas on mobile (6+ rows, flex-grow)
+- Behaviour: Expand textareas on mobile (6+ rows)
 - Validation: npm test -- mobile-textarea.test.ts passes
+
+---
+
+### loop-5
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0137 §Decision — Stacked Persona Selects (Loop 5)
+
+**active_constraint**: Persona selects (voice, audience, tone) are laid out in an inline flex wrap that becomes difficult to use on narrow screens.
+
+**specifying_validation** (Step 1 - baseline): On mobile viewport, persona selects should stack vertically instead of inline.
+
+**validation_targets**:
+- Test verifies persona-selects stack vertically on mobile
+
+**evidence**:
+- red | 2026-02-18T06:20:00Z | exit 1 | npm test -- mobile-persona.test.ts
+    helper:diff-snapshot=N/A
+    specifying validation: no mobile-persona tests exist yet | inline
+- green | 2026-02-18T06:22:00Z | exit 0 | npm test
+    helper:diff-snapshot=1 file changed (web/src/routes/+page.svelte)
+    all 87 tests pass | inline
+
+**rollback_plan**: git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/mobile-persona.test.ts
+
+**delta_summary**: No changes yet.
+
+**loops_remaining_forecast**: 2 loops remaining (FAB, stacked selects). Confidence: high.
+
+**residual_constraints**:
+- External: Requires manual testing on actual iOS/Android devices
+- Severity: Medium
+
+**next_work**: 
+- Behaviour: Stack persona selects vertically on mobile
+- Validation: npm test -- mobile-persona.test.ts passes
 

@@ -106,6 +106,7 @@
 	}
 
 	let conflicts = $derived(grammar ? findConflicts(grammar, selected) : []);
+	let promptText = $derived(grammar ? renderPrompt(grammar, selected, subject, addendum, persona) : '');
 
 	let command = $derived.by(() => {
 		if (!grammar) return '';
@@ -342,7 +343,7 @@
 			</section>
 
 			<button class="preview-toggle" onclick={togglePreview}>
-				{showPreview ? 'Hide Preview' : 'Show Preview'}
+				{showPreview ? 'Hide Output' : 'Show Output'}
 			</button>
 
 			<section class="preview-panel" class:visible={showPreview}>
@@ -376,6 +377,12 @@
 						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K / Ctrl+K)">Clear</button>
 					</div>
 				</div>
+
+				<!-- Rendered prompt -->
+				<details class="prompt-preview-section">
+					<summary class="prompt-preview-label">Rendered Prompt</summary>
+					<pre class="prompt-preview">{promptText}</pre>
+				</details>
 
 				<!-- Subject / addendum inputs -->
 				<div class="inputs">
@@ -587,6 +594,41 @@
 
 	.fab-backdrop {
 		display: none;
+	}
+
+	/* Rendered prompt preview */
+	.prompt-preview-section {
+		margin-bottom: 0.75rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		overflow: hidden;
+	}
+
+	.prompt-preview-label {
+		padding: 0.4rem 0.75rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--color-text-muted);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.prompt-preview-label:hover { color: var(--color-text); }
+
+	.prompt-preview {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		line-height: 1.5;
+		color: var(--color-text);
+		padding: 0.5rem 0.75rem;
+		margin: 0;
+		white-space: pre-wrap;
+		word-break: break-word;
+		background: var(--color-bg);
+		border-top: 1px solid var(--color-border);
+		max-height: 300px;
+		overflow-y: auto;
 	}
 
 	/* Inputs */

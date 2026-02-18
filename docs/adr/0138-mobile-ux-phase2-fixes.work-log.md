@@ -4,7 +4,7 @@
 
 - **Loop 1**: Fix `showPreview` default bug — [COMPLETE]
 - **Loop 2**: Relocate FAB and action overlay to layout root — [COMPLETE]
-- **Loop 3**: Show rendered prompt inline; rename panel to "Output" — [PENDING]
+- **Loop 3**: Show rendered prompt inline; rename panel to "Output" — [COMPLETE]
 - **Loop 4**: Token guidance bottom drawer on mobile — [PENDING]
 - **Loop 5**: Touch targets (tabs, persona chips, selected chips, load-cmd-toggle) — [PENDING]
 - **Loop 6**: iOS auto-zoom fix — [PENDING]
@@ -79,3 +79,38 @@
 
 **next_work**:
 - Behaviour: Show rendered prompt inline + rename panel to "Output" — `npm test -- mobile-output`
+
+---
+
+### loop-3
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0138 §Loop 3 — Show rendered prompt inline; rename panel to "Output"
+
+**active_constraint**: `renderPrompt()` output is never displayed in the UI; users must copy the command and run bar locally. Toggle label "Preview" has no clear referent.
+
+**validation_targets**:
+- `npm test -- mobile-output` — specifying validation: toggle button text contains "Output" not "Preview"; `.prompt-preview` element exists.
+
+**evidence**:
+- red | 2026-02-18T22:26:43Z | exit 1 | npm test -- mobile-output
+    helper:diff-snapshot=0 files changed (specifying validation test added, implementation unchanged)
+    2 tests fail: button text is "Show Preview", no .prompt-preview in DOM | inline
+- green | 2026-02-18T22:27:13Z | exit 0 | npm test -- mobile-output
+    helper:diff-snapshot=3 files changed
+    Both tests pass: button says "Show Output", .prompt-preview renders | inline
+- green | 2026-02-18T22:27:17Z | exit 0 | npm test
+    All 93 tests pass | inline
+
+**rollback_plan**: `git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/mobile-output.test.ts`
+
+**delta_summary**: helper:diff-snapshot=3 files changed. Added `promptText = $derived(renderPrompt(...))`. Added `<details class="prompt-preview-section"><summary>Rendered Prompt</summary><pre class="prompt-preview">` inside the output panel. Renamed toggle label from "Show/Hide Preview" → "Show/Hide Output". Added CSS for collapsible prompt display with max-height 300px and scroll.
+
+**loops_remaining_forecast**: 4 loops remaining (guidance drawer, touch targets, iOS zoom, PWA icon). Confidence: high.
+
+**residual_constraints**:
+- `.preview-panel` CSS class name not renamed (keeping to avoid breaking existing tests). Severity: Low. Monitoring: purely cosmetic tech debt.
+
+**next_work**:
+- Behaviour: Token guidance bottom drawer on mobile — `npm test -- mobile-guidance`

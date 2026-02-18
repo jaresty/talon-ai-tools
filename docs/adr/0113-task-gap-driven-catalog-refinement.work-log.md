@@ -445,3 +445,20 @@ next_trigger: >
 
 **Coverage update:** scope 7/13, form 12/~32.
 
+
+---
+
+## Loop-17 — 2026-02-18
+
+**Focus:** Form token health check (indirect, case, activities, scaffold, tight, formats) + scope (act, mean) + channel (adr, gherkin)
+
+**Results (mean 4.4/5):** 2 gaps at score 3: indirect form (opaque name, competes with case), activities form (preempted by facilitate use_when).
+
+**Confirmed discoverable without use_when:** act, mean scope; case, scaffold, tight, formats form; adr, gherkin channel.
+
+**Fixes applied:**
+- G-L17-01: indirect form use_when — 'walk me through the reasoning first', 'reasoning before conclusion'
+- G-L17-02: activities form use_when — 'session activities', 'what happens in each segment', 'design sprint activities'
+
+**Post-apply:** T03→4, T05→4. Coverage: form 14/~32.
+

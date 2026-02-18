@@ -988,6 +988,23 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "what to do next', 'lessons learned' → wasinawa. Distinct from "
         "pre-mortem (inversion method): pre-mortem assumes future "
         "failure; wasinawa reflects on past events.",
+        "activities": "Segment-level session content: user wants the concrete activities "
+        "within a session, not the overall facilitation structure. Heuristic: "
+        "'what activities should we do', 'activities for each block', 'session "
+        "activities', 'design sprint activities', 'what happens in each segment', "
+        "'activities list for the workshop' → activities. Distinct from facilitate "
+        "form (facilitate = overall facilitation plan with session goals and "
+        "participation mechanics; activities = segment-by-segment content of what "
+        "to do and when). Often combined with facilitate: facilitate handles the "
+        "structure, activities handles the content.",
+        "indirect": "Reasoning-first, conclusion-last narrative: user asks for "
+        "explanation or recommendation that builds up context before landing the "
+        "point. Heuristic: 'walk me through the reasoning first', 'build up to "
+        "the recommendation', 'show your thinking before the conclusion', 'give "
+        "me the context before the answer', 'reasoning before conclusion' → "
+        "indirect. Distinct from case form (case = structured argument with "
+        "evidence and objections; indirect = softer narrative reasoning that "
+        "converges on a bottom-line point).",
         "contextualise": "Preparing content to be passed to another LLM operation: "
         "user wants output that is self-contained and includes all necessary "
         "context for a downstream model to process without additional "

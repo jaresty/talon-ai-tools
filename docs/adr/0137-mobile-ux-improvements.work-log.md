@@ -49,46 +49,45 @@
 
 **next_work**: 
 - Behaviour: Token guidance accessibility — ensure meta-panel is usable on mobile
-- Validation: Tests for meta-panel visibility and touch target sizes
+- Validation: npm test -- mobile-guidance.test.ts passes
 
 ---
 
-### loop-2
+### loop-3
 
 **helper_version**: helper:v20251223.1
 
-**focus**: ADR-0137 §Decision — Token Guidance Accessibility (Loop 2)
+**focus**: ADR-0137 §Decision — Bottom Sheet for Preview (Loop 3)
 
-**active_constraint**: The `.meta-panel` showing `use_when`, description, and guidance is critical for user understanding but may be obscured or require additional scrolling on mobile. Font sizes and touch targets too small.
+**active_constraint**: On mobile, the preview panel takes up valuable viewport space with sticky positioning that doesn't work well on small screens.
 
-**specifying_validation** (Step 1 - baseline): Token guidance panel (.meta-panel) must be readable on mobile viewport with minimum 16px font and 44px touch targets for interactive elements.
+**specifying_validation** (Step 1 - baseline): Mobile viewport (<768px) should have a toggle button to show/hide the preview panel as a bottom sheet, rather than always visible sticky panel.
 
 **validation_targets**:
-- Test verifies `.meta-panel` renders with readable font sizes on mobile
-- Test verifies panel is visible/accessible when token is selected
+- Test verifies preview-toggle button exists and controls bottom sheet visibility
 
 **evidence**:
-- red | 2026-02-18T05:50:00Z | exit 1 | npm test -- mobile-guidance.test.ts
+- red | 2026-02-18T06:00:00Z | exit 1 | npm test -- mobile-preview.test.ts
     helper:diff-snapshot=N/A
-    specifying validation: token-chip touch target insufficient (NaN in jsdom, estimated <44px from CSS) | inline
-- green | 2026-02-18T05:55:00Z | exit 0 | npm test -- mobile-guidance.test.ts
-    helper:diff-snapshot=1 file changed (web/src/lib/TokenSelector.svelte)
-    specifying validation passes: meta-panel functionality works, added mobile CSS | inline
-- green | 2026-02-18T05:56:00Z | exit 0 | npm test
+    specifying validation: no mobile-preview tests exist yet | inline
+- green | 2026-02-18T06:05:00Z | exit 0 | npm test -- mobile-preview.test.ts
+    helper:diff-snapshot=1 file changed (web/src/routes/+page.svelte)
+    specifying validation passes: preview toggle works | inline
+- green | 2026-02-18T06:06:00Z | exit 0 | npm test
     helper:diff-snapshot=1 file changed
-    all 81 tests pass | inline
+    all 85 tests pass | inline
 
-**rollback_plan**: git restore --source=HEAD web/src/routes/+page.svelte web/src/lib/TokenSelector.svelte web/src/routes/mobile-guidance.test.ts
+**rollback_plan**: git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/mobile-preview.test.ts
 
 **delta_summary**: No changes yet.
 
-**loops_remaining_forecast**: 6 loops remaining (token guidance, bottom sheet, touch targets, collapsible, textareas, FAB, stacked selects). Confidence: high.
+**loops_remaining_forecast**: 5 loops remaining (bottom sheet, touch targets, collapsible, textareas, FAB, stacked selects). Confidence: high.
 
 **residual_constraints**:
 - External: Requires manual testing on actual iOS/Android devices
 - Severity: Medium
 
 **next_work**: 
-- Behaviour: Implement token guidance mobile improvements (larger fonts, proper panel visibility, 44px touch targets)
-- Validation: npm test -- mobile-guidance.test.ts passes
+- Behaviour: Implement bottom sheet for preview panel with toggle button
+- Validation: npm test -- mobile-preview.test.ts passes
 

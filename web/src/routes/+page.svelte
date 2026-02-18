@@ -166,8 +166,13 @@
 	let cmdInputWarnings = $state<string[]>([]);
 
 	let activeTab = $state('task');
+	let showPreview = $state(true); // Default visible, CSS hides on mobile
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+
+	function togglePreview() {
+		showPreview = !showPreview;
+	}
 
 	function loadCommand() {
 		if (!grammar || !cmdInput.trim()) return;
@@ -335,7 +340,11 @@
 				{/each}
 			</section>
 
-			<section class="preview-panel">
+			<button class="preview-toggle" onclick={togglePreview}>
+				{showPreview ? 'Hide Preview' : 'Show Preview'}
+			</button>
+
+			<section class="preview-panel" class:visible={showPreview}>
 				<!-- Conflict warnings -->
 				{#if conflicts.length > 0}
 					<div class="conflicts">
@@ -448,6 +457,23 @@
 	.preview-panel {
 		position: sticky;
 		top: 1rem;
+	}
+
+	.preview-toggle {
+		display: none;
+		width: 100%;
+		padding: 0.75rem;
+		background: var(--color-accent-muted);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		cursor: pointer;
+		font-size: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.preview-panel.hidden {
+		display: none;
 	}
 
 	/* Conflicts */
@@ -757,5 +783,27 @@
 		background: var(--color-accent-muted);
 		border-color: var(--color-accent);
 		color: var(--color-text);
+	}
+
+	@media (max-width: 767px) {
+		.preview-toggle {
+			display: block;
+		}
+
+		.preview-panel {
+			position: static;
+		}
+
+		.preview-panel {
+			display: none;
+		}
+
+		.preview-panel.visible {
+			display: block;
+		}
+
+		.main {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>

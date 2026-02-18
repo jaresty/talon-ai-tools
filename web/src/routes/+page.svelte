@@ -75,6 +75,15 @@
 				e.preventDefault();
 				clearState();
 				(document.activeElement as HTMLElement | null)?.blur();
+			} else if (e.key === 'c' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+				e.preventDefault();
+				copyCommand();
+			} else if (e.key === 'p' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+				e.preventDefault();
+				copyPrompt();
+			} else if (e.key === 'u' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+				e.preventDefault();
+				sharePrompt();
 			}
 		}
 		document.addEventListener('keydown', handleGlobalKey);
@@ -414,7 +423,7 @@
 						<button class="share-btn" onclick={sharePrompt}>
 							{shared ? '✓ Link copied' : 'Share'}
 						</button>
-						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K / Ctrl+K)">Clear</button>
+						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K) | Copy cmd (⌘⇧C) | Copy prompt (⌘⇧P) | Share (⌘⇧U)">Clear</button>
 					</div>
 				</div>
 
@@ -495,7 +504,7 @@
 		<button class="share-btn" onclick={sharePrompt}>
 			{shared ? '✓ Link copied' : 'Share'}
 		</button>
-		<button class="clear-btn" onclick={clearState} title="Clear all (⌘K / Ctrl+K)">Clear</button>
+		<button class="clear-btn" onclick={clearState} title="Clear all (⌘K) | Copy cmd (⌘⇧C) | Copy prompt (⌘⇧P) | Share (⌘⇧U)">Clear</button>
 	</div>
 </div>
 

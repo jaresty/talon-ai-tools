@@ -222,4 +222,80 @@ describe('ADR-0139 — T2: Auto-advance Tab-exhaustion (F4/F5)', () => {
 	});
 });
 
-// F6/F7/F8 (T3: action shortcuts) are added in Loop-3 of ADR-0139.
+describe('ADR-0139 — T3: Action keyboard shortcuts (F6/F7/F8)', () => {
+	let container: HTMLDivElement;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockClipboard.writeText.mockClear();
+		container = document.createElement('div');
+		document.body.appendChild(container);
+	});
+
+	afterEach(() => {
+		document.body.removeChild(container);
+	});
+
+	// F6: Cmd+Shift+C fires copyCommand (writes command string to clipboard)
+	it('F6: Cmd+Shift+C fires copyCommand', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		document.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'c', shiftKey: true, metaKey: true, bubbles: true })
+		);
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		expect(mockClipboard.writeText).toHaveBeenCalled();
+		const callArg = mockClipboard.writeText.mock.calls[0]?.[0];
+		expect(typeof callArg).toBe('string');
+		expect(callArg).toMatch(/^bar build/);
+	});
+
+	// F7: Cmd+Shift+P fires copyPrompt (writes rendered prompt to clipboard)
+	it('F7: Cmd+Shift+P fires copyPrompt', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		document.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'p', shiftKey: true, metaKey: true, bubbles: true })
+		);
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		expect(mockClipboard.writeText).toHaveBeenCalledWith('MOCK RENDERED PROMPT');
+	});
+
+	// F8: Cmd+Shift+U fires sharePrompt (writes URL to clipboard)
+	it('F8: Cmd+Shift+U fires sharePrompt', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		Object.defineProperty(window, 'location', {
+			value: { origin: 'http://localhost', pathname: '/', hash: '' },
+			writable: true
+		});
+		Object.defineProperty(window, 'history', {
+			value: { replaceState: vi.fn() },
+			writable: true
+		});
+
+		document.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'u', shiftKey: true, metaKey: true, bubbles: true })
+		);
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		expect(mockClipboard.writeText).toHaveBeenCalled();
+		const callArg = mockClipboard.writeText.mock.calls[0]?.[0];
+		expect(typeof callArg).toBe('string');
+		expect(callArg).toContain('http://localhost');
+	});
+});

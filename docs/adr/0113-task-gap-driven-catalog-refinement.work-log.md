@@ -6,6 +6,41 @@ VCS_REVERT: `git restore --source=HEAD` (file-targeted) or `git stash` (full).
 
 ---
 
+## loop-21 | 2026-02-18 | Directional token discoverability — entire axis uncovered
+
+```
+focus: All 16 directional tokens — none had use_when. Tested jog, dig, fog, rog, ong,
+  bog, fig (primitives) + fly-rog, fly-ong, dip-rog (compounds).
+
+root_cause: AXIS_KEY_TO_USE_WHEN had no "directional" key at all — axis-level gap, not
+  individual token gaps. Autopilot never consulted directionals because no trigger existed.
+
+mean_score: 3.2/5 (lowest since loops 12–14)
+gaps_found: axis-level — all 7 primitives + compounds effectively undiscoverable
+
+fix_applied:
+  - axisConfig.py: Added "directional" key to AXIS_KEY_TO_USE_WHEN with use_when for
+    jog, dig, fog, rog, ong, bog, fig (7 primitives)
+  - Compounds left without individual use_when (discovered via bar shuffle + primitives)
+
+tests: all pass (go test ./internal/barcli/...)
+ssot: intact (git diff --stat: lib/axisConfig.py + regenerated grammar)
+
+key_insight: Axis-level gap is a different failure mode from token-level gaps. After
+  fixing individual tokens across 20 loops, an entire axis (directional) was missed.
+  Periodic axis-level audits needed.
+
+evidence:
+  - docs/adr/evidence/0113/loop-21/evaluations.md
+  - docs/adr/evidence/0113/loop-21/loop-21-summary.md
+
+next_loop_focus: All axes now have at least partial use_when coverage. Consider fresh
+  general health check across all axes, or focused validation that directional use_when
+  actually improves autopilot selection in practice.
+```
+
+---
+
 ## loop-20 | 2026-02-17 | Opaque method tokens set 3: induce, simulation, trans
 
 ```

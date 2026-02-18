@@ -1194,6 +1194,66 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "scope. Distinct from flow method (flow = reasoning approach; time "
         "= scope dimension to emphasize).",
     },
+    "directional": {
+        "jog": "Execute directly without hedging or clarification: user wants an "
+        "immediate answer, not questions back. Heuristic: 'just answer', "
+        "'don\\'t ask me questions', 'make a call', 'just do it', 'don\\'t "
+        "hedge', 'go ahead', 'I don\\'t need options, just pick one', "
+        "'stop asking and decide', 'just tell me' → jog. Most useful with "
+        "pick, plan, make when the user explicitly wants a decision rather "
+        "than a dialogue.",
+        "dig": "Ground in concrete specifics: user wants examples, real cases, and "
+        "grounded details rather than abstract analysis. Heuristic: 'be "
+        "concrete', 'give me specific examples', 'show me an actual case', "
+        "'not abstract — real examples', 'ground this in reality', "
+        "'practical examples only', 'make it tangible', 'I need specifics "
+        "not theory' → dig. Distinct from fog (fog = step back to the "
+        "abstract principle; dig = stay concrete and grounded).",
+        "fog": "Surface the abstract pattern or principle: user wants to move from "
+        "specific cases to the general insight. Heuristic: 'step back and "
+        "tell me the general principle', 'abstract away from the details', "
+        "'what does this reveal more broadly', 'what\\'s the big picture "
+        "here', 'what underlying pattern do these cases share', 'zoom out', "
+        "'what\\'s the broader implication' → fog. Distinct from dig (dig "
+        "= stay concrete; fog = abstract upward from specifics).",
+        "rog": "Examine structure then reflect on what it reveals: user wants a "
+        "two-phase response — first describe how something is organized, "
+        "then reflect on why and what that reveals. Heuristic: 'describe "
+        "the structure then tell me what it means', 'how is it organized "
+        "and what does that reveal', 'walk me through the structure and "
+        "reflect on the implications', 'what does the organization tell us' "
+        "→ rog. Distinct from bog (bog ends in actions; rog ends in "
+        "outward reflection). Distinct from fog (fog = abstract from "
+        "specifics; rog = examine structure then reflect on it).",
+        "ong": "Identify concrete actions then extend outward: user wants what to "
+        "do now plus what naturally follows from each action. Heuristic: "
+        "'what actions should I take and what comes next after each', "
+        "'give me the actions with follow-on steps', 'what do I do and "
+        "what\\'s the next step after that', 'concrete next steps and "
+        "their extensions' → ong. Distinct from plan task (plan = strategy "
+        "and structure; ong directional = execute any task then extend "
+        "actions outward). Distinct from bog (bog = structure → reflect → "
+        "act; ong = act then extend).",
+        "bog": "Examine structure inward, reflect, then identify actions: user "
+        "wants a three-phase response — examine structure, reflect on what "
+        "it means, then identify what actions follow from that reflection. "
+        "Heuristic: 'look at the structure, reflect on what it means, "
+        "then tell me what to do', 'examine it structurally, what does "
+        "that reflection demand in terms of action', 'structure → meaning "
+        "→ action sequence' → bog. Distinct from rog (rog = structure → "
+        "reflect outward, no action phase; bog = structure → reflect → "
+        "action). Use bog when the reflection is meant to produce an "
+        "action list.",
+        "fig": "Alternate between abstract and concrete: user wants the response "
+        "to move back and forth between theory/principle and "
+        "examples/specifics. Heuristic: 'alternate between the theory and "
+        "examples', 'keep going back and forth between abstract and "
+        "concrete', 'use examples to illuminate the principle and vice "
+        "versa', 'interleave concept and example', 'each example should "
+        "connect back to the principle' → fig. Distinct from dig (dig = "
+        "stay concrete; fig = alternate) and fog (fog = stay abstract; "
+        "fig = alternate).",
+    },
 }
 
 

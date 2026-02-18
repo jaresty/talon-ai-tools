@@ -5,7 +5,7 @@
 - **Loop 1**: Fix `showPreview` default bug — [COMPLETE]
 - **Loop 2**: Relocate FAB and action overlay to layout root — [COMPLETE]
 - **Loop 3**: Show rendered prompt inline; rename panel to "Output" — [COMPLETE]
-- **Loop 4**: Token guidance bottom drawer on mobile — [PENDING]
+- **Loop 4**: Token guidance bottom drawer on mobile — [COMPLETE]
 - **Loop 5**: Touch targets (tabs, persona chips, selected chips, load-cmd-toggle) — [PENDING]
 - **Loop 6**: iOS auto-zoom fix — [PENDING]
 - **Loop 7**: PWA icon fix — [PENDING]
@@ -114,3 +114,38 @@
 
 **next_work**:
 - Behaviour: Token guidance bottom drawer on mobile — `npm test -- mobile-guidance`
+
+---
+
+### loop-4
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0138 §Loop 4 — Token guidance bottom drawer on mobile
+
+**active_constraint**: `.meta-panel` renders inline below the token grid; on mobile after tapping a chip the user must scroll down to see guidance, losing chip context.
+
+**validation_targets**:
+- `npm test -- mobile-guidance` — specifying validation: `.meta-backdrop` appears when chip is active; clicking backdrop clears `activeToken` and hides `.meta-panel`.
+
+**evidence**:
+- red | 2026-02-18T22:28:33Z | exit 1 | npm test -- mobile-guidance
+    helper:diff-snapshot=0 files changed (specifying validation updated, implementation unchanged)
+    2 new tests fail: .meta-backdrop not in DOM | inline
+- green | 2026-02-18T22:29:02Z | exit 0 | npm test -- mobile-guidance
+    helper:diff-snapshot=2 files changed (TokenSelector.svelte + mobile-guidance.test.ts)
+    All 5 guidance tests pass | inline
+- green | 2026-02-18T22:29:06Z | exit 0 | npm test
+    All 95 tests pass | inline
+
+**rollback_plan**: `git restore --source=HEAD web/src/lib/TokenSelector.svelte web/src/routes/mobile-guidance.test.ts`
+
+**delta_summary**: helper:diff-snapshot=2 files changed. Added `.meta-backdrop` div before `.meta-panel` in TokenSelector; clicking backdrop sets `activeToken = null`. CSS: desktop `.meta-backdrop { display: none }`. Mobile: backdrop is `position: fixed; inset: 0; z-index: 190; background: rgba(0,0,0,0.4)`. Meta-panel on mobile: `position: fixed; bottom: 0; left: 0; right: 0; max-height: 60vh; z-index: 200`.
+
+**loops_remaining_forecast**: 3 loops remaining (touch targets, iOS zoom, PWA icon). Confidence: high.
+
+**residual_constraints**:
+- No CSS transition (slide-up animation) on the drawer. Severity: Low. Could be added as a future enhancement.
+
+**next_work**:
+- Behaviour: Touch targets ≥44px — `npm test -- mobile-touch`

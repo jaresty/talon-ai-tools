@@ -65,6 +65,55 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		expect(panelText).toContain('Use when explaining');
 	});
 
+	it('meta-backdrop appears when a token is active', () => {
+		mount(TokenSelector, {
+			target: container,
+			props: {
+				axis: 'task',
+				tokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+
+		// No backdrop before any chip is clicked
+		expect(container.querySelector('.meta-backdrop')).toBeNull();
+
+		const tokenChip = container.querySelector('.token-chip');
+		(tokenChip as HTMLElement).click();
+		flushSync();
+
+		// Backdrop present when guidance drawer is open
+		expect(container.querySelector('.meta-backdrop')).toBeTruthy();
+	});
+
+	it('clicking meta-backdrop closes the guidance drawer', () => {
+		mount(TokenSelector, {
+			target: container,
+			props: {
+				axis: 'task',
+				tokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+
+		const tokenChip = container.querySelector('.token-chip');
+		(tokenChip as HTMLElement).click();
+		flushSync();
+
+		const backdrop = container.querySelector('.meta-backdrop') as HTMLElement;
+		expect(backdrop).toBeTruthy();
+
+		backdrop.click();
+		flushSync();
+
+		expect(container.querySelector('.meta-panel')).toBeNull();
+		expect(container.querySelector('.meta-backdrop')).toBeNull();
+	});
+
 	it('meta-panel can be closed via close button', () => {
 		mount(TokenSelector, {
 			target: container,

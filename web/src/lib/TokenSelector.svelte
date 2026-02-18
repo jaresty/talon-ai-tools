@@ -147,6 +147,9 @@
 	</div>
 
 	{#if activeMeta}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="meta-backdrop" onclick={() => (activeToken = null)}></div>
 		<div class="meta-panel">
 			<div class="meta-header">
 				<code class="meta-token">{activeMeta.token}</code>
@@ -273,6 +276,10 @@
 		line-height: 1;
 	}
 
+	.meta-backdrop {
+		display: none;
+	}
+
 	.meta-panel {
 		margin-top: 0.6rem;
 		padding: 0.75rem;
@@ -353,7 +360,30 @@
 			padding: 0.5rem 0.75rem;
 		}
 
+		/* Backdrop dims content above the guidance drawer */
+		.meta-backdrop {
+			display: block;
+			position: fixed;
+			inset: 0;
+			z-index: 190;
+			background: rgba(0, 0, 0, 0.4);
+		}
+
+		/* Guidance drawer: slides up from bottom, always in viewport */
 		.meta-panel {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			margin: 0;
+			border-radius: var(--radius) var(--radius) 0 0;
+			border-left: none;
+			border-right: none;
+			border-bottom: none;
+			border-top: 2px solid var(--color-accent);
+			max-height: 60vh;
+			overflow-y: auto;
+			z-index: 200;
 			font-size: 1rem;
 			line-height: 1.6;
 		}

@@ -518,7 +518,7 @@
       },
       "form": {
         "cocreate": "Iterative design with explicit decision points and alignment checks at each step rather than a one-shot response. Heuristic: 'work through incrementally', 'with decision points', 'iterative design' → cocreate. Distinct from variants (choice of designs) and make (one-shot artifact).",
-        "contextualise": "Adding background and contextual framing to an explanation: user wants to understand a decision, concept, or artifact in its broader context. Heuristic: 'put X in context', 'provide background for', 'frame this decision', 'explain why this was chosen', 'what led to this', 'broader implications of', 'help a junior understand the context', 'contextualize' → contextualise. Distinct from mean scope (mean = conceptual meaning; contextualise = structured framing that adds surrounding context to an explanation).",
+        "contextualise": "Wrapping content with a contextual preamble or frame: user wants output that includes surrounding background, not just the core content. The form adds framing without rewriting the substance. Heuristic: 'with context', 'add background before', 'frame this for', 'include context about why', 'give me X with background', 'contextualize this for the team', 'prepend context' → contextualise. Distinct from mean scope (mean = focus the response on conceptual meaning; contextualise = wrap the response with a contextual preamble regardless of topic).",
         "facilitate": "Planning a workshop, retrospective, or collaborative session with session structure, participation cues, and facilitation agenda. Heuristic: 'facilitate a X', 'run a retrospective', 'workshop planning' → facilitate. Distinct from walkthrough (linear narrated steps).",
         "ladder": "Analyzing causes or effects across multiple levels of abstraction: step up to systemic causes, step down to concrete consequences. Heuristic: 'step up and down abstraction levels', 'root cause hierarchy', 'why at a systems level' → ladder.",
         "recipe": "Documenting a process as a structured recipe with a custom mini-language and short key — best when the process has a recurring structure that benefits from a custom notation. Heuristic: 'document as recipe', 'structured setup guide with repeating patterns' → recipe. Distinct from walkthrough (linear narrated steps without custom notation).",
@@ -2582,7 +2582,7 @@
     }
   ],
   "checksums": {
-    "axes": "a6299907c1fbe3f450bd5c8f0f6c45b3e3ae646be6d17dd3938acc1f832a2d30",
+    "axes": "c286ac5d30343512199d6705e2db10697a4c295338d7b4ab5033ac9d1e12303d",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

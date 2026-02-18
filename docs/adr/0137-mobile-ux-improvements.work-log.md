@@ -91,3 +91,43 @@
 - Behaviour: Implement bottom sheet for preview panel with toggle button
 - Validation: npm test -- mobile-preview.test.ts passes
 
+---
+
+### loop-4
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0137 §Decision — Expanded Textareas (Loop 4)
+
+**active_constraint**: Textareas for --subject and --addendum have rows=3 and rows=2 respectively, which is too small on mobile where the virtual keyboard consumes ~50% of the viewport.
+
+**specifying_validation** (Step 1 - baseline): Textareas should have minimum 6 rows on mobile viewport and use flex-grow to fill available space.
+
+**validation_targets**:
+- Test verifies textarea has adequate rows on mobile
+
+**evidence**:
+- red | 2026-02-18T06:10:00Z | exit 1 | npm test -- mobile-textarea.test.ts
+    helper:diff-snapshot=N/A
+    specifying validation: textarea rows=3, expected >=6 | inline
+- green | 2026-02-18T06:12:00Z | exit 0 | npm test -- mobile-textarea.test.ts
+    helper:diff-snapshot=1 file changed (web/src/routes/+page.svelte)
+    specifying validation passes: textareas expanded to 6/4 rows | inline
+- green | 2026-02-18T06:13:00Z | exit 0 | npm test
+    helper:diff-snapshot=1 file changed
+    all 86 tests pass | inline
+
+**rollback_plan**: git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/mobile-textarea.test.ts
+
+**delta_summary**: No changes yet.
+
+**loops_remaining_forecast**: 4 loops remaining (textareas, FAB, stacked selects). Confidence: high.
+
+**residual_constraints**:
+- External: Requires manual testing on actual iOS/Android devices
+- Severity: Medium
+
+**next_work**: 
+- Behaviour: Expand textareas on mobile (6+ rows, flex-grow)
+- Validation: npm test -- mobile-textarea.test.ts passes
+

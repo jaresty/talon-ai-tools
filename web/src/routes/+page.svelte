@@ -381,7 +381,7 @@
 						<span class="input-label">--subject <span class="input-hint">source material</span></span>
 						<textarea
 							class="input-area"
-							rows="3"
+							rows="6"
 							placeholder="Paste code, document, or topic…"
 							bind:value={subject}
 						></textarea>
@@ -391,7 +391,7 @@
 						<span class="input-label">--addendum <span class="input-hint">task directive</span></span>
 						<textarea
 							class="input-area"
-							rows="2"
+							rows="4"
 							placeholder="e.g. Focus on error handling, include examples…"
 							bind:value={addendum}
 						></textarea>

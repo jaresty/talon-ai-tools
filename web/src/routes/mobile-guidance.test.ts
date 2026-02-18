@@ -135,4 +135,68 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		metaPanel = container.querySelector('.meta-panel');
 		expect(metaPanel).toBeNull();
 	});
+
+	it('meta-panel has a Select button that calls onToggle and dismisses the drawer', () => {
+		const onToggle = vi.fn();
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle }
+		});
+
+		const tokenChip = container.querySelector('.token-chip');
+		(tokenChip as HTMLElement).click();
+		flushSync();
+
+		const selectBtn = container.querySelector('.meta-select-btn') as HTMLElement;
+		expect(selectBtn).toBeTruthy();
+		expect(selectBtn.textContent).toContain('Select');
+
+		selectBtn.click();
+		flushSync();
+
+		// onToggle called with the token
+		expect(onToggle).toHaveBeenCalledWith('show');
+		// drawer dismissed
+		expect(container.querySelector('.meta-panel')).toBeNull();
+	});
+
+	it('Select button shows "Deselect" and removes token when already selected', () => {
+		const onToggle = vi.fn();
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'task', tokens, selected: ['show'], maxSelect: 1, onToggle }
+		});
+
+		const tokenChip = container.querySelector('.token-chip');
+		(tokenChip as HTMLElement).click();
+		flushSync();
+
+		const selectBtn = container.querySelector('.meta-select-btn') as HTMLElement;
+		expect(selectBtn.textContent).toContain('Deselect');
+
+		selectBtn.click();
+		flushSync();
+
+		expect(onToggle).toHaveBeenCalledWith('show');
+		expect(container.querySelector('.meta-panel')).toBeNull();
+	});
+
+	it('Select button shows "At limit" and is disabled when axis is at capacity', () => {
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'task', tokens, selected: ['make'], maxSelect: 1, onToggle: vi.fn() }
+		});
+
+		// Click the 'show' chip (not selected, but make is already selected = at cap)
+		const chips = container.querySelectorAll('.token-chip');
+		const showChip = Array.from(chips).find(
+			(c) => c.querySelector('code')?.textContent === 'show'
+		) as HTMLElement;
+		showChip.click();
+		flushSync();
+
+		const selectBtn = container.querySelector('.meta-select-btn') as HTMLButtonElement;
+		expect(selectBtn.textContent).toContain('At limit');
+		expect(selectBtn.disabled).toBe(true);
+	});
 });

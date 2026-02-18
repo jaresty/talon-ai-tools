@@ -147,6 +147,8 @@
 	</div>
 
 	{#if activeMeta}
+		{@const isActiveSel = selected.includes(activeMeta.token)}
+		{@const atCap = !isActiveSel && selected.length >= maxSelect}
 		<div class="meta-panel">
 			<div class="meta-header">
 				<code class="meta-token">{activeMeta.token}</code>
@@ -170,6 +172,16 @@
 					<p>{activeMeta.guidance}</p>
 				</div>
 			{/if}
+			<div class="meta-footer">
+				<button
+					class="meta-select-btn"
+					class:selected={isActiveSel}
+					disabled={atCap}
+					onclick={() => { onToggle(activeMeta!.token); activeToken = null; }}
+				>
+					{#if isActiveSel}✓ Deselect{:else if atCap}At limit{:else}Select ↵{/if}
+				</button>
+			</div>
 		</div>
 	{/if}
 </div>
@@ -347,6 +359,40 @@
 		margin-top: 0.4rem;
 	}
 
+	.meta-footer {
+		margin-top: 0.6rem;
+		padding-top: 0.5rem;
+		border-top: 1px solid var(--color-border);
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.meta-select-btn {
+		padding: 0.3rem 0.9rem;
+		background: var(--color-accent-muted);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		cursor: pointer;
+		font-size: 0.8rem;
+		font-family: system-ui;
+	}
+
+	.meta-select-btn:hover:not(:disabled) { background: var(--color-accent); }
+
+	.meta-select-btn.selected {
+		background: transparent;
+		border-color: var(--color-border);
+		color: var(--color-text-muted);
+	}
+
+	.meta-select-btn.selected:hover { border-color: #f7768e; color: #f7768e; }
+
+	.meta-select-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
 	@media (max-width: 767px) {
 		.token-chip {
 			min-height: 44px;
@@ -392,6 +438,17 @@
 		.filter-input {
 			min-height: 44px;
 			font-size: 1rem;
+		}
+
+		.meta-select-btn {
+			min-height: 44px;
+			padding: 0.5rem 1.5rem;
+			font-size: 1rem;
+			width: 100%;
+		}
+
+		.meta-footer {
+			justify-content: stretch;
 		}
 	}
 </style>

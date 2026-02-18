@@ -20,596 +20,251 @@ from typing import Dict, FrozenSet
 
 AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
-        "adr": "The response takes the shape of an Architecture Decision Record "
-        "(ADR) document with sections for context, decision, and "
-        "consequences, formatted as a structured document ready for "
-        "version control.",
-        "code": "The response consists only of code or markup as the complete "
-        "output, with no surrounding natural-language explanation or "
-        "narrative.",
-        "codetour": "The response is delivered as a valid VS Code CodeTour "
-        "`.tour` JSON file (schema-compatible) with steps and fields "
-        "appropriate to the task, omitting extra prose or surrounding "
-        "explanation.",
-        "diagram": "The response converts the input into Mermaid diagram code "
-        "only: it infers the best diagram type for the task and "
-        "respects Mermaid safety constraints (Mermaid diagrams do not "
-        "allow parentheses in the syntax or raw '|' characters inside "
-        'node labels; the text uses numeric encodings such as "#124;" '
-        "for '|' instead of raw problematic characters).",
-        "gherkin": "The response outputs only Gherkin format as the complete "
-        "output, using Jira markup where appropriate and omitting "
-        "surrounding explanation. Works with presenterm/diagram "
+        "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready "
+        "for version control.",
+        "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
+        "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
+        "surrounding explanation.",
+        "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not "
+        "allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
+        "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram "
         "channels when wrapped in markdown code blocks.",
-        "html": "The response consists solely of semantic HTML as the complete "
-        "output, with no surrounding prose or explanation.",
-        "jira": "The response formats the content using Jira markup (headings, "
-        "lists, panels) where relevant and avoids extra explanation "
-        "beyond the main material.",
-        "plain": "The response uses plain prose with natural paragraphs and "
-        "sentences as the delivery format, imposing no additional "
-        "structural conventions such as bullets, tables, or code blocks.",
-        "presenterm": "The response is a valid multi-slide presenterm deck "
-        "expressed as raw Markdown (no code fences). The front "
-        'matter always matches: "--- newline title: <descriptive '
-        "title based on the input with colons encoded as &#58; and "
-        "angle brackets encoded as &lt; and &gt;> newline author: "
-        "Generated (or authors: [...]) newline date: YYYY-MM-DD "
-        'newline --- newline" with no other keys. The deck contains '
-        "up to 12 slides. Each slide starts with a Setext header "
-        "(title line followed by a line of ---), includes content "
-        "and references, and ends with an HTML comment named "
-        "end_slide on its own line followed by a blank line; the "
-        "final slide may omit the closing end_slide. A blank line "
-        "always precedes the References section so that a line with "
-        '"References" or "- References" is separated by one empty '
-        "line. Directives appear only as standalone HTML comments "
-        'with exact syntax: "<!-- end_slide -->", "<!-- pause -->", '
-        '"<!-- column_layout: [7, 3] -->", "<!-- column: 0 -->", '
-        '"<!-- reset_layout -->", and "<!-- jump_to_middle -->". '
-        "Code fence safety is enforced: whenever a fenced code "
-        "block opens (for example ```mermaid +render, ```bash "
-        "+exec, ```latex +render, ```d2 +render), the response "
-        "includes a matching closing fence of exactly three "
-        "backticks on its own line before any non-code content, "
-        "directive, or end_slide; if a fence remains open at slide "
-        "end, the response emits the closing fence first. Mermaid "
-        "diagrams use code blocks tagged mermaid +render; LaTeX "
-        "uses latex +render; D2 uses d2 +render; executable "
-        "snippets use fenced code blocks whose info string starts "
-        "with a language then +exec (optionally +id:<name>) or "
-        '+exec_replace or +image. The response emits "<!-- '
-        'snippet_output: name -->" only when a snippet with '
-        "+id:name exists. Lines hidden with # or /// prefixes "
-        "follow language conventions; other code blocks appear only "
-        "when relevant and include the language name; images appear "
-        "only when valid paths or URLs exist. Within the slide body "
-        "(outside fenced or inline code and outside HTML "
-        "directives), the deck never includes raw HTML: every "
-        "literal '<' becomes &lt; and every literal '>' becomes "
-        "&gt;, preventing raw angle brackets in body text. Markdown "
-        "safety prevents accidental styling: standalone or "
-        'path-embedded \'~\' becomes "&#126;" (so "~/foo" becomes '
-        '"&#126;/foo") while intentional "~~text~~" remains '
-        "unchanged. Mermaid safety keeps grammar and delimiters "
-        "intact ([], (), [[]], (()), [/ /]); node and edge labels "
-        "appear inside ASCII double quotes and use "
-        "Mermaid-compatible numeric codes with no leading "
-        'ampersand, such as "#91;" for "[", "#93;" for "]", "#40;" '
-        'for "(", "#41;" for ")", "#123;" for "{{", "#125;" for '
-        '"}}", "#60;" for "<", "#62;" for ">", "#35;" for "#", '
-        '"#58;" for ":", and "&" and slashes \'/\' remain as-is, '
-        "with no additional entity encodings, and labels are never "
-        "double-encoded. The deck avoids # headers in slide bodies.",
-        "remote": "The response is optimised for remote delivery, ensuring "
-        "instructions work in distributed or online contexts and "
-        "surfacing tooling or interaction hints suitable for video, "
+        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+        "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+        "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code "
+        "blocks.",
+        "presenterm": 'The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: "--- newline title: <descriptive title '
+        "based on the input with colons encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD "
+        'newline --- newline" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes '
+        "content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank "
+        'line always precedes the References section so that a line with "References" or "- References" is separated by one empty line. Directives appear only as standalone HTML '
+        'comments with exact syntax: "<!-- end_slide -->", "<!-- pause -->", "<!-- column_layout: [7, 3] -->", "<!-- column: 0 -->", "<!-- reset_layout -->", and "<!-- '
+        'jump_to_middle -->". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), '
+        "the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at "
+        "slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable "
+        'snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image. The response emits "<!-- '
+        'snippet_output: name -->" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when '
+        "relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML "
+        "directives), the deck never includes raw HTML: every literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw angle brackets in body text. Markdown "
+        'safety prevents accidental styling: standalone or path-embedded \'~\' becomes "&#126;" (so "~/foo" becomes "&#126;/foo") while intentional "~~text~~" remains unchanged. '
+        "Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric "
+        'codes with no leading ampersand, such as "#91;" for "[", "#93;" for "]", "#40;" for "(", "#41;" for ")", "#123;" for "{{", "#125;" for "}}", "#60;" for "<", "#62;" for '
+        '">", "#35;" for "#", "#58;" for ":", and "&" and slashes \'/\' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # '
+        "headers in slide bodies.",
+        "remote": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, "
         "voice, or screen sharing.",
-        "shellscript": "The response is delivered as a shell script output "
-        "format, focusing on correct, executable shell code rather "
-        "than prose or explanation.",
-        "sketch": "The response emits only pure D2 diagram source as the complete "
-        "output. The response must use valid D2 syntax and only "
-        "documented D2 shapes (e.g., rectangle, circle, cylinder, "
-        "diamond, hexagon, cloud, text). To create visually distinct "
-        "boxes, use 'border-radius' or style attributes instead of "
-        "non-existent shapes like 'rounded' or 'note'. Explanatory or "
-        "note-like content must be modeled using shape: text or a "
-        "styled standard shape. Do not include any surrounding natural "
-        "language or commentary. Ensure the output is syntactically "
-        "correct and compiles successfully with the D2 CLI.",
-        "slack": "The response formats the answer for Slack using appropriate "
-        "Markdown, mentions, and code blocks while avoiding "
-        "channel-irrelevant decoration.",
-        "svg": "The response consists solely of SVG markup as the complete "
-        "output, with no surrounding prose, remaining minimal and valid "
-        "for direct use in an `.svg` file.",
-        "sync": "The response takes the shape of a synchronous or live session "
-        "plan (agenda, steps, cues) rather than static reference text.",
+        "shellscript": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation.",
+        "sketch": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, "
+        "diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. "
+        "Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the "
+        "output is syntactically correct and compiles successfully with the D2 CLI.",
+        "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
+        "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
+        "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
     },
     "completeness": {
-        "deep": "The response goes into substantial depth within the chosen "
-        "scope, unpacking reasoning layers and fine details without "
-        "necessarily enumerating every edge case.",
-        "full": "The response provides a thorough answer for normal use, "
-        "covering all major aspects without needing every "
-        "micro-detail.",
-        "gist": "The response offers a short but complete answer or summary "
-        "that touches the main points once without exploring every "
-        "detail.",
-        "max": "The response is as exhaustive as reasonable, covering "
-        "essentially everything relevant and treating omissions as "
-        "errors.",
-        "minimal": "The response makes the smallest change or provides the "
-        "smallest answer that satisfies the request, avoiding "
-        "work outside the core need.",
-        "narrow": "The response restricts the discussion to a very small "
-        "slice of the topic, avoiding broad context.",
-        "skim": "The response performs only a very light pass, addressing "
-        "the most obvious or critical issues without aiming for "
-        "completeness.",
+        "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+        "full": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+        "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+        "max": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+        "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+        "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+        "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
     },
     "directional": {
-        "bog": "The response modifies the task to span both the "
-        "reflective/structural dimension (rog) and the "
-        "acting/extending dimension (ong) — examining the structure "
-        "and its implications while also identifying concrete actions "
-        "and extensions that follow.",
-        "dig": "The response modifies the task to examine concrete details "
-        "and grounding examples, focusing on specifics rather than "
-        "abstractions.",
-        "dip bog": "The response modifies the task to start with concrete "
-        "examples and grounded details, examines their structure "
-        "and reflects on patterns, then identify actions and "
+        "bog": "The response modifies the task to span both the reflective/structural dimension (rog) and the acting/extending dimension (ong) — examining the structure and its implications "
+        "while also identifying concrete actions and extensions that follow.",
+        "dig": "The response modifies the task to examine concrete details and grounding examples, focusing on specifics rather than abstractions.",
+        "dip bog": "The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and "
         "extensions.",
-        "dip ong": "The response modifies the task to start with concrete "
-        "examples, identify actions to take from them, then "
-        "extends those actions to related situations.",
-        "dip rog": "The response modifies the task to examine concrete "
-        "details and grounded examples, then reflects on their "
-        "structural patterns and what they reveal.",
-        "fig": "The response modifies the task to span both the abstract/"
-        "general dimension (fog) and the concrete/specific dimension "
-        "(dig) — addressing the underlying principles and the grounded "
-        "specifics, using each to illuminate the other "
-        "(figure-ground reversal).",
-        "fip bog": "The response modifies the task to move between abstract "
-        "principles and concrete examples, examines their "
-        "structural patterns and reflects on them, then identifies "
+        "dip ong": "The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations.",
+        "dip rog": "The response modifies the task to examine concrete details and grounded examples, then reflects on their structural patterns and what they reveal.",
+        "fig": "The response modifies the task to span both the abstract/general dimension (fog) and the concrete/specific dimension (dig) — addressing the underlying principles and the "
+        "grounded specifics, using each to illuminate the other (figure-ground reversal).",
+        "fip bog": "The response modifies the task to move between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies "
         "actions and extends them to related contexts.",
-        "fip ong": "The response modifies the task to alternate between "
-        "abstract principles and concrete examples, then "
-        "identifies actions to take and extends them to related "
-        "situations.",
-        "fip rog": "The response modifies the task to move between abstract "
-        "principles and concrete examples while examining "
-        "structural patterns and reflecting on what they reveal.",
-        "fly bog": "The response modifies the task to identify abstract "
-        "patterns and general principles, examine their structure "
-        "and reflects on it, then identifies actions and extends "
-        "them to related contexts.",
-        "fly ong": "The response modifies the task to identify abstract "
-        "patterns and general principles, then propose concrete "
-        "actions and extends them to related contexts.",
-        "fly rog": "The response modifies the task to identify abstract "
-        "patterns and general principles, then examines their "
-        "structural relationships and reflect on their "
-        "implications.",
-        "fog": "The response modifies the task to identify general patterns "
-        "and abstract principles from the specifics, moving from "
-        "particular cases to broader insights.",
-        "jog": "The response modifies the task to interpret the intent and "
-        "carry it out directly without asking follow-up questions.",
-        "ong": "The response modifies the task to identify concrete actions "
-        "to take, then extends those actions to related situations or "
-        "next steps.",
-        "rog": "The response modifies the task to examine the structure of "
-        "the subject (how it is organized), then reflects on why that "
-        "structure exists and what it reveals.",
+        "fip ong": "The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations.",
+        "fip rog": "The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
+        "fly bog": "The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them "
+        "to related contexts.",
+        "fly ong": "The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts.",
+        "fly rog": "The response modifies the task to identify abstract patterns and general principles, then examines their structural relationships and reflect on their implications.",
+        "fog": "The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights.",
+        "jog": "The response modifies the task to interpret the intent and carry it out directly without asking follow-up questions.",
+        "ong": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps.",
+        "rog": "The response modifies the task to examine the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals.",
     },
     "form": {
-        "actions": "The response structures ideas as concrete actions or tasks a "
-        "user or team could take, leaving out background analysis or "
-        "explanation.",
-        "activities": "The response organizes ideas as concrete session activities "
-        "or segments—what to do, by whom, and in what order—rather "
-        "than abstract description.",
-        "bug": "The response structures ideas as a bug report with sections for "
-        "Steps to Reproduce, Expected Behavior, Actual Behavior, and "
-        "Environment or Context, emphasizing concise, testable details. "
-        "Strongest with diagnostic and debugging tasks (`probe`, or "
-        "`make`/`show` paired with diagnostic methods: `diagnose`, "
-        "`inversion`, `adversarial`). Creates semantic friction with "
-        "non-debugging tasks (e.g., `fix`, which is a reformat task in bar's "
-        "grammar). Conflicts with session-plan channels (`sync`) — a bug "
-        "report is a static artifact, not a live session agenda.",
-        "bullets": "The response organizes ideas as concise bullet points, avoiding "
-        "long paragraphs.",
-        "cards": "The response organizes ideas as discrete cards or items, each with "
-        "a clear heading and short body, avoiding long continuous prose.",
-        "case": "The response structures reasoning by building the case before the "
-        "conclusion, laying out background, evidence, trade-offs, and "
-        "alternatives before converging on a clear recommendation that "
-        "addresses objections and constraints.",
-        "checklist": "The response organizes ideas as an actionable checklist whose "
-        "items are clear imperative tasks rather than descriptive "
-        "prose.",
-        "cocreate": "The response structures itself as a collaborative process — "
-        "small moves, explicit decision points, and alignment checks "
-        "rather than a one-shot answer. Without an output-exclusive "
-        "channel, conducts this interactively: proposes, pauses for "
-        "feedback, and iterates. With an output-exclusive channel, "
-        "formats the artifact to expose decision points, show "
-        "alternative moves, and make the response-inviting structure "
-        "visible within the output.",
-        "commit": "The response structures ideas as a conventional commit message "
-        "with a short type or scope line and an optional concise body.",
-        "contextualise": "The response packages the subject to be passed directly "
-        "to another LLM operation: it enriches the content with all "
-        "context a downstream model would need to act on it without "
-        "further explanation — adding background, assumptions, "
-        "constraints, and framing that would otherwise be implicit or "
-        "missing. The main content is not rewritten. With pull: wraps "
-        "extracted content with the context needed to interpret it. "
-        "With make/fix: accompanies the output with purpose, "
-        "constraints, and framing so the downstream model understands "
-        "how to use it.",
-        "direct": "The response structures ideas by leading with the main point or "
-        "recommendation, followed only by the most relevant supporting "
-        "context, evidence, and next steps.",
-        "facilitate": "The response structures itself as a facilitation plan — "
-        "framing the goal, proposing session structure, managing "
-        "participation and turn-taking rather than doing the work "
-        "solo. Without an output-exclusive channel, acts as a live "
-        "facilitator: proposes structure and invites participation "
-        "interactively. With an output-exclusive channel, produces a "
-        "static facilitation guide: agenda, goals, cues, and session "
-        "structure as a deliverable artifact.",
-        "faq": "The response organizes ideas as clearly separated question headings "
-        "with concise answers beneath each one, keeping content easy to skim "
-        "and free of long uninterrupted prose.",
-        "formats": "The response structures ideas by focusing on document types, "
-        "writing formats, or structural templates and their suitability.",
-        "indirect": "The response begins with brief background, reasoning, and "
-        "trade-offs and finishes with a clear bottom-line point or "
-        "recommendation that ties them together.",
-        "ladder": "The response uses abstraction laddering by placing the focal "
-        "problem, stepping up to higher-level causes, and stepping down to "
-        "consequences ordered by importance to the audience.",
-        "log": "The response reads like a concise work or research log entry with "
-        "date or time markers as needed, short bullet-style updates, and "
-        "enough context for future reference without unrelated narrative.",
-        "merge": "The response combines multiple sources into a single coherent "
-        "whole while preserving essential information.",
-        "questions": "The response presents the answer as a series of probing or "
-        "clarifying questions rather than statements. When combined "
-        "with `diagram` channel, the output is Mermaid code structured "
-        "as a question tree, decision map, or inquiry flow rather than "
-        "a structural diagram of the subject.",
-        "quiz": "The response organizes content as a quiz structure — questions "
-        "posed before explanations, testing understanding through active "
-        "recall before providing answers. Without an output-exclusive "
-        "channel, conducts this as an interactive exchange: poses questions, "
-        "waits for responses, then clarifies or deepens. With an "
-        "output-exclusive channel, structures the output itself as a quiz — "
-        "question headings with revealed answers, test sections, knowledge "
-        "checks — without requiring live interaction.",
-        "recipe": "The response expresses the answer as a recipe that includes a "
-        "custom, clearly explained mini-language and a short key for "
-        "understanding it.",
-        "scaffold": "The response explains with scaffolding: it starts from first "
-        "principles, introduces ideas gradually, uses concrete examples "
-        "and analogies, and revisits key points so a learner can follow "
-        "and retain the concepts. Most effective with learning-oriented "
-        "audiences (student, entry-level engineer). May conflict with "
-        "expert-level or brevity-first personas where first-principles "
-        "exposition contradicts assumed expertise.",
-        "socratic": "The response employs a Socratic, question-led method by asking "
-        "short, targeted questions that surface assumptions, "
-        "definitions, and gaps in understanding, withholding full "
-        "conclusions until enough answers exist or the user explicitly "
-        "requests a summary. With sort/plan: asks clarifying questions "
-        "about criteria before producing output. With make/fix: asks "
-        "diagnostic questions then provides the solution. With probe: "
-        "naturally extends to deeper inquiry.",
-        "spike": "The response formats the backlog item as a research spike: it "
-        "starts with a brief problem or decision statement, lists the key "
-        "questions the spike should answer, and stays focused on questions "
-        "and learning rather than implementation tasks.",
-        "story": 'The response formats the backlog item as a user story using "As a '
-        '<persona>, I want <capability>, so that <value>." It may include a '
-        "short description and high-level acceptance criteria in plain "
-        "prose but avoids Gherkin or test-case syntax.",
-        "table": "The response presents the main answer as a Markdown table when "
-        "feasible, keeping columns and rows compact.",
-        "taxonomy": "The response organizes the main content as a classification "
-        "system, type hierarchy, or category taxonomy, defining types, "
-        "their relationships, and distinguishing attributes clearly. "
-        "Adapts to the channel: when combined with a code channel, the "
-        "taxonomy is expressed through the type system (interfaces, "
-        "enums, inheritance hierarchies); with a markup channel, as "
-        "hierarchical markup structure; without a channel, as prose "
-        "classification sections.",
-        "test": "The response presents test cases in a structured format with clear "
-        "setup, execution, and assertion sections, organized by scenario "
-        "type (happy path, edge cases, errors, boundaries) and including "
-        "descriptive test names.",
-        "tight": "The response uses concise, dense prose, remaining freeform without "
-        "bullets, tables, or code and avoiding filler.",
-        "variants": "The response presents several distinct, decision-ready options "
-        "as separate variants, labelling each one with a short "
-        "description and including approximate probabilities when "
+        "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
+        "activities": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+        "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable "
+        "details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction "
+        "with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live "
+        "session agenda.",
+        "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
+        "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
+        "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a clear "
+        "recommendation that addresses objections and constraints.",
+        "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
+        "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an "
+        "output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision "
+        "points, show alternative moves, and make the response-inviting structure visible within the output.",
+        "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
+        "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it "
+        "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten. "
+        "With pull: wraps extracted content with the context needed to interpret it. With make/fix: accompanies the output with purpose, constraints, and framing so the downstream "
+        "model understands how to use it.",
+        "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
+        "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work "
+        "solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces "
+        "a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact.",
+        "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
+        "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
+        "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+        "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the "
+        "audience.",
+        "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
+        "unrelated narrative.",
+        "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
+        "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
+        "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
+        "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an "
+        "output-exclusive channel, conducts this as an interactive exchange: poses questions, waits for responses, then clarifies or deepens. With an output-exclusive channel, structures "
+        "the output itself as a quiz — question headings with revealed answers, test sections, knowledge checks — without requiring live interaction.",
+        "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+        "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
+        "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
+        "where first-principles exposition contradicts assumed expertise.",
+        "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full "
+        "conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With "
+        "make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry.",
+        "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
+        "focused on questions and learning rather than implementation tasks.",
+        "story": 'The response formats the backlog item as a user story using "As a <persona>, I want <capability>, so that <value>." It may include a short description and high-level acceptance '
+        "criteria in plain prose but avoids Gherkin or test-case syntax.",
+        "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
+        "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes "
+        "clearly. Adapts to the channel: when combined with a code channel, the taxonomy is expressed through the type system (interfaces, enums, inheritance hierarchies); with a "
+        "markup channel, as hierarchical markup structure; without a channel, as prose classification sections.",
+        "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, "
+        "boundaries) and including descriptive test names.",
+        "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
+        "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
-        "visual": "The response presents the main answer as an abstract visual or "
-        "metaphorical layout with a short legend where the subject lends "
-        "itself to visual representation, emphasising big-picture "
-        "structure over dense prose. Adapts to the channel: when combined "
-        "with a code channel, visual structure is expressed through code "
-        "organization, comments, or inline ASCII; without a channel, "
-        "through prose metaphors and spatial layout.",
-        "walkthrough": "The response guides the audience step by step by outlining "
-        "stages and walking through them in order so understanding "
-        "builds gradually.",
-        "wardley": "The response expresses the answer as a Wardley Map showing value "
-        "chain evolution from genesis to commodity.",
-        "wasinawa": "The response applies a What–So What–Now What reflection: it "
-        "describes what happened, interprets why it matters, and "
-        "proposes concrete next steps.",
+        "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising "
+        "big-picture structure over dense prose. Adapts to the channel: when combined with a code channel, visual structure is expressed through code organization, comments, or inline "
+        "ASCII; without a channel, through prose metaphors and spatial layout.",
+        "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
+        "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
+        "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
     },
     "method": {
-        "abduce": "The response enhances the task by generating explanatory "
-        "hypotheses that best account for the available evidence, "
-        "explicitly comparing alternative explanations.",
-        "actors": "The response enhances the task by identifying and centering "
-        "people, roles, or agents involved in the system.",
-        "adversarial": "The response enhances the task by running a constructive "
-        "stress-test, systematically searching for weaknesses, edge "
-        "cases, counterexamples, failure modes, and unstated "
+        "abduce": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations.",
+        "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
+        "adversarial": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated "
         "assumptions.",
-        "canon": "The response models each proposition, rule, or dependency as "
-        "having a single authoritative locus within the explanatory "
-        "structure. Apparent duplication must be reduced to derivation "
-        "from a canonical source, and parallel accounts must be "
-        "explicitly mapped or unified. Explanations may not treat "
-        "multiple representations of the same knowledge as independent "
-        "causal or justificatory elements without specifying their "
-        "dependency relationship.",
-        "analog": "The response enhances the task by reasoning through analogy, "
-        "mapping relational structure from a known case onto the subject "
-        "and examining where the analogy holds or breaks.",
-        "analysis": "The response enhances the task by describing and structuring "
-        "the situation, focusing on understanding before proposing "
-        "actions or recommendations.",
-        "argue": "The response enhances the task by structuring reasoning as an "
-        "explicit argument, identifying claims, premises, warrants, and "
-        "rebuttals and assessing their support.",
-        "bias": "The response enhances the task by identifying likely cognitive "
-        "biases, heuristics, or systematic errors and examining how they "
-        "might distort judgment or conclusions.",
-        "boom": "The response enhances the task by exploring behaviour toward "
-        "extremes of scale or intensity, examining what breaks, dominates, "
-        "or vanishes.",
-        "branch": "The response enhances the task by exploring multiple reasoning "
-        "paths in parallel, branching on key assumptions or choices "
-        "before evaluating and pruning alternatives.",
-        "calc": "The response enhances the task by expressing reasoning as "
-        "executable or quasi-executable procedures, calculations, or "
-        "formal steps whose outputs constrain conclusions.",
-        "cite": "The response enhances the task by including sources, citations, "
-        "or references that anchor claims to evidence, enabling "
-        "verification and further exploration.",
-        "cluster": "The response groups or organizes existing items into clusters "
-        "based on shared characteristics, relationships, or criteria, "
-        "without altering the underlying content or meaning of the "
-        "items.",
-        "compare": "The response enhances the task by systematically comparing "
-        "alternatives against explicit criteria, surfacing tradeoffs, "
-        "relative strengths and weaknesses, and decision factors. Use "
-        "when the user presents options and asks which to choose or how "
-        "they differ.",
-        "converge": "The response enhances the task by systematically narrowing "
-        "from broad exploration to focused recommendations, weighing "
-        "trade-offs explicitly as options are filtered.",
-        "deduce": "The response enhances the task by applying deductive reasoning, "
-        "deriving conclusions that must follow from stated premises or "
-        "assumptions and making logical entailment explicit.",
-        "depends": "The response enhances the task by tracing dependency "
-        "relationships, identifying what depends on what and how "
-        "changes propagate through the system.",
-        "diagnose": "The response enhances the task by seeking likely causes of "
-        "problems first, narrowing hypotheses through evidence, "
-        "falsification pressure, and targeted checks before proposing "
-        "fixes or changes.",
-        "dimension": "The response enhances the task by exploring multiple "
-        "dimensions or axes of analysis, making implicit factors "
-        "explicit and examining how they interact.",
-        "domains": "The response enhances the task by identifying bounded "
-        "contexts, domain boundaries, and capabilities.",
-        "effects": "The response enhances the task by tracing second- and "
-        "third-order effects and summarizing their downstream "
-        "consequences.",
-        "experimental": "The response enhances the task by proposing concrete "
-        "experiments or tests, outlining how each would run, "
-        "describing expected outcomes, and explaining how results "
-        "would update the hypotheses.",
-        "explore": "The response enhances the task by opening and surveying the "
-        "option space, generating and comparing multiple plausible "
-        "approaches without prematurely committing to a single answer.",
-        "field": "The response models interaction as occurring through a shared "
-        "structured medium in which effects arise from structural "
-        "compatibility rather than direct reference between actors. "
-        "Explanations must make the medium and its selection rules "
+        "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
+        "analysis": "The response enhances the task by describing and structuring the situation, focusing on understanding before proposing actions or recommendations.",
+        "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
+        "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
+        "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
+        "branch": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
+        "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
+        "canon": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to "
+        "derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as "
+        "independent causal or justificatory elements without specifying their dependency relationship.",
+        "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
+        "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning "
+        "of the items.",
+        "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision "
+        "factors. Use when the user presents options and asks which to choose or how they differ.",
+        "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
+        "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment "
         "explicit.",
-        "flow": "The response enhances the task by explaining step-by-step "
-        "progression over time or sequence, showing how control, data, or "
-        "narrative moves through the system.",
-        "grove": "The response enhances the task by examining how small effects "
-        "compound into larger outcomes through feedback loops, network "
-        "effects, or iterative growth—asking not just what fails or "
-        "succeeds, but how failures OR successes accumulate through "
-        "systemic mechanisms.",
-        "grow": "The response enhances the task by preserving the simplest form "
-        "adequate to the current purpose and expanding only when new "
-        "demands demonstrably outgrow it, so that every abstraction and "
-        "every exception arises from necessity rather than anticipation.",
-        "induce": "The response enhances the task by applying inductive reasoning, "
-        "generalizing patterns from specific observations and assessing "
-        "the strength and limits of those generalizations.",
-        "inversion": "The response enhances the task by beginning from undesirable "
-        "or catastrophic outcomes, asking what would produce or "
-        "amplify them, then working backward to avoid, mitigate, or "
-        "design around those paths.",
-        "jobs": "The response enhances the task by analyzing Jobs To Be Done—the "
-        "outcomes users want to achieve and the forces shaping their "
-        "choices.",
-        "mapping": "The response enhances the task by surfacing elements, "
-        "relationships, and structure, then organising them into a "
-        "coherent spatial map rather than a linear narrative.",
-        "meld": "The response enhances the task by reasoning about combinations, "
-        "overlaps, balances, and constraints between elements.",
-        "melody": "The response enhances the task by analyzing coordination across "
-        "components, time, or teams, including coupling, "
-        "synchronization, and change alignment.",
-        "mod": "The response enhances the task by applying modulo-style "
-        "reasoning—equivalence classes, cyclic patterns, quotient "
-        "structures, or periodic behavior that repeats with a defined "
+        "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
+        "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
+        "proposing fixes or changes.",
+        "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
+        "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
+        "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
+        "update the hypotheses.",
+        "explore": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing to a single "
+        "answer.",
+        "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
+        "actors. Explanations must make the medium and its selection rules explicit.",
+        "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
+        "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
+        "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
+        "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every "
+        "abstraction and every exception arises from necessity rather than anticipation.",
+        "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
+        "generalizations.",
+        "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
+        "or design around those paths.",
+        "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
+        "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
+        "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
+        "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
+        "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
-        "models": "The response enhances the task by explicitly identifying and "
-        "naming relevant mental models, explaining why they apply (or "
-        "fail), and comparing or combining them.",
-        "objectivity": "The response enhances the task by distinguishing objective "
-        "facts from subjective opinions and supporting claims with "
-        "evidence.",
-        "operations": "The response enhances the task by identifying operations "
-        "research or management science concepts that frame the "
-        "situation.",
-        "order": "The response enhances the task by applying abstract structural "
-        "reasoning such as hierarchy, dominance, or recurrence. When "
-        "paired with `sort` task, `order` adds emphasis on the criteria "
-        "and scheme driving the sequencing rather than merely producing "
-        "the sorted result — consider whether the distinction is needed.",
-        "origin": "The response enhances the task by uncovering how the subject "
-        "arose, why it looks this way now, and how past decisions shaped "
-        "the present state.",
-        "prioritize": "The response enhances the task by assessing and ordering "
-        "items by importance or impact, making the ranking and "
-        "rationale explicit.",
-        "probability": "The response enhances the task by applying probability or "
-        "statistical reasoning to characterize uncertainty and "
-        "likely outcomes.",
-        "product": "The response enhances the task by examining the subject "
-        "through a product lens—features, user needs, and value "
-        "propositions.",
-        "resilience": "The response enhances the task by concentrating on how the "
-        "system behaves under stress and uncertainty—fragility vs "
-        "robustness, margin of safety, and tail risks.",
-        "rigor": "The response enhances the task by relying on disciplined, "
-        "well-justified reasoning and making its logic explicit.",
-        "risks": "The response enhances the task by focusing on potential "
-        "problems, failure modes, or negative outcomes and their "
-        "likelihood or severity.",
-        "robust": "The response enhances the task by reasoning under deep "
-        "uncertainty, favoring options that perform acceptably across "
-        "many plausible futures rather than optimizing for a single "
+        "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
+        "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
+        "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+        "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
+        "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
+        "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
+        "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
+        "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
+        "product": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
+        "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
+        "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
+        "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
+        "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
         "forecast.",
-        "shift": "The response enhances the task by deliberately rotating through "
-        "distinct perspectives or cognitive modes, contrasting how each "
-        "frame interprets the same facts.",
-        "simulation": "The response enhances the task by focusing on explicit "
-        "thought experiments or scenario walkthroughs that project "
-        "evolution over time, highlighting feedback loops, "
+        "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
+        "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response defines explicit criteria of correctness before "
-        "proposing implementations and treats those criteria as fixed and "
-        "authoritative. Implementations must satisfy the prior definition "
-        "and may not redefine correctness during construction. Progress is "
-        "measured by compliance with the specification rather than by "
-        "artifact production.",
-        "split": "The response enhances the task by deliberately decomposing the "
-        "subject into parts or components, analyzing each in isolation "
-        "while intentionally bracketing interactions, treating the "
-        "decomposition as provisional and preparatory rather than final.",
-        "systemic": "The response enhances the task by reasoning about the subject "
-        "as an interacting whole, identifying components, boundaries, "
-        "flows, feedback loops, and emergent behaviour that arise from "
-        "their interactions rather than from parts in isolation.",
-        "trans": "The response models information transfer as a staged process "
-        "involving a source, encoding, channel, decoding, destination, "
-        "and feedback. Explanations must distinguish message from signal, "
-        "account for transformation across stages, model noise or "
-        "distortion explicitly, and specify mechanisms for detecting and "
-        "repairing transmission errors. Outcomes may not be attributed to "
-        "communication without specifying how the signal survived, "
-        "degraded, or was corrected during transmission.",
-        "unknowns": "The response enhances the task by identifying critical "
-        "unknown unknowns and exploring how they might impact "
-        "outcomes.",
-        "verify": "The response enhances the task by applying falsification "
-        "pressure to claims, requiring causal chain integrity, "
-        "externally imposed constraints, and explicitly defined negative "
-        "space. Claims that fail any axis are treated as ungrounded and "
-        "must not be synthesized into conclusions or recommendations, "
-        "ensuring outputs do not transfer authority or imply trust "
-        "beyond the model. This prevents internally coherent but "
-        "unconstrained narratives and preserves human oversight as the "
-        "source of judgment.",
+        "spec": "The response defines explicit criteria of correctness before proposing implementations and treats those criteria as fixed and authoritative. Implementations must satisfy the "
+        "prior definition and may not redefine correctness during construction. Progress is measured by compliance with the specification rather than by artifact production.",
+        "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
+        "treating the decomposition as provisional and preparatory rather than final.",
+        "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
+        "arise from their interactions rather than from parts in isolation.",
+        "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message "
+        "from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes "
+        "may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
+        "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
+        "verify": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative "
+        "space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply "
+        "trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment.",
     },
     "scope": {
-        "act": "The response focuses on what is being done or intended—tasks, "
-        "activities, operations, or work to be performed—suppressing "
-        "interpretation, evaluation, structural explanation, or "
+        "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "
         "perspective-shifting.",
-        "agent": "The response explains outcomes in terms of identifiable actors "
-        "with the capacity to select among alternatives, specifying who "
-        "can act, what options are available, and how their choices "
-        "influence results, rather than attributing outcomes solely to "
-        "impersonal structure or equilibrium dynamics.",
-        "assume": "The response focuses on explicit or implicit premises that must "
-        "hold for the reasoning, system, or argument to function.",
-        "cross": "The response focuses on concerns or forces that propagate across "
-        "otherwise distinct units, layers, or domains—examining how they "
-        "traverse boundaries or become distributed across "
-        "partitions—without primarily analyzing internal arrangement or "
-        "recurring structural form.",
-        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits "
-        "by examining how and under what conditions something stops "
-        "working—risks, edge cases, fragility, or failure modes rather than "
-        "overall quality or preferred outcomes.",
-        "good": "The response focuses on how quality, success, or goodness is "
-        "judged—criteria, metrics, standards, values, or taste—assuming a "
-        "framing rather than defining it or shifting perspective.",
-        "mean": "The response focuses on how something is conceptually framed or "
-        "understood prior to evaluation or action—its purpose, "
-        "interpretation, definitions, categorization, or theoretical "
-        "role—without asserting required premises, judging quality, "
-        "prescribing action, or adopting a specific stakeholder "
+        "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their "
+        "choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
+        "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
+        "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across "
+        "partitions—without primarily analyzing internal arrangement or recurring structural form.",
+        "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure "
+        "modes rather than overall quality or preferred outcomes.",
+        "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting "
         "perspective.",
-        "motifs": "The response focuses on recurring structural or thematic forms "
-        "that appear in multiple places, identifying repeated "
-        "configurations or isomorphic patterns without analyzing their "
-        "internal topology in detail or their boundary-spanning "
-        "distribution.",
-        "stable": "The response focuses on equilibrium, persistence, and "
-        "self-reinforcing states within a system—identifying "
-        "configurations that maintain themselves and analyzing how "
+        "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical "
+        "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
+        "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
+        "their internal topology in detail or their boundary-spanning distribution.",
+        "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
         "perturbations affect their continuity.",
-        "struct": "The response focuses on how parts of a system are arranged and "
-        "related—dependencies, coordination, constraints, incentives, or "
-        "organizing configurations—analyzing the internal topology of "
-        "units without emphasizing repetition across instances or "
-        "boundary-spanning propagation.",
-        "thing": "The response focuses on what entities are in view—objects, "
-        "people, roles, systems, domains, or bounded units—and what is "
-        "excluded, without emphasizing actions, relationships, evaluation, "
-        "or perspective.",
-        "time": "The response focuses on when things occur and how they change over "
-        "time—sequences, evolution, history, phases, or temporal "
-        "dynamics—rather than static structure, evaluation, or immediate "
-        "action.",
-        "view": "The response focuses on how the subject appears from a specific "
-        "stakeholder, role, or positional perspective, making that "
-        "viewpoint explicit without asserting it as definitive, evaluating "
-        "outcomes, or prescribing action.",
+        "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal "
+        "topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
+        "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, "
+        "evaluation, or perspective.",
+        "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or "
+        "immediate action.",
+        "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, "
+        "evaluating outcomes, or prescribing action.",
     },
 }
 
@@ -775,134 +430,63 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # Distinct from hard incompatibilities in hierarchy.incompatibilities.
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
-        "adr": "Task-affinity for decision-making tasks (plan, probe, make). The "
-        "ADR format (Context, Decision, Consequences) is a decision "
-        "artifact — it does not accommodate tasks that produce "
-        "non-decision outputs. Avoid with sort (sorted list), pull "
-        "(extraction), diff (comparison), or sim (scenario playback).",
-        "code": "Avoid with narrative tasks (sim, probe) that produce prose "
-        "rather than code.",
-        "codetour": "Best for code-navigation tasks: fix, make (code creation), "
-        "show (code structure), pull (code extraction). Avoid with "
-        "sim, sort, probe, diff (no code subject), or plan. Requires "
-        "a developer audience — produces a VS Code CodeTour JSON "
-        "file. Avoid with manager, PM, executive, CEO, stakeholder, "
-        "analyst, or designer audiences.",
-        "gherkin": "Outputs only Gherkin Given/When/Then syntax. Primary use: "
-        "make tasks creating acceptance tests or feature "
-        "specifications. With analysis tasks (probe, diff, check, "
-        "sort), output is reframed as Gherkin scenarios that specify "
-        "the analyzed properties — the analysis becomes evidence; "
-        "scenarios express what should be true given that evidence. "
-        "Avoid with prose-structure forms (story, case, log, "
-        "questions, recipe).",
-        "html": "Avoid with narrative tasks (sim, probe) that produce prose "
-        "rather than code.",
-        "shellscript": "Shell script output. Avoid with narrative tasks (sim, "
-        "probe) and selection tasks (pick, diff, sort) - these "
-        "don't produce code.",
-        "sketch": "D2 diagram output only. Avoid with prose forms (indirect, "
-        "case, walkthrough, variants) - choose diagram OR prose, not "
-        "both.",
+        "adr": "Task-affinity for decision-making tasks (plan, probe, make). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce "
+        "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback).",
+        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
+        "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan. "
+        "Requires a developer audience — produces a VS Code CodeTour JSON file. Avoid with manager, PM, executive, CEO, stakeholder, analyst, or designer audiences.",
+        "gherkin": "Outputs only Gherkin Given/When/Then syntax. Primary use: make tasks creating acceptance tests or feature specifications. With analysis tasks (probe, diff, check, sort), "
+        "output is reframed as Gherkin scenarios that specify the analyzed properties — the analysis becomes evidence; scenarios express what should be true given that evidence. "
+        "Avoid with prose-structure forms (story, case, log, questions, recipe).",
+        "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
+        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code.",
+        "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both.",
     },
     "completeness": {
-        "skim": "Quick-pass constraint: most obvious or critical issues "
-        "only. Avoid pairing with multi-phase directionals (bog, fip "
-        "rog, fly rog, fog) that require structural depth and "
-        "sustained examination. Use with simple directionals (jog, "
-        "rog) or none."
+        "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with multi-phase directionals (bog, fip rog, fly rog, fog) that require structural depth and "
+        "sustained examination. Use with simple directionals (jog, rog) or none."
     },
     "form": {
-        "case": "Layered argument-building prose (background, evidence, "
-        "alternatives, recommendation). Conflicts with code-format channels "
-        "(gherkin, codetour, shellscript, svg, html, diagram/sketch) — "
-        "case-building requires prose structure those channels cannot "
-        "accommodate. Use with no channel or prose-compatible channels "
-        "(jira, slack, plain, remote, sync).",
-        "commit": "Conventional commit message (type: scope header + optional body). "
-        "Brief artifact by design — avoid deep or max completeness (no "
-        "room to express depth) and complex directionals (fip rog, fly "
-        "rog, bog, fog). Best with gist or minimal completeness.",
-        "contextualise": "Works well with text-friendly channels (plain, sync, jira, "
-        "slack). Avoid with output-only channels (gherkin, "
-        "shellscript, codetour) - cannot render explanatory "
-        "context.",
-        "facilitate": "When combined with sim, designs a facilitation structure for "
-        "a simulation exercise rather than performing the simulation "
-        "directly.",
-        "faq": "Question-and-answer prose format. Conflicts with executable output "
-        "channels: shellscript, code, codetour (output format mismatch). Use "
-        "with plain, slack, diagram, or no channel.",
-        "log": "Work or research log entry with date markers and bullet updates. "
-        "Conflicts with any non-text output channel (svg, diagram/sketch, "
-        "codetour, gherkin, shellscript, html) — log entries are prose-text "
-        "artifacts. Use with no channel or prose-compatible channels (jira, "
-        "slack, remote, sync).",
-        "questions": "Conflicts with gherkin (syntax rigidity). With diagram: "
-        "produces a question-tree Mermaid diagram. Use with plain, "
-        "slack, diagram, or no channel.",
-        "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm "
-        "(schema has no prose slot). Use with plain, slack, or no channel.",
-        "scaffold": "Learning-oriented explanation. Avoid with 'make' task producing "
-        "artifacts (code, diagram, adr) - use only when user wants "
-        "accompanied explanation. scaffold = explain from first "
-        "principles.",
-        "socratic": "Avoid with code channels (shellscript, codetour) - they cannot "
-        "render questions as code output.",
-        "spike": "Research spike: problem statement and exploratory questions. "
-        "Conflicts with code-format channels (codetour, shellscript, svg, "
-        "html, diagram/sketch, gherkin) — research spikes are prose "
-        "question-documents. Use with no channel or prose-compatible "
-        "channels.",
-        "story": "User story prose (As a / I want / so that). Explicitly avoids "
-        "Gherkin or test-case syntax — conflicts with gherkin channel. Use "
-        "with no channel or prose-compatible channels.",
-        "visual": "Distinct from the diagram channel: visual = abstract/metaphorical "
-        "prose layout with a short legend; diagram = precise Mermaid code "
-        "with exact nodes and edges. Use visual when conceptual overview "
-        "or spatial metaphor is more useful than diagrammatic precision "
-        "(e.g., non-technical audience, big-picture emphasis). Use diagram "
-        "when exact topology, dependency mapping, or architecture review "
-        "requires precise structure.",
+        "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "
+        "diagram/sketch) — case-building requires prose structure those channels cannot accommodate. Use with no channel or prose-compatible channels (jira, slack, plain, remote, sync).",
+        "commit": "Conventional commit message (type: scope header + optional body). Brief artifact by design — avoid deep or max completeness (no room to express depth) and complex directionals "
+        "(fip rog, fly rog, bog, fog). Best with gist or minimal completeness.",
+        "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
+        "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
+        "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",
+        "log": "Work or research log entry with date markers and bullet updates. Conflicts with any non-text output channel (svg, diagram/sketch, codetour, gherkin, shellscript, html) — log "
+        "entries are prose-text artifacts. Use with no channel or prose-compatible channels (jira, slack, remote, sync).",
+        "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
+        "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel.",
+        "scaffold": "Learning-oriented explanation. Avoid with 'make' task producing artifacts (code, diagram, adr) - use only when user wants accompanied explanation. scaffold = explain from "
+        "first principles.",
+        "socratic": "Avoid with code channels (shellscript, codetour) - they cannot render questions as code output.",
+        "spike": "Research spike: problem statement and exploratory questions. Conflicts with code-format channels (codetour, shellscript, svg, html, diagram/sketch, gherkin) — research spikes are "
+        "prose question-documents. Use with no channel or prose-compatible channels.",
+        "story": "User story prose (As a / I want / so that). Explicitly avoids Gherkin or test-case syntax — conflicts with gherkin channel. Use with no channel or prose-compatible channels.",
+        "visual": "Distinct from the diagram channel: visual = abstract/metaphorical prose layout with a short legend; diagram = precise Mermaid code with exact nodes and edges. Use visual when "
+        "conceptual overview or spatial metaphor is more useful than diagrammatic precision (e.g., non-technical audience, big-picture emphasis). Use diagram when exact topology, "
+        "dependency mapping, or architecture review requires precise structure.",
     },
     "method": {
-        "abduce": "Distinguish from: deduce (premises→conclusion) and induce "
-        "(examples→pattern). Abduce generates hypotheses from evidence.",
-        "actors": "Well-suited for security threat modelling: identifying threat "
-        "actors (external attackers, insiders, automated bots), their "
-        "motivations, and how their capabilities interact with system "
-        "attack surfaces. Use alongside adversarial for complete threat "
-        "models.",
-        "branch": "Distinguish from: explore (generating options). Branch explores "
-        "multiple reasoning paths in parallel with evaluation.",
-        "cluster": "Distinguish from: meld (balancing constraints). Cluster groups "
-        "items by shared characteristics.",
-        "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce "
-        "(examples→pattern). Deduce derives conclusions from premises.",
-        "explore": "Distinguish from: branch (parallel reasoning with evaluation). "
-        "Explore generates options without premature commitment.",
-        "induce": "Distinguish from: abduce (evidence→hypothesis) and deduce "
-        "(premises→conclusion). Induce generalizes from examples.",
-        "inversion": "Well-suited for architecture evaluation: start from named "
-        "failure modes (cascade failure, split-brain, thundering "
-        "herd) and ask which design choices create or amplify them. "
-        "Use when failure patterns are named and the question is "
-        "whether the design protects against them.",
-        "meld": "Distinguish from: cluster (grouping by characteristics). Meld "
-        "balances constraints between elements.",
-        "resilience": "Distinguish from: robust (selecting options that work "
-        "across futures). Resilience focuses on system behavior "
-        "under stress.",
-        "robust": "Distinguish from: resilience (behavior under stress). Robust "
-        "favors options that perform acceptably across futures.",
-        "systemic": "Distinguish from: analysis (decomposition/structure). "
-        "Systemic focuses on feedback loops and interactions.",
+        "abduce": "Distinguish from: deduce (premises→conclusion) and induce (examples→pattern). Abduce generates hypotheses from evidence.",
+        "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact "
+        "with system attack surfaces. Use alongside adversarial for complete threat models.",
+        "branch": "Distinguish from: explore (generating options). Branch explores multiple reasoning paths in parallel with evaluation.",
+        "cluster": "Distinguish from: meld (balancing constraints). Cluster groups items by shared characteristics.",
+        "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce (examples→pattern). Deduce derives conclusions from premises.",
+        "explore": "Distinguish from: branch (parallel reasoning with evaluation). Explore generates options without premature commitment.",
+        "induce": "Distinguish from: abduce (evidence→hypothesis) and deduce (premises→conclusion). Induce generalizes from examples.",
+        "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. "
+        "Use when failure patterns are named and the question is whether the design protects against them.",
+        "meld": "Distinguish from: cluster (grouping by characteristics). Meld balances constraints between elements.",
+        "resilience": "Distinguish from: robust (selecting options that work across futures). Resilience focuses on system behavior under stress.",
+        "robust": "Distinguish from: resilience (behavior under stress). Robust favors options that perform acceptably across futures.",
+        "systemic": "Distinguish from: analysis (decomposition/structure). Systemic focuses on feedback loops and interactions.",
     },
     "scope": {
-        "cross": "Use when the question is about where a concern lives across the "
-        "system, not just within one place. Prefer over struct when the "
-        "focus is on horizontal span and consistency of a concern rather "
-        "than structural arrangement."
+        "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a "
+        "concern rather than structural arrangement."
     },
 }
 
@@ -910,376 +494,161 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
 # Surfaces as 'When to use' helper text in UIs.
 AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
     "channel": {
-        "plain": "Suppress structural formatting: when user explicitly requests "
-        "plain prose, no lists, no bullets, or no structural decoration. "
-        "Heuristic: 'no bullets', 'no formatting', 'plain prose', "
-        "'continuous prose', 'flowing paragraphs', 'paragraph form' → "
-        "plain channel.",
-        "remote": "Optimizing output for remote or distributed delivery contexts "
-        "(video calls, screen sharing, async participants). Heuristic: "
-        "'remote delivery', 'distributed session', 'video call "
-        "context', 'screen sharing', 'remote-friendly' → remote "
-        "channel. Note: user saying their team is 'remote' describes "
-        "context — use remote channel only when delivery optimization "
-        "is the explicit goal.",
-        "sketch": "D2 diagram output: when user explicitly requests D2 format or "
-        "D2 diagram source. Heuristic: 'D2 diagram', 'D2 format', "
-        "'sketch diagram', 'd2 source' → sketch. Distinct from diagram "
-        "channel (Mermaid output). If the user just says 'diagram' "
-        "without specifying D2, use diagram channel.",
-        "sync": "Live or synchronous session planning: agenda with timing, steps, "
-        "and cues for real-time delivery. Heuristic: 'session plan', "
-        "'live workshop agenda', 'meeting agenda with timing cues', "
-        "'synchronous workshop plan' → sync channel. Combine with "
-        "facilitate form for facilitator-role outputs.",
+        "plain": "Suppress structural formatting: when user explicitly requests plain prose, no lists, no bullets, or no structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain "
+        "prose', 'continuous prose', 'flowing paragraphs', 'paragraph form' → plain channel.",
+        "remote": "Optimizing output for remote or distributed delivery contexts (video calls, screen sharing, async participants). Heuristic: 'remote delivery', 'distributed session', 'video "
+        "call context', 'screen sharing', 'remote-friendly' → remote channel. Note: user saying their team is 'remote' describes context — use remote channel only when delivery "
+        "optimization is the explicit goal.",
+        "sketch": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source. Heuristic: 'D2 diagram', 'D2 format', 'sketch diagram', 'd2 source' → sketch. Distinct from "
+        "diagram channel (Mermaid output). If the user just says 'diagram' without specifying D2, use diagram channel.",
+        "sync": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery. Heuristic: 'session plan', 'live workshop agenda', 'meeting agenda with timing "
+        "cues', 'synchronous workshop plan' → sync channel. Combine with facilitate form for facilitator-role outputs.",
     },
     "completeness": {
-        "gist": "Brief but complete response needed: user wants a quick "
-        "summary or overview without deep exploration. Heuristic: "
-        "'quick summary', 'overview', 'brief', 'tldr', 'just the "
-        "main points', 'high-level', 'standup update', 'just the "
-        "gist' → gist. Distinct from skim (skim = light pass, may "
-        "miss non-obvious; gist = brief but complete).",
-        "narrow": "Response should focus on a very specific slice only: user "
-        "explicitly limits scope to one aspect. Heuristic: "
-        "'specifically', 'only about', 'just this part', "
-        "'restricted to', 'nothing beyond', 'only X' → narrow. "
-        "Distinct from minimal (minimal = smallest answer; narrow "
-        "= very small slice of topic).",
-        "skim": "Light, surface-level pass needed: user wants a quick scan "
-        "for obvious issues without depth. Heuristic: 'light "
-        "review', 'quick pass', 'spot check', 'just flag obvious "
-        "problems', 'surface-level look', 'sanity check', 'quick "
-        "skim' → skim. Distinct from gist (gist = brief but "
-        "complete; skim = light pass that may miss non-obvious "
-        "issues).",
-    },
-    "form": {
-        "cocreate": "Iterative design with explicit decision points and alignment "
-        "checks at each step rather than a one-shot response. Heuristic: "
-        "'work through incrementally', 'with decision points', "
-        "'iterative design' → cocreate. Distinct from variants (choice "
-        "of designs) and make (one-shot artifact).",
-        "facilitate": "Planning a workshop, retrospective, or collaborative session "
-        "with session structure, participation cues, and facilitation "
-        "agenda. Heuristic: 'facilitate a X', 'run a retrospective', "
-        "'workshop planning' → facilitate. Distinct from walkthrough "
-        "(linear narrated steps).",
-        "ladder": "Analyzing causes or effects across multiple levels of "
-        "abstraction: step up to systemic causes, step down to concrete "
-        "consequences. Heuristic: 'step up and down abstraction levels', "
-        "'root cause hierarchy', 'why at a systems level' → ladder.",
-        "recipe": "Documenting a process as a structured recipe with a custom "
-        "mini-language and short key — best when the process has a "
-        "recurring structure that benefits from a custom notation. "
-        "Heuristic: 'document as recipe', 'structured setup guide with "
-        "repeating patterns' → recipe. Distinct from walkthrough (linear "
-        "narrated steps without custom notation).",
-        "spike": "Framing a technology investigation or adoption decision as a "
-        "backlog spike artifact (problem statement + exploratory "
-        "questions). Use make task (not plan) — the spike IS the artifact. "
-        "Heuristic: 'should we adopt X?', 'spike on Y', 'investigation "
-        "backlog item' → make + spike.",
-        "taxonomy": "Producing a type hierarchy, category classification, or "
-        "taxonomy of entities. Pair with thing scope for concrete "
-        "entities. Heuristic: 'classify all types of X', 'what kinds of "
-        "Y exist', 'type hierarchy' → taxonomy + thing scope. Distinct "
-        "from table (flat comparison).",
-        "visual": "Abstract or metaphorical representation of a subject as prose "
-        "layout with a legend — when diagrammatic precision (Mermaid) is "
-        "less useful than conceptual overview. Heuristic: 'abstract "
-        "visual', 'conceptual layout', 'big-picture structure for "
-        "non-technical audience' → visual. Distinct from diagram channel "
-        "(precise Mermaid output).",
-        "wardley": "Strategic mapping: user wants to position components on an "
-        "evolution axis (genesis → custom → product → commodity). "
-        "Heuristic: 'Wardley map', 'map on evolution axis', 'genesis to "
-        "commodity' → wardley.",
-        "wasinawa": "Post-incident reflection or retrospective on past events. "
-        "Structures output as: what happened, why it matters, next "
-        "steps. Heuristic: 'reflect on incident', 'what went wrong and "
-        "what to do next', 'lessons learned' → wasinawa. Distinct from "
-        "pre-mortem (inversion method): pre-mortem assumes future "
-        "failure; wasinawa reflects on past events.",
-        "questions": "Response structured as a list of investigation or clarification "
-        "questions: user wants the response itself to be a set of questions they can "
-        "pursue, not statements or answers. Heuristic: 'what questions should I ask', "
-        "'give me questions to investigate', 'what should I be asking about', 'frame "
-        "this as questions', 'questions I should explore', 'diagnostic questions for' "
-        "→ questions. Distinct from socratic form (socratic = LLM asks the USER "
-        "questions interactively to surface their thinking; questions = response IS "
-        "a question-list artifact the user takes away).",
-        "activities": "Segment-level session content: user wants the concrete activities "
-        "within a session, not the overall facilitation structure. Heuristic: "
-        "'what activities should we do', 'activities for each block', 'session "
-        "activities', 'design sprint activities', 'what happens in each segment', "
-        "'activities list for the workshop' → activities. Distinct from facilitate "
-        "form (facilitate = overall facilitation plan with session goals and "
-        "participation mechanics; activities = segment-by-segment content of what "
-        "to do and when). Often combined with facilitate: facilitate handles the "
-        "structure, activities handles the content.",
-        "indirect": "Reasoning-first, conclusion-last narrative: user asks for "
-        "explanation or recommendation that builds up context before landing the "
-        "point. Heuristic: 'walk me through the reasoning first', 'build up to "
-        "the recommendation', 'show your thinking before the conclusion', 'give "
-        "me the context before the answer', 'reasoning before conclusion' → "
-        "indirect. Distinct from case form (case = structured argument with "
-        "evidence and objections; indirect = softer narrative reasoning that "
-        "converges on a bottom-line point).",
-        "contextualise": "Preparing content to be passed to another LLM operation: "
-        "user wants output that is self-contained and includes all necessary "
-        "context for a downstream model to process without additional "
-        "explanation. Heuristic: 'pass this to another model', 'use this as "
-        "context for', 'prepare for downstream processing', 'make this "
-        "self-contained for an LLM', 'include all necessary context', "
-        "'so I can feed this to' → contextualise. Distinct from make "
-        "(make = create the artifact; contextualise = package existing "
-        "content with full context for another LLM to act on it).",
-        "socratic": "Question-led dialogue to surface the user's own thinking: user "
-        "wants to be asked questions rather than given answers, or wants to "
-        "reason through a topic interactively. Heuristic: 'ask me "
-        "questions', 'help me think through', 'challenge my assumptions "
-        "with questions', 'Socratic dialogue', 'probe my thinking', "
-        "'question me as we work through this', 'help me reason this out' "
-        "→ socratic. Distinct from adversarial method (adversarial = "
-        "stress-test the design; socratic = question the USER's reasoning "
-        "via dialogue).",
-    },
-    "method": {
-        "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or "
-        "at the absolute limits of the system. Heuristic: 'at 10x', 'at "
-        "extreme load', 'what breaks at scale', 'pushed to the limit', 'at "
-        "maximum load', 'what dominates at scale', 'scale to the extreme', "
-        "'at the limit' → boom. Distinct from resilience (normal stress "
-        "range) and adversarial (deliberate attack/exploit focus).",
-        "field": "Shared-medium interaction analysis: user asks how actors "
-        "interact through a shared infrastructure or protocol layer "
-        "rather than via direct references. Heuristic: 'shared "
-        "infrastructure', 'shared medium', 'protocol mediation', 'service "
-        "mesh routing', 'why things route through', 'broadcast patterns', "
-        "'effects propagate through a shared layer' → field. Distinct "
-        "from mapping (surface elements; field = model the medium and why "
-        "compatibility produces observed routing).",
-        "grove": "Accumulation and compounding analysis: user asks how small "
-        "effects build up over time, how debt or improvement compounds, "
-        "or how feedback loops amplify outcomes. Heuristic: 'compound', "
-        "'accumulates over time', 'feedback loop', 'technical debt "
-        "grows', 'network effect', 'how things build up', 'rate of change "
-        "over time', 'snowball' → grove. Distinct from systemic "
-        "(interacting whole; grove = rate of accumulation through "
-        "mechanisms) and effects (trace consequences; grove = HOW they "
-        "compound).",
-        "grow": "Evolutionary or incremental design philosophy: user wants to "
-        "start minimal and expand only when demonstrably needed. "
-        "Heuristic: 'start simple and expand', 'minimum viable', 'YAGNI', "
-        "'add only what you need', 'simplest thing that works', 'evolve as "
-        "needed', 'don't over-engineer', 'add features only when "
-        "required', 'grow incrementally' → grow. Distinct from minimal "
-        "completeness (brevity of output) and spec (define criteria "
-        "first).",
-        "meld": "Constraint-balancing or tension-resolution analysis: user asks "
-        "how to balance competing forces, find overlaps, or navigate "
-        "constraints between elements that must coexist. Heuristic: "
-        "'balance between', 'overlap between', 'constraints between', "
-        "'combining X and Y', 'where X and Y interact', 'navigate tensions "
-        "between', 'find the combination that satisfies' → meld. Distinct "
-        "from compare (evaluate alternatives; meld = balance constraints "
-        "between elements that must coexist).",
-        "melody": "Cross-component or cross-team coordination analysis: user asks "
-        "how to synchronize work, manage coupling, or align changes "
-        "across teams or components. Heuristic: 'coordinate across "
-        "teams', 'synchronize changes', 'change alignment', 'coupling "
-        "between components', 'parallel work streams', 'avoid conflicts "
-        "between teams', 'migration coordination', 'who needs to change "
-        "when' → melody. Distinct from depends (what relies on what) and "
-        "actors (centering the people involved).",
-        "abduce": "Comparative hypothesis generation from evidence: user wants "
-        "multiple candidate explanations ranked by how well they fit the "
-        "evidence, not just a single root cause. Heuristic: "
-        "'what\\'s the best explanation for', 'generate hypotheses for "
-        "why', 'what are the most likely causes ranked', 'compare possible "
-        "explanations', 'ranked hypotheses from evidence', 'what could "
-        "explain this' → abduce. Distinct from diagnose (diagnose = narrow "
-        "to single root cause via evidence; abduce = generate and compare "
-        "multiple competing explanations explicitly). Distinct from induce "
-        "(induce = generalize a rule from examples; abduce = hypothesize "
-        "from evidence).",
-        "induce": "Inductive generalization from examples: user wants to draw a "
-        "general principle, pattern, or rule from a set of specific cases "
-        "or observations. Heuristic: 'what general principle can I draw "
-        "from these', 'what pattern do these examples suggest', 'what does "
-        "this tell us more broadly', 'generalize from these observations', "
-        "'what can I conclude from these cases', 'what rule emerges from "
-        "these instances', 'extrapolate from these examples' → induce. "
-        "Distinct from abduce (abduce = generate competing hypotheses to "
-        "explain evidence; induce = generalize a rule or pattern from a "
-        "set of examples).",
-        "simulation": "Thought-experiment enrichment for feedback loop and emergent "
-        "effect analysis: user wants to project systemic dynamics through "
-        "an analytical lens. Heuristic: 'run a thought experiment', "
-        "'trace feedback loops', 'where would bottlenecks emerge', "
-        "'tipping point analysis', 'what emergent effects would arise', "
-        "'project systemic dynamics', 'model how effects compound over "
-        "time' → simulation method. Distinct from sim task (sim = "
-        "standalone scenario narrative of what unfolds; simulation method "
-        "= enriches probe/plan with thought-experiment reasoning about "
-        "feedback loops, tipping points, and emergent system behaviour). "
-        "Distinct from boom (boom = scale extremes; simulation = systemic "
-        "feedback dynamics).",
-        "trans": "Information fidelity and signal degradation analysis: user asks "
-        "where data or signal is lost, distorted, delayed, or degraded as "
-        "it passes through a system. Heuristic: 'where does signal get "
-        "lost', 'where does data degrade', 'signal fidelity', 'where is "
-        "information lost in transmission', 'where does the message get "
-        "distorted', 'trace signal path through the system', 'where does "
-        "noise enter', 'signal-to-noise', 'observability pipeline "
-        "fidelity' → trans. Distinct from flow method (flow = narrate "
-        "step-by-step sequence; trans = model noise, distortion, and "
-        "fidelity across stages).",
-        "jobs": "Jobs-to-be-done (JTBD) analysis: user wants to understand what "
-        "outcome users are trying to achieve, what need the feature serves, "
-        "or what forces shape their adoption choices. Heuristic: 'what is "
-        "the user actually trying to accomplish', 'what job does this "
-        "feature do', 'what need does this solve', 'why would someone use "
-        "this', 'what outcome does the user want', 'what drives adoption', "
-        "'user motivation behind', 'JTBD', 'jobs to be done' → jobs. "
-        "Distinct from product method (product = features, user needs, "
-        "value propositions broadly; jobs = specifically the outcome/"
-        "progress users seek and the forces blocking or enabling it).",
-        "mod": "Cyclic or periodic pattern analysis: user asks about behavior that "
-        "repeats, wraps around, or follows a cycle. Heuristic: 'repeats "
-        "across cycles', 'cyclic behavior', 'periodic pattern', 'repeating "
-        "structure', 'what wraps around', 'recurs periodically', "
-        "'equivalent states' → mod. Distinct from motifs scope (recurring "
-        "patterns across codebase; mod = cyclic/periodic reasoning about "
-        "behavior that repeats with a defined period).",
-        "canon": "Canonical-source analysis: user asks which representation is "
-        "authoritative, wants to eliminate duplication by locating the "
-        "SSOT, or needs to map multiple representations to a single "
-        "canonical origin. Heuristic: 'where is the single source of "
-        "truth', 'we have duplicate definitions', 'which config is "
-        "authoritative', 'DRY violation', 'multiple representations of "
-        "the same thing', 'who owns this data', 'derive X from Y instead "
-        "of duplicating', 'canonical source for', 'reduce duplication to "
-        "derivation' → canon. Distinct from depends (depends = trace what "
-        "relies on what; canon = reduce multiple representations to a "
-        "single authoritative locus). Distinct from mapping (mapping = "
-        "surface elements and relationships; canon = identify or enforce "
-        "the single canonical source among them).",
-    },
-    "scope": {
-        "agent": "Decision-making or agency focus: user asks who can act, who has "
-        "authority, or how choices are made between actors. Heuristic: "
-        "'who decides', 'who has authority', 'who can approve', "
-        "'decision-making', 'agency', 'who is responsible' → agent scope. "
-        "Note: agent is a SCOPE token (foregrounds decision-making "
-        "actors); actors is a METHOD token (enriches any task with "
-        "actor-centered analysis). Both can be selected together.",
-        "assume": "Assumptions and premises focus: user asks what must be true, "
-        "what is taken for granted, or what preconditions are embedded in "
-        "the design. Heuristic: 'what assumptions', 'what are we "
-        "assuming', 'what must be true', 'what preconditions', 'hidden "
-        "assumptions', 'what are we taking for granted' → assume scope. "
-        "Distinct from unknowns method (unknowns = surfaces what we don't "
-        "know we don't know; assume = makes explicit what is already "
-        "assumed).",
-        "cross": "Cross-cutting concerns spanning the system: user asks about a "
-        "concern that appears across many unrelated modules (logging, error "
-        "handling, auth, observability). Heuristic: 'scattered across', "
-        "'spans multiple services', 'consistent across', 'cross-cutting', "
-        "'appears throughout', 'horizontal concern', 'error handling across "
-        "our codebase', 'where does X live across the system' → cross "
-        "scope. Distinct from motifs scope (motifs = structural patterns "
-        "that repeat; cross = concerns that PROPAGATE and SPAN across "
-        "module boundaries).",
-        "good": "Quality criteria or success standards focus: user asks what makes "
-        "something good, what criteria matter, or how to judge quality. "
-        "Heuristic: 'quality criteria', 'what makes it good', 'how to "
-        "judge', 'success criteria', 'well-designed', 'what good looks "
-        "like', 'standards for', 'what does success look like' → good "
-        "scope. Often pairs with fail scope (good + fail = quality and "
-        "failure mode dimensions).",
-        "motifs": "Recurring or repeated patterns across the codebase or system: "
-        "user asks about structures or idioms that appear in multiple "
-        "places. Heuristic: 'recurring patterns', 'repeated across', "
-        "'appears in multiple places', 'common idioms', 'what keeps "
-        "showing up', 'same pattern in different places' → motifs scope. "
-        "Distinct from struct (one system's internal arrangement) and "
-        "mapping method (surface all elements/relationships).",
-        "stable": "Stability and persistence focus: user asks what is stable, "
-        "unlikely to change, or self-reinforcing in the system or design. "
-        "Heuristic: 'stable', 'unlikely to change', 'won't change', 'what "
-        "persists', 'what is settled', 'fixed constraints', 'what has "
-        "remained stable', 'backward-compatible' → stable scope. Often "
-        "pairs with time scope (stable = what persists; time = how things "
-        "evolve).",
-        "time": "Temporal or sequential focus: user asks about sequence, history, "
-        "phases, or how something changes over time. Heuristic: 'step by "
-        "step', 'in order', 'over time', 'what happens when', 'sequence', "
-        "'timeline', 'history', 'how did we get here', 'phases' → time "
-        "scope. Distinct from flow method (flow = reasoning approach; time "
-        "= scope dimension to emphasize).",
+        "gist": "Brief but complete response needed: user wants a quick summary or overview without deep exploration. Heuristic: 'quick summary', 'overview', 'brief', 'tldr', 'just the "
+        "main points', 'high-level', 'standup update', 'just the gist' → gist. Distinct from skim (skim = light pass, may miss non-obvious; gist = brief but complete).",
+        "narrow": "Response should focus on a very specific slice only: user explicitly limits scope to one aspect. Heuristic: 'specifically', 'only about', 'just this part', 'restricted "
+        "to', 'nothing beyond', 'only X' → narrow. Distinct from minimal (minimal = smallest answer; narrow = very small slice of topic).",
+        "skim": "Light, surface-level pass needed: user wants a quick scan for obvious issues without depth. Heuristic: 'light review', 'quick pass', 'spot check', 'just flag obvious "
+        "problems', 'surface-level look', 'sanity check', 'quick skim' → skim. Distinct from gist (gist = brief but complete; skim = light pass that may miss non-obvious issues).",
     },
     "directional": {
-        "jog": "Execute directly without hedging or clarification: user wants an "
-        "immediate answer, not questions back. Heuristic: 'just answer', "
-        "'don\\'t ask me questions', 'make a call', 'just do it', 'don\\'t "
-        "hedge', 'go ahead', 'I don\\'t need options, just pick one', "
-        "'stop asking and decide', 'just tell me' → jog. Most useful with "
-        "pick, plan, make when the user explicitly wants a decision rather "
-        "than a dialogue.",
-        "dig": "Ground in concrete specifics: user wants examples, real cases, and "
-        "grounded details rather than abstract analysis. Heuristic: 'be "
-        "concrete', 'give me specific examples', 'show me an actual case', "
-        "'not abstract — real examples', 'ground this in reality', "
-        "'practical examples only', 'make it tangible', 'I need specifics "
-        "not theory' → dig. Distinct from fog (fog = step back to the "
-        "abstract principle; dig = stay concrete and grounded).",
-        "fog": "Surface the abstract pattern or principle: user wants to move from "
-        "specific cases to the general insight. Heuristic: 'step back and "
-        "tell me the general principle', 'abstract away from the details', "
-        "'what does this reveal more broadly', 'what\\'s the big picture "
-        "here', 'what underlying pattern do these cases share', 'zoom out', "
-        "'what\\'s the broader implication' → fog. Distinct from dig (dig "
-        "= stay concrete; fog = abstract upward from specifics).",
-        "rog": "Push toward structural reflection: user wants the response to "
-        "examine how the subject is organised and reflect on what that "
-        "structure reveals. Heuristic: 'describe the structure then tell "
-        "me what it means', 'how is it organised and what does that "
-        "reveal', 'walk me through the structure and reflect on the "
-        "implications', 'what does the organisation tell us' → rog. "
-        "Directional compass: rog is the reflective/structural pole "
-        "(left); ong is the acting/extending pole (right). Distinct from "
-        "fog (fog = push toward abstract; rog = push toward structural "
-        "reflection).",
-        "ong": "Push toward concrete action and extension: user wants the response "
-        "to identify what to do and extend those actions to related "
-        "contexts. Heuristic: 'what actions should I take and what comes "
-        "next after each', 'give me the actions with follow-on steps', "
-        "'what do I do and what\\'s the next step after that', 'concrete "
-        "next steps and their extensions' → ong. Directional compass: ong "
-        "is the acting/extending pole (right); rog is the "
-        "reflective/structural pole (left). Distinct from plan task "
-        "(plan = strategy and structure; ong directional = push any task "
-        "toward acting and extending outward).",
-        "bog": "Span the full horizontal spectrum — reflective AND acting: user "
-        "wants the response to cover both the reflective/structural "
-        "dimension (rog) AND the acting/extending dimension (ong). bog = "
-        "rog + ong. Heuristic: 'examine what it means AND tell me what "
-        "to do about it', 'both the structural reflection and the next "
-        "steps', 'understand it structurally and then act on that "
-        "understanding', 'analysis and actions both' → bog. Distinct from "
-        "rog (rog = reflective pole only) and ong (ong = acting pole "
-        "only). bog spans the horizontal axis end to end.",
-        "fig": "Span the full vertical spectrum — abstract AND concrete: user "
-        "wants the response to cover both the abstract/general dimension "
-        "(fog) AND the concrete/specific dimension (dig). fig = fog + dig. "
-        "Heuristic: 'address both the principle and the specifics', 'give "
-        "me the concept and the grounded examples', 'both the theory and "
-        "the concrete reality', 'be abstract and concrete', 'cover the "
-        "full range from general to specific' → fig. Distinct from fog "
-        "(fog = abstract pole only) and dig (dig = concrete pole only). "
+        "bog": "Span the full horizontal spectrum — reflective AND acting: user wants the response to cover both the reflective/structural dimension (rog) AND the acting/extending dimension "
+        "(ong). bog = rog + ong. Heuristic: 'examine what it means AND tell me what to do about it', 'both the structural reflection and the next steps', 'understand it structurally "
+        "and then act on that understanding', 'analysis and actions both' → bog. Distinct from rog (rog = reflective pole only) and ong (ong = acting pole only). bog spans the "
+        "horizontal axis end to end.",
+        "dig": "Ground in concrete specifics: user wants examples, real cases, and grounded details rather than abstract analysis. Heuristic: 'be concrete', 'give me specific examples', "
+        "'show me an actual case', 'not abstract — real examples', 'ground this in reality', 'practical examples only', 'make it tangible', 'I need specifics not theory' → dig. "
+        "Distinct from fog (fog = step back to the abstract principle; dig = stay concrete and grounded).",
+        "fig": "Span the full vertical spectrum — abstract AND concrete: user wants the response to cover both the abstract/general dimension (fog) AND the concrete/specific dimension "
+        "(dig). fig = fog + dig. Heuristic: 'address both the principle and the specifics', 'give me the concept and the grounded examples', 'both the theory and the concrete "
+        "reality', 'be abstract and concrete', 'cover the full range from general to specific' → fig. Distinct from fog (fog = abstract pole only) and dig (dig = concrete pole only). "
         "fig spans the vertical axis end to end.",
+        "fog": "Surface the abstract pattern or principle: user wants to move from specific cases to the general insight. Heuristic: 'step back and tell me the general principle', 'abstract "
+        "away from the details', 'what does this reveal more broadly', 'what\\'s the big picture here', 'what underlying pattern do these cases share', 'zoom out', 'what\\'s the "
+        "broader implication' → fog. Distinct from dig (dig = stay concrete; fog = abstract upward from specifics).",
+        "jog": "Execute directly without hedging or clarification: user wants an immediate answer, not questions back. Heuristic: 'just answer', 'don\\'t ask me questions', 'make a call', "
+        "'just do it', 'don\\'t hedge', 'go ahead', 'I don\\'t need options, just pick one', 'stop asking and decide', 'just tell me' → jog. Most useful with pick, plan, make when "
+        "the user explicitly wants a decision rather than a dialogue.",
+        "ong": "Push toward concrete action and extension: user wants the response to identify what to do and extend those actions to related contexts. Heuristic: 'what actions should I "
+        "take and what comes next after each', 'give me the actions with follow-on steps', 'what do I do and what\\'s the next step after that', 'concrete next steps and their "
+        "extensions' → ong. Directional compass: ong is the acting/extending pole (right); rog is the reflective/structural pole (left). Distinct from plan task (plan = strategy and "
+        "structure; ong directional = push any task toward acting and extending outward).",
+        "rog": "Push toward structural reflection: user wants the response to examine how the subject is organised and reflect on what that structure reveals. Heuristic: 'describe the "
+        "structure then tell me what it means', 'how is it organised and what does that reveal', 'walk me through the structure and reflect on the implications', 'what does the "
+        "organisation tell us' → rog. Directional compass: rog is the reflective/structural pole (left); ong is the acting/extending pole (right). Distinct from fog (fog = push "
+        "toward abstract; rog = push toward structural reflection).",
+    },
+    "form": {
+        "activities": "Segment-level session content: user wants the concrete activities within a session, not the overall facilitation structure. Heuristic: 'what activities should we do', "
+        "'activities for each block', 'session activities', 'design sprint activities', 'what happens in each segment', 'activities list for the workshop' → activities. Distinct from "
+        "facilitate form (facilitate = overall facilitation plan with session goals and participation mechanics; activities = segment-by-segment content of what to do and when). "
+        "Often combined with facilitate: facilitate handles the structure, activities handles the content.",
+        "cocreate": "Iterative design with explicit decision points and alignment checks at each step rather than a one-shot response. Heuristic: 'work through incrementally', 'with decision "
+        "points', 'iterative design' → cocreate. Distinct from variants (choice of designs) and make (one-shot artifact).",
+        "contextualise": "Preparing content to be passed to another LLM operation: user wants output that is self-contained and includes all necessary context for a downstream model to process "
+        "without additional explanation. Heuristic: 'pass this to another model', 'use this as context for', 'prepare for downstream processing', 'make this self-contained for an "
+        "LLM', 'include all necessary context', 'so I can feed this to' → contextualise. Distinct from make (make = create the artifact; contextualise = package existing content "
+        "with full context for another LLM to act on it).",
+        "facilitate": "Planning a workshop, retrospective, or collaborative session with session structure, participation cues, and facilitation agenda. Heuristic: 'facilitate a X', 'run a "
+        "retrospective', 'workshop planning' → facilitate. Distinct from walkthrough (linear narrated steps).",
+        "indirect": "Reasoning-first, conclusion-last narrative: user asks for explanation or recommendation that builds up context before landing the point. Heuristic: 'walk me through the "
+        "reasoning first', 'build up to the recommendation', 'show your thinking before the conclusion', 'give me the context before the answer', 'reasoning before conclusion' → "
+        "indirect. Distinct from case form (case = structured argument with evidence and objections; indirect = softer narrative reasoning that converges on a bottom-line point).",
+        "ladder": "Analyzing causes or effects across multiple levels of abstraction: step up to systemic causes, step down to concrete consequences. Heuristic: 'step up and down abstraction "
+        "levels', 'root cause hierarchy', 'why at a systems level' → ladder.",
+        "questions": "Response structured as a list of investigation or clarification questions: user wants the response itself to be a set of questions they can pursue, not statements or answers. "
+        "Heuristic: 'what questions should I ask', 'give me questions to investigate', 'what should I be asking about', 'frame this as questions', 'questions I should explore', "
+        "'diagnostic questions for' → questions. Distinct from socratic form (socratic = LLM asks the USER questions interactively to surface their thinking; questions = response IS a "
+        "question-list artifact the user takes away).",
+        "recipe": "Documenting a process as a structured recipe with a custom mini-language and short key — best when the process has a recurring structure that benefits from a custom notation. "
+        "Heuristic: 'document as recipe', 'structured setup guide with repeating patterns' → recipe. Distinct from walkthrough (linear narrated steps without custom notation).",
+        "socratic": "Question-led dialogue to surface the user's own thinking: user wants to be asked questions rather than given answers, or wants to reason through a topic interactively. "
+        "Heuristic: 'ask me questions', 'help me think through', 'challenge my assumptions with questions', 'Socratic dialogue', 'probe my thinking', 'question me as we work through "
+        "this', 'help me reason this out' → socratic. Distinct from adversarial method (adversarial = stress-test the design; socratic = question the USER's reasoning via dialogue).",
+        "spike": "Framing a technology investigation or adoption decision as a backlog spike artifact (problem statement + exploratory questions). Use make task (not plan) — the spike IS the "
+        "artifact. Heuristic: 'should we adopt X?', 'spike on Y', 'investigation backlog item' → make + spike.",
+        "taxonomy": "Producing a type hierarchy, category classification, or taxonomy of entities. Pair with thing scope for concrete entities. Heuristic: 'classify all types of X', 'what kinds of "
+        "Y exist', 'type hierarchy' → taxonomy + thing scope. Distinct from table (flat comparison).",
+        "visual": "Abstract or metaphorical representation of a subject as prose layout with a legend — when diagrammatic precision (Mermaid) is less useful than conceptual overview. Heuristic: "
+        "'abstract visual', 'conceptual layout', 'big-picture structure for non-technical audience' → visual. Distinct from diagram channel (precise Mermaid output).",
+        "wardley": "Strategic mapping: user wants to position components on an evolution axis (genesis → custom → product → commodity). Heuristic: 'Wardley map', 'map on evolution axis', 'genesis "
+        "to commodity' → wardley.",
+        "wasinawa": "Post-incident reflection or retrospective on past events. Structures output as: what happened, why it matters, next steps. Heuristic: 'reflect on incident', 'what went wrong "
+        "and what to do next', 'lessons learned' → wasinawa. Distinct from pre-mortem (inversion method): pre-mortem assumes future failure; wasinawa reflects on past events.",
+    },
+    "method": {
+        "abduce": "Comparative hypothesis generation from evidence: user wants multiple candidate explanations ranked by how well they fit the evidence, not just a single root cause. Heuristic: "
+        "'what\\'s the best explanation for', 'generate hypotheses for why', 'what are the most likely causes ranked', 'compare possible explanations', 'ranked hypotheses from "
+        "evidence', 'what could explain this' → abduce. Distinct from diagnose (diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing "
+        "explanations explicitly). Distinct from induce (induce = generalize a rule from examples; abduce = hypothesize from evidence).",
+        "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to "
+        "the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial "
+        "(deliberate attack/exploit focus).",
+        "canon": "Canonical-source analysis: user asks which representation is authoritative, wants to eliminate duplication by locating the SSOT, or needs to map multiple representations to a "
+        "single canonical origin. Heuristic: 'where is the single source of truth', 'we have duplicate definitions', 'which config is authoritative', 'DRY violation', 'multiple "
+        "representations of the same thing', 'who owns this data', 'derive X from Y instead of duplicating', 'canonical source for', 'reduce duplication to derivation' → canon. Distinct "
+        "from depends (depends = trace what relies on what; canon = reduce multiple representations to a single authoritative locus). Distinct from mapping (mapping = surface elements "
+        "and relationships; canon = identify or enforce the single canonical source among them).",
+        "field": "Shared-medium interaction analysis: user asks how actors interact through a shared infrastructure or protocol layer rather than via direct references. Heuristic: 'shared "
+        "infrastructure', 'shared medium', 'protocol mediation', 'service mesh routing', 'why things route through', 'broadcast patterns', 'effects propagate through a shared layer' → "
+        "field. Distinct from mapping (surface elements; field = model the medium and why compatibility produces observed routing).",
+        "grove": "Accumulation and compounding analysis: user asks how small effects build up over time, how debt or improvement compounds, or how feedback loops amplify outcomes. Heuristic: "
+        "'compound', 'accumulates over time', 'feedback loop', 'technical debt grows', 'network effect', 'how things build up', 'rate of change over time', 'snowball' → grove. Distinct "
+        "from systemic (interacting whole; grove = rate of accumulation through mechanisms) and effects (trace consequences; grove = HOW they compound).",
+        "grow": "Evolutionary or incremental design philosophy: user wants to start minimal and expand only when demonstrably needed. Heuristic: 'start simple and expand', 'minimum viable', "
+        "'YAGNI', 'add only what you need', 'simplest thing that works', 'evolve as needed', 'don't over-engineer', 'add features only when required', 'grow incrementally' → grow. "
+        "Distinct from minimal completeness (brevity of output) and spec (define criteria first).",
+        "induce": "Inductive generalization from examples: user wants to draw a general principle, pattern, or rule from a set of specific cases or observations. Heuristic: 'what general "
+        "principle can I draw from these', 'what pattern do these examples suggest', 'what does this tell us more broadly', 'generalize from these observations', 'what can I conclude "
+        "from these cases', 'what rule emerges from these instances', 'extrapolate from these examples' → induce. Distinct from abduce (abduce = generate competing hypotheses to "
+        "explain evidence; induce = generalize a rule or pattern from a set of examples).",
+        "jobs": "Jobs-to-be-done (JTBD) analysis: user wants to understand what outcome users are trying to achieve, what need the feature serves, or what forces shape their adoption choices. "
+        "Heuristic: 'what is the user actually trying to accomplish', 'what job does this feature do', 'what need does this solve', 'why would someone use this', 'what outcome does the "
+        "user want', 'what drives adoption', 'user motivation behind', 'JTBD', 'jobs to be done' → jobs. Distinct from product method (product = features, user needs, value propositions "
+        "broadly; jobs = specifically the outcome/progress users seek and the forces blocking or enabling it).",
+        "meld": "Constraint-balancing or tension-resolution analysis: user asks how to balance competing forces, find overlaps, or navigate constraints between elements that must coexist. "
+        "Heuristic: 'balance between', 'overlap between', 'constraints between', 'combining X and Y', 'where X and Y interact', 'navigate tensions between', 'find the combination that "
+        "satisfies' → meld. Distinct from compare (evaluate alternatives; meld = balance constraints between elements that must coexist).",
+        "melody": "Cross-component or cross-team coordination analysis: user asks how to synchronize work, manage coupling, or align changes across teams or components. Heuristic: 'coordinate "
+        "across teams', 'synchronize changes', 'change alignment', 'coupling between components', 'parallel work streams', 'avoid conflicts between teams', 'migration coordination', "
+        "'who needs to change when' → melody. Distinct from depends (what relies on what) and actors (centering the people involved).",
+        "mod": "Cyclic or periodic pattern analysis: user asks about behavior that repeats, wraps around, or follows a cycle. Heuristic: 'repeats across cycles', 'cyclic behavior', 'periodic "
+        "pattern', 'repeating structure', 'what wraps around', 'recurs periodically', 'equivalent states' → mod. Distinct from motifs scope (recurring patterns across codebase; mod = "
+        "cyclic/periodic reasoning about behavior that repeats with a defined period).",
+        "simulation": "Thought-experiment enrichment for feedback loop and emergent effect analysis: user wants to project systemic dynamics through an analytical lens. Heuristic: 'run a thought "
+        "experiment', 'trace feedback loops', 'where would bottlenecks emerge', 'tipping point analysis', 'what emergent effects would arise', 'project systemic dynamics', 'model "
+        "how effects compound over time' → simulation method. Distinct from sim task (sim = standalone scenario narrative of what unfolds; simulation method = enriches probe/plan "
+        "with thought-experiment reasoning about feedback loops, tipping points, and emergent system behaviour). Distinct from boom (boom = scale extremes; simulation = systemic "
+        "feedback dynamics).",
+        "trans": "Information fidelity and signal degradation analysis: user asks where data or signal is lost, distorted, delayed, or degraded as it passes through a system. Heuristic: 'where "
+        "does signal get lost', 'where does data degrade', 'signal fidelity', 'where is information lost in transmission', 'where does the message get distorted', 'trace signal path "
+        "through the system', 'where does noise enter', 'signal-to-noise', 'observability pipeline fidelity' → trans. Distinct from flow method (flow = narrate step-by-step sequence; "
+        "trans = model noise, distortion, and fidelity across stages).",
+    },
+    "scope": {
+        "agent": "Decision-making or agency focus: user asks who can act, who has authority, or how choices are made between actors. Heuristic: 'who decides', 'who has authority', 'who can "
+        "approve', 'decision-making', 'agency', 'who is responsible' → agent scope. Note: agent is a SCOPE token (foregrounds decision-making actors); actors is a METHOD token (enriches "
+        "any task with actor-centered analysis). Both can be selected together.",
+        "assume": "Assumptions and premises focus: user asks what must be true, what is taken for granted, or what preconditions are embedded in the design. Heuristic: 'what assumptions', 'what "
+        "are we assuming', 'what must be true', 'what preconditions', 'hidden assumptions', 'what are we taking for granted' → assume scope. Distinct from unknowns method (unknowns = "
+        "surfaces what we don't know we don't know; assume = makes explicit what is already assumed).",
+        "cross": "Cross-cutting concerns spanning the system: user asks about a concern that appears across many unrelated modules (logging, error handling, auth, observability). Heuristic: "
+        "'scattered across', 'spans multiple services', 'consistent across', 'cross-cutting', 'appears throughout', 'horizontal concern', 'error handling across our codebase', 'where "
+        "does X live across the system' → cross scope. Distinct from motifs scope (motifs = structural patterns that repeat; cross = concerns that PROPAGATE and SPAN across module "
+        "boundaries).",
+        "good": "Quality criteria or success standards focus: user asks what makes something good, what criteria matter, or how to judge quality. Heuristic: 'quality criteria', 'what makes it "
+        "good', 'how to judge', 'success criteria', 'well-designed', 'what good looks like', 'standards for', 'what does success look like' → good scope. Often pairs with fail scope (good "
+        "+ fail = quality and failure mode dimensions).",
+        "motifs": "Recurring or repeated patterns across the codebase or system: user asks about structures or idioms that appear in multiple places. Heuristic: 'recurring patterns', 'repeated "
+        "across', 'appears in multiple places', 'common idioms', 'what keeps showing up', 'same pattern in different places' → motifs scope. Distinct from struct (one system's internal "
+        "arrangement) and mapping method (surface all elements/relationships).",
+        "stable": "Stability and persistence focus: user asks what is stable, unlikely to change, or self-reinforcing in the system or design. Heuristic: 'stable', 'unlikely to change', 'won't "
+        "change', 'what persists', 'what is settled', 'fixed constraints', 'what has remained stable', 'backward-compatible' → stable scope. Often pairs with time scope (stable = what "
+        "persists; time = how things evolve).",
+        "time": "Temporal or sequential focus: user asks about sequence, history, phases, or how something changes over time. Heuristic: 'step by step', 'in order', 'over time', 'what happens "
+        "when', 'sequence', 'timeline', 'history', 'how did we get here', 'phases' → time scope. Distinct from flow method (flow = reasoning approach; time = scope dimension to "
+        "emphasize).",
     },
 }
 

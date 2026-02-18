@@ -86,11 +86,12 @@ def render_axis_config() -> str:
         for axis in sorted(use_when.keys())
         if use_when.get(axis)
     }
-    # Use width=88 to match black's default line length
-    body = pprint.pformat(mapping, width=88, sort_dicts=True)
-    label_body = pprint.pformat(label_mapping, width=88, sort_dicts=True)
-    guidance_body = pprint.pformat(guidance_mapping, width=88, sort_dicts=True)
-    use_when_body = pprint.pformat(use_when_mapping, width=88, sort_dicts=True)
+    # Use a very wide width to prevent pprint from splitting string literals
+    # across lines (which creates ugly adjacent string concatenation)
+    body = pprint.pformat(mapping, width=200, sort_dicts=True)
+    label_body = pprint.pformat(label_mapping, width=200, sort_dicts=True)
+    guidance_body = pprint.pformat(guidance_mapping, width=200, sort_dicts=True)
+    use_when_body = pprint.pformat(use_when_mapping, width=200, sort_dicts=True)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).

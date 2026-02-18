@@ -872,14 +872,6 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "favors options that perform acceptably across futures.",
         "systemic": "Distinguish from: analysis (decomposition/structure). "
         "Systemic focuses on feedback loops and interactions.",
-        "trans": "The response models information transfer as a staged process "
-        "involving a source, encoding, channel, decoding, destination, "
-        "and feedback. Explanations must distinguish message from signal, "
-        "account for transformation across stages, model noise or "
-        "distortion explicitly, and specify mechanisms for detecting and "
-        "repairing transmission errors. Outcomes may not be attributed to "
-        "communication without specifying how the signal survived, "
-        "degraded, or was corrected during transmission.",
     },
     "scope": {
         "cross": "Use when the question is about where a concern lives across the "
@@ -992,6 +984,14 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "maximum load', 'what dominates at scale', 'scale to the extreme', "
         "'at the limit' → boom. Distinct from resilience (normal stress "
         "range) and adversarial (deliberate attack/exploit focus).",
+        "trans": "The response models information transfer as a staged process "
+        "involving a source, encoding, channel, decoding, destination, "
+        "and feedback. Explanations must distinguish message from signal, "
+        "account for transformation across stages, model noise or "
+        "distortion explicitly, and specify mechanisms for detecting and "
+        "repairing transmission errors. Outcomes may not be attributed to "
+        "communication without specifying how the signal survived, "
+        "degraded, or was corrected during transmission.",
         "field": "Shared-medium interaction analysis: user asks how actors "
         "interact through a shared infrastructure or protocol layer "
         "rather than via direct references. Heuristic: 'shared "

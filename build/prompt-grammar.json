@@ -438,6 +438,7 @@
         "spec": "Define correctness criteria first",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
+        "trans": "Information transfer model with noise and feedback",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Apply falsification pressure to claims"
       },
@@ -2578,7 +2579,7 @@
     }
   ],
   "checksums": {
-    "axes": "cd361a8fc011710f5c5b6f64c975fd59d9d4a27309d2272c718e6b77a55a94b9",
+    "axes": "8a5e9a0f266164cbd3b99753b8cc76d8a31a1cf91e176685f65887a80975a2cf",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

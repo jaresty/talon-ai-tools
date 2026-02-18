@@ -733,6 +733,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "spec": "Define correctness criteria first",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
+        "trans": "Information transfer model with noise and feedback",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Apply falsification pressure to claims",
     },

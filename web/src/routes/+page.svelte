@@ -167,6 +167,7 @@
 
 	let activeTab = $state('task');
 	let showPreview = $state(true); // Default visible, CSS hides on mobile
+	let fabOpen = $state(false); // FAB menu state
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
@@ -361,7 +362,14 @@
 				<div class="command-box" class:has-conflicts={conflicts.length > 0}>
 					<div class="command-label">Command</div>
 					<code class="command">{command}</code>
-					<div class="action-row">
+					
+					<!-- FAB for mobile -->
+					<button class="fab-btn" onclick={() => fabOpen = !fabOpen} aria-label="Actions">
+						{fabOpen ? '✕' : '⋯'}
+					</button>
+					
+					<!-- Action row -->
+					<div class="action-row" class:mobile-visible={fabOpen}>
 						<button class="copy-btn" onclick={copyCommand}>
 							{copied ? '✓ Copied' : 'Copy cmd'}
 						</button>
@@ -556,6 +564,10 @@
 	}
 
 	.clear-btn:hover { border-color: #f7768e; color: #f7768e; }
+
+	.fab-btn {
+		display: none;
+	}
 
 	/* Inputs */
 	.inputs { margin-bottom: 0.75rem; }
@@ -812,6 +824,46 @@
 
 		.persona-select-label {
 			min-width: 100%;
+		}
+
+		.fab-btn {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 44px;
+			height: 44px;
+			background: var(--color-accent);
+			border: none;
+			border-radius: 50%;
+			color: var(--color-bg);
+			font-size: 1.25rem;
+			cursor: pointer;
+			position: fixed;
+			bottom: 1.5rem;
+			right: 1.5rem;
+			z-index: 100;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		}
+
+		.action-row {
+			display: none;
+			flex-direction: column;
+			gap: 0.5rem;
+			margin-top: 0.5rem;
+		}
+
+		.action-row.mobile-visible {
+			display: flex;
+		}
+
+		.action-row button {
+			width: 100%;
+			min-height: 44px;
+			justify-content: center;
+		}
+
+		.copy-btn, .copy-prompt-btn, .share-btn, .clear-btn {
+			min-height: 44px;
 		}
 	}
 </style>

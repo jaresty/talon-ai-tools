@@ -7,6 +7,44 @@
 - **Loop 3**: Preview Toggle - [COMPLETE]
 - **Loop 4**: Expanded Textareas - [COMPLETE]
 - **Loop 5**: Stacked Persona Selects - [COMPLETE]
+- **Loop 6**: Floating Action Button - [COMPLETE]
+
+---
+
+### loop-6
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0137 §Decision — Floating Action Button (Loop 6)
+
+**active_constraint**: On mobile, action buttons (Copy cmd, Copy prompt, Share, Clear) take up too much horizontal space and have small touch targets.
+
+**specifying_validation** (Step 1 - baseline): On mobile viewport, action buttons should be consolidated into a floating action button (FAB) that expands into an action menu.
+
+**validation_targets**:
+- Test verifies FAB exists and expands to show actions
+
+**evidence**:
+- red | 2026-02-18T06:30:00Z | exit 1 | npm test -- mobile-fab.test.ts
+    helper:diff-snapshot=N/A
+    specifying validation: no mobile-fab tests exist yet | inline
+- green | 2026-02-18T21:57:00Z | exit 0 | npm test -- mobile-fab.test.ts
+    helper:diff-snapshot=3 files changed (web/src/routes/+page.svelte, web/src/routes/mobile-fab.test.ts, docs/adr/0137-mobile-ux-improvements.work-log.md)
+    FAB implemented with toggle button, action row hidden by default on mobile | inline
+
+**rollback_plan**: git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/mobile-fab.test.ts docs/adr/0137-mobile-ux-improvements.work-log.md
+
+**delta_summary**: No changes yet.
+
+**loops_remaining_forecast**: 1 loop remaining (FAB). Confidence: high.
+
+**residual_constraints**:
+- External: Requires manual testing on actual iOS/Android devices
+- Severity: Medium
+
+**next_work**: 
+- Behaviour: Implement FAB for action buttons on mobile
+- Validation: npm test -- mobile-fab.test.ts passes
 
 ## History
 

@@ -346,4 +346,38 @@
 		border-top: none;
 		margin-top: 0.4rem;
 	}
+
+	@media (max-width: 767px) {
+		.token-chip {
+			min-height: 44px;
+			padding: 0.5rem 0.75rem;
+		}
+
+		.meta-panel {
+			font-size: 1rem;
+			line-height: 1.6;
+		}
+
+		.meta-section-label {
+			font-size: 0.85rem;
+		}
+
+		.meta-description,
+		.meta-section p {
+			font-size: 0.95rem;
+		}
+
+		.meta-close {
+			min-width: 44px;
+			min-height: 44px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.filter-input {
+			min-height: 44px;
+			font-size: 1rem;
+		}
+	}
 </style>

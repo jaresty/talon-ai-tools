@@ -173,6 +173,24 @@
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
+	function handleTabBarKey(e: KeyboardEvent) {
+		const n = AXES_WITH_PERSONA.length;
+		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
+		if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+			e.preventDefault();
+			activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
+		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+			e.preventDefault();
+			activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
+		} else if (e.key === 'Home') {
+			e.preventDefault();
+			activeTab = AXES_WITH_PERSONA[0];
+		} else if (e.key === 'End') {
+			e.preventDefault();
+			activeTab = AXES_WITH_PERSONA[n - 1];
+		}
+	}
+
 	function togglePreview() {
 		showPreview = !showPreview;
 	}
@@ -200,11 +218,17 @@
 		<p class="subtitle">Token composition for structured prompts</p>
 	</header>
 
-	<nav class="tab-bar">
+	<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
+	<nav class="tab-bar" role="tablist" onkeydown={handleTabBarKey}>
 		{#each AXES_WITH_PERSONA as tab (tab)}
 			<button
 				class="tab"
 				class:active={activeTab === tab}
+				role="tab"
+				id="tab-{tab}"
+				aria-selected={activeTab === tab}
+				aria-controls="panel-{tab}"
+				tabindex={activeTab === tab ? 0 : -1}
 				onclick={() => activeTab = tab}
 			>
 				{tab}

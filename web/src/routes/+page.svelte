@@ -166,7 +166,7 @@
 	let cmdInputWarnings = $state<string[]>([]);
 
 	let activeTab = $state('task');
-	let showPreview = $state(true); // Default visible, CSS hides on mobile
+	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
 	let fabOpen = $state(false); // FAB menu state
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];

@@ -82,17 +82,17 @@ describe('Page — Mobile Preview Toggle', () => {
 		expect(toggleBtn).toBeTruthy();
 		expect(previewPanel).toBeTruthy();
 		
-		// Initially visible (showPreview = true)
+		// Initially hidden on mobile (showPreview defaults to false)
+		expect(previewPanel?.classList.contains('visible')).toBe(false);
+
+		// Click to show
+		(toggleBtn as HTMLElement).click();
+		flushSync();
 		expect(previewPanel?.classList.contains('visible')).toBe(true);
-		
-		// Click to hide
+
+		// Click again to hide
 		(toggleBtn as HTMLElement).click();
 		flushSync();
 		expect(previewPanel?.classList.contains('visible')).toBe(false);
-		
-		// Click again to show
-		(toggleBtn as HTMLElement).click();
-		flushSync();
-		expect(previewPanel?.classList.contains('visible')).toBe(true);
 	});
 });

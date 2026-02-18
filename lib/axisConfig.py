@@ -150,9 +150,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "completeness.",
     },
     "directional": {
-        "bog": "The response modifies the task to examine the subject's "
-        "structure and reflect on it, then identifies actions to take "
-        "and extends them to related contexts.",
+        "bog": "The response modifies the task to span both the "
+        "reflective/structural dimension (rog) and the "
+        "acting/extending dimension (ong) — examining the structure "
+        "and its implications while also identifying concrete actions "
+        "and extensions that follow.",
         "dig": "The response modifies the task to examine concrete details "
         "and grounding examples, focusing on specifics rather than "
         "abstractions.",
@@ -166,9 +168,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "dip rog": "The response modifies the task to examine concrete "
         "details and grounded examples, then reflects on their "
         "structural patterns and what they reveal.",
-        "fig": "The response modifies the task to alternate between abstract "
-        "principles and concrete examples, using each to illuminate "
-        "the other (figure-ground reversal).",
+        "fig": "The response modifies the task to span both the abstract/"
+        "general dimension (fog) and the concrete/specific dimension "
+        "(dig) — addressing the underlying principles and the grounded "
+        "specifics, using each to illuminate the other "
+        "(figure-ground reversal).",
         "fip bog": "The response modifies the task to move between abstract "
         "principles and concrete examples, examines their "
         "structural patterns and reflects on them, then identifies "
@@ -632,18 +636,18 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "skim": "Light pass, obvious issues only",
     },
     "directional": {
-        "bog": "Reflect on structure inward",
+        "bog": "Span reflection and action (rog + ong)",
         "dig": "Ground in concrete details",
-        "dip bog": "Concrete first, examine structure, reflect",
-        "dip ong": "Concrete first, then identify actions",
-        "dip rog": "Concrete first, then reflect outward",
-        "fig": "Alternate between abstract and concrete",
-        "fip bog": "Cycle abstract/concrete, examine structure",
-        "fip ong": "Cycle abstract/concrete, then act",
-        "fip rog": "Cycle abstract/concrete, then reflect",
-        "fly bog": "Abstract first, examine structure, reflect",
-        "fly ong": "Abstract first, then identify actions",
-        "fly rog": "Abstract first, then reflect outward",
+        "dip bog": "Concrete-first, then span reflection and action",
+        "dip ong": "Concrete-first, then act and extend",
+        "dip rog": "Concrete-first, then reflect on structure",
+        "fig": "Span abstract and concrete (fog + dig)",
+        "fip bog": "Full spectrum: abstract+concrete, then reflection+action",
+        "fip ong": "Full spectrum: abstract+concrete, then act and extend",
+        "fip rog": "Full spectrum: abstract+concrete, then reflect on structure",
+        "fly bog": "Abstract-first, then span reflection and action",
+        "fly ong": "Abstract-first, then act and extend",
+        "fly rog": "Abstract-first, then reflect on structure",
         "fog": "Surface abstract patterns and principles",
         "jog": "Execute intent directly, no clarification",
         "ong": "Identify concrete actions, extend outward",

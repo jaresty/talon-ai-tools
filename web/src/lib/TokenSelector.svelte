@@ -100,6 +100,16 @@
 		/>
 	{/if}
 
+	{#if axis === 'directional'}
+		<div class="axis-note">
+			<span class="compass-label">fog</span> (abstract) ·
+			<span class="compass-label">dig</span> (concrete) ·
+			<span class="compass-label">rog</span> (reflect) ·
+			<span class="compass-label">ong</span> (act) ·
+			compounds span the spectrum between poles
+		</div>
+	{/if}
+
 	<!-- svelte-ignore a11y_interactive_supports_focus -->
 	<div
 		class="token-grid"
@@ -187,6 +197,19 @@
 </div>
 
 <style>
+	.axis-note {
+		font-size: 0.72rem;
+		color: #888;
+		margin-bottom: 0.5rem;
+		line-height: 1.4;
+	}
+
+	.compass-label {
+		font-family: monospace;
+		font-weight: 600;
+		color: #aaa;
+	}
+
 	.axis-panel {
 		margin-bottom: 1.5rem;
 	}

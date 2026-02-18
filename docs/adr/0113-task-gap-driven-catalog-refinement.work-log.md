@@ -425,3 +425,23 @@ next_trigger: >
 ```
 
 ---
+
+---
+
+## Loop-16 — 2026-02-18
+
+**Focus:** Fresh health check across uncovered token areas (scope: cross/view/struct/thing; form: contextualise/socratic/variants; channel: diagram/slack/jira)
+
+**Health check (GH16-T01–T10):** Mean 4.3/5. 3 gaps at score 3: cross scope (competes with motifs), contextualise form (LLM-to-LLM description), socratic form (competes with adversarial method).
+
+**Confirmed discoverable without use_when:** struct, view, thing (description-anchored); diagram, slack, jira (explicit channel names).
+
+**Fixes applied:**
+- R-L16-01: cross scope use_when — "scattered across", "cross-cutting concern", "appears throughout"
+- R-L16-02: contextualise form use_when — "put X in context", "explain why this was chosen"
+- R-L16-03: socratic form use_when — "challenge my assumptions with questions", "Socratic dialogue"
+
+**Post-apply:** T02→4, T05→4, T07→4. Mean 3.0→4.0 ✅. Grammar regenerated, tests pass.
+
+**Coverage update:** scope 7/13, form 12/~32.
+

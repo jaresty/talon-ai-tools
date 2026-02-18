@@ -985,6 +985,24 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "what to do next', 'lessons learned' → wasinawa. Distinct from "
         "pre-mortem (inversion method): pre-mortem assumes future "
         "failure; wasinawa reflects on past events.",
+        "contextualise": "Adding background and contextual framing to an explanation: "
+        "user wants to understand a decision, concept, or artifact in its "
+        "broader context. Heuristic: 'put X in context', 'provide "
+        "background for', 'frame this decision', 'explain why this was "
+        "chosen', 'what led to this', 'broader implications of', 'help a "
+        "junior understand the context', 'contextualize' → contextualise. "
+        "Distinct from mean scope (mean = conceptual meaning; contextualise "
+        "= structured framing that adds surrounding context to an "
+        "explanation).",
+        "socratic": "Question-led dialogue to surface the user's own thinking: user "
+        "wants to be asked questions rather than given answers, or wants to "
+        "reason through a topic interactively. Heuristic: 'ask me "
+        "questions', 'help me think through', 'challenge my assumptions "
+        "with questions', 'Socratic dialogue', 'probe my thinking', "
+        "'question me as we work through this', 'help me reason this out' "
+        "→ socratic. Distinct from adversarial method (adversarial = "
+        "stress-test the design; socratic = question the USER's reasoning "
+        "via dialogue).",
     },
     "method": {
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or "
@@ -1058,6 +1076,15 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "Distinct from unknowns method (unknowns = surfaces what we don't "
         "know we don't know; assume = makes explicit what is already "
         "assumed).",
+        "cross": "Cross-cutting concerns spanning the system: user asks about a "
+        "concern that appears across many unrelated modules (logging, error "
+        "handling, auth, observability). Heuristic: 'scattered across', "
+        "'spans multiple services', 'consistent across', 'cross-cutting', "
+        "'appears throughout', 'horizontal concern', 'error handling across "
+        "our codebase', 'where does X live across the system' → cross "
+        "scope. Distinct from motifs scope (motifs = structural patterns "
+        "that repeat; cross = concerns that PROPAGATE and SPAN across "
+        "module boundaries).",
         "good": "Quality criteria or success standards focus: user asks what makes "
         "something good, what criteria matter, or how to judge quality. "
         "Heuristic: 'quality criteria', 'what makes it good', 'how to "

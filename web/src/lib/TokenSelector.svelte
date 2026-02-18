@@ -7,9 +7,11 @@
 		selected: string[];
 		maxSelect: number;
 		onToggle: (token: string) => void;
+		onTabNext?: () => void;
+		onTabPrev?: () => void;
 	}
 
-	let { axis, tokens, selected, maxSelect, onToggle }: Props = $props();
+	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev }: Props = $props();
 
 	let filter = $state('');
 	let activeToken = $state<string | null>(null);
@@ -69,6 +71,12 @@
 			e.preventDefault();
 			focusedIndex = n - 1;
 			focusChip(n - 1);
+		} else if (e.key === 'Tab' && !e.shiftKey && focusedIndex === filtered.length - 1 && onTabNext) {
+			e.preventDefault();
+			onTabNext();
+		} else if (e.key === 'Tab' && e.shiftKey && focusedIndex === 0 && onTabPrev) {
+			e.preventDefault();
+			onTabPrev();
 		} else if (e.key === 'Escape') {
 			activeToken = null;
 			focusedIndex = -1;

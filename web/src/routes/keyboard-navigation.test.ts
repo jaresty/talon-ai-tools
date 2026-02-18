@@ -152,4 +152,74 @@ describe('ADR-0139 — T1: ARIA tablist on tab-bar nav (F1/F2/F3)', () => {
 	});
 });
 
+describe('ADR-0139 — T2: Auto-advance Tab-exhaustion (F4/F5)', () => {
+	// F4: Tab on last chip in TokenSelector calls onTabNext
+	it('F4: Tab pressed on last chip fires onTabNext callback', async () => {
+		const { default: TokenSelector } = await import('$lib/TokenSelector.svelte');
+		const onTabNext = vi.fn();
+		const onTabPrev = vi.fn();
+		const tokens = [
+			{ token: 'show', label: 'Show', description: '', guidance: '', use_when: '' },
+			{ token: 'make', label: 'Make', description: '', guidance: '', use_when: '' }
+		];
+
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle: vi.fn(), onTabNext, onTabPrev }
+		});
+		flushSync();
+
+		// Focus last chip (index 1) then press Tab
+		const chips = container.querySelectorAll('[role="option"]');
+		expect(chips.length).toBe(2);
+		(chips[1] as HTMLElement).focus();
+		flushSync();
+
+		// Dispatch Tab on the grid (which wraps the chips)
+		const grid = container.querySelector('[role="listbox"]') as HTMLElement;
+		grid.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+		flushSync();
+
+		expect(onTabNext).toHaveBeenCalledTimes(1);
+		expect(onTabPrev).not.toHaveBeenCalled();
+		document.body.removeChild(container);
+	});
+
+	// F5: Shift+Tab on first chip fires onTabPrev callback
+	it('F5: Shift+Tab on first chip fires onTabPrev callback', async () => {
+		const { default: TokenSelector } = await import('$lib/TokenSelector.svelte');
+		const onTabNext = vi.fn();
+		const onTabPrev = vi.fn();
+		const tokens = [
+			{ token: 'show', label: 'Show', description: '', guidance: '', use_when: '' },
+			{ token: 'make', label: 'Make', description: '', guidance: '', use_when: '' }
+		];
+
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle: vi.fn(), onTabNext, onTabPrev }
+		});
+		flushSync();
+
+		// Focus first chip (index 0) then press Shift+Tab
+		const chips = container.querySelectorAll('[role="option"]');
+		(chips[0] as HTMLElement).focus();
+		flushSync();
+
+		const grid = container.querySelector('[role="listbox"]') as HTMLElement;
+		grid.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+		flushSync();
+
+		expect(onTabPrev).toHaveBeenCalledTimes(1);
+		expect(onTabNext).not.toHaveBeenCalled();
+		document.body.removeChild(container);
+	});
+});
+
 // F6/F7/F8 (T3: action shortcuts) are added in Loop-3 of ADR-0139.

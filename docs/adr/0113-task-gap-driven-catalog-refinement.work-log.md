@@ -6,6 +6,36 @@ VCS_REVERT: `git restore --source=HEAD` (file-targeted) or `git stash` (full).
 
 ---
 
+## loop-19 | 2026-02-17 | Task token discoverability + opaque method tokens
+
+```
+focus: Task axis (11 tokens systematically tested) + method opaque tokens (abduce, analog,
+  jobs, shift, spec). First systematic pass over the task axis.
+
+gaps_found: 3 (all undiscoverable-token)
+  G-L19-01: sim task — "what would happen if" does not surface sim; routes to probe instead
+  G-L19-02: abduce method — academic term; "best explanation / ranked hypotheses" not discoverable
+  G-L19-03: jobs method — JTBD phrasing; "what is user trying to accomplish" not discoverable
+
+fixes_applied:
+  - staticPromptConfig.py: sim guidance updated with routing heuristics
+  - axisConfig.py: abduce use_when added to AXIS_KEY_TO_USE_WHEN["method"]
+  - axisConfig.py: jobs use_when added to AXIS_KEY_TO_USE_WHEN["method"]
+
+mean_score: 4.1/5 (pre-fix); all 3 gaps +1 post-fix → ~4.4 equivalent
+tests: all pass (go test ./internal/barcli/...)
+ssot: intact (git diff --stat: lib/axisConfig.py, lib/staticPromptConfig.py + regenerated grammar)
+
+evidence:
+  - docs/adr/evidence/0113/loop-19/evaluations.md
+  - docs/adr/evidence/0113/loop-19/loop-19-summary.md
+
+next_loop_focus: method axis opaque tokens — induce, converge, branch, simulation, operations,
+  models (confirmed without use_when; potentially undiscoverable)
+```
+
+---
+
 ## loop-1 | 2026-02-14 | Cycle 1: Task-gap analysis + 11 recommendations applied
 
 ```

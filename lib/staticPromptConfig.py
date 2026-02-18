@@ -179,7 +179,14 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     "For test coverage gaps: use check, not make ('check' = evaluate existing; 'make' = create new).",
     "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), "
     "jira (backlog items).",
-    "sim": "Works well with: diagram (Mermaid scenarios), slack (session format), "
+    "sim": "Temporal scenario walkthrough: use when the user wants to trace what "
+    "unfolds over time if a condition occurs. Heuristic: 'what would happen "
+    "if', 'play out the scenario where', 'simulate what happens when', "
+    "'walk me through what would occur if', 'hypothetically if we did X then "
+    "what' → sim. Distinct from plan (plan = steps to take; sim = what plays "
+    "out if a condition is met) and probe (probe = surface implications "
+    "analytically; sim = narrate the scenario unfolding over time). "
+    "Works well with: diagram (Mermaid scenarios), slack (session format), "
     "sync (agenda format).",
     "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. "
     "probe = analyze broadly; pull = extract subset.",

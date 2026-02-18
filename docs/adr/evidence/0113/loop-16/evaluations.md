@@ -125,53 +125,30 @@ routing fires reliably. No use_when needed.
 **Task:** "Put our event sourcing decision in context — why was it chosen and what are the broader
 implications?"
 
-**Expected tokens:** show mean full contextualise
+**REVISED ASSESSMENT (post-loop):** This task was originally scored as a contextualise gap, but
+the gap diagnosis was based on a misunderstanding of contextualise's intent. Contextualise is for
+packaging content to be passed to another LLM operation — not for explaining a decision to a human.
+The correct command for this task is `bar build show mean full` (or `show mean full time`), and
+that produces a score-5 result. contextualise is NOT the right token here.
+
+**Correct tokens:** show mean full
 
 **Skill selection:**
 - Task: show
 - Scope: mean ("why was it chosen" → conceptual meaning and rationale ✅)
-- Form: contextualise ("put in context" → contextualise: "structures ideas by adding context")
 - Completeness: full
 
-**Bar command:** `bar build show mean full contextualise`
+**Bar command:** `bar build show mean full`
 
-**Risk:** Two issues with contextualise discoverability:
-1. The form name uses British English spelling ("contextualise") which may not match user phrasing
-   ("contextualize", "put in context", "provide background")
-2. The form description focuses on meta-level LLM-to-LLM communication ("supplying background for
-   an LLM or reframing content") — this doesn't surface the user-facing use case ("explain the
-   background and context of this decision")
-3. Without use_when, `show mean full` is often sufficient for this task — autopilot may correctly
-   answer the task without reaching for contextualise, resulting in a score-3 prompt that omits
-   the contextual framing structure
+**Scores:** fitness 5, completeness 5, correctness 5, clarity 5 → **Overall: 5** ✅
 
-**Scores:** fitness 4, completeness 3, correctness 3, clarity 4 → **Overall: 3** ⚠️
+**Revised gap diagnosis:** None — `show mean full` is the correct and discoverable command.
+The earlier gap diagnosis (G-L16-02) was a false positive caused by misidentifying contextualise's
+intent. contextualise is an LLM-pipeline token; this is a human-explanation task.
 
-**Gap diagnosis:** undiscoverable-token
-```yaml
-gap_type: undiscoverable-token
-task: GH16-T05
-token: contextualise
-axis: form
-observation: >
-  'contextualise' form adds contextual framing (background, rationale, broader implications)
-  around a central topic. Users phrase this as "put X in context", "provide background for",
-  "frame this decision", "explain the wider context". The current description focuses on an
-  LLM-to-LLM use case ("supplying background for an LLM or reframing content") which doesn't
-  connect to natural user phrasing. Without use_when, autopilot omits contextualise and uses
-  show+mean alone (which answers the question but lacks the structured contextual framing).
-recommendation:
-  action: edit (use_when)
-  token: contextualise
-  axis: form
-  proposed_addition: >
-    Adding background and contextual framing to an explanation: user wants to understand a
-    decision, concept, or artifact in its broader context. Heuristic: 'put X in context',
-    'provide background for', 'frame this decision', 'explain why this was chosen',
-    'what led to this', 'broader implications of', 'help a junior understand the context',
-    'contextualize' → contextualise. Distinct from mean scope (mean = conceptual meaning;
-    contextualise = structured framing that adds surrounding context to an explanation).
-```
+**Correction applied:** contextualise form description revised (b8fee40, 1e829d8) and use_when
+updated to reflect LLM-pipeline intent. GH16-T05 was a wrong-token-expected error, not a
+discoverability gap.
 
 ---
 

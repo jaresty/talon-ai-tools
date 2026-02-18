@@ -18,22 +18,25 @@ variants, socratic), and channel tokens (diagram, slack, jira).
 | GH16-T02 | cross scope | 3 | Yes — G-L16-01 |
 | GH16-T03 | view scope | 5 | No |
 | GH16-T04 | thing scope | 5 | No |
-| GH16-T05 | contextualise form | 3 | Yes — G-L16-02 |
+| GH16-T05 | show mean full (contextualise was wrong target) | 5 | No — false positive |
 | GH16-T06 | variants form | 5 | No |
 | GH16-T07 | socratic form | 3 | Yes — G-L16-03 |
 | GH16-T08 | diagram channel | 5 | No |
 | GH16-T09 | slack channel | 5 | No |
 | GH16-T10 | jira channel | 5 | No |
 
-**Mean: 4.3/5** (above 4.0 target)
+**Mean: 4.5/5** (revised — T05 corrected to 5 after misidentified token)
 
 ### Gaps Found
 
 | ID | Token | Axis | Root cause |
 |----|-------|------|-----------|
 | G-L16-01 | cross | scope | Competes with motifs; "scattered across" not in description |
-| G-L16-02 | contextualise | form | Description targets LLM-to-LLM use; user phrases missing |
+| G-L16-02 | contextualise | form | **FALSE POSITIVE** — wrong token expected; `show mean full` is correct for T05 |
 | G-L16-03 | socratic | form | Competes with adversarial method; "challenge assumptions" routes wrong |
+
+**Real gaps: 2** (cross scope, socratic form). contextualise gap (G-L16-02) was a wrong-token-expected
+error. contextualise is an LLM-pipeline token; the task was a human-explanation task.
 
 ### Tokens Confirmed Discoverable (no use_when needed)
 
@@ -54,7 +57,7 @@ variants, socratic), and channel tokens (diagram, slack, jira).
 | Rec | Token | Axis | use_when phrase added |
 |-----|-------|------|-----------------------|
 | R-L16-01 | cross | scope | 'scattered across', 'spans multiple services', 'cross-cutting', 'error handling across our codebase' |
-| R-L16-02 | contextualise | form | 'put X in context', 'provide background for', 'frame this decision', 'explain why this was chosen' |
+| R-L16-02 | contextualise | form | use_when + prompt description corrected to reflect LLM-pipeline intent (was false positive gap) |
 | R-L16-03 | socratic | form | 'ask me questions', 'challenge my assumptions with questions', 'Socratic dialogue', 'probe my thinking' |
 
 Grammar regenerated. All tests pass. SSOT intact.
@@ -64,10 +67,10 @@ Grammar regenerated. All tests pass. SSOT intact.
 | Task | Token | Pre-fix | Post-fix | Delta | Verdict |
 |------|-------|---------|---------|-------|---------|
 | GH16-T02 | cross | 3 | 4 | +1 | PASS |
-| GH16-T05 | contextualise | 3 | 4 | +1 | PASS |
+| GH16-T05 | (false positive — no fix needed; show mean full scores 5) | — | 5 | — | N/A |
 | GH16-T07 | socratic | 3 | 4 | +1 | PASS |
 
-**Mean pre-fix:** 3.0 → **Mean post-fix:** 4.0 ✅
+**Real gaps fixed: 2** (cross, socratic). Mean pre-fix: 3.0 → post-fix: 4.0 ✅
 
 ---
 

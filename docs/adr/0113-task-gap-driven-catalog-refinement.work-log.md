@@ -6,6 +6,38 @@ VCS_REVERT: `git restore --source=HEAD` (file-targeted) or `git stash` (full).
 
 ---
 
+## loop-20 | 2026-02-17 | Opaque method tokens set 3: induce, simulation, trans
+
+```
+focus: induce, converge, branch, simulation (method), operations, models, systemic,
+  unknowns, verify, trans — completing opaque method token coverage.
+
+gaps_found: 3 (all undiscoverable-token)
+  G-L20-01: induce — academic term; "generalize from observations" doesn't route to induce
+  G-L20-02: simulation method — confused with sim task; "thought experiment / feedback loops"
+            not discoverable as method enrichment; sim vs simulation distinction missing
+  G-L20-03: trans — completely opaque; "signal degrades / gets lost" doesn't route there
+
+fixes_applied:
+  - axisConfig.py: induce use_when added to AXIS_KEY_TO_USE_WHEN["method"]
+  - axisConfig.py: simulation use_when added (with explicit sim task distinction)
+  - axisConfig.py: trans use_when added (signal fidelity / degradation heuristics)
+  - axisConfig.py: abduce use_when updated to add induce distinction
+
+mean_score: 4.0/5 (pre-fix); all 3 gaps +1 post-fix → ~4.3 equivalent
+tests: all pass (go test ./internal/barcli/...)
+ssot: intact (git diff --stat: lib/axisConfig.py + regenerated grammar)
+
+evidence:
+  - docs/adr/evidence/0113/loop-20/evaluations.md
+  - docs/adr/evidence/0113/loop-20/loop-20-summary.md
+
+next_loop_focus: Method axis substantially complete. Consider fresh general health check
+  across all axes, or directional token discoverability (bog, fip-rog, fly-rog, fog, jog, rog).
+```
+
+---
+
 ## loop-19 | 2026-02-17 | Task token discoverability + opaque method tokens
 
 ```

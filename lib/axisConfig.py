@@ -872,6 +872,13 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "favors options that perform acceptably across futures.",
         "systemic": "Distinguish from: analysis (decomposition/structure). "
         "Systemic focuses on feedback loops and interactions.",
+        "trans": "The response models information transfer as a staged process "
+        "involving a source, encoding, channel, decoding, and "
+        "destination. Explanations must distinguish message from signal, "
+        "account for transformation across stages, and model noise or "
+        "distortion explicitly. Outcomes may not be attributed to "
+        "communication without specifying how the signal survived or "
+        "degraded during transmission.",
     },
     "scope": {
         "cross": "Use when the question is about where a concern lives across the "
@@ -884,112 +891,6 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
 # Task-type heuristics for when to apply each token (ADR-0132).
 # Surfaces as 'When to use' helper text in UIs.
 AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
-    "completeness": {
-        "gist": "Brief but complete response needed: user wants a quick summary "
-        "or overview without deep exploration. Heuristic: 'quick summary', "
-        "'overview', 'brief', 'tldr', 'just the main points', 'high-level', "
-        "'standup update', 'just the gist' → gist. Distinct from skim "
-        "(skim = light pass, may miss non-obvious; gist = brief but complete).",
-        "narrow": "Response should focus on a very specific slice only: user "
-        "explicitly limits scope to one aspect. Heuristic: 'specifically', "
-        "'only about', 'just this part', 'restricted to', 'nothing beyond', "
-        "'only X' → narrow. Distinct from minimal (minimal = smallest answer; "
-        "narrow = very small slice of topic).",
-        "skim": "Light, surface-level pass needed: user wants a quick scan for "
-        "obvious issues without depth. Heuristic: 'light review', 'quick pass', "
-        "'spot check', 'just flag obvious problems', 'surface-level look', "
-        "'sanity check', 'quick skim' → skim. Distinct from gist (gist = brief "
-        "but complete; skim = light pass that may miss non-obvious issues).",
-    },
-    "method": {
-        "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or "
-        "at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme "
-        "load', 'what breaks at scale', 'pushed to the limit', 'at maximum load', "
-        "'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. "
-        "Distinct from resilience (normal stress range) and adversarial "
-        "(deliberate attack/exploit focus).",
-        "field": "Shared-medium interaction analysis: user asks how actors interact "
-        "through a shared infrastructure or protocol layer rather than via direct "
-        "references. Heuristic: 'shared infrastructure', 'shared medium', 'protocol "
-        "mediation', 'service mesh routing', 'why things route through', 'broadcast "
-        "patterns', 'effects propagate through a shared layer' → field. Distinct from "
-        "mapping (surface elements; field = model the medium and why compatibility "
-        "produces observed routing).",
-        "meld": "Constraint-balancing or tension-resolution analysis: user asks how "
-        "to balance competing forces, find overlaps, or navigate constraints between "
-        "elements that must coexist. Heuristic: 'balance between', 'overlap between', "
-        "'constraints between', 'combining X and Y', 'where X and Y interact', "
-        "'navigate tensions between', 'find the combination that satisfies' → meld. "
-        "Distinct from compare (evaluate alternatives; meld = balance constraints "
-        "between elements that must coexist).",
-        "mod": "Cyclic or periodic pattern analysis: user asks about behavior that "
-        "repeats, wraps around, or follows a cycle. Heuristic: 'repeats across "
-        "cycles', 'cyclic behavior', 'periodic pattern', 'repeating structure', "
-        "'what wraps around', 'recurs periodically', 'equivalent states' → mod. "
-        "Distinct from motifs scope (recurring patterns across codebase; mod = "
-        "cyclic/periodic reasoning about behavior that repeats with a defined period).",
-        "grove": "Accumulation and compounding analysis: user asks how small effects "
-        "build up over time, how debt or improvement compounds, or how feedback loops "
-        "amplify outcomes. Heuristic: 'compound', 'accumulates over time', 'feedback "
-        "loop', 'technical debt grows', 'network effect', 'how things build up', "
-        "'rate of change over time', 'snowball' → grove. Distinct from systemic "
-        "(interacting whole; grove = rate of accumulation through mechanisms) and "
-        "effects (trace consequences; grove = HOW they compound).",
-        "grow": "Evolutionary or incremental design philosophy: user wants to start "
-        "minimal and expand only when demonstrably needed. Heuristic: 'start simple "
-        "and expand', 'minimum viable', 'YAGNI', 'add only what you need', 'simplest "
-        "thing that works', 'evolve as needed', 'don't over-engineer', 'add features "
-        "only when required', 'grow incrementally' → grow. Distinct from minimal "
-        "completeness (brevity of output) and spec (define criteria first).",
-        "melody": "Cross-component or cross-team coordination analysis: user asks "
-        "how to synchronize work, manage coupling, or align changes across teams or "
-        "components. Heuristic: 'coordinate across teams', 'synchronize changes', "
-        "'change alignment', 'coupling between components', 'parallel work streams', "
-        "'avoid conflicts between teams', 'migration coordination', 'who needs to "
-        "change when' → melody. Distinct from depends (what relies on what) and "
-        "actors (centering the people involved).",
-    },
-    "scope": {
-        "agent": "Decision-making or agency focus: user asks who can act, who has "
-        "authority, or how choices are made between actors. Heuristic: "
-        "'who decides', 'who has authority', 'who can approve', "
-        "'decision-making', 'agency', 'who is responsible' → agent scope. "
-        "Note: agent is a SCOPE token (foregrounds decision-making actors); "
-        "actors is a METHOD token (enriches any task with actor-centered "
-        "analysis). Both can be selected together.",
-        "assume": "Assumptions and premises focus: user asks what must be true, "
-        "what is taken for granted, or what preconditions are embedded in "
-        "the design. Heuristic: 'what assumptions', 'what are we assuming', "
-        "'what must be true', 'what preconditions', 'hidden assumptions', "
-        "'what are we taking for granted' → assume scope. Distinct from "
-        "unknowns method (unknowns = surfaces what we don't know we don't "
-        "know; assume = makes explicit what is already assumed).",
-        "good": "Quality criteria or success standards focus: user asks what makes "
-        "something good, what criteria matter, or how to judge quality. "
-        "Heuristic: 'quality criteria', 'what makes it good', 'how to judge', "
-        "'success criteria', 'well-designed', 'what good looks like', "
-        "'standards for', 'what does success look like' → good scope. Often "
-        "pairs with fail scope (good + fail = quality and failure mode dimensions).",
-        "motifs": "Recurring or repeated patterns across the codebase or system: "
-        "user asks about structures or idioms that appear in multiple places. "
-        "Heuristic: 'recurring patterns', 'repeated across', 'appears in "
-        "multiple places', 'common idioms', 'what keeps showing up', 'same "
-        "pattern in different places' → motifs scope. Distinct from struct "
-        "(one system's internal arrangement) and mapping method (surface "
-        "all elements/relationships).",
-        "stable": "Stability and persistence focus: user asks what is stable, "
-        "unlikely to change, or self-reinforcing in the system or design. "
-        "Heuristic: 'stable', 'unlikely to change', 'won't change', 'what "
-        "persists', 'what is settled', 'fixed constraints', 'what has "
-        "remained stable', 'backward-compatible' → stable scope. Often "
-        "pairs with time scope (stable = what persists; time = how things evolve).",
-        "time": "Temporal or sequential focus: user asks about sequence, history, "
-        "phases, or how something changes over time. Heuristic: 'step by "
-        "step', 'in order', 'over time', 'what happens when', 'sequence', "
-        "'timeline', 'history', 'how did we get here', 'phases' → time "
-        "scope. Distinct from flow method (flow = reasoning approach; "
-        "time = scope dimension to emphasize).",
-    },
     "channel": {
         "plain": "Suppress structural formatting: when user explicitly requests "
         "plain prose, no lists, no bullets, or no structural decoration. "
@@ -1013,6 +914,27 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'live workshop agenda', 'meeting agenda with timing cues', "
         "'synchronous workshop plan' → sync channel. Combine with "
         "facilitate form for facilitator-role outputs.",
+    },
+    "completeness": {
+        "gist": "Brief but complete response needed: user wants a quick "
+        "summary or overview without deep exploration. Heuristic: "
+        "'quick summary', 'overview', 'brief', 'tldr', 'just the "
+        "main points', 'high-level', 'standup update', 'just the "
+        "gist' → gist. Distinct from skim (skim = light pass, may "
+        "miss non-obvious; gist = brief but complete).",
+        "narrow": "Response should focus on a very specific slice only: user "
+        "explicitly limits scope to one aspect. Heuristic: "
+        "'specifically', 'only about', 'just this part', "
+        "'restricted to', 'nothing beyond', 'only X' → narrow. "
+        "Distinct from minimal (minimal = smallest answer; narrow "
+        "= very small slice of topic).",
+        "skim": "Light, surface-level pass needed: user wants a quick scan "
+        "for obvious issues without depth. Heuristic: 'light "
+        "review', 'quick pass', 'spot check', 'just flag obvious "
+        "problems', 'surface-level look', 'sanity check', 'quick "
+        "skim' → skim. Distinct from gist (gist = brief but "
+        "complete; skim = light pass that may miss non-obvious "
+        "issues).",
     },
     "form": {
         "cocreate": "Iterative design with explicit decision points and alignment "
@@ -1061,6 +983,106 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "what to do next', 'lessons learned' → wasinawa. Distinct from "
         "pre-mortem (inversion method): pre-mortem assumes future "
         "failure; wasinawa reflects on past events.",
+    },
+    "method": {
+        "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or "
+        "at the absolute limits of the system. Heuristic: 'at 10x', 'at "
+        "extreme load', 'what breaks at scale', 'pushed to the limit', 'at "
+        "maximum load', 'what dominates at scale', 'scale to the extreme', "
+        "'at the limit' → boom. Distinct from resilience (normal stress "
+        "range) and adversarial (deliberate attack/exploit focus).",
+        "field": "Shared-medium interaction analysis: user asks how actors "
+        "interact through a shared infrastructure or protocol layer "
+        "rather than via direct references. Heuristic: 'shared "
+        "infrastructure', 'shared medium', 'protocol mediation', 'service "
+        "mesh routing', 'why things route through', 'broadcast patterns', "
+        "'effects propagate through a shared layer' → field. Distinct "
+        "from mapping (surface elements; field = model the medium and why "
+        "compatibility produces observed routing).",
+        "grove": "Accumulation and compounding analysis: user asks how small "
+        "effects build up over time, how debt or improvement compounds, "
+        "or how feedback loops amplify outcomes. Heuristic: 'compound', "
+        "'accumulates over time', 'feedback loop', 'technical debt "
+        "grows', 'network effect', 'how things build up', 'rate of change "
+        "over time', 'snowball' → grove. Distinct from systemic "
+        "(interacting whole; grove = rate of accumulation through "
+        "mechanisms) and effects (trace consequences; grove = HOW they "
+        "compound).",
+        "grow": "Evolutionary or incremental design philosophy: user wants to "
+        "start minimal and expand only when demonstrably needed. "
+        "Heuristic: 'start simple and expand', 'minimum viable', 'YAGNI', "
+        "'add only what you need', 'simplest thing that works', 'evolve as "
+        "needed', 'don't over-engineer', 'add features only when "
+        "required', 'grow incrementally' → grow. Distinct from minimal "
+        "completeness (brevity of output) and spec (define criteria "
+        "first).",
+        "meld": "Constraint-balancing or tension-resolution analysis: user asks "
+        "how to balance competing forces, find overlaps, or navigate "
+        "constraints between elements that must coexist. Heuristic: "
+        "'balance between', 'overlap between', 'constraints between', "
+        "'combining X and Y', 'where X and Y interact', 'navigate tensions "
+        "between', 'find the combination that satisfies' → meld. Distinct "
+        "from compare (evaluate alternatives; meld = balance constraints "
+        "between elements that must coexist).",
+        "melody": "Cross-component or cross-team coordination analysis: user asks "
+        "how to synchronize work, manage coupling, or align changes "
+        "across teams or components. Heuristic: 'coordinate across "
+        "teams', 'synchronize changes', 'change alignment', 'coupling "
+        "between components', 'parallel work streams', 'avoid conflicts "
+        "between teams', 'migration coordination', 'who needs to change "
+        "when' → melody. Distinct from depends (what relies on what) and "
+        "actors (centering the people involved).",
+        "mod": "Cyclic or periodic pattern analysis: user asks about behavior that "
+        "repeats, wraps around, or follows a cycle. Heuristic: 'repeats "
+        "across cycles', 'cyclic behavior', 'periodic pattern', 'repeating "
+        "structure', 'what wraps around', 'recurs periodically', "
+        "'equivalent states' → mod. Distinct from motifs scope (recurring "
+        "patterns across codebase; mod = cyclic/periodic reasoning about "
+        "behavior that repeats with a defined period).",
+    },
+    "scope": {
+        "agent": "Decision-making or agency focus: user asks who can act, who has "
+        "authority, or how choices are made between actors. Heuristic: "
+        "'who decides', 'who has authority', 'who can approve', "
+        "'decision-making', 'agency', 'who is responsible' → agent scope. "
+        "Note: agent is a SCOPE token (foregrounds decision-making "
+        "actors); actors is a METHOD token (enriches any task with "
+        "actor-centered analysis). Both can be selected together.",
+        "assume": "Assumptions and premises focus: user asks what must be true, "
+        "what is taken for granted, or what preconditions are embedded in "
+        "the design. Heuristic: 'what assumptions', 'what are we "
+        "assuming', 'what must be true', 'what preconditions', 'hidden "
+        "assumptions', 'what are we taking for granted' → assume scope. "
+        "Distinct from unknowns method (unknowns = surfaces what we don't "
+        "know we don't know; assume = makes explicit what is already "
+        "assumed).",
+        "good": "Quality criteria or success standards focus: user asks what makes "
+        "something good, what criteria matter, or how to judge quality. "
+        "Heuristic: 'quality criteria', 'what makes it good', 'how to "
+        "judge', 'success criteria', 'well-designed', 'what good looks "
+        "like', 'standards for', 'what does success look like' → good "
+        "scope. Often pairs with fail scope (good + fail = quality and "
+        "failure mode dimensions).",
+        "motifs": "Recurring or repeated patterns across the codebase or system: "
+        "user asks about structures or idioms that appear in multiple "
+        "places. Heuristic: 'recurring patterns', 'repeated across', "
+        "'appears in multiple places', 'common idioms', 'what keeps "
+        "showing up', 'same pattern in different places' → motifs scope. "
+        "Distinct from struct (one system's internal arrangement) and "
+        "mapping method (surface all elements/relationships).",
+        "stable": "Stability and persistence focus: user asks what is stable, "
+        "unlikely to change, or self-reinforcing in the system or design. "
+        "Heuristic: 'stable', 'unlikely to change', 'won't change', 'what "
+        "persists', 'what is settled', 'fixed constraints', 'what has "
+        "remained stable', 'backward-compatible' → stable scope. Often "
+        "pairs with time scope (stable = what persists; time = how things "
+        "evolve).",
+        "time": "Temporal or sequential focus: user asks about sequence, history, "
+        "phases, or how something changes over time. Heuristic: 'step by "
+        "step', 'in order', 'over time', 'what happens when', 'sequence', "
+        "'timeline', 'history', 'how did we get here', 'phases' → time "
+        "scope. Distinct from flow method (flow = reasoning approach; time "
+        "= scope dimension to emphasize).",
     },
 }
 

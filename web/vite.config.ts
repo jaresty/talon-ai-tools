@@ -12,7 +12,10 @@ export default defineConfig({
 	resolve: {
 		conditions: ['browser', 'import', 'module', 'default'],
 		alias: isTesting
-			? [{ find: '$app/paths', replacement: resolve(__dirname, 'src/mocks/app-paths.ts') }]
+			? [
+					{ find: '$app/paths', replacement: resolve(__dirname, 'src/mocks/app-paths.ts') },
+					{ find: '$lib', replacement: resolve(__dirname, 'src/lib') }
+				]
 			: []
 	},
 	test: {

@@ -165,6 +165,10 @@
 	let cmdInputOpen = $state(false);
 	let cmdInputWarnings = $state<string[]>([]);
 
+	let activeTab = $state('task');
+
+	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+
 	function loadCommand() {
 		if (!grammar || !cmdInput.trim()) return;
 		const result = parseCommand(cmdInput, grammar);
@@ -187,6 +191,18 @@
 		<h1>Bar Prompt Builder</h1>
 		<p class="subtitle">Token composition for structured prompts</p>
 	</header>
+
+	<nav class="tab-bar">
+		{#each AXES_WITH_PERSONA as tab (tab)}
+			<button
+				class="tab"
+				class:active={activeTab === tab}
+				onclick={() => activeTab = tab}
+			>
+				{tab}
+			</button>
+		{/each}
+	</nav>
 
 	{#if error}
 		<div class="error">Failed to load grammar: {error}</div>
@@ -224,6 +240,7 @@
 
 				<PatternsLibrary {patterns} onLoad={loadPattern} />
 
+				{#if activeTab === 'persona'}
 				<!-- Persona -->
 				<div class="persona-section">
 					<div class="persona-header">Persona</div>
@@ -294,7 +311,9 @@
 						</div>
 					</div>
 				</div>
+				{/if}
 
+				{#if activeTab === 'task'}
 				<TokenSelector
 					axis="task"
 					tokens={getTaskTokens(grammar)}
@@ -302,7 +321,9 @@
 					maxSelect={1}
 					onToggle={(t) => toggle('task', t)}
 				/>
+				{/if}
 				{#each AXES as axis (axis)}
+					{#if activeTab === axis}
 					<TokenSelector
 						{axis}
 						tokens={getAxisTokens(grammar, axis)}
@@ -310,6 +331,7 @@
 						maxSelect={softCap(axis)}
 						onToggle={(t) => toggle(axis, t)}
 					/>
+					{/if}
 				{/each}
 			</section>
 
@@ -702,5 +724,38 @@
 		padding: 0.3rem 0.4rem;
 		background: #2a1f10;
 		border-radius: calc(var(--radius) - 2px);
+	}
+
+	.tab-bar {
+		display: flex;
+		gap: 0.25rem;
+		overflow-x: auto;
+		margin-bottom: 1rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid var(--color-border);
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.tab {
+		padding: 0.5rem 0.75rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text-muted);
+		cursor: pointer;
+		font-size: 0.75rem;
+		font-family: system-ui;
+		white-space: nowrap;
+	}
+
+	.tab:hover {
+		border-color: var(--color-accent-muted);
+		color: var(--color-text);
+	}
+
+	.tab.active {
+		background: var(--color-accent-muted);
+		border-color: var(--color-accent);
+		color: var(--color-text);
 	}
 </style>

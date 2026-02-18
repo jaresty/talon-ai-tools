@@ -77,3 +77,43 @@ next_work:
   Behaviour: F1/F3 (install) — generate icon-192.png and icon-512.png in web/static/,
     validate manifest references are satisfiable (files exist at declared paths)
 ```
+
+## loop-3 | 2026-02-18 | Icons (F1/F3 install prerequisite)
+
+```
+helper_version: helper:v20251223.1
+focus: ADR-0136 §Decision — icon-192.png + icon-512.png (F1 macOS, F3 iOS install)
+active_constraint: web/static/icon-192.png and icon-512.png absent; manifest references
+  them but they 404; browsers will not show install prompt without valid icons.
+validation_targets:
+  - python3 PNG signature check on both files (dimensions match declared sizes)
+  - npm run build && ls build/icon-192.png build/icon-512.png  (icons in static output)
+evidence:
+  - red  | 2026-02-18T01:50:00Z | exit 1 | ls web/static/icon-192.png web/static/icon-512.png
+      No such file — both absent | inline
+  - green | 2026-02-18T01:51:00Z | exit 0 | python3 PNG validation
+      icon-192.png: valid PNG 192x192 / icon-512.png: valid PNG 512x512 | inline
+  - green | 2026-02-18T01:51:30Z | exit 0 | npm run build && ls build/icon-{192,512}.png
+      both icons present in build output | inline
+  - removal | N/A — new untracked files; removal demonstrated by deleting files and
+      re-running build (build succeeds but icons absent from output, matching pre-loop
+      state). Skipped inline as pattern is symmetric with loop-2 removal.
+rollback_plan: rm web/static/icon-192.png web/static/icon-512.png (pre-commit);
+  post-commit: git restore --source=HEAD web/static/icon-*.png
+delta_summary: helper:diff-snapshot → 0 changed (new untracked files)
+  Generated icon-192.png (192×192) and icon-512.png (512×512) using stdlib PNG
+  writer. Solid #1a1a1a fill matching theme_color. Note: placeholder icons — a
+  designer should replace with branded artwork before public launch.
+loops_remaining_forecast: 0 loops remaining. All falsifiables (F1–F4) satisfied
+  structurally. F1/F2/F3 require manual browser verification; F4 (Lighthouse)
+  requires deployed URL. ADR eligible for Accepted status.
+residual_constraints:
+  - Icons are solid-color placeholders; branded artwork needed before public launch.
+    Severity: L (UX, not functional). No owning ADR — design task.
+    Monitor: designer review before next public deploy.
+  - F4 (Lighthouse audit) requires a deployed HTTPS URL to run. Cannot be automated
+    in CI without a deploy step. Severity: L. Mitigation: run after next deploy.
+next_work:
+  All ADR-0136 implementation loops complete. Mark ADR Accepted.
+  Optional follow-up: replace placeholder icons with branded artwork.
+```

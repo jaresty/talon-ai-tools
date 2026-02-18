@@ -57,7 +57,7 @@
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision points, show alternative moves, and make the response-inviting structure visible within the output.",
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
-        "contextualise": "The response structures ideas by adding or reshaping context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself. With sort/plan tasks: adds clarifying context about criteria before output. With pull: frames extracted content with additional context. With make/fix: adds framing before the main content.",
+        "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten. With pull: wraps extracted content with the context needed to interpret it. With make/fix: accompanies the output with purpose, constraints, and framing so the downstream model understands how to use it.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
@@ -2582,7 +2582,7 @@
     }
   ],
   "checksums": {
-    "axes": "749cb46319f4a69eb1bb4ea1c55d5776e60df4170229f98a028d684fd5232ae9",
+    "axes": "0699601a6bef7150286a69e0f4fafe1b589c3ad777944b0c8e1ac2c95fc70bc2",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

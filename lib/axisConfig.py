@@ -240,13 +240,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "visible within the output.",
         "commit": "The response structures ideas as a conventional commit message "
         "with a short type or scope line and an optional concise body.",
-        "contextualise": "The response structures ideas by adding or reshaping "
-        "context to support another operation—such as supplying "
-        "background for an LLM or reframing content—without "
-        "rewriting the main text itself. With sort/plan tasks: adds "
-        "clarifying context about criteria before output. With "
-        "pull: frames extracted content with additional context. "
-        "With make/fix: adds framing before the main content.",
+        "contextualise": "The response packages the subject to be passed directly "
+        "to another LLM operation: it enriches the content with all "
+        "context a downstream model would need to act on it without "
+        "further explanation — adding background, assumptions, "
+        "constraints, and framing that would otherwise be implicit or "
+        "missing. The main content is not rewritten. With pull: wraps "
+        "extracted content with the context needed to interpret it. "
+        "With make/fix: accompanies the output with purpose, "
+        "constraints, and framing so the downstream model understands "
+        "how to use it.",
         "direct": "The response structures ideas by leading with the main point or "
         "recommendation, followed only by the most relevant supporting "
         "context, evidence, and next steps.",

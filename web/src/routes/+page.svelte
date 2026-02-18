@@ -69,6 +69,16 @@
 		} catch (e) {
 			error = String(e);
 		}
+
+		function handleGlobalKey(e: KeyboardEvent) {
+			if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
+				e.preventDefault();
+				clearState();
+				(document.activeElement as HTMLElement | null)?.blur();
+			}
+		}
+		document.addEventListener('keydown', handleGlobalKey);
+		return () => document.removeEventListener('keydown', handleGlobalKey);
 	});
 
 	// Auto-save to localStorage on every state change
@@ -330,7 +340,7 @@
 						<button class="share-btn" onclick={sharePrompt}>
 							{shared ? '✓ Link copied' : 'Share'}
 						</button>
-						<button class="clear-btn" onclick={clearState}>Clear</button>
+						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K / Ctrl+K)">Clear</button>
 					</div>
 				</div>
 

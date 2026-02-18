@@ -208,7 +208,7 @@
 
 ## Completion Summary
 
-ADR-0137 Mobile UX Improvements completed with 5 loops:
+ADR-0137 Mobile UX Improvements completed with 6 loops:
 
 | Loop | Feature | Tests |
 |------|---------|-------|
@@ -217,4 +217,5 @@ ADR-0137 Mobile UX Improvements completed with 5 loops:
 | 3 | Preview Toggle | mobile-preview.test.ts |
 | 4 | Expanded Textareas | mobile-textarea.test.ts |
 | 5 | Stacked Persona Selects | mobile-persona.test.ts |
+| 6 | Floating Action Button | mobile-fab.test.ts |
 

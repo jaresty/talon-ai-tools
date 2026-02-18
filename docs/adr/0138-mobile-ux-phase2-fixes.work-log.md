@@ -8,7 +8,7 @@
 - **Loop 4**: Token guidance bottom drawer on mobile — [COMPLETE]
 - **Loop 5**: Touch targets (tabs, persona chips, selected chips, load-cmd-toggle) — [COMPLETE]
 - **Loop 6**: iOS auto-zoom fix — [COMPLETE — combined with loop 5]
-- **Loop 7**: PWA icon fix — [PENDING]
+- **Loop 7**: PWA icon fix — [COMPLETE]
 
 ## History
 
@@ -184,3 +184,49 @@
 
 **next_work**:
 - Behaviour: PWA icon fix (apple-touch-icon + manifest base paths) — `npm test` (no JS change; verified by app.html and manifest diff)
+
+---
+
+### loop-7
+
+**helper_version**: helper:v20251223.1
+
+**focus**: ADR-0138 §Loop 7 — PWA icon fix
+
+**active_constraint**: iOS ignores Web App Manifest for home-screen icons; no `apple-touch-icon` link in `app.html`. Additionally, manifest icon paths use absolute `/icon-*.png` (root-relative), which breaks on GitHub Pages where the app is served at `/talon-ai-tools/`.
+
+**validation_targets**:
+- `npm test` — no JS tests for HTML/manifest changes; green suite confirms no regressions.
+- Correctness verified by inspection: `app.html` has `apple-touch-icon` link; manifest `+server.ts` uses `${base}/` prefix.
+
+**evidence**:
+- green | 2026-02-18T22:32:09Z | exit 0 | npm test
+    helper:diff-snapshot=2 files changed (app.html, manifest.json/+server.ts)
+    All 99 tests pass; no regressions | inline
+
+**rollback_plan**: `git restore --source=HEAD web/src/app.html web/src/routes/manifest.json/+server.ts`
+
+**delta_summary**: helper:diff-snapshot=2 files changed. Added `<link rel="apple-touch-icon" href="%sveltekit.assets%/icon-192.png">` to app.html. Changed manifest icon src from `/icon-*.png` to `` `${base}/icon-*.png` `` so paths are correct when deployed at any base URL.
+
+**loops_remaining_forecast**: 0 loops remaining. All 7 behaviours landed green.
+
+**residual_constraints**:
+- Icon PNG transparency: cannot verify icon-192.png has solid background without image tooling. If icon still appears black on device, the PNG itself needs a background fill. Severity: Low. Monitoring: manual iOS device test after deploy.
+
+**next_work**:
+- ADR-0138 complete. Deploy via GitHub Actions and verify on device.
+
+## Completion Summary
+
+ADR-0138 Mobile UX Phase 2 completed with 7 loops (loops 5+6 combined):
+
+| Loop | Behaviour | Tests |
+|------|-----------|-------|
+| 1 | Fix showPreview default bug | mobile-preview.test.ts |
+| 2 | FAB relocated to layout root with fixed overlay | mobile-fab.test.ts |
+| 3 | Rendered prompt inline; toggle renamed to "Output" | mobile-output.test.ts |
+| 4 | Token guidance bottom drawer + backdrop | mobile-guidance.test.ts |
+| 5+6 | Touch targets ≥44px + iOS auto-zoom fix | mobile-touch.test.ts |
+| 7 | PWA apple-touch-icon + manifest base paths | app.html + manifest |
+
+Final test count: 99 passing across 13 test files.

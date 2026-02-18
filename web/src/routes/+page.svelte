@@ -169,6 +169,7 @@
 	let activeTab = $state('task');
 	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
 	let fabOpen = $state(false); // FAB menu state
+	let activePresetUseWhen = $state('');
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
@@ -261,13 +262,21 @@
 									onclick={() => {
 										if (persona.preset === preset.key) {
 											persona = { preset: '', voice: '', audience: '', tone: '' };
+											activePresetUseWhen = '';
 										} else {
 											persona = { preset: preset.key, voice: '', audience: '', tone: '' };
+											activePresetUseWhen = grammar!.persona.use_when?.presets?.[preset.key] ?? '';
 										}
 									}}
 								>{preset.label}</button>
 							{/each}
 						</div>
+						{#if persona.preset && activePresetUseWhen}
+							<div class="persona-use-when">
+								<span class="persona-use-when-label">When to use</span>
+								<p class="persona-use-when-text">{activePresetUseWhen}</p>
+							</div>
+						{/if}
 					</div>
 
 					<!-- Custom axes -->
@@ -299,6 +308,9 @@
 										<option value={a}>{a}</option>
 									{/each}
 								</select>
+								{#if persona.audience && grammar.persona.use_when?.audience?.[persona.audience]}
+									<span class="persona-hint">{grammar.persona.use_when.audience[persona.audience]}</span>
+								{/if}
 							</label>
 							<label class="persona-select-label">
 								<span>Tone</span>
@@ -723,6 +735,38 @@
 
 	.persona-chip:hover { border-color: var(--color-accent-muted); color: var(--color-text); }
 	.persona-chip.active { background: var(--color-accent-muted); border-color: var(--color-accent); color: var(--color-text); }
+
+	.persona-use-when {
+		margin-top: 0.5rem;
+		padding: 0.5rem 0.6rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-accent-muted);
+		border-radius: var(--radius);
+		font-size: 0.78rem;
+	}
+
+	.persona-use-when-label {
+		display: block;
+		font-size: 0.65rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-accent);
+		margin-bottom: 0.2rem;
+	}
+
+	.persona-use-when-text {
+		margin: 0;
+		color: var(--color-text);
+		line-height: 1.5;
+	}
+
+	.persona-hint {
+		font-size: 0.68rem;
+		color: var(--color-text-muted);
+		line-height: 1.4;
+		font-style: italic;
+	}
 
 	.persona-selects { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 

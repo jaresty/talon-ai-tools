@@ -63,6 +63,7 @@ type PersonaSection struct {
 	Docs     map[string]map[string]string
 	Labels   map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
 	Guidance map[string]map[string]string // ADR-0112: selection-oriented prose hints
+	UseWhen  map[string]map[string]string // ADR-0133: discoverability hints for help llm
 	Presets  map[string]PersonaPreset
 	Spoken   map[string]string
 	Intent   IntentSection
@@ -152,6 +153,7 @@ type rawPersona struct {
 	Docs     map[string]map[string]string `json:"docs"`
 	Labels   map[string]map[string]string `json:"labels"`   // ADR-0111
 	Guidance map[string]map[string]string `json:"guidance"` // ADR-0112
+	UseWhen  map[string]map[string]string `json:"use_when"` // ADR-0133
 	Presets  map[string]PersonaPreset     `json:"presets"`
 	Spoken   map[string]string            `json:"spoken_map"`
 	Intent   struct {
@@ -235,6 +237,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Docs:     raw.Persona.Docs,
 			Labels:   raw.Persona.Labels,
 			Guidance: raw.Persona.Guidance,
+			UseWhen:  raw.Persona.UseWhen,
 			Presets:  raw.Persona.Presets,
 			Spoken:   personaSpoken,
 			Intent: IntentSection{
@@ -940,6 +943,30 @@ func (g *Grammar) PersonaGuidance(axis, token string) string {
 		return text
 	}
 	if text, ok := guidance[strings.ToLower(tokenKey)]; ok && text != "" {
+		return text
+	}
+	return ""
+}
+
+// PersonaUseWhen returns the use_when discoverability hint for the given persona axis token (ADR-0133).
+// Returns empty string if no hint is defined.
+func (g *Grammar) PersonaUseWhen(axis, token string) string {
+	if g.Persona.UseWhen == nil {
+		return ""
+	}
+	axisKey := strings.ToLower(strings.TrimSpace(axis))
+	if axisKey == "" {
+		return ""
+	}
+	hints, ok := g.Persona.UseWhen[axisKey]
+	if !ok {
+		return ""
+	}
+	tokenKey := strings.TrimSpace(token)
+	if text, ok := hints[tokenKey]; ok && text != "" {
+		return text
+	}
+	if text, ok := hints[strings.ToLower(tokenKey)]; ok && text != "" {
 		return text
 	}
 	return ""

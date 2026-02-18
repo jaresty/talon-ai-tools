@@ -14,6 +14,7 @@ from .personaConfig import (
     PERSONA_KEY_TO_VALUE,
     persona_key_to_guidance_map,
     persona_key_to_label_map,
+    persona_key_to_use_when_map,
 )
 from .staticPromptConfig import STATIC_PROMPT_CONFIG
 from .talonSettings import axis_incompatibilities, axis_priority, axis_soft_caps
@@ -316,6 +317,13 @@ def _build_persona_section(
         if guidance_map:
             persona_guidance[axis] = dict(sorted(guidance_map.items()))
 
+    # Persona axis use_when (ADR-0133): discoverability hints for help llm "When to use" column.
+    persona_use_when: dict[str, dict[str, str]] = {}
+    for axis in ("voice", "audience", "tone", "intent", "presets"):
+        use_when_map = persona_key_to_use_when_map(axis)
+        if use_when_map:
+            persona_use_when[axis] = dict(sorted(use_when_map.items()))
+
     section = {
         "axes": persona_axes,
         "docs": persona_docs,
@@ -327,6 +335,8 @@ def _build_persona_section(
         section["labels"] = persona_labels
     if persona_guidance:
         section["guidance"] = persona_guidance
+    if persona_use_when:
+        section["use_when"] = persona_use_when
     return section, persona_slug_map
 
 

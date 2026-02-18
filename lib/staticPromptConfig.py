@@ -189,7 +189,9 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     "Works well with: diagram (Mermaid scenarios), slack (session format), "
     "sync (agenda format).",
     "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. "
-    "probe = analyze broadly; pull = extract subset.",
+    "probe = analyze broadly; pull = extract subset. "
+    "For debugging/troubleshooting: use probe + diagnose method (not fix — fix is content reformatting, not bug-fixing). "
+    "Heuristic: 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe + diagnose.",
     "show": "For summarisation of long documents, prefer 'pull' (extraction). "
     "show = explain a concept; pull = compress source material.",
     "pull": "For summarisation: extract the conceptual core from source material with gist scope. "

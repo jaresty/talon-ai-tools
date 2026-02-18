@@ -131,6 +131,76 @@ PERSONA_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
 }
 
 
+# Discoverability hints for persona presets and axis tokens (ADR-0133).
+# When to reach for a persona at all — displayed in help llm "When to use" column.
+PERSONA_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
+    "presets": {
+        "peer_engineer_explanation": "Technical explanation to a fellow engineer: use when the "
+        "audience is a programmer or peer engineer who wants engineer-to-engineer framing. "
+        "Heuristic: 'explain this to a developer', 'peer review context', 'engineer to engineer', "
+        "'technical walkthrough for my team' → peer_engineer_explanation.",
+        "teach_junior_dev": "Mentoring or onboarding a junior developer: use when the audience "
+        "needs patient, scaffolded explanation with encouragement. Heuristic: 'explain for a "
+        "junior', 'onboarding doc', 'new developer', 'junior team member', 'kind clear explanation "
+        "for someone new' → teach_junior_dev.",
+        "stakeholder_facilitator": "Driving alignment with mixed stakeholders: use when the "
+        "response needs to help a facilitator guide a group toward a decision. Heuristic: "
+        "'stakeholder meeting', 'cross-functional group', 'alignment session', 'facilitating a "
+        "decision', 'stakeholder presentation' → stakeholder_facilitator.",
+        "designer_to_pm": "Design decisions communicated to a product manager: use when a "
+        "designer needs to explain trade-offs and UX rationale to a PM audience. Heuristic: "
+        "'explain design to PM', 'design rationale for product', 'UX decision for a product "
+        "manager' → designer_to_pm.",
+        "product_manager_to_team": "Product direction communicated to the team: use when a PM "
+        "needs to frame product goals or retrospective insights for the engineering or design "
+        "team. Heuristic: 'PM to team update', 'product direction for engineers', 'team "
+        "retrospective framing' → product_manager_to_team.",
+        "executive_brief": "Concise high-stakes summary for a CEO or executive: use when the "
+        "response must surface business impact, risk, and crisp asks in direct language. "
+        "Heuristic: 'executive summary', 'board presentation', 'brief for the CEO', 'business "
+        "impact', 'crisp ask for leadership' → executive_brief.",
+        "scientist_to_analyst": "Evidence-based analysis presented formally to an analyst: use "
+        "when the response needs rigorous structure, data framing, and formal tone. Heuristic: "
+        "'data analysis for an analyst', 'evidence-based findings', 'formal analytical report', "
+        "'scientific framing' → scientist_to_analyst.",
+        "fun_mode": "Casual, playful tone across the board: use when the subject calls for "
+        "levity and the user explicitly wants a casual, entertaining register. Heuristic: "
+        "'keep it light', 'be funny', 'playful tone', 'casual', 'have fun with it' → fun_mode.",
+    },
+    "audience": {
+        "to managers": "Address managers focused on outcomes and risk: use when the primary "
+        "audience is a manager who cares about staffing, risk, and results rather than technical "
+        "implementation. Heuristic: 'for my manager', 'management update', 'manager audience', "
+        "'outcome-focused for leadership' → audience=to-managers.",
+        "to product manager": "Address a product manager with scope and user value framing: use "
+        "when the primary audience is a PM connecting user needs to scope decisions. Heuristic: "
+        "'for the PM', 'product manager audience', 'scope and user value', 'product decision' "
+        "→ audience=to-product-manager.",
+        "to CEO": "Address a CEO with business impact and crisp asks: use when the primary "
+        "audience is a CEO or C-suite executive who needs crisp business framing. Heuristic: "
+        "'for the CEO', 'executive audience', 'business impact', 'C-suite framing' "
+        "→ audience=to-CEO.",
+        "to LLM": "Address another language model: use when the response will be consumed by "
+        "another LLM — make output explicit, unambiguous, and free of prose fluff. Heuristic: "
+        "'pass this to a model', 'LLM pipeline', 'downstream model', 'machine-readable "
+        "framing' → audience=to-LLM.",
+        "to junior engineer": "Address a junior engineer with clear, encouraging guidance: use "
+        "when the audience needs thorough explanation and supportive tone. Heuristic: 'for a "
+        "junior dev', 'explain to someone new to this', 'beginner-friendly', 'onboarding' "
+        "→ audience=to-junior-engineer.",
+        "to stakeholders": "Address a broad stakeholder group focused on impact and decisions: "
+        "use when the audience includes mixed roles and needs clarity on what matters and why. "
+        "Heuristic: 'for stakeholders', 'mixed audience', 'cross-functional group', 'impact "
+        "and decision clarity' → audience=to-stakeholders.",
+    },
+}
+
+
+def persona_key_to_use_when_map(axis: str) -> dict[str, str]:
+    """Return the key->use_when map for a persona/intent axis (ADR-0133)."""
+    return PERSONA_KEY_TO_USE_WHEN.get(axis, {})
+
+
 def persona_key_to_guidance_map(axis: str) -> dict[str, str]:
     """Return the key->guidance map for a persona/intent axis (ADR-0112)."""
     return PERSONA_KEY_TO_GUIDANCE.get(axis, {})

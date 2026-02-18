@@ -39,6 +39,8 @@ export interface Grammar {
 			audience: string[];
 			tone: string[];
 		};
+		docs?: Record<string, Record<string, string>>;
+		use_when?: Record<string, Record<string, string>>;
 	};
 	patterns?: GrammarPattern[];
 }
@@ -109,6 +111,19 @@ export function getPersonaPresets(grammar: Grammar): PersonaPreset[] {
 
 export function getPersonaAxisTokens(grammar: Grammar, axis: 'voice' | 'audience' | 'tone'): string[] {
 	return [...(grammar.persona?.axes?.[axis] ?? [])].sort();
+}
+
+export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audience' | 'tone'): TokenMeta[] {
+	const tokens = getPersonaAxisTokens(grammar, axis);
+	const docs = grammar.persona?.docs?.[axis] ?? {};
+	const use_when = grammar.persona?.use_when?.[axis] ?? {};
+	return tokens.map((token) => ({
+		token,
+		label: token,
+		description: docs[token] ?? '',
+		guidance: '',
+		use_when: use_when[token] ?? ''
+	}));
 }
 
 export function getUsagePatterns(grammar: Grammar): GrammarPattern[] {

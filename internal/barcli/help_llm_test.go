@@ -267,6 +267,51 @@ func TestLLMHelpADR0112D3(t *testing.T) {
 	}
 }
 
+// TestLLMHelpPersonaUseWhen verifies ADR-0133: persona use_when discoverability hints
+// are rendered in bar help llm:
+//   - Preset table has a "When to use" column
+//   - Key presets (peer_engineer_explanation, executive_brief) have use_when content
+//   - Audience token table has "When to use" column with content for to-managers
+func TestLLMHelpPersonaUseWhen(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	// Locate the Persona System section
+	personaStart := strings.Index(output, "## Persona System")
+	if personaStart == -1 {
+		t.Fatal("could not locate ## Persona System section in bar help llm output")
+	}
+	personaSection := output[personaStart:]
+
+	// Preset table must have "When to use" column header
+	if !strings.Contains(personaSection, "When to use") {
+		t.Error("ADR-0133: Persona System section missing 'When to use' column header in preset table")
+	}
+
+	// Key presets must have use_when content
+	checks := []struct {
+		preset   string
+		contains string
+	}{
+		{"peer_engineer_explanation use_when present", "engineer-to-engineer"},
+		{"executive_brief use_when present", "executive summary"},
+		{"teach_junior_dev use_when present", "junior"},
+		{"stakeholder_facilitator use_when present", "stakeholder"},
+	}
+	for _, c := range checks {
+		if !strings.Contains(personaSection, c.contains) {
+			t.Errorf("ADR-0133: Persona System section missing %s (expected to contain %q)", c.preset, c.contains)
+		}
+	}
+
+	// Audience token table must have use_when for to-managers
+	if !strings.Contains(personaSection, "outcome-focused for leadership") {
+		t.Error("ADR-0133: Persona System section missing to-managers use_when hint")
+	}
+}
+
 // TestLLMHelpChannelAffinityAndTokenClarity verifies ADR-0106 decisions are
 // reflected in bar help llm output:
 //

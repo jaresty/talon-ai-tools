@@ -94,6 +94,7 @@
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "branch": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
+        "canon": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as independent causal or justificatory elements without specifying their dependency relationship.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
         "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision factors. Use when the user presents options and asks which to choose or how they differ.",
@@ -246,6 +247,7 @@
         "boom",
         "branch",
         "calc",
+        "canon",
         "cite",
         "cluster",
         "compare",
@@ -398,6 +400,7 @@
         "boom": "Explore behavior at extremes of scale",
         "branch": "Parallel reasoning paths",
         "calc": "Quantitative or executable reasoning",
+        "canon": "Reduce multiple representations to a single authoritative source",
         "cite": "Include sources and references",
         "cluster": "Group items by shared characteristics",
         "compare": "Compare alternatives against criteria",
@@ -544,6 +547,7 @@
       "method": {
         "abduce": "Comparative hypothesis generation from evidence: user wants multiple candidate explanations ranked by how well they fit the evidence, not just a single root cause. Heuristic: 'what\\'s the best explanation for', 'generate hypotheses for why', 'what are the most likely causes ranked', 'compare possible explanations', 'ranked hypotheses from evidence', 'what could explain this' → abduce. Distinct from diagnose (diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing explanations explicitly). Distinct from induce (induce = generalize a rule from examples; abduce = hypothesize from evidence).",
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial (deliberate attack/exploit focus).",
+        "canon": "Canonical-source analysis: user asks which representation is authoritative, wants to eliminate duplication by locating the SSOT, or needs to map multiple representations to a single canonical origin. Heuristic: 'where is the single source of truth', 'we have duplicate definitions', 'which config is authoritative', 'DRY violation', 'multiple representations of the same thing', 'who owns this data', 'derive X from Y instead of duplicating', 'canonical source for', 'reduce duplication to derivation' → canon. Distinct from depends (depends = trace what relies on what; canon = reduce multiple representations to a single authoritative locus). Distinct from mapping (mapping = surface elements and relationships; canon = identify or enforce the single canonical source among them).",
         "field": "Shared-medium interaction analysis: user asks how actors interact through a shared infrastructure or protocol layer rather than via direct references. Heuristic: 'shared infrastructure', 'shared medium', 'protocol mediation', 'service mesh routing', 'why things route through', 'broadcast patterns', 'effects propagate through a shared layer' → field. Distinct from mapping (surface elements; field = model the medium and why compatibility produces observed routing).",
         "grove": "Accumulation and compounding analysis: user asks how small effects build up over time, how debt or improvement compounds, or how feedback loops amplify outcomes. Heuristic: 'compound', 'accumulates over time', 'feedback loop', 'technical debt grows', 'network effect', 'how things build up', 'rate of change over time', 'snowball' → grove. Distinct from systemic (interacting whole; grove = rate of accumulation through mechanisms) and effects (trace consequences; grove = HOW they compound).",
         "grow": "Evolutionary or incremental design philosophy: user wants to start minimal and expand only when demonstrably needed. Heuristic: 'start simple and expand', 'minimum viable', 'YAGNI', 'add only what you need', 'simplest thing that works', 'evolve as needed', 'don't over-engineer', 'add features only when required', 'grow incrementally' → grow. Distinct from minimal completeness (brevity of output) and spec (define criteria first).",
@@ -726,7 +730,7 @@
       "fix": "In bar's grammar, fix means reformat — not debug. To analyze/debug: use probe with diagnose, inversion, or adversarial. To implement the fix: use fix (reformat) or make (create new).",
       "make": "Works well with: svg, adr, diagram, codetour. For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
       "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), jira (backlog items).",
-      "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. probe = analyze broadly; pull = extract subset.",
+      "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. probe = analyze broadly; pull = extract subset. For debugging/troubleshooting: use probe + diagnose method (not fix — fix is content reformatting, not bug-fixing). Heuristic: 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe + diagnose.",
       "pull": "For summarisation: extract the conceptual core from source material with gist scope. For risk extraction: works well with fail scope.",
       "show": "For summarisation of long documents, prefer 'pull' (extraction). show = explain a concept; pull = compress source material.",
       "sim": "Temporal scenario walkthrough: use when the user wants to trace what unfolds over time if a condition occurs. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = what plays out if a condition is met) and probe (probe = surface implications analytically; sim = narrate the scenario unfolding over time). Works well with: diagram (Mermaid scenarios), slack (session format), sync (agenda format)."
@@ -1052,6 +1056,26 @@
         "product_manager_to_team": "Strong with probe (quality analysis), check (requirements validation). Good for retrospectives, estimation.",
         "scientist_to_analyst": "Strong with check (evidence-based verification), probe (analysis). Good for data-driven decisions."
       }
+    },
+    "use_when": {
+      "audience": {
+        "to CEO": "Address a CEO with business impact and crisp asks: use when the primary audience is a CEO or C-suite executive who needs crisp business framing. Heuristic: 'for the CEO', 'executive audience', 'business impact', 'C-suite framing' → audience=to-CEO.",
+        "to LLM": "Address another language model: use when the response will be consumed by another LLM — make output explicit, unambiguous, and free of prose fluff. Heuristic: 'pass this to a model', 'LLM pipeline', 'downstream model', 'machine-readable framing' → audience=to-LLM.",
+        "to junior engineer": "Address a junior engineer with clear, encouraging guidance: use when the audience needs thorough explanation and supportive tone. Heuristic: 'for a junior dev', 'explain to someone new to this', 'beginner-friendly', 'onboarding' → audience=to-junior-engineer.",
+        "to managers": "Address managers focused on outcomes and risk: use when the primary audience is a manager who cares about staffing, risk, and results rather than technical implementation. Heuristic: 'for my manager', 'management update', 'manager audience', 'outcome-focused for leadership' → audience=to-managers.",
+        "to product manager": "Address a product manager with scope and user value framing: use when the primary audience is a PM connecting user needs to scope decisions. Heuristic: 'for the PM', 'product manager audience', 'scope and user value', 'product decision' → audience=to-product-manager.",
+        "to stakeholders": "Address a broad stakeholder group focused on impact and decisions: use when the audience includes mixed roles and needs clarity on what matters and why. Heuristic: 'for stakeholders', 'mixed audience', 'cross-functional group', 'impact and decision clarity' → audience=to-stakeholders."
+      },
+      "presets": {
+        "designer_to_pm": "Design decisions communicated to a product manager: use when a designer needs to explain trade-offs and UX rationale to a PM audience. Heuristic: 'explain design to PM', 'design rationale for product', 'UX decision for a product manager' → designer_to_pm.",
+        "executive_brief": "Concise high-stakes summary for a CEO or executive: use when the response must surface business impact, risk, and crisp asks in direct language. Heuristic: 'executive summary', 'board presentation', 'brief for the CEO', 'business impact', 'crisp ask for leadership' → executive_brief.",
+        "fun_mode": "Casual, playful tone across the board: use when the subject calls for levity and the user explicitly wants a casual, entertaining register. Heuristic: 'keep it light', 'be funny', 'playful tone', 'casual', 'have fun with it' → fun_mode.",
+        "peer_engineer_explanation": "Technical explanation to a fellow engineer: use when the audience is a programmer or peer engineer who wants engineer-to-engineer framing. Heuristic: 'explain this to a developer', 'peer review context', 'engineer to engineer', 'technical walkthrough for my team' → peer_engineer_explanation.",
+        "product_manager_to_team": "Product direction communicated to the team: use when a PM needs to frame product goals or retrospective insights for the engineering or design team. Heuristic: 'PM to team update', 'product direction for engineers', 'team retrospective framing' → product_manager_to_team.",
+        "scientist_to_analyst": "Evidence-based analysis presented formally to an analyst: use when the response needs rigorous structure, data framing, and formal tone. Heuristic: 'data analysis for an analyst', 'evidence-based findings', 'formal analytical report', 'scientific framing' → scientist_to_analyst.",
+        "stakeholder_facilitator": "Driving alignment with mixed stakeholders: use when the response needs to help a facilitator guide a group toward a decision. Heuristic: 'stakeholder meeting', 'cross-functional group', 'alignment session', 'facilitating a decision', 'stakeholder presentation' → stakeholder_facilitator.",
+        "teach_junior_dev": "Mentoring or onboarding a junior developer: use when the audience needs patient, scaffolded explanation with encouragement. Heuristic: 'explain for a junior', 'onboarding doc', 'new developer', 'junior team member', 'kind clear explanation for someone new' → teach_junior_dev."
+      }
     }
   },
   "hierarchy": {
@@ -1173,6 +1197,7 @@
         "boom": "boom",
         "branch": "branch",
         "calc": "calc",
+        "canon": "canon",
         "cite": "cite",
         "cluster": "cluster",
         "compare": "compare",
@@ -1359,6 +1384,7 @@
         "method=boom": "method-boom",
         "method=branch": "method-branch",
         "method=calc": "method-calc",
+        "method=canon": "method-canon",
         "method=cite": "method-cite",
         "method=cluster": "method-cluster",
         "method=compare": "method-compare",
@@ -1569,6 +1595,7 @@
       "build": "build",
       "bullets": "bullets",
       "calc": "calc",
+      "canon": "canon",
       "cards": "cards",
       "case": "case",
       "casually": "casually",
@@ -1733,6 +1760,7 @@
       "method=boom": "method-boom",
       "method=branch": "method-branch",
       "method=calc": "method-calc",
+      "method=canon": "method-canon",
       "method=cite": "method-cite",
       "method=cluster": "method-cluster",
       "method=compare": "method-compare",
@@ -2599,11 +2627,11 @@
     }
   ],
   "checksums": {
-    "axes": "8a74ef959f2b238f388cd889b49ff729a9a17e973711353bf520aea4a6d755d4",
-    "tasks": "8db62714db1652014f598ea11f0f1abcf818ec6736abadb37717bf15d1c7cd81",
-    "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
+    "axes": "b89c4a59aa62aeeadc08def4027114c2064237ace594131a7dd3d7ed912bd245",
+    "tasks": "633e77070af92fc7d23fdfdc71c980953a627e9bc20e3b3f3a74eab08c260034",
+    "persona": "e416f896781512c05563c3c34f13d6d7d71edb143c54683daba266395509cf40",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "a5675e487f7894faafd82c0a64141f74cfe0918cd0b2d27274d3eac00914a869",
+    "slugs": "0ca7b501bf6c8a5ab873d1be44bbccf91481762ea7b9cfe94860ec729426ea75",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1"
   }
 }

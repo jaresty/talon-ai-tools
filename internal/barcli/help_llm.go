@@ -545,8 +545,8 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 		if !compact {
 			fmt.Fprintf(w, "Pre-configured combinations of voice, audience, and tone:\n\n")
 		}
-		fmt.Fprintf(w, "| Preset | Voice | Audience | Tone | Guidance |\n")
-		fmt.Fprintf(w, "|--------|-------|----------|------|----------|\n")
+		fmt.Fprintf(w, "| Preset | Voice | Audience | Tone | Guidance | When to use |\n")
+		fmt.Fprintf(w, "|--------|-------|----------|------|----------|-------------|\n")
 
 		presetNames := make([]string, 0, len(grammar.Persona.Presets))
 		for name := range grammar.Persona.Presets {
@@ -577,7 +577,12 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 				guidance = "-"
 			}
 
-			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s |\n", name, voice, audience, tone, guidance)
+			useWhen := grammar.PersonaUseWhen("presets", name)
+			if useWhen == "" {
+				useWhen = "-"
+			}
+
+			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", name, voice, audience, tone, guidance, useWhen)
 		}
 		fmt.Fprintf(w, "\n")
 	}
@@ -616,8 +621,8 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 
 		// Show descriptions if available (skip in compact mode)
 		if len(axisDocs) > 0 && !compact {
-			fmt.Fprintf(w, "| Token | Description |\n")
-			fmt.Fprintf(w, "|-------|-------------|\n")
+			fmt.Fprintf(w, "| Token | Description | When to use |\n")
+			fmt.Fprintf(w, "|-------|-------------|-------------|\n")
 			for _, token := range tokenNames {
 				slug := grammar.slugForToken(token)
 				if slug == "" {
@@ -627,7 +632,8 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 				if desc == "" {
 					desc = "(no description)"
 				}
-				fmt.Fprintf(w, "| `%s` | %s |\n", slug, desc)
+				useWhen := grammar.PersonaUseWhen(axisName, token)
+				fmt.Fprintf(w, "| `%s` | %s | %s |\n", slug, desc, useWhen)
 			}
 			fmt.Fprintf(w, "\n")
 		}
@@ -792,6 +798,27 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 		return
 	}
 	fmt.Fprintf(w, "## Token Selection Heuristics\n\n")
+
+	fmt.Fprintf(w, "### Choosing Task\n\n")
+	fmt.Fprintf(w, "- **Explain or describe something** → `show`\n")
+	fmt.Fprintf(w, "- **Analyze, surface structure or assumptions** → `probe`\n")
+	fmt.Fprintf(w, "- **Debug, troubleshoot, diagnose a problem** → `probe` + `diagnose` method\n")
+	fmt.Fprintf(w, "- **Create new content or artifacts** → `make`\n")
+	fmt.Fprintf(w, "- **Plan steps or strategy** → `plan`\n")
+	fmt.Fprintf(w, "- **Compare or contrast subjects** → `diff`\n")
+	fmt.Fprintf(w, "- **Reformat or restructure existing content** → `fix`\n")
+	fmt.Fprintf(w, "- **Verify or audit against criteria** → `check`\n")
+	fmt.Fprintf(w, "- **Extract a subset of information** → `pull`\n")
+	fmt.Fprintf(w, "- **Simulate a scenario over time** → `sim`\n")
+	fmt.Fprintf(w, "- **Select from alternatives** → `pick`\n")
+	fmt.Fprintf(w, "- **Organize into categories or order** → `sort`\n\n")
+
+	fmt.Fprintf(w, "### Choosing Persona\n\n")
+	fmt.Fprintf(w, "- **Known audience**: prefer explicit `audience=` token over presets when the task specifies who you are talking to (e.g., 'explain to an engineering manager' → `voice=as-programmer audience=to-managers`, not `persona=peer_engineer_explanation`)\n")
+	fmt.Fprintf(w, "- **Presets are shortcuts** for common pairings — verify the preset's audience matches the actual target before using\n")
+	fmt.Fprintf(w, "- **Non-technical audience** (manager, PM, executive, CEO, stakeholder) → check `audience=to-managers`, `audience=to-product-manager`, `audience=to-ceo`, `audience=to-stakeholders`\n")
+	fmt.Fprintf(w, "- **Technical peer audience** → presets like `persona=peer_engineer_explanation`, `persona=teach_junior_dev` work well\n")
+	fmt.Fprintf(w, "- **Cross-functional communication** → `persona=stakeholder_facilitator` (as-facilitator to-stakeholders) or compose `voice=` + `audience=` explicitly\n\n")
 
 	fmt.Fprintf(w, "### Choosing Scope\n\n")
 	fmt.Fprintf(w, "- **Entities/boundaries** → `thing`, `struct`\n")

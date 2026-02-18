@@ -366,6 +366,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "stress-test, systematically searching for weaknesses, edge "
         "cases, counterexamples, failure modes, and unstated "
         "assumptions.",
+        "canon": "The response models each proposition, rule, or dependency as "
+        "having a single authoritative locus within the explanatory "
+        "structure. Apparent duplication must be reduced to derivation "
+        "from a canonical source, and parallel accounts must be "
+        "explicitly mapped or unified. Explanations may not treat "
+        "multiple representations of the same knowledge as independent "
+        "causal or justificatory elements without specifying their "
+        "dependency relationship.",
         "analog": "The response enhances the task by reasoning through analogy, "
         "mapping relational structure from a known case onto the subject "
         "and examining where the analogy holds or breaks.",
@@ -700,6 +708,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "boom": "Explore behavior at extremes of scale",
         "branch": "Parallel reasoning paths",
         "calc": "Quantitative or executable reasoning",
+        "canon": "Reduce multiple representations to a single authoritative source",
         "cite": "Include sources and references",
         "cluster": "Group items by shared characteristics",
         "compare": "Compare alternatives against criteria",
@@ -1144,6 +1153,19 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'equivalent states' → mod. Distinct from motifs scope (recurring "
         "patterns across codebase; mod = cyclic/periodic reasoning about "
         "behavior that repeats with a defined period).",
+        "canon": "Canonical-source analysis: user asks which representation is "
+        "authoritative, wants to eliminate duplication by locating the "
+        "SSOT, or needs to map multiple representations to a single "
+        "canonical origin. Heuristic: 'where is the single source of "
+        "truth', 'we have duplicate definitions', 'which config is "
+        "authoritative', 'DRY violation', 'multiple representations of "
+        "the same thing', 'who owns this data', 'derive X from Y instead "
+        "of duplicating', 'canonical source for', 'reduce duplication to "
+        "derivation' → canon. Distinct from depends (depends = trace what "
+        "relies on what; canon = reduce multiple representations to a "
+        "single authoritative locus). Distinct from mapping (mapping = "
+        "surface elements and relationships; canon = identify or enforce "
+        "the single canonical source among them).",
     },
     "scope": {
         "agent": "Decision-making or agency focus: user asks who can act, who has "

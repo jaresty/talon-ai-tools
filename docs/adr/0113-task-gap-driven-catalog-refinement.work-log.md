@@ -6,6 +6,56 @@ VCS_REVERT: `git restore --source=HEAD` (file-targeted) or `git stash` (full).
 
 ---
 
+## loop-22 | 2026-02-18 | Cross-axis health check — missing Task and Persona heuristics
+
+```
+focus: Fresh broad health check across 8 diverse task types. All axes had use_when coverage
+  after loop-21. This loop probed whether the heuristics guide task token and persona selection.
+
+root_cause: Token Selection Heuristics section had Choosing Scope / Method / Form but lacked
+  "Choosing Task" and "Choosing Persona" sections. Autopilot selected task tokens by name-
+  matching alone — "debug a race condition" → fix (wrong; fix = reformat) and defaulted to
+  peer_engineer_explanation preset for a manager-audience task (programmer-to-programmer, wrong).
+
+mean_score: 4.125/5
+gaps_found: 2 (both skill-guidance-wrong)
+  G-L22-01: No "Choosing Task" heuristic → T07 misrouted to fix instead of probe+diagnose
+  G-L22-02: No "Choosing Persona" heuristic → T02 used wrong preset for manager audience
+
+fixes_applied:
+  - help_llm.go renderHeuristics(): Added "Choosing Task" section (12-entry positive routing
+    for all 11 task tokens, including debug→probe+diagnose)
+  - help_llm.go renderHeuristics(): Added "Choosing Persona" section (preset vs explicit
+    audience= guidance, manager/PM/CEO/stakeholder routing)
+  - staticPromptConfig.py _STATIC_PROMPT_GUIDANCE["probe"]: Added debugging heuristic
+    per SSOT convention; inline warning removed from help_llm.go (lives in token use_when)
+
+tests: grammar regenerated (make bar-grammar-update), dev binary rebuilt
+ssot: intact (staticPromptConfig.py is SSOT for task token guidance; help_llm.go heuristics
+  are navigation only, no duplication of token-level warnings)
+
+post_apply:
+  T07 probe full struct time diagnose bug: 2 → 5
+  T02 voice=as-programmer audience=to-managers task=show ...: 3 → 5
+  mean: 4.125 → 4.625
+
+key_insight: Even when all axes have use_when coverage, autopilot can still misroute if the
+  heuristics section doesn't provide positive routing for the most critical selection decision:
+  which TASK token to use. "Choosing Task" is the highest-impact heuristic addition to date.
+  Persona heuristic closes a secondary gap: presets are convenient but mask the need to
+  verify audience match for the specific task.
+
+evidence:
+  - docs/adr/evidence/0113/loop-22/evaluations.md
+  - docs/adr/evidence/0113/loop-22/loop-22-summary.md
+
+next_loop_focus: Validate that "Choosing Task" heuristic prevents future task token misrouting
+  across a fresh task sample. May also check if "Choosing Persona" routes correctly for
+  cross-functional scenarios (PM, CEO, platform-team).
+```
+
+---
+
 ## loop-21 | 2026-02-18 | Directional token discoverability — entire axis uncovered
 
 ```

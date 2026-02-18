@@ -496,7 +496,7 @@
         "resilience": "Distinguish from: robust (selecting options that work across futures). Resilience focuses on system behavior under stress.",
         "robust": "Distinguish from: resilience (behavior under stress). Robust favors options that perform acceptably across futures.",
         "systemic": "Distinguish from: analysis (decomposition/structure). Systemic focuses on feedback loops and interactions.",
-        "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, and destination. Explanations must distinguish message from signal, account for transformation across stages, and model noise or distortion explicitly. Outcomes may not be attributed to communication without specifying how the signal survived or degraded during transmission."
+        "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission."
       },
       "scope": {
         "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
@@ -2573,7 +2573,7 @@
     }
   ],
   "checksums": {
-    "axes": "1ce0bc5100465d2f8337380bc3422add57f00b70f4c8c2d8f44fffa4fee54457",
+    "axes": "3d26f5fe637ee7a2abf4acc1fda126958436ee0bedd83c7fa67c2cb6876610e7",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

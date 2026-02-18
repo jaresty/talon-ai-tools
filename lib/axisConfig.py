@@ -518,6 +518,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as an interacting whole, identifying components, boundaries, "
         "flows, feedback loops, and emergent behaviour that arise from "
         "their interactions rather than from parts in isolation.",
+        "trans": "The response models information transfer as a staged process "
+        "involving a source, encoding, channel, decoding, destination, "
+        "and feedback. Explanations must distinguish message from signal, "
+        "account for transformation across stages, model noise or "
+        "distortion explicitly, and specify mechanisms for detecting and "
+        "repairing transmission errors. Outcomes may not be attributed to "
+        "communication without specifying how the signal survived, "
+        "degraded, or was corrected during transmission.",
         "unknowns": "The response enhances the task by identifying critical "
         "unknown unknowns and exploring how they might impact "
         "outcomes.",
@@ -984,14 +992,6 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "maximum load', 'what dominates at scale', 'scale to the extreme', "
         "'at the limit' → boom. Distinct from resilience (normal stress "
         "range) and adversarial (deliberate attack/exploit focus).",
-        "trans": "The response models information transfer as a staged process "
-        "involving a source, encoding, channel, decoding, destination, "
-        "and feedback. Explanations must distinguish message from signal, "
-        "account for transformation across stages, model noise or "
-        "distortion explicitly, and specify mechanisms for detecting and "
-        "repairing transmission errors. Outcomes may not be attributed to "
-        "communication without specifying how the signal survived, "
-        "degraded, or was corrected during transmission.",
         "field": "Shared-medium interaction analysis: user asks how actors "
         "interact through a shared infrastructure or protocol layer "
         "rather than via direct references. Heuristic: 'shared "

@@ -134,6 +134,7 @@
         "spec": "The response defines explicit criteria of correctness before proposing implementations and treats those criteria as fixed and authoritative. Implementations must satisfy the prior definition and may not redefine correctness during construction. Progress is measured by compliance with the specification rather than by artifact production.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
+        "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment."
       },
@@ -285,6 +286,7 @@
         "spec",
         "split",
         "systemic",
+        "trans",
         "unknowns",
         "verify"
       ],
@@ -531,8 +533,7 @@
         "grow": "Evolutionary or incremental design philosophy: user wants to start minimal and expand only when demonstrably needed. Heuristic: 'start simple and expand', 'minimum viable', 'YAGNI', 'add only what you need', 'simplest thing that works', 'evolve as needed', 'don't over-engineer', 'add features only when required', 'grow incrementally' → grow. Distinct from minimal completeness (brevity of output) and spec (define criteria first).",
         "meld": "Constraint-balancing or tension-resolution analysis: user asks how to balance competing forces, find overlaps, or navigate constraints between elements that must coexist. Heuristic: 'balance between', 'overlap between', 'constraints between', 'combining X and Y', 'where X and Y interact', 'navigate tensions between', 'find the combination that satisfies' → meld. Distinct from compare (evaluate alternatives; meld = balance constraints between elements that must coexist).",
         "melody": "Cross-component or cross-team coordination analysis: user asks how to synchronize work, manage coupling, or align changes across teams or components. Heuristic: 'coordinate across teams', 'synchronize changes', 'change alignment', 'coupling between components', 'parallel work streams', 'avoid conflicts between teams', 'migration coordination', 'who needs to change when' → melody. Distinct from depends (what relies on what) and actors (centering the people involved).",
-        "mod": "Cyclic or periodic pattern analysis: user asks about behavior that repeats, wraps around, or follows a cycle. Heuristic: 'repeats across cycles', 'cyclic behavior', 'periodic pattern', 'repeating structure', 'what wraps around', 'recurs periodically', 'equivalent states' → mod. Distinct from motifs scope (recurring patterns across codebase; mod = cyclic/periodic reasoning about behavior that repeats with a defined period).",
-        "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission."
+        "mod": "Cyclic or periodic pattern analysis: user asks about behavior that repeats, wraps around, or follows a cycle. Heuristic: 'repeats across cycles', 'cyclic behavior', 'periodic pattern', 'repeating structure', 'what wraps around', 'recurs periodically', 'equivalent states' → mod. Distinct from motifs scope (recurring patterns across codebase; mod = cyclic/periodic reasoning about behavior that repeats with a defined period)."
       },
       "scope": {
         "agent": "Decision-making or agency focus: user asks who can act, who has authority, or how choices are made between actors. Heuristic: 'who decides', 'who has authority', 'who can approve', 'decision-making', 'agency', 'who is responsible' → agent scope. Note: agent is a SCOPE token (foregrounds decision-making actors); actors is a METHOD token (enriches any task with actor-centered analysis). Both can be selected together.",
@@ -1191,6 +1192,7 @@
         "spec": "spec",
         "split": "split",
         "systemic": "systemic",
+        "trans": "trans",
         "unknowns": "unknowns",
         "verify": "verify"
       },
@@ -1376,6 +1378,7 @@
         "method=spec": "method-spec",
         "method=split": "method-split",
         "method=systemic": "method-systemic",
+        "method=trans": "method-trans",
         "method=unknowns": "method-unknowns",
         "method=verify": "method-verify"
       },
@@ -1749,6 +1752,7 @@
       "method=spec": "method-spec",
       "method=split": "method-split",
       "method=systemic": "method-systemic",
+      "method=trans": "method-trans",
       "method=unknowns": "method-unknowns",
       "method=verify": "method-verify",
       "minimal": "minimal",
@@ -1859,6 +1863,7 @@
       "tone=formally": "tone-formally",
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
+      "trans": "trans",
       "unknowns": "unknowns",
       "variants": "variants",
       "verify": "verify",
@@ -2573,11 +2578,11 @@
     }
   ],
   "checksums": {
-    "axes": "3aa2d010bd5f88113bbf177d0bb0be8ecec7385e37dd048a2f5980cf7f56ab29",
+    "axes": "cd361a8fc011710f5c5b6f64c975fd59d9d4a27309d2272c718e6b77a55a94b9",
     "tasks": "88ada055cd67b292cd79dc21ebe6deb25ca5258e9a2e6a54e106ad7e4c8d103c",
     "persona": "351d762e56b075b172e38c4a3e6d1ba2064a86bbc12acb5772639ed34649195f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "4b8f6392be4600f7bb998a6c413fa799a0d9b3bf478b3dd53e4d332cb9c8a3c3",
+    "slugs": "a5675e487f7894faafd82c0a64141f74cfe0918cd0b2d27274d3eac00914a869",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1"
   }
 }

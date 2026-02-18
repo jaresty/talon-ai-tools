@@ -44,3 +44,36 @@ next_work:
   Behaviour: F2 (offline cache) — add web/src/service-worker.ts, validate build exits 0
     and sw.js present in web/build/
 ```
+
+## loop-2 | 2026-02-18 | Service worker (F2 offline)
+
+```
+helper_version: helper:v20251223.1
+focus: ADR-0136 §Decision — service-worker.ts for cache-first offline support (F2)
+active_constraint: web/src/service-worker.ts absent; npm run build produces no
+  service-worker.js; F2 (offline) cannot be satisfied without it.
+validation_targets:
+  - npm run build                              # build exits 0
+  - ls web/build/service-worker.js            # sw included in static output
+evidence:
+  - red  | 2026-02-18T01:45:00Z | exit 1 | ls web/src/service-worker.ts
+      No such file or directory | inline
+  - red  | 2026-02-18T01:45:10Z | exit 1 | npm run build && ls build/service-worker.js
+      build succeeded but service-worker.js absent from output | inline
+  - green | 2026-02-18T01:46:30Z | exit 0 | npm run build && ls build/service-worker.js
+      build/service-worker.js present | inline
+  - removal | 2026-02-18T01:47:00Z | exit 1 | mv service-worker.ts /tmp && npm run build && ls build/service-worker.js
+      clean build without service-worker.ts produces no sw.js (exit 1 on ls) | inline
+rollback_plan: git restore --source=HEAD web/src/service-worker.ts (after commit);
+  pre-commit: rm web/src/service-worker.ts
+delta_summary: helper:diff-snapshot → 0 changed (service-worker.ts is new untracked file)
+  Added web/src/service-worker.ts: cache-first SW using SvelteKit $service-worker
+  build/files manifests. skipWaiting + clients.claim for immediate activation.
+loops_remaining_forecast: 1 loop remaining (icons). Confidence: high.
+residual_constraints:
+  - Icons (icon-192.png, icon-512.png) still absent; manifest references them.
+    Severity: H (blocks F1/F3). Mitigation: Loop 3. Monitor: static dir listing.
+next_work:
+  Behaviour: F1/F3 (install) — generate icon-192.png and icon-512.png in web/static/,
+    validate manifest references are satisfiable (files exist at declared paths)
+```

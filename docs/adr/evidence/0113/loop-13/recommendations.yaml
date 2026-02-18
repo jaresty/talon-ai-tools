@@ -1,0 +1,75 @@
+# ADR-0113 Loop-13 Recommendations
+# Date: 2026-02-18
+# Focus: Method axis — metaphorical opaque tokens (boom, grove, melody, grow)
+# Part A (scope post-apply validation) confirmed all 4 loop-12 fixes landed — no new recs.
+
+---
+
+- id: R-L13-01
+  gap: G-L13-01
+  gap_type: undiscoverable-token
+  axis: method
+  token: boom
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Scale extreme analysis: user asks what happens at 10x, 100x, or at the
+    absolute limits of the system. Heuristic: 'at 10x', 'at extreme load',
+    'what breaks at scale', 'pushed to the limit', 'at maximum load', 'what
+    dominates at scale', 'scale to the extreme', 'at the limit' → boom.
+    Distinct from resilience (normal stress range) and adversarial (deliberate
+    attack/exploit focus).
+  evidence:
+    - task_T211 (API at 10x traffic spike — boom missed; resilience used instead)
+
+- id: R-L13-02
+  gap: G-L13-02
+  gap_type: undiscoverable-token
+  axis: method
+  token: grove
+  action: add-use-when
+  severity: High
+  proposed_use_when: >
+    Accumulation and compounding analysis: user asks how small effects build up
+    over time, how debt or improvement compounds, or how feedback loops amplify
+    outcomes. Heuristic: 'compound', 'accumulates over time', 'feedback loop',
+    'technical debt grows', 'network effect', 'how things build up', 'rate of
+    change over time', 'snowball' → grove. Distinct from systemic (interacting
+    whole; grove = rate of accumulation) and effects (trace consequences; grove =
+    HOW they compound through mechanisms).
+  evidence:
+    - task_T212 (compounding bottlenecks during growth — grove score 1; systemic used)
+
+- id: R-L13-03
+  gap: G-L13-03
+  gap_type: undiscoverable-token
+  axis: method
+  token: melody
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Cross-component or cross-team coordination analysis: user asks how to
+    synchronize work, manage coupling, or align changes across teams or components.
+    Heuristic: 'coordinate across teams', 'synchronize changes', 'change alignment',
+    'coupling between components', 'parallel work streams', 'avoid conflicts between
+    teams', 'migration coordination', 'who needs to change when' → melody. Distinct
+    from depends (what relies on what) and actors (centering the people involved).
+  evidence:
+    - task_T213 (cross-team migration coordination — melody missed; depends used)
+
+- id: R-L13-04
+  gap: G-L13-04
+  gap_type: undiscoverable-token
+  axis: method
+  token: grow
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Evolutionary or incremental design philosophy: user wants to start minimal
+    and expand only when demonstrably needed. Heuristic: 'start simple and
+    expand', 'minimum viable', 'YAGNI', 'add only what you need', 'simplest
+    thing that works', 'evolve as needed', 'don't over-engineer', 'add features
+    only when required', 'grow incrementally' → grow. Distinct from minimal
+    completeness (brevity of output) and spec (define criteria first).
+  evidence:
+    - task_T218 (implement auth system starting minimal — grow missed; minimal used)

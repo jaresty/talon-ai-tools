@@ -1,0 +1,56 @@
+# ADR-0113 Loop-11 Recommendations
+# Date: 2026-02-18
+# Focus: Completeness axis discoverability (Part B — gist, skim, narrow)
+# Part A (channel post-apply validation) confirmed all 4 loop-10 fixes landed — no new recs needed.
+
+---
+
+- id: R-L11-01
+  gap: G-L11-01
+  gap_type: undiscoverable-token
+  axis: completeness
+  token: gist
+  action: add-use-when
+  severity: High
+  proposed_use_when: >
+    Brief but complete response needed: 'quick summary', 'high-level overview',
+    'standup update', 'tldr', 'main points only', 'brief but complete', 'overview'.
+    Heuristic: 'quick overview', 'brief summary', 'just the key points',
+    'tldr', 'standup', 'overview' → gist completeness.
+    Prefer gist over skim when completeness matters (gist = brief + complete);
+    prefer skim when the user wants a light pass over a larger set (review context).
+  evidence:
+    - task_T196 (quick overview → full instead of gist)
+    - task_T200 (standup brief → full instead of gist)
+
+- id: R-L11-02
+  gap: G-L11-02
+  gap_type: undiscoverable-token
+  axis: completeness
+  token: skim
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Light, surface-level review needed: 'light review', 'quick pass', 'just obvious
+    issues', 'spot check', 'surface-level look', 'sanity check'.
+    Heuristic: 'skim', 'spot check', 'quick review', 'just flag obvious problems',
+    'surface-level' → skim completeness.
+    Distinct from gist (gist = brief but complete; skim = light pass, may miss non-obvious).
+  evidence:
+    - task_T200 (no heuristic distinguishes skim from gist for "brief" tasks)
+
+- id: R-L11-03
+  gap: G-L11-03
+  gap_type: undiscoverable-token
+  axis: completeness
+  token: narrow
+  action: add-use-when
+  severity: Low
+  proposed_use_when: >
+    Response should focus on a very specific slice only: 'just X and nothing else',
+    'only about Y', 'restricted to Z', 'specifically', 'don't go beyond'.
+    Heuristic: 'specifically', 'only', 'just this part', 'restricted to',
+    'nothing beyond' → narrow completeness.
+    Distinct from minimal (minimal = smallest satisfying answer; narrow = very small slice of topic).
+  evidence:
+    - No task evaluated; inferred from token description analysis

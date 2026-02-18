@@ -1,0 +1,107 @@
+# ADR-0113 Loop-12 Recommendations
+# Date: 2026-02-18
+# Focus: Scope axis discoverability — 6 undiscoverable tokens
+# Part A (completeness post-apply validation) confirmed loop-11 fixes landed — no new recs.
+
+---
+
+- id: R-L12-01
+  gap: G-L12-01
+  gap_type: undiscoverable-token
+  axis: scope
+  token: time
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Temporal or sequential focus: user asks about sequence, history, phases, or
+    how something changes over time. Heuristic: 'step by step', 'in order',
+    'over time', 'what happens when', 'sequence', 'timeline', 'history',
+    'how did we get here', 'phases' → time scope. Distinct from flow method
+    (flow = reasoning approach; time = scope dimension to emphasize).
+  evidence:
+    - task_T204 (request flow through system — time scope missed by flow method)
+
+- id: R-L12-02
+  gap: G-L12-02
+  gap_type: undiscoverable-token
+  axis: scope
+  token: agent
+  action: add-use-when
+  severity: High
+  proposed_use_when: >
+    Decision-making or agency focus: user asks who can act, who has authority,
+    or how choices are made between actors. Heuristic: 'who decides', 'who has
+    authority', 'who can approve', 'decision-making', 'agency', 'who is
+    responsible' → agent scope. Note: agent is a SCOPE token (foregrounds
+    decision-making actors); actors is a METHOD token (enriches any task with
+    actor-centered analysis). Both can be selected together.
+  evidence:
+    - task_T205 (who has decision-making authority — agent scope missed, actors method used)
+
+- id: R-L12-03
+  gap: G-L12-03
+  gap_type: undiscoverable-token
+  axis: scope
+  token: assume
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Assumptions and premises focus: user asks what must be true, what is taken
+    for granted, or what preconditions are embedded in the design. Heuristic:
+    'what assumptions', 'what are we assuming', 'what must be true',
+    'what preconditions', 'hidden assumptions', 'what are we taking for granted' →
+    assume scope. Distinct from unknowns method (unknowns = surfaces what we
+    don't know we don't know; assume = makes explicit what is already assumed).
+  evidence:
+    - task_T206 (design assumptions about traffic — assume scope not guaranteed)
+
+- id: R-L12-04
+  gap: G-L12-04
+  gap_type: undiscoverable-token
+  axis: scope
+  token: motifs
+  action: add-use-when
+  severity: High
+  proposed_use_when: >
+    Recurring or repeated patterns across the codebase or system: user asks
+    about structures, idioms, or patterns that appear in multiple places.
+    Heuristic: 'recurring patterns', 'repeated across', 'appears in multiple
+    places', 'common idioms', 'what keeps showing up', 'same pattern in
+    different places' → motifs scope. Distinct from struct (one system's
+    internal arrangement) and mapping method (surface all elements/relationships).
+  evidence:
+    - task_T207 (recurring error-handling patterns — motifs missed, mapping used)
+
+- id: R-L12-05
+  gap: G-L12-05
+  gap_type: undiscoverable-token
+  axis: scope
+  token: good
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Quality criteria or success standards focus: user asks what makes something
+    good, what criteria matter, or how to judge quality. Heuristic: 'quality
+    criteria', 'what makes it good', 'how to judge', 'success criteria',
+    'well-designed', 'what good looks like', 'standards for', 'what does
+    success look like' → good scope. Often pairs with fail scope (good + fail =
+    both quality and failure mode dimensions).
+  evidence:
+    - task_T208 (API quality criteria — good scope not reliably selected)
+
+- id: R-L12-06
+  gap: G-L12-06
+  gap_type: undiscoverable-token
+  axis: scope
+  token: stable
+  action: add-use-when
+  severity: Medium
+  proposed_use_when: >
+    Stability and persistence focus: user asks what is stable, unlikely to
+    change, or self-reinforcing in the system or design. Heuristic: 'stable',
+    'unlikely to change', 'won't change', 'what persists', 'what is settled',
+    'fixed constraints', 'what has remained stable', 'backward-compatible' →
+    stable scope. Often pairs with time scope (stable = what persists;
+    time = how things evolve).
+  evidence:
+    - task_T210 (stable vs. evolving API contract — stable scope missed)

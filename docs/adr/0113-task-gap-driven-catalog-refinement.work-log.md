@@ -192,3 +192,236 @@ loops_remaining_forecast: >
 ```
 
 ---
+
+## loop-11 | 2026-02-18 | Cycle 11: Channel post-apply validation + completeness axis discoverability
+
+```
+focus: Part A — post-apply validation of loop-10 channel discoverability fixes (T188 sync,
+  T189 sketch, T190 plain, T193 remote). Part B — completeness axis discoverability
+  (gist, max, minimal, deep, skim — 5 tasks T196-T200).
+
+active_constraint: >
+  AXIS_KEY_TO_USE_WHEN has no completeness axis entries (0 of 7 tokens covered).
+  gist and skim are undiscoverable for common "brief/quick/overview" and "light review"
+  phrasings — autopilot defaults to full. No SSOT regression observed this loop.
+
+validation_targets:
+  - Part A: mean post-fix score ≥ 4.0 (target: all 4 gapped tasks ≥ 4)
+  - Part B: completeness axis mean score (3.6 observed — below 4.0 target)
+
+evidence:
+  - Part A | 2026-02-18 | post-apply validation
+      T188 sync: 3 → 4 (+1) PASS — "session plan" heuristic fires
+      T189 sketch: 3 → 4 (+1) PASS — "D2 diagram" heuristic fires
+      T190 plain: 3 → 5 (+2) PASS — "no bullets/plain prose" fires (strongest fix)
+      T193 remote: 3 → 4 (+1) BORDERLINE PASS — "distributed session" fires; note preserved
+      Mean: 3.0 → 4.25 ✅
+  - Part B | 2026-02-18 | completeness axis evaluation
+      T196 (gist/quick overview): score 3 — gapped (no use_when, autopilot defaults to full)
+      T197 (max/exhaustive docs): score 4 — "exhaustive" word-for-word in description
+      T198 (minimal/smallest change): score 4 — semi-self-naming
+      T199 (deep/deep dive): score 5 — self-naming
+      T200 (gist vs skim/standup brief): score 2 — gapped (ambiguous; full as default)
+      Mean: 3.6/5 ⚠️ (below 4.0 target)
+
+delta_summary: >
+  Evaluation only — no catalog changes applied this loop.
+  Loop-10 fixes confirmed landing (Part A).
+  Completeness axis gaps identified (Part B): gist, skim, narrow (3 recs).
+  Evidence files created:
+    docs/adr/evidence/0113/loop-11/evaluations.md
+    docs/adr/evidence/0113/loop-11/recommendations.yaml
+    docs/adr/evidence/0113/loop-11/loop-11-summary.md
+
+residual_constraints:
+  - id: RC-L11-01
+    constraint: >
+      AXIS_KEY_TO_USE_WHEN has no completeness axis entries. gist and skim are
+      undiscoverable for "quick/brief/overview" and "light review/spot check" phrasings.
+      narrow has no known routing path at all.
+    severity: Medium (gist/skim), Low (narrow)
+    mitigation: Apply R-L11-01 (gist use_when), R-L11-02 (skim use_when), R-L11-03 (narrow use_when)
+  - id: RC-L11-02
+    constraint: >
+      T193 (remote + retrospective) is a borderline pass. A second usage pattern
+      (remote + facilitate) would strengthen the routing signal beyond the use_when alone.
+    severity: Low
+    mitigation: Add usage pattern in loop-12 apply step
+
+next_work:
+  - Apply R-L11-01, R-L11-02, R-L11-03: add completeness use_when entries to axisConfig.py
+    (check git diff before running make bar-grammar-update — SSOT regression risk)
+  - Post-apply validate: re-test T196 and T200 after completeness use_when added
+  - Scope axis discoverability (0 of 13 tokens have use_when) — candidate for loop-13
+
+apply:
+  date: 2026-02-18
+  changes:
+    - R-L11-01: Added gist use_when to AXIS_KEY_TO_USE_WHEN["completeness"] in lib/axisConfig.py
+    - R-L11-02: Added skim use_when to AXIS_KEY_TO_USE_WHEN["completeness"] in lib/axisConfig.py
+    - R-L11-03: Added narrow use_when to AXIS_KEY_TO_USE_WHEN["completeness"] in lib/axisConfig.py
+  grammar_regen: make bar-grammar-update (exit 0)
+  ssot_check: AXIS_KEY_TO_USE_WHEN intact after regen (no regression)
+  tests: go test ./internal/barcli/ — ok (1.446s)
+  verification: /tmp/bar-new help llm | grep gist/skim/narrow → When to use columns render correctly
+```
+
+---
+
+## loop-12 | 2026-02-18 | Cycle 12: Completeness post-apply + scope axis discoverability + apply
+
+```
+focus: Part A — post-apply validation of loop-11 completeness fixes (T196 gist, T200 gist).
+  Part B — scope axis discoverability (10 tasks T201-T210, 13 scope tokens).
+  Apply — 6 scope use_when entries added immediately after evaluation.
+
+active_constraint: >
+  AXIS_KEY_TO_USE_WHEN had 0 of 13 scope tokens covered. Method tokens preempt scope
+  tokens during selection — "recurring patterns" → mapping/cluster instead of motifs,
+  "flows through" → flow method instead of time scope, "who decides" → actors method
+  instead of agent scope. No SSOT regression observed this loop.
+
+evidence:
+  - Part A: T196 gist 3→4 PASS; T200 gist 2→4 PASS. Mean 2.5→4.0 ✅
+  - Part B scope axis: T201(fail)=5, T202(struct)=4, T203(mean)=4, T204(time)=3,
+      T205(agent)=2, T206(assume)=3, T207(motifs)=2, T208(good)=3, T209(view)=4,
+      T210(stable)=2. Mean 3.2/5 ⚠️
+
+delta_summary: >
+  6 scope use_when entries added to AXIS_KEY_TO_USE_WHEN["scope"] in lib/axisConfig.py:
+    R-L12-01: time — "step by step", "timeline", "sequence", "phases"
+    R-L12-02: agent — "who decides", "who has authority"; distinguishes from actors method
+    R-L12-03: assume — "what assumptions", "what must be true"
+    R-L12-04: motifs — "recurring patterns", "appears in multiple places"
+    R-L12-05: good — "quality criteria", "what makes it good", "success criteria"
+    R-L12-06: stable — "stable", "unlikely to change", "what persists"
+  Grammar regenerated. Tests: ok (1.434s). SSOT intact.
+
+residual_constraints:
+  - id: RC-L12-01
+    constraint: Method axis 51 tokens, 0 use_when entries — largest remaining gap.
+    severity: High (volume), Medium (per-token)
+    mitigation: Candidate for loop-14+ after scope post-apply validation (loop-13).
+
+next_work:
+  - Post-apply validate loop-12 scope fixes: re-test T204, T205, T207, T210
+  - Method axis use_when coverage — 51 tokens, 0 covered; needs sampling strategy
+```
+
+---
+
+## loop-13 | 2026-02-18 | Cycle 13: Scope post-apply + method axis (metaphorical tokens) + apply
+
+```
+focus: Part A — post-apply validation of loop-12 scope fixes (T204 time, T205 agent,
+  T207 motifs, T210 stable). Part B — method axis discoverability sampling (10 tasks
+  T211-T220), focusing on metaphorical token names (boom, grove, melody, grow).
+  Apply — 4 method use_when entries added same loop.
+
+active_constraint: >
+  Method axis: 0 of 51 tokens had use_when entries. Metaphorical names (boom, grove,
+  melody, grow, meld, mod, field, shift) have no routing path — unlike scope tokens
+  (which were preempted by methods), these have no competing token absorbing them;
+  they're simply invisible. No SSOT regression observed this loop.
+
+evidence:
+  - Part A: T204(time) 3→4 PASS; T205(agent) 2→5 PASS; T207(motifs) 2→5 PASS;
+      T210(stable) 2→5 PASS. Mean 2.25→4.75 ✅ (strongest post-apply result yet)
+  - Part B: T211(boom)=2, T212(grove)=1, T213(melody)=2, T214(bias)=4, T215(origin)=4,
+      T216(simulation)=4, T217(jobs)=4, T218(grow)=2, T219(inversion)=5, T220(systemic)=5.
+      Mean 3.3/5 ⚠️ Pattern: metaphorical names invisible; description-anchored discoverable.
+
+delta_summary: >
+  4 method use_when entries added to AXIS_KEY_TO_USE_WHEN["method"] in lib/axisConfig.py:
+    R-L13-01: boom — "at 10x", "extreme load", "what breaks at scale", "at the limit"
+    R-L13-02: grove — "compound", "feedback loop", "snowball", "network effect"
+    R-L13-03: melody — "coordinate across teams", "synchronize changes", "coupling"
+    R-L13-04: grow — "YAGNI", "start simple and expand", "minimum viable"
+  Grammar regenerated. Tests: ok (1.638s). SSOT intact.
+
+residual_constraints:
+  - id: RC-L13-01
+    constraint: >
+      47 of 51 method tokens still have no use_when. Remaining metaphorical tokens
+      that likely need use_when: meld, mod, field, shift. Description-anchored tokens
+      (compare, diagnose, explore, branch, etc.) are likely fine without.
+    severity: Medium (meld/mod/field/shift), Low (description-anchored tokens)
+
+next_work:
+  - Post-apply validate T211, T212, T213, T218 (all scored ≤2 pre-fix)
+  - Continue method axis: meld, mod, field, shift (remaining metaphorical tokens)
+  - Or pivot: task axis (11 tokens, 0 use_when) — smaller scope
+```
+
+---
+
+## loop-14 | 2026-02-18 | Cycle 14: Method post-apply + remaining metaphorical tokens + apply
+
+```
+focus: Part A — post-apply validation of loop-13 method fixes (T211 boom, T212 grove,
+  T213 melody, T218 grow). Part B — remaining metaphorical method tokens: meld, mod,
+  field, shift (T221-T224). Apply — 3 use_when entries added (meld, mod, field).
+
+active_constraint: >
+  `field` scored 1 (lowest in all 14 loops) — physics-theory vocabulary entirely
+  disconnected from software engineering. `shift` scored 4 without use_when —
+  "shift perspective" is intuitive enough to self-route. No SSOT regression.
+
+evidence:
+  - Part A: T211(boom) 2→4 PASS; T212(grove) 1→4 PASS (+3, largest delta yet);
+      T213(melody) 2→4 PASS; T218(grow) 2→5 PASS (+3). Mean 1.75→4.25 ✅
+  - Part B: T221(meld)=2, T222(mod)=2, T223(field)=1, T224(shift)=4. Mean 2.25.
+      All metaphorical tokens now inventoried and addressed.
+
+delta_summary: >
+  3 method use_when entries added to AXIS_KEY_TO_USE_WHEN["method"]:
+    R-L14-01: meld — "balance between", "overlap between", "navigate tensions between"
+    R-L14-02: mod — "cyclic behavior", "periodic pattern", "repeats across cycles"
+    R-L14-03: field — "shared infrastructure", "service mesh routing", "effects propagate"
+  Grammar regenerated. Tests: ok (1.688s). SSOT intact.
+  All 8 metaphorical method tokens now have use_when (boom, grove, grow, melody,
+  meld, mod, field covered; shift scored 4 without needing one).
+
+next_work:
+  - Post-apply validate T221, T222, T223 (loop-14 gaps)
+  - General health check: 10 diverse cross-axis tasks to verify cumulative improvements
+  - Task axis (0/11) and directional axis (0/16) are low priority — self-describing
+```
+
+---
+
+## loop-15 | 2026-02-18 | Cycle 15: Method post-apply + general health check
+
+```
+focus: Part A — post-apply validation of loop-14 fixes (T221 meld, T222 mod, T223 field).
+  Part B — general health check: 10 diverse cross-axis tasks (GH-T01 through GH-T10)
+  verifying that cumulative loop-1–14 improvements compose correctly.
+
+evidence:
+  - Part A: T221(meld) 2→4 PASS; T222(mod) 2→4 PASS; T223(field) 1→4 PASS (+3).
+      Mean 1.67→4.0 ✅. All metaphorical method tokens now routing correctly.
+  - Part B: GH-T01=5, GH-T02=5, GH-T03=4, GH-T04=5, GH-T05=5,
+      GH-T06=4, GH-T07=4, GH-T08=4, GH-T09=5, GH-T10=4. Mean 4.5/5 ✅
+      No new gaps. No regressions. All loop-10–14 fixes verified in combination.
+      GH-T01 fires use_when from loops 11+12+13 simultaneously → scores 5.
+
+delta_summary: >
+  Evaluation only — no catalog changes this loop. All loop-14 fixes confirmed.
+  Program-level conclusion: ADR-0113 primary objective complete. AXIS_KEY_TO_USE_WHEN
+  now covers the most impactful undiscoverable tokens across all axes.
+
+residual_constraints:
+  - id: RC-L15-01
+    constraint: 41 of 51 method tokens have no use_when (Tier 1 / description-anchored).
+    severity: Low — no evidence of routing failures for these tokens.
+  - id: RC-L15-02
+    constraint: SSOT regression risk persists (make axis-regenerate-apply may zero
+      AXIS_KEY_TO_USE_WHEN). Last regression: loop-10. Clean since.
+    severity: Medium — monitor on every grammar regen.
+
+next_trigger: >
+  Re-run ADR-0113 cycle when: new tokens added to catalog, new skill guidance published,
+  or user feedback indicates routing failures for a specific task type.
+```
+
+---

@@ -70,6 +70,11 @@
 			error = String(e);
 		}
 
+		// On desktop, focus the active tab so keyboard navigation works immediately
+		if (!window.matchMedia('(hover: none)').matches) {
+			setTimeout(focusActiveTab, 0);
+		}
+
 		function handleGlobalKey(e: KeyboardEvent) {
 			if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();

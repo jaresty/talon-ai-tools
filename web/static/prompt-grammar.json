@@ -393,6 +393,7 @@
         "abduce": "Generate explanatory hypotheses",
         "actors": "Center people, roles, and agents",
         "adversarial": "Constructive stress-testing",
+        "afford": "Affordance-driven behavior analysis",
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
@@ -492,6 +493,7 @@
       "method": {
         "abduce": "Distinguish from: deduce (premises→conclusion) and induce (examples→pattern). Abduce generates hypotheses from evidence.",
         "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact with system attack surfaces. Use alongside adversarial for complete threat models.",
+        "afford": "Behavioral constraints: distinguish between logical possibility and practical salience; account for how design foregrounds or suppresses specific actions; specify how structural constraints pre-shape the perceived action space. Do not attribute outcomes solely to preferences or incentives without modeling how affordances influenced selection.",
         "branch": "Distinguish from: explore (generating options). Branch explores multiple reasoning paths in parallel with evaluation.",
         "cluster": "Distinguish from: meld (balancing constraints). Cluster groups items by shared characteristics.",
         "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce (examples→pattern). Deduce derives conclusions from premises.",
@@ -546,6 +548,7 @@
       },
       "method": {
         "abduce": "Comparative hypothesis generation from evidence: user wants multiple candidate explanations ranked by how well they fit the evidence, not just a single root cause. Heuristic: 'what\\'s the best explanation for', 'generate hypotheses for why', 'what are the most likely causes ranked', 'compare possible explanations', 'ranked hypotheses from evidence', 'what could explain this' → abduce. Distinct from diagnose (diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing explanations explicitly). Distinct from induce (induce = generalize a rule from examples; abduce = hypothesize from evidence).",
+        "afford": "Affordance-driven behavior analysis: user wants to explain why behavior arises from system or interface design — what the structure makes easy, visible, or natural vs. what it suppresses. Heuristic: 'why do users do X', 'the design encourages Y', 'affordances', 'what the API makes easy', 'shaped by the structure', 'how the design foregrounds this option', 'structural constraints on behavior', 'design defaults bias toward', 'interface suppresses this action' → afford. Distinct from field (actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices). Distinct from systemic (feedback loops and emergent dynamics; afford = structural availability shapes what actors perceive as actionable).",
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial (deliberate attack/exploit focus).",
         "canon": "Canonical-source analysis: user asks which representation is authoritative, wants to eliminate duplication by locating the SSOT, or needs to map multiple representations to a single canonical origin. Heuristic: 'where is the single source of truth', 'we have duplicate definitions', 'which config is authoritative', 'DRY violation', 'multiple representations of the same thing', 'who owns this data', 'derive X from Y instead of duplicating', 'canonical source for', 'reduce duplication to derivation' → canon. Distinct from depends (depends = trace what relies on what; canon = reduce multiple representations to a single authoritative locus). Distinct from mapping (mapping = surface elements and relationships; canon = identify or enforce the single canonical source among them).",
         "field": "Shared-medium interaction analysis: user asks how actors interact through a shared infrastructure or protocol layer rather than via direct references. Heuristic: 'shared infrastructure', 'shared medium', 'protocol mediation', 'service mesh routing', 'why things route through', 'broadcast patterns', 'effects propagate through a shared layer' → field. Distinct from mapping (surface elements; field = model the medium and why compatibility produces observed routing).",
@@ -2678,7 +2681,7 @@
     }
   ],
   "checksums": {
-    "axes": "b89c4a59aa62aeeadc08def4027114c2064237ace594131a7dd3d7ed912bd245",
+    "axes": "b8b5d7e3c8909954ac6559ca61055944a6fe3d34cdddf9d08895b69bbdaa1a75",
     "tasks": "4b9cca8f13e6e7ecfd5cb5b17311ad6716920a4d482df81156e15fc85005916a",
     "persona": "0abd8ac447575ad74a27b6f1521cfd5d85efd894c706b878430b9fb791bf170a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

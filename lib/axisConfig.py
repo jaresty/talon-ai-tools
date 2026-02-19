@@ -356,8 +356,8 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "abduce": "Generate explanatory hypotheses",
         "actors": "Center people, roles, and agents",
         "adversarial": "Constructive stress-testing",
-        "analog": "Reasoning by analogy",
         "afford": "Affordance-driven behavior analysis",
+        "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
         "bias": "Identify cognitive biases",
@@ -473,9 +473,9 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "abduce": "Distinguish from: deduce (premises→conclusion) and induce (examples→pattern). Abduce generates hypotheses from evidence.",
         "actors": "Well-suited for security threat modelling: identifying threat actors (external attackers, insiders, automated bots), their motivations, and how their capabilities interact "
         "with system attack surfaces. Use alongside adversarial for complete threat models.",
-        "afford": "Behavioral constraints: distinguish between logical possibility and practical salience; account for how design foregrounds or suppresses specific actions; "
-        "specify how structural constraints pre-shape the perceived action space. Do not attribute outcomes solely to preferences or incentives without modeling how affordances "
-        "influenced selection.",
+        "afford": "Behavioral constraints: distinguish between logical possibility and practical salience; account for how design foregrounds or suppresses specific actions; specify how "
+        "structural constraints pre-shape the perceived action space. Do not attribute outcomes solely to preferences or incentives without modeling how affordances influenced "
+        "selection.",
         "branch": "Distinguish from: explore (generating options). Branch explores multiple reasoning paths in parallel with evaluation.",
         "cluster": "Distinguish from: meld (balancing constraints). Cluster groups items by shared characteristics.",
         "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce (examples→pattern). Deduce derives conclusions from premises.",
@@ -586,14 +586,14 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'what\\'s the best explanation for', 'generate hypotheses for why', 'what are the most likely causes ranked', 'compare possible explanations', 'ranked hypotheses from "
         "evidence', 'what could explain this' → abduce. Distinct from diagnose (diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing "
         "explanations explicitly). Distinct from induce (induce = generalize a rule from examples; abduce = hypothesize from evidence).",
+        "afford": "Affordance-driven behavior analysis: user wants to explain why behavior arises from system or interface design — what the structure makes easy, visible, or natural vs. what it "
+        "suppresses. Heuristic: 'why do users do X', 'the design encourages Y', 'affordances', 'what the API makes easy', 'shaped by the structure', 'how the design foregrounds this "
+        "option', 'structural constraints on behavior', 'design defaults bias toward', 'interface suppresses this action' → afford. Distinct from field (actors interact via a shared "
+        "medium; afford = how available-action structure pre-shapes individual choices). Distinct from systemic (feedback loops and emergent dynamics; afford = structural availability "
+        "shapes what actors perceive as actionable).",
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to "
         "the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial "
         "(deliberate attack/exploit focus).",
-        "afford": "Affordance-driven behavior analysis: user wants to explain why behavior arises from system or interface design — what the structure makes easy, visible, or natural "
-        "vs. what it suppresses. Heuristic: 'why do users do X', 'the design encourages Y', 'affordances', 'what the API makes easy', 'shaped by the structure', 'how the design "
-        "foregrounds this option', 'structural constraints on behavior', 'design defaults bias toward', 'interface suppresses this action' → afford. Distinct from field (actors "
-        "interact via a shared medium; afford = how available-action structure pre-shapes individual choices). Distinct from systemic (feedback loops and emergent dynamics; "
-        "afford = structural availability shapes what actors perceive as actionable).",
         "canon": "Canonical-source analysis: user asks which representation is authoritative, wants to eliminate duplication by locating the SSOT, or needs to map multiple representations to a "
         "single canonical origin. Heuristic: 'where is the single source of truth', 'we have duplicate definitions', 'which config is authoritative', 'DRY violation', 'multiple "
         "representations of the same thing', 'who owns this data', 'derive X from Y instead of duplicating', 'canonical source for', 'reduce duplication to derivation' → canon. Distinct "

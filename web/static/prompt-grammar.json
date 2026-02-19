@@ -87,6 +87,7 @@
         "abduce": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations.",
         "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
         "adversarial": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions.",
+        "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be attributed solely to preferences or incentives without modeling how affordances influenced selection.",
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by describing and structuring the situation, focusing on understanding before proposing actions or recommendations.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
@@ -240,6 +241,7 @@
         "abduce",
         "actors",
         "adversarial",
+        "afford",
         "analog",
         "analysis",
         "argue",
@@ -1244,6 +1246,7 @@
         "abduce": "abduce",
         "actors": "actors",
         "adversarial": "adversarial",
+        "afford": "afford",
         "analog": "analog",
         "analysis": "analysis",
         "argue": "argue",
@@ -1431,6 +1434,7 @@
         "method=abduce": "method-abduce",
         "method=actors": "method-actors",
         "method=adversarial": "method-adversarial",
+        "method=afford": "method-afford",
         "method=analog": "method-analog",
         "method=analysis": "method-analysis",
         "method=argue": "method-argue",
@@ -1608,6 +1612,7 @@
       "actors": "actors",
       "adr": "adr",
       "adversarial": "adversarial",
+      "afford": "afford",
       "agent": "agent",
       "analog": "analog",
       "analysis": "analysis",
@@ -1807,6 +1812,7 @@
       "method=abduce": "method-abduce",
       "method=actors": "method-actors",
       "method=adversarial": "method-adversarial",
+      "method=afford": "method-afford",
       "method=analog": "method-analog",
       "method=analysis": "method-analysis",
       "method=argue": "method-argue",
@@ -2681,11 +2687,11 @@
     }
   ],
   "checksums": {
-    "axes": "b8b5d7e3c8909954ac6559ca61055944a6fe3d34cdddf9d08895b69bbdaa1a75",
+    "axes": "f62c7939c49c7becf0469b1b0a48231fd87f5a7237f4b9e9b81f85716d9d6874",
     "tasks": "4b9cca8f13e6e7ecfd5cb5b17311ad6716920a4d482df81156e15fc85005916a",
     "persona": "0abd8ac447575ad74a27b6f1521cfd5d85efd894c706b878430b9fb791bf170a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "0ca7b501bf6c8a5ab873d1be44bbccf91481762ea7b9cfe94860ec729426ea75",
+    "slugs": "180834a099012bdf88ff60f1a989d9d3c34b9ac4caf43fa91f796be0f8ad1ee1",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1"
   }
 }

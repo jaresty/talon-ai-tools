@@ -163,6 +163,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
         "adversarial": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated "
         "assumptions.",
+        "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, "
+        "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
+        "attributed solely to preferences or incentives without modeling how affordances influenced selection.",
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by describing and structuring the situation, focusing on understanding before proposing actions or recommendations.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",

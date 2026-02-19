@@ -20,6 +20,8 @@
 	let filterInputRef = $state<HTMLInputElement | null>(null);
 	// Captured at pointerdown (before onfocus fires) to detect confirming clicks
 	let activeAtPointerDown = $state<string | null>(null);
+	// On mobile, focus fires AFTER click — this flag prevents onfocus re-opening the panel
+	let wasJustClicked = $state(false);
 
 	let filtered = $derived(
 		filter.trim()
@@ -165,7 +167,7 @@
 				aria-selected={isSelected}
 				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
 	
-				onpointerdown={() => { activeAtPointerDown = activeToken; }}
+				onpointerdown={() => { activeAtPointerDown = activeToken; wasJustClicked = true; }}
 			onclick={() => handleChipClick(meta, atCap)}
 				onkeydown={(e) => {
 					if (e.key === 'Enter' || e.key === ' ') {
@@ -176,7 +178,8 @@
 				}}
 				onfocus={() => {
 					focusedIndex = i;
-					activeToken = meta.token;
+					if (!wasJustClicked) activeToken = meta.token;
+					wasJustClicked = false;
 				}}
 			>
 				<code>{meta.token}</code>
@@ -201,21 +204,23 @@
 				{/if}
 				<button class="meta-close" onclick={() => (activeToken = null)}>✕</button>
 			</div>
-			{#if activeMeta.description}
-				<p class="meta-description">{activeMeta.description}</p>
-			{/if}
-			{#if activeMeta.use_when}
-				<div class="meta-section">
-					<span class="meta-section-label">When to use</span>
-					<p>{activeMeta.use_when}</p>
-				</div>
-			{/if}
-			{#if activeMeta.guidance}
-				<div class="meta-section meta-note">
-					<span class="meta-section-label">Notes</span>
-					<p>{activeMeta.guidance}</p>
-				</div>
-			{/if}
+			<div class="meta-body">
+				{#if activeMeta.description}
+					<p class="meta-description">{activeMeta.description}</p>
+				{/if}
+				{#if activeMeta.use_when}
+					<div class="meta-section">
+						<span class="meta-section-label">When to use</span>
+						<p>{activeMeta.use_when}</p>
+					</div>
+				{/if}
+				{#if activeMeta.guidance}
+					<div class="meta-section meta-note">
+						<span class="meta-section-label">Notes</span>
+						<p>{activeMeta.guidance}</p>
+					</div>
+				{/if}
+			</div>
 			<div class="meta-footer">
 				<button
 					class="meta-select-btn"
@@ -350,6 +355,16 @@
 		border-radius: var(--radius);
 		font-size: 0.8rem;
 		line-height: 1.5;
+		display: flex;
+		flex-direction: column;
+		max-height: 40vh;
+		overflow: hidden;
+	}
+
+	.meta-body {
+		overflow-y: auto;
+		flex: 1;
+		min-height: 0;
 	}
 
 	.meta-header {
@@ -469,10 +484,11 @@
 			border-bottom: none;
 			border-top: 2px solid var(--color-accent);
 			max-height: 60vh;
-			overflow-y: auto;
+			overflow: hidden;
 			z-index: 200;
 			font-size: 1rem;
 			line-height: 1.6;
+			padding-bottom: 0;
 		}
 
 		.meta-section-label {

@@ -307,4 +307,33 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		expect(screen.getByText('When to use')).toBeTruthy();
 		expect(screen.getByText('Use when the user wants a Wardley map output.')).toBeTruthy();
 	});
+
+	it('pointerdown suppresses onfocus panel-open (mobile: focus fires after click)', async () => {
+		// Simulate mobile sequence: pointerdown → click → focus
+		// onfocus should NOT re-open the panel after the click handler ran
+		const onToggle = vi.fn();
+		renderSelector({ selected: ['wardley'], onToggle });
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		// Mobile deselect: pointerdown sets wasJustClicked, click deselects
+		await fireEvent.pointerDown(chip);
+		await fireEvent.click(chip);
+		// Focus fires after click on mobile — should NOT re-open panel
+		await fireEvent.focus(chip);
+		expect(onToggle).toHaveBeenCalledWith('wardley');
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
+	it('keyboard focus still opens panel after a prior click sequence', async () => {
+		// wasJustClicked is cleared in onfocus so the next keyboard focus works normally
+		renderSelector();
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		// Click sequence clears wasJustClicked via onfocus
+		await fireEvent.pointerDown(chip);
+		await fireEvent.click(chip);
+		await fireEvent.focus(chip); // clears wasJustClicked
+		// Now keyboard focus (no pointerdown) should open the panel
+		await fireEvent.blur(chip);
+		await fireEvent.focus(chip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+	});
 });

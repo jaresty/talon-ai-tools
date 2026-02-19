@@ -22,6 +22,8 @@
 	let activeAtPointerDown = $state<string | null>(null);
 	// On mobile, focus fires AFTER click — this flag prevents onfocus re-opening the panel
 	let wasJustClicked = $state(false);
+	// Touch browsers fire compat mouseenter events — suppress them after any touch interaction
+	let isUsingTouch = $state(false);
 
 	let filtered = $derived(
 		filter.trim()
@@ -167,8 +169,12 @@
 				aria-selected={isSelected}
 				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
 	
-				onmouseenter={() => { activeToken = meta.token; }}
-			onpointerdown={() => { activeAtPointerDown = activeToken; wasJustClicked = true; }}
+				onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
+			onpointerdown={(e) => {
+				isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
+				activeAtPointerDown = activeToken;
+				wasJustClicked = true;
+			}}
 			onclick={() => handleChipClick(meta, atCap)}
 				onkeydown={(e) => {
 					if (e.key === 'Enter' || e.key === ' ') {

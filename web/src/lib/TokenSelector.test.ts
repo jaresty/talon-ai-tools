@@ -161,11 +161,25 @@ describe('TokenSelector — D2 metadata panel', () => {
 		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
 		// Simulate desktop hover → panel opens
 		await fireEvent.mouseEnter(chip);
-		// pointerdown captures activeToken (already set by mouseenter)
-		await fireEvent.pointerDown(chip);
+		// mouse pointerdown (not touch) captures activeToken already set by mouseenter
+		await fireEvent.pointerDown(chip, { pointerType: 'mouse' });
 		await fireEvent.click(chip);
 		expect(onToggle).toHaveBeenCalledWith('wardley');
 		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
+	it('touch pointerdown suppresses compat mouseenter (prevents panel opening on touch)', async () => {
+		const onToggle = vi.fn();
+		renderSelector({ selected: ['wardley'], onToggle });
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		// Touch sequence: pointerdown sets isUsingTouch=true
+		await fireEvent.pointerDown(chip, { pointerType: 'touch' });
+		// Compat mouseenter fires — should be suppressed
+		await fireEvent.mouseEnter(chip);
+		expect(screen.queryByText('When to use')).toBeNull();
+		// Click still deselects
+		await fireEvent.click(chip);
+		expect(onToggle).toHaveBeenCalledWith('wardley');
 	});
 
 	it('second click on chip with panel already open selects it (confirming click)', async () => {

@@ -585,6 +585,14 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to "
         "the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial "
         "(deliberate attack/exploit focus).",
+        "afford": "The response models behavior as shaped by the structural "
+        "configuration of available actions. Explanations must "
+        "distinguish between logical possibility and practical "
+        "salience, account for how system design foregrounds or "
+        "suppresses specific actions, and specify how structural "
+        "constraints pre-shape the perceived action space. Outcomes "
+        "may not be attributed solely to preferences or incentives "
+        "without modeling how affordances influenced selection.",
         "canon": "Canonical-source analysis: user asks which representation is authoritative, wants to eliminate duplication by locating the SSOT, or needs to map multiple representations to a "
         "single canonical origin. Heuristic: 'where is the single source of truth', 'we have duplicate definitions', 'which config is authoritative', 'DRY violation', 'multiple "
         "representations of the same thing', 'who owns this data', 'derive X from Y instead of duplicating', 'canonical source for', 'reduce duplication to derivation' → canon. Distinct "

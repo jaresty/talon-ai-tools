@@ -46,7 +46,7 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 		renderUsagePatterns(w, grammar, compact)
 	}
 	if shouldRender("heuristics") {
-		renderTokenSelectionHeuristics(w, grammar, compact)
+		renderTokenSelectionHeuristics(w, compact)
 	}
 	if shouldRender("advanced") {
 		renderAdvancedFeatures(w, compact)
@@ -793,34 +793,15 @@ func renderUsagePatterns(w io.Writer, grammar *Grammar, compact bool) {
 	}
 }
 
-func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool) {
+func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	if compact {
 		// Skip heuristics in compact mode
 		return
 	}
 	fmt.Fprintf(w, "## Token Selection Heuristics\n\n")
 
-	// Choosing Task: data-driven from tasks.use_when (ADR-0142 SSOT).
-	// Each task token's use_when begins with the routing trigger phrase.
-	fmt.Fprintf(w, "### Choosing Task\n\n")
-	taskOrder := []string{"show", "probe", "make", "plan", "diff", "fix", "check", "pull", "sim", "pick", "sort"}
-	for _, name := range taskOrder {
-		uw := grammar.TaskUseWhen(name)
-		if uw == "" {
-			continue
-		}
-		// Use the first sentence of use_when as the routing line.
-		// Split on the first period or newline to get the brief label.
-		line := uw
-		for _, sep := range []string{".", "\n"} {
-			if idx := strings.Index(uw, sep); idx > 0 {
-				line = uw[:idx]
-				break
-			}
-		}
-		fmt.Fprintf(w, "- **%s** → `%s`\n", line, name)
-	}
-	fmt.Fprintf(w, "\n")
+	// "Choosing Task" routing is now carried by the Token Catalog's "When to use"
+	// column — see tasks.use_when in the grammar (ADR-0142). No separate section needed.
 
 	fmt.Fprintf(w, "### Choosing Persona\n\n")
 	fmt.Fprintf(w, "- **Known audience**: prefer explicit `audience=` token over presets when the task specifies who you are talking to (e.g., 'explain to an engineering manager' → `voice=as-programmer audience=to-managers`, not `persona=peer_engineer_explanation`)\n")

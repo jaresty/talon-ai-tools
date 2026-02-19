@@ -181,9 +181,10 @@ func TestHelpLLMTaskTableHasUseWhenColumn(t *testing.T) {
 	if !strings.Contains(out, "| When to use |") {
 		t.Fatal("help llm Tasks table missing 'When to use' column (ADR-0142 B1)")
 	}
-	// Choosing Task section should be present
-	if !strings.Contains(out, "### Choosing Task") {
-		t.Fatal("help llm missing Choosing Task section (ADR-0142 B1)")
+	// Routing data now lives in the Token Catalog "When to use" column, not a
+	// separate "Choosing Task" heuristic section. Verify the catalog section exists.
+	if !strings.Contains(out, "### Tasks (required)") {
+		t.Fatal("help llm missing Tasks catalog section (ADR-0142 B1)")
 	}
 }
 

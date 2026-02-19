@@ -501,19 +501,57 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
 # Surfaces as 'When to use' helper text in UIs.
 AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
     "channel": {
+        "adr": "Architecture Decision Record format: user wants the output structured as an ADR document with Context, Decision, and Consequences sections. Heuristic: 'write an ADR', "
+        "'architecture decision record', 'document this decision as an ADR', 'ADR format', 'decision record' → adr. Best with decision-making tasks (plan, probe, make). Avoid with "
+        "sort, pull, diff, or sim tasks.",
+        "code": "Code or markup only, no prose: user wants only executable or markup output with no surrounding explanation. Heuristic: 'just the code', 'code only', 'no explanation, "
+        "just the implementation', 'output code only', 'code without prose', 'just the markup', 'implementation without explanation' → code. Avoid with narrative tasks (sim, "
+        "probe) that produce prose.",
+        "codetour": "VS Code CodeTour JSON file: user wants the response as a valid CodeTour `.tour` file for navigating code in VS Code. Heuristic: 'codetour', 'VS Code tour', 'code tour "
+        "file', 'interactive code walkthrough', 'create a codetour' → codetour. Requires a developer audience. Avoid with manager, PM, or executive audiences.",
+        "diagram": "Mermaid diagram code only: user wants the response as Mermaid diagram source, inferred to the best diagram type. Heuristic: 'diagram', 'Mermaid diagram', 'draw a "
+        "diagram', 'flowchart', 'sequence diagram', 'draw this out', 'architecture diagram in Mermaid', 'as a diagram' → diagram. Distinct from sketch channel (sketch = D2 diagram "
+        "format; diagram = Mermaid format).",
+        "gherkin": "Gherkin scenario format: user wants the output as Given/When/Then Gherkin scenarios. Heuristic: 'Gherkin format', 'Given/When/Then', 'BDD scenarios', 'acceptance tests "
+        "in Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (story, case, log, questions, recipe).",
+        "html": "Semantic HTML only, no prose: user wants the complete output as HTML markup with no surrounding explanation. Heuristic: 'HTML output', 'semantic HTML', 'as HTML', 'output "
+        "as a webpage', 'HTML page', 'HTML only' → html. Avoid with narrative tasks (sim, probe).",
+        "jira": "Jira markup formatting: user wants the response formatted using Jira markdown (headings, lists, panels). Heuristic: 'Jira format', 'Jira markup', 'format for Jira', "
+        "'Jira ticket format', 'for a Jira comment', 'use Jira markup' → jira. Use with text-friendly channels; avoid with output-only channels.",
         "plain": "Suppress structural formatting: when user explicitly requests plain prose, no lists, no bullets, or no structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain "
         "prose', 'continuous prose', 'flowing paragraphs', 'paragraph form' → plain channel.",
+        "presenterm": "Presenterm slide deck: user wants the output as a multi-slide presenterm Markdown deck with valid front matter, slide separators, and end_slide directives. Heuristic: "
+        "'presenterm deck', 'slide deck', 'presentation slides', 'create slides', 'slide format', 'multi-slide deck', 'presentation' → presenterm. Distinct from sync channel "
+        "(sync = session plan with timing cues; presenterm = actual slide deck artifact).",
         "remote": "Optimizing output for remote or distributed delivery contexts (video calls, screen sharing, async participants). Heuristic: 'remote delivery', 'distributed session', 'video "
         "call context', 'screen sharing', 'remote-friendly' → remote channel. Note: user saying their team is 'remote' describes context — use remote channel only when delivery "
         "optimization is the explicit goal.",
+        "shellscript": "Shell script format: user wants the response as executable shell code. Heuristic: 'shell script', 'bash script', 'write a script', 'automate this with a shell script', "
+        "'script format', 'shell code only' → shellscript. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort).",
         "sketch": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source. Heuristic: 'D2 diagram', 'D2 format', 'sketch diagram', 'd2 source' → sketch. Distinct from "
         "diagram channel (Mermaid output). If the user just says 'diagram' without specifying D2, use diagram channel.",
+        "slack": "Slack-formatted Markdown: user wants the response formatted for Slack with appropriate Markdown, mentions, and code blocks. Heuristic: 'Slack format', 'format for Slack', "
+        "'post this to Slack', 'Slack message', 'Slack-friendly format', 'for a Slack post' → slack. Avoid channel-irrelevant decoration.",
+        "svg": "SVG markup only: user wants the complete output as SVG for direct use in an `.svg` file. Heuristic: 'SVG format', 'as SVG', 'SVG output', 'output as SVG', 'SVG markup "
+        "only', 'create an SVG' → svg. Output must be minimal and valid SVG with no surrounding prose.",
         "sync": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery. Heuristic: 'session plan', 'live workshop agenda', 'meeting agenda with timing "
         "cues', 'synchronous workshop plan' → sync channel. Combine with facilitate form for facilitator-role outputs.",
     },
     "completeness": {
+        "deep": "Substantial depth within the chosen scope: user wants thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case. Heuristic: "
+        "'go deep', 'really dig in', 'thorough analysis', 'don\\'t skip the nuances', 'unpack this fully', 'I want the details', 'deep dive', 'depth over breadth' → deep. Distinct "
+        "from max (max = exhaustive across all relevant coverage; deep = depth within a focused scope).",
+        "full": "Thorough but not exhaustive: user wants a complete answer covering all major aspects without every micro-detail. Heuristic: 'complete', 'comprehensive', 'cover everything "
+        "important', 'thorough', 'full picture', 'don\\'t leave anything major out', 'complete treatment' → full. Distinct from max (max = treat omissions as errors; full = thorough "
+        "normal coverage) and deep (deep = substantial depth within scope; full = breadth across major aspects).",
         "gist": "Brief but complete response needed: user wants a quick summary or overview without deep exploration. Heuristic: 'quick summary', 'overview', 'brief', 'tldr', 'just the "
         "main points', 'high-level', 'standup update', 'just the gist' → gist. Distinct from skim (skim = light pass, may miss non-obvious; gist = brief but complete).",
+        "max": "Exhaustive and leave nothing out: user explicitly wants the most complete possible response, treating omissions as errors. Heuristic: 'be exhaustive', 'miss nothing', "
+        "'everything relevant', 'leave nothing out', 'as complete as possible', 'comprehensive and exhaustive', 'cover every case', 'I need everything' → max. Distinct from full "
+        "(full = thorough normal coverage; max = every relevant item, omissions are errors).",
+        "minimal": "Smallest satisfying answer only: user wants the minimum change or response that addresses the core need, no extras. Heuristic: 'minimal change', 'just what\\'s needed', "
+        "'no more than necessary', 'smallest fix', 'keep it small', 'just the minimum', 'don\\'t add anything extra', 'bare minimum', 'only what I asked for' → minimal. Distinct "
+        "from narrow (narrow = restrict to a small topic slice; minimal = smallest valid answer to the request).",
         "narrow": "Response should focus on a very specific slice only: user explicitly limits scope to one aspect. Heuristic: 'specifically', 'only about', 'just this part', 'restricted "
         "to', 'nothing beyond', 'only X' → narrow. Distinct from minimal (minimal = smallest answer; narrow = very small slice of topic).",
         "skim": "Light, surface-level pass needed: user wants a quick scan for obvious issues without depth. Heuristic: 'light review', 'quick pass', 'spot check', 'just flag obvious "
@@ -547,10 +585,41 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "toward abstract; rog = push toward structural reflection).",
     },
     "form": {
+        "actions": "Action-list output: user wants the response structured as concrete, specific tasks that can be directly acted on — no background analysis. Heuristic: 'give me actions', "
+        "'what do I actually do', 'concrete steps', 'action items', 'what are my next actions', 'just the actions', 'tasks to do', 'list of actions' → actions. Distinct from "
+        "checklist form (checklist = imperative checkbox items; actions = broader action-structured output including tasks, steps, and next moves) and walkthrough form (walkthrough "
+        "= guided sequential narration; actions = direct action list without guided narration).",
         "activities": "Segment-level session content: user wants the concrete activities within a session, not the overall facilitation structure. Heuristic: 'what activities should we do', "
         "'activities for each block', 'session activities', 'design sprint activities', 'what happens in each segment', 'activities list for the workshop' → activities. Distinct from "
         "facilitate form (facilitate = overall facilitation plan with session goals and participation mechanics; activities = segment-by-segment content of what to do and when). "
         "Often combined with facilitate: facilitate handles the structure, activities handles the content.",
+        "bug": "Bug report format: user wants the output structured as a formal bug report with Steps to Reproduce, Expected Behavior, Actual Behavior, and Context. Heuristic: 'file a bug "
+        "report', 'write this up as a bug', 'bug report format', 'steps to reproduce', 'expected vs actual behavior', 'create a bug ticket' → bug. Best paired with probe or "
+        "diagnostic methods (diagnose, adversarial). Distinct from log form (log = work log entry; bug = structured defect report).",
+        "bullets": "Bullet-point structure: user wants ideas organized as concise bullets rather than paragraphs. Heuristic: 'bullet points', 'use bullets', 'bulleted list', 'as bullet "
+        "points', 'short bullets', 'list format with bullets', 'no paragraphs, just bullets' → bullets. Distinct from checklist form (checklist = imperative action items; bullets "
+        "= general bullet-point organization not necessarily imperative).",
+        "cards": "Card-style layout: user wants content organized as discrete cards — each with a heading and short body — rather than continuous prose. Heuristic: 'cards', 'card layout', "
+        "'each item as a card', 'discrete cards', 'card format', 'organize as cards', 'section cards with headings' → cards. Distinct from bullets form (bullets = brief bullets; "
+        "cards = richer discrete units each with a heading and short body).",
+        "case": "Case-building narrative: user wants background, evidence, trade-offs, and alternatives laid out before the recommendation. Heuristic: 'build the case', 'lay out the "
+        "argument before the recommendation', 'walk through the evidence first', 'structured argument', 'present the case', 'evidence then conclusion', 'case for X' → case. Distinct "
+        "from indirect form (indirect = softer reasoning that converges on a point; case = structured argument with explicit evidence, alternatives, and objection handling before "
+        "the recommendation).",
+        "checklist": "Imperative checklist: user wants the response as a checkbox-style list of clear imperative tasks. Heuristic: 'checklist', 'give me a checklist', 'checkbox list', "
+        "'actionable checklist', 'checkboxes', 'items to check off', 'pre-flight checklist' → checklist. Distinct from actions form (actions = general action-structured output; "
+        "checklist = specifically checkbox-style imperative items designed to be ticked off).",
+        "commit": "Conventional commit message format: user wants a short type/scope header with an optional concise body. Heuristic: 'write a commit message', 'commit message for this', "
+        "'conventional commit', 'git commit message', 'commit message', 'type: scope format' → commit. Best with gist or minimal completeness — the format is brief by design.",
+        "direct": "Conclusion-first narrative: user wants the main point or recommendation stated first, followed only by the most relevant supporting context. Heuristic: 'lead with the "
+        "answer', 'bottom line up front', 'BLUF', 'give me the conclusion first', 'direct response', 'state the recommendation first', 'don\\'t bury the lede' → direct. Distinct "
+        "from indirect form (indirect = background first, conclusion last; direct = main point first, supporting detail after).",
+        "faq": "FAQ format: user wants content structured as question-and-answer pairs with clear question headings. Heuristic: 'FAQ format', 'as a FAQ', 'Q and A format', 'frequently asked "
+        "questions', 'questions and answers', 'write as Q&A', 'question headings with answers below' → faq. Distinct from questions form (questions = response IS a list of questions "
+        "to investigate; faq = questions paired with their answers as a reference artifact).",
+        "formats": "Document format or template focus: user asks about which document type, writing format, or structural template best fits the situation. Heuristic: 'what format should I "
+        "use', 'what template fits', 'which document type', 'writing format options', 'what structure should this take', 'what are the format options', 'format comparison' → "
+        "formats. Distinct from table form (table = present content as a table; formats = the response IS about document types and their suitability).",
         "cocreate": "Iterative design with explicit decision points and alignment checks at each step rather than a one-shot response. Heuristic: 'work through incrementally', 'with decision "
         "points', 'iterative design' → cocreate. Distinct from variants (choice of designs) and make (one-shot artifact).",
         "contextualise": "Preparing content to be passed to another LLM operation: user wants output that is self-contained and includes all necessary context for a downstream model to process "
@@ -564,6 +633,39 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "indirect. Distinct from case form (case = structured argument with evidence and objections; indirect = softer narrative reasoning that converges on a bottom-line point).",
         "ladder": "Analyzing causes or effects across multiple levels of abstraction: step up to systemic causes, step down to concrete consequences. Heuristic: 'step up and down abstraction "
         "levels', 'root cause hierarchy', 'why at a systems level' → ladder.",
+        "log": "Work or research log entry format: user wants the response styled as a concise dated log entry with bullet-style updates and enough context for future reference. Heuristic: "
+        "'write this as a log entry', 'work log', 'research log', 'log format', 'dated entry', 'journal entry', 'log what we did', 'write up as a log' → log. Distinct from "
+        "walkthrough form (walkthrough = guided sequential narration; log = concise dated entry format for archival and reference).",
+        "merge": "Combining multiple sources into one coherent artifact: user has several pieces of content to consolidate without losing key information. Heuristic: 'merge these', "
+        "'combine into one', 'consolidate', 'synthesize these sources', 'merge the content', 'bring these together', 'unify these documents', 'integrate these into a single "
+        "output' → merge. Distinct from contextualise form (contextualise = package with context for downstream LLM; merge = combine multiple sources into one coherent whole).",
+        "quiz": "Quiz structure with questions before answers: user wants to test understanding interactively or produce a quiz artifact. Heuristic: 'quiz me', 'make a quiz', 'quiz format', "
+        "'questions before answers', 'test my knowledge', 'knowledge check', 'quiz questions on', 'multiple choice quiz' → quiz. Without a channel token, conducts interactively; with "
+        "an output channel, produces a quiz document. Distinct from socratic form (socratic = question-led dialogue to surface user reasoning; quiz = test recall via question-then-"
+        "answer structure).",
+        "scaffold": "First-principles scaffolded explanation: user wants concepts introduced gradually with analogies and examples so understanding builds from the ground up. Heuristic: "
+        "'explain from scratch', 'teach me this', 'start from first principles', 'build up my understanding', 'I\\'m a beginner', 'explain step by step as if I\\'m new to this', "
+        "'scaffold my learning' → scaffold. Distinct from walkthrough form (walkthrough = guided sequential steps through a process; scaffold = pedagogical first-principles "
+        "introduction that builds understanding).",
+        "story": "User story format: user wants a backlog item expressed as 'As a <persona>, I want <capability>, so that <value>.' Heuristic: 'user story', 'write as a user story', "
+        "'as a user I want', 'story format', 'user story for this feature', 'backlog user story', 'story card' → story. Distinct from spike form (spike = research question artifact; "
+        "story = user-facing value statement with acceptance criteria).",
+        "table": "Markdown table presentation: user wants the main content organized as a table with columns and rows. Heuristic: 'table format', 'present as a table', 'markdown table', "
+        "'tabular comparison', 'show in a table', 'grid format', 'as a table', 'column-row layout' → table. Distinct from cards form (cards = discrete headed items; table = "
+        "columnar grid layout).",
+        "test": "Structured test case format: user wants test cases with clear setup, execution, and assertion sections organized by scenario type. Heuristic: 'write test cases', 'test "
+        "cases for', 'happy path and edge cases', 'unit test structure', 'test scenarios', 'write the tests', 'test case format with setup and assertion' → test. Distinct from "
+        "checklist form (checklist = imperative tasks to complete; test = structured test scenarios with setup/execute/assert structure).",
+        "tight": "Concise dense prose without bullets or tables: user wants a freeform but compact response that avoids filler and structural decoration. Heuristic: 'tight prose', 'concise "
+        "and dense', 'no bullets or tables', 'compact freeform', 'dense prose', 'brevity without structure', 'just prose, no formatting' → tight. Distinct from plain channel (plain "
+        "= no structural decoration as a delivery format; tight = concise dense prose style that avoids filler).",
+        "variants": "Multiple distinct labeled options: user wants several decision-ready alternatives presented separately, each with a short label and description. Heuristic: 'give me "
+        "options', 'present several approaches', 'show me alternatives', 'multiple variants', 'different approaches', 'what are the options with labels', 'present 3 options', "
+        "'decision-ready alternatives' → variants. Distinct from compare method (compare = evaluate alternatives against criteria; variants = present distinct labeled options "
+        "without necessarily evaluating them against each other).",
+        "walkthrough": "Step-by-step guided narration: user wants to be taken through something stage by stage so understanding builds sequentially. Heuristic: 'walk me through', 'step by "
+        "step walkthrough', 'guide me through', 'take me through it', 'step-by-step guide', 'walkthrough of', 'narrate the steps' → walkthrough. Distinct from actions form "
+        "(actions = list of actions to take; walkthrough = guided sequential narration that builds understanding).",
         "questions": "Response structured as a list of investigation or clarification questions: user wants the response itself to be a set of questions they can pursue, not statements or answers. "
         "Heuristic: 'what questions should I ask', 'give me questions to investigate', 'what should I be asking about', 'frame this as questions', 'questions I should explore', "
         "'diagnostic questions for' → questions. Distinct from socratic form (socratic = LLM asks the USER questions interactively to surface their thinking; questions = response IS a "
@@ -589,6 +691,31 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'what\\'s the best explanation for', 'generate hypotheses for why', 'what are the most likely causes ranked', 'compare possible explanations', 'ranked hypotheses from "
         "evidence', 'what could explain this' → abduce. Distinct from diagnose (diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing "
         "explanations explicitly). Distinct from induce (induce = generalize a rule from examples; abduce = hypothesize from evidence).",
+        "actors": "Actor-centered analysis: user wants the response to center the people, roles, or agents involved — who is participating, what their motivations are, and how their actions "
+        "shape outcomes. Heuristic: 'who is involved', 'what are the stakeholders doing', 'who are the actors', 'center the people', 'model the roles', 'who does what', 'what "
+        "motivates each party', 'threat actors', 'roles and responsibilities' → actors. Distinct from agent scope (agent = who has decision authority; actors method = enrich the "
+        "response with actor-centered analysis regardless of scope).",
+        "adversarial": "Stress-testing for weaknesses and failure modes: user wants the response to constructively attack the design, argument, or plan — finding counterexamples, edge cases, "
+        "and hidden assumptions. Heuristic: 'what could go wrong', 'find the weaknesses', 'stress-test this', 'what\\'s the worst-case attack', 'where does this argument break', "
+        "'challenge this plan', 'red-team this', 'what are the counterexamples', 'play devil\\'s advocate' → adversarial. Distinct from risks method (risks = enumerate failure modes "
+        "and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples).",
+        "analog": "Analogical reasoning: user wants to understand the subject by mapping it onto a well-understood case, examining where the analogy holds and where it breaks. Heuristic: "
+        "'what is this like', 'what does this remind you of', 'explain using an analogy', 'what\\'s the analogous structure', 'reason by analogy', 'find a parallel case', 'what "
+        "known situation does this resemble' → analog. Distinct from models method (models = apply named mental models explicitly; analog = reason through a structural mapping from a "
+        "specific known case).",
+        "analysis": "Descriptive structural understanding before action: user wants the situation described and structured rather than recommendations or fixes. Heuristic: 'analyze this', "
+        "'describe the situation', 'help me understand what\\'s happening', 'structure my understanding', 'what is going on here', 'break this down for me', 'understand before "
+        "acting' → analysis. Distinct from diagnose method (diagnose = seek root cause via falsification; analysis = describe and structure without immediately proposing fixes).",
+        "argue": "Explicit argument structure: user wants claims, premises, warrants, and rebuttals made visible rather than a flowing narrative. Heuristic: 'make the argument', 'structure "
+        "this as an argument', 'what are the premises', 'what supports this claim', 'build the logical case', 'argument and rebuttal', 'explicit reasoning structure' → argue. "
+        "Distinct from case form (case = narrative that builds to a recommendation; argue = expose the logical structure of claims and their supports).",
+        "bias": "Cognitive bias identification: user wants the response to surface likely systematic errors or heuristics that could distort judgment about this situation. Heuristic: 'what "
+        "biases might affect this', 'cognitive biases', 'where might we be wrong due to bias', 'what systematic errors', 'heuristics distorting judgment', 'where are we susceptible "
+        "to bias', 'confirmation bias', 'availability heuristic' → bias. Distinct from verify method (verify = falsify specific claims; bias = identify cognitive mechanisms producing "
+        "distortion).",
+        "branch": "Parallel reasoning path exploration: user wants multiple hypotheses or approaches explored simultaneously before evaluation and pruning. Heuristic: 'explore multiple paths', "
+        "'consider different approaches in parallel', 'branch the reasoning', 'multiple lines of reasoning', 'explore alternatives before choosing', 'parallel hypotheses' → branch. "
+        "Distinct from explore method (explore = survey option space without premature commitment; branch = fork on a key assumption and pursue each path before evaluating).",
         "afford": "Affordance-driven behavior analysis: user wants to explain why behavior arises from system or interface design — what the structure makes easy, visible, or natural vs. what it "
         "suppresses. Heuristic: 'why do users do X', 'the design encourages Y', 'affordances', 'what the API makes easy', 'shaped by the structure', 'how the design foregrounds this "
         "option', 'structural constraints on behavior', 'design defaults bias toward', 'interface suppresses this action' → afford. Distinct from field (actors interact via a shared "
@@ -597,6 +724,47 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to "
         "the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial "
         "(deliberate attack/exploit focus).",
+        "calc": "Quantitative or executable reasoning: user wants calculations, formal procedures, or step-by-step numerical analysis that constrain conclusions. Heuristic: 'calculate', "
+        "'what does the math say', 'run the numbers', 'quantify this', 'estimate the cost', 'work out the probability', 'formal calculation', 'compute', 'what are the numbers' → "
+        "calc. Distinct from probability method (probability = statistical and probabilistic reasoning; calc = general quantitative or quasi-executable procedures).",
+        "cite": "Evidence-anchored response with sources: user wants claims backed by references, citations, or named sources for verification. Heuristic: 'cite your sources', 'include "
+        "references', 'back this up with evidence', 'link to sources', 'where does this come from', 'support with citations', 'show your evidence' → cite. Distinct from verify "
+        "method (verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check).",
+        "cluster": "Group items by shared characteristics: user wants existing items organized into categories or clusters without reinterpreting their content. Heuristic: 'group these', "
+        "'cluster by', 'categorize', 'organize into groups', 'what themes emerge', 'sort into buckets', 'group by similarity', 'classify these items' → cluster. Distinct from "
+        "compare method (compare = evaluate alternatives against criteria; cluster = group without evaluating) and meld method (meld = balance constraints; cluster = organize by "
+        "shared traits).",
+        "compare": "Systematic comparison against explicit criteria: user has options and wants to know how they differ or which is better. Heuristic: 'compare X and Y', 'which is better', "
+        "'how do these differ', 'tradeoffs between', 'evaluate these options', 'side by side comparison', 'which should I choose', 'pros and cons' → compare. Distinct from "
+        "converge method (converge = narrow from exploration to recommendation; compare = explicit criteria-based evaluation of specified alternatives).",
+        "converge": "Narrowing from exploration to focused recommendation: user wants broad options filtered down to the best choice with explicit trade-off reasoning. Heuristic: 'narrow it down', "
+        "'which one should I go with', 'help me pick', 'synthesize into a recommendation', 'from all options, which is best', 'converge on an answer', 'filter and recommend' → "
+        "converge. Distinct from compare method (compare = evaluate alternatives side by side; converge = narrow exploration toward a single recommendation).",
+        "deduce": "Deductive logical reasoning: user wants conclusions derived from stated premises through explicit logical entailment. Heuristic: 'what follows from', 'given these premises', "
+        "'logical conclusion', 'deduce from', 'what must be true if', 'derive the consequence', 'if X then what', 'logically entails' → deduce. Distinct from abduce (evidence → "
+        "hypothesis) and induce (examples → general pattern).",
+        "depends": "Dependency tracing: user wants to know what relies on what and how changes would propagate through the system. Heuristic: 'what depends on X', 'dependency map', 'what breaks "
+        "if I change Y', 'what does this rely on', 'upstream and downstream', 'dependency chain', 'what would be affected', 'what does Z need to work' → depends. Distinct from "
+        "struct scope (struct = internal arrangement; depends = propagation and reliance relationships specifically).",
+        "diagnose": "Root cause investigation via evidence and falsification: user wants to narrow down likely causes through targeted checks rather than immediately proposing fixes. Heuristic: "
+        "'what is causing this', 'root cause', 'why is this happening', 'diagnose this problem', 'narrow down the cause', 'what\\'s the bug source', 'investigate why', 'find the "
+        "root cause' → diagnose. Distinct from abduce (abduce = generate and compare competing hypotheses; diagnose = narrow to single most likely cause via falsification).",
+        "dimension": "Multi-dimensional analysis: user wants implicit axes or factors made explicit and examined for how they interact. Heuristic: 'what are the dimensions', 'what factors are "
+        "at play', 'multiple axes of analysis', 'what hidden factors', 'what are we not considering', 'analyze across dimensions', 'surface the implicit factors' → dimension. "
+        "Distinct from split method (split = decompose into parts; dimension = surface analytical axes that the parts exist along).",
+        "domains": "Bounded context and domain boundary analysis: user wants to identify where one problem domain ends and another begins, or what the distinct capabilities are. Heuristic: "
+        "'what are the domains', 'where are the bounded contexts', 'domain-driven design', 'what are the distinct capabilities', 'domain boundaries', 'how to carve up the system "
+        "into domains', 'which team owns which' → domains. Distinct from struct scope (struct = internal arrangement; domains = identify bounded context separations and "
+        "capabilities).",
+        "effects": "Second and third-order consequence tracing: user wants to look beyond immediate outcomes to downstream ripple effects. Heuristic: 'what are the downstream effects', 'second "
+        "order effects', 'ripple effects', 'what happens next after that', 'unintended consequences', 'how does this propagate', 'what follows downstream' → effects. Distinct from "
+        "grove method (grove = how effects accumulate and compound; effects = trace the chain of consequences).",
+        "experimental": "Concrete experiment design: user wants specific, runnable experiments with expected outcomes and hypothesis-updating logic. Heuristic: 'design an experiment', 'how would "
+        "we test this', 'what experiment would prove this', 'propose tests', 'how do we validate', 'what would we measure', 'design a study', 'run a test to find out' → "
+        "experimental. Distinct from verify method (verify = apply falsification pressure analytically; experimental = propose actual runnable tests).",
+        "explore": "Open option-space survey: user wants a broad scan of possible approaches without premature commitment to any one path. Heuristic: 'what are the options', 'explore the "
+        "solution space', 'what approaches exist', 'brainstorm possibilities', 'what could we do', 'survey the landscape', 'open-ended exploration', 'what\\'s possible here' → "
+        "explore. Distinct from branch method (branch = fork on a key assumption and pursue paths; explore = broad survey without forking on a specific choice).",
         "canon": "Canonical-source analysis: user asks which representation is authoritative, wants to eliminate duplication by locating the SSOT, or needs to map multiple representations to a "
         "single canonical origin. Heuristic: 'where is the single source of truth', 'we have duplicate definitions', 'which config is authoritative', 'DRY violation', 'multiple "
         "representations of the same thing', 'who owns this data', 'derive X from Y instead of duplicating', 'canonical source for', 'reduce duplication to derivation' → canon. Distinct "
@@ -605,6 +773,81 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "field": "Shared-medium interaction analysis: user asks how actors interact through a shared infrastructure or protocol layer rather than via direct references. Heuristic: 'shared "
         "infrastructure', 'shared medium', 'protocol mediation', 'service mesh routing', 'why things route through', 'broadcast patterns', 'effects propagate through a shared layer' → "
         "field. Distinct from mapping (surface elements; field = model the medium and why compatibility produces observed routing).",
+        "flow": "Step-by-step sequential progression: user wants to understand how something moves through a process — control flow, data flow, or narrative sequence. Heuristic: 'walk me "
+        "through the flow', 'how does data move', 'trace the execution path', 'step by step sequence', 'control flow', 'how does it progress', 'follow the data through the system', "
+        "'trace the path' → flow. Distinct from time scope (time = temporal emphasis as scope lens; flow = step-by-step progression as a reasoning method).",
+        "inversion": "Inversion reasoning from bad outcomes: user wants to start from failure or catastrophe and work backward to what must be avoided or designed around. Heuristic: 'what "
+        "would cause this to fail completely', 'pre-mortem', 'how would we destroy this', 'what would guarantee failure', 'invert the goal', 'work backwards from disaster', 'what "
+        "produces the worst outcome' → inversion. Distinct from risks method (risks = enumerate failure modes; inversion = start FROM disaster and derive what to avoid).",
+        "mapping": "Spatial relationship map: user wants elements, relationships, and structure surfaced and organized into a coherent map rather than a linear narrative. Heuristic: 'map out', "
+        "'surface the relationships', 'landscape map', 'draw the connections', 'build a map of', 'what\\'s the structure of the landscape', 'map the territory', 'visualize the "
+        "relationships' → mapping. Distinct from struct scope (struct = internal topology of one unit; mapping = surface and organize across the whole landscape).",
+        "models": "Named mental model application: user wants specific named frameworks or mental models applied explicitly to the situation, not just intuitive analysis. Heuristic: 'what "
+        "mental models apply here', 'apply a framework', 'use first principles', 'which frameworks are relevant', 'what lenses should I use', 'apply systems thinking', 'what "
+        "models explain this', 'name the applicable mental models' → models. Distinct from analog method (analog = reason from a specific analogous case; models = apply named, "
+        "established mental models explicitly).",
+        "objectivity": "Fact-opinion separation: user wants claims clearly labeled as objective facts vs. subjective opinions, with evidence supporting factual claims. Heuristic: 'what\\'s "
+        "objective vs subjective', 'separate fact from opinion', 'what is actually true vs what is a judgment', 'stick to facts', 'evidence-based only', 'distinguish observation "
+        "from interpretation', 'is this a fact or an opinion' → objectivity. Distinct from rigor method (rigor = disciplined logical reasoning; objectivity = separate what is factual "
+        "from what is evaluative).",
+        "operations": "Operations research framing: user wants management science or OR concepts applied — queuing, scheduling, optimization, or resource allocation. Heuristic: 'throughput', "
+        "'bottleneck analysis', 'resource allocation', 'scheduling problem', 'queuing', 'capacity planning', 'utilization', 'operations research', 'minimize wait time', "
+        "'optimization problem' → operations. Distinct from systemic method (systemic = feedback loops and emergent behavior; operations = OR/management science frameworks for "
+        "resource and flow optimization).",
+        "order": "Abstract structural and ordering reasoning: user wants explicit attention to hierarchy, ranking criteria, or recurrence — the principles behind the sequencing. Heuristic: "
+        "'what is the ordering principle', 'hierarchical ordering', 'ranking criteria', 'what determines the order', 'dominance structure', 'what makes one thing rank above another', "
+        "'ordering and precedence' → order. When paired with sort task, order adds emphasis on the criteria and scheme driving the sequence. Distinct from prioritize method (prioritize "
+        "= rank by importance with rationale; order = abstract structural reasoning about ordering schemes).",
+        "origin": "Historical and causal origin analysis: user wants to understand how the current state came to be — past decisions, evolutionary pressures, and historical context. Heuristic: "
+        "'how did we get here', 'what is the history of', 'why does it look this way', 'what past decisions led to this', 'origin story', 'historical context', 'how did this "
+        "evolve', 'archaeology of the codebase', 'why is this the way it is' → origin. Distinct from time scope (time = sequential/temporal emphasis; origin = specifically causal "
+        "history and why the present state is as it is).",
+        "prioritize": "Importance or impact ranking with explicit rationale: user wants items ordered by priority and the ranking reasoning made clear. Heuristic: 'prioritize', 'what should "
+        "we do first', 'rank by impact', 'most important first', 'order by priority', 'what matters most', 'high-priority items', 'rank and explain the ranking' → prioritize. "
+        "Distinct from order method (order = abstract structural reasoning about ordering schemes; prioritize = rank by importance or impact with explicit rationale).",
+        "probability": "Probabilistic and statistical reasoning: user wants uncertainty quantified or outcomes characterized using probability. Heuristic: 'how likely is', 'what\\'s the "
+        "probability', 'expected value', 'confidence interval', 'statistical significance', 'base rate', 'probability of failure', 'how certain are we', 'Bayesian reasoning', "
+        "'likelihood' → probability. Distinct from calc method (calc = general quantitative computation; probability = specifically statistical and probabilistic reasoning under "
+        "uncertainty).",
+        "product": "Product lens analysis: user wants the subject examined through the frame of features, user needs, and value propositions. Heuristic: 'product perspective', 'through a "
+        "product lens', 'feature vs user need', 'value proposition', 'product strategy', 'what does the product offer', 'user needs analysis', 'product thinking' → product. "
+        "Distinct from jobs method (jobs = outcomes users seek and forces shaping adoption; product = broader product lens including features and value propositions).",
+        "resilience": "System stress and recovery analysis: user wants to understand how the system behaves under failure, load, or disruption — fragility, robustness, and margin of safety. "
+        "Heuristic: 'how resilient is this', 'what happens under load', 'failure recovery', 'margin of safety', 'fragility vs robustness', 'how does it behave under stress', "
+        "'graceful degradation', 'fault tolerance' → resilience. Distinct from robust method (robust = choose options that perform across uncertain futures; resilience = analyze system "
+        "behavior under stress specifically).",
+        "rigor": "Disciplined, well-justified reasoning: user wants the response to rely on disciplined logic with explicit reasoning chains rather than intuitive leaps. Heuristic: 'be "
+        "rigorous', 'make the reasoning explicit', 'disciplined analysis', 'careful reasoning', 'justify each step', 'logical rigor', 'no handwaving', 'substantiate your claims' → "
+        "rigor. Distinct from verify method (verify = apply falsification pressure to claims; rigor = discipline the reasoning process throughout).",
+        "risks": "Risk and failure mode enumeration: user wants potential problems, failure modes, and their likelihood or severity identified. Heuristic: 'what are the risks', 'what could go "
+        "wrong', 'risk assessment', 'failure modes', 'identify the hazards', 'risk analysis', 'what might fail', 'enumerate the risks', 'likelihood and severity' → risks. Distinct "
+        "from adversarial method (adversarial = construct attacks to stress-test; risks = enumerate and assess failure modes and their likelihood).",
+        "robust": "Deep-uncertainty decision-making: user wants to choose options that perform acceptably across many plausible futures rather than optimizing for a single forecast. Heuristic: "
+        "'robust to uncertainty', 'works across scenarios', 'hedge against uncertainty', 'perform across many futures', 'uncertainty-aware decision', 'which option survives the most "
+        "scenarios', 'resilient to unknowns', 'option value under uncertainty' → robust. Distinct from resilience method (resilience = system behavior under stress; robust = select "
+        "options that perform across uncertain futures).",
+        "shift": "Perspective rotation: user wants the same facts reinterpreted through several distinct frames or cognitive modes to surface what each reveals. Heuristic: 'look at this from "
+        "multiple angles', 'different perspectives', 'rotate through lenses', 'six thinking hats', 'shift perspectives', 'what would X think about this', 'see it through different "
+        "frames', 'consider multiple viewpoints' → shift. Distinct from models method (models = apply named mental models; shift = rotate through distinct cognitive modes or "
+        "stakeholder perspectives).",
+        "spec": "Correctness criteria before implementation: user wants explicit success criteria defined first, with implementation required to satisfy the prior specification. Heuristic: "
+        "'define the spec first', 'test-driven design', 'what should it do before how', 'specification before implementation', 'write the tests first', 'define success criteria', "
+        "'TDD', 'correctness criteria' → spec. Distinct from grow method (grow = evolve incrementally from minimal; spec = define the target criteria first and measure compliance "
+        "against them).",
+        "split": "Deliberate decomposition into isolated parts: user wants the subject broken into components for separate analysis before considering interactions. Heuristic: 'break this "
+        "into parts', 'decompose', 'analyze each component separately', 'isolate the pieces', 'divide and analyze', 'separate concerns', 'split into sub-problems', 'analyze in "
+        "isolation' → split. Distinct from dimension method (dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis).",
+        "systemic": "Whole-system feedback loop and emergent behavior analysis: user wants to understand the subject as an interacting whole, not just its parts. Heuristic: 'systems thinking', "
+        "'feedback loops', 'emergent behavior', 'system as a whole', 'how do the parts interact', 'unintended consequences', 'second order effects across the system', "
+        "'interconnections' → systemic. Distinct from analysis method (analysis = describe and structure; systemic = reason about interactions and emergence).",
+        "unknowns": "Unknown unknowns surfacing: user wants to identify what has not been asked, what gaps in knowledge could impact outcomes, and what critical uncertainties have not been "
+        "named. Heuristic: 'what are we missing', 'what don\\'t we know that we don\\'t know', 'unknown unknowns', 'what questions haven\\'t we asked', 'critical blind spots', "
+        "'what\\'s not on our radar', 'gaps in our knowledge', 'what could surprise us' → unknowns. Distinct from assume scope (assume = make explicit premises already held; unknowns "
+        "= surface what has not yet been considered or named).",
+        "verify": "Falsification pressure: user wants claims tested against evidence, causal chain integrity, and clearly defined negative space before accepting conclusions. Heuristic: "
+        "'verify this', 'check your reasoning', 'apply falsification', 'is this actually true', 'challenge the claims', 'what would falsify this', 'pressure-test the conclusions', "
+        "'don\\'t just assert — verify', 'what evidence would disprove this' → verify. Distinct from rigor method (rigor = disciplined reasoning process; verify = apply explicit "
+        "falsification to the outputs).",
         "grove": "Accumulation and compounding analysis: user asks how small effects build up over time, how debt or improvement compounds, or how feedback loops amplify outcomes. Heuristic: "
         "'compound', 'accumulates over time', 'feedback loop', 'technical debt grows', 'network effect', 'how things build up', 'rate of change over time', 'snowball' → grove. Distinct "
         "from systemic (interacting whole; grove = rate of accumulation through mechanisms) and effects (trace consequences; grove = HOW they compound).",
@@ -639,6 +882,9 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "trans = model noise, distortion, and fidelity across stages).",
     },
     "scope": {
+        "act": "Actions and intended operations focus: user asks what is being done or needs to be done, not why or how it is structured. Heuristic: 'what actions', 'what operations are "
+        "involved', 'what tasks are performed', 'what does it actually do', 'what work is happening', 'what are the intended operations', 'the activities it performs' → act scope. "
+        "Distinct from thing scope (thing = what entities are involved; act = what those entities are doing or performing).",
         "agent": "Decision-making or agency focus: user asks who can act, who has authority, or how choices are made between actors. Heuristic: 'who decides', 'who has authority', 'who can "
         "approve', 'decision-making', 'agency', 'who is responsible' → agent scope. Note: agent is a SCOPE token (foregrounds decision-making actors); actors is a METHOD token (enriches "
         "any task with actor-centered analysis). Both can be selected together.",
@@ -649,18 +895,35 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'scattered across', 'spans multiple services', 'consistent across', 'cross-cutting', 'appears throughout', 'horizontal concern', 'error handling across our codebase', 'where "
         "does X live across the system' → cross scope. Distinct from motifs scope (motifs = structural patterns that repeat; cross = concerns that PROPAGATE and SPAN across module "
         "boundaries).",
+        "fail": "Failure modes, breakdowns, and limits focus: user asks how and when something stops working, what the edge cases are, or where fragility lives. Heuristic: 'failure modes', "
+        "'where does it break', 'what are the edge cases', 'what can go wrong', 'under what conditions does it fail', 'limits', 'fragility', 'what stress would break this' → fail "
+        "scope. Often pairs with good scope (good + fail = quality and failure mode dimensions together). Distinct from risks method (risks = likelihood and severity of bad outcomes; "
+        "fail = the scope of breakdown conditions).",
         "good": "Quality criteria or success standards focus: user asks what makes something good, what criteria matter, or how to judge quality. Heuristic: 'quality criteria', 'what makes it "
         "good', 'how to judge', 'success criteria', 'well-designed', 'what good looks like', 'standards for', 'what does success look like' → good scope. Often pairs with fail scope (good "
         "+ fail = quality and failure mode dimensions).",
+        "mean": "Conceptual framing and definitional focus: user asks what something means, how it is understood, or what its purpose is before evaluating or acting. Heuristic: 'what does X "
+        "mean', 'how should I think about', 'what is the purpose of', 'how is this concept defined', 'how is this categorized', 'what does this term refer to', 'how do we "
+        "conceptualize this', 'theoretical framing' → mean scope. Distinct from good scope (good = how to judge quality; mean = conceptual framing before evaluation).",
         "motifs": "Recurring or repeated patterns across the codebase or system: user asks about structures or idioms that appear in multiple places. Heuristic: 'recurring patterns', 'repeated "
         "across', 'appears in multiple places', 'common idioms', 'what keeps showing up', 'same pattern in different places' → motifs scope. Distinct from struct (one system's internal "
         "arrangement) and mapping method (surface all elements/relationships).",
         "stable": "Stability and persistence focus: user asks what is stable, unlikely to change, or self-reinforcing in the system or design. Heuristic: 'stable', 'unlikely to change', 'won't "
         "change', 'what persists', 'what is settled', 'fixed constraints', 'what has remained stable', 'backward-compatible' → stable scope. Often pairs with time scope (stable = what "
         "persists; time = how things evolve).",
+        "struct": "Internal arrangement and dependency focus: user asks how parts of a system relate and are organized — the internal topology, not cross-cutting span. Heuristic: 'how is it "
+        "structured', 'what are the dependencies', 'how are the components organized', 'internal architecture', 'how do the parts relate', 'what holds it together', 'the "
+        "coordination and constraints inside' → struct scope. Distinct from cross scope (cross = horizontal span across module boundaries; struct = internal topology and arrangement "
+        "within units).",
+        "thing": "Entity and bounded unit focus: user asks what objects, roles, systems, or domains are in scope — what the relevant entities are. Heuristic: 'what entities', 'what are the "
+        "main objects', 'what roles are involved', 'what systems are in scope', 'what are the bounded domains', 'what things exist here', 'name the components', 'what are we "
+        "talking about' → thing scope. Distinct from act scope (act = what entities are doing; thing = what entities exist).",
         "time": "Temporal or sequential focus: user asks about sequence, history, phases, or how something changes over time. Heuristic: 'step by step', 'in order', 'over time', 'what happens "
         "when', 'sequence', 'timeline', 'history', 'how did we get here', 'phases' → time scope. Distinct from flow method (flow = reasoning approach; time = scope dimension to "
         "emphasize).",
+        "view": "Stakeholder or positional perspective focus: user asks how the subject appears from a specific role or vantage point. Heuristic: 'from the user\\'s perspective', 'from the "
+        "manager\\'s point of view', 'how does the team see this', 'from a security perspective', 'how does this look to stakeholders', 'from a customer\\'s view', 'through the lens "
+        "of' → view scope. Distinct from agent scope (agent = who has decision-making authority; view = how the subject appears from a specific vantage point).",
     },
 }
 

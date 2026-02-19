@@ -577,6 +577,7 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 1.5rem;
+		padding-top: calc(1.5rem + env(safe-area-inset-top));
 	}
 
 	header {

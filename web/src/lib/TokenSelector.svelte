@@ -532,6 +532,7 @@
 
 		.meta-footer {
 			justify-content: stretch;
+			padding-bottom: env(safe-area-inset-bottom);
 		}
 	}
 </style>

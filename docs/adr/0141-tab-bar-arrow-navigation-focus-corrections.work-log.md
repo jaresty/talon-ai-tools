@@ -18,7 +18,39 @@ active_constraint: handleTabBarKey calls setTimeout(focusFirstChip) after ArrowK
   Validation: npm test -- keyboard-navigation (F1c, F2c must go red before fix, green after).
 
 validation_targets:
-  - npm test -- keyboard-navigation (F1c: ArrowRight stays on tab button; F2c: ArrowLeft stays;
-    F3c: directional wrap doesn't land on body — K2 deferred to Loop-2)
-  - npm test -- keyboard-focus (F5k: shortcut legend still present after K3 move)
+  - npm test -- keyboard-navigation (F1c, F2c, F3c)
+  - npm test -- keyboard-focus (F5k)
+```
+
+### evidence
+
+- red | 2026-02-19T01:20:00Z | exit 1 | `npm test -- keyboard-navigation`
+  - F1c, F2c fail: ArrowKey calls setTimeout(focusFirstChip) → focus on chip not tab button
+  - F3c fails: directional → persona wrap; focusFirstChip finds no [role="option"], focus lost to body
+
+- green | 2026-02-19T01:22:31Z | exit 0 | `npm test` (128 tests)
+  - All 128 pass after K1 (focusActiveTab in handleTabBarKey), K2 (persona fallback in
+    focusFirstChip), K3 (shortcut legend moved below PatternsLibrary)
+
+- removal | 2026-02-19T01:21:00Z | exit 1 | `git restore --source=HEAD web/src/routes/+page.svelte && npm test -- keyboard-navigation`
+  - F1c, F2c, F3c return red with original implementation
+
+```
+rollback_plan: git restore --source=HEAD web/src/routes/+page.svelte web/src/routes/keyboard-navigation.test.ts
+
+delta_summary: helper:diff-snapshot — 4 files changed, 253 insertions(+), 39 deletions(-).
+  +page.svelte: handleTabBarKey ArrowKey branches → focusActiveTab; focusFirstChip persona
+  fallback; shortcut-legend moved after PatternsLibrary.
+  keyboard-navigation.test.ts: F1b/F2b deleted; F1c/F2c/F3c added.
+  ADR-0141 and work-log created. Depth-first: all three rungs (K1/K2/K3) in one loop.
+
+loops_remaining_forecast: 0 — all K1/K2/K3 complete. ADR eligible for Accepted.
+
+residual_constraints:
+  - Mid-panel Tab → last chip redirect (K1 F3k) retained; no test failures observed.
+    Reopen condition: user reports linear-Tab expectation broken. Severity: low.
+  - Persona panel Tab-exhaustion now focuses first persona-chip button — verify visually
+    that focus lands on a useful element. Severity: low.
+
+next_work: ADR-0141 → Accepted. No further loops required.
 ```

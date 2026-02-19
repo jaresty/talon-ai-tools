@@ -58,6 +58,7 @@ type completion struct {
 	Category    string
 	Description string
 	Guidance    string
+	UseWhen     string // ADR-0142: routing trigger phrases
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	Fills map[string]string
 }
@@ -853,6 +854,7 @@ func (m *model) updateCompletions() {
 				Category:    category.Label,
 				Description: opt.Description,
 				Guidance:    opt.Guidance,
+				UseWhen:     opt.UseWhen,
 				Fills:       opt.Fills,
 			})
 		}
@@ -1737,6 +1739,7 @@ func (m model) renderTokensPane() string {
 	}
 	var selectedDesc string     // Store full description of selected item
 	var selectedGuidance string // Store guidance of selected item
+	var selectedUseWhen string  // Store routing trigger phrase (ADR-0142)
 
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
@@ -1770,8 +1773,9 @@ func (m model) renderTokensPane() string {
 			if i == m.completionIndex {
 				prefix = "▸ "
 				style = completionSelectedStyle
-				selectedDesc = c.Description  // Capture full description
-				selectedGuidance = c.Guidance // Capture guidance if present
+				selectedDesc = c.Description   // Capture full description
+				selectedGuidance = c.Guidance  // Capture guidance if present
+				selectedUseWhen = c.UseWhen    // Capture routing phrase if present
 			}
 			display := c.Display
 			if strings.TrimSpace(display) == "" {
@@ -1813,11 +1817,21 @@ func (m model) renderTokensPane() string {
 	}
 
 	// Add selected item description area (truncated description preview)
-	if selectedDesc != "" || selectedGuidance != "" {
+	if selectedDesc != "" || selectedGuidance != "" || selectedUseWhen != "" {
 		right.WriteString("\n")
 		right.WriteString(dimStyle.Render("─"))
 		right.WriteString("\n")
-		// Show guidance first if present (higher priority for decision-making)
+		// Show use_when first if present — routing trigger phrase (ADR-0142)
+		if selectedUseWhen != "" {
+			// Show just the first sentence for brevity in the TUI
+			line := selectedUseWhen
+			if idx := strings.Index(selectedUseWhen, "."); idx > 0 {
+				line = selectedUseWhen[:idx]
+			}
+			right.WriteString(dimStyle.Render("When: " + line))
+			right.WriteString("\n")
+		}
+		// Show guidance if present (higher priority disambiguation notes)
 		if selectedGuidance != "" {
 			right.WriteString(warningStyle.Render("→ " + selectedGuidance))
 			right.WriteString("\n")

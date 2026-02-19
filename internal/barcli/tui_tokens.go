@@ -196,6 +196,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 			Label:       label,
 			Description: description,
 			Guidance:    grammar.TaskGuidance(value),
+			UseWhen:     grammar.TaskUseWhen(value),
 		})
 	}
 

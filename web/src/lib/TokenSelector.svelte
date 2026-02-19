@@ -121,6 +121,7 @@
 			placeholder="filter…"
 			bind:value={filter}
 			bind:this={filterInputRef}
+			onfocus={(e) => (e.target as HTMLInputElement).select()}
 			onkeydown={(e) => {
 				if (e.key === 'ArrowDown' && filtered.length > 0) {
 					e.preventDefault();

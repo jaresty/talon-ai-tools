@@ -188,7 +188,9 @@
 
 	function focusFirstChip() {
 		const chip = document.querySelector<HTMLElement>('[role="option"]');
-		chip?.focus();
+		if (chip) { chip.focus(); return; }
+		// Fallback for panels with no [role="option"] (e.g. persona)
+		document.querySelector<HTMLElement>('.selector-panel button, .selector-panel select, .selector-panel input')?.focus();
 	}
 
 	function focusLastChip() {
@@ -217,11 +219,11 @@
 		if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
 			e.preventDefault();
 			activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
-			setTimeout(focusFirstChip, 0);
+			setTimeout(focusActiveTab, 0);
 		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
 			e.preventDefault();
 			activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
-			setTimeout(focusFirstChip, 0);
+			setTimeout(focusActiveTab, 0);
 		} else if (e.key === 'Home') {
 			e.preventDefault();
 			activeTab = AXES_WITH_PERSONA[0];
@@ -275,27 +277,6 @@
 			</button>
 		{/each}
 	</nav>
-
-	<details class="shortcut-legend">
-		<summary class="shortcut-legend-summary">Keyboard shortcuts ▸</summary>
-		<table class="shortcut-table">
-			<thead>
-				<tr><th>Keys</th><th>Action</th></tr>
-			</thead>
-			<tbody>
-				<tr><td><kbd>←</kbd> <kbd>→</kbd> on tab-bar</td><td>Switch axis</td></tr>
-				<tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> on tab-bar</td><td>Switch axis</td></tr>
-				<tr><td>Arrow keys in panel</td><td>Navigate chips</td></tr>
-				<tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Select focused chip</td></tr>
-				<tr><td><kbd>Tab</kbd> from last chip</td><td>Advance to next axis</td></tr>
-				<tr><td><kbd>Shift+Tab</kbd> from first chip</td><td>Retreat to previous axis</td></tr>
-				<tr><td><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></td><td>Clear all</td></tr>
-				<tr><td><kbd>⌘⇧C</kbd> / <kbd>Ctrl+Shift+C</kbd></td><td>Copy command</td></tr>
-				<tr><td><kbd>⌘⇧P</kbd> / <kbd>Ctrl+Shift+P</kbd></td><td>Copy rendered prompt</td></tr>
-				<tr><td><kbd>⌘⇧U</kbd> / <kbd>Ctrl+Shift+U</kbd></td><td>Share URL</td></tr>
-			</tbody>
-		</table>
-	</details>
 
 	{#if error}
 		<div class="error">Failed to load grammar: {error}</div>
@@ -445,6 +426,28 @@
 				</div>
 
 				<PatternsLibrary {patterns} onLoad={loadPattern} />
+
+				<!-- Shortcut legend — after axis panel so Tab flow is uninterrupted -->
+				<details class="shortcut-legend">
+					<summary class="shortcut-legend-summary">Keyboard shortcuts ▸</summary>
+					<table class="shortcut-table">
+						<thead>
+							<tr><th>Keys</th><th>Action</th></tr>
+						</thead>
+						<tbody>
+							<tr><td><kbd>←</kbd> <kbd>→</kbd> on tab-bar</td><td>Switch axis</td></tr>
+							<tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> on tab-bar</td><td>Switch axis</td></tr>
+							<tr><td>Arrow keys in panel</td><td>Navigate chips</td></tr>
+							<tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Select focused chip</td></tr>
+							<tr><td><kbd>Tab</kbd> from last chip</td><td>Advance to next axis</td></tr>
+							<tr><td><kbd>Shift+Tab</kbd> from first chip</td><td>Retreat to previous axis</td></tr>
+							<tr><td><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></td><td>Clear all</td></tr>
+							<tr><td><kbd>⌘⇧C</kbd> / <kbd>Ctrl+Shift+C</kbd></td><td>Copy command</td></tr>
+							<tr><td><kbd>⌘⇧P</kbd> / <kbd>Ctrl+Shift+P</kbd></td><td>Copy rendered prompt</td></tr>
+							<tr><td><kbd>⌘⇧U</kbd> / <kbd>Ctrl+Shift+U</kbd></td><td>Share URL</td></tr>
+						</tbody>
+					</table>
+				</details>
 			</section>
 
 			<button class="preview-toggle" onclick={togglePreview}>

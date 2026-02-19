@@ -305,7 +305,7 @@ describe('ADR-0139 — T3: Action keyboard shortcuts (F6/F7/F8)', () => {
 // Regression coverage: gaps that allowed T1/T2 bugs to ship undetected
 // ---------------------------------------------------------------------------
 
-describe('ADR-0139 — T1 focus regression: ArrowKey moves focus into panel (F1b/F2b)', () => {
+describe('ADR-0141 — K1: ArrowKey focus stays on tab strip (F1c/F2c)', () => {
 	let container: HTMLDivElement;
 
 	beforeEach(() => {
@@ -317,12 +317,11 @@ describe('ADR-0139 — T1 focus regression: ArrowKey moves focus into panel (F1b
 
 	afterEach(() => {
 		document.body.removeChild(container);
-		// Reset getAxisTokens to default empty so other tests are unaffected
 		vi.mocked(getAxisTokens).mockReturnValue([]);
 	});
 
-	// F1b: ArrowRight must move document.activeElement to the first chip, not just update aria-selected
-	it('F1b: ArrowRight moves keyboard focus to first chip in the new panel', async () => {
+	// F1c: ArrowRight must leave focus on the active tab button, not move it to a chip
+	it('F1c: ArrowRight on tab-bar leaves focus on the newly-active tab button', async () => {
 		vi.mocked(getAxisTokens).mockImplementation((_grammar, axis) =>
 			axis === 'completeness'
 				? [{ token: 'deep', label: 'Deep', description: '', guidance: '', use_when: '' }]
@@ -334,46 +333,50 @@ describe('ADR-0139 — T1 focus regression: ArrowKey moves focus into panel (F1b
 		await new Promise((r) => setTimeout(r, 50));
 		flushSync();
 
-		const nav = container.querySelector('nav.tab-bar') as HTMLElement;
-		nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-		flushSync();
-		await new Promise((r) => setTimeout(r, 20)); // let async tick + focus resolve
-		flushSync();
-
-		const firstChip = container.querySelector('[role="option"]') as HTMLElement | null;
-		expect(firstChip).toBeTruthy();
-		expect(document.activeElement).toBe(firstChip);
-	});
-
-	// F2b: ArrowLeft must move document.activeElement to the first chip of the previous panel
-	it('F2b: ArrowLeft moves keyboard focus to first chip in the previous panel', async () => {
-		vi.mocked(getAxisTokens).mockImplementation((_grammar, axis) =>
-			axis === 'completeness'
-				? [{ token: 'deep', label: 'Deep', description: '', guidance: '', use_when: '' }]
-				: []
-		);
-
-		const { default: Page } = await import('../routes/+page.svelte');
-		mount(Page, { target: container });
-		await new Promise((r) => setTimeout(r, 50));
-		flushSync();
-
-		// Advance to completeness first
 		const nav = container.querySelector('nav.tab-bar') as HTMLElement;
 		nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
 		flushSync();
 		await new Promise((r) => setTimeout(r, 20));
 		flushSync();
 
-		// ArrowLeft back to task (task has 'show' chip from mock)
+		// Focus must be on the active tab button (completeness), NOT on a chip
+		const activeTab = container.querySelector('[role="tab"][aria-selected="true"]') as HTMLElement | null;
+		expect(activeTab).toBeTruthy();
+		expect(activeTab?.textContent?.trim()).toBe('completeness');
+		expect(document.activeElement).toBe(activeTab);
+	});
+
+	// F2c: ArrowLeft must leave focus on the active tab button, not move it to a chip
+	it('F2c: ArrowLeft on tab-bar leaves focus on the newly-active tab button', async () => {
+		vi.mocked(getAxisTokens).mockImplementation((_grammar, axis) =>
+			axis === 'completeness'
+				? [{ token: 'deep', label: 'Deep', description: '', guidance: '', use_when: '' }]
+				: []
+		);
+
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		const nav = container.querySelector('nav.tab-bar') as HTMLElement;
+		// Advance to completeness
+		nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+		flushSync();
+
+		// ArrowLeft back to task
 		nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
 		flushSync();
 		await new Promise((r) => setTimeout(r, 20));
 		flushSync();
 
-		const firstChip = container.querySelector('[role="option"]') as HTMLElement | null;
-		expect(firstChip).toBeTruthy();
-		expect(document.activeElement).toBe(firstChip);
+		// Focus must be on the active tab button (task), NOT on a chip
+		const activeTab = container.querySelector('[role="tab"][aria-selected="true"]') as HTMLElement | null;
+		expect(activeTab).toBeTruthy();
+		expect(activeTab?.textContent?.trim()).toBe('task');
+		expect(document.activeElement).toBe(activeTab);
 	});
 });
 
@@ -470,6 +473,65 @@ describe('ADR-0139 — T2 wiring regression: +page.svelte passes callbacks (F4b/
 		const showChip = container.querySelector('[role="option"]') as HTMLElement | null;
 		expect(showChip?.textContent).toContain('show');
 		expect(document.activeElement).toBe(showChip);
+
+		document.body.removeChild(container);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// ADR-0141 — K2: Persona panel focus loss on Tab-exhaustion wrap (F3c)
+// ---------------------------------------------------------------------------
+
+describe('ADR-0141 — K2: Tab-exhaustion to persona panel does not lose focus (F3c)', () => {
+	afterEach(() => {
+		vi.mocked(getAxisTokens).mockReturnValue([]);
+	});
+
+	// F3c: Tab from last directional chip wraps to persona panel; focus must not land on <body>
+	it('F3c: Tab-exhaustion from directional panel focuses first element in persona panel', async () => {
+		vi.mocked(getAxisTokens).mockImplementation((_grammar, axis) =>
+			axis === 'directional'
+				? [{ token: 'fog', label: 'Fog', description: '', guidance: '', use_when: '' }]
+				: []
+		);
+
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		// Navigate to directional tab
+		const nav = container.querySelector('nav.tab-bar') as HTMLElement;
+		// default activeTab=task(1); directional is index 7 → 6 ArrowRights
+		for (let i = 0; i < 6; i++) {
+			nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+			flushSync();
+		}
+		await new Promise((r) => setTimeout(r, 20));
+		flushSync();
+
+		// Focus the only directional chip (fog, index 0 === last)
+		const chips = container.querySelectorAll('[role="option"]');
+		expect(chips.length).toBeGreaterThan(0);
+		(chips[0] as HTMLElement).focus();
+		flushSync();
+
+		// Tab from last chip triggers goToNextTab → persona
+		const grid = container.querySelector('[role="listbox"]') as HTMLElement;
+		grid.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+		flushSync();
+		await new Promise((r) => setTimeout(r, 30));
+		flushSync();
+
+		// Focus must NOT be on <body>
+		expect(document.activeElement?.tagName).not.toBe('BODY');
+
+		// Active tab must be persona
+		const activeTab = container.querySelector('[role="tab"][aria-selected="true"]');
+		expect(activeTab?.textContent?.trim()).toBe('persona');
 
 		document.body.removeChild(container);
 	});

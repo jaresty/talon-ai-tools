@@ -182,15 +182,46 @@
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
+	function focusActiveTab() {
+		document.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();
+	}
+
+	function focusFirstChip() {
+		const chip = document.querySelector<HTMLElement>('[role="option"]');
+		chip?.focus();
+	}
+
+	function focusLastChip() {
+		const chips = document.querySelectorAll<HTMLElement>('[role="option"]');
+		const last = chips[chips.length - 1];
+		last?.focus();
+	}
+
+	function goToNextTab() {
+		const n = AXES_WITH_PERSONA.length;
+		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
+		activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
+		setTimeout(focusFirstChip, 0);
+	}
+
+	function goToPrevTab() {
+		const n = AXES_WITH_PERSONA.length;
+		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
+		activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
+		setTimeout(focusLastChip, 0);
+	}
+
 	function handleTabBarKey(e: KeyboardEvent) {
 		const n = AXES_WITH_PERSONA.length;
 		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
 		if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
 			e.preventDefault();
 			activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
+			setTimeout(focusFirstChip, 0);
 		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
 			e.preventDefault();
 			activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
+			setTimeout(focusFirstChip, 0);
 		} else if (e.key === 'Home') {
 			e.preventDefault();
 			activeTab = AXES_WITH_PERSONA[0];
@@ -245,6 +276,27 @@
 		{/each}
 	</nav>
 
+	<details class="shortcut-legend">
+		<summary class="shortcut-legend-summary">Keyboard shortcuts ▸</summary>
+		<table class="shortcut-table">
+			<thead>
+				<tr><th>Keys</th><th>Action</th></tr>
+			</thead>
+			<tbody>
+				<tr><td><kbd>←</kbd> <kbd>→</kbd> on tab-bar</td><td>Switch axis</td></tr>
+				<tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> on tab-bar</td><td>Switch axis</td></tr>
+				<tr><td>Arrow keys in panel</td><td>Navigate chips</td></tr>
+				<tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Select focused chip</td></tr>
+				<tr><td><kbd>Tab</kbd> from last chip</td><td>Advance to next axis</td></tr>
+				<tr><td><kbd>Shift+Tab</kbd> from first chip</td><td>Retreat to previous axis</td></tr>
+				<tr><td><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></td><td>Clear all</td></tr>
+				<tr><td><kbd>⌘⇧C</kbd> / <kbd>Ctrl+Shift+C</kbd></td><td>Copy command</td></tr>
+				<tr><td><kbd>⌘⇧P</kbd> / <kbd>Ctrl+Shift+P</kbd></td><td>Copy rendered prompt</td></tr>
+				<tr><td><kbd>⌘⇧U</kbd> / <kbd>Ctrl+Shift+U</kbd></td><td>Share URL</td></tr>
+			</tbody>
+		</table>
+	</details>
+
 	{#if error}
 		<div class="error">Failed to load grammar: {error}</div>
 	{:else if !grammar}
@@ -252,33 +304,6 @@
 	{:else}
 		<div class="main">
 			<section class="selector-panel">
-				<!-- Load command input (collapsible) -->
-				<div class="load-cmd-section">
-					<button class="load-cmd-toggle" onclick={() => { cmdInputOpen = !cmdInputOpen; cmdInputWarnings = []; }}>
-						<span class="load-cmd-toggle-label">Load command</span>
-						<span class="load-cmd-caret">{cmdInputOpen ? '▲' : '▼'}</span>
-					</button>
-					{#if cmdInputOpen}
-						<div class="load-cmd-body">
-							<input
-								class="load-cmd-input"
-								type="text"
-								placeholder="bar build show mean full plain --subject &quot;…&quot;"
-								bind:value={cmdInput}
-								onkeydown={(e) => e.key === 'Enter' && loadCommand()}
-							/>
-							<button class="load-cmd-btn" onclick={loadCommand}>Load</button>
-							{#if cmdInputWarnings.length > 0}
-								<div class="load-cmd-warnings">
-									Unrecognized tokens: {cmdInputWarnings.map(t => `"${t}"`).join(', ')}
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
-
-				<PatternsLibrary {patterns} onLoad={loadPattern} />
-
 				{#if activeTab === 'persona'}
 				<!-- Persona -->
 				<div class="persona-section">
@@ -376,6 +401,8 @@
 					selected={selected.task}
 					maxSelect={1}
 					onToggle={(t) => toggle('task', t)}
+					onTabNext={goToNextTab}
+					onTabPrev={focusActiveTab}
 				/>
 				{/if}
 				{#each AXES as axis (axis)}
@@ -386,9 +413,38 @@
 						selected={selected[axis] ?? []}
 						maxSelect={softCap(axis)}
 						onToggle={(t) => toggle(axis, t)}
+						onTabNext={goToNextTab}
+						onTabPrev={goToPrevTab}
 					/>
 					{/if}
 				{/each}
+
+				<!-- Load command input (collapsible) — below axis panel for correct Tab order -->
+				<div class="load-cmd-section">
+					<button class="load-cmd-toggle" onclick={() => { cmdInputOpen = !cmdInputOpen; cmdInputWarnings = []; }}>
+						<span class="load-cmd-toggle-label">Load command</span>
+						<span class="load-cmd-caret">{cmdInputOpen ? '▲' : '▼'}</span>
+					</button>
+					{#if cmdInputOpen}
+						<div class="load-cmd-body">
+							<input
+								class="load-cmd-input"
+								type="text"
+								placeholder="bar build show mean full plain --subject &quot;…&quot;"
+								bind:value={cmdInput}
+								onkeydown={(e) => e.key === 'Enter' && loadCommand()}
+							/>
+							<button class="load-cmd-btn" onclick={loadCommand}>Load</button>
+							{#if cmdInputWarnings.length > 0}
+								<div class="load-cmd-warnings">
+									Unrecognized tokens: {cmdInputWarnings.map(t => `"${t}"`).join(', ')}
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
+
+				<PatternsLibrary {patterns} onLoad={loadPattern} />
 			</section>
 
 			<button class="preview-toggle" onclick={togglePreview}>
@@ -911,6 +967,60 @@
 		padding: 0.3rem 0.4rem;
 		background: #2a1f10;
 		border-radius: calc(var(--radius) - 2px);
+	}
+
+	.shortcut-legend {
+		margin-bottom: 0.75rem;
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+	}
+
+	.shortcut-legend-summary {
+		cursor: pointer;
+		user-select: none;
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+		letter-spacing: 0.02em;
+	}
+
+	.shortcut-legend-summary:hover { color: var(--color-text); }
+
+	.shortcut-table {
+		margin-top: 0.4rem;
+		border-collapse: collapse;
+		width: 100%;
+	}
+
+	.shortcut-table th {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--color-text-muted);
+		text-align: left;
+		padding: 0.2rem 0.4rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.shortcut-table td {
+		padding: 0.2rem 0.4rem;
+		vertical-align: top;
+	}
+
+	.shortcut-table tr:not(:last-child) td {
+		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+	}
+
+	.shortcut-table kbd {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 3px;
+		padding: 0.05rem 0.25rem;
+	}
+
+	@media (pointer: coarse) {
+		.shortcut-legend { display: none; }
 	}
 
 	.tab-bar {

@@ -71,6 +71,10 @@
 			e.preventDefault();
 			focusedIndex = n - 1;
 			focusChip(n - 1);
+		} else if (e.key === 'Tab' && !e.shiftKey && focusedIndex < filtered.length - 1) {
+			e.preventDefault();
+			focusedIndex = filtered.length - 1;
+			focusChip(filtered.length - 1);
 		} else if (e.key === 'Tab' && !e.shiftKey && focusedIndex === filtered.length - 1 && onTabNext) {
 			e.preventDefault();
 			onTabNext();
@@ -100,6 +104,10 @@
 			bind:this={filterInputRef}
 			onkeydown={(e) => {
 				if (e.key === 'ArrowDown' && filtered.length > 0) {
+					e.preventDefault();
+					focusedIndex = 0;
+					focusChip(0);
+				} else if (e.key === 'Tab' && !e.shiftKey && filtered.length > 0) {
 					e.preventDefault();
 					focusedIndex = 0;
 					focusChip(0);

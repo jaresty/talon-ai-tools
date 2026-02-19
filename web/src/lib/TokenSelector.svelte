@@ -359,6 +359,9 @@
 		flex-direction: column;
 		max-height: 40vh;
 		overflow: hidden;
+		position: sticky;
+		bottom: 1rem;
+		z-index: 10;
 	}
 
 	.meta-body {

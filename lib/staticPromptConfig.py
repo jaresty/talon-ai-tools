@@ -172,7 +172,10 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
         "To implement the fix: use fix (reformat) or make (create new)."
     ),
     "diff": "Works well with: jira (comparison tables), log (structured diff), "
-    "codetour (code comparison).",
+    "codetour (code comparison). "
+    "Distinct from pick: diff = structured comparison for the reader to decide; "
+    "pick = LLM makes the selection. When narrowing to a recommendation, pair "
+    "diff with converge or branch method.",
     "make": "Works well with: svg, adr, diagram, codetour. "
     "For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
     "check": "Works well with: log, gherkin, test. "
@@ -196,6 +199,11 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     "show = explain a concept; pull = compress source material.",
     "pull": "For summarisation: extract the conceptual core from source material with gist scope. "
     "For risk extraction: works well with fail scope.",
+    "pick": "Use when the task asks the LLM to make a selection, not just compare. "
+    "Distinct from diff: diff = structured comparison for the reader to decide; "
+    "pick = LLM chooses. Heuristic: 'which should I use', 'choose between X/Y/Z', "
+    "'recommend one' → pick; 'compare X vs Y' → diff. "
+    "Pair with branch method when comparison is needed before selecting.",
 }
 
 

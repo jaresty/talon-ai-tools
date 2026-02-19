@@ -498,6 +498,14 @@ func (s *buildState) canonicalPersonaToken(axis, token string) string {
 	if _, ok := set[lower]; ok {
 		return lower
 	}
+	// Use the grammar's slug-to-canonical map to resolve proper-noun tokens like
+	// "to CEO" or "to Kent Beck" whose canonical forms preserve uppercase letters.
+	// slugToCanonical["to-ceo"] = "to CEO" is populated by initialiseSlugs.
+	if canonical, ok := s.grammar.slugToCanonical[lower]; ok {
+		if _, ok := set[canonical]; ok {
+			return canonical
+		}
+	}
 	// De-slugify: replace dashes with spaces to match canonical multi-word tokens.
 	deslug := strings.ReplaceAll(lower, "-", " ")
 	if deslug != lower {

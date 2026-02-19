@@ -856,7 +856,7 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Multiple alternatives** → `variants`\n")
 	fmt.Fprintf(w, "- **Step-by-step guidance** → `walkthrough`, `recipe`\n")
 	fmt.Fprintf(w, "- **Structured comparison** → `table`\n")
-	fmt.Fprintf(w, "- **Building understanding** → `scaffold` (explanation/education tasks only; do NOT use with `make` when producing a design artifact — code, diagram, or adr channel already defines the output structure)\n")
+	fmt.Fprintf(w, "- **Building understanding** → `scaffold`\n")
 	fmt.Fprintf(w, "- **Decision documentation** → `case`\n\n")
 }
 

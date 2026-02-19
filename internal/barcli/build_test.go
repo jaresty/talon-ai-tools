@@ -27,6 +27,35 @@ func TestPersonaSlugNormalization(t *testing.T) {
 	}
 }
 
+// TestPersonaProperNounSlugNormalization specifies that Build accepts slug-form
+// audience tokens whose canonical form contains uppercase proper-noun letters
+// (e.g. "to-ceo" → "to CEO", "to-kent-beck" → "to Kent Beck"). The lookup
+// must use the grammar's slugToCanonical map rather than a simple de-hyphenation,
+// because de-hyphenation alone yields "to ceo" (lowercase) which does not match
+// the stored canonical "to CEO". Regression test for ADR-0113 loop-23 bug fix.
+func TestPersonaProperNounSlugNormalization(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	cases := []struct {
+		slug      string
+		canonical string
+	}{
+		{"to-ceo", "to CEO"},
+		{"to-kent-beck", "to Kent Beck"},
+	}
+	for _, tc := range cases {
+		if _, ok := grammar.personaTokens["audience"][tc.canonical]; !ok {
+			t.Skipf("test grammar does not have audience token %q", tc.canonical)
+		}
+		result, err := Build(grammar, []string{"show", "audience=" + tc.slug})
+		if err != nil {
+			t.Fatalf("slug %q: expected acceptance, got error: %v", tc.slug, err)
+		}
+		if result.Persona.Audience != tc.canonical {
+			t.Fatalf("slug %q: expected canonical %q, got %q", tc.slug, tc.canonical, result.Persona.Audience)
+		}
+	}
+}
+
 // TestCrossTokenExistsInGrammar specifies that the 'cross' scope token exists
 // in the grammar. This is the specifying validation for the R-01 catalog change
 // in ADR-0113 cycle 1.

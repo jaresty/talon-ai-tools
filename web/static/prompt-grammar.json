@@ -726,9 +726,10 @@
     },
     "guidance": {
       "check": "Works well with: log, gherkin, test. For test coverage gaps: use check, not make ('check' = evaluate existing; 'make' = create new).",
-      "diff": "Works well with: jira (comparison tables), log (structured diff), codetour (code comparison).",
+      "diff": "Works well with: jira (comparison tables), log (structured diff), codetour (code comparison). Distinct from pick: diff = structured comparison for the reader to decide; pick = LLM makes the selection. When narrowing to a recommendation, pair diff with converge or branch method.",
       "fix": "In bar's grammar, fix means reformat — not debug. To analyze/debug: use probe with diagnose, inversion, or adversarial. To implement the fix: use fix (reformat) or make (create new).",
       "make": "Works well with: svg, adr, diagram, codetour. For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
+      "pick": "Use when the task asks the LLM to make a selection, not just compare. Distinct from diff: diff = structured comparison for the reader to decide; pick = LLM chooses. Heuristic: 'which should I use', 'choose between X/Y/Z', 'recommend one' → pick; 'compare X vs Y' → diff. Pair with branch method when comparison is needed before selecting.",
       "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), jira (backlog items).",
       "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. probe = analyze broadly; pull = extract subset. For debugging/troubleshooting: use probe + diagnose method (not fix — fix is content reformatting, not bug-fixing). Heuristic: 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe + diagnose.",
       "pull": "For summarisation: extract the conceptual core from source material with gist scope. For risk extraction: works well with fail scope.",
@@ -2665,7 +2666,7 @@
   ],
   "checksums": {
     "axes": "b89c4a59aa62aeeadc08def4027114c2064237ace594131a7dd3d7ed912bd245",
-    "tasks": "633e77070af92fc7d23fdfdc71c980953a627e9bc20e3b3f3a74eab08c260034",
+    "tasks": "f7a1da7c860655a42dd8241796f1ded61725df59c2718374c46d79ca0d6d4720",
     "persona": "0abd8ac447575ad74a27b6f1521cfd5d85efd894c706b878430b9fb791bf170a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "0ca7b501bf6c8a5ab873d1be44bbccf91481762ea7b9cfe94860ec729426ea75",

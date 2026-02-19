@@ -6,6 +6,50 @@ VCS_REVERT: `git restore --source=HEAD` (file-targeted) or `git stash` (full).
 
 ---
 
+## loop-23 | 2026-02-19 | Task token routing validation + proper-noun slug bug fix
+
+```
+focus: Validate "Choosing Task" and "Choosing Persona" heuristics on a fresh 10-task sample.
+  Primary question: do both heuristics prevent the misrouting failures found in loop-22?
+
+mean_score: 4.9/5 (highest in program history)
+gaps_found: 1 minor + 1 code bug
+  G-L23-01: pick/diff boundary undocumented — "compare to decide" vs "have LLM decide" not
+    distinguished in Choosing Task heuristic. Low priority; routing is correct.
+  BUG: audience=to-ceo slug rejected (also to-kent-beck, to-xp-enthusiast). Root cause:
+    canonicalPersonaToken de-slugified "to-ceo" → "to ceo" (lowercase), which doesn't match
+    stored canonical "to CEO". Fix: use s.grammar.slugToCanonical[lower] (O(1), already correct).
+
+fixes_applied:
+  - build.go canonicalPersonaToken: use slugToCanonical for proper-noun token resolution
+  - build_test.go: Added TestPersonaProperNounSlugNormalization regression test
+
+heuristic_validation:
+  - All 10 tasks routed to correct task token (Choosing Task heuristic: PASS)
+  - Both explicit-audience cases routed to audience= not preset (Choosing Persona: PASS)
+  - T01 debug→probe+diagnose ✓ (loop-22 regression: fixed)
+  - T03/T10 CEO+PM audience→explicit token ✓ (loop-22 regression: fixed)
+
+tests: all pass (go test ./internal/barcli/...)
+ssot: intact (bug fix only touched build.go + test; no grammar changes)
+
+key_insight: The "Choosing Task" heuristic is the highest-impact single addition in the ADR-0113
+  program. 4.9/5 across a fresh 10-task sample with all task tokens exercised. The slug bug was
+  caught during T10 CEO persona routing — the heuristic correctly guided to audience=to-ceo but
+  the runtime rejected the slug. Using the grammar's existing slugToCanonical map is the
+  authoritative fix rather than a case-insensitive scan.
+
+evidence:
+  - docs/adr/evidence/0113/loop-23/evaluations.md
+  - docs/adr/evidence/0113/loop-23/loop-23-summary.md
+
+next_loop_focus: Program health is excellent (4.9/5). Consider closing the pick/diff boundary
+  gap (minor) or running a domain-specific deep dive (e.g., design/architecture tasks, or
+  checking voice token discoverability which hasn't been explicitly tested).
+```
+
+---
+
 ## loop-22 | 2026-02-18 | Cross-axis health check — missing Task and Persona heuristics
 
 ```

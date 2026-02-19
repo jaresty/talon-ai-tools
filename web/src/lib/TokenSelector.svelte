@@ -48,8 +48,15 @@
 	}
 
 	function handleChipClick(meta: TokenMeta, atCap: boolean) {
-		if (!atCap) onToggle(meta.token);
-		activeToken = activeToken === meta.token ? null : meta.token;
+		const isSelected = selected.includes(meta.token);
+		if (isSelected) {
+			onToggle(meta.token);
+			activeToken = null;
+		} else {
+			// Inspect first; Select button in meta-panel commits.
+			// Always open (onfocus already ran, toggle would immediately close).
+			activeToken = meta.token;
+		}
 	}
 
 	function handleGridKey(e: KeyboardEvent) {
@@ -158,7 +165,8 @@
 				onkeydown={(e) => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault();
-						handleChipClick(meta, atCap);
+						// Keyboard: focus already showed detail, so commit directly
+						if (!atCap) { onToggle(meta.token); activeToken = null; }
 					}
 				}}
 				onfocus={() => {

@@ -88,12 +88,12 @@ describe('TokenSelector — D2 metadata panel', () => {
 		expect(screen.getByText('Pair with a strategic intent task.')).toBeTruthy();
 	});
 
-	it('clicking the same chip again closes the panel', async () => {
+	it('clicking the same unselected chip again keeps the panel open', async () => {
 		renderSelector();
 		const chip = screen.getByText('wardley').closest('.token-chip')!;
 		await fireEvent.click(chip); // open
-		await fireEvent.click(chip); // close
-		expect(screen.queryByText('When to use')).toBeNull();
+		await fireEvent.click(chip); // stays open — inspect-first: no toggle on unselected chips
+		expect(screen.getByText('When to use')).toBeTruthy();
 	});
 
 	it('clicking a different chip switches the panel', async () => {
@@ -117,12 +117,33 @@ describe('TokenSelector — D2 metadata panel', () => {
 		expect(screen.queryByText('When to use')).toBeNull();
 	});
 
-	it('clicking chip calls onToggle', async () => {
+	it('clicking unselected chip opens panel but does NOT call onToggle', async () => {
 		const onToggle = vi.fn();
 		renderSelector({ onToggle });
 		const chip = screen.getByText('wardley').closest('.token-chip')!;
 		await fireEvent.click(chip);
+		expect(onToggle).not.toHaveBeenCalled();
+		expect(screen.getByText('When to use')).toBeTruthy();
+	});
+
+	it('clicking "Select" button in meta panel calls onToggle and closes panel', async () => {
+		const onToggle = vi.fn();
+		renderSelector({ onToggle });
+		const chip = screen.getByText('wardley').closest('.token-chip')!;
+		await fireEvent.click(chip); // open panel
+		const selectBtn = screen.getByText('Select ↵');
+		await fireEvent.click(selectBtn);
 		expect(onToggle).toHaveBeenCalledWith('wardley');
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
+	it('clicking selected chip calls onToggle and closes panel immediately', async () => {
+		const onToggle = vi.fn();
+		renderSelector({ selected: ['wardley'], onToggle });
+		const chip = screen.getByText('wardley').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(onToggle).toHaveBeenCalledWith('wardley');
+		expect(screen.queryByText('When to use')).toBeNull();
 	});
 
 	it('does not call onToggle when at cap and token not selected', async () => {

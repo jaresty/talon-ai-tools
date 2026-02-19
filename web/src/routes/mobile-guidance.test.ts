@@ -160,7 +160,7 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		expect(container.querySelector('.meta-panel')).toBeNull();
 	});
 
-	it('Select button shows "Deselect" and removes token when already selected', () => {
+	it('clicking already-selected chip deselects immediately without opening the panel', () => {
 		const onToggle = vi.fn();
 		mount(TokenSelector, {
 			target: container,
@@ -171,12 +171,7 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		(tokenChip as HTMLElement).click();
 		flushSync();
 
-		const selectBtn = container.querySelector('.meta-select-btn') as HTMLElement;
-		expect(selectBtn.textContent).toContain('Deselect');
-
-		selectBtn.click();
-		flushSync();
-
+		// Deselects directly — no panel opened
 		expect(onToggle).toHaveBeenCalledWith('show');
 		expect(container.querySelector('.meta-panel')).toBeNull();
 	});

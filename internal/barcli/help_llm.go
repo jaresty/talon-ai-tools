@@ -46,7 +46,7 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 		renderUsagePatterns(w, grammar, compact)
 	}
 	if shouldRender("heuristics") {
-		renderTokenSelectionHeuristics(w, compact)
+		renderTokenSelectionHeuristics(w, grammar, compact)
 	}
 	if shouldRender("advanced") {
 		renderAdvancedFeatures(w, compact)
@@ -445,8 +445,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	if !compact {
 		fmt.Fprintf(w, "Pre-composed prompt strategies:\n\n")
 	}
-	fmt.Fprintf(w, "| Token | Label | Description | Notes |\n")
-	fmt.Fprintf(w, "|-------|-------|-------------|-------|\n")
+	fmt.Fprintf(w, "| Token | Label | Description | Notes | When to use |\n")
+	fmt.Fprintf(w, "|-------|-------|-------------|-------|-------------|\n")
 
 	staticNames := make([]string, 0, len(grammar.Static.Profiles))
 	for name := range grammar.Static.Profiles {
@@ -465,7 +465,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 		}
 		label := grammar.TaskLabel(name)
 		guidance := grammar.TaskGuidance(name)
-		fmt.Fprintf(w, "| `%s` | %s | %s | %s |\n", slug, label, desc, guidance)
+		useWhen := grammar.TaskUseWhen(name)
+		fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s |\n", slug, label, desc, guidance, useWhen)
 	}
 	fmt.Fprintf(w, "\n")
 
@@ -792,26 +793,34 @@ func renderUsagePatterns(w io.Writer, grammar *Grammar, compact bool) {
 	}
 }
 
-func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
+func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool) {
 	if compact {
 		// Skip heuristics in compact mode
 		return
 	}
 	fmt.Fprintf(w, "## Token Selection Heuristics\n\n")
 
+	// Choosing Task: data-driven from tasks.use_when (ADR-0142 SSOT).
+	// Each task token's use_when begins with the routing trigger phrase.
 	fmt.Fprintf(w, "### Choosing Task\n\n")
-	fmt.Fprintf(w, "- **Explain or describe something** → `show`\n")
-	fmt.Fprintf(w, "- **Analyze, surface structure or assumptions** → `probe`\n")
-	fmt.Fprintf(w, "- **Debug, troubleshoot, diagnose a problem** → `probe` + `diagnose` method\n")
-	fmt.Fprintf(w, "- **Create new content or artifacts** → `make`\n")
-	fmt.Fprintf(w, "- **Plan steps or strategy** → `plan`\n")
-	fmt.Fprintf(w, "- **Compare or contrast subjects** → `diff`\n")
-	fmt.Fprintf(w, "- **Reformat or restructure existing content** → `fix`\n")
-	fmt.Fprintf(w, "- **Verify or audit against criteria** → `check`\n")
-	fmt.Fprintf(w, "- **Extract a subset of information** → `pull`\n")
-	fmt.Fprintf(w, "- **Simulate a scenario over time** → `sim`\n")
-	fmt.Fprintf(w, "- **Select from alternatives** → `pick`\n")
-	fmt.Fprintf(w, "- **Organize into categories or order** → `sort`\n\n")
+	taskOrder := []string{"show", "probe", "make", "plan", "diff", "fix", "check", "pull", "sim", "pick", "sort"}
+	for _, name := range taskOrder {
+		uw := grammar.TaskUseWhen(name)
+		if uw == "" {
+			continue
+		}
+		// Use the first sentence of use_when as the routing line.
+		// Split on the first period or newline to get the brief label.
+		line := uw
+		for _, sep := range []string{".", "\n"} {
+			if idx := strings.Index(uw, sep); idx > 0 {
+				line = uw[:idx]
+				break
+			}
+		}
+		fmt.Fprintf(w, "- **%s** → `%s`\n", line, name)
+	}
+	fmt.Fprintf(w, "\n")
 
 	fmt.Fprintf(w, "### Choosing Persona\n\n")
 	fmt.Fprintf(w, "- **Known audience**: prefer explicit `audience=` token over presets when the task specifies who you are talking to (e.g., 'explain to an engineering manager' → `voice=as-programmer audience=to-managers`, not `persona=peer_engineer_explanation`)\n")

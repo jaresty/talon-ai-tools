@@ -51,6 +51,7 @@ type StaticSection struct {
 	Descriptions map[string]string
 	Labels       map[string]string // ADR-0109: short CLI-facing selection labels
 	Guidance     map[string]string // ADR-0110: selection-oriented prose hints
+	UseWhen      map[string]string // ADR-0142: routing trigger phrases for nav surfaces
 }
 
 type StaticProfile struct {
@@ -146,6 +147,7 @@ type rawStatic struct {
 	Descriptions map[string]string        `json:"descriptions"`
 	Labels       map[string]string        `json:"labels"`   // ADR-0109
 	Guidance     map[string]string        `json:"guidance"` // ADR-0110
+	UseWhen      map[string]string        `json:"use_when"` // ADR-0142
 }
 
 type rawPersona struct {
@@ -231,6 +233,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Descriptions: raw.Static.Descriptions,
 			Labels:       raw.Static.Labels,
 			Guidance:     raw.Static.Guidance,
+			UseWhen:      raw.Static.UseWhen,
 		},
 		Persona: PersonaSection{
 			Axes:     raw.Persona.Axes,
@@ -894,6 +897,19 @@ func (g *Grammar) TaskGuidance(name string) string {
 		return text
 	}
 	if text, ok := g.Static.Guidance[strings.ToLower(key)]; ok {
+		return text
+	}
+	return ""
+}
+
+// TaskUseWhen returns the routing trigger phrase for the given task token (ADR-0142).
+// Returns empty string if no use_when is defined.
+func (g *Grammar) TaskUseWhen(name string) string {
+	key := normalizeToken(name)
+	if text, ok := g.Static.UseWhen[key]; ok {
+		return text
+	}
+	if text, ok := g.Static.UseWhen[strings.ToLower(key)]; ok {
 		return text
 	}
 	return ""

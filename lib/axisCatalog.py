@@ -14,6 +14,7 @@ from .staticPromptConfig import (
     static_prompt_description_overrides as _static_prompt_description_overrides,
     static_prompt_guidance_overrides as _static_prompt_guidance_overrides,
     static_prompt_label_overrides as _static_prompt_label_overrides,
+    static_prompt_use_when_overrides as _static_prompt_use_when_overrides,
 )
 
 # Map axis names to their Talon list filenames (optional/auxiliary) so we can
@@ -214,6 +215,7 @@ def axis_catalog(
         "static_prompt_descriptions": static_prompt_description_overrides(),
         "static_prompt_labels": _static_prompt_label_overrides(),
         "static_prompt_guidance": _static_prompt_guidance_overrides(),
+        "static_prompt_use_when": _static_prompt_use_when_overrides(),
         "static_prompt_profiles": STATIC_PROMPT_CONFIG,
         "usage_patterns": axisConfig.get_usage_patterns(),
     }

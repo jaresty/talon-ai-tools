@@ -206,6 +206,87 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     "Pair with branch method when comparison is needed before selecting.",
 }
 
+# Routing trigger phrases for task tokens — surfaced in the "When to use" column
+# of the Token Catalog, the "Choosing Task" routing table, the SPA chip panel,
+# and the TUI task stage. Parallel to axis use_when; SSOT for task routing hints.
+# ADR-0142.
+_STATIC_PROMPT_USE_WHEN: dict[str, str] = {
+    "show": (
+        "Explaining or describing something for an audience. "
+        "Heuristic: 'explain', 'describe', 'walk me through', 'what is', 'tell me about', "
+        "'how does X work', 'overview of' → show. "
+        "Distinct from pull (pull = compress/extract source material; show = explain a concept)."
+    ),
+    "probe": (
+        "Analyzing structure, surfacing assumptions, or diagnosing a problem. "
+        "Heuristic: 'analyze', 'what assumptions', 'surface implications', "
+        "'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', "
+        "'investigate the error' → probe (pair with diagnose method for debugging). "
+        "Distinct from pull (pull = extract a subset; probe = analyze broadly)."
+    ),
+    "make": (
+        "Creating new content or artifacts that did not previously exist. "
+        "Heuristic: 'write', 'create', 'draft', 'generate', 'build', 'produce', "
+        "'author', 'design' → make. "
+        "Distinct from fix (fix = reformat existing content; make = create new)."
+    ),
+    "fix": (
+        "Reformatting or restructuring existing content while keeping its meaning. "
+        "Heuristic: 'reformat', 'restructure', 'convert to', 'clean up', "
+        "'change format', 'transform into' → fix. "
+        "In bar's grammar, fix means reformat — not bug-fix. "
+        "For debugging: use probe + diagnose. For creating new: use make."
+    ),
+    "plan": (
+        "Proposing steps, structure, or strategy to reach a goal. "
+        "Heuristic: 'plan', 'roadmap', 'steps to', 'how do I get from X to Y', "
+        "'migration plan', 'strategy for', 'sequence of actions' → plan. "
+        "Distinct from sim (plan = steps to take; sim = what plays out if a condition is met)."
+    ),
+    "diff": (
+        "Comparing or contrasting two or more subjects for the reader to decide. "
+        "Heuristic: 'compare', 'contrast', 'X vs Y', 'similarities and differences', "
+        "'tradeoffs between', 'how do X and Y differ' → diff. "
+        "Distinct from pick (diff = reader decides; pick = LLM selects). "
+        "Pair with converge or branch method when narrowing to a recommendation."
+    ),
+    "check": (
+        "Verifying or auditing against criteria. "
+        "Heuristic: 'verify', 'audit', 'validate', 'does this satisfy', "
+        "'check for', 'evaluate against', 'review for compliance', "
+        "'does X meet criteria Y' → check. "
+        "Distinct from probe (probe = analyze broadly; check = evaluate against a condition)."
+    ),
+    "pull": (
+        "Extracting a subset of information from source material. "
+        "Heuristic: 'extract', 'list the', 'what are the risks', 'pull out', "
+        "'summarize this document', 'give me just the', 'identify the' → pull. "
+        "Distinct from show (show = explain a concept; pull = compress source material). "
+        "For risk extraction: pair with fail scope."
+    ),
+    "sim": (
+        "Playing out a scenario over time — what would happen if. "
+        "Heuristic: 'what would happen if', 'play out the scenario where', "
+        "'simulate what happens when', 'walk me through what would occur if', "
+        "'hypothetically if we did X then what' → sim. "
+        "Distinct from plan (plan = steps to take; sim = narrate the scenario unfolding over time) "
+        "and probe (probe = surface implications analytically; sim = temporal narration)."
+    ),
+    "pick": (
+        "Selecting from alternatives — the LLM makes the choice. "
+        "Heuristic: 'which should I use', 'choose between X/Y/Z', 'recommend one', "
+        "'what would you pick', 'which is better for my situation' → pick. "
+        "Distinct from diff (diff = structured comparison for the reader to decide; "
+        "pick = LLM selects). Pair with branch method when comparison precedes selection."
+    ),
+    "sort": (
+        "Arranging items into categories or order. "
+        "Heuristic: 'group', 'categorize', 'cluster', 'rank', 'order by', "
+        "'organize into themes', 'sort by', 'prioritize this list' → sort. "
+        "Pair with cluster method for thematic grouping."
+    ),
+}
+
 
 def static_prompt_label_overrides() -> dict[str, str]:
     """Return name->label map for static prompts (ADR-0109)."""
@@ -215,6 +296,11 @@ def static_prompt_label_overrides() -> dict[str, str]:
 def static_prompt_guidance_overrides() -> dict[str, str]:
     """Return name->guidance map for static prompts (ADR-0110)."""
     return dict(_STATIC_PROMPT_GUIDANCE)
+
+
+def static_prompt_use_when_overrides() -> dict[str, str]:
+    """Return name->use_when map for task tokens (ADR-0142)."""
+    return dict(_STATIC_PROMPT_USE_WHEN)
 
 
 def _read_static_prompt_tokens(

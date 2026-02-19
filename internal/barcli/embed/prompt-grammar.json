@@ -735,6 +735,19 @@
       "pull": "For summarisation: extract the conceptual core from source material with gist scope. For risk extraction: works well with fail scope.",
       "show": "For summarisation of long documents, prefer 'pull' (extraction). show = explain a concept; pull = compress source material.",
       "sim": "Temporal scenario walkthrough: use when the user wants to trace what unfolds over time if a condition occurs. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = what plays out if a condition is met) and probe (probe = surface implications analytically; sim = narrate the scenario unfolding over time). Works well with: diagram (Mermaid scenarios), slack (session format), sync (agenda format)."
+    },
+    "use_when": {
+      "check": "Verifying or auditing against criteria. Heuristic: 'verify', 'audit', 'validate', 'does this satisfy', 'check for', 'evaluate against', 'review for compliance', 'does X meet criteria Y' → check. Distinct from probe (probe = analyze broadly; check = evaluate against a condition).",
+      "diff": "Comparing or contrasting two or more subjects for the reader to decide. Heuristic: 'compare', 'contrast', 'X vs Y', 'similarities and differences', 'tradeoffs between', 'how do X and Y differ' → diff. Distinct from pick (diff = reader decides; pick = LLM selects). Pair with converge or branch method when narrowing to a recommendation.",
+      "fix": "Reformatting or restructuring existing content while keeping its meaning. Heuristic: 'reformat', 'restructure', 'convert to', 'clean up', 'change format', 'transform into' → fix. In bar's grammar, fix means reformat — not bug-fix. For debugging: use probe + diagnose. For creating new: use make.",
+      "make": "Creating new content or artifacts that did not previously exist. Heuristic: 'write', 'create', 'draft', 'generate', 'build', 'produce', 'author', 'design' → make. Distinct from fix (fix = reformat existing content; make = create new).",
+      "pick": "Selecting from alternatives — the LLM makes the choice. Heuristic: 'which should I use', 'choose between X/Y/Z', 'recommend one', 'what would you pick', 'which is better for my situation' → pick. Distinct from diff (diff = structured comparison for the reader to decide; pick = LLM selects). Pair with branch method when comparison precedes selection.",
+      "plan": "Proposing steps, structure, or strategy to reach a goal. Heuristic: 'plan', 'roadmap', 'steps to', 'how do I get from X to Y', 'migration plan', 'strategy for', 'sequence of actions' → plan. Distinct from sim (plan = steps to take; sim = what plays out if a condition is met).",
+      "probe": "Analyzing structure, surfacing assumptions, or diagnosing a problem. Heuristic: 'analyze', 'what assumptions', 'surface implications', 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe (pair with diagnose method for debugging). Distinct from pull (pull = extract a subset; probe = analyze broadly).",
+      "pull": "Extracting a subset of information from source material. Heuristic: 'extract', 'list the', 'what are the risks', 'pull out', 'summarize this document', 'give me just the', 'identify the' → pull. Distinct from show (show = explain a concept; pull = compress source material). For risk extraction: pair with fail scope.",
+      "show": "Explaining or describing something for an audience. Heuristic: 'explain', 'describe', 'walk me through', 'what is', 'tell me about', 'how does X work', 'overview of' → show. Distinct from pull (pull = compress/extract source material; show = explain a concept).",
+      "sim": "Playing out a scenario over time — what would happen if. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = narrate the scenario unfolding over time) and probe (probe = surface implications analytically; sim = temporal narration).",
+      "sort": "Arranging items into categories or order. Heuristic: 'group', 'categorize', 'cluster', 'rank', 'order by', 'organize into themes', 'sort by', 'prioritize this list' → sort. Pair with cluster method for thematic grouping."
     }
   },
   "persona": {
@@ -2666,7 +2679,7 @@
   ],
   "checksums": {
     "axes": "b89c4a59aa62aeeadc08def4027114c2064237ace594131a7dd3d7ed912bd245",
-    "tasks": "f7a1da7c860655a42dd8241796f1ded61725df59c2718374c46d79ca0d6d4720",
+    "tasks": "4b9cca8f13e6e7ecfd5cb5b17311ad6716920a4d482df81156e15fc85005916a",
     "persona": "0abd8ac447575ad74a27b6f1521cfd5d85efd894c706b878430b9fb791bf170a",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "0ca7b501bf6c8a5ab873d1be44bbccf91481762ea7b9cfe94860ec729426ea75",

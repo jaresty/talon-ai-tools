@@ -150,6 +150,43 @@ func TestBuildResultCarriesReferenceKey(t *testing.T) {
 
 // TestGrammarPatternsLoaded verifies that the embedded grammar JSON includes
 // the patterns list from the Python SSOT (ADR-0134 D3).
+// TestTaskUseWhenPopulated specifies that all 11 task tokens carry a non-empty
+// use_when string in the embedded grammar. This is the specifying validation for
+// ADR-0142 behaviour 1: task tokens expose use_when through the grammar schema.
+func TestTaskUseWhenPopulated(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	wantTasks := []string{"check", "diff", "fix", "make", "pick", "plan", "probe", "pull", "show", "sim", "sort"}
+	for _, task := range wantTasks {
+		uw := grammar.TaskUseWhen(task)
+		if strings.TrimSpace(uw) == "" {
+			t.Errorf("task token %q: use_when is empty (ADR-0142)", task)
+		}
+	}
+}
+
+// TestHelpLLMTaskTableHasUseWhenColumn specifies that bar help llm output
+// contains a "When to use" column header in the Tasks section (ADR-0142 B1).
+func TestHelpLLMTaskTableHasUseWhenColumn(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	var buf strings.Builder
+	renderLLMHelp(&buf, grammar, "", false)
+	out := buf.String()
+	// Tasks table should have 5 columns matching axis tables
+	if !strings.Contains(out, "| When to use |") {
+		t.Fatal("help llm Tasks table missing 'When to use' column (ADR-0142 B1)")
+	}
+	// Choosing Task section should be present
+	if !strings.Contains(out, "### Choosing Task") {
+		t.Fatal("help llm missing Choosing Task section (ADR-0142 B1)")
+	}
+}
+
 func TestGrammarPatternsLoaded(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {

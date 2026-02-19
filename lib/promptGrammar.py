@@ -191,6 +191,7 @@ def _build_static_section(
 
     static_labels = catalog.get("static_prompt_labels") or {}
     static_guidance = catalog.get("static_prompt_guidance") or {}
+    static_use_when = catalog.get("static_prompt_use_when") or {}
 
     section: dict[str, Any] = {
         "catalog": _normalize(_strip_none(static_catalog)),
@@ -201,6 +202,8 @@ def _build_static_section(
         section["labels"] = _canonicalize_mapping(static_labels)
     if static_guidance:
         section["guidance"] = _canonicalize_mapping(static_guidance)
+    if static_use_when:
+        section["use_when"] = _canonicalize_mapping(static_use_when)
 
     labels: set[str] = set(section["profiles"].keys()) | set(
         section["descriptions"].keys()

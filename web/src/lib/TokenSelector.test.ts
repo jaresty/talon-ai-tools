@@ -146,6 +146,22 @@ describe('TokenSelector — D2 metadata panel', () => {
 		expect(screen.queryByText('When to use')).toBeNull();
 	});
 
+	it('second click on chip with panel already open selects it (confirming click)', async () => {
+		const onToggle = vi.fn();
+		renderSelector({ onToggle });
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		// First click: pointerdown captures null, click opens panel
+		await fireEvent.pointerDown(chip);
+		await fireEvent.click(chip);
+		expect(onToggle).not.toHaveBeenCalled();
+		expect(screen.getByText('When to use')).toBeTruthy();
+		// Second click: pointerdown captures activeToken='wardley', click selects
+		await fireEvent.pointerDown(chip);
+		await fireEvent.click(chip);
+		expect(onToggle).toHaveBeenCalledWith('wardley');
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
 	it('does not call onToggle when at cap and token not selected', async () => {
 		const onToggle = vi.fn();
 		// maxSelect=1, selected=['prose'] → wardley is at cap

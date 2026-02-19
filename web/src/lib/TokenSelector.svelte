@@ -18,6 +18,8 @@
 	let focusedIndex = $state(-1);
 	let gridRef = $state<HTMLDivElement | null>(null);
 	let filterInputRef = $state<HTMLInputElement | null>(null);
+	// Captured at pointerdown (before onfocus fires) to detect confirming clicks
+	let activeAtPointerDown = $state<string | null>(null);
 
 	let filtered = $derived(
 		filter.trim()
@@ -52,9 +54,11 @@
 		if (isSelected) {
 			onToggle(meta.token);
 			activeToken = null;
+		} else if (activeAtPointerDown === meta.token) {
+			// Panel was already open when the pointer went down — confirming click selects
+			if (!atCap) { onToggle(meta.token); activeToken = null; }
 		} else {
-			// Inspect first; Select button in meta-panel commits.
-			// Always open (onfocus already ran, toggle would immediately close).
+			// First click: open panel to inspect
 			activeToken = meta.token;
 		}
 	}
@@ -161,7 +165,8 @@
 				aria-selected={isSelected}
 				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
 	
-				onclick={() => handleChipClick(meta, atCap)}
+				onpointerdown={() => { activeAtPointerDown = activeToken; }}
+			onclick={() => handleChipClick(meta, atCap)}
 				onkeydown={(e) => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault();

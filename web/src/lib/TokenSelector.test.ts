@@ -146,6 +146,28 @@ describe('TokenSelector — D2 metadata panel', () => {
 		expect(screen.queryByText('When to use')).toBeNull();
 	});
 
+	it('mouseenter opens panel (desktop hover-to-inspect)', async () => {
+		const onToggle = vi.fn();
+		renderSelector({ onToggle });
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		await fireEvent.mouseEnter(chip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+		expect(onToggle).not.toHaveBeenCalled();
+	});
+
+	it('hover then click selects in one step (desktop: mouseenter sets panel, pointerdown captures it)', async () => {
+		const onToggle = vi.fn();
+		renderSelector({ onToggle });
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		// Simulate desktop hover → panel opens
+		await fireEvent.mouseEnter(chip);
+		// pointerdown captures activeToken (already set by mouseenter)
+		await fireEvent.pointerDown(chip);
+		await fireEvent.click(chip);
+		expect(onToggle).toHaveBeenCalledWith('wardley');
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
 	it('second click on chip with panel already open selects it (confirming click)', async () => {
 		const onToggle = vi.fn();
 		renderSelector({ onToggle });

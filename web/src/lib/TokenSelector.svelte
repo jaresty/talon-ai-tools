@@ -167,7 +167,8 @@
 				aria-selected={isSelected}
 				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
 	
-				onpointerdown={() => { activeAtPointerDown = activeToken; wasJustClicked = true; }}
+				onmouseenter={() => { activeToken = meta.token; }}
+			onpointerdown={() => { activeAtPointerDown = activeToken; wasJustClicked = true; }}
 			onclick={() => handleChipClick(meta, atCap)}
 				onkeydown={(e) => {
 					if (e.key === 'Enter' || e.key === ' ') {

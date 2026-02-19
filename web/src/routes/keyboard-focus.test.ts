@@ -268,3 +268,86 @@ describe('ADR-0140 — K3: Shortcut legend present (F5k)', () => {
 		expect(rows.length).toBeGreaterThanOrEqual(10);
 	});
 });
+
+// ---------------------------------------------------------------------------
+// K4 — Shift+Tab from chip stops at filter before exiting panel
+// ---------------------------------------------------------------------------
+
+describe('ADR-0141 — K4: Shift+Tab from first chip focuses filter (F6k)', () => {
+	// F6k: When filter is visible, Shift+Tab on first chip focuses the filter, not previous tab
+	it('F6k: Shift+Tab on first chip when filter is rendered focuses filter input', async () => {
+		const { default: TokenSelector } = await import('$lib/TokenSelector.svelte');
+		const onTabPrev = vi.fn();
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+
+		mount(TokenSelector, {
+			target: container,
+			props: {
+				axis: 'method',
+				tokens: MANY_TOKENS,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				onTabNext: vi.fn(),
+				onTabPrev
+			}
+		});
+		flushSync();
+
+		const filter = container.querySelector('.filter-input') as HTMLInputElement | null;
+		expect(filter).toBeTruthy();
+
+		const chips = container.querySelectorAll('[role="option"]');
+		(chips[0] as HTMLElement).focus();
+		flushSync();
+
+		const grid = container.querySelector('[role="listbox"]') as HTMLElement;
+		grid.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+		flushSync();
+		await new Promise((r) => setTimeout(r, 10));
+
+		expect(document.activeElement).toBe(filter);
+		expect(onTabPrev).not.toHaveBeenCalled();
+
+		document.body.removeChild(container);
+	});
+});
+
+describe('ADR-0141 — K4: Shift+Tab from filter does not call onTabPrev (F7k)', () => {
+	// F7k: Shift+Tab on the filter is not intercepted — browser handles it naturally,
+	// returning focus to the active tab button (correct reverse of tab-bar → filter).
+	it('F7k: Shift+Tab on filter input does not fire onTabPrev', async () => {
+		const { default: TokenSelector } = await import('$lib/TokenSelector.svelte');
+		const onTabPrev = vi.fn();
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+
+		mount(TokenSelector, {
+			target: container,
+			props: {
+				axis: 'method',
+				tokens: MANY_TOKENS,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				onTabNext: vi.fn(),
+				onTabPrev
+			}
+		});
+		flushSync();
+
+		const filter = container.querySelector('.filter-input') as HTMLInputElement | null;
+		expect(filter).toBeTruthy();
+		filter!.focus();
+		flushSync();
+
+		filter!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+		flushSync();
+		await new Promise((r) => setTimeout(r, 10));
+
+		expect(onTabPrev).not.toHaveBeenCalled();
+
+		document.body.removeChild(container);
+	});
+});

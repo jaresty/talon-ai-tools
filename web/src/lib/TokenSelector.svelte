@@ -78,9 +78,13 @@
 		} else if (e.key === 'Tab' && !e.shiftKey && focusedIndex === filtered.length - 1 && onTabNext) {
 			e.preventDefault();
 			onTabNext();
-		} else if (e.key === 'Tab' && e.shiftKey && focusedIndex === 0 && onTabPrev) {
+		} else if (e.key === 'Tab' && e.shiftKey && focusedIndex === 0) {
 			e.preventDefault();
-			onTabPrev();
+			if (filterInputRef) {
+				filterInputRef.focus();
+			} else if (onTabPrev) {
+				onTabPrev();
+			}
 		} else if (e.key === 'Escape') {
 			activeToken = null;
 			focusedIndex = -1;
@@ -112,6 +116,7 @@
 					focusedIndex = 0;
 					focusChip(0);
 				}
+				// Shift+Tab: let browser handle — natural DOM order returns focus to the active tab button
 			}}
 		/>
 	{/if}

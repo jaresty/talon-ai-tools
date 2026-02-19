@@ -1030,7 +1030,9 @@
 		display: flex;
 		gap: 0.25rem;
 		overflow-x: auto;
+		overflow-y: visible;
 		margin-bottom: 1rem;
+		padding-top: 4px;
 		padding-bottom: 0.5rem;
 		border-bottom: 1px solid var(--color-border);
 		-webkit-overflow-scrolling: touch;

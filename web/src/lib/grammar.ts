@@ -60,7 +60,7 @@ let cached: Grammar | null = null;
 
 export async function loadGrammar(): Promise<Grammar> {
 	if (cached) return cached;
-	const res = await fetch(`${base}/prompt-grammar.json`);
+	const res = await fetch(`${base}/prompt-grammar.json`, { cache: 'no-cache' });
 	if (!res.ok) throw new Error(`Failed to load grammar: ${res.status}`);
 	cached = await res.json();
 	return cached!;

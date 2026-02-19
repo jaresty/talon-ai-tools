@@ -26,6 +26,7 @@ export interface Grammar {
 		descriptions: Record<string, string>;
 		labels: Record<string, string>;
 		guidance: Record<string, string>;
+		use_when?: Record<string, string>; // ADR-0142
 	};
 	hierarchy: {
 		axis_priority: string[];
@@ -85,6 +86,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 	const descs = grammar.tasks.descriptions ?? {};
 	const labels = grammar.tasks.labels ?? {};
 	const guidance = grammar.tasks.guidance ?? {};
+	const use_when = grammar.tasks.use_when ?? {};
 	return Object.keys(descs)
 		.sort()
 		.map((token) => ({
@@ -92,7 +94,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 			label: labels[token] ?? '',
 			description: descs[token] ?? '',
 			guidance: guidance[token] ?? '',
-			use_when: ''
+			use_when: use_when[token] ?? ''
 		}));
 }
 

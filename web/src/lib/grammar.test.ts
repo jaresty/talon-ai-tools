@@ -38,7 +38,11 @@ const minimalGrammar: Grammar = {
 			make: 'Produce or generate the artifact described in the subject.'
 		},
 		labels: { show: 'Show', make: 'Make' },
-		guidance: {}
+		guidance: {},
+		use_when: {
+			show: 'Explaining or describing something for an audience.',
+			make: 'Creating new content or artifacts.'
+		}
 	},
 	hierarchy: {
 		axis_priority: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
@@ -137,9 +141,10 @@ describe('getTaskTokens', () => {
 		expect(show.label).toBe('Show');
 	});
 
-	it('returns empty use_when for tasks', () => {
+	it('populates use_when from tasks.use_when (ADR-0142)', () => {
 		const tokens = getTaskTokens(minimalGrammar);
-		expect(tokens.every((t) => t.use_when === '')).toBe(true);
+		const show = tokens.find((t) => t.token === 'show')!;
+		expect(show.use_when).toBe('Explaining or describing something for an audience.');
 	});
 });
 

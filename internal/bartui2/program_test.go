@@ -183,6 +183,30 @@ func testCategoriesWithGuidance() []bartui.TokenCategory {
 	}
 }
 
+// testCategoriesWithUseWhen returns test categories that include use_when for testing ADR-0142.
+func testCategoriesWithUseWhen() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "task",
+			Label:         "Task",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "show", Slug: "show", Label: "Show", Description: "Explain or describe", UseWhen: "Use when explaining concepts to an audience."},
+				{Value: "make", Slug: "make", Label: "Make", Description: "Create new content", UseWhen: "Use when creating new artifacts."},
+			},
+		},
+		{
+			Key:           "completeness",
+			Label:         "Completeness",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer", UseWhen: "Use when you need comprehensive coverage."},
+				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Concise summary"},
+			},
+		},
+	}
+}
+
 // TestCompletionDisplayUsesLabel specifies that when a TokenOption.Label is set,
 // the completion Display uses it rather than the raw slug or value (ADR-0111 D4 tui2 fix).
 func TestCompletionDisplayUsesLabel(t *testing.T) {
@@ -236,6 +260,48 @@ func TestCompletionGuidanceRenderedInDetailPane(t *testing.T) {
 	tokens := m.getCommandTokens()
 	if len(tokens) != 1 || tokens[0] != "fix" {
 		t.Errorf("expected 'fix' token, got: %v", tokens)
+	}
+}
+
+// TestCompletionUseWhenRenderedInDetailPane specifies that when a completion has UseWhen,
+// it appears in the detail pane when selected (ADR-0142).
+func TestCompletionUseWhenRenderedInDetailPane(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategoriesWithUseWhen(),
+		InitialTokens:   []string{"show"}, // Select task first
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.updateCompletions()
+
+	// After selecting "show" task, should be at completeness stage
+	// Find the "full" completion which has UseWhen
+	var fullCompletion *completion
+	for i := range m.completions {
+		if m.completions[i].Value == "full" {
+			fullCompletion = &m.completions[i]
+			break
+		}
+	}
+	if fullCompletion == nil {
+		t.Fatalf("expected to find 'full' completion, got: %v", m.completions)
+	}
+
+	// Select the full completion
+	m.completionIndex = 0
+	for i, c := range m.completions {
+		if c.Value == "full" {
+			m.completionIndex = i
+			break
+		}
+	}
+
+	// Render the view
+	view := m.View()
+
+	// UseWhen should appear in the detail pane
+	if !strings.Contains(view, "Use when you need comprehensive coverage") {
+		t.Errorf("expected use_when to appear in detail pane, got: %s", view)
 	}
 }
 

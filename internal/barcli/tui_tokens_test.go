@@ -71,3 +71,63 @@ func TestBuildPersonaOptionsPopulatesUseWhen(t *testing.T) {
 		t.Errorf("expected UseWhen to be populated for voice:as designer (ADR-0133), got empty string")
 	}
 }
+
+// TestBuildStaticCategoryPopulatesKanji specifies that buildStaticCategory includes
+// kanji for task tokens (ADR-0143).
+func TestBuildStaticCategoryPopulatesKanji(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	category, ok := buildStaticCategory(grammar)
+	if !ok {
+		t.Fatal("expected static category, got none")
+	}
+
+	// Find "make" task and verify it has kanji
+	var makeOption *bartui.TokenOption
+	for i := range category.Options {
+		if category.Options[i].Value == "make" {
+			makeOption = &category.Options[i]
+			break
+		}
+	}
+
+	if makeOption == nil {
+		t.Fatal("expected to find 'make' task option")
+	}
+
+	if makeOption.Kanji == "" {
+		t.Errorf("expected Kanji to be populated for task:make (ADR-0143), got empty string")
+	}
+}
+
+// TestBuildPersonaOptionsPopulatesKanji specifies that buildPersonaOptions includes
+// kanji for persona axis tokens (ADR-0143).
+func TestBuildPersonaOptionsPopulatesKanji(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	// Test that voice:as designer has kanji populated
+	options := buildPersonaOptions(grammar, "voice")
+
+	// Find "as designer" token and verify it has kanji
+	var designerOption *bartui.TokenOption
+	for i := range options {
+		if options[i].Value == "as designer" {
+			designerOption = &options[i]
+			break
+		}
+	}
+
+	if designerOption == nil {
+		t.Fatalf("expected to find 'as designer' token in voice options")
+	}
+
+	if designerOption.Kanji == "" {
+		t.Errorf("expected Kanji to be populated for voice:as designer (ADR-0143), got empty string")
+	}
+}

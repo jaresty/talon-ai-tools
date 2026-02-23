@@ -197,6 +197,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 			Description: description,
 			Guidance:    grammar.TaskGuidance(value),
 			UseWhen:     grammar.TaskUseWhen(value),
+			Kanji:       grammar.TaskKanji(value),
 		})
 	}
 
@@ -267,6 +268,7 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			Description: description,
 			Guidance:    grammar.PersonaGuidance(axis, value),
 			UseWhen:     grammar.PersonaUseWhen(axis, value),
+			Kanji:       grammar.PersonaKanji(axis, value),
 		})
 	}
 	return options

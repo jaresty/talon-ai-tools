@@ -216,6 +216,28 @@ func TestHelpLLMTokenCatalogHasLabelColumn(t *testing.T) {
 	}
 }
 
+// TestHelpLLMTokenCatalogHasKanjiColumn specifies that bar help llm Token Catalog
+// tables include a Kanji column (ADR-0143).
+func TestHelpLLMTokenCatalogHasKanjiColumn(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "tokens", "completeness"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected bar help llm tokens exit 0, got %d: %s", exit, stderr.String())
+	}
+	output := stdout.String()
+
+	// Tables must have Kanji column
+	if !strings.Contains(output, "| Kanji |") {
+		t.Error("Token Catalog tables must include a Kanji column (ADR-0143)")
+	}
+
+	// scope:act kanji "為" must appear in the output
+	if !strings.Contains(output, "| 為 |") {
+		t.Error("Token Catalog must include scope:act kanji '為' (ADR-0143)")
+	}
+}
+
 // TestHelpAdvertisesTUI2 specifies that the general help output must mention
 // bar tui2 as an available interactive surface (ADR-0073, ADR-0081).
 // tui2 is the recommended command-centric grammar learning interface.

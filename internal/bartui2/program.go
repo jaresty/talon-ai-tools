@@ -59,6 +59,7 @@ type completion struct {
 	Description string
 	Guidance    string
 	UseWhen     string // ADR-0142: routing trigger phrases
+	Kanji       string // ADR-0143: kanji icons for visual display
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	Fills map[string]string
 }
@@ -855,6 +856,7 @@ func (m *model) updateCompletions() {
 				Description: opt.Description,
 				Guidance:    opt.Guidance,
 				UseWhen:     opt.UseWhen,
+				Kanji:       opt.Kanji,
 				Fills:       opt.Fills,
 			})
 		}
@@ -1773,13 +1775,17 @@ func (m model) renderTokensPane() string {
 			if i == m.completionIndex {
 				prefix = "▸ "
 				style = completionSelectedStyle
-				selectedDesc = c.Description   // Capture full description
-				selectedGuidance = c.Guidance  // Capture guidance if present
-				selectedUseWhen = c.UseWhen    // Capture routing phrase if present
+				selectedDesc = c.Description  // Capture full description
+				selectedGuidance = c.Guidance // Capture guidance if present
+				selectedUseWhen = c.UseWhen   // Capture routing phrase if present
 			}
 			display := c.Display
 			if strings.TrimSpace(display) == "" {
 				display = c.Value
+			}
+			// Prepend kanji if present (ADR-0143)
+			if c.Kanji != "" {
+				display = c.Kanji + " " + display
 			}
 			// When display includes a label (slug — label), it already conveys context;
 			// omit the inline description to avoid overflow and redundancy (ADR-0111 D4).

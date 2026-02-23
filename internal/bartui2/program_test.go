@@ -239,6 +239,77 @@ func TestCompletionGuidanceRenderedInDetailPane(t *testing.T) {
 	}
 }
 
+// testCategoriesWithKanji returns test categories that include kanji for testing ADR-0143.
+func testCategoriesWithKanji() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "completeness",
+			Label:         "Completeness",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer", Kanji: "全"},
+				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Concise summary", Kanji: "略"},
+			},
+		},
+		{
+			Key:           "scope",
+			Label:         "Scope",
+			MaxSelections: 2,
+			Options: []bartui.TokenOption{
+				{Value: "act", Slug: "act", Label: "Act", Description: "Actions focus", Kanji: "為"},
+				{Value: "thing", Slug: "thing", Label: "Thing", Description: "Entities focus", Kanji: "物"},
+			},
+		},
+	}
+}
+
+// TestCompletionKanjiPresent specifies that when a TokenOption.Kanji is set,
+// the completion includes it (ADR-0143).
+func TestCompletionKanjiPresent(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategoriesWithKanji(),
+		InitialTokens:   []string{"todo"}, // Select task first to advance to next stage
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	// After selecting "todo" task, should be at completeness stage
+	// Completeness options should include kanji
+	m.updateCompletions()
+
+	// Find "full" which has Kanji "全"
+	// The completion struct must include Kanji field for ADR-0143
+	for _, c := range m.completions {
+		if c.Value == "full" {
+			// This will fail until we add Kanji field to completion struct
+			if c.Kanji != "全" {
+				t.Errorf("expected Kanji='全' for 'full', got Kanji=%q (ADR-0143)", c.Kanji)
+			}
+			return
+		}
+	}
+	t.Errorf("expected to find completion for 'full', got: %v", m.completions)
+}
+
+// TestCompletionKanjiRenderedInView specifies that when a completion has Kanji,
+// it appears in the rendered view (ADR-0143).
+func TestCompletionKanjiRenderedInView(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategoriesWithKanji(),
+		InitialTokens:   []string{"todo"}, // Select task first to advance to next stage
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.updateCompletions()
+
+	// Render the view
+	view := m.View()
+
+	// Kanji "全" should appear in the rendered view for "full" token
+	if !strings.Contains(view, "全") {
+		t.Errorf("expected kanji '全' to appear in rendered view, got: %s", view)
+	}
+}
+
 // TestCompletionEntryOmitsDescriptionWhenLabelPresent verifies that when a completion
 // has a label (slug — label format), the rendered view entry does not also append the
 // inline description. The label already provides context; description appears only in

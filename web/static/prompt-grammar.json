@@ -140,6 +140,7 @@
         "spec": "The response defines explicit criteria of correctness before proposing implementations and treats those criteria as fixed and authoritative. Implementations must satisfy the prior definition and may not redefine correctness during construction. Progress is measured by compliance with the specification rather than by artifact production.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
+        "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those dimensions before committing to a configuration.",
         "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply trust beyond the model. This prevents internally coherent but unconstrained narratives and preserves human oversight as the source of judgment."
@@ -298,6 +299,7 @@
         "spec",
         "split",
         "systemic",
+        "trade",
         "trans",
         "unknowns",
         "verify"
@@ -456,6 +458,7 @@
         "spec": "Define correctness criteria first",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
+        "trade": "Trade-off analysis across competing forces",
         "trans": "Information transfer model with noise and feedback",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Apply falsification pressure to claims"
@@ -521,7 +524,8 @@
         "reify": "Distinguish from: analysis (describe and structure). Reify specifically surfaces implicit patterns as explicit formal rules or entities. Useful when hidden assumptions or conventions govern behavior but aren't documented.",
         "resilience": "Distinguish from: robust (selecting options that work across futures). Resilience focuses on system behavior under stress.",
         "robust": "Distinguish from: resilience (behavior under stress). Robust favors options that perform acceptably across futures.",
-        "systemic": "Distinguish from: analysis (decomposition/structure). Systemic focuses on feedback loops and interactions."
+        "systemic": "Distinguish from: analysis (decomposition/structure). Systemic focuses on feedback loops and interactions.",
+        "trade": "Distinguish from: balance (forces offsetting each other to produce equilibrium). Trade specifically identifies competing forces and evaluates alternatives across dimensions before committing. Balance models how existing forces offset; trade explicitly evaluates what trade-offs exist and how to navigate them."
       },
       "scope": {
         "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
@@ -656,6 +660,7 @@
         "spec": "Correctness criteria before implementation: user wants explicit success criteria defined first, with implementation required to satisfy the prior specification. Heuristic: 'define the spec first', 'test-driven design', 'what should it do before how', 'specification before implementation', 'write the tests first', 'define success criteria', 'TDD', 'correctness criteria' → spec. Distinct from grow method (grow = evolve incrementally from minimal; spec = define the target criteria first and measure compliance against them).",
         "split": "Deliberate decomposition into isolated parts: user wants the subject broken into components for separate analysis before considering interactions. Heuristic: 'break this into parts', 'decompose', 'analyze each component separately', 'isolate the pieces', 'divide and analyze', 'separate concerns', 'split into sub-problems', 'analyze in isolation' → split. Distinct from dimension method (dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis).",
         "systemic": "Whole-system feedback loop and emergent behavior analysis: user wants to understand the subject as an interacting whole, not just its parts. Heuristic: 'systems thinking', 'feedback loops', 'emergent behavior', 'system as a whole', 'how do the parts interact', 'unintended consequences', 'second order effects across the system', 'interconnections' → systemic. Distinct from analysis method (analysis = describe and structure; systemic = reason about interactions and emergence).",
+        "trade": "Trade-off analysis across competing forces: user wants to identify competing design pressures or structural forces, make the trade-offs explicit, and evaluate alternatives across those dimensions before committing to a configuration. Heuristic: 'what are the trade-offs', 'weigh the options', 'competing forces', 'design trade-offs', 'pros and cons of each approach', 'alternative configurations', 'what are we trading off', 'evaluate alternatives across dimensions' → trade. Distinct from balance method (balance = how opposing forces offset to produce equilibrium; trade = explicitly identify and evaluate trade-offs across competing dimensions).",
         "trans": "Information fidelity and signal degradation analysis: user asks where data or signal is lost, distorted, delayed, or degraded as it passes through a system. Heuristic: 'where does signal get lost', 'where does data degrade', 'signal fidelity', 'where is information lost in transmission', 'where does the message get distorted', 'trace signal path through the system', 'where does noise enter', 'signal-to-noise', 'observability pipeline fidelity' → trans. Distinct from flow method (flow = narrate step-by-step sequence; trans = model noise, distortion, and fidelity across stages).",
         "unknowns": "Unknown unknowns surfacing: user wants to identify what has not been asked, what gaps in knowledge could impact outcomes, and what critical uncertainties have not been named. Heuristic: 'what are we missing', 'what don\\'t we know that we don\\'t know', 'unknown unknowns', 'what questions haven\\'t we asked', 'critical blind spots', 'what\\'s not on our radar', 'gaps in our knowledge', 'what could surprise us' → unknowns. Distinct from assume scope (assume = make explicit premises already held; unknowns = surface what has not yet been considered or named).",
         "verify": "Falsification pressure: user wants claims tested against evidence, causal chain integrity, and clearly defined negative space before accepting conclusions. Heuristic: 'verify this', 'check your reasoning', 'apply falsification', 'is this actually true', 'challenge the claims', 'what would falsify this', 'pressure-test the conclusions', 'don\\'t just assert — verify', 'what evidence would disprove this' → verify. Distinct from rigor method (rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs)."
@@ -814,6 +819,7 @@
         "spec": "仕",
         "split": "分",
         "systemic": "系",
+        "trade": "衡",
         "trans": "伝",
         "unknowns": "未",
         "verify": "検"
@@ -1619,6 +1625,7 @@
         "spec": "spec",
         "split": "split",
         "systemic": "systemic",
+        "trade": "trade",
         "trans": "trans",
         "unknowns": "unknowns",
         "verify": "verify"
@@ -1811,6 +1818,7 @@
         "method=spec": "method-spec",
         "method=split": "method-split",
         "method=systemic": "method-systemic",
+        "method=trade": "method-trade",
         "method=trans": "method-trans",
         "method=unknowns": "method-unknowns",
         "method=verify": "method-verify"
@@ -2195,6 +2203,7 @@
       "method=spec": "method-spec",
       "method=split": "method-split",
       "method=systemic": "method-systemic",
+      "method=trade": "method-trade",
       "method=trans": "method-trans",
       "method=unknowns": "method-unknowns",
       "method=verify": "method-verify",
@@ -2308,6 +2317,7 @@
       "tone=formally": "tone-formally",
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
+      "trade": "trade",
       "trans": "trans",
       "unknowns": "unknowns",
       "variants": "variants",
@@ -3023,11 +3033,11 @@
     }
   ],
   "checksums": {
-    "axes": "7f932f3556d34f75fbf0bbf6bc85c2a853e5cce31d7a6f73ede4ae14179a1f99",
+    "axes": "77bea6639bb271653f6eb18d7a815df52a83860e93893f76e9251ca5f43b102c",
     "tasks": "8c8e61d3bcf4cb061c975ecbdd7553affd6adc10bbf480bbfcd75762b8ed335a",
     "persona": "ee03637f4daa4ec4ec715131c2c0ae39c815c83a5f8e45ef7f7e25a9678947e8",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "ccc2fe5be85376142416aadcbc395e5cb3c8e684dfbb653655fbb03771a4a05b",
+    "slugs": "5b81df8541a28ef3c80a541b9e518047469601079e1dc65f93d5942d2d158c8d",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1"
   }
 }

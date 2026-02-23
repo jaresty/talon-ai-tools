@@ -28,6 +28,7 @@ export interface Grammar {
 		labels: Record<string, string>;
 		guidance: Record<string, string>;
 		use_when?: Record<string, string>; // ADR-0142
+		kanji?: Record<string, string>; // ADR-0143
 	};
 	hierarchy: {
 		axis_priority: string[];
@@ -43,6 +44,7 @@ export interface Grammar {
 		};
 		docs?: Record<string, Record<string, string>>;
 		use_when?: Record<string, Record<string, string>>;
+		kanji?: Record<string, Record<string, string>>; // ADR-0143
 	};
 	patterns?: GrammarPattern[];
 }

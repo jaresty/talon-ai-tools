@@ -6,15 +6,22 @@ const grammar: Grammar = {
 	axes: {
 		definitions: {
 			completeness: { full: 'Comprehensive coverage of the topic.' },
-			scope: { mean: 'Core meaning and central intent.' },
+			scope: { mean: 'Core meaning and central intent.', struct: 'Internal structure.' },
 			form: { prose: 'Flowing narrative text.' },
 			channel: { plain: 'Plain prose, no markdown.' },
-			method: {},
+			method: { probe: 'Probing analysis.' },
 			directional: {}
 		},
 		labels: { completeness: {}, scope: {}, form: {}, channel: {}, method: {}, directional: {} },
 		guidance: { completeness: {}, scope: {}, form: {}, channel: {}, method: {}, directional: {} },
-		use_when: { completeness: {}, scope: {}, form: {}, channel: {}, method: {}, directional: {} }
+		use_when: { completeness: {}, scope: {}, form: {}, channel: {}, method: {}, directional: {} },
+		kanji: {
+			completeness: { full: '全' },
+			scope: { mean: '意', struct: '造' },
+			form: { prose: '文' },
+			channel: { plain: '平' },
+			method: { probe: '探' },
+		}
 	},
 	tasks: {
 		descriptions: {
@@ -46,13 +53,13 @@ const grammar: Grammar = {
 describe('renderPrompt', () => {
 	it('includes TASK section with task description', () => {
 		const result = renderPrompt(grammar, { task: ['show'] }, 'hello', '');
-		expect(result).toContain('=== TASK (DO THIS) ===');
+		expect(result).toContain('=== TASK 任務 (DO THIS) ===');
 		expect(result).toContain('Reveal the structure');
 	});
 
 	it('includes SUBJECT section with provided text', () => {
 		const result = renderPrompt(grammar, {}, 'my subject text', '');
-		expect(result).toContain('=== SUBJECT (CONTEXT) ===');
+		expect(result).toContain('=== SUBJECT 題材 (CONTEXT) ===');
 		expect(result).toContain('my subject text');
 	});
 
@@ -63,7 +70,7 @@ describe('renderPrompt', () => {
 
 	it('includes ADDENDUM section when provided', () => {
 		const result = renderPrompt(grammar, {}, 'subject', 'Focus on security');
-		expect(result).toContain('=== ADDENDUM (CLARIFICATION) ===');
+		expect(result).toContain('=== ADDENDUM 追加 (CLARIFICATION) ===');
 		expect(result).toContain('Focus on security');
 	});
 
@@ -74,13 +81,13 @@ describe('renderPrompt', () => {
 
 	it('includes constraint tokens with their descriptions', () => {
 		const result = renderPrompt(grammar, { completeness: ['full'], scope: ['mean'] }, 'x', '');
-		expect(result).toContain('Completeness ("full"): Comprehensive coverage');
-		expect(result).toContain('Scope ("mean"): Core meaning');
+		expect(result).toContain('Completeness (full 全): Comprehensive coverage');
+		expect(result).toContain('Scope (mean 意): Core meaning');
 	});
 
 	it('shows (none) in constraints when no tokens selected', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
-		expect(result).toMatch(/=== CONSTRAINTS.*\n\(none\)/s);
+		expect(result).toMatch(/=== CONSTRAINTS 制約.*\n\(none\)/s);
 	});
 
 	it('includes PERSONA section with preset values', () => {
@@ -90,9 +97,32 @@ describe('renderPrompt', () => {
 			audience: '',
 			tone: ''
 		});
-		expect(result).toContain('=== PERSONA (STANCE) ===');
+		expect(result).toContain('=== PERSONA 人格 (STANCE) ===');
 		expect(result).toContain('Voice: Design practitioner');
 		expect(result).toContain('Audience: Product team');
+	});
+
+	it('omits ADDENDUM section when empty', () => {
+		const result = renderPrompt(grammar, {}, 'subject', '');
+		expect(result).not.toContain('=== ADDENDUM');
+	});
+
+	it('includes constraint tokens with their descriptions', () => {
+		const result = renderPrompt(grammar, { completeness: ['full'], scope: ['mean'] }, 'x', '');
+		expect(result).toContain('Completeness (full 全): Comprehensive coverage');
+		expect(result).toContain('Scope (mean 意): Core meaning');
+	});
+
+	it('includes kanji in constraint tokens when available (ADR-0143)', () => {
+		const result = renderPrompt(grammar, { completeness: ['full'], scope: ['struct'], method: ['probe'] }, 'x', '');
+		expect(result).toContain('全'); // completeness full kanji
+		expect(result).toContain('造'); // scope struct kanji
+		expect(result).toContain('探'); // method probe kanji
+	});
+
+	it('shows (none) in constraints when no tokens selected', () => {
+		const result = renderPrompt(grammar, {}, 'x', '');
+		expect(result).toMatch(/=== CONSTRAINTS.*\n\(none\)/s);
 	});
 
 	it('uses custom persona fields when no preset', () => {
@@ -109,7 +139,7 @@ describe('renderPrompt', () => {
 	it('includes REFERENCE KEY section', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
 		expect(result).toContain('=== REFERENCE KEY ===');
-		expect(result).toContain('TASK: The primary action to perform');
+		expect(result).toContain('TASK 任務 (user prompt): The primary action to perform');
 	});
 
 	it('includes EXECUTION REMINDER section', () => {

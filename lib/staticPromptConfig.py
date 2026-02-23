@@ -287,6 +287,21 @@ _STATIC_PROMPT_USE_WHEN: dict[str, str] = {
     ),
 }
 
+# Kanji icons for task tokens (ADR-0143)
+_STATIC_PROMPT_KANJI: dict[str, str] = {
+    "check": "検",
+    "diff": "較",
+    "fix": "修",
+    "make": "作",
+    "pick": "選",
+    "plan": "策",
+    "probe": "探",
+    "pull": "抜",
+    "show": "示",
+    "sim": "模",
+    "sort": "整",
+}
+
 
 def static_prompt_label_overrides() -> dict[str, str]:
     """Return name->label map for static prompts (ADR-0109)."""
@@ -301,6 +316,11 @@ def static_prompt_guidance_overrides() -> dict[str, str]:
 def static_prompt_use_when_overrides() -> dict[str, str]:
     """Return name->use_when map for task tokens (ADR-0142)."""
     return dict(_STATIC_PROMPT_USE_WHEN)
+
+
+def static_prompt_kanji_overrides() -> dict[str, str]:
+    """Return name->kanji map for task tokens (ADR-0143)."""
+    return dict(_STATIC_PROMPT_KANJI)
 
 
 def _read_static_prompt_tokens(

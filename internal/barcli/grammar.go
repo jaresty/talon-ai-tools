@@ -53,6 +53,7 @@ type StaticSection struct {
 	Labels       map[string]string // ADR-0109: short CLI-facing selection labels
 	Guidance     map[string]string // ADR-0110: selection-oriented prose hints
 	UseWhen      map[string]string // ADR-0142: routing trigger phrases for nav surfaces
+	Kanji        map[string]string // ADR-0143: kanji icons for visual display
 }
 
 type StaticProfile struct {
@@ -66,6 +67,7 @@ type PersonaSection struct {
 	Labels   map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
 	Guidance map[string]map[string]string // ADR-0112: selection-oriented prose hints
 	UseWhen  map[string]map[string]string // ADR-0133: discoverability hints for help llm
+	Kanji    map[string]map[string]string // ADR-0143: kanji icons for visual display
 	Presets  map[string]PersonaPreset
 	Spoken   map[string]string
 	Intent   IntentSection
@@ -149,6 +151,7 @@ type rawStatic struct {
 	Labels       map[string]string        `json:"labels"`   // ADR-0109
 	Guidance     map[string]string        `json:"guidance"` // ADR-0110
 	UseWhen      map[string]string        `json:"use_when"` // ADR-0142
+	Kanji        map[string]string        `json:"kanji"`    // ADR-0143
 }
 
 type rawPersona struct {
@@ -157,6 +160,7 @@ type rawPersona struct {
 	Labels   map[string]map[string]string `json:"labels"`   // ADR-0111
 	Guidance map[string]map[string]string `json:"guidance"` // ADR-0112
 	UseWhen  map[string]map[string]string `json:"use_when"` // ADR-0133
+	Kanji    map[string]map[string]string `json:"kanji"`    // ADR-0143
 	Presets  map[string]PersonaPreset     `json:"presets"`
 	Spoken   map[string]string            `json:"spoken_map"`
 	Intent   struct {
@@ -236,6 +240,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Labels:       raw.Static.Labels,
 			Guidance:     raw.Static.Guidance,
 			UseWhen:      raw.Static.UseWhen,
+			Kanji:        raw.Static.Kanji,
 		},
 		Persona: PersonaSection{
 			Axes:     raw.Persona.Axes,
@@ -243,6 +248,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Labels:   raw.Persona.Labels,
 			Guidance: raw.Persona.Guidance,
 			UseWhen:  raw.Persona.UseWhen,
+			Kanji:    raw.Persona.Kanji,
 			Presets:  raw.Persona.Presets,
 			Spoken:   personaSpoken,
 			Intent: IntentSection{
@@ -936,6 +942,19 @@ func (g *Grammar) TaskUseWhen(name string) string {
 	return ""
 }
 
+// TaskKanji returns the kanji icon for the given task token (ADR-0143).
+// Returns empty string if no kanji is defined.
+func (g *Grammar) TaskKanji(name string) string {
+	key := normalizeToken(name)
+	if kanji, ok := g.Static.Kanji[key]; ok {
+		return kanji
+	}
+	if kanji, ok := g.Static.Kanji[strings.ToLower(key)]; ok {
+		return kanji
+	}
+	return ""
+}
+
 // PersonaLabel returns the short CLI-facing label for the given persona axis token (ADR-0111).
 // Returns empty string if no label is defined.
 func (g *Grammar) PersonaLabel(axis, token string) string {
@@ -1005,6 +1024,30 @@ func (g *Grammar) PersonaUseWhen(axis, token string) string {
 	}
 	if text, ok := hints[strings.ToLower(tokenKey)]; ok && text != "" {
 		return text
+	}
+	return ""
+}
+
+// PersonaKanji returns the kanji icon for the given persona axis token (ADR-0143).
+// Returns empty string if no kanji is defined.
+func (g *Grammar) PersonaKanji(axis, token string) string {
+	if g.Persona.Kanji == nil {
+		return ""
+	}
+	axisKey := strings.ToLower(strings.TrimSpace(axis))
+	if axisKey == "" {
+		return ""
+	}
+	kanjiMap, ok := g.Persona.Kanji[axisKey]
+	if !ok {
+		return ""
+	}
+	tokenKey := strings.TrimSpace(token)
+	if kanji, ok := kanjiMap[tokenKey]; ok && kanji != "" {
+		return kanji
+	}
+	if kanji, ok := kanjiMap[strings.ToLower(tokenKey)]; ok && kanji != "" {
+		return kanji
 	}
 	return ""
 }

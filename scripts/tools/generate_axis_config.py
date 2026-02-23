@@ -9,6 +9,7 @@ emit a JSON mapping for consumers that want a structured SSOT feed.
 from __future__ import annotations
 
 import argparse
+from typing import Any
 import json
 import sys
 import pprint
@@ -21,12 +22,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from lib.axisCatalog import serialize_axis_config  # type: ignore  # noqa: E402
+from lib.personaConfig import PERSONA_KEY_TO_KANJI  # type: ignore  # noqa: E402
 
 
 def _axis_payload() -> dict:
     """Return the full axis payload from the SSOT catalog serializer."""
     return serialize_axis_config(
-        lists_dir=None, include_axis_lists=False, include_static_prompts=False
+        lists_dir=None, include_axis_lists=False, include_static_prompts=True
     )
 
 
@@ -60,14 +62,30 @@ def _axis_guidance_mapping() -> dict[str, dict[str, str]]:
     }
 
 
-def _axis_kanji_mapping() -> dict[str, dict[str, str]]:
+def _axis_kanji_mapping() -> dict[str, Any]:
     """Return axis token -> kanji mapping (ADR-0143)."""
     kanji = _axis_payload().get("axis_kanji", {}) or {}
-    return {
+    result: dict[str, Any] = {
         axis: dict(sorted((kanji.get(axis) or {}).items()))
         for axis in sorted(kanji.keys())
         if kanji.get(axis)
     }
+    # Add task kanji from static_prompt_kanji
+    static_kanji = _axis_payload().get("static_prompt_kanji", {}) or {}
+    if static_kanji:
+        result["task"] = dict(sorted(static_kanji.items()))
+    # Add persona kanji from persona.kanji
+    persona_kanji = (_axis_payload().get("persona") or {}).get("kanji", {}) or {}
+    if persona_kanji:
+        result["persona"] = dict(
+            sorted(
+                {
+                    axis: dict(sorted(tokens.items()))
+                    for axis, tokens in persona_kanji.items()
+                }.items()
+            )
+        )
+    return result
 
 
 def render_axis_config() -> str:
@@ -97,11 +115,27 @@ def render_axis_config() -> str:
         if use_when.get(axis)
     }
     kanji = payload.get("axis_kanji", {}) or {}
-    kanji_mapping = {
+    kanji_mapping: dict[str, Any] = {
         axis: dict(sorted((kanji.get(axis) or {}).items()))
         for axis in sorted(kanji.keys())
         if kanji.get(axis)
     }
+    # Add task kanji from static_prompt_kanji
+    static_kanji = payload.get("static_prompt_kanji", {}) or {}
+    if static_kanji:
+        kanji_mapping["task"] = dict(sorted(static_kanji.items()))
+    # Add persona kanji from PERSONA_KEY_TO_KANJI
+    if PERSONA_KEY_TO_KANJI:
+        kanji_mapping["persona"] = dict(
+            sorted(
+                {
+                    axis: dict(sorted(tokens.items()))
+                    for axis, tokens in PERSONA_KEY_TO_KANJI.items()
+                }.items()
+            )
+        )
+    # Sort the final kanji_mapping to match expected order
+    kanji_mapping = dict(sorted(kanji_mapping.items()))
     # Use a very wide width to prevent pprint from splitting string literals
     # across lines (which creates ugly adjacent string concatenation)
     body = pprint.pformat(mapping, width=200, sort_dicts=True)

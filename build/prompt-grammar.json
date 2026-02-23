@@ -688,7 +688,7 @@
         "plain": "文",
         "presenterm": "演",
         "remote": "遠",
-        "shellscript": "処理",
+        "shellscript": "脚",
         "sketch": "描",
         "slack": "通",
         "svg": "画",
@@ -706,18 +706,18 @@
       "directional": {
         "bog": "反",
         "dig": "具",
-        "dip bog": "具→反",
-        "dip ong": "具→行",
-        "dip rog": "具→構",
+        "dip bog": "混",
+        "dip ong": "働",
+        "dip rog": "建",
         "fig": "抽",
-        "fip bog": "抽→反",
-        "fip ong": "抽→行",
-        "fip rog": "抽→構",
-        "fly bog": "飛→反",
-        "fly ong": "飛→行",
-        "fly rog": "飛→構",
+        "fip bog": "幻",
+        "fip ong": "現",
+        "fip rog": "計",
+        "fly bog": "翔",
+        "fly ong": "飛",
+        "fly rog": "翔",
         "fog": "抽",
-        "jog": "行",
+        "jog": "走",
         "ong": "行",
         "rog": "構"
       },
@@ -828,7 +828,7 @@
         "mean": "意",
         "motifs": "紋",
         "stable": "安",
-        "struct": "構造",
+        "struct": "造",
         "thing": "物",
         "time": "時",
         "view": "視"
@@ -1013,6 +1013,19 @@
       "show": "Explaining or describing something for an audience. Heuristic: 'explain', 'describe', 'walk me through', 'what is', 'tell me about', 'how does X work', 'overview of' → show. Distinct from pull (pull = compress/extract source material; show = explain a concept).",
       "sim": "Playing out a scenario over time — what would happen if. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = narrate the scenario unfolding over time) and probe (probe = surface implications analytically; sim = temporal narration).",
       "sort": "Arranging items into categories or order. Heuristic: 'group', 'categorize', 'cluster', 'rank', 'order by', 'organize into themes', 'sort by', 'prioritize this list' → sort. Pair with cluster method for thematic grouping."
+    },
+    "kanji": {
+      "check": "検",
+      "diff": "較",
+      "fix": "修",
+      "make": "作",
+      "pick": "選",
+      "plan": "策",
+      "probe": "探",
+      "pull": "抜",
+      "show": "示",
+      "sim": "模",
+      "sort": "整"
     }
   },
   "persona": {
@@ -1391,6 +1404,53 @@
         "scientist_to_analyst": "Evidence-based analysis presented formally to an analyst: use when the response needs rigorous structure, data framing, and formal tone. Heuristic: 'data analysis for an analyst', 'evidence-based findings', 'formal analytical report', 'scientific framing' → scientist_to_analyst.",
         "stakeholder_facilitator": "Driving alignment with mixed stakeholders: use when the response needs to help a facilitator guide a group toward a decision. Heuristic: 'stakeholder meeting', 'cross-functional group', 'alignment session', 'facilitating a decision', 'stakeholder presentation' → stakeholder_facilitator.",
         "teach_junior_dev": "Mentoring or onboarding a junior developer: use when the audience needs patient, scaffolded explanation with encouragement. Heuristic: 'explain for a junior', 'onboarding doc', 'new developer', 'junior team member', 'kind clear explanation for someone new' → teach_junior_dev."
+      }
+    },
+    "kanji": {
+      "voice": {
+        "as Kent Beck": "貝",
+        "as PM": "監",
+        "as designer": "師",
+        "as facilitator": "介",
+        "as junior engineer": "初",
+        "as principal engineer": "纂",
+        "as programmer": "程",
+        "as prompt engineer": "吟",
+        "as scientist": "科",
+        "as teacher": "師",
+        "as writer": "著"
+      },
+      "audience": {
+        "to CEO": "首",
+        "to Kent Beck": "貝",
+        "to LLM": "機",
+        "to XP enthusiast": "XP",
+        "to analyst": "析",
+        "to designer": "計",
+        "to junior engineer": "初",
+        "to managers": "監",
+        "to platform team": "基",
+        "to principal engineer": "纂",
+        "to product manager": "監",
+        "to programmer": "程",
+        "to stakeholders": "益",
+        "to stream aligned team": "流",
+        "to team": "団"
+      },
+      "tone": {
+        "casually": "軽",
+        "directly": "直",
+        "formally": "式",
+        "gently": "優",
+        "kindly": "慈"
+      },
+      "intent": {
+        "announce": "告",
+        "appreciate": "謝",
+        "coach": "導",
+        "inform": "知",
+        "persuade": "説",
+        "teach": "教"
       }
     }
   },
@@ -2963,9 +3023,9 @@
     }
   ],
   "checksums": {
-    "axes": "7602043b42da386eef4be6682e51b97c2291b5ee4f45f61271eb5cb15ed46a86",
-    "tasks": "4b9cca8f13e6e7ecfd5cb5b17311ad6716920a4d482df81156e15fc85005916a",
-    "persona": "0abd8ac447575ad74a27b6f1521cfd5d85efd894c706b878430b9fb791bf170a",
+    "axes": "149b88de121e83f10361c6f4aeb46bc1e00df02073400f5aefd491697164e961",
+    "tasks": "8c8e61d3bcf4cb061c975ecbdd7553affd6adc10bbf480bbfcd75762b8ed335a",
+    "persona": "16b9af32af08c974a11417236e1e1e195bb183ef7f09864f4d1a110af865aace",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "ccc2fe5be85376142416aadcbc395e5cb3c8e684dfbb653655fbb03771a4a05b",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1"

@@ -13,6 +13,7 @@ from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
     PERSONA_KEY_TO_VALUE,
     persona_key_to_guidance_map,
+    persona_key_to_kanji_map,
     persona_key_to_label_map,
     persona_key_to_use_when_map,
 )
@@ -202,6 +203,7 @@ def _build_static_section(
     static_labels = catalog.get("static_prompt_labels") or {}
     static_guidance = catalog.get("static_prompt_guidance") or {}
     static_use_when = catalog.get("static_prompt_use_when") or {}
+    static_kanji = catalog.get("static_prompt_kanji") or {}
 
     section: dict[str, Any] = {
         "catalog": _normalize(_strip_none(static_catalog)),
@@ -214,6 +216,8 @@ def _build_static_section(
         section["guidance"] = _canonicalize_mapping(static_guidance)
     if static_use_when:
         section["use_when"] = _canonicalize_mapping(static_use_when)
+    if static_kanji:
+        section["kanji"] = _canonicalize_mapping(static_kanji)
 
     labels: set[str] = set(section["profiles"].keys()) | set(
         section["descriptions"].keys()
@@ -337,6 +341,13 @@ def _build_persona_section(
         if use_when_map:
             persona_use_when[axis] = dict(sorted(use_when_map.items()))
 
+    # Persona axis kanji (ADR-0143): kanji icons for visual display.
+    persona_kanji: dict[str, dict[str, str]] = {}
+    for axis in ("voice", "audience", "tone", "intent"):
+        kanji_map = persona_key_to_kanji_map(axis)
+        if kanji_map:
+            persona_kanji[axis] = dict(sorted(kanji_map.items()))
+
     section = {
         "axes": persona_axes,
         "docs": persona_docs,
@@ -350,6 +361,8 @@ def _build_persona_section(
         section["guidance"] = persona_guidance
     if persona_use_when:
         section["use_when"] = persona_use_when
+    if persona_kanji:
+        section["kanji"] = persona_kanji
     return section, persona_slug_map
 
 

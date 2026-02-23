@@ -320,6 +320,61 @@ PERSONA_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
 }
 
 
+# Kanji icons for persona axis tokens (ADR-0143)
+PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
+    "voice": {
+        "as Kent Beck": "貝",
+        "as PM": "監",
+        "as designer": "師",
+        "as facilitator": "介",
+        "as junior engineer": "初",
+        "as principal engineer": "纂",
+        "as programmer": "程",
+        "as prompt engineer": "吟",
+        "as scientist": "科",
+        "as teacher": "教",
+        "as writer": "著",
+    },
+    "audience": {
+        "to managers": "監",
+        "to team": "団",
+        "to stakeholders": "益",
+        "to product manager": "管",
+        "to designer": "設",
+        "to analyst": "析",
+        "to programmer": "者",
+        "to LLM": "言",
+        "to junior engineer": "新",
+        "to principal engineer": "長",
+        "to Kent Beck": "貝",
+        "to CEO": "首",
+        "to platform team": "基",
+        "to stream aligned team": "流",
+        "to XP enthusiast": "好",
+    },
+    "tone": {
+        "casually": "軽",
+        "directly": "直",
+        "formally": "式",
+        "gently": "優",
+        "kindly": "慈",
+    },
+    "intent": {
+        "inform": "知",
+        "persuade": "説",
+        "appreciate": "謝",
+        "announce": "告",
+        "coach": "導",
+        "teach": "教",
+    },
+}
+
+
+def persona_key_to_kanji_map(axis: str) -> dict[str, str]:
+    """Return the key->kanji map for a persona/intent axis (ADR-0143)."""
+    return PERSONA_KEY_TO_KANJI.get(axis, {})
+
+
 def persona_key_to_use_when_map(axis: str) -> dict[str, str]:
     """Return the key->use_when map for a persona/intent axis (ADR-0133)."""
     return PERSONA_KEY_TO_USE_WHEN.get(axis, {})

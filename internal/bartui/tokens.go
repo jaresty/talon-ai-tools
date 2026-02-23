@@ -17,6 +17,7 @@ type TokenOption struct {
 	Description string
 	Guidance    string
 	UseWhen     string // ADR-0142: routing trigger phrases for nav surfaces
+	Kanji       string // ADR-0143: kanji icons for visual display
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	// Key is the category key, value is the token value to fill.
 	// Used by persona presets to auto-fill voice, audience, and tone.

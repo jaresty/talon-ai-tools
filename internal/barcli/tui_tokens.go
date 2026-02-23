@@ -234,6 +234,7 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			Label:       label,
 			Description: description,
 			Guidance:    grammar.AxisGuidance(axis, value),
+			Kanji:       grammar.AxisKanji(axis, value),
 		})
 	}
 	return options

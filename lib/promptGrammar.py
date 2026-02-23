@@ -168,6 +168,14 @@ def _build_axis_section(
         if tokens
     }
 
+    # Kanji (ADR-0143): kanji icons for visual display, optional per token.
+    axis_kanji_raw = catalog.get("axis_kanji") or {}
+    axis_kanji: dict[str, dict[str, str]] = {
+        str(axis): {str(k): str(v) for k, v in sorted(tokens.items())}
+        for axis, tokens in sorted(axis_kanji_raw.items(), key=lambda i: str(i[0]))
+        if tokens
+    }
+
     section: dict[str, Any] = {
         "definitions": axis_definitions,
         "list_tokens": axis_list_tokens,
@@ -178,6 +186,8 @@ def _build_axis_section(
         section["guidance"] = axis_guidance
     if axis_use_when:
         section["use_when"] = axis_use_when
+    if axis_kanji:
+        section["kanji"] = axis_kanji
 
     return (section, axis_slugs)
 
@@ -363,7 +373,6 @@ def _compute_checksum(section: Any) -> str:
         separators=(",", ":"),
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 
 def _build_patterns_section(catalog: Mapping[str, Any]) -> list[dict]:

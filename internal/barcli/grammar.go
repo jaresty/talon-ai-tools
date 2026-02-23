@@ -44,6 +44,7 @@ type AxisSection struct {
 	Labels      map[string]map[string]string // ADR-0109: short CLI-facing selection labels
 	Guidance    map[string]map[string]string // ADR-0110: selection-oriented prose hints
 	UseWhen     map[string]map[string]string // ADR-0132: task-type discoverability hints
+	Kanji       map[string]map[string]string // ADR-0143: kanji icons for visual display
 }
 
 type StaticSection struct {
@@ -115,24 +116,24 @@ type GrammarPattern struct {
 	Tokens  map[string][]string `json:"tokens"`
 }
 
-
 type rawGrammar struct {
-	SchemaVersion string         `json:"schema_version"`
-	ReferenceKey  string         `json:"reference_key"`
-	Axes          rawAxisSection `json:"axes"`
-	Static        rawStatic      `json:"tasks"`
-	Persona       rawPersona     `json:"persona"`
-	Hierarchy     rawHierarchy   `json:"hierarchy"`
-	Slugs         rawSlugSection `json:"slugs"`
+	SchemaVersion string           `json:"schema_version"`
+	ReferenceKey  string           `json:"reference_key"`
+	Axes          rawAxisSection   `json:"axes"`
+	Static        rawStatic        `json:"tasks"`
+	Persona       rawPersona       `json:"persona"`
+	Hierarchy     rawHierarchy     `json:"hierarchy"`
+	Slugs         rawSlugSection   `json:"slugs"`
 	Patterns      []GrammarPattern `json:"patterns"`
 }
 
 type rawAxisSection struct {
 	Definitions map[string]map[string]string `json:"definitions"`
 	ListTokens  map[string][]string          `json:"list_tokens"`
-	Labels      map[string]map[string]string `json:"labels"`    // ADR-0109
-	Guidance    map[string]map[string]string `json:"guidance"`  // ADR-0110
-	UseWhen     map[string]map[string]string `json:"use_when"`  // ADR-0132
+	Labels      map[string]map[string]string `json:"labels"`   // ADR-0109
+	Guidance    map[string]map[string]string `json:"guidance"` // ADR-0110
+	UseWhen     map[string]map[string]string `json:"use_when"` // ADR-0132
+	Kanji       map[string]map[string]string `json:"kanji"`    // ADR-0143
 }
 
 type rawStatic struct {
@@ -227,6 +228,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Labels:      raw.Axes.Labels,
 			Guidance:    raw.Axes.Guidance,
 			UseWhen:     raw.Axes.UseWhen,
+			Kanji:       raw.Axes.Kanji,
 		},
 		Static: StaticSection{
 			Profiles:     profiles,
@@ -817,6 +819,25 @@ func (g *Grammar) AxisLabel(axis, token string) string {
 		}
 		if label, ok := labels[strings.ToLower(tokenKey)]; ok {
 			return label
+		}
+	}
+	return ""
+}
+
+// AxisKanji returns the optional kanji icon for the given axis token (ADR-0143).
+// Returns empty string if no kanji is defined.
+func (g *Grammar) AxisKanji(axis, token string) string {
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	if axisKey == "" || tokenKey == "" {
+		return ""
+	}
+	if kanjiMap, ok := g.Axes.Kanji[axisKey]; ok {
+		if kanji, ok := kanjiMap[tokenKey]; ok {
+			return kanji
+		}
+		if kanji, ok := kanjiMap[strings.ToLower(tokenKey)]; ok {
+			return kanji
 		}
 	}
 	return ""

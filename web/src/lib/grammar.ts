@@ -21,6 +21,7 @@ export interface Grammar {
 		labels: Record<string, Record<string, string>>;
 		guidance: Record<string, Record<string, string>>;
 		use_when: Record<string, Record<string, string>>;
+		kanji: Record<string, Record<string, string>>; // ADR-0143
 	};
 	tasks: {
 		descriptions: Record<string, string>;
@@ -52,6 +53,7 @@ export interface TokenMeta {
 	description: string;
 	guidance: string;
 	use_when: string;
+	kanji: string;
 }
 
 import { base } from '$app/paths';
@@ -71,6 +73,7 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 	const labels = grammar.axes.labels?.[axis] ?? {};
 	const guidance = grammar.axes.guidance?.[axis] ?? {};
 	const use_when = grammar.axes.use_when?.[axis] ?? {};
+	const kanji = grammar.axes.kanji?.[axis] ?? {};
 	return Object.keys(defs)
 		.sort()
 		.map((token) => ({
@@ -78,7 +81,8 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 			label: labels[token] ?? '',
 			description: defs[token] ?? '',
 			guidance: guidance[token] ?? '',
-			use_when: use_when[token] ?? ''
+			use_when: use_when[token] ?? '',
+			kanji: kanji[token] ?? ''
 		}));
 }
 

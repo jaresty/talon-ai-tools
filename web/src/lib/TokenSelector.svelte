@@ -190,6 +190,9 @@
 					wasJustClicked = false;
 				}}
 			>
+				{#if meta.kanji}
+					<span class="token-kanji">{meta.kanji}</span>
+				{/if}
 				<code>{meta.token}</code>
 				{#if meta.label}
 					<span class="token-label">{meta.label}</span>
@@ -338,6 +341,11 @@
 	code {
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
+	}
+
+	.token-kanji {
+		font-size: 0.9rem;
+		margin-right: 0.2rem;
 	}
 
 	.token-label {

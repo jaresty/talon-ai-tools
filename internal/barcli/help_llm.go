@@ -488,8 +488,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 
 		fmt.Fprintf(w, "### %s (%s token)\n\n", strings.Title(axisName), capacity)
 
-		fmt.Fprintf(w, "| Token | Label | Description | Notes | When to use |\n")
-		fmt.Fprintf(w, "|-------|-------|-------------|-------|-------------|\n")
+		fmt.Fprintf(w, "| Token | Kanji | Label | Description | Notes | When to use |\n")
+		fmt.Fprintf(w, "|------|-------|-------|-------------|-------|-------------|\n")
 
 		tokenNames := make([]string, 0, len(tokens))
 		for token := range tokens {
@@ -507,9 +507,10 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 				slug = token
 			}
 			label := grammar.AxisLabel(axisName, token)
+			kanji := grammar.AxisKanji(axisName, token)
 			guidance := grammar.AxisGuidance(axisName, token)
 			useWhen := grammar.AxisUseWhen(axisName, token)
-			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s |\n", slug, label, desc, guidance, useWhen)
+			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
 		}
 		fmt.Fprintf(w, "\n")
 
@@ -783,7 +784,6 @@ func renderUsagePatterns(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "These patterns show **how** tokens work together, not **which** combinations to use.\n")
 	fmt.Fprintf(w, "The full token space supports many more combinations than shown here.\n\n")
 	fmt.Fprintf(w, "---\n\n")
-
 
 	for _, p := range grammar.Patterns {
 		fmt.Fprintf(w, "### %s\n\n", p.Title)

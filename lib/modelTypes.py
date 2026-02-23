@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from talon import settings
+from .axisConfig import axis_key_to_kanji_map
 from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
 from .personaConfig import (
     normalize_intent_token,
     persona_docs_map,
     persona_hydrate_tokens,
+    persona_key_to_kanji_map,
 )
 
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE, PROMPT_REFERENCE_KEY
@@ -246,16 +248,32 @@ class GPTSystemPrompt:
             hydrated = axis_hydrate_tokens(axis, tokens)
             if not hydrated:
                 return " ".join(tokens)
+            kanji_map = axis_key_to_kanji_map(axis)
+            result_parts = []
+            for i, token in enumerate(tokens):
+                part = hydrated[i] if i < len(hydrated) else token
+                kanji = kanji_map.get(token, "")
+                if kanji:
+                    part = f"{part} {kanji}"
+                result_parts.append(part)
             if axis == "completeness":
-                return hydrated[0]
-            return " ".join(hydrated)
+                return result_parts[0] if result_parts else ""
+            return " ".join(result_parts)
 
         def hydrate_persona(axis: str, value: str) -> str:
             tokens = _tokens_for_axis(axis, value)
             if not tokens:
                 return ""
             hydrated = persona_hydrate_tokens(axis, tokens)
-            return " ".join(hydrated) if hydrated else " ".join(tokens)
+            kanji_map = persona_key_to_kanji_map(axis)
+            result_parts = []
+            for i, token in enumerate(tokens):
+                part = hydrated[i] if i < len(hydrated) else token
+                kanji = kanji_map.get(token, "")
+                if kanji:
+                    part = f"{part} {kanji}"
+                result_parts.append(part)
+            return " ".join(result_parts) if result_parts else " ".join(tokens)
 
         def _voice_phrase() -> str:
             raw = " ".join(_tokens_for_axis("voice", self.get_voice()))

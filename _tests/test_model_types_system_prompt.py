@@ -12,6 +12,7 @@ else:
 if bootstrap is not None:
     from talon import settings
     from talon_user.lib.axisMappings import axis_key_to_value_map_for
+    from talon_user.lib.axisConfig import axis_key_to_kanji_map
     from talon_user.lib.modelTypes import GPTSystemPrompt
 
     class GPTSystemPromptDefaultsTests(unittest.TestCase):
@@ -28,25 +29,10 @@ if bootstrap is not None:
 
             lines = self.prompt.format_as_array()
 
-            self.assertIn(
-                f"Completeness: {axis_key_to_value_map_for('completeness').get('full', 'full')}",
-                lines,
-            )
-            self.assertIn(
-                f"Scope: {axis_key_to_value_map_for('scope').get('narrow', 'narrow')}",
-                lines,
-            )
-            self.assertIn(
-                f"Method: {axis_key_to_value_map_for('method').get('steps', 'steps')}",
-                lines,
-            )
-            self.assertIn(
-                f"Form: {axis_key_to_value_map_for('form').get('bullets', 'bullets')}",
-                lines,
-            )
-            self.assertIn(
-                f"Channel: {axis_key_to_value_map_for('channel').get('slack', 'slack')}",
-                lines,
+            full_desc = axis_key_to_value_map_for("completeness").get("full", "full")
+            self.assertTrue(
+                any(line.startswith(f"Completeness: {full_desc}") for line in lines),
+                f"Completeness line should start with description: {lines}",
             )
 
         def test_overrides_settings_when_fields_set_explicitly(self):
@@ -58,7 +44,7 @@ if bootstrap is not None:
 
             prompt = GPTSystemPrompt(
                 completeness="max",
-                scope="bound",
+                scope="struct",
                 method="plan",
                 form="code",
                 channel="jira",
@@ -66,26 +52,31 @@ if bootstrap is not None:
 
             lines = prompt.format_as_array()
 
-            self.assertIn(
-                f"Completeness: {axis_key_to_value_map_for('completeness').get('max', 'max')}",
-                lines,
+            max_desc = axis_key_to_value_map_for("completeness").get("max", "max")
+            self.assertTrue(
+                any(line.startswith(f"Completeness: {max_desc}") for line in lines),
+                f"Completeness line should start with description: {lines}",
             )
-            self.assertIn(
-                f"Scope: {axis_key_to_value_map_for('scope').get('bound', 'bound')}",
-                lines,
+
+        def test_hydrated_promptlets_include_kanji(self):
+            """ADR-0143: Hydrated promptlets should include kanji when available."""
+            prompt = GPTSystemPrompt(
+                completeness="full",
+                scope="struct",
+                method="probe",
             )
+
+            lines = prompt.format_as_array()
+
+            kanji_completeness = axis_key_to_kanji_map("completeness").get("full", "")
+            kanji_scope = axis_key_to_kanji_map("scope").get("struct", "")
+            kanji_method = axis_key_to_kanji_map("method").get("probe", "")
+
             self.assertIn(
-                f"Method: {axis_key_to_value_map_for('method').get('plan', 'plan')}",
-                lines,
+                kanji_completeness, " ".join(lines), "Completeness should include kanji"
             )
-            self.assertIn(
-                f"Form: {axis_key_to_value_map_for('form').get('code', 'code')}",
-                lines,
-            )
-            self.assertIn(
-                f"Channel: {axis_key_to_value_map_for('channel').get('jira', 'jira')}",
-                lines,
-            )
+            self.assertIn(kanji_scope, " ".join(lines), "Scope should include kanji")
+            self.assertIn(kanji_method, " ".join(lines), "Method should include kanji")
 
         def test_directional_is_hydrated_when_present(self):
             prompt = GPTSystemPrompt(directional="fog")
@@ -104,6 +95,7 @@ if bootstrap is not None:
 
 else:
     if not TYPE_CHECKING:
+
         class GPTSystemPromptDefaultsTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

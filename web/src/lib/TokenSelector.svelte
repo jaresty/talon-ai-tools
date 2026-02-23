@@ -169,7 +169,7 @@
 				role="option"
 				aria-selected={isSelected}
 				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
-	
+
 				onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
 			onpointerdown={(e) => {
 				isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
@@ -495,6 +495,7 @@
 		.meta-panel {
 			position: fixed;
 			bottom: 0;
+			top: auto;
 			left: 0;
 			right: 0;
 			margin: 0;

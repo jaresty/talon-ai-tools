@@ -77,6 +77,14 @@ class PromptGrammarCliTests(unittest.TestCase):
             "題材", reference_key, "reference_key should contain kanji for SUBJECT"
         )
 
+        axes_kanji = data.get("axes", {}).get("kanji", {})
+        self.assertTrue(axes_kanji, "axes should contain kanji mappings (ADR-0143)")
+        self.assertIn("scope", axes_kanji, "axes kanji should include scope")
+        self.assertIn("channel", axes_kanji, "axes kanji should include channel")
+
+        static_kanji = data.get("tasks", {}).get("kanji", {})
+        self.assertTrue(static_kanji, "tasks should contain kanji mappings (ADR-0143)")
+
 
 if bootstrap is None and not TYPE_CHECKING:  # pragma: no cover - Talon runtime
 

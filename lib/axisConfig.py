@@ -244,6 +244,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
+        "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those "
+        "dimensions before committing to a configuration.",
         "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message "
         "from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes "
         "may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
@@ -422,6 +424,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "spec": "Define correctness criteria first",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
+        "trade": "Trade-off analysis across competing forces",
         "trans": "Information transfer model with noise and feedback",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Apply falsification pressure to claims",
@@ -512,6 +515,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "resilience": "Distinguish from: robust (selecting options that work across futures). Resilience focuses on system behavior under stress.",
         "robust": "Distinguish from: resilience (behavior under stress). Robust favors options that perform acceptably across futures.",
         "systemic": "Distinguish from: analysis (decomposition/structure). Systemic focuses on feedback loops and interactions.",
+        "trade": "Distinguish from: balance (forces offsetting each other to produce equilibrium). Trade specifically identifies competing forces and evaluates alternatives across dimensions "
+        "before committing. Balance models how existing forces offset; trade explicitly evaluates what trade-offs exist and how to navigate them.",
     },
     "scope": {
         "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a "
@@ -900,6 +905,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "systemic": "Whole-system feedback loop and emergent behavior analysis: user wants to understand the subject as an interacting whole, not just its parts. Heuristic: 'systems thinking', "
         "'feedback loops', 'emergent behavior', 'system as a whole', 'how do the parts interact', 'unintended consequences', 'second order effects across the system', "
         "'interconnections' → systemic. Distinct from analysis method (analysis = describe and structure; systemic = reason about interactions and emergence).",
+        "trade": "Trade-off analysis across competing forces: user wants to identify competing design pressures or structural forces, make the trade-offs explicit, and evaluate alternatives "
+        "across those dimensions before committing to a configuration. Heuristic: 'what are the trade-offs', 'weigh the options', 'competing forces', 'design trade-offs', 'pros and cons "
+        "of each approach', 'alternative configurations', 'what are we trading off', 'evaluate alternatives across dimensions' → trade. Distinct from balance method (balance = how "
+        "opposing forces offset to produce equilibrium; trade = explicitly identify and evaluate trade-offs across competing dimensions).",
         "trans": "Information fidelity and signal degradation analysis: user asks where data or signal is lost, distorted, delayed, or degraded as it passes through a system. Heuristic: 'where "
         "does signal get lost', 'where does data degrade', 'signal fidelity', 'where is information lost in transmission', 'where does the message get distorted', 'trace signal path "
         "through the system', 'where does noise enter', 'signal-to-noise', 'observability pipeline fidelity' → trans. Distinct from flow method (flow = narrate step-by-step sequence; "
@@ -1099,6 +1108,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "spec": "仕",
         "split": "分",
         "systemic": "系",
+        "trade": "衡",
         "trans": "伝",
         "unknowns": "未",
         "verify": "検",

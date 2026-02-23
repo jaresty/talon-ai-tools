@@ -45,7 +45,7 @@ If your system prompt asks the model to explain how it interpreted your request,
 1. End your main answer normally.
 2. Then add a heading and short explanation, for example:
 
-   - `## Model interpretation`  
+   - `## Model interpretation`
      *(one or more lines describing how the model understood the prompt, assumptions, or chosen pattern)*
 
 When a response follows this pattern:
@@ -157,21 +157,21 @@ When the confirmation GUI is open, it also:
 
 When you are deciding how much of the grammar to use, it helps to think in three families (ADR 040):
 
-- **Persona – Who**  
-  - `voice` – who is speaking (for example, `as programmer`, `as teacher`).  
-  - `audience` – who this is for (for example, `to junior engineer`, `to CEO`, `to team`).  
-  - `tone` – emotional register (for example, `casually`, `formally`, `directly`, `gently`, `kindly`).  
+- **Persona – Who**
+  - `voice` – who is speaking (for example, `as programmer`, `as teacher`).
+  - `audience` – who this is for (for example, `to junior engineer`, `to CEO`, `to team`).
+  - `tone` – emotional register (for example, `casually`, `formally`, `directly`, `gently`, `kindly`).
   - You can usually ignore persona until you explicitly want to tailor an explanation for a specific role.
 
-- **Intent – Why**  
-  - `intent` – interaction-level intent (for example, `inform`, `decide`, `brainstorm`, `teach`, `evaluate`).  
+- **Intent – Why**
+  - `intent` – interaction-level intent (for example, `inform`, `decide`, `brainstorm`, `teach`, `evaluate`).
   - Pick an intent when you care about “why we’re talking” (teach vs decide vs explore), not about output container or reasoning steps.
 
-- **Contract – How**  
-  - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).  
-  - `scope` – what territory is in-bounds (`narrow`, `focus`, `bound`, `actions`, `relations`, `system`, `dynamics`, etc.).  
-  - `method` – how to think/decompose (`steps`, `plan`, `debugging`, `xp`, `diverge`, `converge`, `mapping`, etc.).  
-  - `form` – container/shape (`bullets`, `table`, `code`, `adr`, `story`, `checklist`, `faq`, `recipe`, `bug`, `spike`, `log`, `cards`, `commit`, `gherkin`, `shellscript`).  
+- **Contract – How**
+  - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).
+  - `scope` – what territory is in-bounds (`narrow`, `focus`, `bound`, `actions`, `relations`, `system`, `dynamics`, etc.).
+  - `method` – how to think/decompose (`steps`, `plan`, `debugging`, `xp`, `diverge`, `converge`, `mapping`, etc.).
+  - `form` – container/shape (`bullets`, `table`, `code`, `adr`, `story`, `checklist`, `faq`, `recipe`, `bug`, `spike`, `log`, `cards`, `commit`, `gherkin`, `shellscript`).
   - `channel` – medium bias (`slack`, `jira`, `presenterm`, `remote`, `sync`, `html`, `codetour`, `diagram`, `svg`).
 
 In day-to-day use you can:
@@ -185,21 +185,21 @@ In day-to-day use you can:
 
 A couple of common prompts decomposed into the three families:
 
-- “Explain simply to a junior engineer”  
-  - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.  
-  - **Intent (Why)**: `teach`.  
-- **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, plus an optional form/channel when the medium matters (for example, `form=bullets`, `channel=slack`).  
+- “Explain simply to a junior engineer”
+  - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.
+  - **Intent (Why)**: `teach`.
+- **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, plus an optional form/channel when the medium matters (for example, `form=bullets`, `channel=slack`).
   - **Do not** try to encode this entirely as a new audience or intent token; treat it as a recipe across existing axes.
 
-- “Executive brief for CEO” vs “Deep technical write-up for engineers”  
-  - **Persona (Who)**:  
-    - Exec brief → `as programmer` + `to CEO` + `tone=directly`/`formally`.  
-    - Deep write-up → `as programmer` + `to programmer`/`to principal engineer`.  
-  - **Intent (Why)**:  
-    - Exec brief → often `decide` or `inform`.  
-    - Deep write-up → usually `inform` or `evaluate`.  
-  - **Contract (How)**:  
-    - Exec brief → `completeness=gist`, `scope=focus`, `method=structure` (headline-first delivery in the prose), optionally `form=bullets`.  
+- “Executive brief for CEO” vs “Deep technical write-up for engineers”
+  - **Persona (Who)**:
+    - Exec brief → `as programmer` + `to CEO` + `tone=directly`/`formally`.
+    - Deep write-up → `as programmer` + `to programmer`/`to principal engineer`.
+  - **Intent (Why)**:
+    - Exec brief → often `decide` or `inform`.
+    - Deep write-up → usually `inform` or `evaluate`.
+  - **Contract (How)**:
+    - Exec brief → `completeness=gist`, `scope=focus`, `method=structure` (headline-first delivery in the prose), optionally `form=bullets`.
     - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `form=adr` or `form=table`, optionally `tone=directly` if you want a firmer stance.
   - Again, keep persona and intent focused on Who/Why; put coverage, territory, reasoning, and container into the contract axes.
 
@@ -209,7 +209,7 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 Completeness (`completenessModifier`): `deep`, `full`, `gist`, `max`, `minimal`, `narrow`, `skim`
 Scope (`scopeModifier`): `act`, `agent`, `assume`, `cross`, `fail`, `good`, `mean`, `motifs`, `stable`, `struct`, `thing`, `time`, `view`
-Method (`methodModifier`): `abduce`, `actors`, `adversarial`, `afford`, `analog`, `analysis`, `argue`, `balance`, `bias`, `boom`, `branch`, `calc`, `canon`, `cite`, `cluster`, `compare`, `converge`, `deduce`, `depends`, `diagnose`, `dimension`, `domains`, `effects`, `experimental`, `explore`, `field`, `flow`, `gap`, `grove`, `grow`, `induce`, `inversion`, `jobs`, `mapping`, `meld`, `melody`, `mod`, `models`, `objectivity`, `operations`, `order`, `origin`, `polar`, `prioritize`, `probability`, `product`, `reify`, `resilience`, `rigor`, `risks`, `robust`, `shift`, `simulation`, `spec`, `split`, `systemic`, `trans`, `unknowns`, `verify`
+Method (`methodModifier`): `abduce`, `actors`, `adversarial`, `afford`, `analog`, `analysis`, `argue`, `balance`, `bias`, `boom`, `branch`, `calc`, `canon`, `cite`, `cluster`, `compare`, `converge`, `deduce`, `depends`, `diagnose`, `dimension`, `domains`, `effects`, `experimental`, `explore`, `field`, `flow`, `gap`, `grove`, `grow`, `induce`, `inversion`, `jobs`, `mapping`, `meld`, `melody`, `mod`, `models`, `objectivity`, `operations`, `order`, `origin`, `polar`, `prioritize`, `probability`, `product`, `reify`, `resilience`, `rigor`, `risks`, `robust`, `shift`, `simulation`, `spec`, `split`, `systemic`, `trade`, `trans`, `unknowns`, `verify`
 Form (`formModifier`): `actions`, `activities`, `bug`, `bullets`, `cards`, `case`, `checklist`, `cocreate`, `commit`, `contextualise`, `direct`, `facilitate`, `faq`, `formats`, `indirect`, `ladder`, `log`, `merge`, `questions`, `quiz`, `recipe`, `scaffold`, `socratic`, `spike`, `story`, `table`, `taxonomy`, `test`, `tight`, `variants`, `visual`, `walkthrough`, `wardley`, `wasinawa`
 Channel (`channelModifier`): `adr`, `code`, `codetour`, `diagram`, `gherkin`, `html`, `jira`, `plain`, `presenterm`, `remote`, `shellscript`, `sketch`, `slack`, `svg`, `sync`
 Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip rog`, `fig`, `fip bog`, `fip ong`, `fip rog`, `fly bog`, `fly ong`, `fly rog`, `fog`, `jog`, `ong`, `rog`
@@ -371,17 +371,17 @@ Some high-frequency combinations you can say directly:
 If you were using some older, now-retired tokens, here are the closest replacements using the current axes:
 
 - Voices / stance:
-  - `as XP enthusiast` → `as programmer` + `method=xp` (for example, `model describe xp ong`).  
-  - `as adversary` → suitable voice + `method=adversarial` + `for evaluating`.  
+  - `as XP enthusiast` → `as programmer` + `method=xp` (for example, `model describe xp ong`).
+  - `as adversary` → suitable voice + `method=adversarial` + `for evaluating`.
   - `as liberator` → `as facilitator` + `method=liberating` (or use the “Liberating facilitation” pattern).
 - Audiences:
-  - `to receptive` / `to resistant` → keep the audience (for example, `to managers` / `to stakeholders`) and add `method=receptive` / `method=resistant`.  
+  - `to receptive` / `to resistant` → keep the audience (for example, `to managers` / `to stakeholders`) and add `method=receptive` / `method=resistant`.
 - `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `tone=kindly`.
 - Intents / shape:
-  - `for coding` → `goal=solve` + `form=code`.  
-  - `for debugging` → `goal=solve` + `method=debugging`.  
-  - `for slack` / `for table` / `for presenterm` / `for code tour` → `channel=slack` / `form=table` / `channel=presenterm` / `channel=codetour`.  
-  - `for diverging` / `for converging` → `intent=brainstorm` + `method=diverge`; `intent=decide` + `method=converge`.  
+  - `for coding` → `goal=solve` + `form=code`.
+  - `for debugging` → `goal=solve` + `method=debugging`.
+  - `for slack` / `for table` / `for presenterm` / `for code tour` → `channel=slack` / `form=table` / `channel=presenterm` / `channel=codetour`.
+  - `for diverging` / `for converging` → `intent=brainstorm` + `method=diverge`; `intent=decide` + `method=converge`.
   - `for mapping` → `method=mapping` + relations/system/dynamics scope (often with `diagram` channel, `table` form, or `visual` method).
 
 ## OpenAI API Pricing

@@ -60,6 +60,16 @@ def _axis_guidance_mapping() -> dict[str, dict[str, str]]:
     }
 
 
+def _axis_kanji_mapping() -> dict[str, dict[str, str]]:
+    """Return axis token -> kanji mapping (ADR-0143)."""
+    kanji = _axis_payload().get("axis_kanji", {}) or {}
+    return {
+        axis: dict(sorted((kanji.get(axis) or {}).items()))
+        for axis in sorted(kanji.keys())
+        if kanji.get(axis)
+    }
+
+
 def render_axis_config() -> str:
     """Render an axisConfig.py module based on the registry."""
     payload = _axis_payload()
@@ -86,12 +96,19 @@ def render_axis_config() -> str:
         for axis in sorted(use_when.keys())
         if use_when.get(axis)
     }
+    kanji = payload.get("axis_kanji", {}) or {}
+    kanji_mapping = {
+        axis: dict(sorted((kanji.get(axis) or {}).items()))
+        for axis in sorted(kanji.keys())
+        if kanji.get(axis)
+    }
     # Use a very wide width to prevent pprint from splitting string literals
     # across lines (which creates ugly adjacent string concatenation)
     body = pprint.pformat(mapping, width=200, sort_dicts=True)
     label_body = pprint.pformat(label_mapping, width=200, sort_dicts=True)
     guidance_body = pprint.pformat(guidance_mapping, width=200, sort_dicts=True)
     use_when_body = pprint.pformat(use_when_mapping, width=200, sort_dicts=True)
+    kanji_body = pprint.pformat(kanji_mapping, width=200, sort_dicts=True)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -147,6 +164,11 @@ def render_axis_config() -> str:
         def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
             \"\"\"Return the key->use_when map for a given axis (ADR-0132).\"\"\"
             return AXIS_KEY_TO_USE_WHEN.get(axis, {})
+
+
+        def axis_key_to_kanji_map(axis: str) -> dict[str, str]:
+            \"\"\"Return the key->kanji map for a given axis (ADR-0143).\"\"\"
+            return AXIS_KEY_TO_KANJI.get(axis, {})
 
 
         def axis_docs_for(axis: str) -> list[AxisDoc]:
@@ -214,6 +236,10 @@ def get_usage_patterns() -> list[dict]:
                 f"# Task-type heuristics for when to apply each token (ADR-0132).\n"
                 f"# Surfaces as 'When to use' helper text in UIs.\n"
                 f"AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {use_when_body}",
+                f"# Kanji icons for visual display (ADR-0143). 1-2 character kanji per token\n"
+                f"# for faster visual scanning in help, SPA, and TUI2. Display only - not part\n"
+                f"# of input grammar.\n"
+                f"AXIS_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {kanji_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip() + usage_patterns_block,
             ]

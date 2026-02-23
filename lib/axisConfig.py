@@ -958,6 +958,11 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
     },
 }
 
+# Kanji icons for visual display (ADR-0143). 1-2 character kanji per token
+# for faster visual scanning in help, SPA, and TUI2. Display only - not part
+# of input grammar.
+AXIS_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {}
+
 
 @dataclass(frozen=True)
 class AxisDoc:
@@ -986,6 +991,11 @@ def axis_key_to_guidance_map(axis: str) -> dict[str, str]:
 def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
     """Return the key->use_when map for a given axis (ADR-0132)."""
     return AXIS_KEY_TO_USE_WHEN.get(axis, {})
+
+
+def axis_key_to_kanji_map(axis: str) -> dict[str, str]:
+    """Return the key->kanji map for a given axis (ADR-0143)."""
+    return AXIS_KEY_TO_KANJI.get(axis, {})
 
 
 def axis_docs_for(axis: str) -> list[AxisDoc]:

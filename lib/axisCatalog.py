@@ -198,16 +198,16 @@ def axis_catalog(
         "axes": axis_map,
         "axis_list_tokens": axis_lists,
         "axis_labels": {
-            axis: axisConfig.axis_key_to_label_map(axis)
-            for axis in axis_map
+            axis: axisConfig.axis_key_to_label_map(axis) for axis in axis_map
         },
         "axis_guidance": {
-            axis: axisConfig.axis_key_to_guidance_map(axis)
-            for axis in axis_map
+            axis: axisConfig.axis_key_to_guidance_map(axis) for axis in axis_map
         },
         "axis_use_when": {
-            axis: axisConfig.axis_key_to_use_when_map(axis)
-            for axis in axis_map
+            axis: axisConfig.axis_key_to_use_when_map(axis) for axis in axis_map
+        },
+        "axis_kanji": {
+            axis: axisConfig.axis_key_to_kanji_map(axis) for axis in axis_map
         },
         "static_prompts": static_prompt_catalog(
             static_prompt_list_path if lists_dir else ""

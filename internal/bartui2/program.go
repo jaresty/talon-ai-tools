@@ -1627,6 +1627,10 @@ var (
 	warningStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("220"))
 
+	// useWhenStyle for routing trigger phrases - cyan/blue for discoverability (ADR-0142)
+	useWhenStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("45"))
+
 	toastStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("78")).
 			Bold(true)
@@ -1834,7 +1838,7 @@ func (m model) renderTokensPane() string {
 			if idx := strings.Index(selectedUseWhen, "."); idx > 0 {
 				line = selectedUseWhen[:idx]
 			}
-			right.WriteString(dimStyle.Render("When: " + line))
+			right.WriteString(useWhenStyle.Render("When: " + line))
 			right.WriteString("\n")
 		}
 		// Show guidance if present (higher priority disambiguation notes)

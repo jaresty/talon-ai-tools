@@ -60,6 +60,23 @@ class PromptGrammarCliTests(unittest.TestCase):
         self.assertEqual(data["schema_version"], "1.0")
         self.assertIn("checksums", data)
 
+        reference_key = data.get("reference_key", "")
+        self.assertIn(
+            "任務", reference_key, "reference_key should contain kanji for TASK"
+        )
+        self.assertIn(
+            "追加", reference_key, "reference_key should contain kanji for ADDENDUM"
+        )
+        self.assertIn(
+            "制約", reference_key, "reference_key should contain kanji for CONSTRAINTS"
+        )
+        self.assertIn(
+            "人格", reference_key, "reference_key should contain kanji for PERSONA"
+        )
+        self.assertIn(
+            "題材", reference_key, "reference_key should contain kanji for SUBJECT"
+        )
+
 
 if bootstrap is None and not TYPE_CHECKING:  # pragma: no cover - Talon runtime
 

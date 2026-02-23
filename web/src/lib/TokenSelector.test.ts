@@ -372,4 +372,37 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		await fireEvent.focus(chip);
 		expect(screen.getByText('When to use')).toBeTruthy();
 	});
+
+	it('renders kanji when present (ADR-0143)', () => {
+		const tokensWithKanji = [
+			{
+				token: 'full',
+				label: 'Full',
+				description: 'Thorough answer',
+				guidance: '',
+				use_when: '',
+				kanji: '全'
+			},
+			{
+				token: 'gist',
+				label: 'Gist',
+				description: 'Concise summary',
+				guidance: '',
+				use_when: '',
+				kanji: '略'
+			}
+		];
+		render(TokenSelector, {
+			props: {
+				axis: 'completeness',
+				tokens: tokensWithKanji,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		// Kanji should appear in the DOM
+		expect(screen.getByText('全')).toBeTruthy();
+		expect(screen.getByText('略')).toBeTruthy();
+	});
 });

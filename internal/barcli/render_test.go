@@ -9,9 +9,9 @@ func TestRenderPlainTextSections(t *testing.T) {
 	result := &BuildResult{
 		Subject: "Fix onboarding",
 		Task:    "Task:\n  Format this as a todo list.",
-		Constraints: []string{
-			"Completeness (full): The response provides a thorough answer.",
-			"Directional (fog): The response applies an abstracting perspective.",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "full", Description: "The response provides a thorough answer."},
+			{Axis: "directional", Token: "fog", Description: "The response applies an abstracting perspective."},
 		},
 		Persona: PersonaResult{
 			Preset:      "coach_junior",
@@ -28,13 +28,13 @@ func TestRenderPlainTextSections(t *testing.T) {
 	output := RenderPlainText(result)
 
 	required := []string{
-		"=== TASK (DO THIS) ===",
-		"=== CONSTRAINTS (GUARDRAILS) ===",
-		"=== PERSONA (STANCE) ===",
-		"=== SUBJECT (CONTEXT) ===",
-		"- Completeness (full):",
+		"=== TASK 任務 (DO THIS) ===",
+		"=== CONSTRAINTS 制約 (GUARDRAILS) ===",
+		"=== PERSONA 人格 (STANCE) ===",
+		"=== SUBJECT 題材 (CONTEXT) ===",
+		"Completeness (full):",
 		"- Preset: coach_junior — Coach junior",
-		"- Voice: as teacher — Teaches kindly.",
+		"- Voice (as teacher): Teaches kindly.",
 	}
 
 	for _, marker := range required {
@@ -63,5 +63,37 @@ func TestRenderPlainTextUsesResultReferenceKey(t *testing.T) {
 
 	if !strings.Contains(output, customKey) {
 		t.Fatalf("expected RenderPlainText to use result.ReferenceKey %q, but output does not contain it:\n%s", customKey, output)
+	}
+}
+
+// TestRenderPlainTextIncludesKanjiInPromptlets specifies that hydrated promptlets
+// include kanji characters when available (ADR-0143).
+func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
+	result := &BuildResult{
+		Task:        "probe fail full",
+		Constraints: []string{},
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "method", Token: "probe", Kanji: "探"},
+			{Axis: "scope", Token: "fail", Kanji: "敗"},
+			{Axis: "completeness", Token: "full", Kanji: "全"},
+		},
+		HydratedPersona: []HydratedPromptlet{
+			{Axis: "voice", Token: "socratic", Kanji: "質"},
+		},
+	}
+
+	output := RenderPlainText(result)
+
+	if !strings.Contains(output, "探") {
+		t.Fatalf("expected hydrated constraint to include kanji 探, got:\n%s", output)
+	}
+	if !strings.Contains(output, "敗") {
+		t.Fatalf("expected hydrated constraint to include kanji 敗, got:\n%s", output)
+	}
+	if !strings.Contains(output, "全") {
+		t.Fatalf("expected hydrated constraint to include kanji 全, got:\n%s", output)
+	}
+	if !strings.Contains(output, "質") {
+		t.Fatalf("expected hydrated persona to include kanji 質, got:\n%s", output)
 	}
 }

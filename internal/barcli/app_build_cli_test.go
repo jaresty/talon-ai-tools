@@ -253,7 +253,7 @@ func TestRunBuildWithAddendumFlag(t *testing.T) {
 	if !strings.Contains(result.Stdout, "focus on security") {
 		t.Fatalf("expected stdout to include addendum text, got: %s", result.Stdout)
 	}
-	if !strings.Contains(result.Stdout, "ADDENDUM (CLARIFICATION)") {
+	if !strings.Contains(result.Stdout, "ADDENDUM 追加 (CLARIFICATION)") {
 		t.Fatalf("expected ADDENDUM section heading in output, got: %s", result.Stdout)
 	}
 }
@@ -266,7 +266,7 @@ func TestRunBuildAddendumOmittedWhenEmpty(t *testing.T) {
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", result.Exit, result.Stderr)
 	}
-	if strings.Contains(result.Stdout, "=== ADDENDUM") {
+	if strings.Contains(result.Stdout, "=== ADDENDUM 追加 (CLARIFICATION)") {
 		t.Fatalf("expected no ADDENDUM section heading when flag not provided, got: %s", result.Stdout)
 	}
 }

@@ -37,11 +37,14 @@ func RenderPlainText(result *BuildResult) string {
 	b.WriteString(sectionConstraints)
 
 	b.WriteString("\n")
-	if len(result.Constraints) == 0 {
+	if len(result.HydratedConstraints) == 0 {
 		b.WriteString("(none)\n\n")
 	} else {
-		for _, constraint := range result.Constraints {
-			fmt.Fprintf(&b, "- %s\n", constraint)
+		for _, constraint := range result.HydratedConstraints {
+			formatted := formatPromptlet(constraint)
+			if formatted != "" {
+				fmt.Fprintf(&b, "- %s\n", formatted)
+			}
 		}
 		b.WriteString("\n")
 	}
@@ -128,6 +131,7 @@ func writePersonaSection(b *strings.Builder, persona PersonaResult, promptlets [
 	for _, axis := range axisOrder {
 		token := strings.TrimSpace(axis.value)
 		desc := ""
+		kanji := ""
 		entries := axisEntries[axis.key]
 		tokens := make([]string, 0, len(entries))
 		for _, entry := range entries {
@@ -136,6 +140,9 @@ func writePersonaSection(b *strings.Builder, persona PersonaResult, promptlets [
 			}
 			if desc == "" && strings.TrimSpace(entry.Description) != "" {
 				desc = strings.TrimSpace(entry.Description)
+			}
+			if kanji == "" && strings.TrimSpace(entry.Kanji) != "" {
+				kanji = strings.TrimSpace(entry.Kanji)
 			}
 		}
 		if token == "" && len(tokens) > 0 {
@@ -148,12 +155,17 @@ func writePersonaSection(b *strings.Builder, persona PersonaResult, promptlets [
 			continue
 		}
 
+		tokenWithKanji := token
+		if kanji != "" {
+			tokenWithKanji = fmt.Sprintf("%s %s", token, kanji)
+		}
+
 		if token == "" {
 			fmt.Fprintf(b, "- %s — %s\n", axis.label, desc)
 		} else if desc == "" {
-			fmt.Fprintf(b, "- %s: %s\n", axis.label, token)
+			fmt.Fprintf(b, "- %s (%s)\n", axis.label, tokenWithKanji)
 		} else {
-			fmt.Fprintf(b, "- %s: %s — %s\n", axis.label, token, desc)
+			fmt.Fprintf(b, "- %s (%s): %s\n", axis.label, tokenWithKanji, desc)
 		}
 
 		delete(axisEntries, axis.key)

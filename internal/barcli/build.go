@@ -57,6 +57,7 @@ type HydratedPromptlet struct {
 	Axis        string `json:"axis"`
 	Token       string `json:"token"`
 	Description string `json:"description"`
+	Kanji       string `json:"kanji,omitempty"`
 }
 
 type buildState struct {
@@ -260,12 +261,12 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 
 func (s *buildState) applyOverrideToken(token string) *CLIError {
 	ctx := tokens.OverrideContext{
-		IsTask:         s.isTask,
-		IsAxisToken:    s.isAxisToken,
-		AxisCap:        s.axisCap,
-		SplitList:      s.splitValueList,
-		Contains:       contains,
-		AddRecognized:  s.addRecognized,
+		IsTask:        s.isTask,
+		IsAxisToken:   s.isAxisToken,
+		AxisCap:       s.axisCap,
+		SplitList:     s.splitValueList,
+		Contains:      contains,
+		AddRecognized: s.addRecognized,
 		Errorf: func(kind, format string, args ...any) error {
 			return s.errorf(kind, format, args...)
 		},
@@ -769,10 +770,12 @@ func (s *buildState) buildHydratedConstraints() []HydratedPromptlet {
 				continue
 			}
 			description := s.grammar.AxisDescription(axis, canonical)
+			kanji := s.grammar.AxisKanji(axis, canonical)
 			entries = append(entries, HydratedPromptlet{
 				Axis:        axis,
 				Token:       canonical,
 				Description: description,
+				Kanji:       kanji,
 			})
 		}
 	}
@@ -820,10 +823,12 @@ func (s *buildState) buildHydratedPersona() []HydratedPromptlet {
 			return
 		}
 		description := s.grammar.PersonaDescription(axis, canonical)
+		kanji := s.grammar.PersonaKanji(axis, canonical)
 		entries = append(entries, HydratedPromptlet{
 			Axis:        axis,
 			Token:       canonical,
 			Description: description,
+			Kanji:       kanji,
 		})
 	}
 
@@ -913,13 +918,19 @@ func (s *buildState) toResult() *BuildResult {
 func formatPromptlet(p HydratedPromptlet) string {
 	axis := axisHeading(p.Axis)
 	token := strings.TrimSpace(p.Token)
+	kanji := strings.TrimSpace(p.Kanji)
 	description := strings.TrimSpace(p.Description)
+
+	tokenWithKanji := token
+	if kanji != "" {
+		tokenWithKanji = fmt.Sprintf("%s %s", token, kanji)
+	}
 
 	switch {
 	case token != "" && description != "":
-		return fmt.Sprintf("%s (\"%s\"): %s", axis, token, description)
+		return fmt.Sprintf("%s (%s): %s", axis, tokenWithKanji, description)
 	case token != "":
-		return fmt.Sprintf("%s: %s", axis, token)
+		return fmt.Sprintf("%s: %s", axis, tokenWithKanji)
 	case description != "":
 		return fmt.Sprintf("%s: %s", axis, description)
 	default:

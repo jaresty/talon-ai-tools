@@ -23,7 +23,7 @@
 
 **residual_constraints:** None
 
-**next_work:** 
+**next_work:**
 - Add kanji display to bar help LLM output
 - Add kanji to TUI2 token selectors
 - Add kanji to SPA token selectors
@@ -50,9 +50,9 @@
 
 **residual_constraints:** None
 
-**next_work:** 
+**next_work:**
 - Add AxisKanji accessor to Grammar struct
-- Add Kanji field to AxisSection struct  
+- Add Kanji field to AxisSection struct
 - Update help_llm.go to render kanji column
 
 ## loop-3 | 2026-02-23 | Surface kanji in TUI2 and SPA
@@ -78,7 +78,16 @@
 
 **residual_constraints:** None
 
-**completed:** ✅ ADR-0143 implementation complete
+**completed:** ✅ ADR-0143 implementation complete (2026-02-22T23:34:00Z)
+
+**Definition of "completed":**
+- All implementation code written and integrated
+- All tests passing (Go tests in internal/barcli, internal/bartui2; web tests in web/src)
+- Round-trip validation confirmed (kanji survives serialization → JSON → deserialization)
+- Visual verification in all surfaces (bar help llm, TUI2, SPA)
+- Work log updated with final evidence and timestamps
+
+**Deliverables:**
 - ✅ Kanji mappings in axisConfig.py (144 tokens, 6 axes)
 - ✅ axis_kanji serialization in axisCatalog.py
 - ✅ promptGrammar.py exports kanji

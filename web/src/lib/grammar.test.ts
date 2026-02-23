@@ -42,7 +42,8 @@ const minimalGrammar: Grammar = {
 		use_when: {
 			show: 'Explaining or describing something for an audience.',
 			make: 'Creating new content or artifacts.'
-		}
+		},
+		kanji: { show: '示', make: '作' }
 	},
 	hierarchy: {
 		axis_priority: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
@@ -53,7 +54,8 @@ const minimalGrammar: Grammar = {
 		presets: {},
 		axes: { voice: [], audience: ['to managers', 'to product manager'], tone: [] },
 		docs: { audience: { 'to managers': 'Audience focused on outcomes and risk.' } },
-		use_when: { audience: { 'to managers': 'Use when addressing outcome-focused leadership.' } }
+		use_when: { audience: { 'to managers': 'Use when addressing outcome-focused leadership.' } },
+		kanji: { audience: { 'to managers': '経営' }, voice: { 'as-expert': '專' } }
 	},
 	patterns: [
 		{
@@ -146,6 +148,12 @@ describe('getTaskTokens', () => {
 		const show = tokens.find((t) => t.token === 'show')!;
 		expect(show.use_when).toBe('Explaining or describing something for an audience.');
 	});
+
+	it('populates kanji from tasks.kanji (ADR-0143)', () => {
+		const tokens = getTaskTokens(minimalGrammar);
+		const show = tokens.find((t) => t.token === 'show')!;
+		expect(show.kanji).toBe('示');
+	});
 });
 
 describe('getUsagePatterns', () => {
@@ -189,5 +197,11 @@ describe('getPersonaAxisTokensMeta', () => {
 		const metas = getPersonaAxisTokensMeta(noMetaGrammar, 'audience');
 		expect(metas.length).toBe(2);
 		expect(metas.every((m) => m.description === '' && m.use_when === '')).toBe(true);
+	});
+
+	it('populates kanji from persona.kanji (ADR-0143)', () => {
+		const metas = getPersonaAxisTokensMeta(minimalGrammar, 'audience');
+		const mgr = metas.find((m) => m.token === 'to managers')!;
+		expect(mgr.kanji).toBe('経営');
 	});
 });

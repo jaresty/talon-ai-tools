@@ -93,6 +93,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 	const labels = grammar.tasks.labels ?? {};
 	const guidance = grammar.tasks.guidance ?? {};
 	const use_when = grammar.tasks.use_when ?? {};
+	const kanji = grammar.tasks.kanji ?? {};
 	return Object.keys(descs)
 		.sort()
 		.map((token) => ({
@@ -100,7 +101,8 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 			label: labels[token] ?? '',
 			description: descs[token] ?? '',
 			guidance: guidance[token] ?? '',
-			use_when: use_when[token] ?? ''
+			use_when: use_when[token] ?? '',
+			kanji: kanji[token] ?? ''
 		}));
 }
 
@@ -125,12 +127,14 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 	const tokens = getPersonaAxisTokens(grammar, axis);
 	const docs = grammar.persona?.docs?.[axis] ?? {};
 	const use_when = grammar.persona?.use_when?.[axis] ?? {};
+	const kanji = grammar.persona?.kanji?.[axis] ?? {};
 	return tokens.map((token) => ({
 		token,
 		label: token,
 		description: docs[token] ?? '',
 		guidance: '',
-		use_when: use_when[token] ?? ''
+		use_when: use_when[token] ?? '',
+		kanji: kanji[token] ?? ''
 	}));
 }
 

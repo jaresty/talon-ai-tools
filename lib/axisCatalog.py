@@ -239,6 +239,7 @@ def serialize_axis_config(
         "axis_labels": catalog["axis_labels"],
         "axis_guidance": catalog["axis_guidance"],
         "axis_use_when": catalog["axis_use_when"],
+        "axis_kanji": catalog["axis_kanji"],
     }
     if include_axis_lists:
         payload["axis_list_tokens"] = catalog["axis_list_tokens"]

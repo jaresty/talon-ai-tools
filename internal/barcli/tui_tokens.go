@@ -234,6 +234,7 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			Label:       label,
 			Description: description,
 			Guidance:    grammar.AxisGuidance(axis, value),
+			UseWhen:     grammar.AxisUseWhen(axis, value),
 			Kanji:       grammar.AxisKanji(axis, value),
 		})
 	}
@@ -265,6 +266,7 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			Label:       label,
 			Description: description,
 			Guidance:    grammar.PersonaGuidance(axis, value),
+			UseWhen:     grammar.PersonaUseWhen(axis, value),
 		})
 	}
 	return options

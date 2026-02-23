@@ -373,9 +373,10 @@
 		line-height: 1.5;
 		display: flex;
 		flex-direction: column;
-		max-height: 40vh;
+		max-height: min(40vh, calc(100vh - 4rem));
 		overflow: hidden;
 		position: sticky;
+		top: 1rem;
 		bottom: 1rem;
 		z-index: 10;
 	}

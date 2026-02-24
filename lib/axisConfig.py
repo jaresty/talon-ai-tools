@@ -16,7 +16,7 @@ When renaming/removing tokens:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, FrozenSet
+from typing import Dict, FrozenSet, Union
 
 AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
@@ -970,7 +970,9 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
 # Kanji icons for visual display (ADR-0143). 1-2 character kanji per token
 # for faster visual scanning in help, SPA, and TUI2. Display only - not part
 # of input grammar.
-AXIS_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
+# Persona axis uses Dict[str, Dict[str, str]] (sub-axis -> token -> kanji);
+# all other axes use Dict[str, str] (token -> kanji).
+AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] = {
     "channel": {
         "adr": "記",
         "code": "碼",
@@ -1289,8 +1291,14 @@ def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
     return AXIS_KEY_TO_USE_WHEN.get(axis, {})
 
 
-def axis_key_to_kanji_map(axis: str) -> dict[str, str]:
-    """Return the key->kanji map for a given axis (ADR-0143)."""
+def axis_key_to_kanji_map(
+    axis: str,
+) -> Union[Dict[str, str], Dict[str, Dict[str, str]]]:
+    """Return the key->kanji map for a given axis (ADR-0143).
+
+    For regular axes returns Dict[str, str] (token -> kanji).
+    For 'persona' returns Dict[str, Dict[str, str]] (sub-axis -> token -> kanji).
+    """
     return AXIS_KEY_TO_KANJI.get(axis, {})
 
 

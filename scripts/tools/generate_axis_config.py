@@ -171,7 +171,7 @@ def render_axis_config() -> str:
         from __future__ import annotations
 
         from dataclasses import dataclass, field
-        from typing import Dict, FrozenSet
+        from typing import Dict, FrozenSet, Union
         """
     )
     dataclasses = textwrap.dedent(
@@ -208,8 +208,12 @@ def render_axis_config() -> str:
             return AXIS_KEY_TO_USE_WHEN.get(axis, {})
 
 
-        def axis_key_to_kanji_map(axis: str) -> dict[str, str]:
-            \"\"\"Return the key->kanji map for a given axis (ADR-0143).\"\"\"
+        def axis_key_to_kanji_map(axis: str) -> Union[Dict[str, str], Dict[str, Dict[str, str]]]:
+            \"\"\"Return the key->kanji map for a given axis (ADR-0143).
+
+            For regular axes returns Dict[str, str] (token -> kanji).
+            For 'persona' returns Dict[str, Dict[str, str]] (sub-axis -> token -> kanji).
+            \"\"\"
             return AXIS_KEY_TO_KANJI.get(axis, {})
 
 
@@ -286,7 +290,9 @@ def get_usage_patterns() -> list[dict]:
                 f"# Kanji icons for visual display (ADR-0143). 1-2 character kanji per token\n"
                 f"# for faster visual scanning in help, SPA, and TUI2. Display only - not part\n"
                 f"# of input grammar.\n"
-                f"AXIS_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {kanji_body}",
+                f"# Persona axis uses Dict[str, Dict[str, str]] (sub-axis -> token -> kanji);\n"
+                f"# all other axes use Dict[str, str] (token -> kanji).\n"
+                f"AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] = {kanji_body}",
                 f"# Category assignments for method tokens (ADR-0144).\n"
                 f"# Each method token is assigned to exactly one semantic family by primary use case.\n"
                 f"# Tokens that span multiple families are placed by primary use case; contested\n"

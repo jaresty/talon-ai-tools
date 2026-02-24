@@ -131,3 +131,76 @@ func TestBuildPersonaOptionsPopulatesKanji(t *testing.T) {
 		t.Errorf("expected Kanji to be populated for voice:as designer (ADR-0143), got empty string")
 	}
 }
+
+// TestMethodAxisGroupedBySemanticCategory specifies that buildAxisOptions for the
+// method axis returns tokens grouped by SemanticGroup (all tokens of the same group
+// are adjacent), not interleaved alphabetically (ADR-0144).
+func TestMethodAxisGroupedBySemanticCategory(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	options := buildAxisOptions(grammar, "method")
+	if len(options) == 0 {
+		t.Fatal("buildAxisOptions returned no options for method axis")
+	}
+
+	seen := map[string]bool{}
+	lastGroup := ""
+	for _, opt := range options {
+		g := opt.SemanticGroup
+		if g == "" {
+			continue // uncategorised tokens may trail at end
+		}
+		if g != lastGroup {
+			if seen[g] {
+				t.Errorf("SemanticGroup %q appears non-contiguously — tokens are not grouped by category", g)
+			}
+			seen[g] = true
+			lastGroup = g
+		}
+	}
+}
+
+// TestMethodAxisCanonicalCategoryOrder specifies that the canonical category order
+// (Reasoning → Exploration → Structural → Diagnostic → Actor-centered →
+// Temporal/Dynamic → Comparative → Generative) is preserved (ADR-0144).
+func TestMethodAxisCanonicalCategoryOrder(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	options := buildAxisOptions(grammar, "method")
+
+	canonicalOrder := []string{
+		"Reasoning", "Exploration", "Structural", "Diagnostic",
+		"Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
+	}
+	orderIndex := map[string]int{}
+	for i, cat := range canonicalOrder {
+		orderIndex[cat] = i
+	}
+
+	lastIdx := -1
+	lastGroup := ""
+	for _, opt := range options {
+		g := opt.SemanticGroup
+		if g == "" || g == lastGroup {
+			continue
+		}
+		idx, known := orderIndex[g]
+		if !known {
+			t.Logf("unknown category %q — skipping order check", g)
+			lastGroup = g
+			continue
+		}
+		if idx < lastIdx {
+			t.Errorf("category %q (index %d) appears after %q (index %d) — wrong canonical order",
+				g, idx, lastGroup, lastIdx)
+		}
+		lastIdx = idx
+		lastGroup = g
+	}
+}

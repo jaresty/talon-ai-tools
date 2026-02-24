@@ -187,19 +187,33 @@
 
 	let touchStartX = 0;
 	let touchStartY = 0;
+	let swipeDir = $state<'left' | 'right' | null>(null);
 
 	function handleTouchStart(e: TouchEvent) {
 		touchStartX = e.touches[0].clientX;
 		touchStartY = e.touches[0].clientY;
+		swipeDir = null;
+	}
+
+	function handleTouchMove(e: TouchEvent) {
+		const dx = e.touches[0].clientX - touchStartX;
+		const dy = e.touches[0].clientY - touchStartY;
+		if (Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy)) {
+			swipeDir = dx < 0 ? 'left' : 'right';
+		} else {
+			swipeDir = null;
+		}
 	}
 
 	function handleTouchEnd(e: TouchEvent) {
 		const dx = e.changedTouches[0].clientX - touchStartX;
 		const dy = e.changedTouches[0].clientY - touchStartY;
+		swipeDir = null;
 		const target = e.target as Element;
 		if (target.closest('input, textarea, select')) return;
 		if (Math.abs(dx) < 50) return;
 		if (Math.abs(dy) >= Math.abs(dx)) return;
+		e.preventDefault(); // prevent the ghost click browsers fire after touchend
 		if (dx < 0) goToNextTab();
 		else goToPrevTab();
 	}
@@ -227,6 +241,9 @@
 	let activePresetUseWhen = $state('');
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+
+	let nextTabName = $derived(AXES_WITH_PERSONA[(AXES_WITH_PERSONA.indexOf(activeTab) + 1) % AXES_WITH_PERSONA.length]);
+	let prevTabName = $derived(AXES_WITH_PERSONA[(AXES_WITH_PERSONA.indexOf(activeTab) - 1 + AXES_WITH_PERSONA.length) % AXES_WITH_PERSONA.length]);
 
 	function focusActiveTab() {
 		document.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();
@@ -330,7 +347,12 @@
 		<div class="loading">Loading grammar…</div>
 	{:else}
 		<div class="main">
-			<section class="selector-panel" role="region" aria-label="Token selector" ontouchstart={handleTouchStart} ontouchend={handleTouchEnd}>
+			<section class="selector-panel" role="region" aria-label="Token selector" ontouchstart={handleTouchStart} ontouchmove={handleTouchMove} ontouchend={handleTouchEnd}>
+			{#if swipeDir}
+				<div class="swipe-hint swipe-hint-{swipeDir}" aria-hidden="true">
+					{swipeDir === 'left' ? `${nextTabName} ›` : `‹ ${prevTabName}`}
+				</div>
+			{/if}
 				{#if activeTab === 'persona'}
 				<!-- Persona -->
 				<div class="persona-section">
@@ -1078,6 +1100,29 @@
 	@media (pointer: coarse) {
 		.shortcut-legend { display: none; }
 	}
+
+	.selector-panel {
+		position: relative;
+	}
+
+	.swipe-hint {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		background: var(--color-accent-muted);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		padding: 0.3rem 0.75rem;
+		font-size: 0.82rem;
+		font-family: var(--font-mono);
+		color: var(--color-text);
+		pointer-events: none;
+		z-index: 10;
+		white-space: nowrap;
+	}
+
+	.swipe-hint-left { right: 0.5rem; }
+	.swipe-hint-right { left: 0.5rem; }
 
 	.tab-bar {
 		display: flex;

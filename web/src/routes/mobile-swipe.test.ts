@@ -68,7 +68,9 @@ describe('Page — Swipe to Switch Tabs', () => {
 		document.body.appendChild(container);
 	});
 
-	it('left swipe (>50px, horizontal-dominant) on .selector-panel advances to next tab', async () => {
+	// ── Tab switching (delayed by slide-out animation) ────────────────────────
+
+	it('left swipe advances to next tab after the slide-out animation (~250ms)', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
@@ -80,26 +82,29 @@ describe('Page — Swipe to Switch Tabs', () => {
 		fireTouchEnd(panel, 150, 210); // dx = -150, dy = 10
 		flushSync();
 
+		// Tab does NOT change immediately — slide-out animation plays first
+		expect(activeTabLabel(container)).toBe('task');
+
+		await new Promise(r => setTimeout(r, 300));
 		expect(activeTabLabel(container)).toBe('completeness');
 	});
 
-	it('right swipe (>50px, horizontal-dominant) on .selector-panel retreats to previous tab', async () => {
+	it('right swipe retreats to previous tab after the slide-out animation (~250ms)', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
 
-		// Advance once to 'completeness'
+		// Advance to 'completeness' first
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		fireTouchStart(panel, 300, 200);
 		fireTouchEnd(panel, 150, 210);
-		flushSync();
+		await new Promise(r => setTimeout(r, 300));
 		expect(activeTabLabel(container)).toBe('completeness');
 
 		// Right swipe back to 'task'
 		fireTouchStart(panel, 150, 200);
 		fireTouchEnd(panel, 300, 210); // dx = +150, dy = 10
-		flushSync();
-
+		await new Promise(r => setTimeout(r, 300));
 		expect(activeTabLabel(container)).toBe('task');
 	});
 
@@ -110,7 +115,6 @@ describe('Page — Swipe to Switch Tabs', () => {
 
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		const before = activeTabLabel(container);
-
 		fireTouchStart(panel, 200, 100);
 		fireTouchEnd(panel, 210, 400); // dx = 10, dy = 300 — vertical
 		flushSync();
@@ -125,7 +129,6 @@ describe('Page — Swipe to Switch Tabs', () => {
 
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		const before = activeTabLabel(container);
-
 		fireTouchStart(panel, 300, 200);
 		fireTouchEnd(panel, 265, 202); // dx = -35, below 50px threshold
 		flushSync();
@@ -138,7 +141,6 @@ describe('Page — Swipe to Switch Tabs', () => {
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
 
-		// Open load-cmd section to expose the input
 		const toggle = container.querySelector('.load-cmd-toggle') as HTMLElement;
 		toggle.click();
 		flushSync();
@@ -147,63 +149,58 @@ describe('Page — Swipe to Switch Tabs', () => {
 		const input = container.querySelector('.load-cmd-input') as HTMLElement;
 		expect(input).toBeTruthy();
 
-		// Touch starts on the input — should be ignored
 		fireTouchStart(input, 300, 200);
-		fireTouchEnd(input, 150, 210); // dx = -150, would advance tab if not blocked
+		fireTouchEnd(input, 150, 210);
 		flushSync();
 
 		expect(activeTabLabel(container)).toBe(before);
 	});
 
-	// ── Visual feedback ───────────────────────────────────────────────────────
+	// ── Panel drag feedback ───────────────────────────────────────────────────
 
-	it('shows .swipe-hint with next tab name during a left touchmove', async () => {
+	it('panel translates left (negative X) during a left touchmove', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
 
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		fireTouchStart(panel, 300, 200);
-		fireTouchMove(panel, 240, 202); // dx = -60, horizontal-dominant
+		fireTouchMove(panel, 240, 202); // dx = -60
 		flushSync();
 
-		const hint = container.querySelector('.swipe-hint');
-		expect(hint).toBeTruthy();
-		expect(hint?.textContent).toContain('completeness'); // next after 'task'
+		expect(panel.style.transform).toMatch(/translateX\(-60px\)/);
 	});
 
-	it('shows .swipe-hint with prev tab name during a right touchmove', async () => {
+	it('panel translates right (positive X) during a right touchmove', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
 
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		fireTouchStart(panel, 200, 200);
-		fireTouchMove(panel, 260, 202); // dx = +60, horizontal-dominant
+		fireTouchMove(panel, 260, 202); // dx = +60
 		flushSync();
 
-		const hint = container.querySelector('.swipe-hint');
-		expect(hint).toBeTruthy();
-		expect(hint?.textContent).toContain('persona'); // prev before 'task'
+		expect(panel.style.transform).toMatch(/translateX\(60px\)/);
 	});
 
-	it('.swipe-hint disappears after touchend', async () => {
+	it('panel returns to translateX(0px) after an aborted swipe', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
 
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		fireTouchStart(panel, 300, 200);
-		fireTouchMove(panel, 240, 202);
+		fireTouchMove(panel, 260, 202); // dx = -40, dragging
 		flushSync();
-		expect(container.querySelector('.swipe-hint')).toBeTruthy();
 
-		fireTouchEnd(panel, 150, 210);
+		fireTouchEnd(panel, 265, 202); // dx = -35, below threshold → snap back
 		flushSync();
-		expect(container.querySelector('.swipe-hint')).toBeFalsy();
+
+		expect(panel.style.transform).toMatch(/translateX\(0px\)/);
 	});
 
-	it('does not show .swipe-hint for vertical touchmove', async () => {
+	it('vertical touchmove does not translate the panel horizontally', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
@@ -213,12 +210,33 @@ describe('Page — Swipe to Switch Tabs', () => {
 		fireTouchMove(panel, 210, 300); // dx = 10, dy = 200 — vertical
 		flushSync();
 
-		expect(container.querySelector('.swipe-hint')).toBeFalsy();
+		// No horizontal translation for a vertical drag
+		const transform = panel.style.transform;
+		expect(transform === '' || transform === 'translateX(0px)' || !transform.includes('translateX(-') && !transform.match(/translateX\(\d+px\)/)).toBe(true);
 	});
 
 	// ── Ghost click prevention ────────────────────────────────────────────────
 
-	it('touchend has defaultPrevented=true when a swipe completes (prevents ghost click)', async () => {
+	it('a ghost click inside .layout after a swipe is absorbed by the capture listener', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		const panel = container.querySelector('.selector-panel') as HTMLElement;
+		const fabBtn = container.querySelector('.fab-btn') as HTMLElement;
+
+		fireTouchStart(panel, 300, 200);
+		fireTouchEnd(panel, 150, 210); // confirmed swipe
+		flushSync();
+
+		// Simulate the ghost click immediately after (within 300ms window)
+		fabBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		flushSync();
+
+		expect(container.querySelector('.action-overlay')?.classList.contains('mobile-visible')).toBe(false);
+	});
+
+	it('touchend has defaultPrevented=true when a swipe completes (belt-and-suspenders)', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
@@ -226,7 +244,6 @@ describe('Page — Swipe to Switch Tabs', () => {
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		fireTouchStart(panel, 300, 200);
 
-		// Dispatch the touchend manually so we can inspect defaultPrevented
 		const evt = new Event('touchend', { bubbles: true, cancelable: true });
 		Object.defineProperty(evt, 'changedTouches', { value: [{ clientX: 150, clientY: 210 }] });
 		panel.dispatchEvent(evt);

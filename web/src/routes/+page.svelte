@@ -187,35 +187,70 @@
 
 	let touchStartX = 0;
 	let touchStartY = 0;
-	let swipeDir = $state<'left' | 'right' | null>(null);
+	let swipeOffset = $state(0);
+	let swipeAnimating = $state(false);
+
+	// Per-instance capture listener on .layout absorbs ghost clicks after a swipe.
+	// Using bind:this keeps the listener isolated to this component instance.
+	let layoutEl = $state<HTMLElement | null>(null);
+	let swipeCompletedAt = 0;
+	$effect(() => {
+		if (!layoutEl) return;
+		const absorb = (e: MouseEvent) => {
+			if (Date.now() - swipeCompletedAt < 300) {
+				e.stopImmediatePropagation();
+				swipeCompletedAt = 0;
+			}
+		};
+		layoutEl.addEventListener('click', absorb, { capture: true });
+		return () => layoutEl?.removeEventListener('click', absorb);
+	});
 
 	function handleTouchStart(e: TouchEvent) {
 		touchStartX = e.touches[0].clientX;
 		touchStartY = e.touches[0].clientY;
-		swipeDir = null;
+		swipeOffset = 0;
+		swipeAnimating = false;
 	}
 
 	function handleTouchMove(e: TouchEvent) {
 		const dx = e.touches[0].clientX - touchStartX;
 		const dy = e.touches[0].clientY - touchStartY;
-		if (Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy)) {
-			swipeDir = dx < 0 ? 'left' : 'right';
-		} else {
-			swipeDir = null;
+		if (Math.abs(dx) > Math.abs(dy)) {
+			swipeOffset = dx;
 		}
 	}
 
 	function handleTouchEnd(e: TouchEvent) {
 		const dx = e.changedTouches[0].clientX - touchStartX;
 		const dy = e.changedTouches[0].clientY - touchStartY;
-		swipeDir = null;
 		const target = e.target as Element;
-		if (target.closest('input, textarea, select')) return;
-		if (Math.abs(dx) < 50) return;
-		if (Math.abs(dy) >= Math.abs(dx)) return;
-		e.preventDefault(); // prevent the ghost click browsers fire after touchend
-		if (dx < 0) goToNextTab();
-		else goToPrevTab();
+
+		if (target.closest('input, textarea, select')) {
+			swipeAnimating = true;
+			swipeOffset = 0;
+			return;
+		}
+
+		if (Math.abs(dx) < 50 || Math.abs(dy) >= Math.abs(dx)) {
+			swipeAnimating = true;
+			swipeOffset = 0;
+			return;
+		}
+
+		e.preventDefault(); // belt-and-suspenders: suppresses ghost click in mobile browsers
+		swipeCompletedAt = Date.now(); // layout capture listener absorbs the ghost click
+		const dir = dx < 0 ? -1 : 1;
+		const slideWidth = Math.max(window.innerWidth, 400);
+		swipeAnimating = true;
+		swipeOffset = dir * slideWidth; // slide out in the direction of the swipe
+
+		setTimeout(() => {
+			swipeAnimating = false;
+			swipeOffset = 0;
+			if (dx < 0) goToNextTab();
+			else goToPrevTab();
+		}, 250);
 	}
 
 	function clearState() {
@@ -241,9 +276,6 @@
 	let activePresetUseWhen = $state('');
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
-
-	let nextTabName = $derived(AXES_WITH_PERSONA[(AXES_WITH_PERSONA.indexOf(activeTab) + 1) % AXES_WITH_PERSONA.length]);
-	let prevTabName = $derived(AXES_WITH_PERSONA[(AXES_WITH_PERSONA.indexOf(activeTab) - 1 + AXES_WITH_PERSONA.length) % AXES_WITH_PERSONA.length]);
 
 	function focusActiveTab() {
 		document.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();
@@ -317,7 +349,7 @@
 	}
 </script>
 
-<div class="layout">
+<div class="layout" bind:this={layoutEl}>
 	<header>
 		<h1>Bar Prompt Builder</h1>
 		<p class="subtitle">Token composition for structured prompts</p>
@@ -347,12 +379,16 @@
 		<div class="loading">Loading grammar…</div>
 	{:else}
 		<div class="main">
-			<section class="selector-panel" role="region" aria-label="Token selector" ontouchstart={handleTouchStart} ontouchmove={handleTouchMove} ontouchend={handleTouchEnd}>
-			{#if swipeDir}
-				<div class="swipe-hint swipe-hint-{swipeDir}" aria-hidden="true">
-					{swipeDir === 'left' ? `${nextTabName} ›` : `‹ ${prevTabName}`}
-				</div>
-			{/if}
+			<section
+				class="selector-panel"
+				role="region"
+				aria-label="Token selector"
+				style:transform="translateX({swipeOffset}px)"
+				style:transition={swipeAnimating ? 'transform 0.25s ease-out' : 'none'}
+				ontouchstart={handleTouchStart}
+				ontouchmove={handleTouchMove}
+				ontouchend={handleTouchEnd}
+			>
 				{#if activeTab === 'persona'}
 				<!-- Persona -->
 				<div class="persona-section">
@@ -666,6 +702,7 @@
 		grid-template-columns: 1fr 340px;
 		gap: 1.5rem;
 		align-items: start;
+		overflow-x: hidden; /* prevent horizontal scroll during swipe slide-out */
 	}
 
 	.preview-panel {
@@ -1104,25 +1141,6 @@
 	.selector-panel {
 		position: relative;
 	}
-
-	.swipe-hint {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		background: var(--color-accent-muted);
-		border: 1px solid var(--color-accent);
-		border-radius: var(--radius);
-		padding: 0.3rem 0.75rem;
-		font-size: 0.82rem;
-		font-family: var(--font-mono);
-		color: var(--color-text);
-		pointer-events: none;
-		z-index: 10;
-		white-space: nowrap;
-	}
-
-	.swipe-hint-left { right: 0.5rem; }
-	.swipe-hint-right { left: 0.5rem; }
 
 	.tab-bar {
 		display: flex;

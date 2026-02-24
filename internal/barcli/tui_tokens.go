@@ -230,13 +230,14 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			label = displayLabel(value, description)
 		}
 		options = append(options, bartui.TokenOption{
-			Value:       value,
-			Slug:        grammar.slugForToken(value),
-			Label:       label,
-			Description: description,
-			Guidance:    grammar.AxisGuidance(axis, value),
-			UseWhen:     grammar.AxisUseWhen(axis, value),
-			Kanji:       grammar.AxisKanji(axis, value),
+			Value:         value,
+			Slug:          grammar.slugForToken(value),
+			Label:         label,
+			Description:   description,
+			Guidance:      grammar.AxisGuidance(axis, value),
+			UseWhen:       grammar.AxisUseWhen(axis, value),
+			Kanji:         grammar.AxisKanji(axis, value),
+			SemanticGroup: grammar.AxisCategory(axis, value),
 		})
 	}
 	return options

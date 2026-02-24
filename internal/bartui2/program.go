@@ -59,7 +59,8 @@ type completion struct {
 	Description string
 	Guidance    string
 	UseWhen     string // ADR-0142: routing trigger phrases
-	Kanji       string // ADR-0143: kanji icons for visual display
+	Kanji         string // ADR-0143: kanji icons for visual display
+	SemanticGroup string // ADR-0144: semantic family for method tokens; empty for other axes
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	Fills map[string]string
 }
@@ -850,14 +851,15 @@ func (m *model) updateCompletions() {
 				display = slugDisplay + " \u2014 " + opt.Label
 			}
 			results = append(results, completion{
-				Value:       opt.Value,
-				Display:     display,
-				Category:    category.Label,
-				Description: opt.Description,
-				Guidance:    opt.Guidance,
-				UseWhen:     opt.UseWhen,
-				Kanji:       opt.Kanji,
-				Fills:       opt.Fills,
+				Value:         opt.Value,
+				Display:       display,
+				Category:      category.Label,
+				Description:   opt.Description,
+				Guidance:      opt.Guidance,
+				UseWhen:       opt.UseWhen,
+				Kanji:         opt.Kanji,
+				SemanticGroup: opt.SemanticGroup,
+				Fills:         opt.Fills,
 			})
 		}
 	}
@@ -1772,8 +1774,15 @@ func (m model) renderTokensPane() string {
 		}
 		right.WriteString("\n")
 
+		var lastSemanticGroup string
 		for i := startIdx; i < endIdx; i++ {
 			c := m.completions[i]
+			// ADR-0144: render semantic group header when the group changes.
+			if c.SemanticGroup != "" && c.SemanticGroup != lastSemanticGroup {
+				right.WriteString(dimStyle.Render("  · " + c.SemanticGroup))
+				right.WriteString("\n")
+				lastSemanticGroup = c.SemanticGroup
+			}
 			prefix := "  "
 			style := dimStyle
 			if i == m.completionIndex {

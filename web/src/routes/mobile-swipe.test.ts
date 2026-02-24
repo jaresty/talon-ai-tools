@@ -229,7 +229,7 @@ describe('Page — Swipe to Switch Tabs', () => {
 		fireTouchEnd(panel, 150, 210); // confirmed swipe
 		flushSync();
 
-		// Simulate the ghost click immediately after (within 300ms window)
+		// Simulate the ghost click immediately after (within 600ms window)
 		fabBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 		flushSync();
 

@@ -197,7 +197,7 @@
 	$effect(() => {
 		if (!layoutEl) return;
 		const absorb = (e: MouseEvent) => {
-			if (Date.now() - swipeCompletedAt < 300) {
+			if (Date.now() - swipeCompletedAt < 600) {
 				e.stopImmediatePropagation();
 				swipeCompletedAt = 0;
 			}

@@ -119,6 +119,8 @@
 			const cap = softCap(axis);
 			if (cur.length < cap) {
 				selected[axis] = [...cur, token];
+			} else if (cap === 1) {
+				selected[axis] = [token];
 			}
 		}
 	}

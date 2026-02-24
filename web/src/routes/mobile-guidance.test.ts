@@ -28,13 +28,13 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 				onToggle: vi.fn()
 			}
 		});
-		
+
 		const tokenChip = container.querySelector('.token-chip');
 		expect(tokenChip).toBeTruthy();
-		
+
 		(tokenChip as HTMLElement).click();
 		flushSync();
-		
+
 		const metaPanel = container.querySelector('.meta-panel');
 		expect(metaPanel).toBeTruthy();
 		const useWhenText = metaPanel?.textContent || '';
@@ -52,14 +52,14 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 				onToggle: vi.fn()
 			}
 		});
-		
+
 		const tokenChip = container.querySelector('.token-chip');
 		(tokenChip as HTMLElement).click();
 		flushSync();
-		
+
 		const metaPanel = container.querySelector('.meta-panel');
 		const panelText = metaPanel?.textContent || '';
-		
+
 		expect(panelText).toContain('Explain or describe');
 		expect(panelText).toContain('When to use');
 		expect(panelText).toContain('Use when explaining');
@@ -120,18 +120,18 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 				onToggle: vi.fn()
 			}
 		});
-		
+
 		const tokenChip = container.querySelector('.token-chip');
 		(tokenChip as HTMLElement).click();
 		flushSync();
-		
+
 		let metaPanel = container.querySelector('.meta-panel');
 		expect(metaPanel).toBeTruthy();
-		
+
 		const closeBtn = container.querySelector('.meta-close');
 		(closeBtn as HTMLElement).click();
 		flushSync();
-		
+
 		metaPanel = container.querySelector('.meta-panel');
 		expect(metaPanel).toBeNull();
 	});
@@ -176,13 +176,13 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		expect(container.querySelector('.meta-panel')).toBeNull();
 	});
 
-	it('Select button shows "At limit" and is disabled when axis is at capacity', () => {
+	it('Select button shows "Select ↵" and is enabled for single-slot axes even when at capacity', () => {
 		mount(TokenSelector, {
 			target: container,
 			props: { axis: 'task', tokens, selected: ['make'], maxSelect: 1, onToggle: vi.fn() }
 		});
 
-		// Click the 'show' chip (not selected, but make is already selected = at cap)
+		// Click the 'show' chip (not selected, but make is already selected = at cap for maxSelect=1)
 		const chips = container.querySelectorAll('.token-chip');
 		const showChip = Array.from(chips).find(
 			(c) => c.querySelector('code')?.textContent === 'show'
@@ -190,6 +190,31 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		showChip.click();
 		flushSync();
 
+		// Single-slot axes allow replacement: button says "Select ↵" and is not disabled
+		const selectBtn = container.querySelector('.meta-select-btn') as HTMLButtonElement;
+		expect(selectBtn.textContent).toContain('Select ↵');
+		expect(selectBtn.disabled).toBe(false);
+	});
+
+	it('Select button shows "At limit" and is disabled for multi-slot axes when at capacity', () => {
+		const multiTokens = [
+			...tokens,
+			{ token: 'probe', label: 'Investigate', description: 'Probe deeply', use_when: '', guidance: '' }
+		];
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'method', tokens: multiTokens, selected: ['show', 'make'], maxSelect: 2, onToggle: vi.fn() }
+		});
+
+		// Click 'probe' (not selected, but axis is at cap for maxSelect=2)
+		const chips = container.querySelectorAll('.token-chip');
+		const probeChip = Array.from(chips).find(
+			(c) => c.querySelector('code')?.textContent === 'probe'
+		) as HTMLElement;
+		probeChip.click();
+		flushSync();
+
+		// Multi-slot axes block overflow: button says "At limit" and is disabled
 		const selectBtn = container.querySelector('.meta-select-btn') as HTMLButtonElement;
 		expect(selectBtn.textContent).toContain('At limit');
 		expect(selectBtn.disabled).toBe(true);

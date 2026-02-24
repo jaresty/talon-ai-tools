@@ -550,3 +550,32 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		expect(screen.getByText('略')).toBeTruthy();
 	});
 });
+
+describe('TokenSelector — S: single-slot replace (maxSelect=1)', () => {
+	// S1: unselected chip does not carry disabled class when maxSelect=1 and at cap
+	it('S1: unselected chip is not disabled when maxSelect=1 and another token is selected', () => {
+		renderSelector({ selected: ['wardley'], maxSelect: 1 });
+		const proseChip = screen.getByText('prose').closest('.token-chip')! as HTMLElement;
+		expect(proseChip.classList.contains('disabled')).toBe(false);
+	});
+
+	// S2: meta-panel confirm button says "Select ↵" (not "At limit") for maxSelect=1 at cap
+	it('S2: meta-panel confirm shows "Select ↵" (not "At limit") for unselected token at maxSelect=1', async () => {
+		renderSelector({ selected: ['wardley'], maxSelect: 1 });
+		const proseChip = screen.getByText('prose').closest('.token-chip')!;
+		await fireEvent.click(proseChip);
+		expect(screen.getByText('Select ↵')).toBeTruthy();
+		expect(screen.queryByText('At limit')).toBeNull();
+	});
+
+	// S3: confirming an unselected chip at maxSelect=1 calls onToggle even when at cap
+	it('S3: confirming unselected chip at maxSelect=1 fires onToggle even when at cap', async () => {
+		const onToggle = vi.fn();
+		renderSelector({ selected: ['wardley'], maxSelect: 1, onToggle });
+		const proseChip = screen.getByText('prose').closest('.token-chip')!;
+		await fireEvent.click(proseChip);
+		const selectBtn = screen.getByText('Select ↵');
+		await fireEvent.click(selectBtn);
+		expect(onToggle).toHaveBeenCalledWith('prose');
+	});
+});

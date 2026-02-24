@@ -226,7 +226,7 @@
 				{#each group.tokens as meta (meta.token)}
 					{@const i = filtered.indexOf(meta)}
 					{@const isSelected = selected.includes(meta.token)}
-					{@const atCap = !isSelected && selected.length >= maxSelect}
+					{@const atCap = !isSelected && selected.length >= maxSelect && maxSelect > 1}
 					{@const isActive = activeToken === meta.token}
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<div
@@ -273,7 +273,7 @@
 		{:else}
 			{#each filtered as meta, i (meta.token)}
 				{@const isSelected = selected.includes(meta.token)}
-				{@const atCap = !isSelected && selected.length >= maxSelect}
+				{@const atCap = !isSelected && selected.length >= maxSelect && maxSelect > 1}
 				{@const isActive = activeToken === meta.token}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div
@@ -321,7 +321,7 @@
 
 	{#if activeMeta}
 		{@const isActiveSel = selected.includes(activeMeta.token)}
-		{@const atCap = !isActiveSel && selected.length >= maxSelect}
+		{@const atCap = !isActiveSel && selected.length >= maxSelect && maxSelect > 1}
 		<div class="meta-panel" style={panelStyle}>
 			<div class="meta-header">
 				<code class="meta-token">{activeMeta.token}</code>

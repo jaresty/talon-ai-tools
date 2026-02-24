@@ -3096,12 +3096,65 @@
       }
     }
   ],
+  "starter_packs": [
+    {
+      "name": "debug",
+      "framing": "Diagnosing a bug or system failure",
+      "command": "bar build probe diagnose adversarial unknowns"
+    },
+    {
+      "name": "design",
+      "framing": "Architectural or interface design decision",
+      "command": "bar build show branch trade balance"
+    },
+    {
+      "name": "review",
+      "framing": "Code or document review",
+      "command": "bar build check adversarial risks verify"
+    },
+    {
+      "name": "dissect",
+      "framing": "Deep structural understanding of a system",
+      "command": "bar build probe analysis mapping depends"
+    },
+    {
+      "name": "pitch",
+      "framing": "Making a case to stakeholders",
+      "command": "bar build make argue trade analog"
+    },
+    {
+      "name": "audit",
+      "framing": "Compliance, quality, or consistency check",
+      "command": "bar build check verify canon rigor"
+    },
+    {
+      "name": "model",
+      "framing": "Scenario simulation or what-if analysis",
+      "command": "bar build sim simulation systemic effects"
+    },
+    {
+      "name": "charter",
+      "framing": "Planning a project or feature",
+      "command": "bar build plan branch prioritize risks"
+    },
+    {
+      "name": "explain",
+      "framing": "Explaining a concept or system to an audience",
+      "command": "bar build show analog actors jobs"
+    },
+    {
+      "name": "versus",
+      "framing": "Structured comparison between alternatives",
+      "command": "bar build diff branch trade polar"
+    }
+  ],
   "checksums": {
     "axes": "c2aa856f1a39396e8ef5ee469bfa7bfa8480d7dacc5b1cafd75bc227b6395a49",
     "tasks": "8c8e61d3bcf4cb061c975ecbdd7553affd6adc10bbf480bbfcd75762b8ed335a",
     "persona": "ee03637f4daa4ec4ec715131c2c0ae39c815c83a5f8e45ef7f7e25a9678947e8",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "5b81df8541a28ef3c80a541b9e518047469601079e1dc65f93d5942d2d158c8d",
-    "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1"
+    "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1",
+    "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }
 }

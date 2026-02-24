@@ -479,6 +479,12 @@ def prompt_grammar_payload() -> dict[str, Any]:
 
     patterns_section = _build_patterns_section(catalog)
 
+    from talon_user.lib.starterPacks import STARTER_PACKS
+    starter_packs_section = [
+        {"name": p.name, "framing": p.framing, "command": p.command}
+        for p in STARTER_PACKS
+    ]
+
     sections: dict[str, Any] = {
         "axes": axis_section,
         "tasks": static_section,
@@ -486,6 +492,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "hierarchy": hierarchy_section,
         "slugs": slug_section,
         "patterns": patterns_section,
+        "starter_packs": starter_packs_section,
     }
 
     checksums = {name: _compute_checksum(content) for name, content in sections.items()}

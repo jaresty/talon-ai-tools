@@ -86,3 +86,33 @@
 **next_work:**
 - Behaviour: `lib/starterPacks.py` + grammar JSON `starter_packs` key populated with 10 initial packs → Loop 4
 - Behaviour: `bar starter list` and `bar starter <name>` CLI subcommand → Loop 5
+
+## loop-4 | 2026-02-24 | Starter pack data + grammar JSON
+
+**focus:** ADR-0144 §Phase 2 — create `lib/starterPacks.py` with `STARTER_PACKS` (10 packs), wire into `promptGrammar.py` so grammar JSON gains `starter_packs` key, add `StarterPack` interface + `getStarterPacks()` to SPA `grammar.ts`.
+
+**active_constraint:** `lib/starterPacks.py` did not exist; `prompt_grammar_payload()` had no `starter_packs` key; SP1–SP6 specifying tests (6 tests, 40 subtests) all failed with ImportError.
+
+**validation_targets:**
+- `python3 -m pytest _tests/test_starter_packs.py -x -q` — specifying validation: SP1–SP6 (importable, required fields, unique names, no token conflicts, grammar payload key, bar-build prefix)
+- `python3 -m pytest _tests/ -x -q` — full Python suite (1245 tests)
+- `npm run test -- --run` in web/ — SPA suite (162 tests including 3 new `getStarterPacks` tests)
+
+**evidence:**
+- red | 2026-02-24T04:35:00Z | exit 1 | `python3 -m pytest _tests/test_starter_packs.py -x -q` — `ModuleNotFoundError: No module named 'talon_user.lib.starterPacks'`
+- green | 2026-02-24T04:37:21Z | exit 0 | 1245 Python + 162 SPA tests pass after `lib/starterPacks.py` + `promptGrammar.py` + `grammar.ts` + `grammar.test.ts` + grammar JSON regenerated
+- removal | 2026-02-24T04:37:xx Z | `git stash` reverted implementation; SP5 (`starter_packs not in payload`) confirmed red; `git stash pop` restored
+
+**rollback_plan:** `git restore lib/promptGrammar.py lib/starterPacks.py web/src/lib/grammar.ts` then replay `python3 -m pytest _tests/test_starter_packs.py`.
+
+**delta_summary:** `helper:diff-snapshot=10 files changed, 386 insertions(+), 22 deletions(-)` — `lib/starterPacks.py` (new; 10 packs with `compare` renamed `versus` to avoid token conflict), `lib/promptGrammar.py` (starter_packs_section wired), grammar JSONs regenerated, `web/src/lib/grammar.ts` (StarterPack interface + starter_packs? + getStarterPacks), `web/src/lib/grammar.test.ts` (3 getStarterPacks tests).
+
+**loops_remaining_forecast:** 2 loops remaining (Loop 5: bar starter CLI → Loop 6: bar help llm starter packs + SPA PatternsLibrary). Confidence: high.
+
+**residual_constraints:**
+- Severity: Low. `bar starter` CLI subcommand does not yet exist — Loop 5 target. No current blocker on Loop 4 completion.
+- Severity: Low. SPA PatternsLibrary does not yet render starter packs section — Loop 6 target.
+
+**next_work:**
+- Behaviour: `bar starter list` and `bar starter <name>` CLI subcommand (Go) → Loop 5
+- Behaviour: `bar help llm` Starter Packs section + SPA PatternsLibrary starter packs section → Loop 6

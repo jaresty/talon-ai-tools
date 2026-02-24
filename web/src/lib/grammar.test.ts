@@ -3,7 +3,9 @@ import {
 	getAxisTokens,
 	getTaskTokens,
 	getUsagePatterns,
+	getStarterPacks,
 	getPersonaAxisTokensMeta,
+	getMethodTokensByCategory,
 	toPersonaSlug,
 	type Grammar
 } from './grammar.js';
@@ -203,5 +205,96 @@ describe('getPersonaAxisTokensMeta', () => {
 		const metas = getPersonaAxisTokensMeta(minimalGrammar, 'audience');
 		const mgr = metas.find((m) => m.token === 'to managers')!;
 		expect(mgr.kanji).toBe('経営');
+	});
+});
+
+// ADR-0144: getMethodTokensByCategory groups method tokens by semantic family.
+describe('getMethodTokensByCategory', () => {
+	const categoryGrammar: Grammar = {
+		...minimalGrammar,
+		axes: {
+			...minimalGrammar.axes,
+			definitions: {
+				method: {
+					abduce: 'Generate explanatory hypotheses.',
+					explore: 'Survey the option space.',
+					analysis: 'Describe and structure the situation.',
+					diagnose: 'Find the root cause.'
+				}
+			},
+			categories: {
+				method: {
+					abduce: 'Reasoning',
+					explore: 'Exploration',
+					analysis: 'Structural',
+					diagnose: 'Diagnostic'
+				}
+			}
+		}
+	};
+
+	it('returns groups in canonical category order (ADR-0144)', () => {
+		const groups = getMethodTokensByCategory(categoryGrammar);
+		const cats = groups.map((g) => g.category);
+		expect(cats).toEqual(['Reasoning', 'Exploration', 'Structural', 'Diagnostic']);
+	});
+
+	it('places each token in its category group', () => {
+		const groups = getMethodTokensByCategory(categoryGrammar);
+		const reasoning = groups.find((g) => g.category === 'Reasoning')!;
+		expect(reasoning.tokens.map((t) => t.token)).toEqual(['abduce']);
+	});
+
+	it('places uncategorized tokens in a trailing group with empty category', () => {
+		const withExtra: Grammar = {
+			...categoryGrammar,
+			axes: {
+				...categoryGrammar.axes,
+				definitions: { method: { ...categoryGrammar.axes.definitions['method'], unknown: 'No category.' } },
+				categories: { method: { ...categoryGrammar.axes.categories!['method'] } }
+			}
+		};
+		const groups = getMethodTokensByCategory(withExtra);
+		const last = groups[groups.length - 1];
+		expect(last.category).toBe('');
+		expect(last.tokens.map((t) => t.token)).toContain('unknown');
+	});
+
+	it('populates category field on TokenMeta', () => {
+		const tokens = getAxisTokens(categoryGrammar, 'method');
+		const abduce = tokens.find((t) => t.token === 'abduce')!;
+		expect(abduce.category).toBe('Reasoning');
+	});
+});
+
+// ADR-0144 Phase 2: getStarterPacks
+describe('getStarterPacks', () => {
+	const grammarWithPacks: Grammar = {
+		...minimalGrammar,
+		starter_packs: [
+			{ name: 'debug', framing: 'Diagnosing a bug or system failure', command: 'bar build probe diagnose adversarial unknowns' },
+			{ name: 'design', framing: 'Architectural or interface design decision', command: 'bar build show branch trade balance' },
+		]
+	};
+
+	it('returns starter packs from grammar', () => {
+		const packs = getStarterPacks(grammarWithPacks);
+		expect(packs).toHaveLength(2);
+		expect(packs[0].name).toBe('debug');
+		expect(packs[0].framing).toBe('Diagnosing a bug or system failure');
+		expect(packs[0].command).toBe('bar build probe diagnose adversarial unknowns');
+	});
+
+	it('returns empty array when starter_packs absent', () => {
+		expect(getStarterPacks(minimalGrammar)).toEqual([]);
+	});
+
+	it('each pack has name, framing, command strings', () => {
+		const packs = getStarterPacks(grammarWithPacks);
+		for (const pack of packs) {
+			expect(typeof pack.name).toBe('string');
+			expect(typeof pack.framing).toBe('string');
+			expect(typeof pack.command).toBe('string');
+		}
 	});
 });

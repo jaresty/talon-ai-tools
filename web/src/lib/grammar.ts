@@ -1,3 +1,9 @@
+export interface StarterPack {
+	name: string;
+	framing: string;
+	command: string;
+}
+
 export interface PersonaPreset {
 	key: string;
 	label: string;
@@ -22,6 +28,7 @@ export interface Grammar {
 		guidance: Record<string, Record<string, string>>;
 		use_when: Record<string, Record<string, string>>;
 		kanji: Record<string, Record<string, string>>; // ADR-0143
+		categories?: Record<string, Record<string, string>>; // ADR-0144: semantic family groupings for method tokens
 	};
 	tasks: {
 		descriptions: Record<string, string>;
@@ -47,6 +54,7 @@ export interface Grammar {
 		kanji?: Record<string, Record<string, string>>; // ADR-0143
 	};
 	patterns?: GrammarPattern[];
+	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
 }
 
 export interface TokenMeta {
@@ -56,6 +64,7 @@ export interface TokenMeta {
 	guidance: string;
 	use_when: string;
 	kanji: string;
+	category: string; // ADR-0144: semantic family for method tokens; empty for other axes
 }
 
 import { base } from '$app/paths';
@@ -76,6 +85,7 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 	const guidance = grammar.axes.guidance?.[axis] ?? {};
 	const use_when = grammar.axes.use_when?.[axis] ?? {};
 	const kanji = grammar.axes.kanji?.[axis] ?? {};
+	const categories = grammar.axes.categories?.[axis] ?? {};
 	return Object.keys(defs)
 		.sort()
 		.map((token) => ({
@@ -84,8 +94,35 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 			description: defs[token] ?? '',
 			guidance: guidance[token] ?? '',
 			use_when: use_when[token] ?? '',
-			kanji: kanji[token] ?? ''
+			kanji: kanji[token] ?? '',
+			category: categories[token] ?? ''
 		}));
+}
+
+// Category order for method axis (ADR-0144)
+export const METHOD_CATEGORY_ORDER = [
+	'Reasoning', 'Exploration', 'Structural', 'Diagnostic',
+	'Actor-centered', 'Temporal/Dynamic', 'Comparative', 'Generative'
+];
+
+// Returns method tokens grouped by category in canonical order (ADR-0144).
+// Each entry is { category: string, tokens: TokenMeta[] }.
+export function getMethodTokensByCategory(grammar: Grammar): { category: string; tokens: TokenMeta[] }[] {
+	const all = getAxisTokens(grammar, 'method');
+	const byCategory = new Map<string, TokenMeta[]>();
+	const uncategorized: TokenMeta[] = [];
+	for (const t of all) {
+		if (!t.category) { uncategorized.push(t); continue; }
+		if (!byCategory.has(t.category)) byCategory.set(t.category, []);
+		byCategory.get(t.category)!.push(t);
+	}
+	const result: { category: string; tokens: TokenMeta[] }[] = [];
+	for (const cat of METHOD_CATEGORY_ORDER) {
+		const tokens = byCategory.get(cat);
+		if (tokens && tokens.length > 0) result.push({ category: cat, tokens });
+	}
+	if (uncategorized.length > 0) result.push({ category: '', tokens: uncategorized });
+	return result;
 }
 
 export function getTaskTokens(grammar: Grammar): TokenMeta[] {
@@ -140,4 +177,8 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 
 export function getUsagePatterns(grammar: Grammar): GrammarPattern[] {
 	return grammar.patterns ?? [];
+}
+
+export function getStarterPacks(grammar: Grammar): StarterPack[] {
+	return grammar.starter_packs ?? [];
 }

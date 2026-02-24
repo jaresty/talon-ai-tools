@@ -497,20 +497,73 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 		}
 		sort.Strings(tokenNames)
 
-		for _, token := range tokenNames {
-			desc := strings.TrimSpace(tokens[token])
-			if desc == "" {
-				desc = "(no description)"
+		if axisName == "method" {
+			// Group method tokens by semantic category (ADR-0144).
+			// Emit a bold category header row before each new category group.
+			categoryOrder := []string{"Reasoning", "Exploration", "Structural", "Diagnostic", "Actor-centered", "Temporal/Dynamic", "Comparative", "Generative"}
+			byCategory := make(map[string][]string)
+			uncategorized := []string{}
+			for _, token := range tokenNames {
+				cat := grammar.AxisCategory(axisName, token)
+				if cat == "" {
+					uncategorized = append(uncategorized, token)
+				} else {
+					byCategory[cat] = append(byCategory[cat], token)
+				}
 			}
-			slug := grammar.slugForToken(token)
-			if slug == "" {
-				slug = token
+			for _, cat := range categoryOrder {
+				catTokens := byCategory[cat]
+				if len(catTokens) == 0 {
+					continue
+				}
+				fmt.Fprintf(w, "| **%s** | | | | | |\n", cat)
+				for _, token := range catTokens {
+					desc := strings.TrimSpace(tokens[token])
+					if desc == "" {
+						desc = "(no description)"
+					}
+					slug := grammar.slugForToken(token)
+					if slug == "" {
+						slug = token
+					}
+					label := grammar.AxisLabel(axisName, token)
+					kanji := grammar.AxisKanji(axisName, token)
+					guidance := grammar.AxisGuidance(axisName, token)
+					useWhen := grammar.AxisUseWhen(axisName, token)
+					fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
+				}
 			}
-			label := grammar.AxisLabel(axisName, token)
-			kanji := grammar.AxisKanji(axisName, token)
-			guidance := grammar.AxisGuidance(axisName, token)
-			useWhen := grammar.AxisUseWhen(axisName, token)
-			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
+			for _, token := range uncategorized {
+				desc := strings.TrimSpace(tokens[token])
+				if desc == "" {
+					desc = "(no description)"
+				}
+				slug := grammar.slugForToken(token)
+				if slug == "" {
+					slug = token
+				}
+				label := grammar.AxisLabel(axisName, token)
+				kanji := grammar.AxisKanji(axisName, token)
+				guidance := grammar.AxisGuidance(axisName, token)
+				useWhen := grammar.AxisUseWhen(axisName, token)
+				fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
+			}
+		} else {
+			for _, token := range tokenNames {
+				desc := strings.TrimSpace(tokens[token])
+				if desc == "" {
+					desc = "(no description)"
+				}
+				slug := grammar.slugForToken(token)
+				if slug == "" {
+					slug = token
+				}
+				label := grammar.AxisLabel(axisName, token)
+				kanji := grammar.AxisKanji(axisName, token)
+				guidance := grammar.AxisGuidance(axisName, token)
+				useWhen := grammar.AxisUseWhen(axisName, token)
+				fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
+			}
 		}
 		fmt.Fprintf(w, "\n")
 

@@ -30,3 +30,30 @@
 **next_work:**
 - Behaviour: `bar help llm` renders method tokens grouped by category headers → Loop 2
 - Behaviour: SPA and TUI2 token pickers show category separators → Loop 3
+
+## loop-2 | 2026-02-23 | help_llm.go method category grouping
+
+**focus:** ADR-0144 §Phase 1 Exposure — `bar help llm tokens method` renders method tokens grouped by semantic category headers (e.g. `**Reasoning**`) between table rows.
+
+**active_constraint:** `Grammar.Axes.Categories` field did not exist; `AxisCategory()` accessor was absent; `help_llm.go` rendered all method tokens in a flat alphabetical table.
+
+**validation_targets:**
+- `go test ./internal/barcli/... -run TestHelpLLMMethodCatalogGroupedByCategory -v` — specifying validation: checks for `**Reasoning**`, `**Exploration**`, `**Structural**`, `**Diagnostic**` bold headers in output
+- `go test ./internal/barcli/... -count=1 -q` — regression suite
+
+**evidence:**
+- red | 2026-02-23T01:00:00Z | exit 1 | `TestHelpLLMMethodCatalogGroupedByCategory` — missing `**Reasoning**` etc. (test strengthened to require bold header format)
+- green | 2026-02-23T01:30:00Z | exit 0 | all barcli + cmd/bar tests pass after grammar.go + help_llm.go changes
+
+**rollback_plan:** `git restore .` then replay red command.
+
+**delta_summary:** 3 files changed — `grammar.go` (Categories field in AxisSection + rawAxisSection, wired from JSON, AxisCategory() accessor), `help_llm.go` (method table renders by category group), `app_help_cli_test.go` (specifying test added).
+
+**loops_remaining_forecast:** 4 loops remaining (SPA/TUI2 → starter pack data → bar starter CLI → help llm + SPA starter packs). Confidence: high.
+
+**residual_constraints:**
+- Severity: Low. SPA and TUI2 do not yet consume `axes.categories` — Loop 3. No current blocker.
+
+**next_work:**
+- Behaviour: SPA TokenSelector groups method tokens by category → Loop 3
+- Behaviour: TUI2 token picker shows category separator rows → Loop 3

@@ -238,6 +238,26 @@ func TestHelpLLMTokenCatalogHasKanjiColumn(t *testing.T) {
 	}
 }
 
+// TestHelpLLMMethodCatalogGroupedByCategory specifies that bar help llm Token Catalog
+// renders method tokens grouped by semantic category section headers (ADR-0144).
+// Category names appear as bold Markdown headers between token table rows, e.g. "**Reasoning**".
+func TestHelpLLMMethodCatalogGroupedByCategory(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "tokens", "method"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected bar help llm tokens method exit 0, got %d: %s", exit, stderr.String())
+	}
+	output := stdout.String()
+
+	// Representative category section headers must appear as bold markers between rows
+	for _, category := range []string{"**Reasoning**", "**Exploration**", "**Structural**", "**Diagnostic**"} {
+		if !strings.Contains(output, category) {
+			t.Errorf("Method catalog must include category section header %q (ADR-0144)", category)
+		}
+	}
+}
+
 // TestHelpAdvertisesTUI2 specifies that the general help output must mention
 // bar tui2 as an available interactive surface (ADR-0073, ADR-0081).
 // tui2 is the recommended command-centric grammar learning interface.

@@ -45,6 +45,7 @@ type AxisSection struct {
 	Guidance    map[string]map[string]string // ADR-0110: selection-oriented prose hints
 	UseWhen     map[string]map[string]string // ADR-0132: task-type discoverability hints
 	Kanji       map[string]map[string]string // ADR-0143: kanji icons for visual display
+	Categories  map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
 }
 
 type StaticSection struct {
@@ -134,8 +135,9 @@ type rawAxisSection struct {
 	ListTokens  map[string][]string          `json:"list_tokens"`
 	Labels      map[string]map[string]string `json:"labels"`   // ADR-0109
 	Guidance    map[string]map[string]string `json:"guidance"` // ADR-0110
-	UseWhen     map[string]map[string]string `json:"use_when"` // ADR-0132
-	Kanji       map[string]map[string]string `json:"kanji"`    // ADR-0143
+	UseWhen     map[string]map[string]string `json:"use_when"`    // ADR-0132
+	Kanji       map[string]map[string]string `json:"kanji"`       // ADR-0143
+	Categories  map[string]map[string]string `json:"categories"`  // ADR-0144
 }
 
 type rawStatic struct {
@@ -233,6 +235,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Guidance:    raw.Axes.Guidance,
 			UseWhen:     raw.Axes.UseWhen,
 			Kanji:       raw.Axes.Kanji,
+			Categories:  raw.Axes.Categories,
 		},
 		Static: StaticSection{
 			Profiles:     profiles,
@@ -844,6 +847,25 @@ func (g *Grammar) AxisKanji(axis, token string) string {
 		}
 		if kanji, ok := kanjiMap[strings.ToLower(tokenKey)]; ok {
 			return kanji
+		}
+	}
+	return ""
+}
+
+// AxisCategory returns the semantic family category for the given axis token (ADR-0144).
+// Returns empty string if no category is defined.
+func (g *Grammar) AxisCategory(axis, token string) string {
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	if axisKey == "" || tokenKey == "" {
+		return ""
+	}
+	if catMap, ok := g.Axes.Categories[axisKey]; ok {
+		if cat, ok := catMap[tokenKey]; ok {
+			return cat
+		}
+		if cat, ok := catMap[strings.ToLower(tokenKey)]; ok {
+			return cat
 		}
 	}
 	return ""

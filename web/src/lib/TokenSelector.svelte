@@ -37,6 +37,40 @@
 
 	let activeMeta = $derived(tokens.find((t) => t.token === activeToken) ?? null);
 
+	let panelStyle = $state('');
+
+	// Compute panel position before render, anchored to the active chip (not the full grid).
+	// Shows on whichever side of the chip has more viewport space — so chips near the top
+	// show below, chips near the bottom flip above.
+	$effect.pre(() => {
+		if (!activeMeta || !gridRef || window.innerWidth <= 767) { panelStyle = ''; return; }
+		const chipEl = gridRef.querySelector<HTMLElement>(`[data-token="${activeMeta.token}"]`);
+		const rect = (chipEl ?? gridRef).getBoundingClientRect();
+		const spaceBelow = window.innerHeight - rect.bottom;
+		const spaceAbove = rect.top;
+		const left = Math.round(rect.left);
+		const w = `min(600px, calc(100vw - ${left}px - 1rem))`;
+		if (spaceBelow >= spaceAbove) {
+			panelStyle = `top:${Math.round(rect.bottom + 4)}px; left:${left}px; width:${w}`;
+		} else {
+			panelStyle = `bottom:${Math.round(window.innerHeight - rect.top + 4)}px; left:${left}px; width:${w}`;
+		}
+	});
+
+	// Close panel on page scroll or touch scroll
+	$effect(() => {
+		if (!activeToken) return;
+
+		const handleScroll = () => { activeToken = null; };
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		window.addEventListener('touchmove', handleScroll, { passive: true });
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+			window.removeEventListener('touchmove', handleScroll);
+		};
+	});
+
 	// Reset focus index when filtered list changes
 	$effect(() => {
 		void filtered.length;
@@ -108,7 +142,7 @@
 	}
 </script>
 
-<div class="axis-panel">
+<div class="axis-panel" onmouseleave={() => { if (!isUsingTouch) activeToken = null; }}>
 	<div class="axis-header">
 		<span class="axis-name">{axis}</span>
 		<span class="axis-cap">0–{maxSelect}</span>
@@ -168,9 +202,10 @@
 				class:active-meta={isActive}
 				role="option"
 				aria-selected={isSelected}
+				data-token={meta.token}
 				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
 
-				onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
+			onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
 			onpointerdown={(e) => {
 				isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
 				activeAtPointerDown = activeToken;
@@ -207,7 +242,7 @@
 	{#if activeMeta}
 		{@const isActiveSel = selected.includes(activeMeta.token)}
 		{@const atCap = !isActiveSel && selected.length >= maxSelect}
-		<div class="meta-panel">
+		<div class="meta-panel" style={panelStyle}>
 			<div class="meta-header">
 				<code class="meta-token">{activeMeta.token}</code>
 				{#if activeMeta.label}
@@ -325,12 +360,12 @@
 
 	.token-chip.active-meta:not(:focus-visible) {
 		outline: 2px solid var(--color-accent);
-		outline-offset: 1px;
+		outline-offset: -1px;
 	}
 
 	.token-chip:focus-visible {
 		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
+		outline-offset: -1px;
 	}
 
 	.token-chip.disabled {
@@ -364,7 +399,6 @@
 	}
 
 	.meta-panel {
-		margin-top: 0.6rem;
 		padding: 0.75rem;
 		background: var(--color-surface);
 		border: 1px solid var(--color-accent-muted);
@@ -373,12 +407,9 @@
 		line-height: 1.5;
 		display: flex;
 		flex-direction: column;
-		max-height: min(40vh, calc(100vh - 4rem));
-		overflow: hidden;
-		position: sticky;
-		top: 1rem;
-		bottom: 1rem;
-		z-index: 10;
+		position: fixed;
+		z-index: 100;
+		pointer-events: none;
 	}
 
 	.meta-body {
@@ -507,6 +538,7 @@
 			max-height: 60vh;
 			overflow: hidden;
 			z-index: 200;
+			pointer-events: auto;
 			font-size: 1rem;
 			line-height: 1.6;
 			padding-bottom: 0;

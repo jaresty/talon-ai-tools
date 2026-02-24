@@ -2,6 +2,71 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import TokenSelector from './TokenSelector.svelte';
 
+// ── Hover-safety fix (option B) ───────────────────────────────────────────────
+// Spec:
+//   H1: mouseleave on .token-grid while panel is open → panel stays open
+//   H2: mouseleave on .axis-panel while panel is open → panel closes
+//   A1: no chip has an inline anchor-name style attribute
+
+describe('TokenSelector — hover-safety fix', () => {
+	it('H1: mouseleave on token-grid does not close the panel', async () => {
+		render(TokenSelector, {
+			props: { axis: 'form', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
+		});
+		// Open panel via hover
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		await fireEvent.mouseEnter(chip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+		// Simulate mouse leaving the grid (but not the axis-panel)
+		const grid = document.querySelector('.token-grid')!;
+		await fireEvent.mouseLeave(grid);
+		// Panel must still be open (H1)
+		expect(screen.getByText('When to use')).toBeTruthy();
+	});
+
+	it('H2: mouseleave on axis-panel closes the panel', async () => {
+		render(TokenSelector, {
+			props: { axis: 'form', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
+		});
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		await fireEvent.mouseEnter(chip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+		// Mouse leaves the entire axis section
+		const axisPanel = document.querySelector('.axis-panel')!;
+		await fireEvent.mouseLeave(axisPanel);
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
+	it('A1: chips have no inline anchor-name style', async () => {
+		render(TokenSelector, {
+			props: { axis: 'form', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
+		});
+		// Open panel so the active chip would have been given anchor-name in the old code
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		await fireEvent.mouseEnter(chip);
+		const chips = document.querySelectorAll('[role="option"]');
+		chips.forEach((c) => {
+			expect((c as HTMLElement).style.anchorName ?? '').toBe('');
+		});
+	});
+
+	it('M1: on mobile viewport, meta-panel has no inline position styles (CSS media query must control positioning)', async () => {
+		// Simulate mobile width so $effect.pre skips desktop positioning
+		const originalWidth = window.innerWidth;
+		Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+		render(TokenSelector, {
+			props: { axis: 'form', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
+		});
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		await fireEvent.click(chip); // mobile: click opens panel
+		const panel = document.querySelector('.meta-panel') as HTMLElement;
+		expect(panel).toBeTruthy();
+		// Inline style must be empty — mobile positioning comes from the CSS media query
+		expect(panel.getAttribute('style') ?? '').toBe('');
+		Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+	});
+});
+
 // 10-token fixture for filter-input tests (filter only shows when tokens.length > 8)
 const manyTokens = Array.from({ length: 10 }, (_, i) => ({
 	token: `tok${i}`,

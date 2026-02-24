@@ -238,9 +238,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response maintains an explicit and independent definition of correctness that remains authoritative over implementation. Implementations must be justified against this "
-        "definition and may not redefine, weaken, or reinterpret the criteria during construction. Progress is measured by alignment with the defined correctness conditions rather than "
-        "by artifact production.",
+        "spec": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions must be justified against this governing layer and may not redefine it during execution.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "

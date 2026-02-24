@@ -137,7 +137,7 @@
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response maintains an explicit and independent definition of correctness that remains authoritative over implementation. Implementations must be justified against this definition and may not redefine, weaken, or reinterpret the criteria during construction. Progress is measured by alignment with the defined correctness conditions rather than by artifact production.",
+        "spec": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions must be justified against this governing layer and may not redefine it during execution.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
         "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those dimensions before committing to a configuration.",
@@ -3149,7 +3149,7 @@
     }
   ],
   "checksums": {
-    "axes": "c7fe189c34dffe96b025d389cc44191183c95926c707ec83db57058698ed9533",
+    "axes": "6838e0f34ea4f3cf4a1e79b7629574942ab00c6d13d1f4a5926b6913260b5bc6",
     "tasks": "8c8e61d3bcf4cb061c975ecbdd7553affd6adc10bbf480bbfcd75762b8ed335a",
     "persona": "ee03637f4daa4ec4ec715131c2c0ae39c815c83a5f8e45ef7f7e25a9678947e8",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -52,7 +52,8 @@ vi.mock('$lib/grammar.js', () => ({
 	}),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn((s: string) => s.toLowerCase().replace(/\s+/g, '-')),
-	getUsagePatterns: vi.fn().mockReturnValue([])
+	getUsagePatterns: vi.fn().mockReturnValue([]),
+	getStarterPacks: vi.fn().mockReturnValue([])
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({

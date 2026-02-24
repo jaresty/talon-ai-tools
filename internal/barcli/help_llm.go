@@ -45,6 +45,9 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 	if shouldRender("patterns") {
 		renderUsagePatterns(w, grammar, compact)
 	}
+	if shouldRender("starter") {
+		renderStarterPacks(w, grammar, compact)
+	}
 	if shouldRender("heuristics") {
 		renderTokenSelectionHeuristics(w, compact)
 	}
@@ -844,6 +847,28 @@ func renderUsagePatterns(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "**Pattern:**\n```bash\n%s\n```\n\n", p.Command)
 		fmt.Fprintf(w, "**Example:**\n```bash\n%s\n```\n\n", p.Example)
 	}
+}
+
+func renderStarterPacks(w io.Writer, grammar *Grammar, compact bool) {
+	if len(grammar.StarterPacks) == 0 {
+		return
+	}
+	fmt.Fprintf(w, "## Starter Packs\n\n")
+	fmt.Fprintf(w, "Starter packs map a task framing to a suggested `bar build` command.\n")
+	fmt.Fprintf(w, "Run `bar starter <name>` to print the command, or `bar starter list` to see all packs.\n")
+	fmt.Fprintf(w, "The output is pipeable: `$(bar starter debug) --subject \"my problem\"`.\n\n")
+	if !compact {
+		fmt.Fprintf(w, "| Pack | Task framing | Suggested command |\n")
+		fmt.Fprintf(w, "|------|-------------|-------------------|\n")
+		for _, p := range grammar.StarterPacks {
+			fmt.Fprintf(w, "| `%s` | %s | `%s` |\n", p.Name, p.Framing, p.Command)
+		}
+	} else {
+		for _, p := range grammar.StarterPacks {
+			fmt.Fprintf(w, "- `%s`: %s → `%s`\n", p.Name, p.Framing, p.Command)
+		}
+	}
+	fmt.Fprintf(w, "\n")
 }
 
 func renderTokenSelectionHeuristics(w io.Writer, compact bool) {

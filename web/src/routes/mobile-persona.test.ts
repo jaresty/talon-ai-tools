@@ -28,7 +28,8 @@ vi.mock('$lib/grammar.js', () => ({
 	getPersonaAxisTokens: vi.fn().mockReturnValue(['as-designer']),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue('designer'),
-	getUsagePatterns: vi.fn().mockReturnValue([])
+	getUsagePatterns: vi.fn().mockReturnValue([]),
+	getStarterPacks: vi.fn().mockReturnValue([])
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({
@@ -47,16 +48,16 @@ describe('Page — Mobile Stacked Persona Selects', () => {
 	it('has persona selects in the DOM', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		await new Promise(r => setTimeout(r, 100));
-		
+
 		// Click persona tab to show persona section
 		const personaTab = Array.from(container.querySelectorAll('.tab')).find(
 			el => el.textContent?.trim() === 'persona'
 		);
 		(personaTab as HTMLElement).click();
 		flushSync();
-		
+
 		const selects = container.querySelectorAll('.persona-select');
 		expect(selects.length).toBeGreaterThanOrEqual(3);
 	});

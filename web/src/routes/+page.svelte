@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, getUsagePatterns } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
@@ -13,6 +13,7 @@
 	let grammar: Grammar | null = $state(null);
 	let error: string | null = $state(null);
 	let patterns = $state<GrammarPattern[]>([]);
+	let starterPacks = $state<StarterPack[]>([]);
 
 	let selected = $state<Record<string, string[]>>({
 		task: [],
@@ -65,7 +66,10 @@
 
 		try {
 			grammar = await loadGrammar();
-			if (grammar) patterns = getUsagePatterns(grammar);
+			if (grammar) {
+			patterns = getUsagePatterns(grammar);
+			starterPacks = getStarterPacks(grammar);
+		}
 		} catch (e) {
 			error = String(e);
 		}
@@ -430,7 +434,7 @@
 					{/if}
 				</div>
 
-				<PatternsLibrary {patterns} onLoad={loadPattern} />
+				<PatternsLibrary {patterns} {starterPacks} {grammar} onLoad={loadPattern} />
 
 				<!-- Shortcut legend — after axis panel so Tab flow is uninterrupted -->
 				<details class="shortcut-legend">

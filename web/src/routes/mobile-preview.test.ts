@@ -26,7 +26,8 @@ vi.mock('$lib/grammar.js', () => ({
 	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
-	getUsagePatterns: vi.fn().mockReturnValue([])
+	getUsagePatterns: vi.fn().mockReturnValue([]),
+	getStarterPacks: vi.fn().mockReturnValue([])
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({
@@ -45,7 +46,7 @@ describe('Page — Mobile Preview Toggle', () => {
 	it('renders the page component', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		const header = container.querySelector('header');
 		expect(header).toBeTruthy();
 	});
@@ -53,9 +54,9 @@ describe('Page — Mobile Preview Toggle', () => {
 	it('has preview toggle button', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		await new Promise(r => setTimeout(r, 100));
-		
+
 		const toggleBtn = container.querySelector('.preview-toggle');
 		expect(toggleBtn).toBeTruthy();
 	});
@@ -63,9 +64,9 @@ describe('Page — Mobile Preview Toggle', () => {
 	it('preview panel is in the DOM', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		await new Promise(r => setTimeout(r, 100));
-		
+
 		const previewPanel = container.querySelector('.preview-panel');
 		expect(previewPanel).toBeTruthy();
 	});
@@ -73,15 +74,15 @@ describe('Page — Mobile Preview Toggle', () => {
 	it('clicking toggle toggles the visible class', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		await new Promise(r => setTimeout(r, 100));
-		
+
 		const toggleBtn = container.querySelector('.preview-toggle');
 		const previewPanel = container.querySelector('.preview-panel');
-		
+
 		expect(toggleBtn).toBeTruthy();
 		expect(previewPanel).toBeTruthy();
-		
+
 		// Initially hidden on mobile (showPreview defaults to false)
 		expect(previewPanel?.classList.contains('visible')).toBe(false);
 

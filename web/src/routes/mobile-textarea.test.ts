@@ -26,7 +26,8 @@ vi.mock('$lib/grammar.js', () => ({
 	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
-	getUsagePatterns: vi.fn().mockReturnValue([])
+	getUsagePatterns: vi.fn().mockReturnValue([]),
+	getStarterPacks: vi.fn().mockReturnValue([])
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({
@@ -45,9 +46,9 @@ describe('Page — Mobile Expanded Textareas', () => {
 	it('has subject textarea with adequate rows', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-		
+
 		await new Promise(r => setTimeout(r, 100));
-		
+
 		const subjectTextarea = container.querySelector('textarea') as HTMLTextAreaElement;
 		expect(subjectTextarea).toBeTruthy();
 		expect(subjectTextarea.rows).toBeGreaterThanOrEqual(6);

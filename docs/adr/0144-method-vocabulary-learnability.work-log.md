@@ -145,3 +145,35 @@
 **next_work:**
 - Behaviour: `bar help llm` renders Starter Packs section (pack name, framing, command) → Loop 6
 - Behaviour: SPA PatternsLibrary renders starter packs as a distinct section with onLoad → Loop 6
+
+## loop-6 | 2026-02-24 | bar help llm Starter Packs section + SPA PatternsLibrary
+
+**focus:** ADR-0144 §Phase 2 Exposure — `bar help llm` renders a Starter Packs table (pack name, framing, `bar build` command); SPA `PatternsLibrary.svelte` renders a starter packs toggle section above usage patterns with `loadStarter` wiring `parseCommand → onLoad`.
+
+**active_constraint:** `help_llm.go` had no `renderStarterPacks` function; `PatternsLibrary.svelte` had no `starterPacks` prop and no `.starters` toggle section; `TestHelpLLMStarterPacksSection` (Go) + P1–P4 (SPA) specifying tests all failed before implementation. Secondary bug: `loadStarter` used `parsed.axes` (non-existent field) and called `parseCommand` without `grammar` argument, causing `tokens: {}` on click.
+
+**validation_targets:**
+- `go test ./internal/barcli/ -run TestHelpLLMStarterPacksSection -v` — specifying: "Starter Packs" heading + all 10 pack names + "bar build" commands in `bar help llm` output
+- `npm run test -- --run src/lib/PatternsLibrary.test.ts` — specifying: P1 (.starters renders when non-empty), P2 (absent when empty), P3 (toggle expands grid), P4 (click calls onLoad with parsed tokens)
+- `go test ./...` + `npm run test -- --run` — full regression suites
+
+**evidence:**
+- red | 2026-02-24T05:00:00Z | exit 1 | `go test ./internal/barcli/ -run TestHelpLLMStarterPacksSection -v` — test absent before implementation
+- red | 2026-02-24T05:00:10Z | exit 1 | `npm run test -- --run src/lib/PatternsLibrary.test.ts` — P4 red: `tokens: {}` (parsed.axes undefined); 22 page-level tests also red (getStarterPacks not mocked → TypeError in onMount caught → error state rendered)
+- green | 2026-02-24T05:00:10Z | exit 0 | `go test ./internal/barcli/ -run TestHelpLLMStarterPacksSection -v` — renderStarterPacks added to help_llm.go
+- green | 2026-02-24T05:00:25Z | exit 0 | `npm run test -- --run` — 166 tests pass after: PatternsLibrary accepts grammar prop; loadStarter uses parsed.selected; 10 page mock files get getStarterPacks; +page.svelte passes grammar to PatternsLibrary
+- removal | 2026-02-24T05:00:46Z | exit 1 | `git stash && npm run test -- --run src/lib/PatternsLibrary.test.ts` — 3 of 4 fail (P1/P3/P4 absent, P2 trivially passes); `git stash pop` restored
+
+**rollback_plan:** `git restore web/src/lib/PatternsLibrary.svelte web/src/routes/+page.svelte internal/barcli/help_llm.go` then replay `npm run test -- --run src/lib/PatternsLibrary.test.ts` to confirm P1/P3/P4 fail.
+
+**delta_summary:** `helper:diff-snapshot=17 files changed, 164 insertions(+), 32 deletions(-)` — `internal/barcli/help_llm.go` (renderStarterPacks func, wired into renderLLMHelp), `internal/barcli/app_help_cli_test.go` (TestHelpLLMStarterPacksSection), `web/src/lib/PatternsLibrary.svelte` (grammar prop, loadStarter fixed, .starters section, .pattern-cmd CSS), `web/src/routes/+page.svelte` (grammar passed to PatternsLibrary, starterPacks state, getStarterPacks called in onMount), `web/src/lib/PatternsLibrary.test.ts` (new; P1–P4 specifying tests), 10 page-level test mocks (getStarterPacks: vi.fn().mockReturnValue([]) added).
+
+**loops_remaining_forecast:** 0 loops remaining — ADR-0144 Phase 1 and Phase 2 MVP complete. All 6 loops landed green. Confidence: complete.
+
+**residual_constraints:**
+- Severity: Low. Phase 3 (family-token hierarchy) not yet implemented — deferred per ADR-0144 §Phase 3. No current blocker; opens a future ADR.
+- Severity: Low. TUI2 has no dedicated starter pack UI — deferred per ADR-0144 Phase 2 MVP decision. Starter packs accessible via `bar starter <name>` CLI.
+
+**next_work:**
+- ADR-0144 Phase 1 + Phase 2: COMPLETE. All 6 loops green.
+- Future: Phase 3 family-token hierarchy (opens new ADR when scoped).

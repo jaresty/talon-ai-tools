@@ -429,3 +429,34 @@ func TestPlainOutputPersonaLabels(t *testing.T) {
 	checkLabel("tone:casually")
 	checkLabel("intent:announce")
 }
+
+// TestHelpLLMStarterPacksSection specifies that bar help llm renders a
+// "Starter Packs" section listing all packs from the grammar (ADR-0144 Phase 2).
+// The section must appear after the Token Catalog and list each pack name,
+// framing, and bar build command.
+func TestHelpLLMStarterPacksSection(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
+	}
+	output := stdout.String()
+
+	// Section heading must be present
+	if !strings.Contains(output, "Starter Packs") {
+		t.Error("bar help llm must include a 'Starter Packs' section (ADR-0144 Phase 2)")
+	}
+
+	// All 10 pack names must appear
+	for _, name := range []string{"debug", "design", "review", "dissect", "pitch", "audit", "model", "charter", "explain", "versus"} {
+		if !strings.Contains(output, name) {
+			t.Errorf("Starter Packs section must include pack name %q", name)
+		}
+	}
+
+	// At least one bar build command must appear
+	if !strings.Contains(output, "bar build ") {
+		t.Error("Starter Packs section must include bar build commands")
+	}
+}

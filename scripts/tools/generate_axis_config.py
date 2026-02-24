@@ -136,6 +136,13 @@ def render_axis_config() -> str:
         )
     # Sort the final kanji_mapping to match expected order
     kanji_mapping = dict(sorted(kanji_mapping.items()))
+    category = payload.get("axis_category", {}) or {}
+    category_mapping: dict[str, Any] = {
+        axis: dict(sorted((category.get(axis) or {}).items()))
+        for axis in sorted(category.keys())
+        if category.get(axis)
+    }
+    category_mapping = dict(sorted(category_mapping.items()))
     # Use a very wide width to prevent pprint from splitting string literals
     # across lines (which creates ugly adjacent string concatenation)
     body = pprint.pformat(mapping, width=200, sort_dicts=True)
@@ -143,6 +150,7 @@ def render_axis_config() -> str:
     guidance_body = pprint.pformat(guidance_mapping, width=200, sort_dicts=True)
     use_when_body = pprint.pformat(use_when_mapping, width=200, sort_dicts=True)
     kanji_body = pprint.pformat(kanji_mapping, width=200, sort_dicts=True)
+    category_body = pprint.pformat(category_mapping, width=200, sort_dicts=True)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -203,6 +211,11 @@ def render_axis_config() -> str:
         def axis_key_to_kanji_map(axis: str) -> dict[str, str]:
             \"\"\"Return the key->kanji map for a given axis (ADR-0143).\"\"\"
             return AXIS_KEY_TO_KANJI.get(axis, {})
+
+
+        def axis_key_to_category_map(axis: str) -> dict[str, str]:
+            \"\"\"Return the key->category map for a given axis (ADR-0144).\"\"\"
+            return AXIS_KEY_TO_CATEGORY.get(axis, {})
 
 
         def axis_docs_for(axis: str) -> list[AxisDoc]:
@@ -274,6 +287,11 @@ def get_usage_patterns() -> list[dict]:
                 f"# for faster visual scanning in help, SPA, and TUI2. Display only - not part\n"
                 f"# of input grammar.\n"
                 f"AXIS_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {kanji_body}",
+                f"# Category assignments for method tokens (ADR-0144).\n"
+                f"# Each method token is assigned to exactly one semantic family by primary use case.\n"
+                f"# Tokens that span multiple families are placed by primary use case; contested\n"
+                f"# placements are resolved by the authors and recorded here as the authoritative SSOT.\n"
+                f"AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {category_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip() + usage_patterns_block,
             ]

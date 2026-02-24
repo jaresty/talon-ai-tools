@@ -210,6 +210,9 @@ def axis_catalog(
         "axis_kanji": {
             axis: axisConfig.axis_key_to_kanji_map(axis) for axis in axis_map
         },
+        "axis_category": {
+            axis: axisConfig.axis_key_to_category_map(axis) for axis in axis_map
+        },
         "static_prompts": static_prompt_catalog(
             static_prompt_list_path if lists_dir else ""
         ),
@@ -242,6 +245,7 @@ def serialize_axis_config(
         "axis_guidance": catalog["axis_guidance"],
         "axis_use_when": catalog["axis_use_when"],
         "axis_kanji": catalog["axis_kanji"],
+        "axis_category": catalog["axis_category"],
     }
     if include_axis_lists:
         payload["axis_list_tokens"] = catalog["axis_list_tokens"]

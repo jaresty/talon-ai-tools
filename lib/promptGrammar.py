@@ -177,6 +177,14 @@ def _build_axis_section(
         if tokens
     }
 
+    # Categories (ADR-0144): semantic family groupings for method tokens.
+    axis_category_raw = catalog.get("axis_category") or {}
+    axis_category: dict[str, dict[str, str]] = {
+        str(axis): {str(k): str(v) for k, v in sorted(tokens.items())}
+        for axis, tokens in sorted(axis_category_raw.items(), key=lambda i: str(i[0]))
+        if tokens
+    }
+
     section: dict[str, Any] = {
         "definitions": axis_definitions,
         "list_tokens": axis_list_tokens,
@@ -189,6 +197,8 @@ def _build_axis_section(
         section["use_when"] = axis_use_when
     if axis_kanji:
         section["kanji"] = axis_kanji
+    if axis_category:
+        section["categories"] = axis_category
 
     return (section, axis_slugs)
 

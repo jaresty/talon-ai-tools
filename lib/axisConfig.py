@@ -1190,6 +1190,75 @@ AXIS_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
     },
 }
 
+# Category assignments for method tokens (ADR-0144).
+# Each method token is assigned to exactly one semantic family by primary use case.
+# Tokens that span multiple families are placed by primary use case; contested
+# placements are resolved by the authors and recorded here as the authoritative SSOT.
+AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
+    "method": {
+        "abduce": "Reasoning",
+        "actors": "Actor-centered",
+        "adversarial": "Diagnostic",
+        "afford": "Actor-centered",
+        "analog": "Generative",
+        "analysis": "Structural",
+        "argue": "Reasoning",
+        "balance": "Comparative",
+        "bias": "Reasoning",
+        "boom": "Exploration",
+        "branch": "Exploration",
+        "calc": "Reasoning",
+        "canon": "Structural",
+        "cite": "Reasoning",
+        "cluster": "Structural",
+        "compare": "Comparative",
+        "converge": "Comparative",
+        "deduce": "Reasoning",
+        "depends": "Structural",
+        "diagnose": "Diagnostic",
+        "dimension": "Comparative",
+        "domains": "Exploration",
+        "effects": "Temporal/Dynamic",
+        "experimental": "Exploration",
+        "explore": "Exploration",
+        "field": "Actor-centered",
+        "flow": "Temporal/Dynamic",
+        "gap": "Structural",
+        "grove": "Generative",
+        "grow": "Generative",
+        "induce": "Reasoning",
+        "inversion": "Diagnostic",
+        "jobs": "Actor-centered",
+        "mapping": "Structural",
+        "meld": "Comparative",
+        "melody": "Generative",
+        "mod": "Generative",
+        "models": "Generative",
+        "objectivity": "Reasoning",
+        "operations": "Temporal/Dynamic",
+        "order": "Structural",
+        "origin": "Structural",
+        "polar": "Comparative",
+        "prioritize": "Comparative",
+        "probability": "Reasoning",
+        "product": "Generative",
+        "reify": "Generative",
+        "resilience": "Diagnostic",
+        "rigor": "Reasoning",
+        "risks": "Diagnostic",
+        "robust": "Diagnostic",
+        "shift": "Generative",
+        "simulation": "Temporal/Dynamic",
+        "spec": "Structural",
+        "split": "Exploration",
+        "systemic": "Temporal/Dynamic",
+        "trade": "Comparative",
+        "trans": "Temporal/Dynamic",
+        "unknowns": "Diagnostic",
+        "verify": "Reasoning",
+    }
+}
+
 
 @dataclass(frozen=True)
 class AxisDoc:
@@ -1223,6 +1292,11 @@ def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
 def axis_key_to_kanji_map(axis: str) -> dict[str, str]:
     """Return the key->kanji map for a given axis (ADR-0143)."""
     return AXIS_KEY_TO_KANJI.get(axis, {})
+
+
+def axis_key_to_category_map(axis: str) -> dict[str, str]:
+    """Return the key->category map for a given axis (ADR-0144)."""
+    return AXIS_KEY_TO_CATEGORY.get(axis, {})
 
 
 def axis_docs_for(axis: str) -> list[AxisDoc]:

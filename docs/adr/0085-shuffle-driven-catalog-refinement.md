@@ -56,6 +56,7 @@ bar shuffle --seed 102 --include persona_preset --fill 0.0
 **Sampling strategy:**
 - Broad sweep: 30-50 fully random shuffles (`--fill 0.5`)
 - Category deep-dives: 10-20 per axis with `--include` forcing selection
+- **Method category samples**: 5-10 shuffles per method semantic category (Decision/Understanding/Exploration/Diagnostic) with `--include method` to evaluate whether tokens within each category produce distinguishable, coherent outputs. Tokens in the same category that produce indistinguishable results are a stronger retirement signal than cross-category redundancy.
 - Edge cases: Low-fill (`--fill 0.1`) and high-fill (`--fill 0.9`) extremes
 
 ### Phase 2: Evaluation
@@ -69,6 +70,7 @@ For each generated prompt, evaluate against the prompt key (ADR 0083):
 | **Persona coherence** | Does the persona stance make sense for this task? |
 | **Category alignment** | Is each token doing the job of its stated category? |
 | **Combination harmony** | Do the selected tokens work together or fight? |
+| **Method category coherence** | When multiple method tokens are selected, do their semantic categories (Decision/Understanding/Exploration/Diagnostic) make complementary analytical sense together? |
 
 **Scoring rubric:**
 
@@ -128,6 +130,7 @@ After evaluating against skills, assess whether `bar help llm` provides adequate
 | **Selection guidance** | Do the "Token Selection Heuristics" in `bar help llm` help explain why these tokens work together? |
 | **Pattern examples** | Do the "Usage Patterns by Task Type" examples illustrate similar combinations? |
 | **Reference completeness** | Would someone consulting only `bar help llm` understand what this prompt will do? |
+| **Method category legibility** | Do the method category headings (Decision/Understanding/Exploration/Diagnostic) in the "Choosing Method" section clearly guide selection toward the methods in this combination? Score 1 if the category labels misdirected selection, 5 if they immediately surfaced the right methods. |
 
 **Scoring rubric:**
 
@@ -186,6 +189,8 @@ For each shuffled prompt, document:
 - [ ] Heuristics section missing guidance for {method category} + {scope category}
 - [ ] Usage patterns lack examples for {task type}
 - [ ] Composition rules don't explain {incompatibility or constraint}
+- [ ] Method category label {X} in "Choosing Method" section misdirected selection (explain)
+- [ ] Method category grouping missing tokens that belong in category {X}
 
 **Recommendations for bar help llm:**
 - Update § "Token Catalog" § "{axis}" to clarify {token} description
@@ -249,6 +254,41 @@ proposed_token: "contrarian"
 proposed_description: "The response challenges assumptions and argues against the obvious interpretation."
 reason: "No existing directional for critical/skeptical lens"
 evidence: [seed_8, seed_19]  # prompts where this would have helped
+```
+
+#### Starter Pack Update
+Shuffle combination is coherent and corresponds to or should be represented by a starter pack.
+
+```yaml
+action: starter-pack-update
+pack: "investigation"  # existing pack name
+current_tokens: [probe, struct, mean, mapping]
+proposed_tokens: [probe, struct, mean, mapping, adversarial]
+reason: "Shuffle evidence shows adversarial method consistently improves investigation prompts; pack should include it"
+evidence: [seed_18, seed_29, seed_44]
+```
+
+#### Starter Pack Add
+No starter pack covers a coherent combination that shuffle evidence repeatedly surfaces.
+
+```yaml
+action: starter-pack-add
+proposed_pack: "risk-audit"
+proposed_tokens: [probe, fail, adversarial, inversion]
+reason: "Shuffle repeatedly surfaces this Diagnostic-method combination for risk tasks; no pack represents it"
+evidence: [seed_22, seed_37]
+```
+
+#### Recategorize Method
+Method token is assigned to the wrong semantic category (Decision/Understanding/Exploration/Diagnostic).
+
+```yaml
+action: recategorize-method
+token: "systemic"
+from_category: "Understanding"
+to_category: "Diagnostic"
+reason: "Token examines system-level failure patterns, not structural mapping"
+evidence: [seed_12, seed_34]
 ```
 
 #### Phase 3b: Cross-Validate with ADR-0113
@@ -315,6 +355,11 @@ For each shuffled prompt, capture:
 - Persona coherence: {1-5}
 - Category alignment: {1-5}
 - Combination harmony: {1-5}
+- Method category coherence: {1-5}
+  - 5: All methods from compatible categories (e.g., two Diagnostic methods, or Exploration→Understanding progression)
+  - 3: Mix of categories with plausible rationale
+  - 1: Category clash (e.g., Exploration + Decision methods without a bridging task)
+  - N/A: Only one method token selected
 - **Overall**: {1-5}
 
 **Meta-Evaluation (vs Bar Skills):**
@@ -333,6 +378,11 @@ For each shuffled prompt, capture:
 
 **Notes:**
 {Qualitative observations, specific concerns, token interactions}
+
+**Kanji spot-check (optional):**
+- [ ] Kanji for selected tokens are semantically reinforcing (e.g., 隙 for `gap` = gap/crack ✓)
+- [ ] No kanji appear duplicated across displayed tokens in this combination
+- Flag any that feel misleading or arbitrary; record in `category-feedback.md`
 
 **Skill Feedback:**
 - [ ] Skill gap: {which skill} § {section} needs {what}
@@ -355,8 +405,9 @@ The refinement cycle produces:
 3. **Skill feedback**: `docs/adr/evidence/0085/skill-feedback.md` - Aggregated improvements for bar skills
 4. **Help LLM feedback**: `docs/adr/evidence/0085/help-llm-feedback.md` - `bar help llm` documentation gaps
 5. **Catalog feedback**: `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
-6. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
-7. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
+6. **Category feedback**: `docs/adr/evidence/0085/category-feedback.md` - Method tokens miscategorized; category label clarity issues; mismatches between `AXIS_KEY_TO_CATEGORY` and skill heuristics
+7. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
+8. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
 
 ---
 
@@ -509,6 +560,7 @@ Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
 | `docs/adr/evidence/0085/skill-feedback.md` | Aggregated skill improvement recommendations |
 | `docs/adr/evidence/0085/help-llm-feedback.md` | `bar help llm` documentation improvement recommendations |
 | `docs/adr/evidence/0085/catalog-feedback.md` | Catalog issues discovered via skill validation |
+| `docs/adr/evidence/0085/category-feedback.md` | Method token categorization issues and category label clarity gaps |
 | `lib/promptConfig.py` | Catalog edits (static prompts) |
 | `lib/axisConfig.py` | Axes token edits |
 | `lib/personaConfig.py` | Persona/intent edits |

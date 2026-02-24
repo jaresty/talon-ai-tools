@@ -114,6 +114,20 @@ with approximate probabilities, for example:
 
 **Output artifact:** `docs/adr/evidence/0113/task-taxonomy.md`
 
+**Secondary pass — method category stratification:**
+
+After generating the main probability-weighted list, run a secondary pass to surface task types that may be underrepresented in a flat probability-weighted sample:
+
+```bash
+bar build probe full variants --addendum \
+  "For each method category — Decision Methods, Understanding Methods, \
+   Exploration Methods, Diagnostic Methods — list 5 realistic bar task types \
+   where that category's methods would be the primary analytical tool. \
+   Label each with the category and an example bar command."
+```
+
+Use the output to ensure each method category has at least 3-5 representative tasks in the evaluation corpus. This prevents systematic under-sampling of Diagnostic or Exploration tasks, which users may describe with lower-frequency vocabulary but are no less important.
+
 ---
 
 ### Phase 2: Apply Bar Skills
@@ -140,6 +154,8 @@ agent tests both the catalog and the skill simultaneously.
 - Considered: show, probe → chose: show (explanation task, not analysis)
 - Completeness: full (thorough explanation needed)
 - Scope: considered struct, mean → chose: mean (conceptual understanding is the goal)
+- **Method category targeted:** Understanding (explanation task requires structural mapping, not root-cause or decision)
+  - **Category rationale:** goal is to convey how the system works, not diagnose problems or evaluate options
 - Method: considered melody → rejected (coordination analysis is secondary)
 - Form: (none selected)
 - Channel: plain (prose for PM audience)
@@ -180,6 +196,15 @@ serve the task*.
 - **3 - Partial coverage**: Key aspects of the task are not represented by any token
 - **2 - Poor coverage**: The combination misrepresents the task or skill misrouted badly
 - **1 - No coverage**: No adequate token combination exists for this task type
+
+**Starter pack check (secondary):**
+
+After scoring the skill-selected combination, check whether a starter pack covers this task type:
+
+- Is there a starter pack that maps to this task type? If yes, name it and score its coverage: {1-5}
+- Pack vs autopilot: [Pack better / Autopilot better / Equivalent]
+- If pack is better: what does it provide that autopilot missed? (candidate for skill-guidance-wrong diagnosis)
+- If no relevant pack exists: does this task type warrant a new starter pack? (candidate for `starter-pack-add` recommendation)
 
 **Output artifact:** `docs/adr/evidence/0113/evaluations/task_T01_eval.md`
 
@@ -266,7 +291,33 @@ recommendation:
 evidence: [task_T19, task_T23]
 ```
 
-#### Gap Type 4: Out of Scope
+#### Gap Type 4: Category Misrouting
+
+A method token was selected from the correct axis, but its semantic category (Decision/Understanding/Exploration/Diagnostic) doesn't match the task's analytical need. The token is discoverable and the skill guidance isn't grossly wrong — the selection fails at category granularity.
+
+```yaml
+gap_type: category-misrouting
+task: T31 — Identify the root cause of a recurring production failure
+dimension: method
+observation: >
+  bar-autopilot selected 'mapping' (Understanding category) to analyze
+  the failure's structure. The task calls for root-cause work, which belongs
+  to the Diagnostic category ('diagnose', 'inversion', 'adversarial').
+  'mapping' is discoverable and technically valid, but the wrong analytical
+  stance for this task type.
+recommendation:
+  action: skill-update
+  skill: bar-autopilot
+  section: "Choosing Method"
+  proposed_addition: >
+    For root-cause and failure-mode tasks, target Diagnostic-category methods
+    (diagnose, inversion, adversarial) before Understanding-category methods.
+    Understanding methods (mapping, systemic, flow) describe structure;
+    Diagnostic methods find what's broken.
+evidence: [task_T31]
+```
+
+#### Gap Type 5: Out of Scope
 
 The task is not appropriate for bar — bar's grammar cannot represent it well and should not
 try to. This is a valid finding: knowing the catalog's boundary is as useful as knowing its coverage.
@@ -298,6 +349,7 @@ Aggregate gap diagnoses into actionable recommendations following the same taxon
 | `missing-token` | **Add** — propose new token with description |
 | `undiscoverable-token` | **Edit** — clarify token description to surface for this task type; or update skill heuristics |
 | `skill-guidance-wrong` | **Skill-update** — revise skill section (Usage Patterns, Heuristics) |
+| `category-misrouting` | **Skill-update** — revise "Choosing Method" section to clarify category selection for this task type |
 | `out-of-scope` | **Document** — note as known boundary in bar help llm |
 
 ---
@@ -315,6 +367,8 @@ Aggregate gap diagnoses into actionable recommendations following the same taxon
 - Task token considered: {options} → chose: {token} (reason)
 - Completeness: {token} (reason)
 - Scope: considered {options} → chose: {token} (reason)
+- **Method category targeted:** [Decision / Understanding / Exploration / Diagnostic / mixed]
+  - **Category rationale:** {why this category fits the task's analytical need}
 - Method: considered {options} → chose / rejected: {token} (reason)
 - Form: {token or none} (reason)
 - Channel: {token or none} (reason)
@@ -344,8 +398,14 @@ bar build {tokens}
 - Prompt clarity: {1-5}
 - **Overall: {1-5}**
 
-**Gap diagnosis:** {gap type or "none"}
+**Gap diagnosis:** {gap type or "none"} — [missing-token / undiscoverable-token / skill-guidance-wrong / category-misrouting / out-of-scope]
 {Gap YAML block if applicable}
+
+**Starter pack check:**
+- Relevant pack: {pack name or "none"}
+- Pack coverage score: {1-5 or N/A}
+- Pack vs autopilot: [Pack better / Autopilot better / Equivalent / N/A]
+- Notes: {what pack adds or misses vs autopilot selection}
 
 **Notes:**
 {Observations on what worked, what was missing, what the skill did well or poorly}
@@ -362,6 +422,7 @@ bar build {tokens}
 | `docs/adr/evidence/0113/evaluations/` | Per-task coverage scores and gap diagnoses |
 | `docs/adr/evidence/0113/gap-catalog.md` | Aggregated gap findings grouped by type |
 | `docs/adr/evidence/0113/recommendations.yaml` | Actionable recommendations (same format as ADR-0085) |
+| `docs/adr/evidence/0113/category-feedback.md` | Method token categorization issues and category label clarity gaps |
 
 ---
 

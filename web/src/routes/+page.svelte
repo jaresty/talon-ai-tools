@@ -92,7 +92,7 @@
 				copyPrompt();
 			} else if (e.key === 'u' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
-				sharePrompt();
+				shareLink();
 			}
 		}
 		document.addEventListener('keydown', handleGlobalKey);
@@ -160,13 +160,48 @@
 		setTimeout(() => (copiedPrompt = false), 1500);
 	}
 
-	function sharePrompt() {
+	async function shareLink() {
 		const encoded = serialize();
 		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
 		window.history.replaceState(null, '', `#${encoded}`);
-		navigator.clipboard.writeText(url);
-		shared = true;
-		setTimeout(() => (shared = false), 1500);
+		if (navigator.share) {
+			await navigator.share({ url });
+		} else {
+			navigator.clipboard.writeText(url);
+			shared = true;
+			setTimeout(() => (shared = false), 1500);
+		}
+	}
+
+	async function sharePromptNative() {
+		if (!grammar) return;
+		const text = renderPrompt(grammar, selected, subject, addendum, persona);
+		if (navigator.share) {
+			await navigator.share({ text });
+		} else {
+			navigator.clipboard.writeText(text);
+			copiedPrompt = true;
+			setTimeout(() => (copiedPrompt = false), 1500);
+		}
+	}
+
+	let touchStartX = 0;
+	let touchStartY = 0;
+
+	function handleTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+		touchStartY = e.touches[0].clientY;
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		const dx = e.changedTouches[0].clientX - touchStartX;
+		const dy = e.changedTouches[0].clientY - touchStartY;
+		const target = e.target as Element;
+		if (target.closest('input, textarea, select')) return;
+		if (Math.abs(dx) < 50) return;
+		if (Math.abs(dy) >= Math.abs(dx)) return;
+		if (dx < 0) goToNextTab();
+		else goToPrevTab();
 	}
 
 	function clearState() {
@@ -295,7 +330,7 @@
 		<div class="loading">Loading grammar…</div>
 	{:else}
 		<div class="main">
-			<section class="selector-panel">
+			<section class="selector-panel" role="region" aria-label="Token selector" ontouchstart={handleTouchStart} ontouchend={handleTouchEnd}>
 				{#if activeTab === 'persona'}
 				<!-- Persona -->
 				<div class="persona-section">
@@ -490,8 +525,11 @@
 						<button class="copy-prompt-btn" onclick={copyPrompt}>
 							{copiedPrompt ? '✓ Copied' : 'Copy prompt'}
 						</button>
-						<button class="share-btn" onclick={sharePrompt}>
-							{shared ? '✓ Link copied' : 'Share'}
+						<button class="share-prompt-btn" onclick={sharePromptNative}>
+							Share prompt
+						</button>
+						<button class="share-link-btn" onclick={shareLink}>
+							{shared ? '✓ Link copied' : 'Share link'}
 						</button>
 						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K) | Copy cmd (⌘⇧C) | Copy prompt (⌘⇧P) | Share (⌘⇧U)">Clear</button>
 					</div>
@@ -571,8 +609,11 @@
 		<button class="copy-prompt-btn" onclick={copyPrompt}>
 			{copiedPrompt ? '✓ Copied' : 'Copy prompt'}
 		</button>
-		<button class="share-btn" onclick={sharePrompt}>
-			{shared ? '✓ Link copied' : 'Share'}
+		<button class="share-prompt-btn" onclick={sharePromptNative}>
+			Share prompt
+		</button>
+		<button class="share-link-btn" onclick={shareLink}>
+			{shared ? '✓ Link copied' : 'Share link'}
 		</button>
 		<button class="clear-btn" onclick={clearState} title="Clear all (⌘K) | Copy cmd (⌘⇧C) | Copy prompt (⌘⇧P) | Share (⌘⇧U)">Clear</button>
 	</div>
@@ -681,7 +722,7 @@
 		flex-wrap: wrap;
 	}
 
-	.copy-btn, .copy-prompt-btn, .share-btn, .clear-btn {
+	.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .clear-btn {
 		padding: 0.3rem 0.75rem;
 		background: var(--color-accent-muted);
 		border: 1px solid var(--color-accent);
@@ -691,7 +732,7 @@
 		font-size: 0.8rem;
 	}
 
-	.copy-btn:hover, .copy-prompt-btn:hover, .share-btn:hover { background: var(--color-accent); }
+	.copy-btn:hover, .copy-prompt-btn:hover, .share-prompt-btn:hover, .share-link-btn:hover { background: var(--color-accent); }
 
 	.copy-prompt-btn {
 		border-color: var(--color-success);
@@ -1161,7 +1202,7 @@
 			justify-content: center;
 		}
 
-		.copy-btn, .copy-prompt-btn, .share-btn, .clear-btn {
+		.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .clear-btn {
 			min-height: 44px;
 		}
 

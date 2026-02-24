@@ -86,15 +86,14 @@ describe('Page — Mobile Floating Action Button', () => {
 		expect(actionOverlay?.classList.contains('mobile-visible')).toBe(true);
 	});
 
-	it('has copy and share buttons inside action-overlay', async () => {
+	it('has copy, share-prompt, and share-link buttons inside action-overlay', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 
 		await new Promise(r => setTimeout(r, 100));
 
-		const copyBtn = container.querySelector('.action-overlay .copy-btn');
-		const shareBtn = container.querySelector('.action-overlay .share-btn');
-		expect(copyBtn).toBeTruthy();
-		expect(shareBtn).toBeTruthy();
+		expect(container.querySelector('.action-overlay .copy-btn')).toBeTruthy();
+		expect(container.querySelector('.action-overlay .share-prompt-btn')).toBeTruthy();
+		expect(container.querySelector('.action-overlay .share-link-btn')).toBeTruthy();
 	});
 });

@@ -43,7 +43,7 @@ Each method token gains a category placing it in one of ~8 semantic families. Al
 | Comparative | `compare`, `contrast`, `balance`, `trade`, `polar`, `dimension` |
 | Generative | `analog`, `models`, `reify`, `grove`, `grow`, `melody` |
 
-Tokens that plausibly span multiple categories are assigned by primary use case. The assignment is editorial; contested placements are resolved by the authors and recorded in `AXIS_KEY_TO_CATEGORY`.
+Tokens that plausibly span multiple categories are assigned by primary use case. The assignment is editorial; contested placements are resolved by the authors and recorded in `AXIS_KEY_TO_CATEGORY`. A placement is **contested** when a token's category assignment changes after its initial merge — any such change must be discussed in a PR and recorded as a comment in `AXIS_KEY_TO_CATEGORY` alongside the token entry. This definition of contestation is what the Phase 3 gate condition "no contested placements merged in the prior 90 days" measures.
 
 **Data architecture — follows existing metadata pattern:**
 
@@ -65,6 +65,7 @@ Named bundles that map a task framing to a curated set of relevant tokens. Users
 - Must not conflict with any existing bar token name (task, scope, method, form, channel, directional)
 - Must not conflict with any bar axis name (`scope`, `method`, `form`, etc.)
 - Checked against the token registry at definition time
+- The collision check is **bi-directional**: pack names are checked against the token registry when packs are defined, and new token registrations must also be checked against existing pack names. A token whose name matches a pack name must be rejected or the pack renamed.
 
 **Proposed initial starter packs:**
 
@@ -127,7 +128,7 @@ Once Phase 1 and 2 have been in use, introduce generic "family" tokens that alia
 - Family names must not conflict with existing specific token names or axis names
 - Each family token specifies its default sub-token and its member list explicitly (e.g., `reason` → default: `abduce`, members: `[deduce, induce, abduce, argue, verify, bias]`)
 - Default sub-token selection rationale must be documented alongside the token definition
-- Family tokens are valid anywhere a method token is valid; when combined with a specific sub-token from the same family (e.g., `reason verify`), the family token is ignored and the specific token takes precedence
+- Family tokens are valid anywhere a method token is valid; when combined with a specific sub-token from the same family (e.g., `reason verify`), the family token is **silently dropped** — no error is produced, and the specific token is used verbatim. The output of `bar build reason verify` must be identical to `bar build verify`. When two family tokens from different families are combined (e.g., `reason explore`), both resolve to their respective defaults and both default sub-tokens are used.
 
 **The hierarchy is deferred because** designing family boundaries before empirical category data is available risks encoding incorrect groupings, and this is a vocabulary change (new tokens) requiring more careful design than a navigation change.
 

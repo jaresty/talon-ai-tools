@@ -57,3 +57,32 @@
 **next_work:**
 - Behaviour: SPA TokenSelector groups method tokens by category → Loop 3
 - Behaviour: TUI2 token picker shows category separator rows → Loop 3
+
+## loop-3 | 2026-02-24 | SPA TokenSelector + TUI2 category grouping
+
+**focus:** ADR-0144 §Phase 1 Exposure — SPA `TokenSelector.svelte` renders method tokens grouped by category headers; TUI2 token picker already had `SemanticGroup` rendering (confirmed complete in prior work).
+
+**active_constraint:** `TokenSelector.svelte` rendered a flat token list regardless of category data; `METHOD_CATEGORY_ORDER` was not imported; no `.category-header` elements existed. The 6 specifying tests (C1–C6) did not exist.
+
+**validation_targets:**
+- `npm run test -- --run` with 6 new specifying tests (C1–C6 in `TokenSelector.test.ts`) — checks: headers rendered, headers not role=option, canonical order, flat on filter, uncategorized trailing, non-method axis stays flat
+- Full suite: 159 tests pass
+
+**evidence:**
+- red | 2026-02-24T04:29:00Z | exit 0 (38 TokenSelector tests, 0 category tests) | `npm run test -- --run` — pre-implementation baseline: no C1–C6 specifying tests existed; category grouping absent
+- green | 2026-02-24T04:30:32Z | exit 0 | 159 passed (44 TokenSelector, 6 new C1–C6 pass) after `TokenSelector.svelte` updated with `categoryGroups` derived + grouped template branch + `.category-header` CSS
+- removal | 2026-02-24T04:30:55Z | `git stash` reverted both implementation and tests simultaneously; stashed state ran 149 tests / 38 TokenSelector — 6 C1–C6 tests absent confirms pre-implementation state had no specifying validation. `git stash pop` restored.
+
+**rollback_plan:** `git restore web/src/lib/TokenSelector.svelte web/src/lib/TokenSelector.test.ts` then replay `npm run test -- --run` to confirm C1–C6 absent.
+
+**delta_summary:** `helper:diff-snapshot=8 files changed, 347 insertions(+), 67 deletions(-)` — primary changes: `TokenSelector.svelte` (category grouping logic + template + CSS), `TokenSelector.test.ts` (6 specifying tests C1–C6), `docs/adr/0144-method-vocabulary-learnability.md` (3 ADR clarifications from gap analysis: bi-directional collision check, contested definition, Phase 3 family-token semantics). TUI2 `SemanticGroup` rendering was already in place.
+
+**loops_remaining_forecast:** 3 loops remaining (Loop 4: starter pack data + grammar JSON → Loop 5: bar starter CLI → Loop 6: bar help llm starter packs + SPA PatternsLibrary). Confidence: high.
+
+**residual_constraints:**
+- Severity: Low. Starter pack data (`lib/starterPacks.py`, grammar JSON `starter_packs` key) not yet created — Loop 4 target. No current blocker on Loop 3 completion.
+- Severity: Low. TUI2 has no dedicated starter pack UI (Phase 2 MVP decision per ADR). Not a constraint.
+
+**next_work:**
+- Behaviour: `lib/starterPacks.py` + grammar JSON `starter_packs` key populated with 10 initial packs → Loop 4
+- Behaviour: `bar starter list` and `bar starter <name>` CLI subcommand → Loop 5

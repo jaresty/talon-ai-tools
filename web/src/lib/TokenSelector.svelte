@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { METHOD_CATEGORY_ORDER } from './grammar.js';
 	import type { TokenMeta } from './grammar.js';
 
 	interface Props {
@@ -25,6 +26,31 @@
 	// Touch browsers fire compat mouseenter events — suppress them after any touch interaction
 	let isUsingTouch = $state(false);
 
+	// True when any token has a non-empty category — enables grouped rendering
+	let hasCategoryGroups = $derived(tokens.some((t) => t.category));
+
+	// Groups for grouped rendering (no filter active). Follows canonical METHOD_CATEGORY_ORDER,
+	// with uncategorized tokens in a trailing group.
+	let categoryGroups = $derived((): { category: string; tokens: TokenMeta[] }[] => {
+		if (!hasCategoryGroups) return [];
+		const byCategory = new Map<string, TokenMeta[]>();
+		const uncategorized: TokenMeta[] = [];
+		for (const t of tokens) {
+			if (!t.category) { uncategorized.push(t); continue; }
+			if (!byCategory.has(t.category)) byCategory.set(t.category, []);
+			byCategory.get(t.category)!.push(t);
+		}
+		const result: { category: string; tokens: TokenMeta[] }[] = [];
+		for (const cat of METHOD_CATEGORY_ORDER) {
+			const catTokens = byCategory.get(cat);
+			if (catTokens && catTokens.length > 0) result.push({ category: cat, tokens: catTokens });
+		}
+		if (uncategorized.length > 0) result.push({ category: '', tokens: uncategorized });
+		return result;
+	});
+
+	// Flat token list in display order — used for keyboard navigation.
+	// In grouped mode (no filter), tokens appear in category order; in flat/filter mode, unchanged.
 	let filtered = $derived(
 		filter.trim()
 			? tokens.filter(
@@ -32,7 +58,9 @@
 						t.token.includes(filter.toLowerCase()) ||
 						t.label.toLowerCase().includes(filter.toLowerCase())
 				)
-			: tokens
+			: hasCategoryGroups
+				? categoryGroups().flatMap((g) => g.tokens)
+				: tokens
 	);
 
 	let activeMeta = $derived(tokens.find((t) => t.token === activeToken) ?? null);
@@ -190,53 +218,105 @@
 		onkeydown={handleGridKey}
 		bind:this={gridRef}
 	>
-		{#each filtered as meta, i (meta.token)}
-			{@const isSelected = selected.includes(meta.token)}
-			{@const atCap = !isSelected && selected.length >= maxSelect}
-			{@const isActive = activeToken === meta.token}
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<div
-				class="token-chip"
-				class:selected={isSelected}
-				class:disabled={atCap}
-				class:active-meta={isActive}
-				role="option"
-				aria-selected={isSelected}
-				data-token={meta.token}
-				tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
-
-			onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
-			onpointerdown={(e) => {
-				isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
-				activeAtPointerDown = activeToken;
-				wasJustClicked = true;
-			}}
-			onclick={() => handleChipClick(meta, atCap)}
-				onkeydown={(e) => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault();
-						// Keyboard: focus already showed detail, so commit directly
-						if (!atCap) { onToggle(meta.token); activeToken = null; }
-					}
-				}}
-				onfocus={() => {
-					focusedIndex = i;
-					if (!wasJustClicked) activeToken = meta.token;
-					wasJustClicked = false;
-				}}
-			>
-				{#if meta.kanji}
-					<span class="token-kanji">{meta.kanji}</span>
+		{#if hasCategoryGroups && !filter.trim()}
+			{#each categoryGroups() as group}
+				{#if group.category}
+					<div class="category-header" role="presentation">{group.category}</div>
 				{/if}
-				<code>{meta.token}</code>
-				{#if meta.label}
-					<span class="token-label">{meta.label}</span>
-				{/if}
-				{#if meta.use_when}
-					<span class="use-when-dot">●</span>
-				{/if}
-			</div>
-		{/each}
+				{#each group.tokens as meta (meta.token)}
+					{@const i = filtered.indexOf(meta)}
+					{@const isSelected = selected.includes(meta.token)}
+					{@const atCap = !isSelected && selected.length >= maxSelect}
+					{@const isActive = activeToken === meta.token}
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<div
+						class="token-chip"
+						class:selected={isSelected}
+						class:disabled={atCap}
+						class:active-meta={isActive}
+						role="option"
+						aria-selected={isSelected}
+						data-token={meta.token}
+						tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
+						onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
+						onpointerdown={(e) => {
+							isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
+							activeAtPointerDown = activeToken;
+							wasJustClicked = true;
+						}}
+						onclick={() => handleChipClick(meta, atCap)}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								if (!atCap) { onToggle(meta.token); activeToken = null; }
+							}
+						}}
+						onfocus={() => {
+							focusedIndex = i;
+							if (!wasJustClicked) activeToken = meta.token;
+							wasJustClicked = false;
+						}}
+					>
+						{#if meta.kanji}
+							<span class="token-kanji">{meta.kanji}</span>
+						{/if}
+						<code>{meta.token}</code>
+						{#if meta.label}
+							<span class="token-label">{meta.label}</span>
+						{/if}
+						{#if meta.use_when}
+							<span class="use-when-dot">●</span>
+						{/if}
+					</div>
+				{/each}
+			{/each}
+		{:else}
+			{#each filtered as meta, i (meta.token)}
+				{@const isSelected = selected.includes(meta.token)}
+				{@const atCap = !isSelected && selected.length >= maxSelect}
+				{@const isActive = activeToken === meta.token}
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<div
+					class="token-chip"
+					class:selected={isSelected}
+					class:disabled={atCap}
+					class:active-meta={isActive}
+					role="option"
+					aria-selected={isSelected}
+					data-token={meta.token}
+					tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
+					onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
+					onpointerdown={(e) => {
+						isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
+						activeAtPointerDown = activeToken;
+						wasJustClicked = true;
+					}}
+					onclick={() => handleChipClick(meta, atCap)}
+					onkeydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							if (!atCap) { onToggle(meta.token); activeToken = null; }
+						}
+					}}
+					onfocus={() => {
+						focusedIndex = i;
+						if (!wasJustClicked) activeToken = meta.token;
+						wasJustClicked = false;
+					}}
+				>
+					{#if meta.kanji}
+						<span class="token-kanji">{meta.kanji}</span>
+					{/if}
+					<code>{meta.token}</code>
+					{#if meta.label}
+						<span class="token-label">{meta.label}</span>
+					{/if}
+					{#if meta.use_when}
+						<span class="use-when-dot">●</span>
+					{/if}
+				</div>
+			{/each}
+		{/if}
 	</div>
 
 	{#if activeMeta}
@@ -334,6 +414,25 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.4rem;
+		align-items: flex-start;
+	}
+
+	.category-header {
+		width: 100%;
+		font-size: 0.68rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+		padding: 0.4rem 0 0.1rem 0;
+		margin-top: 0.2rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.category-header:first-child {
+		border-top: none;
+		padding-top: 0;
+		margin-top: 0;
 	}
 
 	.token-chip {

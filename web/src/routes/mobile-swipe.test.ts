@@ -108,6 +108,25 @@ describe('Page — Swipe to Switch Tabs', () => {
 		expect(activeTabLabel(container)).toBe('task');
 	});
 
+	it('swipe does NOT focus a chip in the new tab (prevents ghost click on focused chip)', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		const panel = container.querySelector('.selector-panel') as HTMLElement;
+		fireTouchStart(panel, 300, 200);
+		fireTouchEnd(panel, 150, 210); // left swipe → completeness tab
+		await new Promise(r => setTimeout(r, 300));
+
+		expect(activeTabLabel(container)).toBe('completeness');
+		// After a swipe, document.activeElement must not be a chip inside the panel
+		// (chips have class 'token-chip' or similar — anything that's not a .tab button)
+		const focused = document.activeElement as HTMLElement | null;
+		const panelEl = container.querySelector('.selector-panel');
+		const focusedInsidePanel = focused && panelEl?.contains(focused) && !focused.classList.contains('tab');
+		expect(focusedInsidePanel).toBeFalsy();
+	});
+
 	it('vertical swipe does NOT change the active tab', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });

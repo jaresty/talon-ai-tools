@@ -248,8 +248,8 @@
 		setTimeout(() => {
 			swipeAnimating = false;
 			swipeOffset = 0;
-			if (dx < 0) goToNextTab();
-			else goToPrevTab();
+			if (dx < 0) goToNextTab(false);
+			else goToPrevTab(false);
 		}, 250);
 	}
 
@@ -294,18 +294,18 @@
 		last?.focus();
 	}
 
-	function goToNextTab() {
+	function goToNextTab(moveFocus = true) {
 		const n = AXES_WITH_PERSONA.length;
 		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
 		activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
-		setTimeout(focusFirstChip, 0);
+		if (moveFocus) setTimeout(focusFirstChip, 0);
 	}
 
-	function goToPrevTab() {
+	function goToPrevTab(moveFocus = true) {
 		const n = AXES_WITH_PERSONA.length;
 		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
 		activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
-		setTimeout(focusLastChip, 0);
+		if (moveFocus) setTimeout(focusLastChip, 0);
 	}
 
 	function handleTabBarKey(e: KeyboardEvent) {

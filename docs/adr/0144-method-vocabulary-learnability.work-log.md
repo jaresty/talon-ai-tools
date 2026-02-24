@@ -116,3 +116,32 @@
 **next_work:**
 - Behaviour: `bar starter list` and `bar starter <name>` CLI subcommand (Go) → Loop 5
 - Behaviour: `bar help llm` Starter Packs section + SPA PatternsLibrary starter packs section → Loop 6
+
+## loop-5 | 2026-02-24 | bar starter CLI subcommand
+
+**focus:** ADR-0144 §Phase 2 CLI — `bar starter list` / `bar starter <name>` / `bar starter <unknown>` subcommand; `StarterPack` type in grammar.go + rawGrammar wiring.
+
+**active_constraint:** `grammar.go` had no `StarterPack` type and `rawGrammar` did not deserialise `starter_packs`; `app.go` had no `runStarter` function; ST1–ST5 specifying tests all failed exit-1 (unrecognised command).
+
+**validation_targets:**
+- `go test ./internal/barcli/ -run TestStarter -v` — specifying validation: ST1–ST5 (list exits 0, all names present, framing text present, debug command starts with "bar build ", unknown exits 1 with name in stderr, no-args exits 1)
+- `go test ./...` — full Go suite
+
+**evidence:**
+- red | 2026-02-24T04:50:00Z | exit 1 | `go test ./internal/barcli/ -run TestStarter -v` — ST1/ST2/ST3/ST4/ST5 fail (command routes to topUsage error; pack name absent from stderr)
+- green | 2026-02-24T04:52:00Z | exit 0 | all 5 TestStarter tests pass; `go test ./...` all packages green after grammar.go + app.go changes
+- removal | 2026-02-24T04:53:00Z | `git stash` reverted; ST1/ST2/ST3 confirmed red (exit-1 + missing pack name); `git stash pop` restored
+
+**rollback_plan:** `git restore internal/barcli/app.go internal/barcli/grammar.go` then replay `go test ./internal/barcli/ -run TestStarter`.
+
+**delta_summary:** `helper:diff-snapshot=5 files changed, 88 insertions(+), 18 deletions(-)` — `internal/barcli/grammar.go` (StarterPack struct, Grammar.StarterPacks field, rawGrammar.StarterPacks field, wired in parseGrammar), `internal/barcli/app.go` (runStarter func + dispatch + topUsage updated), `internal/barcli/starter_test.go` (5 specifying tests ST1–ST5).
+
+**loops_remaining_forecast:** 1 loop remaining (Loop 6: bar help llm Starter Packs section + SPA PatternsLibrary). Confidence: high.
+
+**residual_constraints:**
+- Severity: Low. `bar help llm` does not yet have a Starter Packs section — Loop 6 target.
+- Severity: Low. SPA PatternsLibrary does not yet render starter packs — Loop 6 target.
+
+**next_work:**
+- Behaviour: `bar help llm` renders Starter Packs section (pack name, framing, command) → Loop 6
+- Behaviour: SPA PatternsLibrary renders starter packs as a distinct section with onLoad → Loop 6

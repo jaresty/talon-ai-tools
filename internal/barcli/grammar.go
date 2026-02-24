@@ -28,6 +28,7 @@ type Grammar struct {
 	Hierarchy     HierarchySection
 
 	Patterns        []GrammarPattern
+	StarterPacks    []StarterPack
 	axisTokens      map[string]map[string]struct{}
 	axisDocs        map[string]map[string]string
 	axisPriority    []string
@@ -110,6 +111,13 @@ type DefaultsSection struct {
 	Completeness string
 }
 
+// StarterPack maps a task framing to a suggested bar build command (ADR-0144 Phase 2).
+type StarterPack struct {
+	Name    string `json:"name"`
+	Framing string `json:"framing"`
+	Command string `json:"command"`
+}
+
 // GrammarPattern represents a named usage pattern from the SSOT (ADR-0134 D3).
 type GrammarPattern struct {
 	Title   string              `json:"title"`
@@ -128,6 +136,7 @@ type rawGrammar struct {
 	Hierarchy     rawHierarchy     `json:"hierarchy"`
 	Slugs         rawSlugSection   `json:"slugs"`
 	Patterns      []GrammarPattern `json:"patterns"`
+	StarterPacks  []StarterPack    `json:"starter_packs"`
 }
 
 type rawAxisSection struct {
@@ -228,6 +237,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 		SchemaVersion: raw.SchemaVersion,
 		ReferenceKey:  raw.ReferenceKey,
 		Patterns:      raw.Patterns,
+		StarterPacks:  raw.StarterPacks,
 		Axes: AxisSection{
 			Definitions: raw.Axes.Definitions,
 			ListTokens:  raw.Axes.ListTokens,

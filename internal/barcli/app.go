@@ -19,7 +19,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|shuffle|help|completion|preset|tui|tui2|install-skills]"
+	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|tui|tui2|install-skills]"
 )
 
 // barVersion holds the current version of bar, set by main package
@@ -78,22 +78,22 @@ var generalHelpText = strings.TrimSpace(`USAGE
   bar help tokens [section...] [--grammar PATH]
   bar tui2 [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen]
   bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen] [--no-clipboard] [--env NAME]...
- 
+
    bar completion <shell> [--grammar PATH] [--output FILE]
       (shell = bash | zsh | fish)
- 
+
     bar preset save <name> [--force]
 
    bar preset list
    bar preset show <name> [--json]
    bar preset use <name> [--json]
    bar preset delete <name> --force
- 
+
     The CLI ships with an embedded prompt grammar. Use --grammar or
      BAR_GRAMMAR_PATH to point at alternate payloads for testing.
      Completion suggestions include the token category and a short description
      so shells can display richer context.
- 
+
   TOKEN ORDER (SHORTHAND)
 
 
@@ -114,14 +114,14 @@ var generalHelpText = strings.TrimSpace(`USAGE
   fail with an error that points to the slug. Key=value overrides accept canonical
   values like "scope=focus" as well as slug equivalents such as "directional=fly-rog".
   Use shell quotes when needed; completions list every value for convenience.
- 
+
   QUICK NAVIGATION
- 
+
     Use the skip sentinel "//next" to fast-forward persona/task stages:
       //next            Skip remaining persona hints and show tasks.
       //next:<stage>    Skip the named stage (static, scope, method, etc.).
     Skip tokens do not appear in "bar build" output—they only influence completion ordering.
- 
+
   Sections accepted by "bar help tokens":
 
     static            Show only tasks (slug + canonical hints)
@@ -263,6 +263,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runInstallSkills(options, stdout, stderr)
 	}
 
+	if options.Command == "starter" {
+		return runStarter(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1
@@ -321,6 +325,51 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 	return 0
+}
+
+// runStarter implements the `bar starter` subcommand (ADR-0144 Phase 2).
+//
+//	bar starter list          — print all pack names with one-line framings
+//	bar starter <name>        — print the suggested bar build command (bare, pipeable)
+//	bar starter <unknown>     — exit 1, print error mentioning the unknown name
+func runStarter(opts *cli.Config, stdout, stderr io.Writer) int {
+	grammar, loadErr := LoadGrammar(opts.GrammarPath)
+	if loadErr != nil {
+		writeError(stderr, fmt.Sprintf("error loading grammar: %v", loadErr))
+		return 1
+	}
+
+	sub := ""
+	if len(opts.Tokens) > 0 {
+		sub = opts.Tokens[0]
+	}
+
+	if sub == "" {
+		writeError(stderr, "usage: bar starter list\n       bar starter <name>")
+		return 1
+	}
+
+	if sub == "list" {
+		for _, p := range grammar.StarterPacks {
+			fmt.Fprintf(stdout, "%-12s  %s\n", p.Name, p.Framing)
+		}
+		return 0
+	}
+
+	for _, p := range grammar.StarterPacks {
+		if p.Name == sub {
+			fmt.Fprintln(stdout, p.Command)
+			return 0
+		}
+	}
+
+	// Collect available names for the error message.
+	names := make([]string, 0, len(grammar.StarterPacks))
+	for _, p := range grammar.StarterPacks {
+		names = append(names, p.Name)
+	}
+	writeError(stderr, fmt.Sprintf("unknown pack %q. Available: %s", sub, strings.Join(names, ", ")))
+	return 1
 }
 
 func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {

@@ -652,7 +652,7 @@
 	{/if}
 
 	<!-- FAB and mobile action overlay — always accessible, outside preview panel -->
-	<button class="fab-btn" onclick={() => fabOpen = !fabOpen} aria-label="Actions">
+	<button class="fab-btn" onclick={() => { if (Date.now() - swipeCompletedAt >= 600) fabOpen = !fabOpen; }} aria-label="Actions">
 		{fabOpen ? '✕' : '⋯'}
 	</button>
 	{#if fabOpen}

@@ -211,11 +211,14 @@ Based on evaluation, categorize findings into actions:
 #### Retire
 Token produces consistently low scores or is indistinguishable from another.
 
+**Priority signal — same-category redundancy**: If the redundant token shares a semantic category (Decision/Understanding/Exploration/Diagnostic) with the token it overlaps, retirement is higher priority than cross-category overlap. Tokens in the same category are explicitly positioned as peers; indistinguishable outputs within a category are unambiguous redundancy, not a framing difference.
+
 ```yaml
 action: retire
 token: "systemic"
 axis: method
-reason: "Overlaps significantly with 'analytical'; users can't distinguish output"
+category: "Understanding"  # include when retiring a method token
+reason: "Overlaps significantly with 'mapping' (same Understanding category); outputs indistinguishable"
 evidence: [seed_12, seed_34, seed_45]
 ```
 

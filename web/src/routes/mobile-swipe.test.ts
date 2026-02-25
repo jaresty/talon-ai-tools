@@ -203,7 +203,7 @@ describe('Page — Swipe to Switch Tabs', () => {
 		expect(panel.style.transform).toMatch(/translateX\(60px\)/);
 	});
 
-	it('panel returns to translateX(0px) after an aborted swipe', async () => {
+	it('panel has no transform after an aborted swipe (at-rest removes transform to avoid fixed-position containment)', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
@@ -216,7 +216,8 @@ describe('Page — Swipe to Switch Tabs', () => {
 		fireTouchEnd(panel, 265, 202); // dx = -35, below threshold → snap back
 		flushSync();
 
-		expect(panel.style.transform).toMatch(/translateX\(0px\)/);
+		// transform must be absent (empty string) so position:fixed children stay viewport-relative
+		expect(panel.style.transform).toBe('');
 	});
 
 	it('vertical touchmove does not translate the panel horizontally', async () => {

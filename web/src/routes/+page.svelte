@@ -383,7 +383,7 @@
 				class="selector-panel"
 				role="region"
 				aria-label="Token selector"
-				style:transform="translateX({swipeOffset}px)"
+				style:transform={swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined}
 				style:transition={swipeAnimating ? 'transform 0.25s ease-out' : 'none'}
 				ontouchstart={handleTouchStart}
 				ontouchmove={handleTouchMove}

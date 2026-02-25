@@ -155,6 +155,7 @@
         "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how perturbations affect their continuity.",
+        "stakes": "The response differentiates system areas by consequence magnitude and uncertainty, and allocates protective or evaluative intensity proportionally to those gradients.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
         "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
@@ -314,6 +315,7 @@
         "mean",
         "motifs",
         "stable",
+        "stakes",
         "struct",
         "thing",
         "time",
@@ -473,6 +475,7 @@
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
         "stable": "Stability and persistence of states",
+        "stakes": "Consequence magnitude and uncertainty gradients",
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
         "time": "Sequences and temporal change",
@@ -528,7 +531,8 @@
         "trade": "Distinguish from: balance (forces offsetting each other to produce equilibrium). Trade specifically identifies competing forces and evaluates alternatives across dimensions before committing. Balance models how existing forces offset; trade explicitly evaluates what trade-offs exist and how to navigate them."
       },
       "scope": {
-        "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement."
+        "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a concern rather than structural arrangement.",
+        "stakes": "Use when the goal is to allocate attention non-uniformly based on a risk gradient — high-consequence high-uncertainty areas get deeper treatment, low-stakes areas get lighter coverage. Distinct from fail scope (fail = enumerate what breaks; stakes = allocate intensity by consequence×uncertainty). Distinct from risks method (risks = systematic procedure for identifying and assessing risks; stakes scope = frames the entire response around a consequence-uncertainty gradient)."
       }
     },
     "use_when": {
@@ -675,6 +679,7 @@
         "mean": "Conceptual framing and definitional focus: user asks what something means, how it is understood, or what its purpose is before evaluating or acting. Heuristic: 'what does X mean', 'how should I think about', 'what is the purpose of', 'how is this concept defined', 'how is this categorized', 'what does this term refer to', 'how do we conceptualize this', 'theoretical framing' → mean scope. Distinct from good scope (good = how to judge quality; mean = conceptual framing before evaluation).",
         "motifs": "Recurring or repeated patterns across the codebase or system: user asks about structures or idioms that appear in multiple places. Heuristic: 'recurring patterns', 'repeated across', 'appears in multiple places', 'common idioms', 'what keeps showing up', 'same pattern in different places' → motifs scope. Distinct from struct (one system's internal arrangement) and mapping method (surface all elements/relationships).",
         "stable": "Stability and persistence focus: user asks what is stable, unlikely to change, or self-reinforcing in the system or design. Heuristic: 'stable', 'unlikely to change', 'won't change', 'what persists', 'what is settled', 'fixed constraints', 'what has remained stable', 'backward-compatible' → stable scope. Often pairs with time scope (stable = what persists; time = how things evolve).",
+        "stakes": "Risk-gradient focus: user wants the response to allocate attention non-uniformly, spending more depth on high-consequence high-uncertainty areas and less on low-stakes areas. Heuristic: 'focus on the high-risk areas', 'allocate attention by risk', 'most dangerous parts first', 'consequence-weighted review', 'where are the stakes highest', 'triage by impact and uncertainty', 'risk-proportionate depth', 'what deserves the most scrutiny', 'protect the high-stakes areas' → stakes scope. Distinct from fail scope (fail = enumerate what breaks; stakes = allocate coverage intensity by consequence×uncertainty gradient). Distinct from risks method (risks = systematic identification and assessment procedure; stakes = scope dimension that frames where to allocate evaluative effort).",
         "struct": "Internal arrangement and dependency focus: user asks how parts of a system relate and are organized — the internal topology, not cross-cutting span. Heuristic: 'how is it structured', 'what are the dependencies', 'how are the components organized', 'internal architecture', 'how do the parts relate', 'what holds it together', 'the coordination and constraints inside' → struct scope. Distinct from cross scope (cross = horizontal span across module boundaries; struct = internal topology and arrangement within units).",
         "thing": "Entity and bounded unit focus: user asks what objects, roles, systems, or domains are in scope — what the relevant entities are. Heuristic: 'what entities', 'what are the main objects', 'what roles are involved', 'what systems are in scope', 'what are the bounded domains', 'what things exist here', 'name the components', 'what are we talking about' → thing scope. Distinct from act scope (act = what entities are doing; thing = what entities exist).",
         "time": "Temporal or sequential focus: user asks about sequence, history, phases, or how something changes over time. Heuristic: 'step by step', 'in order', 'over time', 'what happens when', 'sequence', 'timeline', 'history', 'how did we get here', 'phases' → time scope. Distinct from flow method (flow = reasoning approach; time = scope dimension to emphasize).",
@@ -834,6 +839,7 @@
         "mean": "意",
         "motifs": "紋",
         "stable": "安",
+        "stakes": "険",
         "struct": "造",
         "thing": "物",
         "time": "時",
@@ -1704,6 +1710,7 @@
         "mean": "mean",
         "motifs": "motifs",
         "stable": "stable",
+        "stakes": "stakes",
         "struct": "struct",
         "thing": "thing",
         "time": "time",
@@ -1820,6 +1827,7 @@
         "scope=mean": "scope-mean",
         "scope=motifs": "scope-motifs",
         "scope=stable": "scope-stable",
+        "scope=stakes": "scope-stakes",
         "scope=struct": "scope-struct",
         "scope=thing": "scope-thing",
         "scope=time": "scope-time",
@@ -2320,6 +2328,7 @@
       "scope=mean": "scope-mean",
       "scope=motifs": "scope-motifs",
       "scope=stable": "scope-stable",
+      "scope=stakes": "scope-stakes",
       "scope=struct": "scope-struct",
       "scope=thing": "scope-thing",
       "scope=time": "scope-time",
@@ -2338,6 +2347,7 @@
       "spike": "spike",
       "split": "split",
       "stable": "stable",
+      "stakes": "stakes",
       "story": "story",
       "struct": "struct",
       "svg": "svg",
@@ -3149,11 +3159,11 @@
     }
   ],
   "checksums": {
-    "axes": "05bff7ba4b232d2f58845c4fcd7dbe0955a71e76a4a78af67828ee0a8c35f027",
+    "axes": "5b9c89138936d27acec4e9dcbb550ecfd4e854d44816a83fca2fa6c410049165",
     "tasks": "bfd0103762cd228a3a12d920f9763d2669a2deb7fdad922e63855688da2fe14d",
     "persona": "119ff50f1dbdf7f8b58301189b3e81f238448406ce22ebc02a08e62c7115a531",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "5b81df8541a28ef3c80a541b9e518047469601079e1dc65f93d5942d2d158c8d",
+    "slugs": "31e07427132778fe55e7847b1f855553c3b5f92d37ae98157fda652531a4db05",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

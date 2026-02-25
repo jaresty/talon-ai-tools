@@ -927,6 +927,7 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Actions/tasks** → `act`\n")
 	fmt.Fprintf(w, "- **Quality/criteria** → `good`\n")
 	fmt.Fprintf(w, "- **Failure modes** → `fail`\n")
+	fmt.Fprintf(w, "- **Risk gradient / allocate by consequence×uncertainty** → `stakes`\n")
 	fmt.Fprintf(w, "- **Perspectives** → `view`\n")
 	fmt.Fprintf(w, "- **Premises/preconditions** → `assume`\n")
 	fmt.Fprintf(w, "- **Recurring patterns** → `motifs`\n")

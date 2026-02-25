@@ -722,7 +722,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "adversarial": "Stress-testing for weaknesses and failure modes: user wants the response to constructively attack the design, argument, or plan — finding counterexamples, edge cases, and "
         "hidden assumptions. Heuristic: 'what could go wrong', 'find the weaknesses', 'stress-test this', 'what\\'s the worst-case attack', 'where does this argument break', "
         "'challenge this plan', 'red-team this', 'what are the counterexamples', 'play devil\\'s advocate' → adversarial. Distinct from risks method (risks = enumerate failure "
-        "modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples).",
+        "modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples). "
+        "NOT suited for interpersonal feedback tasks ('sensitive feedback on a colleague', 'supportive code review') — prefer analysis method and pair with tone=gently instead.",
         "afford": "Affordance-driven behavior analysis: user wants to explain why behavior arises from system or interface design — what the structure makes easy, visible, or natural vs. what it "
         "suppresses. Heuristic: 'why do users do X', 'the design encourages Y', 'affordances', 'what the API makes easy', 'shaped by the structure', 'how the design foregrounds this "
         "option', 'structural constraints on behavior', 'design defaults bias toward', 'interface suppresses this action' → afford. Distinct from field (actors interact via a shared "

@@ -232,68 +232,94 @@ PERSONA_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "→ audience=to-XP-enthusiast.",
     },
     "voice": {
-        "as programmer": "Adopt a programmer's technical stance: use when you want the response "
+        # voice= = speaker identity (output FROM this role; contrast: audience= targets a reader)
+        "as programmer": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a programmer's technical stance: use when you want the response "
         "to reason and explain like an engineer — precise, implementation-minded, direct. "
-        "Heuristic: 'from a developer perspective', 'engineer stance', 'technical voice', "
-        "'programmer framing' → voice=as-programmer.",
-        "as prompt engineer": "Adopt a prompt-engineering stance: use when the response involves "
+        "Heuristic: 'from a developer perspective', 'as a programmer would', 'engineer stance', "
+        "'technical voice', 'programmer framing' → voice=as-programmer.",
+        "as prompt engineer": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a prompt-engineering stance: use when the response involves "
         "designing, critiquing, or refining prompts explicitly. Heuristic: 'from a prompt "
-        "engineer angle', 'prompt design perspective', 'meta-prompt framing' "
-        "→ voice=as-prompt-engineer.",
-        "as scientist": "Adopt a scientific, evidence-first stance: use when you want the "
-        "response to foreground hypotheses, evidence, and rigor. Heuristic: 'scientific "
-        "framing', 'evidence-based stance', 'hypothesis-driven', 'researcher voice' "
-        "→ voice=as-scientist.",
-        "as writer": "Adopt a writer's stance focused on narrative clarity: use when the "
+        "engineer angle', 'as a prompt engineer would', 'prompt design perspective', "
+        "'meta-prompt framing' → voice=as-prompt-engineer.",
+        "as scientist": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a scientific, evidence-first stance: use when you want the "
+        "response to foreground hypotheses, evidence, and rigor. Heuristic: 'from a scientific "
+        "perspective', 'as a scientist would', 'scientific framing', 'evidence-based stance', "
+        "'hypothesis-driven', 'researcher voice' → voice=as-scientist.",
+        "as writer": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a writer's stance focused on narrative clarity: use when the "
         "response involves prose, storytelling, or communication craftsmanship. Heuristic: "
-        "'writing perspective', 'narrative clarity', 'writer's eye', 'editorial stance' "
-        "→ voice=as-writer.",
-        "as designer": "Adopt a designer's stance focused on usability and interaction: use when "
-        "the response involves UX decisions, flows, or visual clarity. Heuristic: 'designer "
-        "perspective', 'UX lens', 'design thinking', 'interaction design voice' "
+        "'from a writer's perspective', 'as a writer would', 'writing perspective', "
+        "'narrative clarity', 'writer's eye', 'editorial stance' → voice=as-writer.",
+        "as designer": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a designer's stance focused on usability and interaction: use when "
+        "the response involves UX decisions, flows, or visual clarity. Heuristic: 'from a "
+        "designer's perspective', 'as a designer would', 'give feedback as a designer', "
+        "'designer perspective', 'UX lens', 'design thinking', 'interaction design voice' "
         "→ voice=as-designer.",
-        "as teacher": "Adopt a teacher's stance that scaffolds understanding: use when the "
-        "response needs to break concepts down gradually for a learner. Heuristic: 'teaching "
-        "voice', 'explain like a teacher', 'pedagogical framing', 'scaffolded explanation' "
+        "as teacher": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a teacher's stance that scaffolds understanding: use when the "
+        "response needs to break concepts down gradually for a learner. Heuristic: 'teach me', "
+        "'as a teacher would explain', 'from a teaching perspective', 'teaching voice', "
+        "'explain like a teacher', 'pedagogical framing', 'scaffolded explanation' "
         "→ voice=as-teacher.",
-        "as facilitator": "Adopt a facilitator's stance that guides process: use when the "
+        "as facilitator": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a facilitator's stance that guides process: use when the "
         "response needs to balance voices, structure participation, and maintain momentum. "
-        "Heuristic: 'facilitation perspective', 'group process framing', 'facilitator voice', "
+        "Heuristic: 'run this as a facilitator', 'facilitate this', 'as a facilitator would', "
+        "'facilitation perspective', 'group process framing', 'facilitator voice', "
         "'session guidance' → voice=as-facilitator.",
-        "as PM": "Adopt a product manager's stance focused on outcomes and scope: use when the "
+        "as PM": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a product manager's stance focused on outcomes and scope: use when the "
         "response needs to foreground user value, trade-offs, and stakeholder alignment. "
-        "Heuristic: 'PM framing', 'product perspective', 'outcome-focused voice', "
+        "Heuristic: 'write as a PM', 'from a product manager's perspective', 'user story as "
+        "PM would write', 'PM framing', 'product perspective', 'outcome-focused voice', "
         "'product manager stance' → voice=as-PM.",
-        "as junior engineer": "Adopt a junior engineer's curious, candid stance: use when you "
+        "as junior engineer": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a junior engineer's curious, candid stance: use when you "
         "want the response to surface questions, acknowledge uncertainty, and show its work. "
-        "Heuristic: 'junior engineer voice', 'curious framing', 'show uncertainty', "
-        "'beginner perspective' → voice=as-junior-engineer.",
-        "as principal engineer": "Adopt a principal engineer's systems-thinking stance: use when "
+        "Heuristic: 'from a junior engineer's perspective', 'junior engineer voice', 'curious "
+        "framing', 'show uncertainty', 'beginner perspective' → voice=as-junior-engineer.",
+        "as principal engineer": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt a principal engineer's systems-thinking stance: use when "
         "the response needs architectural breadth, trade-off reasoning, and pragmatic guidance. "
-        "Heuristic: 'principal engineer perspective', 'architectural voice', 'senior technical "
-        "framing', 'systems thinking stance' → voice=as-principal-engineer.",
-        "as Kent Beck": "Adopt Kent Beck's pragmatic, test-first, iterative stance: use when you "
+        "Heuristic: 'from a senior engineer's perspective', 'as a principal engineer would', "
+        "'review as a senior engineer', 'principal engineer perspective', 'architectural voice', "
+        "'senior technical framing', 'systems thinking stance' → voice=as-principal-engineer.",
+        "as Kent Beck": "Voice= = speaker identity (output FROM this role; contrast: audience= targets a reader). "
+        "Adopt Kent Beck's pragmatic, test-first, iterative stance: use when you "
         "want the response to favor simplicity, working code, and small steps over elaboration. "
-        "Heuristic: 'Kent Beck style', 'XP voice', 'test-driven framing', 'simplicity-first "
-        "perspective' → voice=as-Kent-Beck.",
+        "Heuristic: 'Kent Beck style', 'from Kent Beck's perspective', 'XP voice', "
+        "'test-driven framing', 'simplicity-first perspective' → voice=as-Kent-Beck.",
     },
     "tone": {
-        "casually": "Casual, conversational register: use when formality would feel stiff or "
+        # tone= = emotional register (HOW content is delivered; use alongside voice=/audience= when task specifies communication style)
+        "casually": "Tone= = emotional register (HOW content is delivered; distinct from voice= which sets speaker identity). "
+        "Casual, conversational register: use when formality would feel stiff or "
         "the subject benefits from a relaxed tone. Heuristic: 'keep it casual', 'conversational "
-        "tone', 'informal', 'relaxed register', 'chat style' → tone=casually.",
-        "formally": "Formal, professional register: use when the output will be shared with "
-        "leadership, external parties, or in a professional document. Heuristic: 'formal tone', "
-        "'professional register', 'official language', 'no colloquialisms' → tone=formally.",
-        "directly": "Direct, no-hedging register: use when the user wants a straight answer "
+        "tone', 'informal', 'quick Slack message', 'relaxed register', 'chat style' → tone=casually.",
+        "formally": "Tone= = emotional register (HOW content is delivered; distinct from voice= which sets speaker identity). "
+        "Formal, professional register: use when the output will be shared with "
+        "leadership, external parties, compliance contexts, or a professional document. "
+        "Heuristic: 'formal tone', 'professional register', 'official language', 'compliance "
+        "report', 'incident report', 'for leadership', 'no colloquialisms' → tone=formally.",
+        "directly": "Tone= = emotional register (HOW content is delivered; distinct from voice= which sets speaker identity). "
+        "Direct, no-hedging register: use when the user wants a straight answer "
         "without softening or qualifications. Heuristic: 'be direct', 'no hedging', 'straight "
-        "answer', 'don't soften it', 'blunt' → tone=directly.",
-        "gently": "Gentle, supportive register: use when the subject involves sensitive feedback, "
-        "personal difficulty, or someone who needs encouragement. Heuristic: 'be gentle', "
-        "'sensitive topic', 'supportive tone', 'soft delivery', 'with care' → tone=gently.",
-        "kindly": "Kind, warm register: use when the response should convey warmth alongside "
+        "answer', 'don't soften it', 'to the point', 'blunt' → tone=directly.",
+        "gently": "Tone= = emotional register (HOW content is delivered; distinct from voice= which sets speaker identity). "
+        "Gentle, supportive register: use when the subject involves sensitive feedback, "
+        "interpersonal difficulty, or someone who needs encouragement. For interpersonal feedback "
+        "tasks pair with analysis method (not adversarial). Heuristic: 'be gentle', "
+        "'sensitive topic', 'sensitive feedback on a colleague', 'supportive tone', 'soft "
+        "delivery', 'with care', 'interpersonal feedback' → tone=gently.",
+        "kindly": "Tone= = emotional register (HOW content is delivered; distinct from voice= which sets speaker identity). "
+        "Kind, warm register: use when the response should convey warmth alongside "
         "substance — often for coaching, junior audiences, or emotionally charged topics. "
-        "Heuristic: 'be kind', 'warm tone', 'encouraging register', 'with warmth' "
-        "→ tone=kindly.",
+        "Heuristic: 'be kind', 'warm tone', 'encouraging register', 'with warmth', "
+        "'kind feedback' → tone=kindly.",
     },
     "intent": {
         "inform": "Communicate to transfer knowledge or update understanding: use when the goal "

@@ -884,9 +884,10 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "### Choosing Persona\n\n")
 	fmt.Fprintf(w, "- **Known audience**: prefer explicit `audience=` token over presets when the task specifies who you are talking to (e.g., 'explain to an engineering manager' → `voice=as-programmer audience=to-managers`, not `persona=peer_engineer_explanation`)\n")
 	fmt.Fprintf(w, "- **Presets are shortcuts** for common pairings — verify the preset's audience matches the actual target before using\n")
-	fmt.Fprintf(w, "- **Non-technical audience** (manager, PM, executive, CEO, stakeholder) → check `audience=to-managers`, `audience=to-product-manager`, `audience=to-ceo`, `audience=to-stakeholders`\n")
+	fmt.Fprintf(w, "- **Non-technical audience** (manager, PM, executive, CEO, stakeholder, team) → check `audience=to-managers`, `audience=to-product-manager`, `audience=to-ceo`, `audience=to-stakeholders`, `audience=to-team`\n")
 	fmt.Fprintf(w, "- **Technical peer audience** → presets like `persona=peer_engineer_explanation`, `persona=teach_junior_dev` work well\n")
-	fmt.Fprintf(w, "- **Cross-functional communication** → `persona=stakeholder_facilitator` (as-facilitator to-stakeholders) or compose `voice=` + `audience=` explicitly\n\n")
+	fmt.Fprintf(w, "- **Cross-functional communication** → `persona=stakeholder_facilitator` (as-facilitator to-stakeholders) or compose `voice=` + `audience=` explicitly\n")
+	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person) — consult the Persona System section for per-token trigger phrases\n\n")
 
 	fmt.Fprintf(w, "### Choosing Scope\n\n")
 	fmt.Fprintf(w, "- **Entities/boundaries** → `thing`, `struct`\n")

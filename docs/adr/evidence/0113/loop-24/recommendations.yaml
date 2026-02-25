@@ -1,0 +1,88 @@
+# Loop-24 Recommendations
+# Date: 2026-02-24
+# Mean coverage: 3.60 (tasks ≤3: 9/15)
+
+recommendations:
+
+  - id: L24-R1
+    action: skill-update
+    priority: high
+    skill: bar-autopilot
+    file: internal/barcli/help_llm.go
+    section: "Choosing Persona"
+    title: "Add voice= token heuristic"
+    description: >
+      The "Choosing Persona" section has zero guidance on when to use voice= tokens.
+      Five tasks (T01-T05) failed to surface voice= tokens that would meaningfully
+      improve their prompts. The heuristic must tell autopilot: voice= = speaker identity,
+      use when the task asks for output FROM a specific role's perspective.
+    proposed_addition: |
+      - **When to use voice=**: select voice= when the task asks for output FROM a specific
+        role's perspective — "write as a PM", "speak as a designer", "review as a senior
+        engineer", "from the facilitator's perspective", "as a teacher would explain".
+        Voice= shapes the speaker identity; audience= shapes the target reader.
+        Common mappings:
+        - "as a PM" / "product manager perspective" → voice=as-pm
+        - "as a designer" / "design perspective" → voice=as-designer
+        - "teach me" / "explain as you would to a student" → voice=as-teacher
+        - "as a facilitator" / "run this as a workshop" → voice=as-facilitator
+        - "senior engineer perspective" / "as a principal engineer" → voice=as-principal-engineer
+        - "as a programmer" / "code-first" → voice=as-programmer
+    evidence: [T01, T02, T03, T04, T05]
+
+  - id: L24-R2
+    action: skill-update
+    priority: high
+    skill: bar-autopilot
+    file: internal/barcli/help_llm.go
+    section: "Choosing Persona"
+    title: "Add tone= token heuristic"
+    description: >
+      The tone= axis (casually, directly, formally, gently, kindly) has zero heuristic
+      guidance. Three tasks (T11-T13) failed to surface tone= tokens. The entire axis is
+      invisible to autopilot. This is a complete axis blindspot.
+    proposed_addition: |
+      - **When to use tone=**: select tone= when the task specifies an emotional register or
+        communication style (distinct from voice= which is about speaker identity):
+        - "formal", "official", "compliance", "regulatory", "professional report" → tone=formally
+        - "casual", "informal", "friendly", "quick message", "low-key" → tone=casually
+        - "gentle", "sensitive", "supportive", "careful", "constructive" (interpersonal) → tone=gently
+        - "direct", "blunt", "concise", "no fluff", "to the point" → tone=directly
+        - "kind", "encouraging", "warm", "positive" → tone=kindly
+    evidence: [T11, T12, T13]
+
+  - id: L24-R3
+    action: skill-update
+    priority: medium
+    skill: bar-autopilot
+    file: internal/barcli/help_llm.go
+    section: "Choosing Persona"
+    title: "Add audience=to-team to non-technical audience list"
+    description: >
+      The "non-technical audience" heuristic lists manager, PM, executive, CEO, stakeholder
+      but omits "team". Tasks like "communicate this to the team" (T10, T12) fail to surface
+      audience=to-team. This is a simple omission.
+    proposed_addition: |
+      - Add "team" → audience=to-team to the non-technical audience list:
+        "audience=to-team" for "communicate to the team", "team update", "team announcement",
+        "whole team", "send to everyone".
+    evidence: [T10, T12]
+
+  - id: L24-R4
+    action: skill-update
+    priority: medium
+    skill: bar-autopilot
+    file: internal/barcli/help_llm.go
+    section: "Choosing Method"
+    title: "Limit adversarial to technical stress-testing; exclude interpersonal feedback"
+    description: >
+      T13 showed autopilot routing sensitive feedback tasks to adversarial method because
+      the "Finding problems" heuristic covers "feedback" broadly. adversarial is wrong when
+      the task is interpersonal feedback ("supportive", "sensitive", "constructive" in the
+      collegial sense). Add a carve-out.
+    proposed_addition: |
+      - **adversarial**: use for technical stress-testing (code review for failure modes,
+        architecture red-teaming, argument challenge). Do NOT use for interpersonal
+        feedback tasks where "sensitive", "supportive", or "gentle" framing is present —
+        prefer analysis method and pair with tone=gently.
+    evidence: [T13]

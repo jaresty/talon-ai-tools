@@ -95,7 +95,8 @@ describe('renderPrompt', () => {
 			preset: 'designer',
 			voice: '',
 			audience: '',
-			tone: ''
+			tone: '',
+			intent: ''
 		});
 		expect(result).toContain('=== PERSONA 人格 (STANCE) ===');
 		expect(result).toContain('Voice: Design practitioner');
@@ -130,10 +131,33 @@ describe('renderPrompt', () => {
 			preset: '',
 			voice: 'custom voice',
 			audience: 'engineers',
-			tone: 'direct'
+			tone: 'direct',
+			intent: ''
 		});
 		expect(result).toContain('Voice: custom voice');
 		expect(result).toContain('Audience: engineers');
+	});
+
+	it('includes Intent in PERSONA section when set', () => {
+		const result = renderPrompt(grammar, {}, 'x', '', {
+			preset: '',
+			voice: '',
+			audience: '',
+			tone: '',
+			intent: 'persuade'
+		});
+		expect(result).toContain('Intent: persuade');
+	});
+
+	it('omits Intent line when intent is empty', () => {
+		const result = renderPrompt(grammar, {}, 'x', '', {
+			preset: '',
+			voice: 'as programmer',
+			audience: 'engineers',
+			tone: 'direct',
+			intent: ''
+		});
+		expect(result).not.toContain('Intent:');
 	});
 
 	it('includes REFERENCE KEY section', () => {

@@ -5,6 +5,7 @@ import {
 	getUsagePatterns,
 	getStarterPacks,
 	getPersonaAxisTokensMeta,
+	getPersonaIntentTokens,
 	getMethodTokensByCategory,
 	toPersonaSlug,
 	type Grammar
@@ -223,6 +224,23 @@ describe('getPersonaAxisTokensMeta', () => {
 	it('returns empty guidance when persona.guidance is absent', () => {
 		const metas = getPersonaAxisTokensMeta(minimalGrammar, 'audience');
 		expect(metas.every((m) => m.guidance === '')).toBe(true);
+	});
+});
+
+describe('getPersonaIntentTokens', () => {
+	it('returns sorted intent tokens from persona.intent.axis_tokens', () => {
+		const grammarWithIntent = {
+			...minimalGrammar,
+			persona: {
+				...minimalGrammar.persona,
+				intent: { axis_tokens: { intent: ['persuade', 'announce', 'inform'] } }
+			}
+		};
+		expect(getPersonaIntentTokens(grammarWithIntent)).toEqual(['announce', 'inform', 'persuade']);
+	});
+
+	it('returns empty array when persona.intent is absent', () => {
+		expect(getPersonaIntentTokens(minimalGrammar)).toEqual([]);
 	});
 });
 

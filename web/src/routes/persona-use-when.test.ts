@@ -50,6 +50,7 @@ vi.mock('$lib/grammar.js', () => ({
 		if (axis === 'audience') return ['to managers'];
 		return [];
 	}),
+	getPersonaIntentTokens: vi.fn().mockReturnValue([]),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn((s: string) => s.toLowerCase().replace(/\s+/g, '-')),
 	getUsagePatterns: vi.fn().mockReturnValue([]),

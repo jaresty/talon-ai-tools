@@ -63,7 +63,7 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 		channel: [],
 		directional: []
 	};
-	const persona: PersonaState = { preset: '', voice: '', audience: '', tone: '' };
+	const persona: PersonaState = { preset: '', voice: '', audience: '', tone: '', intent: '' };
 	const unrecognized: string[] = [];
 
 	const rawTokens = cmd.trim().split(/\s+/).filter(Boolean);
@@ -93,8 +93,9 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 				} else if (key === 'tone') {
 					persona.tone = val;
 					persona.preset = '';
+				} else if (key === 'intent') {
+					persona.intent = val;
 				}
-				// intent is display-only; ignore for state
 			} else {
 				unrecognized.push(tok);
 			}

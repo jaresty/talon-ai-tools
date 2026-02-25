@@ -53,6 +53,9 @@ export interface Grammar {
 		use_when?: Record<string, Record<string, string>>;
 		guidance?: Record<string, Record<string, string>>;
 		kanji?: Record<string, Record<string, string>>; // ADR-0143
+		intent?: {
+			axis_tokens?: Record<string, string[]>;
+		};
 	};
 	patterns?: GrammarPattern[];
 	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
@@ -155,6 +158,10 @@ export function getPersonaPresets(grammar: Grammar): PersonaPreset[] {
 	return Object.values(grammar.persona?.presets ?? {}).sort((a, b) =>
 		a.label.localeCompare(b.label)
 	);
+}
+
+export function getPersonaIntentTokens(grammar: Grammar): string[] {
+	return [...(grammar.persona?.intent?.axis_tokens?.intent ?? [])].sort();
 }
 
 export function getPersonaAxisTokens(grammar: Grammar, axis: 'voice' | 'audience' | 'tone'): string[] {

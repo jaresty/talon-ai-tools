@@ -135,6 +135,18 @@ describe('parseCommand', () => {
 		expect(result.persona.tone).toBe('direct');
 	});
 
+	it('parses intent=value persona token', () => {
+		const result = parseCommand('bar build intent=persuade show', grammar);
+		expect(result.persona.intent).toBe('persuade');
+		expect(result.persona.preset).toBe('');
+	});
+
+	it('intent= coexists with persona=preset (orthogonal dimensions)', () => {
+		const result = parseCommand('bar build persona=designer intent=inform', grammar);
+		expect(result.persona.preset).toBe('designer');
+		expect(result.persona.intent).toBe('inform');
+	});
+
 	it('clears preset when custom persona key is given', () => {
 		const result = parseCommand('bar build voice=developer', grammar);
 		expect(result.persona.preset).toBe('');

@@ -75,6 +75,7 @@ export interface PersonaState {
 	voice: string;
 	audience: string;
 	tone: string;
+	intent: string;
 }
 
 /**
@@ -140,6 +141,7 @@ export function renderPrompt(
 		if (persona.voice) personaLines.push(`Voice: ${persona.voice}`);
 		if (persona.audience) personaLines.push(`Audience: ${persona.audience}`);
 		if (persona.tone) personaLines.push(`Tone: ${persona.tone}`);
+		if (persona.intent) personaLines.push(`Intent: ${persona.intent}`);
 	}
 	parts.push(writeSection('=== PERSONA 人格 (STANCE) ===', personaLines.join('\n') || '(none)'));
 

@@ -26,6 +26,7 @@ vi.mock('$lib/grammar.js', () => ({
 		{ key: 'designer_to_pm', label: 'Designer → PM' }
 	]),
 	getPersonaAxisTokens: vi.fn().mockReturnValue(['as-designer']),
+	getPersonaIntentTokens: vi.fn().mockReturnValue([]),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue('designer'),
 	getUsagePatterns: vi.fn().mockReturnValue([]),

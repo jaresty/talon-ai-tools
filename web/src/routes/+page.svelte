@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, getPersonaIntentTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
@@ -25,7 +25,7 @@
 		directional: []
 	});
 
-	let persona = $state<PersonaState>({ preset: '', voice: '', audience: '', tone: '' });
+	let persona = $state<PersonaState>({ preset: '', voice: '', audience: '', tone: '', intent: '' });
 
 	let subject = $state('');
 	let addendum = $state('');
@@ -137,6 +137,7 @@
 			if (persona.voice) personaTokens.push(`voice=${toPersonaSlug(persona.voice)}`);
 			if (persona.audience) personaTokens.push(`audience=${toPersonaSlug(persona.audience)}`);
 			if (persona.tone) personaTokens.push(`tone=${persona.tone}`);
+			if (persona.intent) personaTokens.push(`intent=${persona.intent}`);
 		}
 		const order = ['task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 		const tokens = [...personaTokens, ...order.flatMap((axis) => selected[axis] ?? [])];
@@ -255,7 +256,7 @@
 
 	function clearState() {
 		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
-		persona = { preset: '', voice: '', audience: '', tone: '' };
+		persona = { preset: '', voice: '', audience: '', tone: '', intent: '' };
 		subject = '';
 		addendum = '';
 		window.history.replaceState(null, '', window.location.pathname);
@@ -339,7 +340,7 @@
 		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...result.selected };
 		if (result.subject) subject = result.subject;
 		if (result.addendum) addendum = result.addendum;
-		if (result.persona.preset || result.persona.voice || result.persona.audience || result.persona.tone) {
+		if (result.persona.preset || result.persona.voice || result.persona.audience || result.persona.tone || result.persona.intent) {
 			persona = result.persona;
 		}
 		cmdInputWarnings = result.unrecognized;
@@ -405,11 +406,11 @@
 									class:active={persona.preset === preset.key}
 									onclick={() => {
 										if (persona.preset === preset.key) {
-											persona = { preset: '', voice: '', audience: '', tone: '' };
+											persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent };
 											activePresetUseWhen = '';
 											activePresetGuidance = '';
 										} else {
-											persona = { preset: preset.key, voice: '', audience: '', tone: '' };
+											persona = { preset: preset.key, voice: '', audience: '', tone: '', intent: persona.intent };
 											activePresetUseWhen = grammar!.persona.use_when?.presets?.[preset.key] ?? '';
 											activePresetGuidance = grammar!.persona.guidance?.presets?.[preset.key] ?? '';
 										}
@@ -440,7 +441,7 @@
 								<select
 									class="persona-select"
 									value={persona.voice}
-									onchange={(e) => { persona = { preset: '', voice: (e.target as HTMLSelectElement).value, audience: persona.audience, tone: persona.tone }; }}
+									onchange={(e) => { persona = { preset: '', voice: (e.target as HTMLSelectElement).value, audience: persona.audience, tone: persona.tone, intent: persona.intent }; }}
 								>
 									<option value="">—</option>
 									{#each getPersonaAxisTokens(grammar, 'voice') as v (v)}
@@ -459,7 +460,7 @@
 								<select
 									class="persona-select"
 									value={persona.audience}
-									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: (e.target as HTMLSelectElement).value, tone: persona.tone }; }}
+									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: (e.target as HTMLSelectElement).value, tone: persona.tone, intent: persona.intent }; }}
 								>
 									<option value="">—</option>
 									{#each getPersonaAxisTokens(grammar, 'audience') as a (a)}
@@ -478,7 +479,7 @@
 								<select
 									class="persona-select"
 									value={persona.tone}
-									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: persona.audience, tone: (e.target as HTMLSelectElement).value }; }}
+									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: persona.audience, tone: (e.target as HTMLSelectElement).value, intent: persona.intent }; }}
 								>
 									<option value="">—</option>
 									{#each getPersonaAxisTokens(grammar, 'tone') as t (t)}
@@ -490,6 +491,25 @@
 								{/if}
 								{#if persona.tone && grammar.persona.guidance?.tone?.[persona.tone]}
 									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.tone[persona.tone]}</span>
+								{/if}
+							</label>
+							<label class="persona-select-label">
+								<span>Intent</span>
+								<select
+									class="persona-select"
+									value={persona.intent}
+									onchange={(e) => { persona = { preset: persona.preset, voice: persona.voice, audience: persona.audience, tone: persona.tone, intent: (e.target as HTMLSelectElement).value }; }}
+								>
+									<option value="">—</option>
+									{#each getPersonaIntentTokens(grammar) as it (it)}
+										<option value={it}>{it}</option>
+									{/each}
+								</select>
+								{#if persona.intent && grammar.persona.use_when?.intent?.[persona.intent]}
+									<span class="persona-hint">{grammar.persona.use_when.intent[persona.intent]}</span>
+								{/if}
+								{#if persona.intent && grammar.persona.guidance?.intent?.[persona.intent]}
+									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.intent[persona.intent]}</span>
 								{/if}
 							</label>
 						</div>

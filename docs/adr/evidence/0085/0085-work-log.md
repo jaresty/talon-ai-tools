@@ -220,3 +220,45 @@ All Cycle 6 recommendations (R14-R16) were confirmed implemented before running:
 ---
 
 ## ADR 0085 Complete ✅
+
+---
+
+## Cycle 9: Post-Apply Validation + R30/R31 Investigations (Seeds 176–215)
+
+**Date:** 2026-02-25
+**Focus:** (1) Kanji collision post-apply validation, (2) grow vs grove investigation, (3) analysis over-broad investigation, (4) fresh broad health check
+**Seeds:** 176–215 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| Kanji post-apply validation | ✅ PASS | All 6 collisions resolved; all 8 kanji fixes confirmed in corpus |
+| R30: grow vs grove | Closed — no retirement | Semantically distinct; name proximity is usability risk only |
+| R31: analysis over-broad | Closed — no action | Exclusion clause correctly differentiates from structural peers |
+| Fresh corpus average | 3.89 | Broad health; 4 scores of 5, 5 scores of 3, 0 scores ≤ 2 |
+
+### Recommendations (R30-edit, R32, R33)
+
+| ID | Action | Target | Priority | Applied? |
+|----|--------|--------|----------|----------|
+| R30-edit | Cross-reference | Choosing Method cross-ref pointer now lists `grow` vs `grove` | Medium | ✅ Applied |
+| R32 | Edit | `help_llm.go` — Completeness × Method: max+grow tension note | Medium | ✅ Applied |
+| R33 | Edit | `help_llm.go` — Channel × audience: technical channels + non-technical audience | Medium | ✅ Applied |
+
+### Positive Patterns Confirmed
+
+- diff + motifs + probability + dig: excellent triple-lens (seed 204, score 5)
+- show + struct + polar + dig + expert persona: structural opposition exploration (seed 188, score 5)
+- Minimal combos (2–3 tokens): consistently 4–5
+- canon + assume: canonicalizing assumptions is a high-value pairing (seed 192, score 4)
+
+### New Open Item
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R34 | `gist` + compound directionals (fig, bog) tension — track in future cycles | Low |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-9/evaluations.md`

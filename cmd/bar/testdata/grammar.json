@@ -89,7 +89,7 @@
         "adversarial": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions.",
         "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be attributed solely to preferences or incentives without modeling how affordances influenced selection.",
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
-        "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without a specific organizing principle. Use when general structural understanding is needed and no more specific structural lens applies (spatial layout → mapping; dependency tracing → depends; grouping by similarity → cluster; hierarchical sequencing → order; historical causation → origin; governing criteria → spec; implicit gaps → gap).",
+        "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures, incentives, or constraints and show how they offset one another. The analysis must distinguish transient states from equilibria by specifying restoring or destabilizing dynamics under perturbation. No configuration may be treated as stable without explaining why countervailing forces fail to overturn it.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
@@ -3149,7 +3149,7 @@
     }
   ],
   "checksums": {
-    "axes": "0c64a87887aa99fc2ac7dee63704e06929274a0fc9c75b4a0e8f30fa81aa578d",
+    "axes": "a3c183ce58e4278e88b073d13fca71b80f5a443c2623c19bf79c51d06dd9e8e1",
     "tasks": "8c8e61d3bcf4cb061c975ecbdd7553affd6adc10bbf480bbfcd75762b8ed335a",
     "persona": "119ff50f1dbdf7f8b58301189b3e81f238448406ce22ebc02a08e62c7115a531",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

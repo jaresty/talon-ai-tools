@@ -167,7 +167,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
         "attributed solely to preferences or incentives without modeling how affordances influenced selection.",
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
-        "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
+        "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
+        "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures, incentives, "
         "or constraints and show how they offset one another. The analysis must distinguish transient states from equilibria by specifying restoring or destabilizing dynamics under "
@@ -233,7 +234,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
-        "stakes": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
         "forecast.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
@@ -243,6 +243,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "must be justified against this governing layer and may not redefine it during execution.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
+        "stakes": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
         "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those "
@@ -420,11 +421,11 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "rigor": "Disciplined, well-justified reasoning",
         "risks": "Potential problems and failure modes",
         "robust": "Reason under deep uncertainty",
-        "stakes": "Triage by consequence×uncertainty gradient",
         "shift": "Rotate through distinct perspectives",
         "simulation": "Thought experiments and scenario walkthroughs",
         "spec": "Define correctness criteria first",
         "split": "Decompose into parts or components",
+        "stakes": "Triage by consequence×uncertainty gradient",
         "systemic": "Interacting whole and feedback loops",
         "trade": "Trade-off analysis across competing forces",
         "trans": "Information transfer model with noise and feedback",
@@ -455,22 +456,21 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Task-affinity for decision-making tasks (plan, probe, make). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce "
         "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback).",
-        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code. "
-        "Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team). "
-        "Prefer diagram, presenterm, sketch, or plain for non-technical audiences.",
+        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code. Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, "
+        "to-team). Prefer diagram, presenterm, sketch, or plain for non-technical audiences.",
         "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan. "
         "Requires a developer audience — produces a VS Code CodeTour JSON file. Avoid with manager, PM, executive, CEO, stakeholder, analyst, or designer audiences.",
         "gherkin": "Outputs only Gherkin Given/When/Then syntax. Primary use: make tasks creating acceptance tests or feature specifications. With analysis tasks (probe, diff, check, sort), "
         "output is reframed as Gherkin scenarios that specify the analyzed properties — the analysis becomes evidence; scenarios express what should be true given that evidence. "
         "Avoid with prose-structure forms (story, case, log, questions, recipe).",
         "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code. "
-        "Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team).",
+        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code. Audience incompatibility: avoid with "
+        "non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team).",
         "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both.",
     },
     "completeness": {
-        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. "
-        "Prefer max for exhaustive treatment; prefer grow for disciplined minimalism.",
+        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer "
+        "grow for disciplined minimalism.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with multi-phase directionals (bog, fip rog, fly rog, fog) that require structural depth and "
         "sustained examination. Use with simple directionals (jog, rog) or none.",
     },
@@ -511,8 +511,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "explore": "Distinguish from: branch (parallel reasoning with evaluation). Explore generates options without premature commitment.",
         "gap": "Distinguish from: assume (explicit premises held). Gap identifies where implicit assumptions clash with explicit treatment, producing coordination failures. Useful for analyzing "
         "specification gaps, interface mismatches, or implicit expectations that contradict formal rules.",
-        "grow": "Contradicts max completeness: grow = expand only when necessity is demonstrated; max = exhaust all coverage. Avoid pairing grow + max. "
-        "Prefer grow for disciplined minimalism; prefer max for exhaustive treatment.",
+        "grow": "Contradicts max completeness: grow = expand only when necessity is demonstrated; max = exhaust all coverage. Avoid pairing grow + max. Prefer grow for disciplined minimalism; "
+        "prefer max for exhaustive treatment.",
         "induce": "Distinguish from: abduce (evidence→hypothesis) and deduce (premises→conclusion). Induce generalizes from examples.",
         "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. "
         "Use when failure patterns are named and the question is whether the design protects against them.",
@@ -532,41 +532,7 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a "
-        "concern rather than structural arrangement.",
-    },
-}
-
-# Distilled routing concept phrases for nav surfaces (ADR-0146 Phase 2).
-# Each token maps to the shortest phrase that maps a user's framing to that token.
-# Tokens sharing the same phrase group into a single routing bullet:
-#   e.g. thing + struct → "Entities/boundaries"
-# Covered axes: scope and form only. Method routing uses editorial sub-group
-# labels spanning multiple tokens and stays hardcoded until a future ADR.
-AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
-    "scope": {
-        "act": "Actions/tasks",
-        "agent": "Actors with agency",
-        "assume": "Premises/preconditions",
-        "cross": "Cross-cutting concerns",
-        "fail": "Failure modes",
-        "good": "Quality/criteria",
-        "mean": "Understanding/meaning",
-        "motifs": "Recurring patterns",
-        "stable": "Invariants/stable states",
-        "struct": "Entities/boundaries",
-        "thing": "Entities/boundaries",
-        "time": "Sequences/change",
-        "view": "Perspectives",
-    },
-    "form": {
-        "actions": "Actionable next steps",
-        "case": "Decision documentation",
-        "checklist": "Actionable next steps",
-        "recipe": "Step-by-step guidance",
-        "scaffold": "Building understanding",
-        "table": "Structured comparison",
-        "variants": "Multiple alternatives",
-        "walkthrough": "Step-by-step guidance",
+        "concern rather than structural arrangement."
     },
 }
 
@@ -783,8 +749,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "analysis": "General structural decomposition when no specific structural lens applies: user wants the subject broken into components and each examined for role, properties, and "
         "interactions — without spatial, dependency, grouping, sequential, historical, or criteria focus. Heuristic: 'analyze this', 'describe the situation', 'help me understand "
         "what\\'s happening', 'structure my understanding', 'what is going on here', 'break this down for me', 'understand before acting' → analysis. Distinct from: mapping (spatial "
-        "layout), depends (dependency tracing), cluster (group by similarity), order (hierarchical/sequential), origin (historical causation), spec (governing criteria), gap (implicit "
-        "assumptions). Also distinct from diagnose (diagnose = root cause via falsification; analysis = structural decomposition without fault-finding).",
+        "layout), depends (dependency tracing), cluster (group by similarity), order (hierarchical/sequential), origin (historical causation), spec (governing criteria), gap "
+        "(implicit assumptions). Also distinct from diagnose (diagnose = root cause via falsification; analysis = structural decomposition without fault-finding).",
         "argue": "Explicit argument structure: user wants claims, premises, warrants, and rebuttals made visible rather than a flowing narrative. Heuristic: 'make the argument', 'structure this "
         "as an argument', 'what are the premises', 'what supports this claim', 'build the logical case', 'argument and rebuttal', 'explicit reasoning structure' → argue. Distinct from "
         "case form (case = narrative that builds to a recommendation; argue = expose the logical structure of claims and their supports).",
@@ -929,10 +895,6 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "rigor": "Disciplined, well-justified reasoning: user wants the response to rely on disciplined logic with explicit reasoning chains rather than intuitive leaps. Heuristic: 'be "
         "rigorous', 'make the reasoning explicit', 'disciplined analysis', 'careful reasoning', 'justify each step', 'logical rigor', 'no handwaving', 'substantiate your claims' → "
         "rigor. Distinct from verify method (verify = apply falsification pressure to claims; rigor = discipline the reasoning process throughout).",
-        "stakes": "Risk-gradient triage: user wants analytical depth allocated proportionally to consequence×uncertainty — the most dangerous or uncertain areas get the most thorough treatment. "
-        "Heuristic: 'focus on the high-risk areas', 'triage by impact and uncertainty', 'risk-proportionate depth', 'where are the stakes highest', 'most dangerous parts first', "
-        "'consequence-weighted review', 'allocate attention by risk', 'what deserves the most scrutiny', 'protect the high-stakes areas' → stakes method. Can pair with risks method "
-        "(risks = find what could go wrong; stakes = calibrate how deeply to examine each based on consequence×uncertainty).",
         "risks": "Risk and failure mode enumeration: user wants potential problems, failure modes, and their likelihood or severity identified. Heuristic: 'what are the risks', 'what could go "
         "wrong', 'risk assessment', 'failure modes', 'identify the hazards', 'risk analysis', 'what might fail', 'enumerate the risks', 'likelihood and severity' → risks. Distinct from "
         "adversarial method (adversarial = construct attacks to stress-test; risks = enumerate and assess failure modes and their likelihood).",
@@ -955,6 +917,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "split": "Deliberate decomposition into isolated parts: user wants the subject broken into components for separate analysis before considering interactions. Heuristic: 'break this into "
         "parts', 'decompose', 'analyze each component separately', 'isolate the pieces', 'divide and analyze', 'separate concerns', 'split into sub-problems', 'analyze in isolation' → "
         "split. Distinct from dimension method (dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis).",
+        "stakes": "Risk-gradient triage: user wants analytical depth allocated proportionally to consequence×uncertainty — the most dangerous or uncertain areas get the most thorough treatment. "
+        "Heuristic: 'focus on the high-risk areas', 'triage by impact and uncertainty', 'risk-proportionate depth', 'where are the stakes highest', 'most dangerous parts first', "
+        "'consequence-weighted review', 'allocate attention by risk', 'what deserves the most scrutiny', 'protect the high-stakes areas' → stakes method. Can pair with risks method "
+        "(risks = find what could go wrong; stakes = calibrate how deeply to examine each based on consequence×uncertainty).",
         "systemic": "Whole-system feedback loop and emergent behavior analysis: user wants to understand the subject as an interacting whole, not just its parts. Heuristic: 'systems thinking', "
         "'feedback loops', 'emergent behavior', 'system as a whole', 'how do the parts interact', 'unintended consequences', 'second order effects across the system', "
         "'interconnections' → systemic. Distinct from analysis method (analysis = describe and structure; systemic = reason about interactions and emergence).",
@@ -1158,11 +1124,11 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "rigor": "厳",
         "risks": "危",
         "robust": "堅",
-        "stakes": "険",
         "shift": "転",
         "simulation": "象",
         "spec": "規",
         "split": "分",
+        "stakes": "険",
         "systemic": "系",
         "trade": "衡",
         "trans": "伝",
@@ -1303,17 +1269,51 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "rigor": "Reasoning",
         "risks": "Diagnostic",
         "robust": "Diagnostic",
-        "stakes": "Diagnostic",
         "shift": "Generative",
         "simulation": "Temporal/Dynamic",
         "spec": "Structural",
         "split": "Exploration",
+        "stakes": "Diagnostic",
         "systemic": "Temporal/Dynamic",
         "trade": "Comparative",
         "trans": "Temporal/Dynamic",
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
     }
+}
+
+# Distilled routing concept phrases for nav surfaces (ADR-0146 Phase 2).
+# Each token maps to the shortest phrase that maps a user's framing to that token.
+# Tokens sharing the same phrase group into a single routing bullet:
+#   e.g. thing + struct → 'Entities/boundaries'
+# Covered axes: scope and form only. Method routing uses editorial sub-group
+# labels spanning multiple tokens and stays hardcoded until a future ADR.
+AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
+    "form": {
+        "actions": "Actionable next steps",
+        "case": "Decision documentation",
+        "checklist": "Actionable next steps",
+        "recipe": "Step-by-step guidance",
+        "scaffold": "Building understanding",
+        "table": "Structured comparison",
+        "variants": "Multiple alternatives",
+        "walkthrough": "Step-by-step guidance",
+    },
+    "scope": {
+        "act": "Actions/tasks",
+        "agent": "Actors with agency",
+        "assume": "Premises/preconditions",
+        "cross": "Cross-cutting concerns",
+        "fail": "Failure modes",
+        "good": "Quality/criteria",
+        "mean": "Understanding/meaning",
+        "motifs": "Recurring patterns",
+        "stable": "Invariants/stable states",
+        "struct": "Entities/boundaries",
+        "thing": "Entities/boundaries",
+        "time": "Sequences/change",
+        "view": "Perspectives",
+    },
 }
 
 

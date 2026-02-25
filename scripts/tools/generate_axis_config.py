@@ -143,6 +143,13 @@ def render_axis_config() -> str:
         if category.get(axis)
     }
     category_mapping = dict(sorted(category_mapping.items()))
+    routing_concept = payload.get("axis_routing_concept", {}) or {}
+    routing_concept_mapping: dict[str, Any] = {
+        axis: dict(sorted((routing_concept.get(axis) or {}).items()))
+        for axis in sorted(routing_concept.keys())
+        if routing_concept.get(axis)
+    }
+    routing_concept_mapping = dict(sorted(routing_concept_mapping.items()))
     # Use a very wide width to prevent pprint from splitting string literals
     # across lines (which creates ugly adjacent string concatenation)
     body = pprint.pformat(mapping, width=200, sort_dicts=True)
@@ -151,6 +158,7 @@ def render_axis_config() -> str:
     use_when_body = pprint.pformat(use_when_mapping, width=200, sort_dicts=True)
     kanji_body = pprint.pformat(kanji_mapping, width=200, sort_dicts=True)
     category_body = pprint.pformat(category_mapping, width=200, sort_dicts=True)
+    routing_concept_body = pprint.pformat(routing_concept_mapping, width=200, sort_dicts=True)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -220,6 +228,15 @@ def render_axis_config() -> str:
         def axis_key_to_category_map(axis: str) -> dict[str, str]:
             \"\"\"Return the key->category map for a given axis (ADR-0144).\"\"\"
             return AXIS_KEY_TO_CATEGORY.get(axis, {})
+
+
+        def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
+            \"\"\"Return the key->routing_concept map for a given axis (ADR-0146).
+
+            Returns per-token distilled routing concept phrases. Tokens sharing the same
+            phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
+            \"\"\"
+            return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
 
 
         def axis_docs_for(axis: str) -> list[AxisDoc]:
@@ -298,6 +315,13 @@ def get_usage_patterns() -> list[dict]:
                 f"# Tokens that span multiple families are placed by primary use case; contested\n"
                 f"# placements are resolved by the authors and recorded here as the authoritative SSOT.\n"
                 f"AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {category_body}",
+                f"# Distilled routing concept phrases for nav surfaces (ADR-0146 Phase 2).\n"
+                f"# Each token maps to the shortest phrase that maps a user's framing to that token.\n"
+                f"# Tokens sharing the same phrase group into a single routing bullet:\n"
+                f"#   e.g. thing + struct → 'Entities/boundaries'\n"
+                f"# Covered axes: scope and form only. Method routing uses editorial sub-group\n"
+                f"# labels spanning multiple tokens and stays hardcoded until a future ADR.\n"
+                f"AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {routing_concept_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip() + usage_patterns_block,
             ]

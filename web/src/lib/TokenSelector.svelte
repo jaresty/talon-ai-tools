@@ -25,6 +25,9 @@
 	let wasJustClicked = $state(false);
 	// Touch browsers fire compat mouseenter events — suppress them after any touch interaction
 	let isUsingTouch = $state(false);
+	// Set when a touchmove/scroll closes the panel mid-gesture; suppresses the stray synthetic
+	// click that iOS fires at touchend even after a swipe (which would re-open a random chip's panel)
+	let touchBecameSwipe = $state(false);
 
 	// True when any token has a non-empty category — enables grouped rendering
 	let hasCategoryGroups = $derived(tokens.some((t) => t.category));
@@ -91,6 +94,7 @@
 
 		const handleScroll = (e: Event) => {
 			if (e instanceof TouchEvent && (e.target as Element)?.closest?.('.meta-panel')) return;
+			if (e instanceof TouchEvent) touchBecameSwipe = true;
 			activeToken = null;
 		};
 		window.addEventListener('scroll', handleScroll, { passive: true });
@@ -127,6 +131,8 @@
 	}
 
 	function handleChipClick(meta: TokenMeta, atCap: boolean) {
+		// Suppress stray synthetic click fired by iOS at touchend after a swipe gesture
+		if (isUsingTouch && touchBecameSwipe) { touchBecameSwipe = false; return; }
 		const isSelected = selected.includes(meta.token);
 		if (isSelected) {
 			onToggle(meta.token);
@@ -258,6 +264,7 @@
 							isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
 							activeAtPointerDown = activeToken;
 							wasJustClicked = true;
+							touchBecameSwipe = false;
 						}}
 						onclick={() => handleChipClick(meta, atCap)}
 						onkeydown={(e) => {

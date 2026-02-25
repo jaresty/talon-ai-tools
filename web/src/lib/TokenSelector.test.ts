@@ -445,6 +445,27 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		expect(document.activeElement).not.toBe(chip);
 	});
 
+	it('swipe-then-click does not re-open the panel on a different chip (touchBecameSwipe guard)', async () => {
+		// Regression: iOS fires a synthetic click at touchend even after a swipe.
+		// When the swipe starts on chip B while chip A's panel is open, the stray click
+		// would open chip B's panel. The touchBecameSwipe flag suppresses this.
+		renderSelector();
+		// Open panel on wardley (has use_when so we can confirm it's open)
+		const wardleyChip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		await fireEvent.pointerDown(wardleyChip, { pointerType: 'touch' });
+		await fireEvent.click(wardleyChip); // opens panel
+		expect(screen.getByText('When to use')).toBeTruthy();
+		// Swipe begins on a different chip (prose)
+		const proseChip = screen.getByText('prose').closest('.token-chip')! as HTMLElement;
+		await fireEvent.pointerDown(proseChip, { pointerType: 'touch' });
+		// Touchmove fires (swipe gesture) — panel closes, touchBecameSwipe = true
+		await fireEvent.touchMove(document.body);
+		expect(screen.queryByText('When to use')).toBeNull();
+		// iOS fires stray synthetic click on prose — should be suppressed
+		await fireEvent.click(proseChip);
+		expect(screen.queryByText('Flowing narrative text.')).toBeNull();
+	});
+
 	it('keyboard focus still opens panel after a prior click sequence', async () => {
 		// wasJustClicked is cleared in onfocus so the next keyboard focus works normally
 		renderSelector();

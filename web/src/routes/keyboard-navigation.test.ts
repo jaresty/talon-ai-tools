@@ -538,3 +538,183 @@ describe('ADR-0141 — K2: Tab-exhaustion to persona panel does not lose focus (
 		document.body.removeChild(container);
 	});
 });
+
+// ---------------------------------------------------------------------------
+// ADR-0145 — KS: Global shortcut + filter focus + Enter-to-toggle
+// ---------------------------------------------------------------------------
+
+describe('ADR-0145 — KS: Alt+./Alt+, global shortcuts and filter Enter-to-toggle', () => {
+	let container: HTMLDivElement;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		container = document.createElement('div');
+		document.body.appendChild(container);
+	});
+
+	afterEach(() => {
+		document.body.removeChild(container);
+	});
+
+	// KS1: Alt+. from non-textarea context switches to next tab
+	it('KS1: Alt+. switches to next tab', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 100));
+		flushSync();
+
+		const tabsBefore = container.querySelectorAll('[role="tab"]');
+		const activeBeforeIdx = Array.from(tabsBefore).findIndex(
+			(t) => t.getAttribute('aria-selected') === 'true'
+		);
+
+		document.dispatchEvent(
+			new KeyboardEvent('keydown', { key: '.', code: 'Period', altKey: true, bubbles: true })
+		);
+		flushSync();
+
+		const tabsAfter = container.querySelectorAll('[role="tab"]');
+		const activeAfterIdx = Array.from(tabsAfter).findIndex(
+			(t) => t.getAttribute('aria-selected') === 'true'
+		);
+		const expectedNextIdx = (activeBeforeIdx + 1) % tabsAfter.length;
+		expect(activeAfterIdx).toBe(expectedNextIdx);
+	});
+
+	// KS2: Alt+. from a textarea does NOT switch tabs
+	it('KS2: Alt+. dispatched with target=TEXTAREA does not switch tabs', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 100));
+		flushSync();
+
+		const tabsBefore = container.querySelectorAll('[role="tab"]');
+		const activeBeforeIdx = Array.from(tabsBefore).findIndex(
+			(t) => t.getAttribute('aria-selected') === 'true'
+		);
+
+		// Create a real textarea and dispatch from it
+		const textarea = document.createElement('textarea');
+		container.appendChild(textarea);
+		textarea.focus();
+
+		textarea.dispatchEvent(
+			new KeyboardEvent('keydown', { key: '.', code: 'Period', altKey: true, bubbles: true })
+		);
+		flushSync();
+
+		const tabsAfter = container.querySelectorAll('[role="tab"]');
+		const activeAfterIdx = Array.from(tabsAfter).findIndex(
+			(t) => t.getAttribute('aria-selected') === 'true'
+		);
+		expect(activeAfterIdx).toBe(activeBeforeIdx);
+	});
+
+	// KS3: Alt+, switches to previous tab
+	it('KS3: Alt+, switches to previous tab', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 100));
+		flushSync();
+
+		const tabsBefore = container.querySelectorAll('[role="tab"]');
+		const n = tabsBefore.length;
+		const activeBeforeIdx = Array.from(tabsBefore).findIndex(
+			(t) => t.getAttribute('aria-selected') === 'true'
+		);
+
+		document.dispatchEvent(
+			new KeyboardEvent('keydown', { key: ',', code: 'Comma', altKey: true, bubbles: true })
+		);
+		flushSync();
+
+		const tabsAfter = container.querySelectorAll('[role="tab"]');
+		const activeAfterIdx = Array.from(tabsAfter).findIndex(
+			(t) => t.getAttribute('aria-selected') === 'true'
+		);
+		const expectedPrevIdx = (activeBeforeIdx - 1 + n) % n;
+		expect(activeAfterIdx).toBe(expectedPrevIdx);
+	});
+
+	// KS4: Enter in .filter-input calls onToggle with the first filtered token
+	it('KS4: Enter in filter-input calls onToggle with the first filtered token', async () => {
+		const { default: TokenSelector } = await import('$lib/TokenSelector.svelte');
+		const onToggle = vi.fn();
+		const tokens = [
+			{ token: 'show', label: 'Show', description: '', guidance: '', use_when: '' },
+			{ token: 'make', label: 'Make', description: '', guidance: '', use_when: '' },
+			{ token: 'fix',  label: 'Fix',  description: '', guidance: '', use_when: '' },
+			{ token: 'plan', label: 'Plan', description: '', guidance: '', use_when: '' },
+			{ token: 'spec', label: 'Spec', description: '', guidance: '', use_when: '' },
+			{ token: 'test', label: 'Test', description: '', guidance: '', use_when: '' },
+			{ token: 'list', label: 'List', description: '', guidance: '', use_when: '' },
+			{ token: 'map',  label: 'Map',  description: '', guidance: '', use_when: '' },
+			{ token: 'diff', label: 'Diff', description: '', guidance: '', use_when: '' }
+		];
+
+		const c = document.createElement('div');
+		document.body.appendChild(c);
+
+		mount(TokenSelector, {
+			target: c,
+			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle, onTabNext: vi.fn(), onTabPrev: vi.fn() }
+		});
+		flushSync();
+
+		const filterInput = c.querySelector<HTMLInputElement>('.filter-input');
+		expect(filterInput).toBeTruthy();
+
+		// Type 'sh' to filter to 'show'
+		filterInput!.value = 'sh';
+		filterInput!.dispatchEvent(new Event('input', { bubbles: true }));
+		flushSync();
+
+		// Press Enter
+		filterInput!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+		flushSync();
+
+		expect(onToggle).toHaveBeenCalledWith('show');
+		document.body.removeChild(c);
+	});
+
+	// KS5: Enter in .filter-input when no results does nothing
+	it('KS5: Enter in filter-input when no results does not call onToggle', async () => {
+		const { default: TokenSelector } = await import('$lib/TokenSelector.svelte');
+		const onToggle = vi.fn();
+		const tokens = [
+			{ token: 'show', label: 'Show', description: '', guidance: '', use_when: '' },
+			{ token: 'make', label: 'Make', description: '', guidance: '', use_when: '' },
+			{ token: 'fix',  label: 'Fix',  description: '', guidance: '', use_when: '' },
+			{ token: 'plan', label: 'Plan', description: '', guidance: '', use_when: '' },
+			{ token: 'spec', label: 'Spec', description: '', guidance: '', use_when: '' },
+			{ token: 'test', label: 'Test', description: '', guidance: '', use_when: '' },
+			{ token: 'list', label: 'List', description: '', guidance: '', use_when: '' },
+			{ token: 'map',  label: 'Map',  description: '', guidance: '', use_when: '' },
+			{ token: 'diff', label: 'Diff', description: '', guidance: '', use_when: '' }
+		];
+
+		const c = document.createElement('div');
+		document.body.appendChild(c);
+
+		mount(TokenSelector, {
+			target: c,
+			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle, onTabNext: vi.fn(), onTabPrev: vi.fn() }
+		});
+		flushSync();
+
+		const filterInput = c.querySelector<HTMLInputElement>('.filter-input');
+		expect(filterInput).toBeTruthy();
+
+		// Type something that matches nothing
+		filterInput!.value = 'zzz';
+		filterInput!.dispatchEvent(new Event('input', { bubbles: true }));
+		flushSync();
+
+		// Press Enter — should not call onToggle
+		filterInput!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+		flushSync();
+
+		expect(onToggle).not.toHaveBeenCalled();
+		document.body.removeChild(c);
+	});
+});

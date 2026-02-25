@@ -176,7 +176,7 @@
 		<span class="axis-cap">0–{maxSelect}</span>
 	</div>
 
-	{#if tokens.length > 8}
+	{#if tokens.length > 5}
 		<input
 			class="filter-input"
 			type="text"
@@ -193,6 +193,10 @@
 					e.preventDefault();
 					focusedIndex = 0;
 					focusChip(0);
+				} else if (e.key === 'Enter' && filtered.length > 0) {
+					e.preventDefault();
+					onToggle(filtered[0].token);
+					// Keep focus on filter — allows fast multi-toggle by typing + Enter repeatedly
 				}
 				// Shift+Tab: let browser handle — natural DOM order returns focus to the active tab button
 			}}

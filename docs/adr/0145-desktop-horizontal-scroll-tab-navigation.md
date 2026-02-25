@@ -197,3 +197,56 @@ and is not analogous to the mobile swipe idiom.
 ## VCS Revert
 
 `git restore --source=HEAD web/src/routes/+page.svelte web/src/lib/settings.ts web/src/lib/scrollNav.ts`
+
+---
+
+## Amendment — Loop 2 (2026-02-24)
+
+### Wheel navigation reverted
+
+The `handleWheelNav` handler added in loop-1 has been removed. Root cause: macOS back/forward
+swipe gestures fire the same `WheelEvent` stream. Because `overflow-x: hidden` keeps the
+page permanently at the horizontal scroll edge, every horizontal two-finger swipe was
+simultaneously navigating the browser back/forward AND switching tabs. This race is not
+fixable without calling `preventDefault()` on the wheel event, which would block the
+browser's native scroll thread (incompatible with the `{ passive: true }` constraint from G1).
+G6 localStorage opt-out and G4 animation were also deferred accordingly.
+
+### Replaced by: directional slide animation on all tab switches
+
+All tab-switch paths (click, keyboard ArrowKey, keyboard `Tab`-exhaustion, global `Alt+.`/`Alt+,`)
+now trigger a CSS `slide-in-from-right` (next) or `slide-in-from-left` (prev) animation on
+`.selector-panel`. The animation:
+- lasts 0.18s (fast enough not to feel slow, noticeable enough to communicate direction)
+- is suppressed under `prefers-reduced-motion: reduce`
+- is skipped (`animate=false`) on the mobile swipe path, which already has its own slide-out
+
+### Global `Alt+.` / `Alt+,` shortcuts
+
+`Alt+.` advances to the next axis and focuses the filter input (or first chip if no filter).
+`Alt+,` retreats to the previous axis and focuses the filter/first-chip.
+Guard: both shortcuts no-op if the event target is a `<textarea>`.
+
+### Filter Enter-to-toggle
+
+`Enter` pressed in the filter input calls `onToggle` on the first filtered token, keeping
+focus on the filter for rapid multi-token selection.
+
+### Revised validation contract
+
+| ID | Falsifiable | Validation command |
+|---|---|---|
+| SA1 | Clicking a tab to the right adds `slide-next` class to `.selector-panel` | `npm test -- scroll-navigation` |
+| SA2 | Clicking a tab to the left adds `slide-prev` class to `.selector-panel` | `npm test -- scroll-navigation` |
+| SA3 | `animationend` on `.selector-panel` removes the slide class | `npm test -- scroll-navigation` |
+| SA4 | Mobile swipe path (`animate=false`) does NOT set a slide class | `npm test -- scroll-navigation` |
+| SA5 | Clicking the already-active tab does NOT add a slide class | `npm test -- scroll-navigation` |
+| KS1 | `Alt+.` from non-textarea context switches to next tab | `npm test -- keyboard-navigation` |
+| KS2 | `Alt+.` from `<textarea>` does NOT switch tabs | `npm test -- keyboard-navigation` |
+| KS3 | `Alt+,` switches to previous tab | `npm test -- keyboard-navigation` |
+| KS4 | `Enter` in `.filter-input` calls `onToggle` with first filtered token | `npm test -- keyboard-navigation` |
+| KS5 | `Enter` in `.filter-input` with no results does nothing | `npm test -- keyboard-navigation` |
+
+### Revised VCS revert
+
+`git restore --source=HEAD web/src/routes/+page.svelte web/src/lib/TokenSelector.svelte web/src/routes/scroll-navigation.test.ts web/src/routes/keyboard-navigation.test.ts`

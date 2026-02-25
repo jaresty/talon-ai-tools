@@ -93,6 +93,16 @@
 			} else if (e.key === 'u' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				shareLink();
+			} else if (e.code === 'Period' && e.altKey) {
+				if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
+				e.preventDefault();
+				goToNextTab(false);
+				setTimeout(focusFilterOrFirst, 0);
+			} else if (e.code === 'Comma' && e.altKey) {
+				if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
+				e.preventDefault();
+				goToPrevTab(false);
+				setTimeout(focusFilterOrFirst, 0);
 			}
 		}
 		document.addEventListener('keydown', handleGlobalKey);
@@ -190,12 +200,12 @@
 	let touchStartY = 0;
 	let swipeOffset = $state(0);
 	let swipeAnimating = $state(false);
+	let panelSlideDir = $state<'next' | 'prev' | null>(null);
 
 	// Per-instance capture listener on .layout absorbs ghost clicks after a swipe.
 	// Using bind:this keeps the listener isolated to this component instance.
 	let layoutEl = $state<HTMLElement | null>(null);
 	let swipeCompletedAt = 0;
-	let lastScrollNavAt = 0;
 	$effect(() => {
 		if (!layoutEl) return;
 		const absorb = (e: MouseEvent) => {
@@ -205,10 +215,8 @@
 			}
 		};
 		layoutEl.addEventListener('click', absorb, { capture: true });
-		layoutEl.addEventListener('wheel', handleWheelNav, { passive: true });
 		return () => {
 			layoutEl?.removeEventListener('click', absorb);
-			layoutEl?.removeEventListener('wheel', handleWheelNav);
 		};
 	});
 
@@ -254,30 +262,11 @@
 		setTimeout(() => {
 			swipeAnimating = false;
 			swipeOffset = 0;
-			if (dx < 0) goToNextTab(false);
-			else goToPrevTab(false);
+			if (dx < 0) goToNextTab(false, false);
+			else goToPrevTab(false, false);
 		}, 250);
 	}
 
-	function handleWheelNav(e: WheelEvent) {
-		// Opt-out via localStorage setting
-		if (localStorage.getItem('bar-scroll-nav-enabled') === 'false') return;
-		// Boundary: if event originated inside an .h-scroll-boundary, don't navigate
-		if ((e.target as Element).closest?.('.h-scroll-boundary')) return;
-		const dx = e.deltaX;
-		const dy = e.deltaY;
-		// Dominant-axis: must be clearly horizontal (1.5x factor) and above minimum displacement
-		if (Math.abs(dx) < 40) return;
-		if (Math.abs(dx) <= Math.abs(dy) * 1.5) return;
-		// Cooldown: prevent momentum scrolling from skipping multiple tabs (400ms)
-		if (Date.now() - lastScrollNavAt < 400) return;
-		lastScrollNavAt = Date.now();
-		if (dx < 0) {
-			goToNextTab(false); // scroll left → advance to next tab
-		} else {
-			goToPrevTab(false); // scroll right → go to previous tab
-		}
-	}
 
 	function clearState() {
 		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
@@ -321,18 +310,33 @@
 		last?.focus();
 	}
 
-	function goToNextTab(moveFocus = true) {
+	function goToNextTab(moveFocus = true, animate = true) {
+		if (animate) panelSlideDir = 'next';
 		const n = AXES_WITH_PERSONA.length;
 		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
 		activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
 		if (moveFocus) setTimeout(focusFirstChip, 0);
 	}
 
-	function goToPrevTab(moveFocus = true) {
+	function goToPrevTab(moveFocus = true, animate = true) {
+		if (animate) panelSlideDir = 'prev';
 		const n = AXES_WITH_PERSONA.length;
 		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
 		activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
 		if (moveFocus) setTimeout(focusLastChip, 0);
+	}
+
+	function switchTab(tab: string) {
+		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
+		const next = AXES_WITH_PERSONA.indexOf(tab);
+		panelSlideDir = next > cur ? 'next' : next < cur ? 'prev' : null;
+		activeTab = tab;
+	}
+
+	function focusFilterOrFirst() {
+		const filterEl = document.querySelector<HTMLElement>('.selector-panel .filter-input');
+		if (filterEl) { filterEl.focus(); return; }
+		focusFirstChip();
 	}
 
 	function handleTabBarKey(e: KeyboardEvent) {
@@ -340,17 +344,21 @@
 		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
 		if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
 			e.preventDefault();
+			panelSlideDir = 'next';
 			activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
 			setTimeout(focusActiveTab, 0);
 		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
 			e.preventDefault();
+			panelSlideDir = 'prev';
 			activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
 			setTimeout(focusActiveTab, 0);
 		} else if (e.key === 'Home') {
 			e.preventDefault();
+			panelSlideDir = cur > 0 ? 'prev' : null;
 			activeTab = AXES_WITH_PERSONA[0];
 		} else if (e.key === 'End') {
 			e.preventDefault();
+			panelSlideDir = cur < n - 1 ? 'next' : null;
 			activeTab = AXES_WITH_PERSONA[n - 1];
 		}
 	}
@@ -393,7 +401,7 @@
 				aria-selected={activeTab === tab}
 				aria-controls="panel-{tab}"
 				tabindex={activeTab === tab ? 0 : -1}
-				onclick={() => activeTab = tab}
+				onclick={() => switchTab(tab)}
 			>
 				{tab}
 			</button>
@@ -408,6 +416,8 @@
 		<div class="main">
 			<section
 				class="selector-panel"
+				class:slide-next={panelSlideDir === 'next'}
+				class:slide-prev={panelSlideDir === 'prev'}
 				role="region"
 				aria-label="Token selector"
 				style:transform={swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined}
@@ -415,6 +425,7 @@
 				ontouchstart={handleTouchStart}
 				ontouchmove={handleTouchMove}
 				ontouchend={handleTouchEnd}
+				onanimationend={() => panelSlideDir = null}
 			>
 				{#if activeTab === 'persona'}
 				<!-- Persona -->
@@ -612,6 +623,8 @@
 							<tr><td><kbd>⌘⇧C</kbd> / <kbd>Ctrl+Shift+C</kbd></td><td>Copy command</td></tr>
 							<tr><td><kbd>⌘⇧P</kbd> / <kbd>Ctrl+Shift+P</kbd></td><td>Copy rendered prompt</td></tr>
 							<tr><td><kbd>⌘⇧U</kbd> / <kbd>Ctrl+Shift+U</kbd></td><td>Share URL</td></tr>
+						<tr><td><kbd>Alt+.</kbd></td><td>Next axis (focus filter)</td></tr>
+						<tr><td><kbd>Alt+,</kbd></td><td>Previous axis (focus filter)</td></tr>
 						</tbody>
 					</table>
 				</details>
@@ -1217,6 +1230,24 @@
 
 	.selector-panel {
 		position: relative;
+		padding-left: 3px; /* prevent focus outline from being clipped by parent overflow-x:hidden */
+	}
+
+	@keyframes slide-in-from-right {
+		from { transform: translateX(30px); opacity: 0.8; }
+		to   { transform: translateX(0);    opacity: 1;   }
+	}
+	@keyframes slide-in-from-left {
+		from { transform: translateX(-30px); opacity: 0.8; }
+		to   { transform: translateX(0);     opacity: 1;   }
+	}
+
+	.selector-panel.slide-next { animation: slide-in-from-right 0.18s ease-out; }
+	.selector-panel.slide-prev { animation: slide-in-from-left  0.18s ease-out; }
+
+	@media (prefers-reduced-motion: reduce) {
+		.selector-panel.slide-next,
+		.selector-panel.slide-prev { animation: none; }
 	}
 
 	.tab-bar {

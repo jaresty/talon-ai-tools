@@ -16,9 +16,10 @@ type TokenOption struct {
 	Label       string
 	Description string
 	Guidance    string
-	UseWhen     string // ADR-0142: routing trigger phrases for nav surfaces
-	Kanji         string // ADR-0143: kanji icons for visual display
-	SemanticGroup string // ADR-0144: semantic family for method tokens; empty for other axes
+	UseWhen        string // ADR-0142: routing trigger phrases for nav surfaces
+	Kanji          string // ADR-0143: kanji icons for visual display
+	SemanticGroup  string // ADR-0144: semantic family for method tokens; empty for other axes
+	RoutingConcept string // ADR-0146: distilled routing concept phrase; populated for scope/form only
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	// Key is the category key, value is the token value to fill.
 	// Used by persona presets to auto-fill voice, audience, and tone.

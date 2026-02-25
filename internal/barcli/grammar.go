@@ -982,6 +982,28 @@ func (g *Grammar) AxisGuidanceMap(axis string) map[string]string {
 	return nil
 }
 
+// AxisRoutingConcept returns the distilled routing concept phrase for a token (ADR-0146).
+// Returns empty string if no concept is defined (only scope and form axes are populated).
+func (g *Grammar) AxisRoutingConcept(axis, token string) string {
+	if g.Axes.RoutingConcept == nil {
+		return ""
+	}
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	if axisKey == "" || tokenKey == "" {
+		return ""
+	}
+	if concepts, ok := g.Axes.RoutingConcept[axisKey]; ok {
+		if text, ok := concepts[tokenKey]; ok {
+			return text
+		}
+		if text, ok := concepts[strings.ToLower(tokenKey)]; ok {
+			return text
+		}
+	}
+	return ""
+}
+
 // AxisUseWhen returns the use_when discoverability hint for a token (ADR-0132).
 // Returns empty string if no hint is defined.
 func (g *Grammar) AxisUseWhen(axis, token string) string {

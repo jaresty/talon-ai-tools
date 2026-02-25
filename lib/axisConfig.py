@@ -243,7 +243,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "must be justified against this governing layer and may not redefine it during execution.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
-        "stakes": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
         "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those "
@@ -251,6 +250,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message "
         "from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes "
         "may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
+        "triage": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative "
         "space. Claims that fail any axis are treated as ungrounded and must not be synthesized into conclusions or recommendations, ensuring outputs do not transfer authority or imply "
@@ -425,10 +425,10 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "simulation": "Thought experiments and scenario walkthroughs",
         "spec": "Define correctness criteria first",
         "split": "Decompose into parts or components",
-        "stakes": "Triage by consequence×uncertainty gradient",
         "systemic": "Interacting whole and feedback loops",
         "trade": "Trade-off analysis across competing forces",
         "trans": "Information transfer model with noise and feedback",
+        "triage": "Triage by consequence×uncertainty gradient",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Apply falsification pressure to claims",
     },
@@ -523,12 +523,12 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "conventions govern behavior but aren't documented.",
         "resilience": "Distinguish from: robust (selecting options that work across futures). Resilience focuses on system behavior under stress.",
         "robust": "Distinguish from: resilience (behavior under stress). Robust favors options that perform acceptably across futures.",
-        "stakes": "Use when the goal is to allocate analytical depth non-uniformly — high-consequence high-uncertainty areas get more depth, low-stakes areas get lighter treatment. Distinct from "
-        "risks method (risks = enumerate and assess potential problems; stakes = calibrate coverage intensity by the consequence×uncertainty gradient once the risk landscape is known). "
-        "Can be used together: risks surfaces the risks; stakes ensures depth is proportional to them.",
         "systemic": "Distinguish from: analysis (decomposition/structure). Systemic focuses on feedback loops and interactions.",
         "trade": "Distinguish from: balance (forces offsetting each other to produce equilibrium). Trade specifically identifies competing forces and evaluates alternatives across dimensions "
         "before committing. Balance models how existing forces offset; trade explicitly evaluates what trade-offs exist and how to navigate them.",
+        "triage": "Use when the goal is to allocate analytical depth non-uniformly — high-consequence high-uncertainty areas get more depth, low-stakes areas get lighter treatment. Distinct from "
+        "risks method (risks = enumerate and assess potential problems; triage = calibrate coverage intensity by the consequence×uncertainty gradient once the risk landscape is known). "
+        "Can be used together: risks surfaces the risks; triage ensures depth is proportional to them.",
     },
     "scope": {
         "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a "
@@ -917,10 +917,6 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "split": "Deliberate decomposition into isolated parts: user wants the subject broken into components for separate analysis before considering interactions. Heuristic: 'break this into "
         "parts', 'decompose', 'analyze each component separately', 'isolate the pieces', 'divide and analyze', 'separate concerns', 'split into sub-problems', 'analyze in isolation' → "
         "split. Distinct from dimension method (dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis).",
-        "stakes": "Risk-gradient triage: user wants analytical depth allocated proportionally to consequence×uncertainty — the most dangerous or uncertain areas get the most thorough treatment. "
-        "Heuristic: 'focus on the high-risk areas', 'triage by impact and uncertainty', 'risk-proportionate depth', 'where are the stakes highest', 'most dangerous parts first', "
-        "'consequence-weighted review', 'allocate attention by risk', 'what deserves the most scrutiny', 'protect the high-stakes areas' → stakes method. Can pair with risks method "
-        "(risks = find what could go wrong; stakes = calibrate how deeply to examine each based on consequence×uncertainty).",
         "systemic": "Whole-system feedback loop and emergent behavior analysis: user wants to understand the subject as an interacting whole, not just its parts. Heuristic: 'systems thinking', "
         "'feedback loops', 'emergent behavior', 'system as a whole', 'how do the parts interact', 'unintended consequences', 'second order effects across the system', "
         "'interconnections' → systemic. Distinct from analysis method (analysis = describe and structure; systemic = reason about interactions and emergence).",
@@ -932,6 +928,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "does signal get lost', 'where does data degrade', 'signal fidelity', 'where is information lost in transmission', 'where does the message get distorted', 'trace signal path "
         "through the system', 'where does noise enter', 'signal-to-noise', 'observability pipeline fidelity' → trans. Distinct from flow method (flow = narrate step-by-step sequence; "
         "trans = model noise, distortion, and fidelity across stages).",
+        "triage": "Risk-gradient triage: user wants analytical depth allocated proportionally to consequence×uncertainty — the most dangerous or uncertain areas get the most thorough treatment. "
+        "Heuristic: 'focus on the high-risk areas', 'triage by impact and uncertainty', 'risk-proportionate depth', 'where are the stakes highest', 'most dangerous parts first', "
+        "'consequence-weighted review', 'allocate attention by risk', 'what deserves the most scrutiny', 'protect the high-stakes areas' → triage method. Can pair with risks method "
+        "(risks = find what could go wrong; triage = calibrate how deeply to examine each based on consequence×uncertainty).",
         "unknowns": "Unknown unknowns surfacing: user wants to identify what has not been asked, what gaps in knowledge could impact outcomes, and what critical uncertainties have not been "
         "named. Heuristic: 'what are we missing', 'what don\\'t we know that we don\\'t know', 'unknown unknowns', 'what questions haven\\'t we asked', 'critical blind spots', "
         "'what\\'s not on our radar', 'gaps in our knowledge', 'what could surprise us' → unknowns. Distinct from assume scope (assume = make explicit premises already held; unknowns "
@@ -1128,10 +1128,10 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "simulation": "象",
         "spec": "規",
         "split": "分",
-        "stakes": "険",
         "systemic": "系",
         "trade": "衡",
         "trans": "伝",
+        "triage": "険",
         "unknowns": "未",
         "verify": "証",
     },
@@ -1273,10 +1273,10 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "simulation": "Temporal/Dynamic",
         "spec": "Structural",
         "split": "Exploration",
-        "stakes": "Diagnostic",
         "systemic": "Temporal/Dynamic",
         "trade": "Comparative",
         "trans": "Temporal/Dynamic",
+        "triage": "Diagnostic",
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
     }
@@ -1289,15 +1289,148 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
 # Covered axes: scope and form only. Method routing uses editorial sub-group
 # labels spanning multiple tokens and stays hardcoded until a future ADR.
 AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
+    "channel": {
+        "adr": "Architecture decision record",
+        "code": "Code output",
+        "codetour": "VS Code tour",
+        "diagram": "Mermaid diagram",
+        "gherkin": "Gherkin scenarios",
+        "html": "HTML output",
+        "jira": "Jira formatting",
+        "plain": "Plain prose",
+        "presenterm": "Slide deck",
+        "remote": "Remote delivery",
+        "shellscript": "Shell script",
+        "sketch": "D2 diagram",
+        "slack": "Slack formatting",
+        "svg": "SVG output",
+        "sync": "Session plan",
+    },
+    "completeness": {
+        "deep": "Deep dive",
+        "full": "Complete coverage",
+        "gist": "Summary",
+        "max": "Exhaustive treatment",
+        "minimal": "Minimal answer",
+        "narrow": "Narrow focus",
+        "skim": "Quick pass",
+    },
+    "directional": {
+        "bog": "Reflect + act",
+        "dig": "Concrete/specific",
+        "dip bog": "Concrete, reflect, act",
+        "dip ong": "Concrete then act",
+        "dip rog": "Concrete then reflect",
+        "fig": "Abstract + concrete",
+        "fip bog": "Full range, reflect, act",
+        "fip ong": "Full range, then act",
+        "fip rog": "Full range, then reflect",
+        "fly bog": "Abstract, reflect, act",
+        "fly ong": "Abstract then act",
+        "fly rog": "Abstract then reflect",
+        "fog": "Abstractify/generalise",
+        "jog": "Execute directly",
+        "ong": "Act and extend",
+        "rog": "Reflect on structure",
+    },
     "form": {
         "actions": "Actionable next steps",
+        "activities": "Session activities",
+        "bug": "Bug report",
+        "bullets": "Bullet points",
+        "cards": "Cards/items",
         "case": "Decision documentation",
         "checklist": "Actionable next steps",
+        "cocreate": "Collaborative process",
+        "commit": "Commit message",
+        "contextualise": "LLM context package",
+        "direct": "Lead with conclusion",
+        "facilitate": "Facilitation plan",
+        "faq": "FAQ format",
+        "formats": "Format comparison",
+        "indirect": "Background then conclusion",
+        "ladder": "Abstraction ladder",
+        "log": "Work log entry",
+        "merge": "Combine sources",
+        "questions": "Probing questions",
+        "quiz": "Quiz structure",
         "recipe": "Step-by-step guidance",
         "scaffold": "Building understanding",
+        "socratic": "Question-led inquiry",
+        "spike": "Research spike",
+        "story": "User story",
         "table": "Structured comparison",
+        "taxonomy": "Classification system",
+        "test": "Test cases",
+        "tight": "Concise prose",
         "variants": "Multiple alternatives",
+        "visual": "Visual/spatial layout",
         "walkthrough": "Step-by-step guidance",
+        "wardley": "Wardley map",
+        "wasinawa": "What/So What/Now What",
+    },
+    "method": {
+        "abduce": "Best explanation",
+        "actors": "People/roles",
+        "adversarial": "Stress test",
+        "afford": "Structural affordances",
+        "analog": "Reasoning by analogy",
+        "analysis": "Decompose components",
+        "argue": "Formal argument",
+        "balance": "Equilibrium forces",
+        "bias": "Cognitive biases",
+        "boom": "Extreme scale behavior",
+        "branch": "Multiple paths",
+        "calc": "Formal calculation",
+        "canon": "Single source of truth",
+        "cite": "Evidence/sources",
+        "cluster": "Group/categorize",
+        "compare": "Side-by-side comparison",
+        "converge": "Narrow to recommendation",
+        "deduce": "Logical deduction",
+        "depends": "Dependency tracing",
+        "diagnose": "Root cause",
+        "dimension": "Multiple dimensions",
+        "domains": "Bounded contexts",
+        "effects": "Second-order effects",
+        "experimental": "Design experiments",
+        "explore": "Open option space",
+        "field": "Structural field effects",
+        "flow": "Step-by-step flow",
+        "gap": "Implicit gaps",
+        "grove": "Compounding effects",
+        "grow": "Expand only when needed",
+        "induce": "Generalise from examples",
+        "inversion": "Start from failure",
+        "jobs": "Jobs to be done",
+        "mapping": "Spatial map",
+        "meld": "Combinations/overlaps",
+        "melody": "Coordination across parts",
+        "mod": "Cyclic/periodic patterns",
+        "models": "Named mental models",
+        "objectivity": "Facts vs opinions",
+        "operations": "Operations research",
+        "order": "Abstract ordering",
+        "origin": "Historical causation",
+        "polar": "Attractors/repellers",
+        "prioritize": "Rank by importance",
+        "probability": "Statistical reasoning",
+        "product": "Product lens",
+        "reify": "Make implicit explicit",
+        "resilience": "Stress and fragility",
+        "rigor": "Disciplined reasoning",
+        "risks": "Potential problems",
+        "robust": "Works across futures",
+        "shift": "Rotate perspectives",
+        "simulation": "Scenario walkthrough",
+        "spec": "Governing constraints",
+        "split": "Decompose in isolation",
+        "systemic": "System as whole",
+        "trade": "Structural tradeoffs",
+        "trans": "Communication transmission",
+        "triage": "Risk-gradient depth",
+        "unknowns": "Unknown unknowns",
+        "verify": "Falsification pressure",
     },
     "scope": {
         "act": "Actions/tasks",

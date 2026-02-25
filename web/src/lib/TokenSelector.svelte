@@ -74,7 +74,8 @@
 			? tokens.filter(
 					(t) =>
 						t.token.includes(filter.toLowerCase()) ||
-						t.label.toLowerCase().includes(filter.toLowerCase())
+						t.label.toLowerCase().includes(filter.toLowerCase()) ||
+						(t.routing_concept?.toLowerCase().includes(filter.toLowerCase()) ?? false)
 				)
 			: hasCategoryGroups
 				? categoryGroups().flatMap((g) => g.tokens)
@@ -315,6 +316,9 @@
 						{#if meta.use_when}
 							<span class="use-when-dot">●</span>
 						{/if}
+						{#if meta.routing_concept}
+							<span class="routing-concept">{meta.routing_concept}</span>
+						{/if}
 					</div>
 				{/each}
 			{/each}
@@ -361,6 +365,9 @@
 					{/if}
 					{#if meta.use_when}
 						<span class="use-when-dot">●</span>
+					{/if}
+					{#if meta.routing_concept}
+						<span class="routing-concept">{meta.routing_concept}</span>
 					{/if}
 				</div>
 			{/each}
@@ -486,6 +493,7 @@
 	.token-chip {
 		display: flex;
 		align-items: center;
+		flex-wrap: wrap;
 		gap: 0.3rem;
 		padding: 0.25rem 0.5rem;
 		background: var(--color-surface);
@@ -543,6 +551,16 @@
 		font-size: 0.5rem;
 		color: var(--color-accent);
 		line-height: 1;
+	}
+
+	/* ADR-0146: routing concept subtitle — same visual weight as chip label, not artificially dimmed */
+	.routing-concept {
+		width: 100%;
+		font-size: 0.65rem;
+		color: var(--color-text);
+		font-style: italic;
+		line-height: 1.3;
+		margin-top: 0.05rem;
 	}
 
 	.meta-panel {

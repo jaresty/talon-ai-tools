@@ -204,3 +204,95 @@ func TestMethodAxisCanonicalCategoryOrder(t *testing.T) {
 		lastGroup = g
 	}
 }
+
+// TestBuildAxisOptionsPopulatesRoutingConceptForScopeToken specifies that buildAxisOptions
+// includes RoutingConcept for scope tokens that have one (ADR-0146).
+func TestBuildAxisOptionsPopulatesRoutingConceptForScopeToken(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	options := buildAxisOptions(grammar, "scope")
+	if len(options) == 0 {
+		t.Fatal("expected scope options, got none")
+	}
+
+	var failOption *bartui.TokenOption
+	for i := range options {
+		if options[i].Value == "fail" {
+			failOption = &options[i]
+			break
+		}
+	}
+	if failOption == nil {
+		t.Fatal("expected to find 'fail' token in scope options")
+	}
+	if failOption.RoutingConcept == "" {
+		t.Errorf("expected RoutingConcept to be populated for scope:fail (ADR-0146), got empty string")
+	}
+	const want = "Failure modes"
+	if failOption.RoutingConcept != want {
+		t.Errorf("expected scope:fail RoutingConcept %q, got %q", want, failOption.RoutingConcept)
+	}
+}
+
+// TestBuildAxisOptionsRoutingConceptForMethodToken specifies that buildAxisOptions
+// populates RoutingConcept for method tokens — method axis coverage added in ADR-0146 Phase 3.
+func TestBuildAxisOptionsRoutingConceptForMethodToken(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	options := buildAxisOptions(grammar, "method")
+	if len(options) == 0 {
+		t.Fatal("expected method options, got none")
+	}
+
+	var triageOption *bartui.TokenOption
+	for i := range options {
+		if options[i].Value == "triage" {
+			triageOption = &options[i]
+			break
+		}
+	}
+	if triageOption == nil {
+		t.Fatal("expected to find 'triage' token in method options")
+	}
+	const want = "Risk-gradient depth"
+	if triageOption.RoutingConcept != want {
+		t.Errorf("expected RoutingConcept %q for method:triage (ADR-0146 Phase 3), got %q", want, triageOption.RoutingConcept)
+	}
+}
+
+// TestBuildAxisOptionsSharedRoutingConceptPhrase specifies that tokens with the same
+// routing concept (e.g. thing and struct both map to "Entities/boundaries") are
+// assigned identical phrases so the render layer can group them (ADR-0146).
+func TestBuildAxisOptionsSharedRoutingConceptPhrase(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	options := buildAxisOptions(grammar, "scope")
+	if len(options) == 0 {
+		t.Fatal("expected scope options, got none")
+	}
+
+	concepts := make(map[string]string) // token → RoutingConcept
+	for _, opt := range options {
+		if opt.Value == "thing" || opt.Value == "struct" {
+			concepts[opt.Value] = opt.RoutingConcept
+		}
+	}
+	for _, token := range []string{"thing", "struct"} {
+		if concepts[token] == "" {
+			t.Errorf("expected RoutingConcept to be populated for scope:%s (ADR-0146), got empty", token)
+		}
+	}
+	if concepts["thing"] != concepts["struct"] {
+		t.Errorf("expected scope:thing and scope:struct to share RoutingConcept phrase for grouped rendering, got thing=%q struct=%q",
+			concepts["thing"], concepts["struct"])
+	}
+}

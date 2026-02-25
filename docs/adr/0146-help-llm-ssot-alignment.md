@@ -1,7 +1,7 @@
 # ADR 0146: Help LLM SSOT Alignment — Move Token-Specific Guidance Out of help_llm.go
 
 **Date:** 2026-02-25
-**Status:** Implemented
+**Status:** Implemented (Phase 1, Phase 2, Phase 3)
 **Authors:** jaresty
 
 ---
@@ -174,9 +174,11 @@ The complete per-token use_when entries in `PERSONA_KEY_TO_USE_WHEN["intent"]` a
 
 **Axes covered:** `scope` and `form` only. Method axis routing uses editorial sub-group labels ("Decision Methods", "Understanding Methods") that span 2–5 tokens each — these are category-level prose, not per-token concept phrases, and stay hardcoded.
 
-**TUI2 display:** Chip subtitle (Option α) — render routing concept as a dim secondary line beneath the chip label in the palette list. Visible while browsing without requiring focus; helps users who know the concept ("failure modes") but not the token name (`fail`).
+**TUI2 display:** Chip subtitle (Option α) — render routing concept as a **readable subtitle line beneath the chip label**, styled at the same visual weight as the chip label itself. Not artificially dimmed; not louder than guidance/use_when (which are full-brightness content). Routing concept is a navigation label — legible, compact, at home next to the token name.
 
-**SPA display:** Search filter corpus first (extend palette search to match `routing_concept` in addition to label/description), chip face annotation second (dim secondary line on chip). Search filter is the higher-discoverability change; both are independent.
+**SPA display:** Search filter corpus first (extend palette search to match `routing_concept` in addition to label/description), chip face annotation second (**readable subtitle line on chip face, same visual weight as the chip label — not dimmed, not louder than guidance/use_when**). Search filter is the higher-discoverability change; both are independent.
+
+**Vibrancy rationale (both surfaces):** Routing concept is a navigation label, not detailed content. It should read at the same tier as the chip label — legible and clear — but it is not competing with guidance/use_when, which are already rendered at full brightness as the content a user reads after selecting a token. The right framing: chip label weight, subtitle position.
 
 **`help_llm.go`:** Rewrite "Choosing Scope" and "Choosing Form" routing bullet sections to iterate `grammar.Axes.RoutingConcept` dynamically. Method routing section stays hardcoded.
 
@@ -223,6 +225,40 @@ Implement Finding 4, Option B. The shippable slice is steps 1–3; steps 4–5 a
 - If `AXIS_KEY_TO_GUIDANCE` rendering order changes, the placement of the moved guidance could shift.
 - The `codetour` guidance already partially covers audience incompatibility — adding a redundant note risks inconsistency. Must audit the existing text before adding.
 - Phase 2: routing concept phrases are editorial — if two contributors assign different phrases to logically related tokens, the grouping in `help_llm.go` will produce inconsistent bullet text. Mitigation: review all scope/form phrase assignments in a single pass before merging.
+
+### Phase 3 — Full axis coverage for `AXIS_KEY_TO_ROUTING_CONCEPT` + `stakes` → `triage` rename
+
+**Date:** 2026-02-25
+
+#### Change A: Rename `stakes` → `triage` (method axis)
+
+The method token `stakes` collided with stakeholder language in the persona config (`stakeholder_facilitator`, `to stakeholders`). Its label was already "Triage by consequence×uncertainty gradient", making `triage` the zero-ambiguity name.
+
+Files changed:
+- `lib/axisConfig.py` — renamed `"stakes"` key in all 6 dicts: `AXIS_KEY_TO_VALUE`, `AXIS_KEY_TO_LABEL`, `AXIS_KEY_TO_GUIDANCE`, `AXIS_KEY_TO_USE_WHEN`, `AXIS_KEY_TO_KANJI`, `AXIS_KEY_TO_CATEGORY`. Updated self-references in use_when text (`stakes method` → `triage method`, `stakes ensures` → `triage ensures`).
+- `internal/barcli/help_llm.go` line 974 — updated hardcoded reference `` `stakes` `` → `` `triage` ``.
+- Grammar JSONs regenerated via `make bar-grammar-update`.
+
+Note: Three remaining occurrences of "stakes" in `axisConfig.py` are legitimate subject-domain words in heuristic phrases ("low-stakes areas", "where are the stakes highest", "protect the high-stakes areas") — these are user-facing trigger phrases, not token name references.
+
+#### Change B: Extend `AXIS_KEY_TO_ROUTING_CONCEPT` to all 6 grammar axes
+
+Replaced the 2-axis dict (scope + form) with a full 6-axis dict:
+
+| Axis | Tokens | Coverage |
+|------|--------|---------|
+| `scope` | 13 | Complete (unchanged) |
+| `form` | 34 | Complete (expanded from 8; added 26 missing tokens) |
+| `method` | 61 | Complete (new; includes `triage`) |
+| `completeness` | 7 | Complete (new) |
+| `channel` | 15 | Complete (new) |
+| `directional` | 16 | Complete (new) |
+
+Updated comment in `axisConfig.py` from "Covered axes: scope and form only" to "all 6 grammar axes".
+
+Updated `internal/barcli/tui_tokens_test.go`: renamed `TestBuildAxisOptionsNoRoutingConceptForMethodToken` to `TestBuildAxisOptionsRoutingConceptForMethodToken` and updated the assertion to verify `triage` has routing concept `"Risk-gradient depth"`.
+
+The task axis was deferred (Option B from the plan): task tokens come from `grammar.Static`, not `grammar.Axes`. Adding task routing concepts would require a new `StaticConfig.RoutingConcept` field in `grammar.go` and a `TaskRoutingConcept()` method — a non-trivial plumbing change better landed separately.
 
 ---
 

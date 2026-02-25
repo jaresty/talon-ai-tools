@@ -971,7 +971,7 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	fmt.Fprintf(w, "**Diagnostic Methods:**\n")
 	fmt.Fprintf(w, "- Root cause analysis → `diagnose`, `inversion`, `adversarial`\n")
 	fmt.Fprintf(w, "- Risk/resilience → `risks`, `resilience`, `robust`\n")
-	fmt.Fprintf(w, "- Risk-gradient triage (allocate depth by consequence×uncertainty) → `stakes`\n\n")
+	fmt.Fprintf(w, "- Risk-gradient triage (allocate depth by consequence×uncertainty) → `triage`\n\n")
 	fmt.Fprintf(w, "See **Completeness × Method compatibility** note for `max`/`grow` in \"Guidance for specific tokens\" below.\n\n")
 	fmt.Fprintf(w, "**For detailed differentiation guidance** on similar methods (e.g., `explore` vs `branch`, `abduce` vs `deduce`, `robust` vs `resilience`, `grow` vs `grove`), see \"Guidance for specific tokens\" section below.\n\n")
 

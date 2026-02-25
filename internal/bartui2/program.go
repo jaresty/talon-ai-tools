@@ -58,9 +58,10 @@ type completion struct {
 	Category    string
 	Description string
 	Guidance    string
-	UseWhen     string // ADR-0142: routing trigger phrases
-	Kanji         string // ADR-0143: kanji icons for visual display
-	SemanticGroup string // ADR-0144: semantic family for method tokens; empty for other axes
+	UseWhen        string // ADR-0142: routing trigger phrases
+	Kanji          string // ADR-0143: kanji icons for visual display
+	SemanticGroup  string // ADR-0144: semantic family for method tokens; empty for other axes
+	RoutingConcept string // ADR-0146: distilled routing concept phrase; populated for scope/form only
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	Fills map[string]string
 }
@@ -856,9 +857,10 @@ func (m *model) updateCompletions() {
 				Category:      category.Label,
 				Description:   opt.Description,
 				Guidance:      opt.Guidance,
-				UseWhen:       opt.UseWhen,
-				Kanji:         opt.Kanji,
-				SemanticGroup: opt.SemanticGroup,
+				UseWhen:        opt.UseWhen,
+				Kanji:          opt.Kanji,
+				SemanticGroup:  opt.SemanticGroup,
+				RoutingConcept: opt.RoutingConcept,
 				Fills:         opt.Fills,
 			})
 		}
@@ -1633,6 +1635,12 @@ var (
 	useWhenStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("45"))
 
+	// routingConceptStyle for chip subtitles - same visual weight as chip label (ADR-0146).
+	// Color 248 (medium-light gray): clearly readable, not artificially dimmed (240),
+	// not louder than guidance (220) or use_when (45). Navigation label tier, not content tier.
+	routingConceptStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("248"))
+
 	toastStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("78")).
 			Bold(true)
@@ -1811,6 +1819,11 @@ func (m model) renderTokensPane() string {
 			}
 			right.WriteString(style.Render(entry))
 			right.WriteString("\n")
+			// ADR-0146: routing concept subtitle — readable chip-label-weight line for scope/form tokens.
+			if c.RoutingConcept != "" {
+				right.WriteString(routingConceptStyle.Render("   " + c.RoutingConcept))
+				right.WriteString("\n")
+			}
 		}
 
 		// Always show "more below" line (empty if at bottom) to keep layout stable

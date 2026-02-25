@@ -29,6 +29,7 @@ export interface Grammar {
 		use_when: Record<string, Record<string, string>>;
 		kanji: Record<string, Record<string, string>>; // ADR-0143
 		categories?: Record<string, Record<string, string>>; // ADR-0144: semantic family groupings for method tokens
+		routing_concept?: Record<string, Record<string, string>>; // ADR-0146: distilled routing concept phrases (scope/form only)
 	};
 	tasks: {
 		descriptions: Record<string, string>;
@@ -69,6 +70,7 @@ export interface TokenMeta {
 	use_when: string;
 	kanji: string;
 	category: string; // ADR-0144: semantic family for method tokens; empty for other axes
+	routing_concept: string; // ADR-0146: distilled routing concept phrase; populated for scope/form only
 }
 
 import { base } from '$app/paths';
@@ -90,6 +92,7 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 	const use_when = grammar.axes.use_when?.[axis] ?? {};
 	const kanji = grammar.axes.kanji?.[axis] ?? {};
 	const categories = grammar.axes.categories?.[axis] ?? {};
+	const routing_concepts = grammar.axes.routing_concept?.[axis] ?? {};
 	return Object.keys(defs)
 		.sort()
 		.map((token) => ({
@@ -99,7 +102,8 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 			guidance: guidance[token] ?? '',
 			use_when: use_when[token] ?? '',
 			kanji: kanji[token] ?? '',
-			category: categories[token] ?? ''
+			category: categories[token] ?? '',
+			routing_concept: routing_concepts[token] ?? ''
 		}));
 }
 
@@ -143,7 +147,9 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 			description: descs[token] ?? '',
 			guidance: guidance[token] ?? '',
 			use_when: use_when[token] ?? '',
-			kanji: kanji[token] ?? ''
+			kanji: kanji[token] ?? '',
+			category: '',
+			routing_concept: ''
 		}));
 }
 
@@ -180,7 +186,9 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 		description: docs[token] ?? '',
 		guidance: guidance[token] ?? '',
 		use_when: use_when[token] ?? '',
-		kanji: kanji[token] ?? ''
+		kanji: kanji[token] ?? '',
+		category: '',
+		routing_concept: ''
 	}));
 }
 

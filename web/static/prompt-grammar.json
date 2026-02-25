@@ -1704,6 +1704,63 @@
         "persuade": "説",
         "teach": "教"
       }
+    },
+    "routing_concept": {
+      "voice": {
+        "as Kent Beck": "Kent Beck voice",
+        "as PM": "PM voice",
+        "as designer": "Designer voice",
+        "as facilitator": "Facilitator voice",
+        "as junior engineer": "Junior engineer voice",
+        "as principal engineer": "Principal engineer voice",
+        "as programmer": "Programmer voice",
+        "as prompt engineer": "Prompt engineer voice",
+        "as scientist": "Scientist voice",
+        "as teacher": "Teacher voice",
+        "as writer": "Writer voice"
+      },
+      "audience": {
+        "to CEO": "CEO audience",
+        "to Kent Beck": "Kent Beck audience",
+        "to LLM": "LLM context",
+        "to XP enthusiast": "XP enthusiast audience",
+        "to analyst": "Analyst audience",
+        "to designer": "Designer audience",
+        "to junior engineer": "Junior engineer audience",
+        "to managers": "Manager audience",
+        "to platform team": "Platform team audience",
+        "to principal engineer": "Principal engineer audience",
+        "to product manager": "Product manager audience",
+        "to programmer": "Programmer audience",
+        "to stakeholders": "Stakeholder audience",
+        "to stream aligned team": "Stream-aligned team",
+        "to team": "Team audience"
+      },
+      "tone": {
+        "casually": "Casual tone",
+        "directly": "Direct tone",
+        "formally": "Formal tone",
+        "gently": "Gentle tone",
+        "kindly": "Kind tone"
+      },
+      "intent": {
+        "announce": "Share news",
+        "appreciate": "Express thanks",
+        "coach": "Develop capability",
+        "inform": "Transfer knowledge",
+        "persuade": "Influence belief/action",
+        "teach": "Build understanding"
+      },
+      "presets": {
+        "designer_to_pm": "Designer to PM",
+        "executive_brief": "Executive brief",
+        "fun_mode": "Fun mode",
+        "peer_engineer_explanation": "Peer explanation",
+        "product_manager_to_team": "PM to team",
+        "scientist_to_analyst": "Scientist to analyst",
+        "stakeholder_facilitator": "Stakeholder facilitation",
+        "teach_junior_dev": "Teach junior dev"
+      }
     }
   },
   "hierarchy": {
@@ -3337,7 +3394,7 @@
   "checksums": {
     "axes": "5407eed9d0004d3477bee6a21af77474ae80da9d8ec61fe9a9c39d162958a721",
     "tasks": "ec5c08235dedcdcb84be0ec3e5521c1e78d4b83fc577ffa5d3560d37792b25e5",
-    "persona": "119ff50f1dbdf7f8b58301189b3e81f238448406ce22ebc02a08e62c7115a531",
+    "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "6569a2d98a756027e75c840543e82c80ecf76fc7b9dbbeae8c724f5084fef6bb",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1",

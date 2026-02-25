@@ -346,6 +346,66 @@ PERSONA_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
 }
 
 
+# Distilled routing concept phrases for persona tokens (ADR-0146).
+# Parallel to AXIS_KEY_TO_ROUTING_CONCEPT; SSOT for persona routing labels in TUI2/SPA.
+PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
+    "voice": {
+        "as Kent Beck":          "Kent Beck voice",
+        "as PM":                 "PM voice",
+        "as designer":           "Designer voice",
+        "as facilitator":        "Facilitator voice",
+        "as junior engineer":    "Junior engineer voice",
+        "as principal engineer": "Principal engineer voice",
+        "as programmer":         "Programmer voice",
+        "as prompt engineer":    "Prompt engineer voice",
+        "as scientist":          "Scientist voice",
+        "as teacher":            "Teacher voice",
+        "as writer":             "Writer voice",
+    },
+    "audience": {
+        "to CEO":                 "CEO audience",
+        "to Kent Beck":           "Kent Beck audience",
+        "to LLM":                 "LLM context",
+        "to XP enthusiast":       "XP enthusiast audience",
+        "to analyst":             "Analyst audience",
+        "to designer":            "Designer audience",
+        "to junior engineer":     "Junior engineer audience",
+        "to managers":            "Manager audience",
+        "to platform team":       "Platform team audience",
+        "to principal engineer":  "Principal engineer audience",
+        "to product manager":     "Product manager audience",
+        "to programmer":          "Programmer audience",
+        "to stakeholders":        "Stakeholder audience",
+        "to stream aligned team": "Stream-aligned team",
+        "to team":                "Team audience",
+    },
+    "tone": {
+        "casually": "Casual tone",
+        "directly": "Direct tone",
+        "formally": "Formal tone",
+        "gently":   "Gentle tone",
+        "kindly":   "Kind tone",
+    },
+    "intent": {
+        "announce":   "Share news",
+        "appreciate": "Express thanks",
+        "coach":      "Develop capability",
+        "inform":     "Transfer knowledge",
+        "persuade":   "Influence belief/action",
+        "teach":      "Build understanding",
+    },
+    "presets": {
+        "designer_to_pm":           "Designer to PM",
+        "executive_brief":          "Executive brief",
+        "fun_mode":                 "Fun mode",
+        "peer_engineer_explanation": "Peer explanation",
+        "product_manager_to_team":  "PM to team",
+        "scientist_to_analyst":     "Scientist to analyst",
+        "stakeholder_facilitator":  "Stakeholder facilitation",
+        "teach_junior_dev":         "Teach junior dev",
+    },
+}
+
 # Kanji icons for persona axis tokens (ADR-0143)
 PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
     "voice": {
@@ -399,6 +459,11 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
 def persona_key_to_kanji_map(axis: str) -> dict[str, str]:
     """Return the key->kanji map for a persona/intent axis (ADR-0143)."""
     return PERSONA_KEY_TO_KANJI.get(axis, {})
+
+
+def persona_key_to_routing_concept_map(axis: str) -> dict[str, str]:
+    """Return the key->routing_concept map for a persona/intent axis (ADR-0146)."""
+    return PERSONA_KEY_TO_ROUTING_CONCEPT.get(axis, {})
 
 
 def persona_key_to_use_when_map(axis: str) -> dict[str, str]:

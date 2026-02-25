@@ -71,10 +71,11 @@ type PersonaSection struct {
 	Labels   map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
 	Guidance map[string]map[string]string // ADR-0112: selection-oriented prose hints
 	UseWhen  map[string]map[string]string // ADR-0133: discoverability hints for help llm
-	Kanji    map[string]map[string]string // ADR-0143: kanji icons for visual display
-	Presets  map[string]PersonaPreset
-	Spoken   map[string]string
-	Intent   IntentSection
+	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
+	RoutingConcept map[string]map[string]string // ADR-0146: distilled routing concept phrases
+	Presets        map[string]PersonaPreset
+	Spoken         map[string]string
+	Intent         IntentSection
 }
 
 type multiWordToken struct {
@@ -174,9 +175,10 @@ type rawPersona struct {
 	Docs     map[string]map[string]string `json:"docs"`
 	Labels   map[string]map[string]string `json:"labels"`   // ADR-0111
 	Guidance map[string]map[string]string `json:"guidance"` // ADR-0112
-	UseWhen  map[string]map[string]string `json:"use_when"` // ADR-0133
-	Kanji    map[string]map[string]string `json:"kanji"`    // ADR-0143
-	Presets  map[string]PersonaPreset     `json:"presets"`
+	UseWhen        map[string]map[string]string `json:"use_when"`        // ADR-0133
+	Kanji          map[string]map[string]string `json:"kanji"`           // ADR-0143
+	RoutingConcept map[string]map[string]string `json:"routing_concept"` // ADR-0146
+	Presets        map[string]PersonaPreset     `json:"presets"`
 	Spoken   map[string]string            `json:"spoken_map"`
 	Intent   struct {
 		AxisTokens map[string][]string `json:"axis_tokens"`
@@ -262,13 +264,14 @@ func LoadGrammar(path string) (*Grammar, error) {
 			RoutingConcept: raw.Static.RoutingConcept,
 		},
 		Persona: PersonaSection{
-			Axes:     raw.Persona.Axes,
-			Docs:     raw.Persona.Docs,
-			Labels:   raw.Persona.Labels,
-			Guidance: raw.Persona.Guidance,
-			UseWhen:  raw.Persona.UseWhen,
-			Kanji:    raw.Persona.Kanji,
-			Presets:  raw.Persona.Presets,
+			Axes:           raw.Persona.Axes,
+			Docs:           raw.Persona.Docs,
+			Labels:         raw.Persona.Labels,
+			Guidance:       raw.Persona.Guidance,
+			UseWhen:        raw.Persona.UseWhen,
+			Kanji:          raw.Persona.Kanji,
+			RoutingConcept: raw.Persona.RoutingConcept,
+			Presets:        raw.Persona.Presets,
 			Spoken:   personaSpoken,
 			Intent: IntentSection{
 				AxisTokens: raw.Persona.Intent.AxisTokens,
@@ -1171,6 +1174,30 @@ func (g *Grammar) PersonaKanji(axis, token string) string {
 	}
 	if kanji, ok := kanjiMap[strings.ToLower(tokenKey)]; ok && kanji != "" {
 		return kanji
+	}
+	return ""
+}
+
+// PersonaRoutingConcept returns the distilled routing concept phrase for a persona axis token (ADR-0146).
+// Returns empty string if no concept is defined.
+func (g *Grammar) PersonaRoutingConcept(axis, token string) string {
+	if g.Persona.RoutingConcept == nil {
+		return ""
+	}
+	axisKey := strings.ToLower(strings.TrimSpace(axis))
+	if axisKey == "" {
+		return ""
+	}
+	rcMap, ok := g.Persona.RoutingConcept[axisKey]
+	if !ok {
+		return ""
+	}
+	tokenKey := strings.TrimSpace(token)
+	if concept, ok := rcMap[tokenKey]; ok && concept != "" {
+		return concept
+	}
+	if concept, ok := rcMap[strings.ToLower(tokenKey)]; ok && concept != "" {
+		return concept
 	}
 	return ""
 }

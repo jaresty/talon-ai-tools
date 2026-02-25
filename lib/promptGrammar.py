@@ -15,6 +15,7 @@ from .personaConfig import (
     persona_key_to_guidance_map,
     persona_key_to_kanji_map,
     persona_key_to_label_map,
+    persona_key_to_routing_concept_map,
     persona_key_to_use_when_map,
 )
 from .staticPromptConfig import STATIC_PROMPT_CONFIG
@@ -371,6 +372,13 @@ def _build_persona_section(
         if kanji_map:
             persona_kanji[axis] = dict(sorted(kanji_map.items()))
 
+    # Persona axis routing_concept (ADR-0146): distilled routing concept phrases.
+    persona_routing_concept: dict[str, dict[str, str]] = {}
+    for axis in ("voice", "audience", "tone", "intent", "presets"):
+        rc_map = persona_key_to_routing_concept_map(axis)
+        if rc_map:
+            persona_routing_concept[axis] = dict(sorted(rc_map.items()))
+
     section = {
         "axes": persona_axes,
         "docs": persona_docs,
@@ -386,6 +394,8 @@ def _build_persona_section(
         section["use_when"] = persona_use_when
     if persona_kanji:
         section["kanji"] = persona_kanji
+    if persona_routing_concept:
+        section["routing_concept"] = persona_routing_concept
     return section, persona_slug_map
 
 

@@ -144,9 +144,10 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 			Slug:        personaSlug,
 			Label:       label,
 			Description: label,
-			Guidance:    grammar.PersonaGuidance("presets", value),
-			UseWhen:     grammar.PersonaUseWhen("presets", value),
-			Fills:       fills,
+			Guidance:       grammar.PersonaGuidance("presets", value),
+			UseWhen:        grammar.PersonaUseWhen("presets", value),
+			RoutingConcept: grammar.PersonaRoutingConcept("presets", value),
+			Fills:          fills,
 		})
 	}
 	return options
@@ -299,9 +300,10 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 			Slug:        grammar.slugForToken(value),
 			Label:       label,
 			Description: description,
-			Guidance:    grammar.PersonaGuidance(axis, value),
-			UseWhen:     grammar.PersonaUseWhen(axis, value),
-			Kanji:       grammar.PersonaKanji(axis, value),
+			Guidance:       grammar.PersonaGuidance(axis, value),
+			UseWhen:        grammar.PersonaUseWhen(axis, value),
+			Kanji:          grammar.PersonaKanji(axis, value),
+			RoutingConcept: grammar.PersonaRoutingConcept(axis, value),
 		})
 	}
 	return options

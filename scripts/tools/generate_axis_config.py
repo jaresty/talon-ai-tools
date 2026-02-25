@@ -149,6 +149,10 @@ def render_axis_config() -> str:
         for axis in sorted(routing_concept.keys())
         if routing_concept.get(axis)
     }
+    # Add task routing_concept from static_prompt_routing_concept
+    static_routing_concept = payload.get("static_prompt_routing_concept", {}) or {}
+    if static_routing_concept:
+        routing_concept_mapping["task"] = dict(sorted(static_routing_concept.items()))
     routing_concept_mapping = dict(sorted(routing_concept_mapping.items()))
     # Use a very wide width to prevent pprint from splitting string literals
     # across lines (which creates ugly adjacent string concatenation)

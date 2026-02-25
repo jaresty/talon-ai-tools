@@ -224,6 +224,7 @@ def _build_static_section(
     static_guidance = catalog.get("static_prompt_guidance") or {}
     static_use_when = catalog.get("static_prompt_use_when") or {}
     static_kanji = catalog.get("static_prompt_kanji") or {}
+    static_routing_concept = catalog.get("static_prompt_routing_concept") or {}
 
     section: dict[str, Any] = {
         "catalog": _normalize(_strip_none(static_catalog)),
@@ -238,6 +239,8 @@ def _build_static_section(
         section["use_when"] = _canonicalize_mapping(static_use_when)
     if static_kanji:
         section["kanji"] = _canonicalize_mapping(static_kanji)
+    if static_routing_concept:
+        section["routing_concept"] = _canonicalize_mapping(static_routing_concept)
 
     labels: set[str] = set(section["profiles"].keys()) | set(
         section["descriptions"].keys()

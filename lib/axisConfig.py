@@ -1447,6 +1447,19 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "time": "Sequences/change",
         "view": "Perspectives",
     },
+    "task": {
+        "check": "Evaluate pass/fail",
+        "diff": "Compare subjects",
+        "fix": "Reformat/edit",
+        "make": "Create new content",
+        "pick": "Choose from options",
+        "plan": "Propose strategy",
+        "probe": "Analyse/surface structure",
+        "pull": "Extract/select subset",
+        "show": "Explain/describe",
+        "sim": "Play out scenario",
+        "sort": "Arrange/categorize",
+    },
 }
 
 

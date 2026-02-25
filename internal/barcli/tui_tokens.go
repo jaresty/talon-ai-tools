@@ -196,9 +196,10 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 			Slug:        grammar.slugForToken(value),
 			Label:       label,
 			Description: description,
-			Guidance:    grammar.TaskGuidance(value),
-			UseWhen:     grammar.TaskUseWhen(value),
-			Kanji:       grammar.TaskKanji(value),
+			Guidance:       grammar.TaskGuidance(value),
+			UseWhen:        grammar.TaskUseWhen(value),
+			Kanji:          grammar.TaskKanji(value),
+			RoutingConcept: grammar.TaskRoutingConcept(value),
 		})
 	}
 

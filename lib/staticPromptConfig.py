@@ -290,6 +290,22 @@ _STATIC_PROMPT_USE_WHEN: dict[str, str] = {
     ),
 }
 
+# Distilled routing concept phrases for task tokens (ADR-0146).
+# Parallel to AXIS_KEY_TO_ROUTING_CONCEPT; SSOT for task routing labels in TUI2/SPA.
+_STATIC_PROMPT_ROUTING_CONCEPT: dict[str, str] = {
+    "check": "Evaluate pass/fail",
+    "diff":  "Compare subjects",
+    "fix":   "Reformat/edit",
+    "make":  "Create new content",
+    "pick":  "Choose from options",
+    "plan":  "Propose strategy",
+    "probe": "Analyse/surface structure",
+    "pull":  "Extract/select subset",
+    "show":  "Explain/describe",
+    "sim":   "Play out scenario",
+    "sort":  "Arrange/categorize",
+}
+
 # Kanji icons for task tokens (ADR-0143)
 _STATIC_PROMPT_KANJI: dict[str, str] = {
     "check": "検",
@@ -324,6 +340,11 @@ def static_prompt_use_when_overrides() -> dict[str, str]:
 def static_prompt_kanji_overrides() -> dict[str, str]:
     """Return name->kanji map for task tokens (ADR-0143)."""
     return dict(_STATIC_PROMPT_KANJI)
+
+
+def static_prompt_routing_concept_overrides() -> dict[str, str]:
+    """Return name->routing_concept map for task tokens (ADR-0146)."""
+    return dict(_STATIC_PROMPT_ROUTING_CONCEPT)
 
 
 def _read_static_prompt_tokens(

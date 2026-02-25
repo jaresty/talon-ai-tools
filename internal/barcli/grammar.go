@@ -55,8 +55,9 @@ type StaticSection struct {
 	Descriptions map[string]string
 	Labels       map[string]string // ADR-0109: short CLI-facing selection labels
 	Guidance     map[string]string // ADR-0110: selection-oriented prose hints
-	UseWhen      map[string]string // ADR-0142: routing trigger phrases for nav surfaces
-	Kanji        map[string]string // ADR-0143: kanji icons for visual display
+	UseWhen        map[string]string // ADR-0142: routing trigger phrases for nav surfaces
+	Kanji          map[string]string // ADR-0143: kanji icons for visual display
+	RoutingConcept map[string]string // ADR-0146: distilled routing concept phrases
 }
 
 type StaticProfile struct {
@@ -163,8 +164,9 @@ type rawStatic struct {
 	Descriptions map[string]string        `json:"descriptions"`
 	Labels       map[string]string        `json:"labels"`   // ADR-0109
 	Guidance     map[string]string        `json:"guidance"` // ADR-0110
-	UseWhen      map[string]string        `json:"use_when"` // ADR-0142
-	Kanji        map[string]string        `json:"kanji"`    // ADR-0143
+	UseWhen        map[string]string        `json:"use_when"`        // ADR-0142
+	Kanji          map[string]string        `json:"kanji"`           // ADR-0143
+	RoutingConcept map[string]string        `json:"routing_concept"` // ADR-0146
 }
 
 type rawPersona struct {
@@ -251,12 +253,13 @@ func LoadGrammar(path string) (*Grammar, error) {
 			RoutingConcept: raw.Axes.RoutingConcept,
 		},
 		Static: StaticSection{
-			Profiles:     profiles,
-			Descriptions: raw.Static.Descriptions,
-			Labels:       raw.Static.Labels,
-			Guidance:     raw.Static.Guidance,
-			UseWhen:      raw.Static.UseWhen,
-			Kanji:        raw.Static.Kanji,
+			Profiles:       profiles,
+			Descriptions:   raw.Static.Descriptions,
+			Labels:         raw.Static.Labels,
+			Guidance:       raw.Static.Guidance,
+			UseWhen:        raw.Static.UseWhen,
+			Kanji:          raw.Static.Kanji,
+			RoutingConcept: raw.Static.RoutingConcept,
 		},
 		Persona: PersonaSection{
 			Axes:     raw.Persona.Axes,
@@ -1061,6 +1064,16 @@ func (g *Grammar) TaskKanji(name string) string {
 	}
 	if kanji, ok := g.Static.Kanji[strings.ToLower(key)]; ok {
 		return kanji
+	}
+	return ""
+}
+
+// TaskRoutingConcept returns the distilled routing concept phrase for a task token (ADR-0146).
+// Returns empty string if no concept is defined.
+func (g *Grammar) TaskRoutingConcept(name string) string {
+	key := normalizeToken(name)
+	if concept, ok := g.Static.RoutingConcept[key]; ok {
+		return concept
 	}
 	return ""
 }

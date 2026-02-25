@@ -85,11 +85,14 @@
 		}
 	});
 
-	// Close panel on page scroll or touch scroll
+	// Close panel on page scroll or touch scroll, but not when scrolling inside the panel itself
 	$effect(() => {
 		if (!activeToken) return;
 
-		const handleScroll = () => { activeToken = null; };
+		const handleScroll = (e: Event) => {
+			if (e instanceof TouchEvent && (e.target as Element)?.closest?.('.meta-panel')) return;
+			activeToken = null;
+		};
 		window.addEventListener('scroll', handleScroll, { passive: true });
 		window.addEventListener('touchmove', handleScroll, { passive: true });
 

@@ -167,7 +167,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
         "attributed solely to preferences or incentives without modeling how affordances influenced selection.",
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
-        "analysis": "The response enhances the task by describing and structuring the situation, focusing on understanding before proposing actions or recommendations.",
+        "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without a specific organizing principle. Use when general structural understanding is needed and no more specific structural lens applies (spatial layout → mapping; dependency tracing → depends; grouping by similarity → cluster; hierarchical sequencing → order; historical causation → origin; governing criteria → spec; implicit gaps → gap).",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures, incentives, "
         "or constraints and show how they offset one another. The analysis must distinguish transient states from equilibria by specifying restoring or destabilizing dynamics under "
@@ -734,9 +734,11 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "is this like', 'what does this remind you of', 'explain using an analogy', 'what\\'s the analogous structure', 'reason by analogy', 'find a parallel case', 'what known "
         "situation does this resemble' → analog. Distinct from models method (models = apply named mental models explicitly; analog = reason through a structural mapping from a "
         "specific known case).",
-        "analysis": "Descriptive structural understanding before action: user wants the situation described and structured rather than recommendations or fixes. Heuristic: 'analyze this', "
-        "'describe the situation', 'help me understand what\\'s happening', 'structure my understanding', 'what is going on here', 'break this down for me', 'understand before "
-        "acting' → analysis. Distinct from diagnose method (diagnose = seek root cause via falsification; analysis = describe and structure without immediately proposing fixes).",
+        "analysis": "General structural decomposition when no specific structural lens applies: user wants the subject broken into components and each examined for role, properties, and "
+        "interactions — without spatial, dependency, grouping, sequential, historical, or criteria focus. Heuristic: 'analyze this', 'describe the situation', 'help me understand "
+        "what\\'s happening', 'structure my understanding', 'what is going on here', 'break this down for me', 'understand before acting' → analysis. Distinct from: mapping (spatial "
+        "layout), depends (dependency tracing), cluster (group by similarity), order (hierarchical/sequential), origin (historical causation), spec (governing criteria), gap (implicit "
+        "assumptions). Also distinct from diagnose (diagnose = root cause via falsification; analysis = structural decomposition without fault-finding).",
         "argue": "Explicit argument structure: user wants claims, premises, warrants, and rebuttals made visible rather than a flowing narrative. Heuristic: 'make the argument', 'structure this "
         "as an argument', 'what are the premises', 'what supports this claim', 'build the logical case', 'argument and rebuttal', 'explicit reasoning structure' → argue. Distinct from "
         "case form (case = narrative that builds to a recommendation; argue = expose the logical structure of claims and their supports).",

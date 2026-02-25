@@ -233,6 +233,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
+        "stakes": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
         "forecast.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
@@ -276,7 +277,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, "
         "evaluation, or perspective.",
-        "stakes": "The response differentiates system areas by consequence magnitude and uncertainty, and allocates protective or evaluative intensity proportionally to those gradients.",
         "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or "
         "immediate action.",
         "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, "
@@ -420,6 +420,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "rigor": "Disciplined, well-justified reasoning",
         "risks": "Potential problems and failure modes",
         "robust": "Reason under deep uncertainty",
+        "stakes": "Triage by consequence×uncertainty gradient",
         "shift": "Rotate through distinct perspectives",
         "simulation": "Thought experiments and scenario walkthroughs",
         "spec": "Define correctness criteria first",
@@ -439,7 +440,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
-        "stakes": "Consequence magnitude and uncertainty gradients",
         "stable": "Stability and persistence of states",
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
@@ -516,6 +516,9 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "conventions govern behavior but aren't documented.",
         "resilience": "Distinguish from: robust (selecting options that work across futures). Resilience focuses on system behavior under stress.",
         "robust": "Distinguish from: resilience (behavior under stress). Robust favors options that perform acceptably across futures.",
+        "stakes": "Use when the goal is to allocate analytical depth non-uniformly — high-consequence high-uncertainty areas get more depth, low-stakes areas get lighter treatment. Distinct from "
+        "risks method (risks = enumerate and assess potential problems; stakes = calibrate coverage intensity by the consequence×uncertainty gradient once the risk landscape is known). "
+        "Can be used together: risks surfaces the risks; stakes ensures depth is proportional to them.",
         "systemic": "Distinguish from: analysis (decomposition/structure). Systemic focuses on feedback loops and interactions.",
         "trade": "Distinguish from: balance (forces offsetting each other to produce equilibrium). Trade specifically identifies competing forces and evaluates alternatives across dimensions "
         "before committing. Balance models how existing forces offset; trade explicitly evaluates what trade-offs exist and how to navigate them.",
@@ -523,9 +526,6 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "scope": {
         "cross": "Use when the question is about where a concern lives across the system, not just within one place. Prefer over struct when the focus is on horizontal span and consistency of a "
         "concern rather than structural arrangement.",
-        "stakes": "Use when the goal is to allocate attention non-uniformly based on a risk gradient — high-consequence high-uncertainty areas get deeper treatment, low-stakes areas get lighter "
-        "coverage. Distinct from fail scope (fail = enumerate what breaks; stakes = allocate intensity by consequence×uncertainty). Distinct from risks method (risks = systematic "
-        "procedure for identifying and assessing risks; stakes scope = frames the entire response around a consequence-uncertainty gradient).",
     },
 }
 
@@ -888,6 +888,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "rigor": "Disciplined, well-justified reasoning: user wants the response to rely on disciplined logic with explicit reasoning chains rather than intuitive leaps. Heuristic: 'be "
         "rigorous', 'make the reasoning explicit', 'disciplined analysis', 'careful reasoning', 'justify each step', 'logical rigor', 'no handwaving', 'substantiate your claims' → "
         "rigor. Distinct from verify method (verify = apply falsification pressure to claims; rigor = discipline the reasoning process throughout).",
+        "stakes": "Risk-gradient triage: user wants analytical depth allocated proportionally to consequence×uncertainty — the most dangerous or uncertain areas get the most thorough treatment. "
+        "Heuristic: 'focus on the high-risk areas', 'triage by impact and uncertainty', 'risk-proportionate depth', 'where are the stakes highest', 'most dangerous parts first', "
+        "'consequence-weighted review', 'allocate attention by risk', 'what deserves the most scrutiny', 'protect the high-stakes areas' → stakes method. Can pair with risks method "
+        "(risks = find what could go wrong; stakes = calibrate how deeply to examine each based on consequence×uncertainty).",
         "risks": "Risk and failure mode enumeration: user wants potential problems, failure modes, and their likelihood or severity identified. Heuristic: 'what are the risks', 'what could go "
         "wrong', 'risk assessment', 'failure modes', 'identify the hazards', 'risk analysis', 'what might fail', 'enumerate the risks', 'likelihood and severity' → risks. Distinct from "
         "adversarial method (adversarial = construct attacks to stress-test; risks = enumerate and assess failure modes and their likelihood).",
@@ -957,11 +961,6 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "motifs": "Recurring or repeated patterns across the codebase or system: user asks about structures or idioms that appear in multiple places. Heuristic: 'recurring patterns', 'repeated "
         "across', 'appears in multiple places', 'common idioms', 'what keeps showing up', 'same pattern in different places' → motifs scope. Distinct from struct (one system's internal "
         "arrangement) and mapping method (surface all elements/relationships).",
-        "stakes": "Risk-gradient focus: user wants the response to allocate attention non-uniformly, spending more depth on high-consequence high-uncertainty areas and less on low-stakes areas. "
-        "Heuristic: 'focus on the high-risk areas', 'allocate attention by risk', 'most dangerous parts first', 'consequence-weighted review', 'where are the stakes highest', "
-        "'triage by impact and uncertainty', 'risk-proportionate depth', 'what deserves the most scrutiny', 'protect the high-stakes areas' → stakes scope. Distinct from fail scope "
-        "(fail = enumerate what breaks; stakes = allocate coverage intensity by consequence×uncertainty gradient). Distinct from risks method (risks = systematic identification and "
-        "assessment procedure; stakes = scope dimension that frames where to allocate evaluative effort).",
         "stable": "Stability and persistence focus: user asks what is stable, unlikely to change, or self-reinforcing in the system or design. Heuristic: 'stable', 'unlikely to change', 'won't "
         "change', 'what persists', 'what is settled', 'fixed constraints', 'what has remained stable', 'backward-compatible' → stable scope. Often pairs with time scope (stable = what "
         "persists; time = how things evolve).",
@@ -1118,6 +1117,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "rigor": "厳",
         "risks": "危",
         "robust": "堅",
+        "stakes": "険",
         "shift": "転",
         "simulation": "象",
         "spec": "規",
@@ -1185,7 +1185,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "mean": "意",
         "motifs": "紋",
         "stable": "安",
-        "stakes": "険",
         "struct": "造",
         "thing": "物",
         "time": "時",
@@ -1263,6 +1262,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "rigor": "Reasoning",
         "risks": "Diagnostic",
         "robust": "Diagnostic",
+        "stakes": "Diagnostic",
         "shift": "Generative",
         "simulation": "Temporal/Dynamic",
         "spec": "Structural",

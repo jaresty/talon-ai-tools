@@ -927,7 +927,6 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Actions/tasks** → `act`\n")
 	fmt.Fprintf(w, "- **Quality/criteria** → `good`\n")
 	fmt.Fprintf(w, "- **Failure modes** → `fail`\n")
-	fmt.Fprintf(w, "- **Risk gradient / allocate by consequence×uncertainty** → `stakes`\n")
 	fmt.Fprintf(w, "- **Perspectives** → `view`\n")
 	fmt.Fprintf(w, "- **Premises/preconditions** → `assume`\n")
 	fmt.Fprintf(w, "- **Recurring patterns** → `motifs`\n")
@@ -950,7 +949,8 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 
 	fmt.Fprintf(w, "**Diagnostic Methods:**\n")
 	fmt.Fprintf(w, "- Root cause analysis → `diagnose`, `inversion`, `adversarial`\n")
-	fmt.Fprintf(w, "- Risk/resilience → `risks`, `resilience`\n\n")
+	fmt.Fprintf(w, "- Risk/resilience → `risks`, `resilience`, `robust`\n")
+	fmt.Fprintf(w, "- Risk-gradient triage (allocate depth by consequence×uncertainty) → `stakes`\n\n")
 	fmt.Fprintf(w, "**Completeness × Method compatibility:**\n")
 	fmt.Fprintf(w, "- `max` (尽 — exhaust all coverage) + `grow` (増 — expand only under demonstrated necessity) send contradictory signals. `max` says cover everything; `grow` says cover only what is necessary. Avoid combining them. Prefer `max` for exhaustive treatment; prefer `grow` for disciplined minimalism.\n\n")
 	fmt.Fprintf(w, "**For detailed differentiation guidance** on similar methods (e.g., `explore` vs `branch`, `abduce` vs `deduce`, `robust` vs `resilience`, `grow` vs `grove`), see \"Guidance for specific tokens\" section below.\n\n")

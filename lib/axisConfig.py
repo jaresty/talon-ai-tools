@@ -455,14 +455,17 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Task-affinity for decision-making tasks (plan, probe, make). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce "
         "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback).",
-        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
+        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code. "
+        "Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team). "
+        "Prefer diagram, presenterm, sketch, or plain for non-technical audiences.",
         "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan. "
         "Requires a developer audience — produces a VS Code CodeTour JSON file. Avoid with manager, PM, executive, CEO, stakeholder, analyst, or designer audiences.",
         "gherkin": "Outputs only Gherkin Given/When/Then syntax. Primary use: make tasks creating acceptance tests or feature specifications. With analysis tasks (probe, diff, check, sort), "
         "output is reframed as Gherkin scenarios that specify the analyzed properties — the analysis becomes evidence; scenarios express what should be true given that evidence. "
         "Avoid with prose-structure forms (story, case, log, questions, recipe).",
         "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code.",
+        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code. "
+        "Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team).",
         "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both.",
     },
     "completeness": {

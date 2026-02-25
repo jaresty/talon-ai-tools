@@ -461,6 +461,35 @@ func TestHelpLLMStarterPacksSection(t *testing.T) {
 	}
 }
 
+// TestHelpLLMChannelAudienceGuidanceInSSoT specifies that channel:code and
+// channel:shellscript guidance must include the non-technical audience
+// incompatibility note (ADR-0146 Change 2). The hardcoded bullet in help_llm.go
+// must be absent; the guidance renders via Composition Rules > Token Guidance.
+// codetour already documents the audience restriction and needs no change.
+func TestHelpLLMChannelAudienceGuidanceInSSoT(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+	for _, token := range []string{"code", "shellscript"} {
+		g := grammar.AxisGuidance("channel", token)
+		if !strings.Contains(g, "non-technical") {
+			t.Errorf("ADR-0146 Change 2: channel:%s guidance must mention non-technical audience incompatibility, got: %q", token, g)
+		}
+	}
+
+	// Hardcoded bullet must be gone from heuristics
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
+	}
+	if strings.Contains(stdout.String(), "**Channel × audience compatibility**") {
+		t.Error("ADR-0146 Change 2: hardcoded 'Channel × audience compatibility' bullet must be removed from heuristics")
+	}
+}
+
 // TestHelpLLMMaxGrowGuidanceInSSoT specifies that the max/grow cross-axis tension
 // note must be present in the grammar's AXIS_KEY_TO_GUIDANCE for completeness:max
 // and method:grow (ADR-0146 Change 1). The hardcoded block in help_llm.go must be

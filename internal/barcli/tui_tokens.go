@@ -145,6 +145,7 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 			Label:       label,
 			Description: label,
 			Guidance:    grammar.PersonaGuidance("presets", value),
+			UseWhen:     grammar.PersonaUseWhen("presets", value),
 			Fills:       fills,
 		})
 	}

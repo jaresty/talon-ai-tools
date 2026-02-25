@@ -51,6 +51,7 @@ export interface Grammar {
 		};
 		docs?: Record<string, Record<string, string>>;
 		use_when?: Record<string, Record<string, string>>;
+		guidance?: Record<string, Record<string, string>>;
 		kanji?: Record<string, Record<string, string>>; // ADR-0143
 	};
 	patterns?: GrammarPattern[];
@@ -164,12 +165,13 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 	const tokens = getPersonaAxisTokens(grammar, axis);
 	const docs = grammar.persona?.docs?.[axis] ?? {};
 	const use_when = grammar.persona?.use_when?.[axis] ?? {};
+	const guidance = grammar.persona?.guidance?.[axis] ?? {};
 	const kanji = grammar.persona?.kanji?.[axis] ?? {};
 	return tokens.map((token) => ({
 		token,
 		label: token,
 		description: docs[token] ?? '',
-		guidance: '',
+		guidance: guidance[token] ?? '',
 		use_when: use_when[token] ?? '',
 		kanji: kanji[token] ?? ''
 	}));

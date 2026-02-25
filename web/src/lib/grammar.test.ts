@@ -206,6 +206,24 @@ describe('getPersonaAxisTokensMeta', () => {
 		const mgr = metas.find((m) => m.token === 'to managers')!;
 		expect(mgr.kanji).toBe('経営');
 	});
+
+	it('populates guidance from persona.guidance when present', () => {
+		const grammarWithGuidance = {
+			...minimalGrammar,
+			persona: {
+				...minimalGrammar.persona,
+				guidance: { audience: { 'to managers': 'Note: very outcome-focused; avoid implementation details.' } }
+			}
+		};
+		const metas = getPersonaAxisTokensMeta(grammarWithGuidance, 'audience');
+		const mgr = metas.find((m) => m.token === 'to managers')!;
+		expect(mgr.guidance).toBe('Note: very outcome-focused; avoid implementation details.');
+	});
+
+	it('returns empty guidance when persona.guidance is absent', () => {
+		const metas = getPersonaAxisTokensMeta(minimalGrammar, 'audience');
+		expect(metas.every((m) => m.guidance === '')).toBe(true);
+	});
 });
 
 // ADR-0144: getMethodTokensByCategory groups method tokens by semantic family.

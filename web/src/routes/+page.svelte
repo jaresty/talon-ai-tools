@@ -274,6 +274,7 @@
 	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
 	let fabOpen = $state(false); // FAB menu state
 	let activePresetUseWhen = $state('');
+	let activePresetGuidance = $state('');
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
@@ -406,9 +407,11 @@
 										if (persona.preset === preset.key) {
 											persona = { preset: '', voice: '', audience: '', tone: '' };
 											activePresetUseWhen = '';
+											activePresetGuidance = '';
 										} else {
 											persona = { preset: preset.key, voice: '', audience: '', tone: '' };
 											activePresetUseWhen = grammar!.persona.use_when?.presets?.[preset.key] ?? '';
+											activePresetGuidance = grammar!.persona.guidance?.presets?.[preset.key] ?? '';
 										}
 									}}
 								>{preset.label}</button>
@@ -418,6 +421,12 @@
 							<div class="persona-use-when">
 								<span class="persona-use-when-label">When to use</span>
 								<p class="persona-use-when-text">{activePresetUseWhen}</p>
+							</div>
+						{/if}
+						{#if persona.preset && activePresetGuidance}
+							<div class="persona-use-when persona-guidance">
+								<span class="persona-use-when-label">Notes</span>
+								<p class="persona-use-when-text">{activePresetGuidance}</p>
 							</div>
 						{/if}
 					</div>
@@ -441,6 +450,9 @@
 								{#if persona.voice && grammar.persona.use_when?.voice?.[persona.voice]}
 									<span class="persona-hint">{grammar.persona.use_when.voice[persona.voice]}</span>
 								{/if}
+								{#if persona.voice && grammar.persona.guidance?.voice?.[persona.voice]}
+									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.voice[persona.voice]}</span>
+								{/if}
 							</label>
 							<label class="persona-select-label">
 								<span>Audience</span>
@@ -457,6 +469,9 @@
 								{#if persona.audience && grammar.persona.use_when?.audience?.[persona.audience]}
 									<span class="persona-hint">{grammar.persona.use_when.audience[persona.audience]}</span>
 								{/if}
+								{#if persona.audience && grammar.persona.guidance?.audience?.[persona.audience]}
+									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.audience[persona.audience]}</span>
+								{/if}
 							</label>
 							<label class="persona-select-label">
 								<span>Tone</span>
@@ -472,6 +487,9 @@
 								</select>
 								{#if persona.tone && grammar.persona.use_when?.tone?.[persona.tone]}
 									<span class="persona-hint">{grammar.persona.use_when.tone[persona.tone]}</span>
+								{/if}
+								{#if persona.tone && grammar.persona.guidance?.tone?.[persona.tone]}
+									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.tone[persona.tone]}</span>
 								{/if}
 							</label>
 						</div>
@@ -976,6 +994,20 @@
 		color: var(--color-text-muted);
 		line-height: 1.4;
 		font-style: italic;
+	}
+
+	.persona-hint-note {
+		color: var(--color-accent);
+		font-style: normal;
+	}
+
+	.persona-guidance {
+		border-color: color-mix(in srgb, var(--color-accent-muted) 60%, transparent);
+		background: color-mix(in srgb, var(--color-surface) 80%, var(--color-accent-muted));
+	}
+
+	.persona-guidance .persona-use-when-label {
+		color: var(--color-text-muted);
 	}
 
 	.persona-selects { display: flex; gap: 0.5rem; flex-wrap: wrap; }

@@ -1,7 +1,7 @@
 # ADR 0146: Help LLM SSOT Alignment — Move Token-Specific Guidance Out of help_llm.go
 
 **Date:** 2026-02-25
-**Status:** Proposed
+**Status:** Implemented
 **Authors:** jaresty
 
 ---

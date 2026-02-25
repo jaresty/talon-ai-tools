@@ -102,6 +102,14 @@
 		};
 	});
 
+	// On touch: blur the chip when the panel closes so swipe-back can't re-trigger it via focus restore
+	$effect(() => {
+		if (activeToken !== null) return;
+		if (!isUsingTouch) return;
+		const focused = document.activeElement as HTMLElement | null;
+		if (focused?.closest('.token-grid')) focused.blur();
+	});
+
 	// Reset focus index when filtered list changes
 	$effect(() => {
 		void filtered.length;

@@ -428,6 +428,23 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		expect(screen.queryByText('When to use')).toBeNull();
 	});
 
+	it('blurs chip on touch when panel is dismissed so swipe-back cannot re-trigger it', async () => {
+		renderSelector();
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		// Touch tap: pointerdown (touch) → click opens panel
+		await fireEvent.pointerDown(chip, { pointerType: 'touch' });
+		await fireEvent.click(chip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+		// Chip retains focus after tap (as mobile browsers do)
+		chip.focus();
+		expect(document.activeElement).toBe(chip);
+		// Dismiss panel via close button
+		const closeBtn = screen.getByText('✕');
+		await fireEvent.click(closeBtn);
+		// Chip should be blurred so swipe-back can't restore focus and re-open the panel
+		expect(document.activeElement).not.toBe(chip);
+	});
+
 	it('keyboard focus still opens panel after a prior click sequence', async () => {
 		// wasJustClicked is cleared in onfocus so the next keyboard focus works normally
 		renderSelector();

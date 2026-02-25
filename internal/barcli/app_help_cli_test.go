@@ -461,6 +461,39 @@ func TestHelpLLMStarterPacksSection(t *testing.T) {
 	}
 }
 
+// TestHelpLLMRoutingConceptInGrammar specifies that the grammar must expose
+// routing_concept data for scope and form axes (ADR-0146 Phase 2 step 2).
+// thing+struct must share a concept phrase; actions+checklist must share a phrase.
+func TestHelpLLMRoutingConceptInGrammar(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+	scope := grammar.Axes.RoutingConcept["scope"]
+	if scope == nil {
+		t.Fatal("ADR-0146 Phase 2: grammar.Axes.RoutingConcept must have a 'scope' entry")
+	}
+	if scope["thing"] == "" || scope["struct"] == "" {
+		t.Error("ADR-0146 Phase 2: scope routing_concept must have entries for thing and struct")
+	}
+	if scope["thing"] != scope["struct"] {
+		t.Errorf("ADR-0146 Phase 2: scope:thing and scope:struct must share a routing concept phrase, got %q and %q",
+			scope["thing"], scope["struct"])
+	}
+
+	form := grammar.Axes.RoutingConcept["form"]
+	if form == nil {
+		t.Fatal("ADR-0146 Phase 2: grammar.Axes.RoutingConcept must have a 'form' entry")
+	}
+	if form["actions"] == "" || form["checklist"] == "" {
+		t.Error("ADR-0146 Phase 2: form routing_concept must have entries for actions and checklist")
+	}
+	if form["actions"] != form["checklist"] {
+		t.Errorf("ADR-0146 Phase 2: form:actions and form:checklist must share a routing concept phrase, got %q and %q",
+			form["actions"], form["checklist"])
+	}
+}
+
 // TestHelpLLMChannelAudienceGuidanceInSSoT specifies that channel:code and
 // channel:shellscript guidance must include the non-technical audience
 // incompatibility note (ADR-0146 Change 2). The hardcoded bullet in help_llm.go

@@ -912,6 +912,33 @@
         "unknowns": "Diagnostic",
         "verify": "Reasoning"
       }
+    },
+    "routing_concept": {
+      "form": {
+        "actions": "Actionable next steps",
+        "case": "Decision documentation",
+        "checklist": "Actionable next steps",
+        "recipe": "Step-by-step guidance",
+        "scaffold": "Building understanding",
+        "table": "Structured comparison",
+        "variants": "Multiple alternatives",
+        "walkthrough": "Step-by-step guidance"
+      },
+      "scope": {
+        "act": "Actions/tasks",
+        "agent": "Actors with agency",
+        "assume": "Premises/preconditions",
+        "cross": "Cross-cutting concerns",
+        "fail": "Failure modes",
+        "good": "Quality/criteria",
+        "mean": "Understanding/meaning",
+        "motifs": "Recurring patterns",
+        "stable": "Invariants/stable states",
+        "struct": "Entities/boundaries",
+        "thing": "Entities/boundaries",
+        "time": "Sequences/change",
+        "view": "Perspectives"
+      }
     }
   },
   "tasks": {
@@ -3162,7 +3189,7 @@
     }
   ],
   "checksums": {
-    "axes": "0f105ddbc3edf69cd30a81407b9ee9d18775ddc42f3c7a986b9ef86dc6a70a94",
+    "axes": "558b7210258aa1f2498ff09fb276fcb57c0c322e19bdcaccaa2d8293bb47b682",
     "tasks": "bfd0103762cd228a3a12d920f9763d2669a2deb7fdad922e63855688da2fe14d",
     "persona": "119ff50f1dbdf7f8b58301189b3e81f238448406ce22ebc02a08e62c7115a531",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

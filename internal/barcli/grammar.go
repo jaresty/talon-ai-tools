@@ -40,13 +40,14 @@ type Grammar struct {
 }
 
 type AxisSection struct {
-	Definitions map[string]map[string]string
-	ListTokens  map[string][]string
-	Labels      map[string]map[string]string // ADR-0109: short CLI-facing selection labels
-	Guidance    map[string]map[string]string // ADR-0110: selection-oriented prose hints
-	UseWhen     map[string]map[string]string // ADR-0132: task-type discoverability hints
-	Kanji       map[string]map[string]string // ADR-0143: kanji icons for visual display
-	Categories  map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
+	Definitions    map[string]map[string]string
+	ListTokens     map[string][]string
+	Labels         map[string]map[string]string // ADR-0109: short CLI-facing selection labels
+	Guidance       map[string]map[string]string // ADR-0110: selection-oriented prose hints
+	UseWhen        map[string]map[string]string // ADR-0132: task-type discoverability hints
+	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
+	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
+	RoutingConcept map[string]map[string]string // ADR-0146: distilled routing concept phrases
 }
 
 type StaticSection struct {
@@ -140,13 +141,14 @@ type rawGrammar struct {
 }
 
 type rawAxisSection struct {
-	Definitions map[string]map[string]string `json:"definitions"`
-	ListTokens  map[string][]string          `json:"list_tokens"`
-	Labels      map[string]map[string]string `json:"labels"`   // ADR-0109
-	Guidance    map[string]map[string]string `json:"guidance"` // ADR-0110
-	UseWhen     map[string]map[string]string `json:"use_when"`    // ADR-0132
-	Kanji       map[string]map[string]string `json:"kanji"`       // ADR-0143
-	Categories  map[string]map[string]string `json:"categories"`  // ADR-0144
+	Definitions    map[string]map[string]string `json:"definitions"`
+	ListTokens     map[string][]string          `json:"list_tokens"`
+	Labels         map[string]map[string]string `json:"labels"`           // ADR-0109
+	Guidance       map[string]map[string]string `json:"guidance"`         // ADR-0110
+	UseWhen        map[string]map[string]string `json:"use_when"`         // ADR-0132
+	Kanji          map[string]map[string]string `json:"kanji"`            // ADR-0143
+	Categories     map[string]map[string]string `json:"categories"`       // ADR-0144
+	RoutingConcept map[string]map[string]string `json:"routing_concept"`  // ADR-0146
 }
 
 type rawStatic struct {
@@ -239,13 +241,14 @@ func LoadGrammar(path string) (*Grammar, error) {
 		Patterns:      raw.Patterns,
 		StarterPacks:  raw.StarterPacks,
 		Axes: AxisSection{
-			Definitions: raw.Axes.Definitions,
-			ListTokens:  raw.Axes.ListTokens,
-			Labels:      raw.Axes.Labels,
-			Guidance:    raw.Axes.Guidance,
-			UseWhen:     raw.Axes.UseWhen,
-			Kanji:       raw.Axes.Kanji,
-			Categories:  raw.Axes.Categories,
+			Definitions:    raw.Axes.Definitions,
+			ListTokens:     raw.Axes.ListTokens,
+			Labels:         raw.Axes.Labels,
+			Guidance:       raw.Axes.Guidance,
+			UseWhen:        raw.Axes.UseWhen,
+			Kanji:          raw.Axes.Kanji,
+			Categories:     raw.Axes.Categories,
+			RoutingConcept: raw.Axes.RoutingConcept,
 		},
 		Static: StaticSection{
 			Profiles:     profiles,

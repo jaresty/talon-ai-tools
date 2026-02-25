@@ -185,6 +185,14 @@ def _build_axis_section(
         if tokens
     }
 
+    # RoutingConcept (ADR-0146): distilled routing concept phrases for nav surfaces.
+    axis_routing_concept_raw = catalog.get("axis_routing_concept") or {}
+    axis_routing_concept: dict[str, dict[str, str]] = {
+        str(axis): {str(k): str(v) for k, v in sorted(tokens.items())}
+        for axis, tokens in sorted(axis_routing_concept_raw.items(), key=lambda i: str(i[0]))
+        if tokens
+    }
+
     section: dict[str, Any] = {
         "definitions": axis_definitions,
         "list_tokens": axis_list_tokens,
@@ -199,6 +207,8 @@ def _build_axis_section(
         section["kanji"] = axis_kanji
     if axis_category:
         section["categories"] = axis_category
+    if axis_routing_concept:
+        section["routing_concept"] = axis_routing_concept
 
     return (section, axis_slugs)
 

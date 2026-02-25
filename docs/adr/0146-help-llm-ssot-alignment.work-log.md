@@ -201,3 +201,48 @@ next_work:
     field to Go grammar structs
     Validation: go test ./internal/barcli/... -run TestHelpLLMRoutingConceptInGrammar
 ```
+
+---
+
+## Loop 5 — 2026-02-25
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0146 Phase 2 step 2 — wire routing_concept into grammar export pipeline; add RoutingConcept to Go structs
+active_constraint: >
+  grammar.Axes.RoutingConcept field did not exist. The Go struct (AxisSection) had
+  no RoutingConcept field; the JSON had no routing_concept key; axisCatalog.py
+  and promptGrammar.py did not pass routing concept data through the export pipeline.
+  The specifying test (TestHelpLLMRoutingConceptInGrammar) failed red at compile time
+  (undefined field). All four touch points needed simultaneous change.
+  Expected value: Impact=High (unblocks Loop 6 dynamic rendering), Probability=High, Time Sensitivity=Low.
+validation_targets:
+  - go test ./internal/barcli/... -run TestHelpLLMRoutingConceptInGrammar -count=1
+evidence:
+  - red  | 2026-02-25T00:30:00Z | exit 1 | go test ./internal/barcli/... -run TestHelpLLMRoutingConceptInGrammar
+      helper:diff-snapshot=0 files changed
+      Build failed: grammar.Axes.RoutingConcept undefined | inline
+  - green | 2026-02-25T00:35:00Z | exit 0 | go test ./internal/barcli/... -run TestHelpLLMRoutingConceptInGrammar
+      helper:diff-snapshot=5 files modified (grammar.go, axisCatalog.py, promptGrammar.py, + grammar JSONs)
+      TestHelpLLMRoutingConceptInGrammar PASS; full suite ok; routing_concept in JSON | inline
+  - removal | 2026-02-25T00:36:00Z | exit 1 | git stash impl && go test ... && git stash pop
+      Build fails again (undefined field) | inline
+rollback_plan: git restore --source=HEAD internal/barcli/grammar.go lib/axisCatalog.py lib/promptGrammar.py; make bar-grammar-update
+delta_summary: >
+  helper:diff-snapshot=9 files changed
+  Added RoutingConcept field to AxisSection and rawAxisSection in grammar.go with
+  json:"routing_concept" tag. Added axis_routing_concept to axisCatalog.py axis_catalog()
+  and serialize_axis_config(). Added routing_concept handling in promptGrammar.py
+  (parallel to categories pattern). Ran make bar-grammar-update — routing_concept now
+  appears in build/prompt-grammar.json under axes.routing_concept.{form,scope}.
+  Depth-first rung: Phase 2 step 2 lands green.
+loops_remaining_forecast: "1 loop (Loop 6: dynamic rendering of Choosing Scope/Form). Confidence: high."
+residual_constraints:
+  - Choosing Scope/Form still renders hardcoded bullets in help_llm.go.
+    Severity: Medium (final SSOT violation — the whole point of Phase 2).
+    Mitigation: Loop 6.
+next_work:
+  - Behaviour: Phase 2 step 3 — rewrite Choosing Scope/Form to render dynamically
+    from grammar.Axes.RoutingConcept
+    Validation: go test ./internal/barcli/... -run TestHelpLLMScopeFormDynamic
+```

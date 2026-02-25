@@ -445,10 +445,11 @@ Steps:
 7. **Aggregate** — group by gap type, identify recurring patterns
 8. **Recommend** — produce actionable list with evidence
 9. **Cross-Validate** — if ADR-0085 (shuffle-driven) has been run, correlate findings between processes
-10. **Review** — human review before implementing
-11. **Apply** — edit catalog, skills, or help_llm.go; regenerate grammar
-12. **Post-Apply Validate** — re-test original evidence cases against new catalog state
-13. **Validate** — re-run a sample of gapped tasks to confirm improvement
+10. **Process Health Check** — run `probe gap` on aggregated findings to surface implicit assumptions in the evaluation cycle itself before review
+11. **Review** — human review before implementing
+12. **Apply** — edit catalog, skills, or help_llm.go; regenerate grammar
+13. **Post-Apply Validate** — re-test original evidence cases against new catalog state
+14. **Validate** — re-run a sample of gapped tasks to confirm improvement
 
 ### Automation Note
 
@@ -522,6 +523,25 @@ If ADR-0085 (shuffle-driven) has been run, compare findings before finalizing re
 ```
 
 Store: `docs/adr/evidence/cross-validation/{date}.md`
+
+#### Process Health Check
+
+After cross-validation (or after aggregating recommendations if ADR-0085 has not been run), run a `probe gap` pass on the cycle's aggregated findings. This is not a diagnostic for any specific gap type — it surfaces implicit assumptions in the evaluation process itself before human review.
+
+```bash
+bar build probe gap \
+  --subject "$(cat docs/adr/evidence/0113/gap-catalog.md)" \
+  --addendum "Surface implicit assumptions in this refinement cycle: what is this process treating as settled that may not be? Consider: task taxonomy scope, gap type boundaries, coverage rubric definitions, the separation between skill error and catalog gap, what counts as sufficient evidence."
+```
+
+Questions this step is designed to surface:
+
+- Does the gap taxonomy treat `undiscoverable-token` and `skill-guidance-wrong` as cleanly separable when the root cause is often shared?
+- Does the task taxonomy's probability weighting treat LLM-estimated frequency as a reliable proxy for actual usage?
+- Are coverage scores treating the five rubric dimensions as independent when they are entangled?
+- Does the process assume that fixing skill guidance is sufficient when the catalog description is also contributing?
+
+Capture output as a brief note appended to `gap-catalog.md` before handing off to human review.
 
 #### Post-Apply Validation
 

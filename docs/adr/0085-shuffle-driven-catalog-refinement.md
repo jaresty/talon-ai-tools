@@ -428,10 +428,11 @@ Run this process periodically or when catalog drift is suspected:
 6. **Aggregate**: Group low-scoring tokens, identify patterns, collect feedback for skills/catalog/help
 7. **Recommend**: Produce actionable list with evidence for catalog, skills, and help documentation
 8. **Cross-Validate**: If ADR-0113 (task-driven) has been run, correlate findings between processes
-9. **Review**: Human review of recommendations before implementing
-10. **Apply**: Edit catalog files, skill documentation, and/or help_llm.go, regenerate grammar
-11. **Post-Apply Validate**: Re-test original evidence cases against new catalog state
-12. **Validate**: Re-run shuffle samples to confirm improvement
+9. **Process Health Check**: Run `probe gap` on the aggregated findings to surface implicit assumptions in the evaluation cycle itself before review
+10. **Review**: Human review of recommendations before implementing
+11. **Apply**: Edit catalog files, skill documentation, and/or help_llm.go, regenerate grammar
+12. **Post-Apply Validate**: Re-test original evidence cases against new catalog state
+13. **Validate**: Re-run shuffle samples to confirm improvement
 
 #### Phase 0: Calibrate
 
@@ -459,6 +460,25 @@ Both evaluators independently scored the same 10 prompts without consulting each
 ```
 
 Store: `docs/adr/evidence/0085/evaluations/00-calibration.md`
+
+### Process Health Check
+
+After cross-validation (or after aggregating recommendations if ADR-0113 has not been run), run a `probe gap` pass on the cycle's aggregated findings. This is not a diagnostic for any specific token failure — it surfaces implicit assumptions in the evaluation process itself before human review.
+
+```bash
+bar build probe gap \
+  --subject "$(cat docs/adr/evidence/0085/recommendations.yaml)" \
+  --addendum "Surface implicit assumptions in this refinement cycle: what is this process treating as settled that may not be? Consider: scoring rubric boundaries, category definitions, retirement thresholds, cross-validation logic, what counts as sufficient evidence."
+```
+
+Questions this step is designed to surface:
+
+- Does the scoring rubric treat "category alignment" as separable from "combination harmony" when they share root causes?
+- Are retirement thresholds ("multiple low scores") treating a quantitative bar as self-evident when it isn't?
+- Does the cross-validation assume ADR-0085 and ADR-0113 measure independent things when they may share blind spots?
+- Are any recommendation actions (retire/edit/recategorize) treating their own scope as obvious?
+
+Capture output as a brief note appended to `recommendations.yaml` before handing off to human review.
 
 ### Post-Apply Validation
 

@@ -282,6 +282,9 @@ func LoadGrammar(path string) (*Grammar, error) {
 
 	grammar.initialise()
 	grammar.initialiseSlugs(raw.Slugs)
+	if err := grammar.validateNoPersonaCollisions(); err != nil {
+		return nil, err
+	}
 
 	return grammar, nil
 }
@@ -421,6 +424,56 @@ func (g *Grammar) initialise() {
 			g.registerMultiWord(canonical)
 		}
 	}
+}
+
+// validateNoPersonaCollisions ensures no persona token (voice, audience, tone, intent) shares
+// a name with any non-persona axis token (tasks, completeness, scope, method, form, channel,
+// directional). Such a collision would make positional persona syntax ambiguous.
+func (g *Grammar) validateNoPersonaCollisions() error {
+	// Build set of all non-persona tokens: axis tokens + static/task tokens.
+	nonPersona := make(map[string]string) // canonical token → axis name
+	for axis, tokenSet := range g.axisTokens {
+		for token := range tokenSet {
+			nonPersona[token] = axis
+		}
+	}
+	for token := range g.Static.Profiles {
+		if canonical := normalizeToken(token); canonical != "" {
+			nonPersona[canonical] = "task"
+		}
+	}
+	for token := range g.Static.Descriptions {
+		if canonical := normalizeToken(token); canonical != "" {
+			nonPersona[canonical] = "task"
+		}
+	}
+
+	var collisions []string
+	check := func(axisName, token string) {
+		canonical := normalizeToken(token)
+		if canonical == "" {
+			return
+		}
+		if conflictAxis, ok := nonPersona[canonical]; ok {
+			collisions = append(collisions, fmt.Sprintf("persona %s token %q collides with %s token", axisName, canonical, conflictAxis))
+		}
+	}
+	for axisName, tokens := range g.Persona.Axes {
+		for _, token := range tokens {
+			check(axisName, token)
+		}
+	}
+	if intentTokens, ok := g.Persona.Intent.AxisTokens["intent"]; ok {
+		for _, token := range intentTokens {
+			check("intent", token)
+		}
+	}
+
+	if len(collisions) > 0 {
+		sort.Strings(collisions)
+		return fmt.Errorf("persona token collision(s) detected — positional persona syntax requires unique names: %s", strings.Join(collisions, "; "))
+	}
+	return nil
 }
 
 func normalizeAxis(axis string) string {

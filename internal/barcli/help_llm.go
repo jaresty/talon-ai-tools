@@ -154,10 +154,10 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 
 	fmt.Fprintf(w, "<persona-axis>   ::= <voice-token> | <audience-token> | <tone-token> | <intent-token>\n\n")
 
-	fmt.Fprintf(w, "<voice-token>    ::= \"voice=\" <voice-value>\n")
-	fmt.Fprintf(w, "<audience-token> ::= \"audience=\" <audience-value>\n")
-	fmt.Fprintf(w, "<tone-token>     ::= \"tone=\" <tone-value>\n")
-	fmt.Fprintf(w, "<intent-token>   ::= \"intent=\" <intent-value>\n\n")
+	fmt.Fprintf(w, "<voice-token>    ::= \"voice=\" <voice-value> | <voice-value>\n")
+	fmt.Fprintf(w, "<audience-token> ::= \"audience=\" <audience-value> | <audience-value>\n")
+	fmt.Fprintf(w, "<tone-token>     ::= \"tone=\" <tone-value> | <tone-value>\n")
+	fmt.Fprintf(w, "<intent-token>   ::= \"intent=\" <intent-value> | <intent-value>\n\n")
 
 	fmt.Fprintf(w, "<static-token>   ::= <static-value>\n\n")
 
@@ -261,6 +261,20 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "<voice-value>        ::= %s\n", formatPersonaAxis("voice", 7))
 	fmt.Fprintf(w, "<audience-value>     ::= %s\n", formatPersonaAxis("audience", 7))
 	fmt.Fprintf(w, "<tone-value>         ::= %s\n", formatPersonaAxis("tone", 0))
+
+	// Intent values - stored separately from other persona axes
+	if intentTokens, ok := grammar.Persona.Intent.AxisTokens["intent"]; ok && len(intentTokens) > 0 {
+		intentSlugs := make([]string, 0, len(intentTokens))
+		for _, token := range intentTokens {
+			slug := grammar.slugForToken(token)
+			if slug == "" {
+				slug = token
+			}
+			intentSlugs = append(intentSlugs, fmt.Sprintf("\"%s\"", slug))
+		}
+		sort.Strings(intentSlugs)
+		fmt.Fprintf(w, "<intent-value>       ::= %s\n", strings.Join(intentSlugs, " | "))
+	}
 
 	// Persona presets
 	presetTokens := make([]string, 0, len(grammar.Persona.Presets))
@@ -417,8 +431,13 @@ func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {
 	// Persona axes
 	personaAxes := []string{"voice", "audience", "tone", "intent"}
 	for _, axisName := range personaAxes {
-		tokenList, exists := grammar.Persona.Axes[axisName]
-		if !exists || len(tokenList) == 0 {
+		var tokenList []string
+		if axisName == "intent" {
+			tokenList = grammar.Persona.Intent.AxisTokens["intent"]
+		} else {
+			tokenList = grammar.Persona.Axes[axisName]
+		}
+		if len(tokenList) == 0 {
 			continue
 		}
 
@@ -653,8 +672,13 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 
 	personaAxes := []string{"voice", "audience", "tone", "intent"}
 	for _, axisName := range personaAxes {
-		tokenList, exists := grammar.Persona.Axes[axisName]
-		if !exists {
+		var tokenList []string
+		if axisName == "intent" {
+			tokenList = grammar.Persona.Intent.AxisTokens["intent"]
+		} else {
+			tokenList = grammar.Persona.Axes[axisName]
+		}
+		if len(tokenList) == 0 {
 			continue
 		}
 
@@ -703,8 +727,13 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 
 	axesWithGuidance := []string{"voice", "audience", "tone", "intent"}
 	for _, axisName := range axesWithGuidance {
-		tokenList, exists := grammar.Persona.Axes[axisName]
-		if !exists {
+		var tokenList []string
+		if axisName == "intent" {
+			tokenList = grammar.Persona.Intent.AxisTokens["intent"]
+		} else {
+			tokenList = grammar.Persona.Axes[axisName]
+		}
+		if len(tokenList) == 0 {
 			continue
 		}
 		hasGuidance := false
@@ -887,7 +916,8 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Non-technical audience** (manager, PM, executive, CEO, stakeholder, team) → check `audience=to-managers`, `audience=to-product-manager`, `audience=to-ceo`, `audience=to-stakeholders`, `audience=to-team`\n")
 	fmt.Fprintf(w, "- **Technical peer audience** → presets like `persona=peer_engineer_explanation`, `persona=teach_junior_dev` work well\n")
 	fmt.Fprintf(w, "- **Cross-functional communication** → `persona=stakeholder_facilitator` (as-facilitator to-stakeholders) or compose `voice=` + `audience=` explicitly\n")
-	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person) — consult the Persona System section for per-token trigger phrases\n\n")
+	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person), **intent=** (communication purpose: WHY addressing the audience) — consult the Persona System section for per-token trigger phrases\n")
+	fmt.Fprintf(w, "- **Choosing intent=**: use when the framing purpose matters — `intent=inform` (transfer knowledge/status), `intent=persuade` (influence belief or action), `intent=teach` (build deep understanding), `intent=announce` (share news or a change), `intent=coach` (develop the audience's capability), `intent=appreciate` (express thanks or recognition). Place before the task token (positional) or use `key=value` form.\n\n")
 
 	fmt.Fprintf(w, "### Choosing Scope\n\n")
 	fmt.Fprintf(w, "- **Entities/boundaries** → `thing`, `struct`\n")

@@ -1763,8 +1763,9 @@ func (m model) renderTokensPane() string {
 		right.WriteString(dimStyle.Render("(no matches)"))
 	} else {
 		// Show completions with current selection highlighted
-		// Reserve space for: header, "more above", completions, "more below", "Then:" hint, selected desc
-		maxShow := paneHeight - 7 // -1 header, -2 scroll indicators, -2 Then+desc, -2 padding
+		// Reserve space for: header, "more above", completions, "more below", "Then:" hint, selected desc,
+		// and one extra line for the routing concept subtitle on the selected item.
+		maxShow := paneHeight - 8 // -1 header, -2 scroll indicators, -2 Then+desc, -2 padding, -1 routing concept
 		if maxShow < 1 {
 			maxShow = 1
 		}
@@ -1819,8 +1820,10 @@ func (m model) renderTokensPane() string {
 			}
 			right.WriteString(style.Render(entry))
 			right.WriteString("\n")
-			// ADR-0146: routing concept subtitle — readable chip-label-weight line for scope/form tokens.
-			if c.RoutingConcept != "" {
+			// ADR-0146: routing concept subtitle — shown only on the selected item so that
+			// non-selected items stay single-line (prevents height overflow and keeps the
+			// subtitle visually subordinate to the token name above it).
+			if i == m.completionIndex && c.RoutingConcept != "" {
 				right.WriteString(routingConceptStyle.Render("   " + c.RoutingConcept))
 				right.WriteString("\n")
 			}

@@ -1,13 +1,57 @@
 # ADR 0085 Work Log
 
-**ADR:** 0085-shuffle-driven-catalog-refinement  
+**ADR:** 0085-shuffle-driven-catalog-refinement
 **Helper:** helper:v20251223.1
+
+---
+
+## Cycle 8: Kanji & Group Evaluation (Seeds 141–175)
+
+**Date:** 2026-02-25
+**Focus:** Kanji spot-check across all axes + method category group coherence
+**Seeds:** 141–175 (35 prompts, `--include method`)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| Kanji collisions | 6 cross-axis duplicates | K1–K6: max/boom, verify/checklist, argue/case, analog/taxonomy, view/visual, reify/formats |
+| Weak kanji | 2 tokens | gherkin(シ), spec(仕) |
+| Category coherence | 3 concerns | grow/grove proximity (Generative), analysis over-broad (Structural), trans kanji half-coverage |
+| Task-method redundancy | 1 instance | sort+order (seed 171) |
+
+### Recommendations (R22–R31)
+
+| ID | Action | Target | Priority |
+|----|--------|--------|----------|
+| R22 | edit-kanji | spec → 規 | High |
+| R23 | edit-kanji | gherkin → 瓜 | Medium |
+| R24 | edit-kanji | max → 尽 (resolve boom/max collision) | High |
+| R25 | edit-kanji | verify → 証 (resolve verify/checklist collision) | High |
+| R26 | edit-kanji | case → 策 (resolve argue/case collision) | Medium |
+| R27 | edit-kanji | taxonomy → 分 (resolve analog/taxonomy collision) | Medium |
+| R28 | edit-kanji | visual → 絵 (resolve view/visual collision) | Medium |
+| R29 | edit-kanji | formats → 式 (resolve reify/formats collision) | Medium |
+| R30 | investigate | grow vs grove same-category proximity | Medium |
+| R31 | investigate | analysis(析) over-broad description | Medium |
+
+### Positive Patterns
+
+- Diagnostic category: strong, well-differentiated, no collisions
+- Actor-centered: small but precise, jobs(需) is an excellent kanji
+- Reasoning: well-differentiated across 11 tokens
+- Strong kanji: adversarial(攻), diagnose(診), jobs(需), gap(隙), trade(衡), branch(枝), inversion(逆)
+- Seed 159 (plan+good+gap+socratic): excellent combination — quality planning with gap+Socratic structure (score 5)
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-8/evaluations.md`
 
 ---
 
 ## Loop 1: Precedence Rules in Reference Key (P1) ✅
 
-**Date:** 2026-02-15  
+**Date:** 2026-02-15
 **Focus:** Add precedence rules to reference key (prompts work without skills)
 
 ### Changes Made
@@ -47,7 +91,7 @@ Precedence rules now appear in:
 
 ## Loop 2: Re-evaluation with Precedence ✅
 
-**Date:** 2026-02-15  
+**Date:** 2026-02-15
 **Focus:** Validate precedence rules improve scores
 
 ### Method
@@ -77,7 +121,7 @@ The general principle "form shapes task output" handles novel combinations autom
 
 ## Cycle 4: Feedback Loop Enhancements + Evaluation
 
-**Date:** 2026-02-15  
+**Date:** 2026-02-15
 **Focus:** Exercise new ADR-0085 feedback loop phases
 
 ### Enhancements Applied

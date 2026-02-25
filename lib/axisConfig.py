@@ -238,7 +238,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions must be justified against this governing layer and may not redefine it during execution.",
+        "spec": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions "
+        "must be justified against this governing layer and may not redefine it during execution.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
@@ -722,8 +723,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "adversarial": "Stress-testing for weaknesses and failure modes: user wants the response to constructively attack the design, argument, or plan — finding counterexamples, edge cases, and "
         "hidden assumptions. Heuristic: 'what could go wrong', 'find the weaknesses', 'stress-test this', 'what\\'s the worst-case attack', 'where does this argument break', "
         "'challenge this plan', 'red-team this', 'what are the counterexamples', 'play devil\\'s advocate' → adversarial. Distinct from risks method (risks = enumerate failure "
-        "modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples). "
-        "NOT suited for interpersonal feedback tasks ('sensitive feedback on a colleague', 'supportive code review') — prefer analysis method and pair with tone=gently instead.",
+        "modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples). NOT suited for interpersonal feedback tasks ('sensitive feedback on "
+        "a colleague', 'supportive code review') — prefer analysis method and pair with tone=gently instead.",
         "afford": "Affordance-driven behavior analysis: user wants to explain why behavior arises from system or interface design — what the structure makes easy, visible, or natural vs. what it "
         "suppresses. Heuristic: 'why do users do X', 'the design encourages Y', 'affordances', 'what the API makes easy', 'shaped by the structure', 'how the design foregrounds this "
         "option', 'structural constraints on behavior', 'design defaults bias toward', 'interface suppresses this action' → afford. Distinct from field (actors interact via a shared "
@@ -978,7 +979,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "code": "碼",
         "codetour": "観",
         "diagram": "図",
-        "gherkin": "シ",
+        "gherkin": "瓜",
         "html": "標",
         "jira": "票",
         "plain": "文",
@@ -994,7 +995,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "deep": "深",
         "full": "全",
         "gist": "略",
-        "max": "極",
+        "max": "尽",
         "minimal": "小",
         "narrow": "狭",
         "skim": "掠",
@@ -1023,7 +1024,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "bug": "虫",
         "bullets": "列",
         "cards": "卡",
-        "case": "論",
+        "case": "策",
         "checklist": "検",
         "cocreate": "共",
         "commit": "提",
@@ -1031,7 +1032,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "direct": "直",
         "facilitate": "促",
         "faq": "質",
-        "formats": "形",
+        "formats": "様",
         "indirect": "間",
         "ladder": "階",
         "log": "誌",
@@ -1044,11 +1045,11 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "spike": "査",
         "story": "話",
         "table": "表",
-        "taxonomy": "類",
+        "taxonomy": "別",
         "test": "験",
         "tight": "簡",
         "variants": "変",
-        "visual": "視",
+        "visual": "絵",
         "walkthrough": "歩",
         "wardley": "図",
         "wasinawa": "振",
@@ -1107,13 +1108,13 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "robust": "堅",
         "shift": "転",
         "simulation": "象",
-        "spec": "仕",
+        "spec": "規",
         "split": "分",
         "systemic": "系",
         "trade": "衡",
         "trans": "伝",
         "unknowns": "未",
-        "verify": "検",
+        "verify": "証",
     },
     "persona": {
         "audience": {

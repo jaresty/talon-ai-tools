@@ -461,6 +461,36 @@ func TestHelpLLMStarterPacksSection(t *testing.T) {
 	}
 }
 
+// TestHelpLLMMaxGrowGuidanceInSSoT specifies that the max/grow cross-axis tension
+// note must be present in the grammar's AXIS_KEY_TO_GUIDANCE for completeness:max
+// and method:grow (ADR-0146 Change 1). The hardcoded block in help_llm.go must be
+// absent from the heuristics section; the guidance renders via Composition Rules.
+func TestHelpLLMMaxGrowGuidanceInSSoT(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+	maxGuidance := grammar.AxisGuidance("completeness", "max")
+	if !strings.Contains(maxGuidance, "grow") {
+		t.Errorf("ADR-0146 Change 1: completeness:max guidance must mention grow contradiction, got: %q", maxGuidance)
+	}
+	growGuidance := grammar.AxisGuidance("method", "grow")
+	if !strings.Contains(growGuidance, "max") {
+		t.Errorf("ADR-0146 Change 1: method:grow guidance must mention max contradiction, got: %q", growGuidance)
+	}
+
+	// Hardcoded block must be gone from heuristics
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
+	}
+	if strings.Contains(stdout.String(), "**Completeness × Method compatibility:**") {
+		t.Error("ADR-0146 Change 1: hardcoded 'Completeness × Method compatibility' block must be removed from heuristics")
+	}
+}
+
 // TestHelpLLMNoHardcodedIntentLine specifies that bar help llm must NOT contain
 // the hardcoded "Choosing intent=" summary line in the Token Selection Heuristics
 // section (ADR-0146 Change 3). The complete per-token guidance is already rendered

@@ -466,8 +466,10 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both.",
     },
     "completeness": {
+        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. "
+        "Prefer max for exhaustive treatment; prefer grow for disciplined minimalism.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with multi-phase directionals (bog, fip rog, fly rog, fog) that require structural depth and "
-        "sustained examination. Use with simple directionals (jog, rog) or none."
+        "sustained examination. Use with simple directionals (jog, rog) or none.",
     },
     "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "
@@ -506,6 +508,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "explore": "Distinguish from: branch (parallel reasoning with evaluation). Explore generates options without premature commitment.",
         "gap": "Distinguish from: assume (explicit premises held). Gap identifies where implicit assumptions clash with explicit treatment, producing coordination failures. Useful for analyzing "
         "specification gaps, interface mismatches, or implicit expectations that contradict formal rules.",
+        "grow": "Contradicts max completeness: grow = expand only when necessity is demonstrated; max = exhaust all coverage. Avoid pairing grow + max. "
+        "Prefer grow for disciplined minimalism; prefer max for exhaustive treatment.",
         "induce": "Distinguish from: abduce (evidence→hypothesis) and deduce (premises→conclusion). Induce generalizes from examples.",
         "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. "
         "Use when failure patterns are named and the question is whether the design protects against them.",

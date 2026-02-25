@@ -56,3 +56,50 @@ next_work:
   - Behaviour: Change 1 — add max/grow cross-axis tension to AXIS_KEY_TO_GUIDANCE
     Validation: go test ./internal/barcli/... -run TestHelpLLMMaxGrowGuidanceInSSoT
 ```
+
+---
+
+## Loop 2 — 2026-02-25
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0146 Change 1 — add max/grow tension to AXIS_KEY_TO_GUIDANCE; remove hardcoded block
+active_constraint: >
+  Neither completeness:max nor method:grow had any AXIS_KEY_TO_GUIDANCE entry;
+  the tension note existed only as hardcoded Go prose in renderTokenSelectionHeuristics.
+  The new specifying test (TestHelpLLMMaxGrowGuidanceInSSoT) failed red on all three
+  assertions: no max guidance, no grow guidance, hardcoded block present.
+  Expected value: Impact=High (prevents SSOT drift on key compatibility rule),
+  Probability=High (deterministic), Time Sensitivity=Low.
+validation_targets:
+  - go test ./internal/barcli/... -run TestHelpLLMMaxGrowGuidanceInSSoT -count=1
+evidence:
+  - red  | 2026-02-25T00:05:00Z | exit 1 | go test ./internal/barcli/... -run TestHelpLLMMaxGrowGuidanceInSSoT
+      helper:diff-snapshot=0 files changed
+      3 failures: max guidance empty, grow guidance empty, hardcoded block present | inline
+  - green | 2026-02-25T00:07:00Z | exit 0 | go test ./internal/barcli/... -run TestHelpLLMMaxGrowGuidanceInSSoT
+      helper:diff-snapshot=7 files changed, 48 insertions(+), 7 deletions(-)
+      TestHelpLLMMaxGrowGuidanceInSSoT PASS; full suite ok | inline
+  - removal | 2026-02-25T00:08:00Z | exit 1 | git stash impl && go test ... && git stash pop
+      helper:diff-snapshot=0 files changed (impl reverted; test remains)
+      All 3 assertions fail again after revert | inline
+rollback_plan: git restore --source=HEAD lib/axisConfig.py internal/barcli/help_llm.go; make bar-grammar-update
+delta_summary: >
+  helper:diff-snapshot=7 files changed, 48 insertions(+), 7 deletions(-)
+  Added completeness:max and method:grow guidance entries to AXIS_KEY_TO_GUIDANCE in
+  axisConfig.py. Removed 2-line hardcoded "Completeness × Method compatibility" block
+  from help_llm.go; added cross-reference pointer sentence. Ran make bar-grammar-update
+  to propagate guidance into prompt-grammar.json and TUI fixture.
+  Depth-first rung: Change 1 lands green.
+loops_remaining_forecast: "4 loops (Change 2, then Phase 2 loops 4–6). Confidence: high."
+residual_constraints:
+  - Change 2 (channel × audience): code/shellscript guidance still missing audience
+    incompatibility note in AXIS_KEY_TO_GUIDANCE. Hardcoded bullet still in help_llm.go:917.
+    Severity: Medium. Mitigation: Loop 3.
+  - Phase 2 (routing concept): AXIS_KEY_TO_ROUTING_CONCEPT not yet in axisConfig.py.
+    Severity: Medium. Mitigation: Loops 4–6.
+next_work:
+  - Behaviour: Change 2 — add channel × audience incompatibility to AXIS_KEY_TO_GUIDANCE
+    for code and shellscript; remove hardcoded bullet from help_llm.go
+    Validation: go test ./internal/barcli/... -run TestHelpLLMChannelAudienceGuidanceInSSoT
+```

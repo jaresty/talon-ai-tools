@@ -460,3 +460,20 @@ func TestHelpLLMStarterPacksSection(t *testing.T) {
 		t.Error("Starter Packs section must include bar build commands")
 	}
 }
+
+// TestHelpLLMNoHardcodedIntentLine specifies that bar help llm must NOT contain
+// the hardcoded "Choosing intent=" summary line in the Token Selection Heuristics
+// section (ADR-0146 Change 3). The complete per-token guidance is already rendered
+// by the Token Catalog via PERSONA_KEY_TO_USE_WHEN["intent"]; the hardcoded line
+// is a stale abbreviation that silently omits new intent tokens.
+func TestHelpLLMNoHardcodedIntentLine(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
+	}
+	if strings.Contains(stdout.String(), "**Choosing intent=**") {
+		t.Error("ADR-0146 Change 3: hardcoded '**Choosing intent=**' line must be removed from heuristics; intent use_when is already in the Token Catalog")
+	}
+}

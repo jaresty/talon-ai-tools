@@ -918,7 +918,6 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Technical peer audience** → presets like `persona=peer_engineer_explanation`, `persona=teach_junior_dev` work well\n")
 	fmt.Fprintf(w, "- **Cross-functional communication** → `persona=stakeholder_facilitator` (as-facilitator to-stakeholders) or compose `voice=` + `audience=` explicitly\n")
 	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person), **intent=** (communication purpose: WHY addressing the audience) — consult the Persona System section for per-token trigger phrases\n")
-	fmt.Fprintf(w, "- **Choosing intent=**: use when the framing purpose matters — `intent=inform` (transfer knowledge/status), `intent=persuade` (influence belief or action), `intent=teach` (build deep understanding), `intent=announce` (share news or a change), `intent=coach` (develop the audience's capability), `intent=appreciate` (express thanks or recognition). Place before the task token (positional) or use `key=value` form.\n\n")
 
 	fmt.Fprintf(w, "### Choosing Scope\n\n")
 	fmt.Fprintf(w, "- **Entities/boundaries** → `thing`, `struct`\n")

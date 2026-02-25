@@ -536,6 +536,40 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     },
 }
 
+# Distilled routing concept phrases for nav surfaces (ADR-0146 Phase 2).
+# Each token maps to the shortest phrase that maps a user's framing to that token.
+# Tokens sharing the same phrase group into a single routing bullet:
+#   e.g. thing + struct → "Entities/boundaries"
+# Covered axes: scope and form only. Method routing uses editorial sub-group
+# labels spanning multiple tokens and stays hardcoded until a future ADR.
+AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
+    "scope": {
+        "act": "Actions/tasks",
+        "agent": "Actors with agency",
+        "assume": "Premises/preconditions",
+        "cross": "Cross-cutting concerns",
+        "fail": "Failure modes",
+        "good": "Quality/criteria",
+        "mean": "Understanding/meaning",
+        "motifs": "Recurring patterns",
+        "stable": "Invariants/stable states",
+        "struct": "Entities/boundaries",
+        "thing": "Entities/boundaries",
+        "time": "Sequences/change",
+        "view": "Perspectives",
+    },
+    "form": {
+        "actions": "Actionable next steps",
+        "case": "Decision documentation",
+        "checklist": "Actionable next steps",
+        "recipe": "Step-by-step guidance",
+        "scaffold": "Building understanding",
+        "table": "Structured comparison",
+        "variants": "Multiple alternatives",
+        "walkthrough": "Step-by-step guidance",
+    },
+}
+
 # Task-type heuristics for when to apply each token (ADR-0132).
 # Surfaces as 'When to use' helper text in UIs.
 AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
@@ -1326,6 +1360,15 @@ def axis_key_to_kanji_map(
 def axis_key_to_category_map(axis: str) -> dict[str, str]:
     """Return the key->category map for a given axis (ADR-0144)."""
     return AXIS_KEY_TO_CATEGORY.get(axis, {})
+
+
+def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
+    """Return the key->routing_concept map for a given axis (ADR-0146).
+
+    Returns per-token distilled routing concept phrases. Tokens sharing the same
+    phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
+    """
+    return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
 
 
 def axis_docs_for(axis: str) -> list[AxisDoc]:

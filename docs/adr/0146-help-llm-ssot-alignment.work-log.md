@@ -151,5 +151,53 @@ residual_constraints:
     Severity: Low (blocked by steps 1-2). Mitigation: Loop 6.
 next_work:
   - Behaviour: Phase 2 step 1 — add AXIS_KEY_TO_ROUTING_CONCEPT for scope and form
-    Validation: go test ./internal/barcli/... -run TestHelpLLMRoutingConceptInSSoT
+    Validation: .venv/bin/python -m pytest _tests/test_routing_concept.py -v
+```
+
+---
+
+## Loop 4 — 2026-02-25
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0146 Phase 2 step 1 — add AXIS_KEY_TO_ROUTING_CONCEPT dict and accessor to axisConfig.py
+active_constraint: >
+  AXIS_KEY_TO_ROUTING_CONCEPT did not exist. There was no per-token routing concept
+  metadata for scope or form axes. The specifying test (test_routing_concept.py) failed
+  red at import time (ImportError). No grammar wiring needed in this loop — that is
+  Loop 5's job.
+  Expected value: Impact=High (unblocks Loops 5-6; establishes the phrase table that
+  must be reviewed in one pass per ADR risk mitigation), Probability=High, Time Sensitivity=Low.
+validation_targets:
+  - .venv/bin/python -m pytest _tests/test_routing_concept.py -v
+evidence:
+  - red  | 2026-02-25T00:20:00Z | exit 1 | .venv/bin/python -m pytest _tests/test_routing_concept.py
+      helper:diff-snapshot=0 files changed
+      ImportError: cannot import name 'AXIS_KEY_TO_ROUTING_CONCEPT' | inline
+  - green | 2026-02-25T00:22:00Z | exit 0 | .venv/bin/python -m pytest _tests/test_routing_concept.py
+      helper:diff-snapshot=lib/axisConfig.py modified (+38 lines), _tests/test_routing_concept.py created
+      7 tests pass; make bar-grammar-update + go test also pass | inline
+  - removal | 2026-02-25T00:23:00Z | exit 1 | git stash lib/axisConfig.py && pytest && git stash pop
+      ImportError re-appears after stash | inline
+rollback_plan: git restore --source=HEAD lib/axisConfig.py; remove _tests/test_routing_concept.py
+delta_summary: >
+  helper:diff-snapshot=2 files changed
+  Added AXIS_KEY_TO_ROUTING_CONCEPT dict covering scope (13 tokens, 12 concept groups)
+  and form (8 tokens, 6 concept groups) with exact phrases matching current hardcoded
+  Choosing Scope/Form bullets. Added axis_key_to_routing_concept_map accessor.
+  Created _tests/test_routing_concept.py with 7 specifying tests (RC1-RC7).
+  Grammar update + Go test suite remain green.
+  Depth-first rung: Phase 2 step 1 lands green.
+loops_remaining_forecast: "2 loops (Loop 5: grammar struct + export wiring; Loop 6: dynamic rendering). Confidence: high."
+residual_constraints:
+  - Grammar export not yet wired: prompt-grammar.json has no routing_concept field.
+    Severity: Medium (Loops 5-6 blocked). Mitigation: Loop 5.
+  - Go grammar structs have no RoutingConcept field yet. Severity: Low (blocked by export).
+    Mitigation: Loop 5.
+  - Choosing Scope/Form still renders hardcoded bullets. Severity: Low (blocked by Loop 5).
+    Mitigation: Loop 6.
+next_work:
+  - Behaviour: Phase 2 step 2 — wire routing_concept into grammar export; add RoutingConcept
+    field to Go grammar structs
+    Validation: go test ./internal/barcli/... -run TestHelpLLMRoutingConceptInGrammar
 ```

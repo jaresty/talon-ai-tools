@@ -53,7 +53,7 @@ The hardcoded line in `renderTokenSelectionHeuristics`:
 
 ---
 
-### Finding 4 — Distilled routing guide has no metadata bucket (deferred)
+### Finding 4 — Distilled routing guide has no metadata bucket
 
 The "Choosing Scope" and "Choosing Form" sections in `renderTokenSelectionHeuristics` contain compact concept-to-token routing bullets:
 
@@ -81,7 +81,7 @@ A new dict mapping each token to a short routing concept phrase ("Failure modes"
 **Option C — Keep hardcoded; add cross-reference pointer only**
 Accept that routing bullets are editorial and maintain them as prose. Add a note in `help_llm.go` that the complete per-token guide is in the Token Catalog. Lower implementation cost; retains hardcoded staleness risk when tokens are added.
 
-**Decision: Deferred.** The three immediate changes (Findings 1–3) remove genuine SSOT violations. Finding 4 is a quality-of-life improvement — the routing bullets are intentionally distilled and their hardcoded nature is less harmful because they rarely need to change. The `AXIS_KEY_TO_ROUTING_CONCEPT` design (Option B) is appealing for future SPA/TUI2 integration but requires a separate ADR once there is a concrete consumer need beyond `help_llm.go`.
+**Decision: Option B.** The per-token dict shape (each token maps to its concept phrase) enables both per-token chip lookups in TUI2/SPA and grouped rendering in `help_llm.go`. Multi-token routing (`thing` + `struct` → "Entities/boundaries") is expressed by assigning the same phrase to both tokens; render logic groups by shared phrase. See Phase 2 Decision below for full implementation details.
 
 ---
 
@@ -94,9 +94,7 @@ The following hardcoded content was audited and classified as **Type A** (cross-
 | "Known audience: prefer explicit `audience=` over presets" | Spans the entire presets × audience token space |
 | "Presets are shortcuts — verify audience matches" | Cross-system meta-guidance |
 | Compound directionals require `full`/`deep` completeness | Applies to the compound directional *type*, not any specific token |
-| Choosing Method sub-group labels ("Narrowing to recommendation → converge, meld", etc.) | Editorial sub-groupings within `AXIS_KEY_TO_CATEGORY`; no token-level metadata field maps to these |
-| Choosing Scope one-liners ("Entities/boundaries → thing, struct") | See Finding 4; deferred to future ADR |
-| Choosing Form partial list | See Finding 4; deferred to future ADR |
+| Choosing Method routing one-liners ("Deciding between options → branch, explore") | Method routing uses editorial sub-group labels ("Decision Methods", "Understanding Methods") spanning 2–5 tokens each. Not reducible to per-token concept phrases; no token-level metadata field maps to these. Stays hardcoded until a future ADR addresses method routing. |
 
 ---
 
@@ -170,6 +168,18 @@ fmt.Fprintf(w, "- **Choosing intent=**: use when the framing purpose matters —
 
 The complete per-token use_when entries in `PERSONA_KEY_TO_USE_WHEN["intent"]` already render in the Token Catalog Persona table. No replacement needed.
 
+### Phase 2 Decision: `AXIS_KEY_TO_ROUTING_CONCEPT`
+
+**Data structure:** Per-token dict (`{"scope": {"thing": "Entities/boundaries", "struct": "Entities/boundaries", ...}}`). Shared concept phrases across tokens express multi-token routing; render logic groups by shared phrase. Per-token shape is required for chip tooltip lookups in TUI2/SPA.
+
+**Axes covered:** `scope` and `form` only. Method axis routing uses editorial sub-group labels ("Decision Methods", "Understanding Methods") that span 2–5 tokens each — these are category-level prose, not per-token concept phrases, and stay hardcoded.
+
+**TUI2 display:** Chip subtitle (Option α) — render routing concept as a dim secondary line beneath the chip label in the palette list. Visible while browsing without requiring focus; helps users who know the concept ("failure modes") but not the token name (`fail`).
+
+**SPA display:** Search filter corpus first (extend palette search to match `routing_concept` in addition to label/description), chip face annotation second (dim secondary line on chip). Search filter is the higher-discoverability change; both are independent.
+
+**`help_llm.go`:** Rewrite "Choosing Scope" and "Choosing Form" routing bullet sections to iterate `grammar.Axes.RoutingConcept` dynamically. Method routing section stays hardcoded.
+
 ---
 
 ## Implementation Order
@@ -182,9 +192,15 @@ The complete per-token use_when entries in `PERSONA_KEY_TO_USE_WHEN["intent"]` a
 
 After all three changes: run `make bar-grammar-update` and `go test ./...`.
 
-### Phase 2 — Routing concept metadata (future ADR)
+### Phase 2 — Routing concept metadata (`AXIS_KEY_TO_ROUTING_CONCEPT`)
 
-Design and implement `AXIS_KEY_TO_ROUTING_CONCEPT` (Finding 4, Option B) when a concrete consumer beyond `help_llm.go` emerges (e.g., TUI2 hover, SPA chip tooltip). Prerequisite: at least one non-help-llm surface that would render routing concept data.
+Implement Finding 4, Option B. The shippable slice is steps 1–3; steps 4–5 are independent UI enhancements.
+
+1. **Add `AXIS_KEY_TO_ROUTING_CONCEPT` to `lib/axisConfig.py`** — populate `scope` (11 tokens) and `form` (~11 tokens, 6 concept groups). Run `make bar-grammar-update`.
+2. **Add `RoutingConcept` field to Go grammar structs** — 3-line addition to `AxesJSON` and `Grammar` in `grammar.go`, following the existing `Labels`/`Guidance`/`UseWhen`/`Kanji` pattern.
+3. **Rewrite `help_llm.go` Choosing Scope/Form** — replace ~30 hardcoded routing bullets with dynamic rendering from `grammar.Axes.RoutingConcept`, grouping tokens by shared concept phrase. Run `go test ./...`.
+4. **TUI2 chip subtitle** — add `RoutingConcept string` to `CompletionOption`, populate at assembly, render as a dim secondary line beneath the chip label in the palette list.
+5. **SPA search corpus + chip annotation** — add `routing_concept` field to `AxisTokenMeta` in `grammar.ts`; extend the palette search predicate to match `routing_concept` (highest discoverability value); add dim annotation to chip face as secondary enhancement.
 
 ---
 
@@ -206,6 +222,7 @@ Design and implement `AXIS_KEY_TO_ROUTING_CONCEPT` (Finding 4, Option B) when a 
 
 - If `AXIS_KEY_TO_GUIDANCE` rendering order changes, the placement of the moved guidance could shift.
 - The `codetour` guidance already partially covers audience incompatibility — adding a redundant note risks inconsistency. Must audit the existing text before adding.
+- Phase 2: routing concept phrases are editorial — if two contributors assign different phrases to logically related tokens, the grouping in `help_llm.go` will produce inconsistent bullet text. Mitigation: review all scope/form phrase assignments in a single pass before merging.
 
 ---
 
@@ -224,4 +241,19 @@ bar help llm | grep "Choosing intent"  # should return nothing
 
 # Verify Token Catalog still shows intent use_when
 bar help llm | grep -A 2 "intent=inform"  # should still appear in Token Catalog
+
+# Phase 2 validation (after implementing AXIS_KEY_TO_ROUTING_CONCEPT):
+make bar-grammar-update
+go test ./...
+
+# Verify dynamic routing replaces hardcoded bullets
+bar help llm | grep -A 12 "### Choosing Scope"
+# Expected: bullets rendered from routing_concept metadata, not hardcoded strings
+
+# Verify multi-token grouping works
+bar help llm | grep "Entities"  # should show "Entities/boundaries → \`thing\`, \`struct\`"
+bar help llm | grep "Actionable"  # should show "Actionable next steps → \`actions\`, \`checklist\`"
+
+# Verify method routing section is unchanged (still hardcoded)
+bar help llm | grep "Decision Methods"  # should still appear
 ```

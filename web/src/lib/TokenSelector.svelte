@@ -258,9 +258,9 @@
 								if (!atCap) { onToggle(meta.token); activeToken = null; }
 							}
 						}}
-						onfocus={() => {
+						onfocus={(e) => {
 							focusedIndex = i;
-							if (!wasJustClicked) activeToken = meta.token;
+							if (!wasJustClicked && (e.target as HTMLElement).matches(':focus-visible')) activeToken = meta.token;
 							wasJustClicked = false;
 						}}
 					>
@@ -305,9 +305,9 @@
 							if (!atCap) { onToggle(meta.token); activeToken = null; }
 						}
 					}}
-					onfocus={() => {
+					onfocus={(e) => {
 						focusedIndex = i;
-						if (!wasJustClicked) activeToken = meta.token;
+						if (!wasJustClicked && (e.target as HTMLElement).matches(':focus-visible')) activeToken = meta.token;
 						wasJustClicked = false;
 					}}
 				>

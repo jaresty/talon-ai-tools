@@ -402,7 +402,11 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		const wardleyChip = Array.from(chips).find(
 			(el) => el.querySelector('code')?.textContent === 'wardley'
 		) as HTMLElement;
-		// Use fireEvent.focus so Svelte processes the onfocus handler reactively
+		// JSDOM doesn't set :focus-visible automatically — mock it to simulate keyboard navigation
+		vi.spyOn(wardleyChip, 'matches').mockImplementation((selector: string) => {
+			if (selector === ':focus-visible') return true;
+			return Element.prototype.matches.call(wardleyChip, selector);
+		});
 		await fireEvent.focus(wardleyChip);
 		// metadata panel should appear without a click
 		expect(screen.getByText('When to use')).toBeTruthy();

@@ -1,3 +1,18 @@
+<script module>
+	// Module-level flag: persists across all TokenSelector instances (tab changes mount fresh
+	// instances with isUsingTouch=false, breaking per-instance guards). This tracks whether
+	// the last pointer interaction was touch anywhere on the page, so onfocus and onmouseenter
+	// guards work correctly even after a new instance mounts.
+	// Note: :focus-visible is NOT a reliable guard on iOS Safari — it returns true for all
+	// focused elements regardless of input method, so we use this flag instead.
+	let globalIsUsingTouch = false;
+	if (typeof window !== 'undefined') {
+		window.addEventListener('pointerdown', (e: PointerEvent) => {
+			globalIsUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
+		}, { capture: true, passive: true });
+	}
+</script>
+
 <script lang="ts">
 	import { METHOD_CATEGORY_ORDER } from './grammar.js';
 	import type { TokenMeta } from './grammar.js';
@@ -270,7 +285,7 @@
 						aria-selected={isSelected}
 						data-token={meta.token}
 						tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
-						onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
+						onmouseenter={() => { if (!globalIsUsingTouch) activeToken = meta.token; }}
 						onpointerdown={(e) => {
 							isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
 							activeAtPointerDown = activeToken;
@@ -286,7 +301,7 @@
 						}}
 						onfocus={(e) => {
 							focusedIndex = i;
-							if (!wasJustClicked && (e.target as HTMLElement).matches(':focus-visible')) activeToken = meta.token;
+							if (!wasJustClicked && !globalIsUsingTouch) activeToken = meta.token;
 							wasJustClicked = false;
 						}}
 					>
@@ -318,7 +333,7 @@
 					aria-selected={isSelected}
 					data-token={meta.token}
 					tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
-					onmouseenter={() => { if (!isUsingTouch) activeToken = meta.token; }}
+					onmouseenter={() => { if (!globalIsUsingTouch) activeToken = meta.token; }}
 					onpointerdown={(e) => {
 						isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
 						activeAtPointerDown = activeToken;
@@ -333,7 +348,7 @@
 					}}
 					onfocus={(e) => {
 						focusedIndex = i;
-						if (!wasJustClicked && (e.target as HTMLElement).matches(':focus-visible')) activeToken = meta.token;
+						if (!wasJustClicked && !globalIsUsingTouch) activeToken = meta.token;
 						wasJustClicked = false;
 					}}
 				>

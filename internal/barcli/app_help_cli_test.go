@@ -461,6 +461,78 @@ func TestHelpLLMStarterPacksSection(t *testing.T) {
 	}
 }
 
+// TestHelpLLMScopeFormDynamic specifies that bar help llm Choosing Scope/Form
+// sections must render dynamically from grammar.Axes.RoutingConcept rather than
+// hardcoded strings (ADR-0146 Phase 2 step 3). Verifies:
+//   - thing+struct appear on a single bullet (multi-token grouping works)
+//   - actions+checklist appear on a single bullet
+//   - scope:agent (present in RoutingConcept but absent from old hardcoded section)
+//     appears in the Choosing Scope section — proving dynamic rendering
+func TestHelpLLMScopeFormDynamic(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
+	}
+	output := stdout.String()
+
+	// Extract just the Choosing Scope section (between its heading and the next ###)
+	scopeStart := strings.Index(output, "### Choosing Scope")
+	scopeEnd := strings.Index(output[scopeStart+1:], "### Choosing Method")
+	if scopeStart < 0 || scopeEnd < 0 {
+		t.Fatal("Choosing Scope section not found in bar help llm output")
+	}
+	scopeSection := output[scopeStart : scopeStart+1+scopeEnd]
+
+	// Verify multi-token grouping in scope: thing+struct share "Entities/boundaries"
+	conceptThing := grammar.Axes.RoutingConcept["scope"]["thing"]
+	if conceptThing == "" {
+		t.Fatal("scope:thing must have a routing concept phrase")
+	}
+	if !strings.Contains(scopeSection, conceptThing) {
+		t.Errorf("Choosing Scope must render concept phrase %q from routing_concept", conceptThing)
+	}
+	if !strings.Contains(scopeSection, "`thing`") || !strings.Contains(scopeSection, "`struct`") {
+		t.Error("Choosing Scope must list both thing and struct in the Entities/boundaries bullet")
+	}
+
+	// scope:agent is in RoutingConcept but NOT in the old hardcoded section.
+	// Dynamic rendering must include it; hardcoded rendering would not.
+	conceptAgent := grammar.Axes.RoutingConcept["scope"]["agent"]
+	if conceptAgent == "" {
+		t.Fatal("scope:agent must have a routing concept phrase (verify AXIS_KEY_TO_ROUTING_CONCEPT)")
+	}
+	if !strings.Contains(scopeSection, "`agent`") {
+		t.Error("ADR-0146 Phase 2: Choosing Scope must render scope:agent dynamically (absent from old hardcoded section)")
+	}
+
+	// Extract Choosing Form section
+	formStart := strings.Index(output, "### Choosing Form")
+	formEnd := strings.Index(output[formStart+1:], "### Choosing Directional")
+	if formStart < 0 || formEnd < 0 {
+		t.Fatal("Choosing Form section not found in bar help llm output")
+	}
+	formSection := output[formStart : formStart+1+formEnd]
+
+	// Verify form multi-token grouping: actions+checklist share a concept
+	conceptActions := grammar.Axes.RoutingConcept["form"]["actions"]
+	if conceptActions == "" {
+		t.Fatal("form:actions must have a routing concept phrase")
+	}
+	if !strings.Contains(formSection, conceptActions) {
+		t.Errorf("Choosing Form must render concept phrase %q from routing_concept", conceptActions)
+	}
+	if !strings.Contains(formSection, "`actions`") || !strings.Contains(formSection, "`checklist`") {
+		t.Error("Choosing Form must list both actions and checklist in the Actionable next steps bullet")
+	}
+}
+
 // TestHelpLLMRoutingConceptInGrammar specifies that the grammar must expose
 // routing_concept data for scope and form axes (ADR-0146 Phase 2 step 2).
 // thing+struct must share a concept phrase; actions+checklist must share a phrase.

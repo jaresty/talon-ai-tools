@@ -246,3 +246,52 @@ next_work:
     from grammar.Axes.RoutingConcept
     Validation: go test ./internal/barcli/... -run TestHelpLLMScopeFormDynamic
 ```
+
+---
+
+## Loop 6 — 2026-02-25
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0146 Phase 2 step 3 — rewrite Choosing Scope/Form to render dynamically from grammar.Axes.RoutingConcept
+active_constraint: >
+  The hardcoded scope (11 bullets, 12 tokens) and form (6 bullets, 9 tokens) sections
+  could not include scope:agent (present in RoutingConcept since Loop 4) without a
+  code edit. The specifying test (TestHelpLLMScopeFormDynamic) failed red: scope:agent
+  absent from the Choosing Scope section. Dynamic rendering via renderRoutingConceptSection
+  is the only way to make new RoutingConcept entries appear automatically.
+  Expected value: Impact=High (closes the SSOT violation — Choosing Scope/Form now
+  track metadata automatically), Probability=High, Time Sensitivity=Low.
+validation_targets:
+  - go test ./internal/barcli/... -run TestHelpLLMScopeFormDynamic -count=1
+evidence:
+  - red  | 2026-02-25T00:40:00Z | exit 1 | go test ./internal/barcli/... -run TestHelpLLMScopeFormDynamic
+      helper:diff-snapshot=0 files changed
+      scope:agent absent from Choosing Scope section | inline
+  - green | 2026-02-25T00:45:00Z | exit 0 | go test ./internal/barcli/... -run TestHelpLLMScopeFormDynamic
+      helper:diff-snapshot=help_llm.go modified (+40 lines, -22 lines)
+      TestHelpLLMScopeFormDynamic PASS; full suite ok; Choosing Scope now includes agent | inline
+  - removal | 2026-02-25T00:46:00Z | exit 1 | git stash help_llm.go && go test ... && git stash pop
+      scope:agent absent again | inline
+rollback_plan: git restore --source=HEAD internal/barcli/help_llm.go
+delta_summary: >
+  helper:diff-snapshot=2 files changed (app_help_cli_test.go +55 lines, help_llm.go net +18 lines)
+  Added renderRoutingConceptSection helper: groups tokens by shared concept phrase,
+  sorts concepts and tokens deterministically, renders "- **concept** → `tok1`, `tok2`" bullets.
+  Updated renderTokenSelectionHeuristics signature to accept *Grammar; replaced 11
+  hardcoded scope bullets and 6 hardcoded form bullets with two renderRoutingConceptSection calls.
+  Output verified: agent now appears in Choosing Scope; thing+struct grouped correctly.
+  Phase 2 steps 1-3 complete. ADR-0146 fully implemented.
+loops_remaining_forecast: "0 — all ADR-0146 behaviour outcomes land green. Run ci-guardrails before push."
+residual_constraints:
+  - ci-guardrails: user noted CI guardrails were previously failing. Must run before push.
+    Severity: High (blocks push). Mitigation: run make ci-guardrails and fix any failures.
+  - TUI2 chip subtitle (Phase 2 step 4): RoutingConcept not yet surfaced in TUI2.
+    Severity: Low (independent UI enhancement per ADR). Owning ADR: 0146 Phase 2 step 4.
+  - SPA search corpus (Phase 2 step 5): routing_concept not yet in search predicate.
+    Severity: Low. Owning ADR: 0146 Phase 2 step 5.
+next_work:
+  - Run make ci-guardrails and fix any failures before pushing
+  - Phase 2 step 4 (TUI2 chip subtitle) — independent future ADR loop
+  - Phase 2 step 5 (SPA search corpus) — independent future ADR loop
+```

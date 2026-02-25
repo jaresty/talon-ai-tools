@@ -49,7 +49,7 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 		renderStarterPacks(w, grammar, compact)
 	}
 	if shouldRender("heuristics") {
-		renderTokenSelectionHeuristics(w, compact)
+		renderTokenSelectionHeuristics(w, grammar, compact)
 	}
 	if shouldRender("advanced") {
 		renderAdvancedFeatures(w, compact)
@@ -900,7 +900,40 @@ func renderStarterPacks(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "\n")
 }
 
-func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
+// renderRoutingConceptSection renders a "Choosing X" routing guide section
+// dynamically from grammar.Axes.RoutingConcept for the given axis (ADR-0146 Phase 2).
+// Tokens sharing the same concept phrase are grouped into a single bullet.
+func renderRoutingConceptSection(w io.Writer, heading string, axisTokenConcepts map[string]string) {
+	if len(axisTokenConcepts) == 0 {
+		return
+	}
+	fmt.Fprintf(w, "### %s\n\n", heading)
+
+	// Group tokens by shared concept phrase, preserving insertion order via sorted concepts.
+	conceptToTokens := make(map[string][]string)
+	for token, concept := range axisTokenConcepts {
+		conceptToTokens[concept] = append(conceptToTokens[concept], token)
+	}
+	// Sort concepts for deterministic output.
+	concepts := make([]string, 0, len(conceptToTokens))
+	for c := range conceptToTokens {
+		concepts = append(concepts, c)
+	}
+	sort.Strings(concepts)
+
+	for _, concept := range concepts {
+		tokens := conceptToTokens[concept]
+		sort.Strings(tokens)
+		backticked := make([]string, len(tokens))
+		for i, t := range tokens {
+			backticked[i] = "`" + t + "`"
+		}
+		fmt.Fprintf(w, "- **%s** → %s\n", concept, strings.Join(backticked, ", "))
+	}
+	fmt.Fprintf(w, "\n")
+}
+
+func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool) {
 	if compact {
 		// Skip heuristics in compact mode
 		return
@@ -916,20 +949,10 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Non-technical audience** (manager, PM, executive, CEO, stakeholder, team) → check `audience=to-managers`, `audience=to-product-manager`, `audience=to-ceo`, `audience=to-stakeholders`, `audience=to-team`\n")
 	fmt.Fprintf(w, "- **Technical peer audience** → presets like `persona=peer_engineer_explanation`, `persona=teach_junior_dev` work well\n")
 	fmt.Fprintf(w, "- **Cross-functional communication** → `persona=stakeholder_facilitator` (as-facilitator to-stakeholders) or compose `voice=` + `audience=` explicitly\n")
-	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person), **intent=** (communication purpose: WHY addressing the audience) — consult the Persona System section for per-token trigger phrases\n")
+	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person), **intent=** (communication purpose: WHY addressing the audience) — consult the Persona System section for per-token trigger phrases\n\n")
 
-	fmt.Fprintf(w, "### Choosing Scope\n\n")
-	fmt.Fprintf(w, "- **Entities/boundaries** → `thing`, `struct`\n")
-	fmt.Fprintf(w, "- **Sequences/change** → `time`\n")
-	fmt.Fprintf(w, "- **Understanding/meaning** → `mean`\n")
-	fmt.Fprintf(w, "- **Actions/tasks** → `act`\n")
-	fmt.Fprintf(w, "- **Quality/criteria** → `good`\n")
-	fmt.Fprintf(w, "- **Failure modes** → `fail`\n")
-	fmt.Fprintf(w, "- **Perspectives** → `view`\n")
-	fmt.Fprintf(w, "- **Premises/preconditions** → `assume`\n")
-	fmt.Fprintf(w, "- **Recurring patterns** → `motifs`\n")
-	fmt.Fprintf(w, "- **Invariants/stable states** → `stable`\n")
-	fmt.Fprintf(w, "- **Cross-cutting concerns** → `cross`\n\n")
+	// Choosing Scope — rendered dynamically from AXIS_KEY_TO_ROUTING_CONCEPT (ADR-0146 Phase 2)
+	renderRoutingConceptSection(w, "Choosing Scope", grammar.Axes.RoutingConcept["scope"])
 
 	fmt.Fprintf(w, "### Choosing Method\n\n")
 	fmt.Fprintf(w, "**Decision Methods:**\n")
@@ -951,13 +974,9 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- Risk-gradient triage (allocate depth by consequence×uncertainty) → `stakes`\n\n")
 	fmt.Fprintf(w, "See **Completeness × Method compatibility** note for `max`/`grow` in \"Guidance for specific tokens\" below.\n\n")
 	fmt.Fprintf(w, "**For detailed differentiation guidance** on similar methods (e.g., `explore` vs `branch`, `abduce` vs `deduce`, `robust` vs `resilience`, `grow` vs `grove`), see \"Guidance for specific tokens\" section below.\n\n")
-	fmt.Fprintf(w, "### Choosing Form\n\n")
-	fmt.Fprintf(w, "- **Actionable next steps** → `actions`, `checklist`\n")
-	fmt.Fprintf(w, "- **Multiple alternatives** → `variants`\n")
-	fmt.Fprintf(w, "- **Step-by-step guidance** → `walkthrough`, `recipe`\n")
-	fmt.Fprintf(w, "- **Structured comparison** → `table`\n")
-	fmt.Fprintf(w, "- **Building understanding** → `scaffold`\n")
-	fmt.Fprintf(w, "- **Decision documentation** → `case`\n\n")
+
+	// Choosing Form — rendered dynamically from AXIS_KEY_TO_ROUTING_CONCEPT (ADR-0146 Phase 2)
+	renderRoutingConceptSection(w, "Choosing Form", grammar.Axes.RoutingConcept["form"])
 
 	fmt.Fprintf(w, "### Choosing Directional\n\n")
 	fmt.Fprintf(w, "- **Compound directionals** (fig, bog, fly ong, fly bog, fip bog, dip bog, etc.) span multiple dimensions simultaneously and require space to resolve. Avoid pairing them with `gist` or `skim` completeness — the multi-directional coverage cannot be expressed in a brief summary. Use `full` or `deep` completeness when selecting compound directionals.\n")

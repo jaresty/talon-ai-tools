@@ -1069,7 +1069,7 @@
       "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. probe = analyze broadly; pull = extract subset. For debugging/troubleshooting: use probe + diagnose method (not fix — fix is content reformatting, not bug-fixing). Heuristic: 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe + diagnose.",
       "pull": "For summarisation: extract the conceptual core from source material with gist scope. For risk extraction: works well with fail scope.",
       "show": "For summarisation of long documents, prefer 'pull' (extraction). show = explain a concept; pull = compress source material.",
-      "sim": "Temporal scenario walkthrough: use when the user wants to trace what unfolds over time if a condition occurs. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = what plays out if a condition is met) and probe (probe = surface implications analytically; sim = narrate the scenario unfolding over time). Works well with: diagram (Mermaid scenarios), slack (session format), sync (agenda format)."
+      "sim": "Temporal scenario walkthrough: use when the user wants to trace what unfolds over time if a condition occurs. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = what plays out if a condition is met), probe (probe = surface implications analytically; sim = narrate the scenario unfolding over time), and simulation method (simulation = enriches probe/plan/etc with thought-experiment reasoning about feedback loops; sim = the scenario narrative is the primary task). Works well with: diagram (Mermaid scenarios), slack (session format), sync (agenda format)."
     },
     "use_when": {
       "check": "Verifying or auditing against criteria. Heuristic: 'verify', 'audit', 'validate', 'does this satisfy', 'check for', 'evaluate against', 'review for compliance', 'does X meet criteria Y' → check. Distinct from probe (probe = analyze broadly; check = evaluate against a condition).",
@@ -3150,7 +3150,7 @@
   ],
   "checksums": {
     "axes": "a3c183ce58e4278e88b073d13fca71b80f5a443c2623c19bf79c51d06dd9e8e1",
-    "tasks": "8c8e61d3bcf4cb061c975ecbdd7553affd6adc10bbf480bbfcd75762b8ed335a",
+    "tasks": "bfd0103762cd228a3a12d920f9763d2669a2deb7fdad922e63855688da2fe14d",
     "persona": "119ff50f1dbdf7f8b58301189b3e81f238448406ce22ebc02a08e62c7115a531",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "5b81df8541a28ef3c80a541b9e518047469601079e1dc65f93d5942d2d158c8d",

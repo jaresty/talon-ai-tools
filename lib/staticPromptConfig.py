@@ -187,8 +187,11 @@ _STATIC_PROMPT_GUIDANCE: dict[str, str] = {
     "if', 'play out the scenario where', 'simulate what happens when', "
     "'walk me through what would occur if', 'hypothetically if we did X then "
     "what' → sim. Distinct from plan (plan = steps to take; sim = what plays "
-    "out if a condition is met) and probe (probe = surface implications "
-    "analytically; sim = narrate the scenario unfolding over time). "
+    "out if a condition is met), probe (probe = surface implications "
+    "analytically; sim = narrate the scenario unfolding over time), and "
+    "simulation method (simulation = enriches probe/plan/etc with "
+    "thought-experiment reasoning about feedback loops; sim = the scenario "
+    "narrative is the primary task). "
     "Works well with: diagram (Mermaid scenarios), slack (session format), "
     "sync (agenda format).",
     "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. "

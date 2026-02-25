@@ -88,13 +88,24 @@
 		}
 	});
 
-	// Close panel on page scroll or touch scroll, but not when scrolling inside the panel itself
+	// Always-active touchmove guard: any touch movement marks the gesture as a swipe so
+	// handleChipClick can suppress the stray synthetic click iOS fires at touchend.
+	// pointerdown resets the flag, so a real tap after a scroll always works correctly.
+	$effect(() => {
+		const markSwipe = (e: Event) => { if (e instanceof TouchEvent) touchBecameSwipe = true; };
+		window.addEventListener('touchmove', markSwipe, { passive: true });
+		return () => window.removeEventListener('touchmove', markSwipe);
+	});
+
+	// Close panel on page scroll or touch scroll, but not when scrolling inside the panel itself.
+	// Set touchBecameSwipe BEFORE the meta-panel early-return so swipes that start inside the
+	// panel still suppress the ghost click.
 	$effect(() => {
 		if (!activeToken) return;
 
 		const handleScroll = (e: Event) => {
-			if (e instanceof TouchEvent && (e.target as Element)?.closest?.('.meta-panel')) return;
 			if (e instanceof TouchEvent) touchBecameSwipe = true;
+			if (e instanceof TouchEvent && (e.target as Element)?.closest?.('.meta-panel')) return;
 			activeToken = null;
 		};
 		window.addEventListener('scroll', handleScroll, { passive: true });

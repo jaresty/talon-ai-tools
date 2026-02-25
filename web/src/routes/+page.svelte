@@ -195,6 +195,7 @@
 	// Using bind:this keeps the listener isolated to this component instance.
 	let layoutEl = $state<HTMLElement | null>(null);
 	let swipeCompletedAt = 0;
+	let lastScrollNavAt = 0;
 	$effect(() => {
 		if (!layoutEl) return;
 		const absorb = (e: MouseEvent) => {
@@ -204,7 +205,11 @@
 			}
 		};
 		layoutEl.addEventListener('click', absorb, { capture: true });
-		return () => layoutEl?.removeEventListener('click', absorb);
+		layoutEl.addEventListener('wheel', handleWheelNav, { passive: true });
+		return () => {
+			layoutEl?.removeEventListener('click', absorb);
+			layoutEl?.removeEventListener('wheel', handleWheelNav);
+		};
 	});
 
 	function handleTouchStart(e: TouchEvent) {
@@ -252,6 +257,26 @@
 			if (dx < 0) goToNextTab(false);
 			else goToPrevTab(false);
 		}, 250);
+	}
+
+	function handleWheelNav(e: WheelEvent) {
+		// Opt-out via localStorage setting
+		if (localStorage.getItem('bar-scroll-nav-enabled') === 'false') return;
+		// Boundary: if event originated inside an .h-scroll-boundary, don't navigate
+		if ((e.target as Element).closest?.('.h-scroll-boundary')) return;
+		const dx = e.deltaX;
+		const dy = e.deltaY;
+		// Dominant-axis: must be clearly horizontal (1.5x factor) and above minimum displacement
+		if (Math.abs(dx) < 40) return;
+		if (Math.abs(dx) <= Math.abs(dy) * 1.5) return;
+		// Cooldown: prevent momentum scrolling from skipping multiple tabs (400ms)
+		if (Date.now() - lastScrollNavAt < 400) return;
+		lastScrollNavAt = Date.now();
+		if (dx < 0) {
+			goToNextTab(false); // scroll left → advance to next tab
+		} else {
+			goToPrevTab(false); // scroll right → go to previous tab
+		}
 	}
 
 	function clearState() {

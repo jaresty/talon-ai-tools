@@ -1053,7 +1053,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "variants": "変",
         "visual": "絵",
         "walkthrough": "歩",
-        "wardley": "図",
+        "wardley": "鎖",
         "wasinawa": "振",
     },
     "method": {

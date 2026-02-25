@@ -262,3 +262,44 @@ All Cycle 6 recommendations (R14-R16) were confirmed implemented before running:
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-9/evaluations.md`
+
+---
+
+## Cycle 10: Compound Directional Validation + Kanji Audit (Seeds 216–255)
+
+**Date:** 2026-02-25
+**Focus:** R34 investigation (gist/skim + compound directionals), kanji collision sweep, broad health check
+**Seeds:** 216–255 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R34: gist/skim + compound directionals | ✅ Confirmed | Seeds 225 (gist+fip bog = 2) and 230 (skim+dip bog = 2) |
+| R35: wardley/diagram kanji collision | New finding | wardley(form,図) ↔ diagram(channel,図) — cross-axis, CAN appear together |
+| R33 additional evidence | Confirmed | Seeds 232, 236, 241 (technical channel + non-technical audience) |
+| Corpus average | 3.75 | Slight regression (from 3.89); root causes: R34, R33, table+svg conflict |
+
+### Changes Applied
+
+| ID | Action | Applied? |
+|----|--------|----------|
+| R35 | wardley kanji → 鎖 in axisConfig.py, grammar regenerated | ✅ Applied |
+| R34-action | Added "Choosing Directional" heuristic section to help_llm.go | ✅ Applied |
+
+### Positive Patterns Confirmed
+
+- pull + compare + scaffold + teach_junior_dev: excellent pedagogical combination (seed 221, score 5)
+- diff + bias + contextualise + expert-to-expert: nuanced analytical communication (seed 237, score 5)
+- sim + cross + gap + expert persona: excellent cross-cutting gap analysis (seed 235, score 5)
+- diff + deep + systemic + designer_to_pm: deep systemic comparison (seed 252, score 5)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| table+svg form/channel | table form + svg channel: awkward but not broken (seed 228) | Low |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-10/evaluations.md`

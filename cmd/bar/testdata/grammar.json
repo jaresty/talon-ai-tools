@@ -759,7 +759,7 @@
         "variants": "変",
         "visual": "絵",
         "walkthrough": "歩",
-        "wardley": "図",
+        "wardley": "鎖",
         "wasinawa": "振"
       },
       "method": {
@@ -3149,7 +3149,7 @@
     }
   ],
   "checksums": {
-    "axes": "a3c183ce58e4278e88b073d13fca71b80f5a443c2623c19bf79c51d06dd9e8e1",
+    "axes": "05bff7ba4b232d2f58845c4fcd7dbe0955a71e76a4a78af67828ee0a8c35f027",
     "tasks": "bfd0103762cd228a3a12d920f9763d2669a2deb7fdad922e63855688da2fe14d",
     "persona": "119ff50f1dbdf7f8b58301189b3e81f238448406ce22ebc02a08e62c7115a531",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

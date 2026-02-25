@@ -960,6 +960,10 @@ func renderTokenSelectionHeuristics(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- **Structured comparison** → `table`\n")
 	fmt.Fprintf(w, "- **Building understanding** → `scaffold`\n")
 	fmt.Fprintf(w, "- **Decision documentation** → `case`\n\n")
+
+	fmt.Fprintf(w, "### Choosing Directional\n\n")
+	fmt.Fprintf(w, "- **Compound directionals** (fig, bog, fly ong, fly bog, fip bog, dip bog, etc.) span multiple dimensions simultaneously and require space to resolve. Avoid pairing them with `gist` or `skim` completeness — the multi-directional coverage cannot be expressed in a brief summary. Use `full` or `deep` completeness when selecting compound directionals.\n")
+	fmt.Fprintf(w, "- **Primitive directionals** (fog, dig, rog, ong, jog) work at any completeness level.\n\n")
 }
 
 func renderAdvancedFeatures(w io.Writer, compact bool) {

@@ -220,21 +220,34 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 2. ~~Evaluate reframe combinations for quality~~ — done; shellscript+diff, shellscript+sort, adr+pull all derivable from universal rule; score-4 expected for normal subjects
 3. ~~Update `process-feedback.md` open recommendations table~~ — done; R40 and F4 marked done; Phase 4 validation section added
 
-### Phase 5: Metadata migration audit (post-implementation)
+### Phase 5: Metadata migration audit ✅ Done (2026-02-26)
 
-Once `CROSS_AXIS_COMPOSITION` is live and validated, audit existing token metadata for content that should migrate to the new structure:
+Audit result: **no migrations required.** `AXIS_KEY_TO_GUIDANCE` prose and `CROSS_AXIS_COMPOSITION` are complementary, not duplicates — they serve different purposes at different surfaces.
 
-```
-bar build probe full domains split --addendum "Audit token metadata for cross-axis content that belongs in CROSS_AXIS_COMPOSITION rather than per-token prose"
-```
+**Findings per source:**
 
-Evaluate the following sources:
-- `AXIS_KEY_TO_GUIDANCE` prose in `lib/axisConfig.py` — entries like shellscript, code, adr, codetour, gherkin, sync, commit that contain cross-axis avoidance notes (these are the prime migration candidates per R2)
-- `AXIS_KEY_TO_USE_WHEN` entries that contain cross-axis heuristics rather than token-selection guidance
-- `_STATIC_PROMPT_GUIDANCE` and `_STATIC_PROMPT_USE_WHEN` in `lib/staticPromptConfig.py` — task token notes that reference channel or form incompatibilities
-- Static help text in `help_llm.go` — sections that document cross-axis behavior inline rather than rendering from data
+`AXIS_KEY_TO_GUIDANCE` (shellscript, code, adr, codetour, gherkin, sync, commit):
+- Each guidance entry is the human-readable description shown in TUI2 and SPA meta panels. It provides broad usage context, exceptions (form-as-lens rescue for `adr+pull`), and audience considerations.
+- `CROSS_AXIS_COMPOSITION` is the *structured extract* of the same information — covering only the structurally-broken cases derivable from empirical observation (sim, probe), not the universal-rule cases.
+- **Decision: keep guidance prose in place. It is not duplicating `CROSS_AXIS_COMPOSITION`; it is a fuller human-facing narrative of which `CROSS_AXIS_COMPOSITION` is the structured subset.**
 
-For each candidate: determine whether it is (a) pure cross-axis composition data → migrate to `CROSS_AXIS_COMPOSITION`, (b) same-axis guidance → keep in place, or (c) general usage pattern → belongs in `help_llm.go` heuristics sections.
+`AXIS_KEY_TO_GUIDANCE` — additional tokens listed in prose but not in `CROSS_AXIS_COMPOSITION` (e.g., `shellscript` guidance mentions `pick`, `diff`, `sort` as "avoid"; `codetour` mentions `probe`, `diff`, `plan`):
+- These are all derivable from the universal Reference Key rule introduced in Phase 3a — they produce output, just output that the universal rule can generate without explicit guidance.
+- **Decision: do not add to `CROSS_AXIS_COMPOSITION`. Cautionary entries are reserved for combinations that produce poor output even with the universal rule (i.e., structurally narrative tasks like `sim` in an executable channel).**
+
+`AXIS_KEY_TO_USE_WHEN` (channel tokens):
+- Channel use_when entries describe when to select the channel, not cross-axis interactions.
+- **Decision: no migration candidates found.**
+
+`_STATIC_PROMPT_GUIDANCE` / `_STATIC_PROMPT_USE_WHEN` in `staticPromptConfig.py`:
+- Task token notes reference internal task distinctions (`sim` vs `simulation` method, `probe` vs `diagnose` disambiguation). No channel/form incompatibilities found.
+- **Decision: no migration candidates found.**
+
+Static help text in `help_llm.go`:
+- All channel cross-axis guidance is now rendered dynamically from `CROSS_AXIS_COMPOSITION` (Phase 3b). No residual inline cross-axis text found.
+- **Decision: no action needed.**
+
+**R2 residual constraint status:** Closed. The prose and structured data are deliberately complementary. R2 was premature — "prose duplication" was a misdiagnosis; the two are different representations for different audiences (human readers vs. structured rendering).
 
 ---
 

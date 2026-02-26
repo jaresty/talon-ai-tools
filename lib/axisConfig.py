@@ -473,6 +473,9 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "grow for disciplined minimalism. Avoid pairing with sync channel — sync implies practical session brevity; max treating omissions as errors produces unusable session plans.",
         "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that "
         "require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
+        "narrow": "Restricts discussion to a small topic slice. Compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) work with "
+        "narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, prefer "
+        "full or deep completeness so the directional can range freely.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, "
         "dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none.",
     },

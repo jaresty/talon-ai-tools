@@ -495,6 +495,7 @@
       "completeness": {
         "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
         "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer grow for disciplined minimalism. Avoid pairing with sync channel — sync implies practical session brevity; max treating omissions as errors produces unusable session plans.",
+        "narrow": "Restricts discussion to a small topic slice. Compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) work with narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, prefer full or deep completeness so the directional can range freely.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none."
       },
       "form": {
@@ -3393,7 +3394,7 @@
     }
   ],
   "checksums": {
-    "axes": "75cf856336757de167684288f1c70837c23db82a099696c60d1b8cf770c4cdcf",
+    "axes": "cb6a67442574e63b7b3be96fa58f47c7e7a249f86a4d393e096d730e54c29ae9",
     "tasks": "ec5c08235dedcdcb84be0ec3e5521c1e78d4b83fc577ffa5d3560d37792b25e5",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

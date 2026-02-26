@@ -491,3 +491,45 @@ No changes. All R36 hits covered by cycle-11 fix. R37 and R38 are watch items on
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-15/evaluations.md`
+
+---
+
+## Cycle 16: R37 Applied + R36 Recurrence (Seeds 456–495)
+
+**Date:** 2026-02-25
+**Focus:** General health check; R37-watch resolution (3rd data point); spike+gherkin watch
+**Seeds:** 456–495 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36: skim + fip-rog | ✅ Guidance in place | Seed 474 (skim+fip-rog=2); cycle-11 fix covers it |
+| R37: narrow + fig | 3rd data point → fixed | Seed 466 (narrow+fig=3); consistent across seeds 326, 346, 466 |
+| full + sync (R38 boundary) | ✅ Fine | Seed 478 (full+sync=4); fix correctly scoped to max+sync only |
+| R38 generalization: max + spike | New 1-data-point watch | Seed 495 (max+spike=3); spike = time-boxed, max = exhaustive |
+| Corpus average | 3.58 | Within 3.40–3.70 band; 15 sparse seeds + 1 R36 hit |
+
+### Changes Applied
+
+| ID | Action | Applied? |
+|----|--------|----------|
+| R37 | Add `narrow` entry to AXIS_KEY_TO_GUIDANCE["completeness"]: "use with awareness" note for narrow+compound directional combinations | ✅ Applied |
+
+### Positive Patterns Confirmed
+
+- plan + full + motifs + triage + spike + ong: PM research spike with triage; coherent (seed 477, score 4)
+- probe + full + cocreate + gherkin + fip-rog: gherkin+cocreate=form-as-lens (seed 491, score 4)
+- trans + full + explore + variants + presenterm: transformation alternatives as slides (seed 487, score 4)
+- plan + full + origin + case + dip-ong: origin-based case planning (seed 486, score 4)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| spike+gherkin | 1 data point (seed 432 cycle-15, score 3). No new data this cycle | Low |
+| R38-generalization | max + brevity-constrained forms (seed 495 max+spike=3). One data point | Low — watch |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-16/evaluations.md`

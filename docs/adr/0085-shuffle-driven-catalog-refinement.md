@@ -213,6 +213,60 @@ For each shuffled prompt, document:
 - `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
 - `docs/adr/evidence/0085/help-llm-feedback.md` - `bar help llm` documentation gaps and improvements
 
+#### Phase 2d: Process Self-Evaluation
+
+After evaluating skills and reference documentation, evaluate the evaluation process itself. This phase uses the same `gap` method — surfacing where the process implicitly assumes things are correct or complete that may not be.
+
+**Bar command:**
+```bash
+bar build probe full domains gap \
+  --addendum "Evaluate the ADR-0085 evaluation process itself: what does the process implicitly treat as settled that may not be? Consider: sampling strategy, release pipeline, fix closure rate, score calibration, meta-analysis cadence, blind spots in rapid evaluation."
+```
+
+**Questions to answer:**
+
+| Criterion | Question |
+|-----------|----------|
+| **Sampling adequacy** | Did seed selection cover cross-axis edge cases, or only within-axis patterns? Are grammar gap patterns (channel+task, form+completeness) deliberately sampled? |
+| **Release pipeline** | Are dev-repo guidance fixes visible in the installed binary? Is there a release lag between `make bar-grammar-update` and what users actually see? |
+| **Fix closure rate** | Of recommendations from prior cycles, how many were implemented? How many remain open? Is the backlog growing faster than it's being resolved? |
+| **Score calibration** | Were skill alignment and reference utility scores calibrated, or single-evaluator estimates? Are the 1–5 rubric boundaries consistently applied? |
+| **Meta-analysis cadence** | How many rapid evaluation cycles since the last meta-analysis? Was deferral appropriate, or did documentation gaps compound undetected? |
+| **Rapid evaluation blind spots** | Does the scoring methodology surface score-3 cases with the same rigor as score-2? Are "sparse" score-3 combos tracked for patterns, or dismissed as noise? |
+| **Feedback loop closure** | After a fix is applied and released, are the original evidence seeds re-tested against the installed binary? Is there a post-release validation step? |
+
+**Scoring rubric:**
+
+- **5 - Tight process**: No implicit assumptions found; process is fully self-consistent
+- **4 - Minor gaps**: One or two assumptions that are unlikely to cause real problems
+- **3 - Meaningful gaps**: Gaps that have already caused observable drift (deferred phases, untracked release lag)
+- **2 - Structural gaps**: The process has systematic blind spots that will produce wrong conclusions
+- **1 - Broken**: Process cannot reliably detect the problems it was designed to find
+
+**Feedback capture:**
+
+```markdown
+### Process Self-Evaluation
+
+**Process health score:** {1-5}
+
+**Gaps identified:**
+- [ ] Sampling: {describe gap in seed selection strategy}
+- [ ] Release pipeline: {describe lag or missing verification}
+- [ ] Fix closure: {list open recommendations from prior cycles}
+- [ ] Calibration: {single-evaluator estimates; no calibration run}
+- [ ] Cadence: {N cycles deferred; gaps compounded}
+- [ ] Blind spots: {describe systematic omissions in rapid evaluation}
+- [ ] Feedback loop: {post-release validation missing or incomplete}
+
+**Recommendations for process:**
+- Add {step} to the refinement cycle to address {gap}
+- Change {cadence/threshold} from {current} to {proposed} because {reason}
+```
+
+**Output artifact:**
+- `docs/adr/evidence/0085/process-feedback.md` - Process health findings and improvement recommendations
+
 ### Phase 3: Recommendation
 
 Based on evaluation, categorize findings into actions:
@@ -417,9 +471,10 @@ The refinement cycle produces:
 3. **Skill feedback**: `docs/adr/evidence/0085/skill-feedback.md` - Aggregated improvements for bar skills
 4. **Help LLM feedback**: `docs/adr/evidence/0085/help-llm-feedback.md` - `bar help llm` documentation gaps
 5. **Catalog feedback**: `docs/adr/evidence/0085/catalog-feedback.md` - Catalog issues discovered via skill validation
-6. **Category feedback**: `docs/adr/evidence/0085/category-feedback.md` - Method tokens miscategorized; category label clarity issues; mismatches between `AXIS_KEY_TO_CATEGORY` and skill heuristics
-7. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
-8. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
+6. **Process feedback**: `docs/adr/evidence/0085/process-feedback.md` - Evaluation process health findings and improvement recommendations (Phase 2d)
+7. **Category feedback**: `docs/adr/evidence/0085/category-feedback.md` - Method tokens miscategorized; category label clarity issues; mismatches between `AXIS_KEY_TO_CATEGORY` and skill heuristics
+8. **Changelog draft**: Proposed edits to `lib/promptConfig.py` and related files
+9. **Grammar regeneration**: Updated `prompt_grammar.json` after changes
 
 ---
 
@@ -432,9 +487,10 @@ Run this process periodically or when catalog drift is suspected:
 1. **Calibrate**: Run calibration check with multiple evaluators to establish scoring consistency
 2. **Generate**: Create 50+ shuffled prompts across sampling strategies
 3. **Evaluate**: Score each against prompt key rubric, capture notes, record LLM execution outcome
-4. **Meta-Evaluate Skills**: Score each against bar skills, identify skill gaps and catalog issues
-5. **Meta-Evaluate Reference**: Score `bar help llm` utility for each prompt, identify documentation gaps
-6. **Aggregate**: Group low-scoring tokens, identify patterns, collect feedback for skills/catalog/help
+4. **Meta-Evaluate Skills**: Score each against bar skills, identify skill gaps and catalog issues (Phase 2b)
+5. **Meta-Evaluate Reference**: Score `bar help llm` utility for each prompt, identify documentation gaps (Phase 2c)
+5a. **Meta-Evaluate Process**: Run `probe full domains gap` on the process itself — sampling adequacy, release pipeline, fix closure rate, score calibration, cadence, blind spots (Phase 2d); capture in `process-feedback.md`
+6. **Aggregate**: Group low-scoring tokens, identify patterns, collect feedback for skills/catalog/help/process
 7. **Recommend**: Produce actionable list with evidence for catalog, skills, and help documentation
 8. **Cross-Validate**: If ADR-0113 (task-driven) has been run, correlate findings between processes
 9. **Process Health Check**: Run `probe gap` on the aggregated findings to surface implicit assumptions in the evaluation cycle itself before review

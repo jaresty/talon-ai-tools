@@ -135,9 +135,9 @@ The "Choosing Method" section doesn't warn that `simulation` (method) is distinc
 
 ## Recommendations for Skills
 
-| Priority | Recommendation | Affected skill | Section |
-|----------|---------------|----------------|---------|
-| High | Add "Choosing Channel" section to bar help llm | bar-autopilot, bar-workflow | Token Selection Heuristics |
-| Medium | Document form-as-lens rescue path in Precedence Examples | bar-autopilot | Composition Rules |
-| Medium | Clarify `simulation` (method) vs `sim` (task) in method selection | bar-autopilot, bar-workflow | Choosing Method |
-| Low | Add skim+rigor cross-axis tension note | bar-autopilot | Choosing Completeness |
+| Priority | Recommendation | Affected skill | Section | Status |
+|----------|---------------|----------------|---------|--------|
+| High | Add "Choosing Channel" section to bar help llm | bar-autopilot, bar-workflow | Token Selection Heuristics | Superseded by ADR-0147 Part C |
+| Medium | Document form-as-lens rescue path in Precedence Examples | bar-autopilot | Composition Rules | ✅ Done (2026-02-25) |
+| Medium | Clarify `simulation` (method) vs `sim` (task) in method selection | bar-autopilot, bar-workflow | Choosing Method | ✅ Done (2026-02-25) — in token Notes |
+| Low | Add skim+rigor cross-axis tension note | bar-autopilot | Choosing Completeness | ✅ Done (2026-02-25) — in skim guidance |

@@ -111,5 +111,5 @@ tokens, exceeding scope/method/directional capacity limits).
 |----------|-------|-------|----------------|
 | High | `skim` | Installed binary has incomplete compound directional list; dev grammar already correct | Release lag only — needs bar release (no code change required) |
 | Medium | `narrow` | Guidance in dev grammar but not in installed binary | Release lag only — needs bar release (no code change required) |
-| Medium | `adr` | "Avoid with pull" doesn't explain form-as-lens rescue | Add conditional exception |
+| Medium | `adr` | "Avoid with pull" doesn't explain form-as-lens rescue | ✅ Done (2026-02-25) |
 | Medium | (grammar) | "Grammar-enforced restrictions" section is empty | Add honest statement about advisory-only restrictions |

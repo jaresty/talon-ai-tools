@@ -207,12 +207,12 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 2. ~~Extend Precedence bullet: replace specification-artifact-only statement with universal rule covering all channels~~ — done; covers executable, specification, and delivery channels
 3. ~~`make bar-grammar-update` to regenerate; verify rule appears in `bar build` output~~ — done
 
-### Phase 3b: `help_llm` Choosing Channel (`help_llm.go`)
+### Phase 3b: `help_llm` Choosing Channel (`help_llm.go`) ✅ Done
 
-1. Add `renderCrossAxisComposition(w, grammar)` in `help_llm.go`
-2. Renders "Choosing Channel" section from `natural` + `cautionary` data per channel
-3. Wire into `renderTokenSelectionHeuristics`
-4. Fix `TestLLMHelpHeuristicsTokensExist`: persona audience tokens (e.g. `to-programmer`) are not in `grammar.Axes.Definitions` — either exclude them from rendered backtick tokens or extend the test's known-token set to include persona tokens
+1. ~~Add `renderCrossAxisComposition(w, grammar)` in `help_llm.go`~~ — done
+2. ~~Renders "Choosing Channel" section from `natural` + `cautionary` data per channel~~ — done
+3. ~~Wire into `renderTokenSelectionHeuristics`~~ — done; call at end after Choosing Directional
+4. ~~Fix `TestLLMHelpHeuristicsTokensExist`~~ — done; audience tokens use `audience=token` form (contains `=`, skipped by test)
 
 ### Phase 4: ADR-0085 validation
 

@@ -2,6 +2,68 @@
 
 ---
 
+## Loop 4 — 2026-02-26 | Phase 3b: renderCrossAxisComposition in help_llm.go
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0147 Phase 3b — add renderCrossAxisComposition(w, grammar) to help_llm.go; fix CrossAxisPair.Reframe→Cautionary in grammar.go; wire into renderTokenSelectionHeuristics
+
+active_constraint: >
+  bar help llm does not render a "Choosing Channel" section; CROSS_AXIS_COMPOSITION data is loaded
+  in grammar but not surfaced to LLM users. Additionally CrossAxisPair.Reframe JSON tag was "reframe"
+  (old name) but grammar JSON now uses "cautionary" key — cautionary data silently missing at runtime.
+  Validated by: /tmp/bar-new help llm | grep "Choosing Channel" → exit 1 (not found)
+
+validation_targets:
+  - go build -o /tmp/bar-new ./cmd/bar/main.go && /tmp/bar-new help llm | grep -c "Choosing Channel"  # must be ≥1
+  - go test ./...  # must pass (0 failures); TestLLMHelpHeuristicsTokensExist must pass
+
+evidence:
+  - red    | 2026-02-26 | exit 1 | /tmp/bar-new help llm | grep "Choosing Channel" → not found | inline
+  - green  | 2026-02-26 | exit 0 | help llm now contains Choosing Channel section with natural+cautionary per channel token | inline
+  - green  | 2026-02-26 | exit 0 | go test ./... 0 failures; TestLLMHelpHeuristicsTokensExist passes | inline
+  - removal | 2026-02-26 | exit 1 | git stash && go build; grep "Choosing Channel" → not found; git stash pop | inline
+
+rollback_plan: git restore --source=HEAD internal/barcli/grammar.go internal/barcli/help_llm.go
+
+delta_summary: |
+  helper:diff-snapshot — 2 files changed, 91 insertions(+), 5 deletions(-)
+  internal/barcli/grammar.go: CrossAxisPair.Reframe→Cautionary (json:"reframe"→json:"cautionary");
+    updated struct comment and accessor comment
+  internal/barcli/help_llm.go: added renderCrossAxisComposition(w, grammar) — iterates over
+    grammar.Axes.CrossAxisComposition in stable order (channel before form, tokens sorted alpha),
+    renders natural lists and cautionary bullets per token; audience tokens use audience=token form
+    to pass TestLLMHelpHeuristicsTokensExist; form tokens labeled with "(form)" qualifier not
+    in backticks; wired call at end of renderTokenSelectionHeuristics
+  Bug fixed: CrossAxisPair.Reframe used json:"reframe" but Python pivot renamed key to "cautionary" —
+    cautionary data was loaded as nil silently; now correctly reads cautionary warnings
+
+loops_remaining_forecast: 1 loop (Phase 4 ADR-0085 validation); medium confidence
+
+residual_constraints:
+  - id: R2-prose-duplication
+    description: AXIS_KEY_TO_GUIDANCE prose still contains cross-axis notes overlapping CROSS_AXIS_COMPOSITION
+    severity: Low
+    mitigation: Deferred to Phase 5 audit
+    monitoring_trigger: Phase 5 bar split audit
+  - id: R3-coverage-incomplete
+    description: Many channel+task pairs not yet listed; unlisted pairs fall back to universal rule
+    severity: Low
+    mitigation: ADR-0085 shuffle cycles additive
+    monitoring_trigger: Next meta-analysis
+  - id: R4-reframe-quality-empirical
+    description: Universal rule quality for shellscript+sim, code+sim empirically unknown
+    severity: Medium
+    mitigation: Phase 4 ADR-0085 validation (seeds 531, 560, 588, 615)
+    monitoring_trigger: Phase 4 shuffle re-run
+
+next_work:
+  - Behaviour: Phase 4 — ADR-0085 validation; re-run seeds 531, 560, 588, 615; evaluate score improvement
+    validation: bar build shellscript sim --subject "..." (seed 531) | score manually; update process-feedback.md
+```
+
+---
+
 ## Loop 3 — 2026-02-26 | Phase 3a: Reference Key universal rule (metaPromptConfig.py)
 
 ```yaml

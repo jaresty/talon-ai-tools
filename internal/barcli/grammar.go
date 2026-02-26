@@ -48,13 +48,13 @@ type AxisSection struct {
 	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
 	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
 	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
-	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,reframe}
+	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
 }
 
-// CrossAxisPair holds the natural/reframe composition data for one axis_a+token_a+axis_b triple (ADR-0147).
+// CrossAxisPair holds the natural/cautionary composition data for one axis_a+token_a+axis_b triple (ADR-0147).
 type CrossAxisPair struct {
-	Natural []string          `json:"natural"`
-	Reframe map[string]string `json:"reframe"`
+	Natural   []string          `json:"natural"`
+	Cautionary map[string]string `json:"cautionary"`
 }
 
 type StaticSection struct {
@@ -1022,7 +1022,7 @@ func (g *Grammar) AxisRoutingConcept(axis, token string) string {
 
 // CrossAxisCompositionFor returns the cross-axis composition entry for a given axis+token pair (ADR-0147).
 // Returns nil if no entry is defined. The returned map is keyed by partner axis, each value being
-// a CrossAxisPair{Natural: [...], Reframe: {token: description}}.
+// a CrossAxisPair{Natural: [...], Cautionary: {token: description}}.
 func (g *Grammar) CrossAxisCompositionFor(axis, token string) map[string]CrossAxisPair {
 	if g.Axes.CrossAxisComposition == nil {
 		return nil

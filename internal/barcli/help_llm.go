@@ -1000,6 +1000,92 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	fmt.Fprintf(w, "### Choosing Directional\n\n")
 	fmt.Fprintf(w, "- **Compound directionals** (fig, bog, fly ong, fly bog, fip bog, dip bog, etc.) span multiple dimensions simultaneously and require space to resolve. Avoid pairing them with `gist` or `skim` completeness — the multi-directional coverage cannot be expressed in a brief summary. Use `full` or `deep` completeness when selecting compound directionals.\n")
 	fmt.Fprintf(w, "- **Primitive directionals** (fog, dig, rog, ong, jog) work at any completeness level.\n\n")
+
+	renderCrossAxisComposition(w, grammar)
+}
+
+// renderCrossAxisComposition renders the "Choosing Channel" section from CROSS_AXIS_COMPOSITION
+// data (ADR-0147). Lists natural combinations per channel/form token, then cautionary warnings.
+// Audience tokens use audience=token form so TestLLMHelpHeuristicsTokensExist skips them
+// (persona tokens are not in grammar.Axes.Definitions).
+func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
+	cac := grammar.Axes.CrossAxisComposition
+	if len(cac) == 0 {
+		return
+	}
+
+	fmt.Fprintf(w, "### Choosing Channel\n\n")
+
+	for _, axisA := range []string{"channel", "form"} {
+		byToken, ok := cac[axisA]
+		if !ok {
+			continue
+		}
+		tokens := make([]string, 0, len(byToken))
+		for tok := range byToken {
+			tokens = append(tokens, tok)
+		}
+		sort.Strings(tokens)
+
+		for _, tokenA := range tokens {
+			pairsByAxisB := byToken[tokenA]
+
+			var naturalParts []string
+			for _, axisB := range []string{"task", "completeness", "audience"} {
+				pair, ok := pairsByAxisB[axisB]
+				if !ok || len(pair.Natural) == 0 {
+					continue
+				}
+				var backticks []string
+				for _, n := range pair.Natural {
+					if axisB == "audience" {
+						backticks = append(backticks, fmt.Sprintf("`audience=%s`", n))
+					} else {
+						backticks = append(backticks, fmt.Sprintf("`%s`", n))
+					}
+				}
+				naturalParts = append(naturalParts, fmt.Sprintf("%s: %s", axisB, strings.Join(backticks, ", ")))
+			}
+
+			var cautionaryLines []string
+			for _, axisB := range []string{"task", "completeness", "audience"} {
+				pair, ok := pairsByAxisB[axisB]
+				if !ok || len(pair.Cautionary) == 0 {
+					continue
+				}
+				keys := make([]string, 0, len(pair.Cautionary))
+				for k := range pair.Cautionary {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+				for _, tok := range keys {
+					warning := pair.Cautionary[tok]
+					if axisB == "audience" {
+						cautionaryLines = append(cautionaryLines, fmt.Sprintf("  - `audience=%s` — %s", tok, warning))
+					} else {
+						cautionaryLines = append(cautionaryLines, fmt.Sprintf("  - `%s` — %s", tok, warning))
+					}
+				}
+			}
+
+			if len(naturalParts) == 0 && len(cautionaryLines) == 0 {
+				continue
+			}
+
+			qualifier := ""
+			if axisA == "form" {
+				qualifier = " (form)"
+			}
+			fmt.Fprintf(w, "**`%s`**%s: natural: %s\n", tokenA, qualifier, strings.Join(naturalParts, "; "))
+			if len(cautionaryLines) > 0 {
+				fmt.Fprintf(w, "- Cautionary:\n")
+				for _, line := range cautionaryLines {
+					fmt.Fprintf(w, "%s\n", line)
+				}
+			}
+			fmt.Fprintf(w, "\n")
+		}
+	}
 }
 
 func renderAdvancedFeatures(w io.Writer, compact bool) {

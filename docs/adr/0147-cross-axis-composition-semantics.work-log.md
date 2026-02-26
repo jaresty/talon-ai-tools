@@ -2,6 +2,65 @@
 
 ---
 
+## Loop 5 — 2026-02-26 | Phase 4: ADR-0085 validation
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0147 Phase 4 — validate that universal Reference Key rule provides sufficient guidance for previously-undocumented channel+task combinations; update process-feedback.md
+
+active_constraint: >
+  process-feedback.md open recommendations table has R40 (shellscript cross-axis) and F4
+  (Choosing Channel section) still marked open; ADR-0085 Phase 4 seeds 531/560/615 not
+  re-evaluated against updated grammar.
+  Validated by: process-feedback.md R40 status === open; F4 status === open
+
+validation_targets:
+  - bar build diff shellscript --subject x | grep -c "task becomes"  # must be ≥1
+  - bar build pull adr --subject x | grep -c "task becomes"  # must be ≥1
+  - grep "R40.*Done\|F4.*Done" docs/adr/evidence/0085/process-feedback.md  # must match
+
+evidence:
+  - red    | 2026-02-26 | exit 1 | grep "R40.*Done" docs/adr/evidence/0085/process-feedback.md → not found | inline
+  - green  | 2026-02-26 | exit 0 | /tmp/bar-new build diff shellscript --subject x | grep -c "task becomes" → 2 (appears in both Channel bullet and Precedence bullet) | inline
+  - green  | 2026-02-26 | exit 0 | /tmp/bar-new build pull adr --subject x | grep -c "task becomes" → 2 | inline
+  - green  | 2026-02-26 | exit 0 | process-feedback.md R40 and F4 marked ✅ Done; Phase 4 Validation section added | inline
+  - removal | 2026-02-26 | exit 1 | git stash → grep check fails; git stash pop | inline
+
+rollback_plan: git restore --source=HEAD docs/adr/evidence/0085/process-feedback.md docs/adr/0147-cross-axis-composition-semantics.md
+
+delta_summary: |
+  helper:diff-snapshot — 3 files changed (process-feedback.md, ADR-0147, work-log)
+  docs/adr/evidence/0085/process-feedback.md: R40 + F4 marked Done; ADR-0147 Phase 4
+    Validation section added with seed re-run results and reframe combination assessment
+  docs/adr/0147-cross-axis-composition-semantics.md: Phase 4 marked Done; status Proposed→Accepted
+  docs/adr/0147-cross-axis-composition-semantics.work-log.md: Loop 5 appended
+
+loops_remaining_forecast: 0 loops — all phases complete; Phase 5 metadata audit deferred per ADR
+
+residual_constraints:
+  - id: R2-prose-duplication
+    description: AXIS_KEY_TO_GUIDANCE prose still contains cross-axis notes overlapping CROSS_AXIS_COMPOSITION
+    severity: Low
+    mitigation: Phase 5 bar split audit (deliberately deferred)
+    monitoring_trigger: Next major grammar audit cycle
+  - id: R3-coverage-incomplete
+    description: Many channel+task pairs not yet listed; unlisted fall back to universal rule
+    severity: Low
+    mitigation: ADR-0085 shuffle cycles additive; no action needed
+    monitoring_trigger: Next ADR-0085 meta-analysis
+  - id: R4-reframe-quality-empirical
+    description: Runtime quality for sim+shellscript structurally poor even with universal rule; cautionary warning is pre-selection only
+    severity: Medium
+    mitigation: Cautionary entry in bar help llm discourages combination at selection time; universal rule provides best-effort guidance at execution time
+    monitoring_trigger: ADR-0085 next shuffle cycle; watch for repeated sim+shellscript score-2
+
+next_work:
+  - Behaviour: Phase 5 (deferred) — metadata migration audit; bar split to evaluate token metadata migration candidates
+    validation: bar build probe full domains split --addendum "Audit token metadata for cross-axis content" → manual review
+```
+
+---
+
 ## Loop 4 — 2026-02-26 | Phase 3b: renderCrossAxisComposition in help_llm.go
 
 ```yaml

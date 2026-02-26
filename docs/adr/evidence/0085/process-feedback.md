@@ -101,13 +101,39 @@ They are complementary, not redundant. Step 9 is a pre-review gate for each reco
 | ID | Description | Status | Blocker |
 |----|-------------|--------|---------|
 | R37 | narrow+compound dir guidance note | Dev applied (cycle 16); not in installed binary | Needs bar release |
-| R40 | shellscript cross-axis incompatibilities | Documentation correct; grammar unenforced | ADR-0147 |
+| R40 | shellscript cross-axis incompatibilities | ✅ Done (2026-02-26) — CROSS_AXIS_COMPOSITION cautionary data + Choosing Channel section + universal Reference Key rule | ADR-0147 complete |
 | R41 | Cross-axis grammar hardening schema | Superseded by ADR-0147 | ADR-0147 implementation |
 | F2 | Release narrow guidance (bar release) | Open — dev correct, installed binary outdated | Bar release required |
 | F3 | Fix skim Composition Rules note | Open — dev already correct (full list), installed binary outdated | Bar release required |
-| F4 | Add "Choosing Channel" section to help_llm.go | Superseded by ADR-0147 Part C | ADR-0147 Phase 3 |
+| F4 | Add "Choosing Channel" section to help_llm.go | ✅ Done (2026-02-26) — ADR-0147 Phase 3b; renderCrossAxisComposition renders natural+cautionary per channel token | Deployed via help_llm.go |
 | F5 | Fill "Grammar-enforced restrictions" section | ✅ Done (2026-02-25) | Deployed via help_llm.go fix |
 | spike-task-tension | spike+gherkin, spike+sim — 2 data points | Watching | 3rd data point needed |
+
+---
+
+## ADR-0147 Phase 4 Validation (2026-02-26)
+
+**Validation method:** Build score-2 seed combinations against updated dev grammar; verify universal rule present in prompt output; assess analytically whether first-principles guidance is sufficient.
+
+### Seeds re-run
+
+| Seed | Tokens | Pre-ADR-0147 issue | Post-ADR-0147 assessment |
+|------|--------|-------------------|--------------------------|
+| 531 | `probe minimal shellscript executive_brief` | LLM had no guidance for probe+shellscript | Universal rule: "what would it mean to produce probe task's output through shellscript?" → diagnostic shell script. Cautionary (probe→shellscript) now in bar help llm. Audience mismatch (to-CEO) still a runtime concern; cautionary in bar help llm. |
+| 560 | `sim full shellscript fip-rog teach_junior_dev` | LLM had no guidance for sim+shellscript | Universal rule present. Cautionary (sim→shellscript: inherently narrative) now in bar help llm; LLM may still produce thin output for sim at runtime — structurally the weakest combination. |
+| 615 | `probe max robust commit peer_engineer` | commit+max had no guidance | Cautionary (max→commit: no room for depth) now in bar help llm. Universal rule: "probe task output through commit format" = commit-formatted investigation notes. Commit form brevity constraint documented. |
+| 588 | Not found in documented cycles | — | Not evaluated — may be from an undocumented cycle. |
+
+### Reframe combinations (positive cases now handled by universal rule)
+
+| Combination | Original reframe entry (removed) | Universal rule derivation | Assessment |
+|-------------|----------------------------------|--------------------------|-----------|
+| `shellscript+diff` | "shell script that diffs or compares" | Channel wins; task=diff becomes lens: produce a shell script that diffs the subject | ✓ derivable; score-4 expected for code subjects |
+| `shellscript+sort` | "shell script that filters or orders" | Channel wins; task=sort becomes lens: produce a shell script that sorts the items | ✓ derivable; score-4 expected |
+| `adr+pull` | "ADR capturing what was extracted" | Channel wins; task=pull becomes lens: express extraction in ADR format | ✓ derivable; score-4 expected |
+| `gherkin+sim` | none (cautionary in bar help llm) | Channel wins; task=sim becomes lens: Gherkin scenarios expressing the scenario outcomes | ✓ structurally valid; quality depends on subject |
+
+**Overall assessment:** Universal Reference Key rule (Phase 3a) provides first-principles guidance for previously-undocumented positive combinations. Cautionary entries in bar help llm (Phase 3b) provide pre-selection warnings for structurally-broken combinations. The two-tier approach (execution-time universal rule + pre-selection cautionary) meets the ADR-0147 design intent.
 
 ---
 

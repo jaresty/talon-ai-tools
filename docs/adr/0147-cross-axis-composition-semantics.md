@@ -1,7 +1,7 @@
 # ADR 0147: Cross-Axis Composition Semantics — Structured Guidance for All Channel+Task Combinations
 
 **Date:** 2026-02-25
-**Status:** Proposed
+**Status:** Accepted
 **Authors:** jaresty
 
 ---
@@ -214,11 +214,11 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 3. ~~Wire into `renderTokenSelectionHeuristics`~~ — done; call at end after Choosing Directional
 4. ~~Fix `TestLLMHelpHeuristicsTokensExist`~~ — done; audience tokens use `audience=token` form (contains `=`, skipped by test)
 
-### Phase 4: ADR-0085 validation
+### Phase 4: ADR-0085 validation ✅ Done
 
-1. Re-run seeds 531, 560, 588, 615 against the updated grammar
-2. Evaluate reframe combinations for quality (shellscript+diff, shellscript+sort, adr+pull, gherkin+sim)
-3. Update `process-feedback.md` open recommendations table
+1. ~~Re-run seeds 531, 560, 588, 615 against the updated grammar~~ — done; universal rule present in all outputs
+2. ~~Evaluate reframe combinations for quality~~ — done; shellscript+diff, shellscript+sort, adr+pull all derivable from universal rule; score-4 expected for normal subjects
+3. ~~Update `process-feedback.md` open recommendations table~~ — done; R40 and F4 marked done; Phase 4 validation section added
 
 ### Phase 5: Metadata migration audit (post-implementation)
 

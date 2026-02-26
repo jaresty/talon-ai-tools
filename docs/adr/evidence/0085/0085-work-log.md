@@ -341,3 +341,41 @@ All Cycle 6 recommendations (R14-R16) were confirmed implemented before running:
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-11/evaluations.md`
+
+---
+
+## Cycle 12: R36 Validation + Broad Health Check (Seeds 296–335)
+
+**Date:** 2026-02-25
+**Focus:** Validate cycle-11 R36 fix (gist + compound directionals), broad health check
+**Seeds:** 296–335 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36 validation: gist + fip-ong | ✅ Confirmed | Seed 318 (gist+fip-ong = 2); cycle-11 fix correctly motivated |
+| minimal + compound dirs | ✅ Fine | Seeds 325 (minimal+fip-ong), 333 (minimal+fip-bog) both score 4 |
+| narrow + fig mild tension | New watch | Seed 326 (narrow+fig = 3); low priority |
+| Corpus average | 3.60 | Regression from 3.73; 14 sparse/minimal seeds + seed 318 |
+
+### Changes Applied
+
+No changes — R36 already applied in cycle 11. Cycle 12 is validation-only.
+
+### Positive Patterns Confirmed
+
+- sim + assume + meld + socratic + teach: collaborative educational simulation (seed 313, score 4)
+- pick + full + converge + questions: convergent decision via questioning (seed 299, score 4)
+- show + deep + quiz + presenterm: deep persuasive quiz presentation (seed 324, score 4)
+- check + max + struct + indirect + dip-ong: exhaustive indirect structural check (seed 331, score 4)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R37-watch | narrow completeness + fig directional tension (seed 326, score 3) | Low — monitor |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-12/evaluations.md`

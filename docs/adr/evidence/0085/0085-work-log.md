@@ -533,3 +533,42 @@ No changes. All R36 hits covered by cycle-11 fix. R37 and R38 are watch items on
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-16/evaluations.md`
+
+---
+
+## Cycle 17: R36 Recurrence + shellscript/CEO Gap Watch (Seeds 496–535)
+
+**Date:** 2026-02-25
+**Focus:** General health check; R37/R38 precision validation; shellscript+CEO incompatibility
+**Seeds:** 496–535 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36: skim + dip-rog | ✅ Guidance in place | Seed 533 (skim+dip-rog=2); cycle-11 fix covers it |
+| shellscript + executive_brief(to-CEO) | Score 2 | Seed 531; documentation covers it (shellscript notes list to-CEO in avoid list); grammar doesn't enforce |
+| R37 precision: narrow+channel/simple-dir | ✅ Validated | Seeds 496, 525, 526 (narrow+non-compound=4); note correctly scoped |
+| R38 boundary: full+sync; max+presenterm | ✅ Validated | Seeds 500, 535 both score 4; R38 correctly scoped to max+sync |
+| Corpus average | 3.53 | Within expected band; 2 score-2 seeds; 15 sparse |
+
+### Changes Applied
+
+No changes — all score-2 seeds covered by existing documentation.
+
+### Positive Patterns Confirmed
+
+- probe + deep + tight + fip-rog + peer_engineer: dense multi-directional probe (seed 504, score 4)
+- probe + deep + fail + adr: failure mode ADR as form-as-lens (seed 506, score 4)
+- check + deep + fail + grove + rog: compounding failure check (seed 518, score 4)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R40-watch | shellscript + non-technical audience (to-CEO via executive_brief preset) — documentation correct; grammar gap | Low — 1 data point |
+| spike-task-tension | spike+sim (524) and spike+gherkin (432) both score 3: spike composes awkwardly with execution-oriented tasks | Low — 2 data points |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-17/evaluations.md`

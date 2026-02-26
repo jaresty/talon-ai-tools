@@ -466,6 +466,25 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		expect(screen.queryByText('Flowing narrative text.')).toBeNull();
 	});
 
+	it('touchBecameSwipe resets on pointerdown in non-grouped mode (filter path)', async () => {
+		// Bug: non-grouped rendering path was missing touchBecameSwipe = false on pointerdown.
+		// This caused: scroll → touchBecameSwipe=true → tap chip → click suppressed → panel doesn't open.
+		const onToggle = vi.fn();
+		renderSelector({ onToggle, selected: [] });
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+
+		// Simulate: user scrolls the page (touchmove sets touchBecameSwipe)
+		await fireEvent.touchMove(window);
+		// Now touch and tap on a chip - should work
+		await fireEvent.pointerDown(chip, { pointerType: 'touch' });
+		await fireEvent.click(chip);
+
+		// Panel should open (not suppressed)
+		expect(screen.getByText('When to use')).toBeTruthy();
+		// Should NOT have selected on first tap
+		expect(onToggle).not.toHaveBeenCalled();
+	});
+
 	it('keyboard focus still opens panel after a prior click sequence', async () => {
 		// wasJustClicked is cleared in onfocus so the next keyboard focus works normally
 		renderSelector();

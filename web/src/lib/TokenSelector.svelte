@@ -342,6 +342,7 @@
 						isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
 						activeAtPointerDown = activeToken;
 						wasJustClicked = true;
+						touchBecameSwipe = false;
 					}}
 					onclick={() => handleChipClick(meta, atCap)}
 					onkeydown={(e) => {

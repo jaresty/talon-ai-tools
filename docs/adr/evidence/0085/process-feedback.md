@@ -101,12 +101,12 @@ They are complementary, not redundant. Step 9 is a pre-review gate for each reco
 | ID | Description | Status | Blocker |
 |----|-------------|--------|---------|
 | R37 | narrow+compound dir guidance note | Dev applied (cycle 16); not in installed binary | Needs bar release |
-| R40 | shellscript cross-axis incompatibilities | Documentation correct; grammar unenforced | R41 grammar hardening |
-| R41 | Cross-axis grammar hardening schema | Deferred | Design session needed |
-| F2 | Release narrow guidance (bar release) | Open | Bar release required |
-| F3 | Fix skim Composition Rules note (incomplete list) | Open | axisConfig.py edit + release |
-| F4 | Add "Choosing Channel" section to help_llm.go | Open | help_llm.go edit + release |
-| F5 | Fill "Grammar-enforced restrictions" section | Open | help_llm.go edit + release |
+| R40 | shellscript cross-axis incompatibilities | Documentation correct; grammar unenforced | ADR-0147 |
+| R41 | Cross-axis grammar hardening schema | Superseded by ADR-0147 | ADR-0147 implementation |
+| F2 | Release narrow guidance (bar release) | Open — dev correct, installed binary outdated | Bar release required |
+| F3 | Fix skim Composition Rules note | Open — dev already correct (full list), installed binary outdated | Bar release required |
+| F4 | Add "Choosing Channel" section to help_llm.go | Superseded by ADR-0147 Part C | ADR-0147 Phase 3 |
+| F5 | Fill "Grammar-enforced restrictions" section | ✅ Done (2026-02-25) | Deployed via help_llm.go fix |
 | spike-task-tension | spike+gherkin, spike+sim — 2 data points | Watching | 3rd data point needed |
 
 ---

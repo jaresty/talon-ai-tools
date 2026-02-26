@@ -836,8 +836,20 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 
 	fmt.Fprintf(w, "\n")
 
-	if len(grammar.Hierarchy.AxisIncompatibilities) > 0 {
-		fmt.Fprintf(w, "**Grammar-enforced restrictions:**\n")
+	fmt.Fprintf(w, "**Grammar-enforced restrictions:**\n")
+	hasEnforced := false
+	for _, conflicts := range grammar.Hierarchy.AxisIncompatibilities {
+		for _, tokens := range conflicts {
+			if len(tokens) > 0 {
+				hasEnforced = true
+				break
+			}
+		}
+		if hasEnforced {
+			break
+		}
+	}
+	if hasEnforced {
 		for axis1, conflicts := range grammar.Hierarchy.AxisIncompatibilities {
 			for axis2, tokens := range conflicts {
 				for _, token := range tokens {
@@ -845,8 +857,13 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 				}
 			}
 		}
-		fmt.Fprintf(w, "\n")
+	} else {
+		fmt.Fprintf(w, "None currently. All documented incompatibilities (channel+task, form+completeness, " +
+			"channel+audience) are advisory only — the grammar permits them but guidance notes in " +
+			"\"Guidance for specific tokens\" above apply. Grammar restrictions enforce only axis " +
+			"capacity limits (one channel, one directional, etc.).\n")
 	}
+	fmt.Fprintf(w, "\n")
 }
 
 // renderUsagePatterns generates hardcoded usage pattern examples.

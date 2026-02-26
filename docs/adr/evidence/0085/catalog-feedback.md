@@ -98,7 +98,7 @@ tokens, exceeding scope/method/directional capacity limits).
 |-----|-----------------|--------------------|-----------------------------|---------------|
 | R37 narrow guidance | 16 | ✅ Yes | ❌ No | Needs bar release |
 | R36 gist note | 11 | ✅ Yes | ✅ Yes (predates cycles 16–19) | None |
-| R36 skim note | 11 | ✅ Yes | ✅ Yes (partial — list incomplete) | Fix list → release |
+| R36 skim note | 11 | ✅ Yes (full list) | ❌ No (partial list in 2.64.1) | Release lag — needs bar release |
 | R38 max+sync note | 15 | ✅ Yes | ✅ Yes | None |
 | shellscript notes | Pre-16 | ✅ Yes | ✅ Yes | None |
 | commit notes | Pre-16 | ✅ Yes | ✅ Yes | None |
@@ -109,7 +109,7 @@ tokens, exceeding scope/method/directional capacity limits).
 
 | Priority | Token | Issue | Recommendation |
 |----------|-------|-------|----------------|
-| High | `skim` | Incomplete compound directional list in Composition Rules note | Replace specific list with "all compound directionals + fog" |
-| Medium | `narrow` | Guidance in dev grammar but not in installed binary | Release bar with R37 note propagated |
+| High | `skim` | Installed binary has incomplete compound directional list; dev grammar already correct | Release lag only — needs bar release (no code change required) |
+| Medium | `narrow` | Guidance in dev grammar but not in installed binary | Release lag only — needs bar release (no code change required) |
 | Medium | `adr` | "Avoid with pull" doesn't explain form-as-lens rescue | Add conditional exception |
 | Medium | (grammar) | "Grammar-enforced restrictions" section is empty | Add honest statement about advisory-only restrictions |

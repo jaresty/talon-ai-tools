@@ -2,6 +2,53 @@
 
 ---
 
+## Loop 2 — 2026-02-25 | Phase 2: Grammar export
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0147 Phase 2 — export CROSS_AXIS_COMPOSITION through axisCatalog→promptGrammar→grammar.go into prompt-grammar.json
+
+active_constraint: >
+  cross_axis_composition key absent from build/prompt-grammar.json["axes"]; KeyError on access.
+  Validated by: python3 -c "import json; d=json.load(open('build/prompt-grammar.json')); d['axes']['cross_axis_composition']['channel']['shellscript']['task']"
+
+validation_targets:
+  - python3 -c "import json; d=json.load(open('build/prompt-grammar.json')); c=d['axes']['cross_axis_composition']['channel']['shellscript']['task']; assert 'natural' in c and 'reframe' in c; print('PASS')"
+  - go test ./...  # must pass (0 failures)
+
+evidence:
+  - red   | 2026-02-25 | exit 1 | KeyError: 'cross_axis_composition' in grammar JSON | inline
+  - green | 2026-02-25 | exit 0 | grammar JSON contains cross_axis_composition with correct structure; go test ./... passes | inline
+
+rollback_plan: git restore --source=HEAD lib/promptGrammar.py internal/barcli/grammar.go && make bar-grammar-update
+
+delta_summary: |
+  helper:diff-snapshot — 4 files changed (promptGrammar.py, grammar.go, prompt-grammar.json x2, tui_smoke.json)
+  lib/promptGrammar.py: added cross_axis_composition passthrough from catalog to axis section JSON
+  internal/barcli/grammar.go: CrossAxisPair struct; CrossAxisComposition field (3-level map) in AxisSection + rawAxisSection; wired in LoadGrammar; CrossAxisCompositionFor() accessor
+  Note: initial rawAxisSection type was 2-level (bug); corrected to 3-level during loop
+
+loops_remaining_forecast: 2 loops (Phase 3 help_llm rendering, Phase 4 validation); medium confidence
+
+residual_constraints:
+  - id: R2-prose-duplication
+    description: AXIS_KEY_TO_GUIDANCE prose still contains cross-axis notes overlapping CROSS_AXIS_COMPOSITION
+    severity: Low
+    mitigation: Deferred to Phase 5 audit
+    monitoring_trigger: Phase 5 bar split audit
+  - id: R3-coverage-incomplete
+    description: Many channel+task pairs not yet listed
+    severity: Low
+    mitigation: ADR-0085 shuffle cycles additive
+    monitoring_trigger: Next meta-analysis
+
+next_work:
+  - Behaviour: Phase 3 — renderCrossAxisComposition in help_llm.go
+    validation: go build -o /tmp/bar-new ./cmd/bar/main.go && /tmp/bar-new help llm | grep -c "Choosing Channel"  # must be ≥1
+```
+
+---
+
 ## Loop 1 — 2026-02-25 | Phase 1: CROSS_AXIS_COMPOSITION data structure
 
 ```yaml

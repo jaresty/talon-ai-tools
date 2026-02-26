@@ -47,7 +47,14 @@ type AxisSection struct {
 	UseWhen        map[string]map[string]string // ADR-0132: task-type discoverability hints
 	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
 	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
-	RoutingConcept map[string]map[string]string // ADR-0146: distilled routing concept phrases
+	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
+	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,reframe}
+}
+
+// CrossAxisPair holds the natural/reframe composition data for one axis_a+token_a+axis_b triple (ADR-0147).
+type CrossAxisPair struct {
+	Natural []string          `json:"natural"`
+	Reframe map[string]string `json:"reframe"`
 }
 
 type StaticSection struct {
@@ -150,8 +157,10 @@ type rawAxisSection struct {
 	UseWhen        map[string]map[string]string `json:"use_when"`         // ADR-0132
 	Kanji          map[string]map[string]string `json:"kanji"`            // ADR-0143
 	Categories     map[string]map[string]string `json:"categories"`       // ADR-0144
-	RoutingConcept map[string]map[string]string `json:"routing_concept"`  // ADR-0146
+	RoutingConcept       map[string]map[string]string                `json:"routing_concept"`        // ADR-0146
+	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"` // ADR-0147
 }
+
 
 type rawStatic struct {
 	Catalog struct {
@@ -252,7 +261,8 @@ func LoadGrammar(path string) (*Grammar, error) {
 			UseWhen:        raw.Axes.UseWhen,
 			Kanji:          raw.Axes.Kanji,
 			Categories:     raw.Axes.Categories,
-			RoutingConcept: raw.Axes.RoutingConcept,
+			RoutingConcept:       raw.Axes.RoutingConcept,
+			CrossAxisComposition: raw.Axes.CrossAxisComposition,
 		},
 		Static: StaticSection{
 			Profiles:       profiles,
@@ -1008,6 +1018,26 @@ func (g *Grammar) AxisRoutingConcept(axis, token string) string {
 		}
 	}
 	return ""
+}
+
+// CrossAxisCompositionFor returns the cross-axis composition entry for a given axis+token pair (ADR-0147).
+// Returns nil if no entry is defined. The returned map is keyed by partner axis, each value being
+// a CrossAxisPair{Natural: [...], Reframe: {token: description}}.
+func (g *Grammar) CrossAxisCompositionFor(axis, token string) map[string]CrossAxisPair {
+	if g.Axes.CrossAxisComposition == nil {
+		return nil
+	}
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	if axisKey == "" || tokenKey == "" {
+		return nil
+	}
+	if byToken, ok := g.Axes.CrossAxisComposition[axisKey]; ok {
+		if entry, ok := byToken[tokenKey]; ok {
+			return entry
+		}
+	}
+	return nil
 }
 
 // AxisUseWhen returns the use_when discoverability hint for a token (ADR-0132).

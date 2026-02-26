@@ -211,6 +211,12 @@ def _build_axis_section(
     if axis_routing_concept:
         section["routing_concept"] = axis_routing_concept
 
+    # CrossAxisComposition (ADR-0147): cross-axis composition semantics.
+    # Structure: axis_a → token_a → axis_b → {"natural": [...], "reframe": {token: description}}
+    cross_axis_raw = catalog.get("cross_axis_composition") or {}
+    if cross_axis_raw:
+        section["cross_axis_composition"] = cross_axis_raw
+
     return (section, axis_slugs)
 
 

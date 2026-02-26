@@ -282,6 +282,22 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 2. Evaluate reframe combinations for quality (shellscript+diff, shellscript+sort, adr+pull, gherkin+sim)
 3. Update `process-feedback.md` open recommendations table
 
+### Phase 5: Metadata migration audit (post-implementation)
+
+Once `CROSS_AXIS_COMPOSITION` is live and validated, audit existing token metadata for content that should migrate to the new structure:
+
+```
+bar build probe full domains split --addendum "Audit token metadata for cross-axis content that belongs in CROSS_AXIS_COMPOSITION rather than per-token prose"
+```
+
+Evaluate the following sources:
+- `AXIS_KEY_TO_GUIDANCE` prose in `lib/axisConfig.py` — entries like shellscript, code, adr, codetour, gherkin, sync, commit that contain cross-axis avoidance notes (these are the prime migration candidates per R2)
+- `AXIS_KEY_TO_USE_WHEN` entries that contain cross-axis heuristics rather than token-selection guidance
+- `_STATIC_PROMPT_GUIDANCE` and `_STATIC_PROMPT_USE_WHEN` in `lib/staticPromptConfig.py` — task token notes that reference channel or form incompatibilities
+- Static help text in `help_llm.go` — sections that document cross-axis behavior inline rather than rendering from data
+
+For each candidate: determine whether it is (a) pure cross-axis composition data → migrate to `CROSS_AXIS_COMPOSITION`, (b) same-axis guidance → keep in place, or (c) general usage pattern → belongs in `help_llm.go` heuristics sections.
+
 ---
 
 ## Deferred

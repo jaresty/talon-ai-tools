@@ -814,7 +814,9 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- `svg` + `test` form → SVG visualization of test structure\n")
 	fmt.Fprintf(w, "- `codetour` + `plan` task → Plan as CodeTour navigation steps\n")
 	fmt.Fprintf(w, "- `appreciate` intent + `pick` task → Intent ignored, pick proceeds\n")
-	fmt.Fprintf(w, "- `test` form + `plan` task → Plan becomes test plan/acceptance criteria\n\n")
+	fmt.Fprintf(w, "- `test` form + `plan` task → Plan becomes test plan/acceptance criteria\n")
+	fmt.Fprintf(w, "- `ladder` form + `adr` channel + `pull` task → Channel wins; form acts as content lens. ladder reframes the extraction as a hierarchical scaffold within the ADR structure rather than blocking the combination.\n")
+	fmt.Fprintf(w, "  Form-as-lens rule: when a form token cannot literally compose with a channel token, the form becomes a content lens that shapes the conceptual organization within the channel's format. The channel defines output format; the form describes what to emphasize and how to structure ideas within it.\n\n")
 
 	fmt.Fprintf(w, "**Token Guidance:**\n")
 	fmt.Fprintf(w, "Guidance for specific tokens (from axis configuration):\n\n")

@@ -272,8 +272,11 @@ _STATIC_PROMPT_USE_WHEN: dict[str, str] = {
         "Heuristic: 'what would happen if', 'play out the scenario where', "
         "'simulate what happens when', 'walk me through what would occur if', "
         "'hypothetically if we did X then what' → sim. "
-        "Distinct from plan (plan = steps to take; sim = narrate the scenario unfolding over time) "
-        "and probe (probe = surface implications analytically; sim = temporal narration)."
+        "Distinct from plan (plan = steps to take; sim = narrate the scenario unfolding over time), "
+        "probe (probe = surface implications analytically; sim = temporal narration), "
+        "and simulation method (simulation method = enriches probe/plan/etc with thought-experiment "
+        "reasoning about feedback loops; sim = the scenario narrative is the primary task). "
+        "They can compose: sim+simulation = scenario played out via explicit feedback-loop modeling."
     ),
     "pick": (
         "Selecting from alternatives — the LLM makes the choice. "

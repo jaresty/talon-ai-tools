@@ -455,7 +455,9 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Task-affinity for decision-making tasks (plan, probe, make). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce "
-        "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback).",
+        "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback). "
+        "Exception: when a structural form token (e.g., ladder, case) is also present, it may act as a content lens that reframes the task as a decision-adjacent structure "
+        "(e.g., pull+ladder+adr = a hierarchical extraction organized as an ADR) — coherence depends on the subject.",
         "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code. Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, "
         "to-team). Prefer diagram, presenterm, sketch, or plain for non-technical audiences.",
         "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan. "
@@ -477,7 +479,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, prefer "
         "full or deep completeness so the directional can range freely.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, "
-        "dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none.",
+        "dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none. "
+        "Tension with rigor method: skim constrains response volume while rigor demands disciplined depth — the light pass cannot accommodate the rigorous reasoning rigor requires; expect score-3 output.",
     },
     "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "

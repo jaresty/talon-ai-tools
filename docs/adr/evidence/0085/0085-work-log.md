@@ -610,3 +610,43 @@ No changes — all score-2 seeds covered by existing documentation.
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-18/evaluations.md`
+
+---
+
+## Cycle 19: Best Average Since Cycle 14 + Grammar Gap Pattern Confirmed (Seeds 576–615)
+
+**Date:** 2026-02-25
+**Focus:** General health check; R40 third data point; grammar gap investigation
+**Seeds:** 576–615 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36: gist + fip-ong | ✅ Guidance in place | Seed 591 (gist+fip-ong=2) |
+| shellscript + sort (R40) | Score 2 | 3rd consecutive cycle; 3rd incompatibility type; grammar gap confirmed |
+| commit + max | Score 2 | New cross-axis grammar gap: commit notes say "avoid max"; same root cause as R40 |
+| Corpus average | 3.73 | Best since cycle 14; 32/40 scoring 4 |
+
+### Changes Applied
+
+No changes — all score-2 seeds covered by existing documentation.
+
+### Grammar Gap Analysis
+
+`_AXIS_INCOMPATIBILITIES` in `lib/talonSettings.py` only supports same-axis conflicts. All documented cross-axis incompatibilities (shellscript+task, shellscript+audience, commit+completeness) are unenforced at grammar level. R41 deferred for dedicated design.
+
+### Positive Patterns Confirmed
+
+- pull + max + act + balance + ladder + adr + fog: rich 6-token combo, all compatible (seed 599, score 4)
+- sim + gist + cross + systemic + walkthrough + remote: gist remote sim as step-by-step walkthrough (seed 592, score 4)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R41-grammar-hardening | Cross-axis incompatibility schema: shellscript+[sim/probe/sort/pick/diff/CEO/...] and commit/gist/skim+[max/deep/compound-dirs] all documented but unenforced | Medium — design session needed |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-19/evaluations.md`

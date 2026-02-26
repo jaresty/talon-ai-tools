@@ -1,4 +1,4 @@
-# ADR 0147: Cross-Axis Composition Semantics — Structured Affinities and Channel-Wins Reframe
+# ADR 0147: Cross-Axis Composition Semantics — Structured Guidance for All Channel+Task Combinations
 
 **Date:** 2026-02-25
 **Status:** Proposed
@@ -8,9 +8,9 @@
 
 ## Context
 
-### The current state: incompatibilities as prose notes
+### The current state: selective incompatibility prose
 
-When two tokens from different axes combine in ways that produce poor output, the current approach is to document the incompatibility as prose in `AXIS_KEY_TO_GUIDANCE`. For example:
+When two tokens from different axes combine in ways that produce poor output, the current approach is to document this in `AXIS_KEY_TO_GUIDANCE` prose:
 
 ```python
 "shellscript": (
@@ -21,151 +21,209 @@ When two tokens from different axes combine in ways that produce poor output, th
 )
 ```
 
-This produces three problems:
+This has two problems:
 
 **P1 — Structured data masquerading as prose.**
-The statement "avoid with sim, probe, pick, diff, sort" is a list of task tokens. The statement "avoid with to-CEO, to-managers" is a list of audience tokens. These are cross-axis relationships that could be represented as data, but they live in a string that only an LLM can interpret. Code cannot use them.
+"Avoid with sim, probe, pick, diff, sort" is a list of task tokens. "Avoid with to-CEO, to-managers" is a list of audience tokens. These are cross-axis relationships that could be represented as data, but they live in a string that only an LLM can interpret at runtime. Code cannot use them to render systematic guidance or validate entries.
 
-**P2 — No systematic rendering.**
-Because the incompatibilities are prose, `help_llm.go` cannot render a "Choosing Channel" section analogous to "Choosing Scope" or "Choosing Form." Each new incompatibility requires manual prose updates in two places: the `AXIS_KEY_TO_GUIDANCE` note and (if added) any hardcoded summary in `help_llm.go`.
+**P2 — Only the bad cases are documented; the good ones aren't.**
+The prose says what to avoid, but not what `shellscript` *does* when combined with the tasks it does work well with (make, fix, show, trans, pull). There's no systematic statement of what any channel+task pair produces. Users learn what's broken but not what to aim for.
 
-**P3 — Grammar enforcement is architecturally blocked.**
-`_AXIS_INCOMPATIBILITIES` in `lib/talonSettings.py` is structured as `axis → token → set[incompatible tokens within the same axis]`. It cannot express cross-axis incompatibilities. R41 (grammar-hardening) has been deferred indefinitely because the schema doesn't support it — but that schema could be replaced with the structured data from this ADR.
+### The existing precedent: defined composition semantics
 
-### The existing precedent: form-as-lens
+The grammar already documents combinations with explicit *what it produces* language rather than avoidance:
 
-The grammar already has one cross-axis composition rule defined with explicit semantics rather than incompatibility: the **form-as-lens** rule. When a form token and a channel token are both present and cannot literally compose (e.g., `case` form + `shellscript` channel), the rule is:
+- **form-as-lens rule**: When form and channel can't literally compose, the form becomes a content lens. The rule says what the combination *produces* — it doesn't block it.
+- **Specification channel reframe** (Reference Key): "`probe+adr` = probe task expressed as an ADR. `diff+gherkin` = differences expressed as behavioral distinctions." Channel wins; task becomes a content lens. Again: defines the output, doesn't block the input.
 
-> Channel defines output format; form describes conceptual organization within that format. When the form's structural template cannot be expressed in the channel's format, treat the form as a content lens.
-
-This rule is documented in the Reference Key and produces useful output from combinations that would otherwise be incoherent. It is not an incompatibility — it is a defined composition semantic.
-
-### The observation: channel-wins already applies to some task+channel combinations
-
-The Reference Key also documents:
-
-> "When a channel produces a specification artifact (gherkin, codetour, adr), analysis or comparison tasks are reframed as: perform the analysis, then express findings as that artifact type."
-
-So `probe+adr` = probe task + ADR channel → the analysis is expressed as an ADR. `diff+gherkin` = diff task + Gherkin channel → differences expressed as behavioral distinctions. The **channel-wins-reframe** pattern already exists for specification channels.
-
-This pattern is *not* extended to executable channels (shellscript, code) or brevity channels (sync, commit). The shellscript guidance says "avoid" instead of defining what the combination should produce.
+The pattern is consistent: define what the combination produces. This works for specification channels (adr, gherkin, codetour) but isn't extended to executable channels (shellscript, code) or brevity channels (sync, commit). Those just say "avoid."
 
 ### The question from ADR-0085 meta-analysis
 
-ADR-0085 cycles 17–19 found three shellscript grammar gap seeds (531, 560, 588) all scoring 2, all documented in AXIS_KEY_TO_GUIDANCE, all unenforced at grammar level. The meta-analysis surfaced two questions:
+ADR-0085 cycles 17–19 found three shellscript grammar gap seeds all scoring 2 because no guidance told the LLM what to produce. The meta-analysis surfaced:
 
-1. Should cross-axis affinities be structured data in axisConfig.py rather than prose in guidance notes?
-2. Could we define composition semantics that make some "incompatible" combinations produce useful output, rather than just documenting them as errors?
+1. Should cross-axis relationships be structured data in axisConfig.py rather than ad-hoc prose?
+2. Could we define what *every* channel+task combination produces — including the currently-discouraged ones — so the LLM always has guidance rather than just a list of things to avoid?
 
 ---
 
 ## Decision
 
-### Part A: Introduce `CROSS_AXIS_AFFINITIES` in axisConfig.py
+### Core principle: define what every combination produces
 
-Add a structured dict that captures cross-axis affinity and avoidance relationships as data. This replaces the cross-axis incompatibility prose currently embedded in `AXIS_KEY_TO_GUIDANCE` notes.
+No combinations are blocked. The goal is to give the LLM a complete composition map: for any channel+task pair, there is a defined output description. Some descriptions will say "this produces a useful X"; others will say "this tends to produce low-quality output because Y; prefer Z instead." Both are more useful than silence or a bare "avoid."
+
+This extends the existing channel-wins-reframe pattern uniformly across all channels.
+
+### Part A: Introduce `CROSS_AXIS_COMPOSITION` in axisConfig.py
+
+Add a structured dict that captures cross-axis composition semantics as data. The structure uses two keys per axis pair:
+
+- `"natural"` — tokens that combine with the channel natively; no special reframe needed
+- `"reframe"` — a dict of `{token: description}` giving the output semantics when the combination is not natural. Descriptions may be positive ("produces X") or cautionary ("tends to produce poor output because Y; prefer Z instead")
 
 ```python
 # lib/axisConfig.py
 #
-# Cross-axis affinity rules. Structure:
-#   axis_a → token_a → axis_b → rule
+# Cross-axis composition semantics. Structure:
+#   axis_a → token_a → axis_b → {"natural": [...], "reframe": {token: description}}
 #
-# Rules:
-#   "affinity": [tokens] — axis_b tokens that combine well with token_a
-#   "avoid": [tokens]    — axis_b tokens that should not be combined with token_a
-#   "reframe": {token: description} — axis_b tokens that combine with defined
-#                                     composition semantics (see Part B)
+# "natural": token_b combinations that work with token_a without any special
+#            interpretation. Listed for completeness and for "Choosing Channel"
+#            rendering; the LLM produces normal output.
 #
-CROSS_AXIS_AFFINITIES: Dict[str, Dict[str, Dict[str, Any]]] = {
+# "reframe": token_b combinations where the LLM should interpret token_b as a
+#            content lens within token_a's format. The description says what the
+#            combination should produce. Descriptions may be positive or cautionary.
+#            No combination is blocked — these are guidance, not restrictions.
+#
+CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
     "channel": {
         "shellscript": {
             "task": {
-                "affinity": ["make", "fix", "show", "trans", "pull"],
-                "avoid":    ["sim", "probe"],
-                "reframe":  {
-                    "pick":  "interactive select-menu script for choosing between options",
-                    "diff":  "shell script that diffs the two subjects",
+                "natural": ["make", "fix", "show", "trans", "pull"],
+                "reframe": {
+                    "pick":  "interactive select-menu script (e.g. bash select) for choosing between options",
+                    "diff":  "shell script that diffs or compares the two subjects",
                     "sort":  "shell script that filters or orders the items",
+                    "sim":   "a script nominally about the scenario — tends to produce thin output "
+                             "since simulation is inherently narrative; consider remote or no channel instead",
+                    "probe": "a diagnostic script checking the subject — valid for narrow system-probe "
+                             "use cases; tends to miss the analytical depth a prose channel provides",
+                    "check": "a shell script that validates or asserts the conditions",
+                    "plan":  "a shell script that sets up the plan as executable steps",
+                    "trans": "a shell script that transforms the subject",
                 },
             },
             "audience": {
-                "avoid": ["to-ceo", "to-managers", "to-stakeholders", "to-team"],
+                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
+                            "to-platform-team", "to-llm"],
+                "reframe": {
+                    "to-ceo":          "shell output to a non-technical audience — tends to be inaccessible; consider plain or presenterm instead",
+                    "to-managers":     "shell output to a non-technical audience — tends to be inaccessible; consider plain or sync instead",
+                    "to-stakeholders": "shell output to a non-technical audience — tends to be inaccessible; consider plain or presenterm instead",
+                    "to-team":         "shell output to a mixed audience — accessible only to technical members; consider plain instead",
+                },
             },
         },
         "adr": {
             "task": {
-                "affinity": ["plan", "probe", "make"],
-                "avoid":    [],
-                "reframe":  {
-                    "pull":  "ADR capturing what was extracted and why it matters",
-                    "diff":  "ADR recording the comparison and decision rationale",
+                "natural": ["plan", "probe", "make"],
+                "reframe": {
+                    "pull":  "ADR capturing what was extracted and the decision context around it",
+                    "diff":  "ADR recording the comparison and the decision rationale it supports",
                     "sort":  "ADR recording the prioritization criteria and outcome",
-                    "sim":   "ADR capturing the scenario and its implications",
+                    "sim":   "ADR capturing the scenario explored and its architectural implications",
+                    "check": "ADR recording what was evaluated, findings, and decision",
+                    "pick":  "ADR recording the options considered and the final selection rationale",
+                    "fix":   "ADR recording what was changed, why, and the trade-offs accepted",
+                    "show":  "ADR framing what was demonstrated and what it implies for the architecture",
                 },
             },
         },
         "sync": {
             "completeness": {
-                "avoid": ["max"],
+                "natural": ["full", "minimal", "gist"],
+                "reframe": {
+                    "max":  "exhaustive session plan — tends to be unusable; session plans require "
+                            "practical brevity; max completeness treats omissions as errors and "
+                            "produces overloaded agendas; use full or minimal instead",
+                    "deep": "deep-dive session plan — workable but risks running long; ensure time-boxing",
+                    "skim": "light-pass session plan — valid for quick standups or check-ins",
+                },
             },
         },
         "code": {
             "task": {
-                "avoid": ["sim", "probe"],
+                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "reframe": {
+                    "sim":   "code that nominally represents the simulation — tends to produce "
+                             "thin placeholder code since simulation is narrative; consider remote or no channel",
+                    "probe": "code that inspects or queries the subject — valid for narrow introspection "
+                             "use cases; tends to miss the analytical depth prose provides",
+                    "diff":  "code that implements a comparison of the subjects",
+                    "sort":  "code that sorts or filters the items",
+                    "pick":  "code that implements the selection logic",
+                    "plan":  "code skeleton or scaffolding for the plan steps",
+                },
             },
             "audience": {
-                "avoid": ["to-ceo", "to-managers", "to-stakeholders", "to-team"],
+                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
+                            "to-platform-team", "to-llm"],
+                "reframe": {
+                    "to-ceo":          "code output to a non-technical audience — inaccessible; use plain or presenterm instead",
+                    "to-managers":     "code output to a non-technical audience — inaccessible; use plain instead",
+                    "to-stakeholders": "code output to a non-technical audience — inaccessible; use plain or presenterm instead",
+                    "to-team":         "code output to a mixed audience — accessible only to technical members",
+                },
             },
         },
         "codetour": {
             "task": {
-                "affinity": ["make", "fix", "show", "pull"],
-                "avoid":    ["sim", "sort", "probe", "diff", "plan"],
+                "natural": ["make", "fix", "show", "pull"],
+                "reframe": {
+                    "sim":   "CodeTour nominally about a scenario — no code subject to navigate; tends to be incoherent",
+                    "sort":  "CodeTour nominally about sorted items — no navigable code; tends to be incoherent",
+                    "probe": "CodeTour that navigates relevant code locations to support the analysis",
+                    "diff":  "CodeTour walking through the two subjects side-by-side in code",
+                    "plan":  "CodeTour outlining planned code locations — valid for architecture planning",
+                    "check": "CodeTour walking through the code locations being evaluated",
+                    "pick":  "CodeTour comparing code implementations of the options",
+                },
             },
-            "audience": {
-                "avoid": ["to-managers", "to-product-manager", "to-ceo",
-                          "to-stakeholders", "to-analyst", "to-designer"],
+        },
+        "gherkin": {
+            "task": {
+                "natural": ["make", "check"],
+                "reframe": {
+                    "probe":  "Gherkin scenarios specifying the structural properties the analysis revealed",
+                    "diff":   "Gherkin scenarios expressing differences as behavioral distinctions",
+                    "sort":   "Gherkin scenarios capturing the sorted items as ordered acceptance criteria",
+                    "pick":   "Gherkin scenarios expressing the selection criteria as behavioral tests",
+                    "pull":   "Gherkin scenarios capturing the extracted content as behavioral specifications",
+                    "sim":    "Gherkin scenarios walking through the simulation as Given/When/Then steps",
+                    "plan":   "Gherkin scenarios expressing planned behavior as acceptance criteria",
+                    "show":   "Gherkin scenarios demonstrating the subject's behavior",
+                    "fix":    "Gherkin scenarios specifying what the fix must satisfy",
+                    "trans":  "Gherkin scenarios specifying the transformation as behavioral contracts",
+                },
             },
         },
     },
     "form": {
         "commit": {
             "completeness": {
-                "avoid": ["max", "deep"],
+                "natural": ["gist", "minimal"],
+                "reframe": {
+                    "max":   "commit message with exhaustive detail — the format has no room for depth; "
+                             "tends to produce truncated or overloaded commit messages; use gist or minimal",
+                    "deep":  "commit message with deep analysis — same constraint as max; use gist or minimal",
+                    "full":  "commit message with full coverage — workable but may feel verbose for the format",
+                    "skim":  "commit message with only the most obvious change noted — may omit important context",
+                    "narrow": "commit message restricted to one aspect — valid for focused commits",
+                },
             },
         },
     },
 }
 ```
 
-**Scope:** The initial implementation covers the cases identified in ADR-0085 cycles 17–19. Additional entries can be added as new cross-axis patterns are discovered in future shuffle cycles.
+### Part B: Extend channel-wins-reframe to all channels in the Reference Key
 
-### Part B: Define channel-wins-reframe composition semantics
+Update the Reference Key section in the grammar (rendered in `bar help llm`) to state the composition rule uniformly:
 
-Where a `"reframe"` entry exists in `CROSS_AXIS_AFFINITIES`, the combination is not an incompatibility — it has defined output semantics. The channel wins (output format is fixed); the task becomes a content lens interpreted within the channel's format.
+> "When a channel token is combined with any task: the channel defines output format; the task becomes a content lens within that format. For all channel+task combinations, `CROSS_AXIS_COMPOSITION` defines the output description. If no natural combination exists for a given task, the reframe description tells the LLM what to produce or warns that the combination tends to produce low-quality output."
 
-**Reframe rule:** `channel C + task T` with a reframe description `D` → "produce a `C`-format output that `D`."
+This replaces the current selective documentation (only gherkin/codetour/adr get the reframe rule) with a universal one.
 
-Examples:
-- `shellscript + diff` with reframe "shell script that diffs the two subjects" → produce a shell script implementing or invoking a diff of the subjects
-- `adr + pull` with reframe "ADR capturing what was extracted and why it matters" → perform the pull task, express findings as an ADR
-- `shellscript + sort` with reframe "shell script that filters or orders the items" → produce a shell script that implements the sort/filter
+### Part C: Render `CROSS_AXIS_COMPOSITION` in help_llm.go
 
-**Non-reframeable combinations remain "avoid":**
-`shellscript + sim` stays "avoid" (not in reframe dict) because simulation is inherently narrative — there is no coherent shell script that "plays out a scenario" in a way that serves the user's intent. `shellscript + probe` similarly — shell scripts produce output, not analysis.
+Add a `renderCrossAxisComposition(w, grammar)` function that produces:
 
-### Part C: Render `CROSS_AXIS_AFFINITIES` in help_llm.go
+1. **"Choosing Channel" section** — for each channel, lists the natural task combinations and notes the reframe semantics for others
+2. **Reframe table in Reference Key** — extends the existing "Precedence Examples" to cover all channels with reframe descriptions pulled from the data
 
-Add a `renderCrossAxisAffinities(w, grammar)` function that produces a "Choosing Channel" section (and other cross-axis summary sections) from the structured data rather than hardcoded prose.
-
-This replaces the F4 temporary fix (hardcoded "Choosing Channel" in help_llm.go) with a data-driven renderer.
-
-### Part D: Wire into grammar enforcement (replaces R41)
-
-The `CROSS_AXIS_AFFINITIES` dict provides the data needed for cross-axis grammar enforcement. Replace the incomplete `_AXIS_INCOMPATIBILITIES` schema in `lib/talonSettings.py` with a grammar-generation step that reads `CROSS_AXIS_AFFINITIES["channel"]["shellscript"]["task"]["avoid"]` and produces hard blocks in the grammar JSON.
-
-**Note:** Grammar enforcement blocks "avoid" combinations. "Reframe" combinations are NOT blocked — they produce valid output with defined semantics.
+This replaces the F4 temporary fix (which was a hardcoded "Choosing Channel" in help_llm.go) with a data-driven renderer. When new channel+task entries are added to `CROSS_AXIS_COMPOSITION`, the rendered output updates automatically — no Go changes required.
 
 ---
 
@@ -173,25 +231,26 @@ The `CROSS_AXIS_AFFINITIES` dict provides the data needed for cross-axis grammar
 
 ### Positive
 
-- **P1 resolved**: Cross-axis rules are now machine-readable data. Code can render "Choosing Channel" systematically, generate grammar restrictions, and surface affinities in TUI/SPA tooling.
-- **P2 resolved**: `renderCrossAxisAffinities` in `help_llm.go` replaces both the temporary F4 fix and any future manual additions to Go source.
-- **P3 resolved**: R41 grammar hardening becomes "populate `CROSS_AXIS_AFFINITIES` and wire the renderer" — the architecture now supports it.
-- **Score-2 reduction**: Combinations with reframe semantics (`shellscript+diff`, `shellscript+sort`, `adr+pull`, etc.) may move from score-2 to score-3 or score-4 once the reframe guidance is visible to the LLM.
-- **Composability principle extended**: The channel-wins rule now applies uniformly — specification channels, executable channels, and brevity channels all have defined semantics for task combinations.
+- **P1 resolved**: Cross-axis relationships are machine-readable data. Code can render "Choosing Channel" systematically and validate entries against the token catalog.
+- **P2 resolved**: Every channel+task pair has defined output semantics. The LLM no longer silently mishandles undocumented combinations.
+- **Composability principle unified**: The channel-wins-reframe pattern now applies to all channels, not just specification artifact channels. The Reference Key states the rule once; `CROSS_AXIS_COMPOSITION` provides the per-combination output descriptions.
+- **Score-2 reduction**: Combinations with useful reframe semantics (`shellscript+diff`, `shellscript+sort`, `adr+pull`, `gherkin+sim`, etc.) may improve from score-2 to score-3 or score-4 once the LLM has guidance on what to produce.
+- **Cautionary reframes**: Combinations like `shellscript+sim` now produce defined (poor) output with an explanation and a better-path suggestion, rather than producing undefined output silently.
+- **Growing dict**: New channel+task observations from ADR-0085 shuffle cycles can be added as `reframe` entries without Go changes.
 
 ### Risks and open questions
 
 **R1 — Reframe quality is empirically unknown.**
-The reframe descriptions are hypotheses. `shellscript + diff → "shell script that diffs the subjects"` may produce score-4 output for code subjects but score-2 for conceptual subjects. ADR-0085 shuffle validation will be needed after implementation.
+Reframe descriptions are hypotheses. `shellscript+diff → "shell script that diffs the subjects"` may produce score-4 for code subjects but score-2 for conceptual subjects. ADR-0085 shuffle validation is needed post-implementation.
 
 **R2 — AXIS_KEY_TO_GUIDANCE prose duplication.**
-The structured `CROSS_AXIS_AFFINITIES` data overlaps with existing prose in `AXIS_KEY_TO_GUIDANCE["channel"]["shellscript"]` etc. The prose notes must be updated to reference the structured data (or be auto-generated from it) to avoid contradiction. This is a migration concern, not a blocker.
+`CROSS_AXIS_COMPOSITION` overlaps with existing prose in `AXIS_KEY_TO_GUIDANCE["channel"]["shellscript"]` etc. The prose notes should be updated to reference the structured data (or removed where the structured data is the SSOT) to avoid contradiction. Migration concern, not a blocker.
 
-**R3 — Grammar enforcement for "avoid" changes user experience.**
-Currently "avoid" combinations are permitted by grammar and only warned in notes. Hard grammar blocks will reject them outright. This is the intended behavior, but requires user communication (a new release note).
+**R3 — Coverage is intentionally incomplete at first.**
+The initial dict covers channels identified in ADR-0085 cycles 17–19. Many channel+task combinations are not yet listed. Unlisted combinations fall back to existing behavior (no special reframe). The dict is additive.
 
-**R4 — Reframe dict coverage is incomplete.**
-The initial dict covers cases found in ADR-0085 cycles 17–19. Many other channel+task combinations exist and have not been evaluated. The dict should be treated as growing, not complete.
+**R4 — No grammar enforcement.**
+All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` data is guidance-only. If grammar enforcement is desired in the future, this data structure is the natural place to derive it from — but that is explicitly deferred and not part of this ADR.
 
 ---
 
@@ -199,40 +258,35 @@ The initial dict covers cases found in ADR-0085 cycles 17–19. Many other chann
 
 ### Phase 1: Data structure (axisConfig.py)
 
-1. Add `CROSS_AXIS_AFFINITIES` dict to `lib/axisConfig.py`
-2. Add helper function `get_cross_axis_affinities() → CROSS_AXIS_AFFINITIES`
-3. Populate initial entries: shellscript, adr, sync, code, codetour (channel axis) + commit (form axis)
-4. Remove cross-axis incompatibility prose from `AXIS_KEY_TO_GUIDANCE` entries that are now covered by the structured dict; keep same-axis and non-structured notes
+1. Add `CROSS_AXIS_COMPOSITION` dict to `lib/axisConfig.py`
+2. Add helper function `get_cross_axis_composition(axis: str, token: str) → dict`
+3. Populate initial entries (shellscript, adr, sync, code, codetour, gherkin for channel axis; commit for form axis)
+4. Update `AXIS_KEY_TO_GUIDANCE` prose for covered tokens to remove redundant cross-axis avoidance text; keep same-axis notes
 
 ### Phase 2: Grammar export
 
-1. Add `CrossAxisAffinities` field to grammar JSON (alongside existing `AxisIncompatibilities`)
+1. Add `CrossAxisComposition` field to grammar JSON
 2. Export from `lib/promptGrammar.py`; read in `grammar.go`
 3. `make bar-grammar-update` to regenerate
 
-### Phase 3: help_llm rendering (replaces F4 temporary fix)
+### Phase 3: help_llm rendering (replaces F4)
 
-1. Add `renderCrossAxisAffinities(w, grammar)` in `help_llm.go`
-2. Renders "Choosing Channel" section with affinity/avoid/reframe entries per channel token
-3. Renders reframe semantics as composition rules in the Reference Key section
-4. Replace the empty `"Grammar-enforced restrictions:"` section (F5) with actual content drawn from the "avoid" entries
+1. Add `renderCrossAxisComposition(w, grammar)` in `help_llm.go`
+2. Renders "Choosing Channel" section from natural+reframe data per channel
+3. Extends Reference Key "Precedence Examples" with channel-wins-reframe rule stated universally
+4. Update the "Grammar-enforced restrictions" section to clarify no cross-axis enforcement exists (already partially done by F5 fix)
 
-### Phase 4: Grammar enforcement (Part D / R41)
-
-1. Update grammar generation to produce hard incompatibility rules from "avoid" entries
-2. Update `_AXIS_INCOMPATIBILITIES` in `lib/talonSettings.py` to a cross-axis-capable schema (or deprecate in favour of `CROSS_AXIS_AFFINITIES`)
-3. Validate: shuffle cycles should see zero score-2 seeds from newly-blocked combinations
-
-### Phase 5: ADR-0085 validation
+### Phase 4: ADR-0085 validation
 
 1. Re-run seeds 531, 560, 588, 615 against the updated grammar
-2. Evaluate reframe combinations (shellscript+diff, shellscript+sort, adr+pull) for quality
+2. Evaluate reframe combinations for quality (shellscript+diff, shellscript+sort, adr+pull, gherkin+sim)
 3. Update `process-feedback.md` open recommendations table
 
 ---
 
 ## Deferred
 
-- Extending `CROSS_AXIS_AFFINITIES` to completeness×method affinities (e.g., skim+rigor tension, max+spike) — these are score-3 tensions, not score-2 incompatibilities, and may not warrant grammar enforcement
-- Surfacing affinities in TUI2/SPA (would require new UI component to show per-token cross-axis warnings)
-- Auto-generating `AXIS_KEY_TO_GUIDANCE` prose from `CROSS_AXIS_AFFINITIES` data (migration work, not architectural blocker)
+- Grammar enforcement for cross-axis combinations — explicitly out of scope for this ADR; the data structure would support it if desired
+- Extending `CROSS_AXIS_COMPOSITION` to completeness×method tensions (skim+rigor, max+spike) — score-3 tensions, lower priority
+- Surfacing reframe descriptions in TUI2/SPA (would require new UI component)
+- Auto-generating `AXIS_KEY_TO_GUIDANCE` prose from `CROSS_AXIS_COMPOSITION` (migration work)

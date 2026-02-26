@@ -91,6 +91,15 @@ For example: `test + code` = "test structure in code format" (valid, not redunda
 
 #### Phase 2b: Meta-Evaluation Against Bar Skills
 
+**When to run:** Every 3–5 rapid evaluation cycles. Do not defer more than 5 cycles — gaps in the reference and skill documentation compound.
+
+**Bar command for meta-analysis:**
+```bash
+bar build probe full domains gap \
+  --addendum "Meta-evaluation of [N] representative seeds from cycles [X]-[Y] against bar help llm and bar-autopilot skill documentation. Identify where skill guidance implicitly assumes user knowledge, where bar help llm documents restrictions but they're unenforced at grammar level, and where dev-repo guidance fixes haven't propagated to the installed binary."
+```
+Use `gap` method token (not `rigor` or `domains` alone) — gap specifically surfaces where implicit assumptions clash with explicit treatment, which is exactly what meta-analysis tests.
+
 After evaluating prompts against the prompt key, perform a secondary evaluation by checking them against the bar skills themselves (bar-autopilot, bar-manual, bar-workflow, bar-suggest). This meta-evaluation serves dual purposes:
 
 **Purpose 1: Validate skill guidance quality**
@@ -431,6 +440,7 @@ Run this process periodically or when catalog drift is suspected:
 9. **Process Health Check**: Run `probe gap` on the aggregated findings to surface implicit assumptions in the evaluation cycle itself before review
 10. **Review**: Human review of recommendations before implementing
 11. **Apply**: Edit catalog files, skill documentation, and/or help_llm.go, regenerate grammar
+11a. **Release Lag Check**: After running `make bar-grammar-update`, verify that guidance changes are visible in `bar help llm` output from the installed binary. Dev-repo changes update JSON files but NOT the installed binary — a Homebrew/Nix release is required. Check with: `bar help llm | grep -A3 "<token-name>"`. If the guidance is absent, note it in `catalog-feedback.md` under "Release Lag Tracking" and request a release.
 12. **Post-Apply Validate**: Re-test original evidence cases against new catalog state
 13. **Validate**: Re-run shuffle samples to confirm improvement
 

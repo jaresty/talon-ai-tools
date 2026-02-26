@@ -5,6 +5,111 @@
 
 ---
 
+## Meta-Analysis: Cycles 16–19 (Seeds 456–615)
+
+**Date:** 2026-02-25
+**Focus:** Phase 2b/2c meta-evaluation (first since program start); 10 representative seeds
+**Bar command:** `bar build probe full domains gap`
+
+### Seeds evaluated
+
+| Seed | Tokens | Prompt score | Skill align | Ref utility | Primary finding |
+|------|--------|-------------|-------------|-------------|-----------------|
+| 491 | probe cocreate gherkin fip-rog | 4 | 4 | 4 | form-as-lens pattern not in usage examples |
+| 492 | plan gherkin dip-bog | 4 | 4 | 5 | clean |
+| 563 | make simulation wardley | 4 | 4 | 4 | simulation vs sim disambiguation gap |
+| 599 | pull balance ladder adr fog | 4 | 4 | 4 | form-as-lens rescue path not in precedence examples |
+| 533 | plan skim grow dip-rog | 2 | 4 | 4 | R36 documented; skim note has incomplete dir list |
+| 531 | probe shellscript executive_brief | 2 | 4 | 5 | R40 documented; grammar enforcement only (R41) |
+| 560 | sim shellscript | 2 | 4 | 5 | R40 documented; grammar enforcement only (R41) |
+| 615 | probe max commit | 2 | 4 | 5 | commit+max documented; grammar enforcement only (R41) |
+| 466 | sort narrow fig | 3 | 2 | 2 | narrow guidance absent from installed binary (R37 release lag) |
+| 556 | probe skim rigor | 3 | 3 | 3 | cross-axis volume×method tension undocumented |
+
+**Average skill alignment: 3.7 | Average reference utility: 4.1**
+
+### Key findings
+
+**F1 — R40/R41 gap is grammar enforcement, not documentation**
+All three shellscript grammar gap seeds (531, 560) and the commit+max gap (615) are FULLY documented in `bar help llm`. shellscript and commit guidance in "Composition Rules → Guidance for specific tokens" is complete and correct. The gap is exclusively at grammar level (R41 — cross-axis incompatibilities not enforceable with current `_AXIS_INCOMPATIBILITIES` schema). Skill workflow correctly routes to Composition Rules → users who check notes before building would catch these.
+
+**F2 — narrow guidance (R37) not in installed binary (release lag)**
+R37 fix (cycle 16) added `narrow` guidance to `lib/axisConfig.py` and dev grammar JSON. But installed bar 2.64.1 does not include it — the narrow token catalog entry shows empty Notes and it's absent from Composition Rules. Any LLM using the installed binary won't see the "use with awareness" warning for narrow+compound directionals. Needs a bar release.
+
+**F3 — skim Composition Rules note has incomplete compound directional list**
+skim's note says "Avoid pairing with multi-phase directionals (bog, fip rog, fly rog, fog)" — misses dip- family (dip-rog, dip-ong, dip-bog), fig, fip-ong, and fly-ong. The "Choosing Directional" section is correct (covers all compound dirs). Fix: replace specific list with "all compound directionals + fog" in `AXIS_KEY_TO_GUIDANCE["completeness"]["skim"]`.
+
+**F4 — No "Choosing Channel" section in bar help llm heuristics**
+Unlike Scope, Method, Form, and Directional, there's no "Choosing Channel" quick-select guide. Since all channel cross-axis incompatibilities are documentation-only (R41 scope), a "Choosing Channel" section would be the most effective near-term mitigation.
+
+**F5 — "Grammar-enforced restrictions" section is empty (misleading)**
+Section header appears with no content, creating false impression about enforcement status. Should explicitly state that all cross-axis incompatibilities are advisory-only.
+
+**F6 — Process: meta-analysis was deferred for 9 cycles**
+ADR implies phases 2b/2c happen after each cycle. In practice, deferred until now. The ADR has been updated with cadence recommendation (every 3–5 cycles) and a release lag check step.
+
+### Process findings (evaluating the process itself)
+
+**P1 — Release lag is a hidden drift source**
+When guidance fixes are applied in the dev repo and validated against dev-grammar JSON, there's no automatic check that the installed binary reflects them. The cycle could show a "fix applied" status while users still see the old behavior. Add a release lag check after every `make bar-grammar-update` (added to ADR step 11a).
+
+**P2 — Rapid evaluation alone is sufficient for catalog health, but insufficient for documentation quality**
+The 3.50–3.73 average scores across cycles 16–19 accurately track catalog guidance quality. But they don't surface reference or skill documentation gaps — those require the meta-analysis phase. The two processes are complementary, not redundant.
+
+**P3 — `gap` method token is the correct choice for meta-analysis bar build**
+`rigor` (used initially) shapes analytical discipline but doesn't specifically target the mismatch between implicit and explicit treatment. `gap` directly models the meta-analysis goal: finding where the documented restrictions aren't enforced, where guidance exists but isn't visible, and where the process assumes things are complete when they aren't.
+
+**P4 — Score-2 seeds from grammar gaps are not fixable via guidance alone**
+All three R40 seeds (531, 560, 588) and the commit+max seed (615) are score-2 because the grammar allows them. The documentation is complete. Better skill/reference guidance might reduce LLM misuse but won't fix the root cause. R41 grammar hardening remains the correct long-term solution.
+
+### Recommendations
+
+```yaml
+- id: F2-release-narrow-guidance
+  type: release
+  description: >
+    R37 narrow guidance is in dev grammar but absent from bar 2.64.1.
+    narrow token has empty Notes in installed binary; absent from Composition Rules.
+    Needs a bar release to propagate to users.
+  priority: high
+
+- id: F3-fix-skim-note
+  type: edit-notes
+  token: skim
+  axis: completeness
+  action: >
+    Replace "Avoid pairing with multi-phase directionals (bog, fip rog, fly rog, fog)"
+    with "Avoid pairing with any compound directional or fog"
+    to match gist's note and Choosing Directional guidance.
+  priority: medium
+
+- id: F4-add-choosing-channel
+  type: edit-help-llm
+  section: "### Choosing Channel"
+  action: >
+    Add Choosing Channel heuristics to renderHeuristics() in help_llm.go.
+    Cover: shellscript (task/audience restrictions), adr (task affinity),
+    gherkin (spec + analysis reframe), sync/commit (brevity constraints).
+  priority: medium
+
+- id: F5-fix-grammar-enforced-section
+  type: edit-help-llm
+  section: "**Grammar-enforced restrictions:**"
+  action: >
+    Fill the empty section with an honest statement that all cross-axis
+    incompatibilities are advisory-only; grammar only enforces axis capacity limits.
+  priority: medium
+
+- id: R41-grammar-hardening
+  type: architectural
+  status: deferred
+  note: All R40/R41 gaps are documentation-correct. Grammar enforcement requires
+        a cross-axis schema in _AXIS_INCOMPATIBILITIES (currently single-axis only).
+        Medium priority — score-2 from these gaps appears in ~7% of shuffle draws.
+```
+
+---
+
 ## Cycle 8: Kanji & Group Evaluation (Seeds 141–175)
 
 **Date:** 2026-02-25

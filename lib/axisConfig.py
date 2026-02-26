@@ -470,7 +470,7 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     },
     "completeness": {
         "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer "
-        "grow for disciplined minimalism.",
+        "grow for disciplined minimalism. Avoid pairing with sync channel — sync implies practical session brevity; max treating omissions as errors produces unusable session plans.",
         "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that "
         "require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, "
@@ -570,6 +570,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "remote": "Optimizing output for remote or distributed delivery contexts (video calls, screen sharing, async participants). Heuristic: 'remote delivery', 'distributed session', 'video "
         "call context', 'screen sharing', 'remote-friendly' → remote channel. Note: user saying their team is 'remote' describes context — use remote channel only when delivery "
         "optimization is the explicit goal.",
+        "sync": "Session plan channel: actionable agenda with timing and cues for real-time delivery. Avoid pairing with max completeness — max treats omissions as errors but session plans "
+        "must be concise and deliverable; the combination produces overloaded agendas. Use full or minimal completeness.",
         "shellscript": "Shell script format: user wants the response as executable shell code. Heuristic: 'shell script', 'bash script', 'write a script', 'automate this with a shell script', "
         "'script format', 'shell code only' → shellscript. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort).",
         "sketch": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source. Heuristic: 'D2 diagram', 'D2 format', 'sketch diagram', 'd2 source' → sketch. Distinct from "

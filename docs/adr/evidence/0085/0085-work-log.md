@@ -459,3 +459,35 @@ No changes. All R36 hits covered by cycle-11 fix. R37 and R38 are watch items on
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-14/evaluations.md`
+
+---
+
+## Cycle 15: Four R36 Hits + R38 Confirmed (Seeds 416–455)
+
+**Date:** 2026-02-25
+**Focus:** General health check; R38-watch confirmation (max+sync)
+**Seeds:** 416–455 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36 hits | 4 (seeds 423,443,445,446) | Above-average draw; all covered by cycle-11 fix |
+| R38: max + sync confirmed | Seed 418 (2nd data point) | Both seeds score 3; fix applied |
+| Corpus average | 3.40 | Regression from 3.70; 4 R36 hits drive it |
+
+### Changes Applied
+
+| ID | Action | Applied? |
+|----|--------|----------|
+| R38 | Add max↔sync avoidance notes to both tokens in axisConfig.py | ✅ Applied |
+
+### New watch
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| spike+gherkin | 1 data point (seed 432, score 3). May deserve story+gherkin treatment | Low |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-15/evaluations.md`

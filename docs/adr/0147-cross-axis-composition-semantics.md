@@ -59,7 +59,7 @@ This extends the existing channel-wins-reframe pattern uniformly across all chan
 
 Add a structured dict that captures cross-axis composition semantics as data. The structure uses two keys per axis pair:
 
-- `"natural"` — tokens that combine with the channel natively; no special reframe needed
+- `"natural"` — tokens that combine with the channel and reliably produce good output without the LLM needing explicit instruction about what to produce. When in doubt, use `reframe` with a positive description; promote to `natural` after ADR-0085 validation confirms consistent score-4.
 - `"reframe"` — a dict of `{token: description}` giving the output semantics when the combination is not natural. Descriptions may be positive ("produces X") or cautionary ("tends to produce poor output because Y; prefer Z instead")
 
 ```python
@@ -92,7 +92,6 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                              "use cases; tends to miss the analytical depth a prose channel provides",
                     "check": "a shell script that validates or asserts the conditions",
                     "plan":  "a shell script that sets up the plan as executable steps",
-                    "trans": "a shell script that transforms the subject",
                 },
             },
             "audience": {
@@ -208,22 +207,16 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
 }
 ```
 
-### Part B: Extend channel-wins-reframe to all channels in the Reference Key
+### Part B: Render `CROSS_AXIS_COMPOSITION` in help_llm.go
 
-Update the Reference Key section in the grammar (rendered in `bar help llm`) to state the composition rule uniformly:
+Add a `renderCrossAxisComposition(w, grammar)` function that produces two things in a single Go change:
+
+1. **"Choosing Channel" section** — for each channel, lists the natural task combinations and notes the reframe semantics for others
+2. **Universal channel-wins-reframe rule in Reference Key** — replaces the current selective documentation (only gherkin/codetour/adr) with a universally stated rule, plus per-channel reframe examples pulled from the data:
 
 > "When a channel token is combined with any task: the channel defines output format; the task becomes a content lens within that format. For all channel+task combinations, `CROSS_AXIS_COMPOSITION` defines the output description. If no natural combination exists for a given task, the reframe description tells the LLM what to produce or warns that the combination tends to produce low-quality output."
 
-This replaces the current selective documentation (only gherkin/codetour/adr get the reframe rule) with a universal one.
-
-### Part C: Render `CROSS_AXIS_COMPOSITION` in help_llm.go
-
-Add a `renderCrossAxisComposition(w, grammar)` function that produces:
-
-1. **"Choosing Channel" section** — for each channel, lists the natural task combinations and notes the reframe semantics for others
-2. **Reframe table in Reference Key** — extends the existing "Precedence Examples" to cover all channels with reframe descriptions pulled from the data
-
-This replaces the F4 temporary fix (which was a hardcoded "Choosing Channel" in help_llm.go) with a data-driven renderer. When new channel+task entries are added to `CROSS_AXIS_COMPOSITION`, the rendered output updates automatically — no Go changes required.
+When new channel+task entries are added to `CROSS_AXIS_COMPOSITION`, the rendered output updates automatically — no Go changes required.
 
 ---
 
@@ -261,7 +254,7 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 1. Add `CROSS_AXIS_COMPOSITION` dict to `lib/axisConfig.py`
 2. Add helper function `get_cross_axis_composition(axis: str, token: str) → dict`
 3. Populate initial entries (shellscript, adr, sync, code, codetour, gherkin for channel axis; commit for form axis)
-4. Update `AXIS_KEY_TO_GUIDANCE` prose for covered tokens to remove redundant cross-axis avoidance text; keep same-axis notes
+4. Leave `AXIS_KEY_TO_GUIDANCE` prose unchanged — migration of overlapping cross-axis notes is deferred to Phase 5 audit
 
 ### Phase 2: Grammar export
 
@@ -273,8 +266,8 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 
 1. Add `renderCrossAxisComposition(w, grammar)` in `help_llm.go`
 2. Renders "Choosing Channel" section from natural+reframe data per channel
-3. Extends Reference Key "Precedence Examples" with channel-wins-reframe rule stated universally
-4. Update the "Grammar-enforced restrictions" section to clarify no cross-axis enforcement exists (already partially done by F5 fix)
+3. Renders universal channel-wins-reframe rule in Reference Key, replacing the current selective gherkin/codetour/adr-only statement
+4. "Grammar-enforced restrictions" section already handled by F5 fix — no further change needed
 
 ### Phase 4: ADR-0085 validation
 

@@ -471,14 +471,16 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "completeness": {
         "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer "
         "grow for disciplined minimalism.",
-        "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with multi-phase directionals (bog, fip rog, fly rog, fog) that require structural depth and "
-        "sustained examination. Use with simple directionals (jog, rog) or none.",
+        "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that "
+        "require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
+        "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, "
+        "dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none.",
     },
     "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "
         "diagram/sketch) — case-building requires prose structure those channels cannot accommodate. Use with no channel or prose-compatible channels (jira, slack, plain, remote, sync).",
-        "commit": "Conventional commit message (type: scope header + optional body). Brief artifact by design — avoid deep or max completeness (no room to express depth) and complex directionals "
-        "(fip rog, fly rog, bog, fog). Best with gist or minimal completeness.",
+        "commit": "Conventional commit message (type: scope header + optional body). Brief artifact by design — avoid deep or max completeness (no room to express depth) and compound directionals "
+        "(fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog, fog). Best with gist or minimal completeness.",
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
         "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",

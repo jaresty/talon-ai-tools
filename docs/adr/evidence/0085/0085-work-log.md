@@ -303,3 +303,41 @@ All Cycle 6 recommendations (R14-R16) were confirmed implemented before running:
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-10/evaluations.md`
+
+---
+
+## Cycle 11: Compound Directional Expansion + Bar v2.64.1 Health Check (Seeds 256–295)
+
+**Date:** 2026-02-25
+**Focus:** Post-cycle-10 health check, verify R34 heuristic coverage with expanded compound directional catalog (bar v2.64.1)
+**Seeds:** 256–295 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R34: fly-ong + skim | ✅ Confirmed | Seed 287 (skim+fly-ong = 2); fly-ong missing from skim token notes |
+| R34: fip-rog + skim | Existing coverage | Seed 260 (skim+fip-rog) scores 3 (fip-rog is listed in skim notes, but socratic+exec tension also present) |
+| help_llm.go R34 heuristic | ✅ Validated | fly-ong+full (seeds 257, 273) and bog+full (278) all score 4; heuristic works |
+| Corpus average | 3.73 | Slight regression from 3.75; seed 287 drives it |
+
+### Changes Applied
+
+| ID | Action | Applied? |
+|----|--------|----------|
+| R36 | Update skim + gist token notes in axisConfig.py with full compound directional list | ✅ Applied |
+
+### Positive Patterns Confirmed
+
+- pull + triage + thing + fig + executive_brief: executive extraction with prioritization (seed 264, score 5)
+- pick + boom + adr + jog + formally + announce: decisive ADR creation (seed 270, score 4)
+- probe + adversarial + questions + presenterm: adversarial probing as slides (seed 261, score 4)
+- probe + mean + order + actions + dig: concrete ordered probe with actionable output (seed 290, score 4)
+
+### Open Items
+
+(none — R36 applied)
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-11/evaluations.md`

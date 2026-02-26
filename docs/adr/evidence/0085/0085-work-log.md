@@ -572,3 +572,41 @@ No changes — all score-2 seeds covered by existing documentation.
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-17/evaluations.md`
+
+---
+
+## Cycle 18: Three R36 Hits + shellscript Grammar Gap Confirmed (Seeds 536–575)
+
+**Date:** 2026-02-25
+**Focus:** General health check; R40-watch follow-up (shellscript grammar gaps)
+**Seeds:** 536–575 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36 hits | 3 (seeds 541, 558, 568) | Above-average draw; all covered by cycle-11 fix |
+| shellscript + sim (seed 560) | Score 2 | shellscript guidance already says "avoid with sim/probe"; grammar gap; R40 confirmed |
+| max + sim (seed 575) | Score 4 | R38 correctly scoped: max+sim=fine; only max+sync is problematic |
+| Corpus average | 3.50 | Regression; 3 R36 hits + shellscript/sim gap |
+
+### Changes Applied
+
+No changes — all score-2 seeds covered by existing documentation.
+
+### Positive Patterns Confirmed
+
+- sim + full + motifs + sync + persuade: persuasive motif simulation as session plan (seed 539, score 4)
+- check + full + systemic + socratic + html + bog: socratic HTML systemic check (seed 552, score 4)
+- probe + full + fail + taxonomy + sketch: failure taxonomy as D2 diagram (seed 565, score 4)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R40 | shellscript grammar gaps confirmed (2 data points: seed 531 shellscript+CEO, seed 560 shellscript+sim) | Medium — defer grammar schema work |
+| spike-task-tension | 2 data points: spike+gherkin (432), spike+sim (524) — no new data | Low |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-18/evaluations.md`

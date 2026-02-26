@@ -379,3 +379,43 @@ No changes — R36 already applied in cycle 11. Cycle 12 is validation-only.
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-12/evaluations.md`
+
+---
+
+## Cycle 13: R36 Recurrence + New Token Discovery (Seeds 336–375)
+
+**Date:** 2026-02-25
+**Focus:** Post-cycle-12 health check, R36 recurrence tracking, R37-watch follow-up
+**Seeds:** 336–375 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36: gist + fip-ong | ✅ Guidance in place | Seed 337 (gist+fip-ong=2); 3rd gist+compound hit; cycle-11 fix covers it |
+| R36: skim + fog | ✅ Guidance in place | Seed 348 (skim+fog=2); fog was always in skim avoidance list |
+| R37-watch: narrow + fip-bog | 2nd confirmation | Seed 346 (narrow+fip-bog=3); consistent score 3, not broken |
+| R38-watch: max + sync | New 1-data-point watch | Seed 338 (max+sync=3); needs confirmation before acting |
+| New token: wasinawa | Discovery | wasinawa = What-So What-Now What reflection form; well-defined |
+| Corpus average | 3.60 | Third cycle at 3.60; R36 seeds are the stable floor |
+
+### Changes Applied
+
+No changes. All R36 hits covered by cycle-11 fix. R37 and R38 are watch items only.
+
+### Positive Patterns Confirmed
+
+- show + agent + adversarial + diagram + fig: adversarial executive explanation as diagram (seed 372, score 4)
+- check + deep + act + contextualise: check packaged for downstream LLM (seed 363, score 4)
+- pull + minimal + inversion + direct + gherkin: playful inversion exercise (seed 355, score 4)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R37-watch | narrow + compound directional (seeds 326, 346) | Low — 2 data points, both score 3 |
+| R38-watch | max + sync tension (seed 338) | Low — 1 data point only |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-13/evaluations.md`

@@ -228,6 +228,7 @@ def axis_catalog(
         "static_prompt_routing_concept": _static_prompt_routing_concept_overrides(),
         "static_prompt_profiles": STATIC_PROMPT_CONFIG,
         "usage_patterns": axisConfig.get_usage_patterns(),
+        "cross_axis_composition": axisConfig.CROSS_AXIS_COMPOSITION,  # ADR-0147
     }
 
 
@@ -262,4 +263,5 @@ def serialize_axis_config(
         payload["static_prompt_kanji"] = catalog.get("static_prompt_kanji", {})
         payload["static_prompt_routing_concept"] = catalog.get("static_prompt_routing_concept", {})
     payload["usage_patterns"] = catalog["usage_patterns"]
+    payload["cross_axis_composition"] = catalog["cross_axis_composition"]  # ADR-0147
     return payload

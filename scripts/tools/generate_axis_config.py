@@ -163,6 +163,8 @@ def render_axis_config() -> str:
     kanji_body = pprint.pformat(kanji_mapping, width=200, sort_dicts=True)
     category_body = pprint.pformat(category_mapping, width=200, sort_dicts=True)
     routing_concept_body = pprint.pformat(routing_concept_mapping, width=200, sort_dicts=True)
+    cross_axis_raw = payload.get("cross_axis_composition", {}) or {}
+    cross_axis_body = pprint.pformat(cross_axis_raw, width=200, sort_dicts=False)
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -183,7 +185,7 @@ def render_axis_config() -> str:
         from __future__ import annotations
 
         from dataclasses import dataclass, field
-        from typing import Dict, FrozenSet, Union
+        from typing import Any, Dict, FrozenSet, Union
         """
     )
     dataclasses = textwrap.dedent(
@@ -241,6 +243,16 @@ def render_axis_config() -> str:
             phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
             \"\"\"
             return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
+
+
+        def get_cross_axis_composition(axis: str, token: str) -> dict:
+            \"\"\"Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
+
+            Returns a dict keyed by partner axis, each value being
+            {\"natural\": [...], \"reframe\": {token: description}}.
+            Returns an empty dict if the axis or token has no entry.
+            \"\"\"
+            return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})
 
 
         def axis_docs_for(axis: str) -> list[AxisDoc]:
@@ -326,6 +338,22 @@ def get_usage_patterns() -> list[dict]:
                 f"# Covered axes: scope and form only. Method routing uses editorial sub-group\n"
                 f"# labels spanning multiple tokens and stays hardcoded until a future ADR.\n"
                 f"AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {routing_concept_body}",
+                f"# ADR-0147: Cross-axis composition semantics.\n"
+                f"# Structure: axis_a → token_a → axis_b → {{\"natural\": [...], \"reframe\": {{token: description}}}}\n"
+                f"#\n"
+                f"# \"natural\": token_b combinations that work with token_a without any special\n"
+                f"#            interpretation. The LLM produces good output without explicit guidance\n"
+                f"#            about what to produce. Promote to natural after ADR-0085 validation\n"
+                f"#            confirms consistent score-4; when in doubt, use reframe with a positive\n"
+                f"#            description.\n"
+                f"#\n"
+                f"# \"reframe\": token_b combinations where the LLM benefits from an explicit output\n"
+                f"#            description. The description says what the combination produces.\n"
+                f"#            Descriptions may be positive (\"produces X\") or cautionary\n"
+                f"#            (\"tends to produce poor output because Y; prefer Z instead\").\n"
+                f"#            No combination is blocked — these are guidance, not restrictions.\n"
+                f"#\n"
+                f"CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {cross_axis_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip() + usage_patterns_block,
             ]

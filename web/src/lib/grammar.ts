@@ -29,14 +29,15 @@ export interface Grammar {
 		use_when: Record<string, Record<string, string>>;
 		kanji: Record<string, Record<string, string>>; // ADR-0143
 		categories?: Record<string, Record<string, string>>; // ADR-0144: semantic family groupings for method tokens
-		routing_concept?: Record<string, Record<string, string>>; // ADR-0146: distilled routing concept phrases (scope/form only)
+		routing_concept?: Record<string, Record<string, string>>; // ADR-0146: distilled routing concept phrases
 	};
 	tasks: {
 		descriptions: Record<string, string>;
 		labels: Record<string, string>;
 		guidance: Record<string, string>;
-		use_when?: Record<string, string>; // ADR-0142
-		kanji?: Record<string, string>; // ADR-0143
+		use_when?: Record<string, string>;           // ADR-0142
+		kanji?: Record<string, string>;              // ADR-0143
+		routing_concept?: Record<string, string>;    // ADR-0146
 	};
 	hierarchy: {
 		axis_priority: string[];
@@ -53,7 +54,8 @@ export interface Grammar {
 		docs?: Record<string, Record<string, string>>;
 		use_when?: Record<string, Record<string, string>>;
 		guidance?: Record<string, Record<string, string>>;
-		kanji?: Record<string, Record<string, string>>; // ADR-0143
+		kanji?: Record<string, Record<string, string>>;              // ADR-0143
+		routing_concept?: Record<string, Record<string, string>>;    // ADR-0146
 		intent?: {
 			axis_tokens?: Record<string, string[]>;
 		};
@@ -70,7 +72,7 @@ export interface TokenMeta {
 	use_when: string;
 	kanji: string;
 	category: string; // ADR-0144: semantic family for method tokens; empty for other axes
-	routing_concept: string; // ADR-0146: distilled routing concept phrase; populated for scope/form only
+	routing_concept: string; // ADR-0146: distilled routing concept phrase
 }
 
 import { base } from '$app/paths';
@@ -139,6 +141,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 	const guidance = grammar.tasks.guidance ?? {};
 	const use_when = grammar.tasks.use_when ?? {};
 	const kanji = grammar.tasks.kanji ?? {};
+	const routing_concepts = grammar.tasks.routing_concept ?? {};
 	return Object.keys(descs)
 		.sort()
 		.map((token) => ({
@@ -149,7 +152,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 			use_when: use_when[token] ?? '',
 			kanji: kanji[token] ?? '',
 			category: '',
-			routing_concept: ''
+			routing_concept: routing_concepts[token] ?? ''
 		}));
 }
 
@@ -180,6 +183,7 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 	const use_when = grammar.persona?.use_when?.[axis] ?? {};
 	const guidance = grammar.persona?.guidance?.[axis] ?? {};
 	const kanji = grammar.persona?.kanji?.[axis] ?? {};
+	const routing_concepts = grammar.persona?.routing_concept?.[axis] ?? {};
 	return tokens.map((token) => ({
 		token,
 		label: token,
@@ -188,7 +192,7 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 		use_when: use_when[token] ?? '',
 		kanji: kanji[token] ?? '',
 		category: '',
-		routing_concept: ''
+		routing_concept: routing_concepts[token] ?? ''
 	}));
 }
 

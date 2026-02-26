@@ -2,6 +2,70 @@
 
 ---
 
+## Loop 3 — 2026-02-26 | Phase 3a: Reference Key universal rule (metaPromptConfig.py)
+
+```yaml
+helper_version: helper:v20251223.1
+focus: ADR-0147 Phase 3a — extend Channel bullet + Precedence bullet in PROMPT_REFERENCE_KEY with universal task-as-content-lens rule
+
+active_constraint: >
+  PROMPT_REFERENCE_KEY Channel bullet says "delivery context: platform formatting conventions only" with no
+  task-as-lens rule; Precedence section only covers specification channels (gherkin, codetour, adr).
+  LLM has no first-principles rule for executable/delivery channels (shellscript, code, presenterm) at
+  execution time. Validated by: /tmp/bar-new build make struct --subject x | grep -A1 "Channel 経路" | grep "task becomes"
+  → exit 1 (not found)
+
+validation_targets:
+  - go build -o /tmp/bar-new ./cmd/bar/main.go && /tmp/bar-new build make struct --subject x | grep -A1 "Channel 経路" | grep "task becomes"  # must exit 0
+  - /tmp/bar-new build make struct --subject x | grep "all channels"  # must exit 0
+  - go test ./...  # must pass (0 failures)
+
+evidence:
+  - red    | 2026-02-26 | exit 1 | /tmp/bar-new build make struct --subject x | grep -A1 "Channel 経路" | grep "task becomes" → not found | inline
+  - red    | 2026-02-26 | exit 1 | /tmp/bar-new build make struct --subject x | grep "all channels" → not found | inline
+  - green  | 2026-02-26 | exit 0 | Channel bullet now contains "task becomes a content lens"; Precedence bullet now says "all channels: executable...specification...delivery" | inline
+  - green  | 2026-02-26 | exit 0 | go test ./... passes 0 failures | inline
+  - removal | 2026-02-26 | exit 1 | git stash && go build -o /tmp/bar-new; grep check → not found; git stash pop | inline
+
+rollback_plan: git restore --source=HEAD lib/metaPromptConfig.py && make bar-grammar-update
+
+delta_summary: |
+  helper:diff-snapshot — 6 files changed
+  lib/metaPromptConfig.py: Channel bullet extended with task-as-lens rule; Precedence bullet
+    universalized from specification-only to all channels (executable, specification, delivery);
+    existing probe+gherkin / diff+codetour examples preserved under specification channel clause
+  build/prompt-grammar.json + internal/barcli/embed/prompt-grammar.json + cmd/bar/testdata/grammar.json
+    + web/static/prompt-grammar.json: regenerated — includes both Phase 3a reference_key update and
+    pivot-commit reframe→cautionary changes that were missing from those files
+  Note: cmd/bar/testdata/grammar.json and web/static/prompt-grammar.json were omitted from the prior
+    pivot commit; this loop regeneration corrects the omission
+
+loops_remaining_forecast: 2 loops (Phase 3b help_llm Choosing Channel, Phase 4 ADR-0085 validation); medium confidence
+
+residual_constraints:
+  - id: R2-prose-duplication
+    description: AXIS_KEY_TO_GUIDANCE prose still contains cross-axis notes overlapping CROSS_AXIS_COMPOSITION
+    severity: Low
+    mitigation: Deferred to Phase 5 audit
+    monitoring_trigger: Phase 5 bar split audit
+  - id: R3-coverage-incomplete
+    description: Many channel+task pairs not yet listed; unlisted pairs fall back to universal rule
+    severity: Low
+    mitigation: ADR-0085 shuffle cycles additive
+    monitoring_trigger: Next meta-analysis
+  - id: R4-reframe-quality-empirical
+    description: Universal reframe quality for shellscript+sim, code+sim is empirically unknown
+    severity: Medium
+    mitigation: Phase 4 ADR-0085 validation (seeds 531, 560, 588, 615)
+    monitoring_trigger: Phase 4 shuffle re-run
+
+next_work:
+  - Behaviour: Phase 3b — renderCrossAxisComposition in help_llm.go; fix TestLLMHelpHeuristicsTokensExist persona token issue
+    validation: go build -o /tmp/bar-new ./cmd/bar/main.go && /tmp/bar-new help llm | grep -c "Choosing Channel"  # must be ≥1 && go test ./...
+```
+
+---
+
 ## Loop 2 — 2026-02-25 | Phase 2: Grammar export
 
 ```yaml

@@ -201,11 +201,11 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 2. ~~Export from `lib/promptGrammar.py`; read in `grammar.go`~~ — done; `CrossAxisPair` struct + accessor
 3. ~~`make bar-grammar-update` to regenerate~~ — done
 
-### Phase 3a: Reference Key universal rule (`metaPromptConfig.py`)
+### Phase 3a: Reference Key universal rule (`metaPromptConfig.py`) ✅ Done
 
-1. Extend Channel bullet in CONSTRAINTS: add task-as-lens rule
-2. Extend Precedence bullet: replace specification-artifact-only statement with universal rule covering all channels
-3. `make bar-grammar-update` to regenerate; verify rule appears in `bar build` output
+1. ~~Extend Channel bullet in CONSTRAINTS: add task-as-lens rule~~ — done
+2. ~~Extend Precedence bullet: replace specification-artifact-only statement with universal rule covering all channels~~ — done; covers executable, specification, and delivery channels
+3. ~~`make bar-grammar-update` to regenerate; verify rule appears in `bar build` output~~ — done
 
 ### Phase 3b: `help_llm` Choosing Channel (`help_llm.go`)
 

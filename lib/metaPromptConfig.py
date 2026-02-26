@@ -28,14 +28,14 @@ CONSTRAINTS 制約 (system prompt and user prompt): Independent guardrails that 
   • Method 方法 — The method describes the reasoning approach or analytical procedure the response should follow. It affects *how* the analysis is carried out, not what topic is discussed or how the output is formatted.
   • Directional 方向 — execution modifier (adverbial): governs how the task is carried out, shaping sequencing, emphasis, and tradeoffs; Applies globally and implicitly. Do not describe, name, label, or section the response around this constraint. The reader should be able to infer it only from the flow and emphasis of the response.
   • Form 形式 — The form specifies the desired structure or presentation of the output (e.g., list, table, scaffold). It does not change the underlying reasoning, only how results are rendered. When form and channel tokens are both present, the channel defines the output format and the form describes the conceptual organization within that format. When the form's structural template cannot be expressed in the channel's format (e.g., a prose log in SVG, a question-document as a CodeTour JSON), treat the form as a content lens: it shapes the informational character of the response — what to emphasize and how to organize ideas — rather than the literal output structure.
-  • Channel 経路 — delivery context: platform formatting conventions only
+  • Channel 経路 — delivery context: platform formatting conventions only. When a channel is present, the channel mandates output format and the task becomes a content lens — ask "what would it mean to produce this task's output through this channel's format?" This applies to any channel+task combination.
 
 **Precedence:** When tokens from different axes combine:
   • Channel tokens take precedence over form tokens (output format is fixed)
   • For example: gherkin+presenterm produces presenterm slides, not pure Gherkin—the channel format wins and the form describes conceptual organization within it
   • Task takes precedence over intent (task defines what, intent explains why for the audience)
   • Persona audience overrides tone preference (audience expertise matters)
-  • When a channel produces a specification artifact (gherkin, codetour, adr), analysis or comparison tasks are reframed as: perform the analysis, then express findings as that artifact type. probe+gherkin = Gherkin scenarios specifying the structural properties the analysis revealed. diff+gherkin = Gherkin scenarios expressing differences as behavioral distinctions. diff+codetour = CodeTour steps walking through the differences.
+  • When a channel is present, the channel mandates output format and the task becomes a content lens — ask "what would it mean to produce this task's output through this channel's format?" This applies to all channels: executable (shellscript, code), specification (gherkin, codetour, adr), and delivery (presenterm, remote, plain). For specification channels, express findings as that artifact type: probe+gherkin = Gherkin scenarios specifying the structural properties the analysis revealed. diff+gherkin = Gherkin scenarios expressing differences as behavioral distinctions. diff+codetour = CodeTour steps walking through the differences.
 
 PERSONA 人格 (system prompt): Communication identity that shapes expression, not reasoning.
   • Voice 声 — who is speaking

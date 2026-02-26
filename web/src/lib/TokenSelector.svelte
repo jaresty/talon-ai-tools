@@ -287,6 +287,7 @@
 						data-token={meta.token}
 						tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
 						onmouseenter={() => { if (!globalIsUsingTouch) activeToken = meta.token; }}
+						onmouseleave={() => { if (!globalIsUsingTouch) activeToken = null; }}
 						onpointerdown={(e) => {
 							isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
 							activeAtPointerDown = activeToken;
@@ -338,6 +339,7 @@
 					data-token={meta.token}
 					tabindex={focusedIndex === -1 ? (i === 0 ? 0 : -1) : (focusedIndex === i ? 0 : -1)}
 					onmouseenter={() => { if (!globalIsUsingTouch) activeToken = meta.token; }}
+					onmouseleave={() => { if (!globalIsUsingTouch) activeToken = null; }}
 					onpointerdown={(e) => {
 						isUsingTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
 						activeAtPointerDown = activeToken;

@@ -50,6 +50,19 @@ describe('TokenSelector — hover-safety fix', () => {
 		});
 	});
 
+	it('H3: mouseleave on chip closes the panel (fixes rightward hover bug)', async () => {
+		render(TokenSelector, {
+			props: { axis: 'form', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
+		});
+		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
+		await fireEvent.mouseEnter(chip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+		// Mouse leaves the chip (simulates moving right to adjacent chip)
+		await fireEvent.mouseLeave(chip);
+		// Panel must close immediately (was staying open when moving right)
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
 	it('M1: on mobile viewport, meta-panel has no inline position styles (CSS media query must control positioning)', async () => {
 		// Simulate mobile width so $effect.pre skips desktop positioning
 		const originalWidth = window.innerWidth;

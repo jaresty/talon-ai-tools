@@ -493,7 +493,9 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "socratic": "Avoid with code channels (shellscript, codetour) - they cannot render questions as code output.",
         "spike": "Research spike: problem statement and exploratory questions. Conflicts with code-format channels (codetour, shellscript, svg, html, diagram/sketch, gherkin) — research spikes are "
         "prose question-documents. Use with no channel or prose-compatible channels.",
-        "story": "User story prose (As a / I want / so that). Explicitly avoids Gherkin or test-case syntax — conflicts with gherkin channel. Use with no channel or prose-compatible channels.",
+        "story": "User story prose (As a / I want / so that). Without a channel: produces prose user stories, avoids Gherkin syntax. With gherkin channel: story acts as a content lens — "
+        "scenarios are shaped around user capabilities and value (As a → Given [user state]; I want → When [action]; So that → Then [outcome]). Use with no channel or prose-compatible "
+        "channels for pure prose user stories; combine with gherkin channel to produce BDD scenarios framed around user value.",
         "visual": "Distinct from the diagram channel: visual = abstract/metaphorical prose layout with a short legend; diagram = precise Mermaid code with exact nodes and edges. Use visual when "
         "conceptual overview or spatial metaphor is more useful than diagrammatic precision (e.g., non-technical audience, big-picture emphasis). Use diagram when exact topology, "
         "dependency mapping, or architecture review requires precise structure.",
@@ -554,7 +556,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'flowchart', 'sequence diagram', 'draw this out', 'architecture diagram in Mermaid', 'as a diagram' → diagram. Distinct from sketch channel (sketch = D2 diagram format; "
         "diagram = Mermaid format).",
         "gherkin": "Gherkin scenario format: user wants the output as Given/When/Then Gherkin scenarios. Heuristic: 'Gherkin format', 'Given/When/Then', 'BDD scenarios', 'acceptance tests in "
-        "Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (story, case, log, questions, recipe).",
+        "Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (case, log, questions, recipe). Exception: story form composes with gherkin — scenarios "
+        "are shaped by user-value framing rather than pure behavioral conditions.",
         "html": "Semantic HTML only, no prose: user wants the complete output as HTML markup with no surrounding explanation. Heuristic: 'HTML output', 'semantic HTML', 'as HTML', 'output as a "
         "webpage', 'HTML page', 'HTML only' → html. Avoid with narrative tasks (sim, probe).",
         "jira": "Jira markup formatting: user wants the response formatted using Jira markdown (headings, lists, panels). Heuristic: 'Jira format', 'Jira markup', 'format for Jira', 'Jira "

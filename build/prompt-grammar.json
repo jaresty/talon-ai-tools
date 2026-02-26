@@ -509,7 +509,7 @@
         "scaffold": "Learning-oriented explanation. Avoid with 'make' task producing artifacts (code, diagram, adr) - use only when user wants accompanied explanation. scaffold = explain from first principles.",
         "socratic": "Avoid with code channels (shellscript, codetour) - they cannot render questions as code output.",
         "spike": "Research spike: problem statement and exploratory questions. Conflicts with code-format channels (codetour, shellscript, svg, html, diagram/sketch, gherkin) — research spikes are prose question-documents. Use with no channel or prose-compatible channels.",
-        "story": "User story prose (As a / I want / so that). Explicitly avoids Gherkin or test-case syntax — conflicts with gherkin channel. Use with no channel or prose-compatible channels.",
+        "story": "User story prose (As a / I want / so that). Without a channel: produces prose user stories, avoids Gherkin syntax. With gherkin channel: story acts as a content lens — scenarios are shaped around user capabilities and value (As a → Given [user state]; I want → When [action]; So that → Then [outcome]). Use with no channel or prose-compatible channels for pure prose user stories; combine with gherkin channel to produce BDD scenarios framed around user value.",
         "visual": "Distinct from the diagram channel: visual = abstract/metaphorical prose layout with a short legend; diagram = precise Mermaid code with exact nodes and edges. Use visual when conceptual overview or spatial metaphor is more useful than diagrammatic precision (e.g., non-technical audience, big-picture emphasis). Use diagram when exact topology, dependency mapping, or architecture review requires precise structure."
       },
       "method": {
@@ -544,7 +544,7 @@
         "code": "Code or markup only, no prose: user wants only executable or markup output with no surrounding explanation. Heuristic: 'just the code', 'code only', 'no explanation, just the implementation', 'output code only', 'code without prose', 'just the markup', 'implementation without explanation' → code. Avoid with narrative tasks (sim, probe) that produce prose.",
         "codetour": "VS Code CodeTour JSON file: user wants the response as a valid CodeTour `.tour` file for navigating code in VS Code. Heuristic: 'codetour', 'VS Code tour', 'code tour file', 'interactive code walkthrough', 'create a codetour' → codetour. Requires a developer audience. Avoid with manager, PM, or executive audiences.",
         "diagram": "Mermaid diagram code only: user wants the response as Mermaid diagram source, inferred to the best diagram type. Heuristic: 'diagram', 'Mermaid diagram', 'draw a diagram', 'flowchart', 'sequence diagram', 'draw this out', 'architecture diagram in Mermaid', 'as a diagram' → diagram. Distinct from sketch channel (sketch = D2 diagram format; diagram = Mermaid format).",
-        "gherkin": "Gherkin scenario format: user wants the output as Given/When/Then Gherkin scenarios. Heuristic: 'Gherkin format', 'Given/When/Then', 'BDD scenarios', 'acceptance tests in Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (story, case, log, questions, recipe).",
+        "gherkin": "Gherkin scenario format: user wants the output as Given/When/Then Gherkin scenarios. Heuristic: 'Gherkin format', 'Given/When/Then', 'BDD scenarios', 'acceptance tests in Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (case, log, questions, recipe). Exception: story form composes with gherkin — scenarios are shaped by user-value framing rather than pure behavioral conditions.",
         "html": "Semantic HTML only, no prose: user wants the complete output as HTML markup with no surrounding explanation. Heuristic: 'HTML output', 'semantic HTML', 'as HTML', 'output as a webpage', 'HTML page', 'HTML only' → html. Avoid with narrative tasks (sim, probe).",
         "jira": "Jira markup formatting: user wants the response formatted using Jira markdown (headings, lists, panels). Heuristic: 'Jira format', 'Jira markup', 'format for Jira', 'Jira ticket format', 'for a Jira comment', 'use Jira markup' → jira. Use with text-friendly channels; avoid with output-only channels.",
         "plain": "Suppress structural formatting: when user explicitly requests plain prose, no lists, no bullets, or no structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain prose', 'continuous prose', 'flowing paragraphs', 'paragraph form' → plain channel.",
@@ -3393,7 +3393,7 @@
     }
   ],
   "checksums": {
-    "axes": "2a94f17dd5110272d6dd5dbab2da03f7496b071755cb1fb19be5e0f665a27b9b",
+    "axes": "9dc2ef13a1dece53d28406c55d2fd237a918d2b6fde93fe2aa9938d378aa8718",
     "tasks": "ec5c08235dedcdcb84be0ec3e5521c1e78d4b83fc577ffa5d3560d37792b25e5",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

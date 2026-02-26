@@ -419,3 +419,43 @@ No changes. All R36 hits covered by cycle-11 fix. R37 and R38 are watch items on
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-13/evaluations.md`
+
+---
+
+## Cycle 14: No R36 Hits + story+gherkin Behavior Defined (Seeds 376–415)
+
+**Date:** 2026-02-25
+**Focus:** General health check; R38-watch follow-up; story+gherkin resolution
+**Seeds:** 376–415 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36 hits | ✅ Zero | First clean cycle; no gist/skim + compound dir |
+| story+gherkin (seed 401) | Score 2 → Fixed | Not a conflict — defined as BDD scenarios with user-value framing |
+| R38-watch: max+sync | Unconfirmed | No max+sync; one max+codetour=3 (generalised watch) |
+| Corpus average | 3.70 | Best since cycle 11; improvement from R36-free draw |
+
+### Changes Applied
+
+| ID | Action | Applied? |
+|----|--------|----------|
+| R39 | Define story+gherkin behavior (not block it) — updated story guidance + gherkin use_when | ✅ Applied |
+
+### Positive Patterns Confirmed
+
+- sim + act + experimental + recipe + sketch + fip: rich teaching simulation (seed 408, score 4)
+- probe + full + indirect + gherkin: form-as-lens working correctly (seed 396, score 4)
+- pull + stable + contextualise + remote + fip: contextualised extraction as PR (seed 400, score 4)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R37-watch | narrow + compound directional (seeds 326, 346) | Low |
+| R38-watch | max + constrained-format channel (seeds 338, 395) | Low — generalised to max+[sync,codetour,adr,presenterm] |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-14/evaluations.md`

@@ -1950,129 +1950,90 @@ def get_usage_patterns() -> list[dict]:
 
 
 # ADR-0147: Cross-axis composition semantics.
-# Structure: axis_a → token_a → axis_b → {"natural": [...], "reframe": {token: description}}
+# Structure: axis_a → token_a → axis_b → {"natural": [...], "cautionary": {token: warning}}
 #
 # "natural": token_b combinations that work with token_a without any special
-#            interpretation. The LLM produces good output without explicit guidance
-#            about what to produce. Promote to natural after ADR-0085 validation
-#            confirms consistent score-4; when in doubt, use reframe with a positive
-#            description.
+#            interpretation. The LLM produces good output without explicit guidance.
+#            Positive "what does this produce" cases are handled by the universal
+#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py) —
+#            no per-combination enumeration needed here.
 #
-# "reframe": token_b combinations where the LLM benefits from an explicit output
-#            description. The description says what the combination produces.
-#            Descriptions may be positive ("produces X") or cautionary
-#            ("tends to produce poor output because Y; prefer Z instead").
-#            No combination is blocked — these are guidance, not restrictions.
+# "cautionary": token_b combinations where the combination tends to produce poor
+#               output for structural reasons the universal rule cannot predict.
+#               Only entries that are NOT derivable from first principles belong here.
+#               Format: "tends to produce X because Y; prefer Z instead".
+#               No combination is blocked — these are guidance, not restrictions.
 #
 CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
     "channel": {
         "shellscript": {
             "task": {
                 "natural": ["make", "fix", "show", "trans", "pull"],
-                "reframe": {
-                    "pick":  "interactive select-menu script (e.g. bash select) for choosing between options",
-                    "diff":  "shell script that diffs or compares the two subjects",
-                    "sort":  "shell script that filters or orders the items",
-                    "sim":   "a script nominally about the scenario — tends to produce thin output "
-                             "since simulation is inherently narrative; consider remote or no channel instead",
-                    "probe": "a diagnostic script checking the subject — valid for narrow system-probe "
-                             "use cases; tends to miss the analytical depth a prose channel provides",
-                    "check": "a shell script that validates or asserts the conditions",
-                    "plan":  "a shell script that sets up the plan as executable steps",
+                "cautionary": {
+                    "sim":   "tends to produce thin output — simulation is inherently narrative, "
+                             "not executable; consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer "
+                             "analysis; valid only for narrow system-probe scripts",
                 },
             },
             "audience": {
                 "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
                             "to-platform-team", "to-llm"],
-                "reframe": {
-                    "to-ceo":          "shell output to a non-technical audience — tends to be inaccessible; consider plain or presenterm instead",
-                    "to-managers":     "shell output to a non-technical audience — tends to be inaccessible; consider plain or sync instead",
-                    "to-stakeholders": "shell output to a non-technical audience — tends to be inaccessible; consider plain or presenterm instead",
-                    "to-team":         "shell output to a mixed audience — accessible only to technical members; consider plain instead",
+                "cautionary": {
+                    "to-ceo":          "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-managers":     "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
+                    "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-team":         "accessible only to technical members of a mixed audience; consider plain instead",
                 },
             },
         },
         "adr": {
             "task": {
                 "natural": ["plan", "probe", "make"],
-                "reframe": {
-                    "pull":  "ADR capturing what was extracted and the decision context around it",
-                    "diff":  "ADR recording the comparison and the decision rationale it supports",
-                    "sort":  "ADR recording the prioritization criteria and outcome",
-                    "sim":   "ADR capturing the scenario explored and its architectural implications",
-                    "check": "ADR recording what was evaluated, findings, and decision",
-                    "pick":  "ADR recording the options considered and the final selection rationale",
-                    "fix":   "ADR recording what was changed, why, and the trade-offs accepted",
-                    "show":  "ADR framing what was demonstrated and what it implies for the architecture",
-                },
             },
         },
         "sync": {
             "completeness": {
                 "natural": ["full", "minimal", "gist"],
-                "reframe": {
-                    "max":  "exhaustive session plan — tends to be unusable; session plans require "
-                            "practical brevity; max completeness treats omissions as errors and "
-                            "produces overloaded agendas; use full or minimal instead",
-                    "deep": "deep-dive session plan — workable but risks running long; ensure time-boxing",
-                    "skim": "light-pass session plan — valid for quick standups or check-ins",
+                "cautionary": {
+                    "max":  "tends to be unusable — session plans require practical brevity; "
+                            "max treats omissions as errors and produces overloaded agendas; use full or minimal instead",
                 },
             },
         },
         "code": {
             "task": {
                 "natural": ["make", "fix", "show", "trans", "pull", "check"],
-                "reframe": {
-                    "sim":   "code that nominally represents the simulation — tends to produce "
-                             "thin placeholder code since simulation is narrative; consider remote or no channel",
-                    "probe": "code that inspects or queries the subject — valid for narrow introspection "
-                             "use cases; tends to miss the analytical depth prose provides",
-                    "diff":  "code that implements a comparison of the subjects",
-                    "sort":  "code that sorts or filters the items",
-                    "pick":  "code that implements the selection logic",
-                    "plan":  "code skeleton or scaffolding for the plan steps",
+                "cautionary": {
+                    "sim":   "tends to produce thin placeholder code — simulation is narrative, not executable; "
+                             "consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; "
+                             "valid only for narrow introspection scripts",
                 },
             },
             "audience": {
                 "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
                             "to-platform-team", "to-llm"],
-                "reframe": {
-                    "to-ceo":          "code output to a non-technical audience — inaccessible; use plain or presenterm instead",
-                    "to-managers":     "code output to a non-technical audience — inaccessible; use plain instead",
-                    "to-stakeholders": "code output to a non-technical audience — inaccessible; use plain or presenterm instead",
-                    "to-team":         "code output to a mixed audience — accessible only to technical members",
+                "cautionary": {
+                    "to-ceo":          "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-managers":     "inaccessible to a non-technical audience; use plain instead",
+                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-team":         "accessible only to technical members of a mixed audience",
                 },
             },
         },
         "codetour": {
             "task": {
                 "natural": ["make", "fix", "show", "pull"],
-                "reframe": {
-                    "sim":   "CodeTour nominally about a scenario — no code subject to navigate; tends to be incoherent",
-                    "sort":  "CodeTour nominally about sorted items — no navigable code; tends to be incoherent",
-                    "probe": "CodeTour that navigates relevant code locations to support the analysis",
-                    "diff":  "CodeTour walking through the two subjects side-by-side in code",
-                    "plan":  "CodeTour outlining planned code locations — valid for architecture planning",
-                    "check": "CodeTour walking through the code locations being evaluated",
-                    "pick":  "CodeTour comparing code implementations of the options",
+                "cautionary": {
+                    "sim":  "tends to be incoherent — simulation is narrative with no code subject to navigate",
+                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
                 },
             },
         },
         "gherkin": {
             "task": {
                 "natural": ["make", "check"],
-                "reframe": {
-                    "probe":  "Gherkin scenarios specifying the structural properties the analysis revealed",
-                    "diff":   "Gherkin scenarios expressing differences as behavioral distinctions",
-                    "sort":   "Gherkin scenarios capturing the sorted items as ordered acceptance criteria",
-                    "pick":   "Gherkin scenarios expressing the selection criteria as behavioral tests",
-                    "pull":   "Gherkin scenarios capturing the extracted content as behavioral specifications",
-                    "sim":    "Gherkin scenarios walking through the simulation as Given/When/Then steps",
-                    "plan":   "Gherkin scenarios expressing planned behavior as acceptance criteria",
-                    "show":   "Gherkin scenarios demonstrating the subject's behavior",
-                    "fix":    "Gherkin scenarios specifying what the fix must satisfy",
-                    "trans":  "Gherkin scenarios specifying the transformation as behavioral contracts",
-                },
             },
         },
     },
@@ -2080,13 +2041,9 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         "commit": {
             "completeness": {
                 "natural": ["gist", "minimal"],
-                "reframe": {
-                    "max":    "commit message with exhaustive detail — the format has no room for depth; "
-                              "tends to produce truncated or overloaded commit messages; use gist or minimal",
-                    "deep":   "commit message with deep analysis — same constraint as max; use gist or minimal",
-                    "full":   "commit message with full coverage — workable but may feel verbose for the format",
-                    "skim":   "commit message with only the most obvious change noted — may omit important context",
-                    "narrow": "commit message restricted to one aspect — valid for focused commits",
+                "cautionary": {
+                    "max":  "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
+                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
                 },
             },
         },
@@ -2098,7 +2055,7 @@ def get_cross_axis_composition(axis: str, token: str) -> dict:
     """Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
 
     Returns a dict keyed by partner axis, each value being
-    {"natural": [...], "reframe": {token: description}}.
+    {"natural": [...], "cautionary": {token: warning}}.
     Returns an empty dict if the axis or token has no entry.
     """
     return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})

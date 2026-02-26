@@ -49,142 +49,77 @@ ADR-0085 cycles 17–19 found three shellscript grammar gap seeds all scoring 2 
 
 ## Decision
 
-### Core principle: define what every combination produces
+### Core principle: universal rule + cautionary exceptions
 
-No combinations are blocked. The goal is to give the LLM a complete composition map: for any channel+task pair, there is a defined output description. Some descriptions will say "this produces a useful X"; others will say "this tends to produce low-quality output because Y; prefer Z instead." Both are more useful than silence or a bare "avoid."
+Positive "what does this combination produce" cases are handled by a universal channel-wins-reframe rule in the Reference Key (injected into every `bar build` prompt via `metaPromptConfig.py`). The rule tells the LLM: when a channel is present, the channel mandates output format and the task becomes a content lens — ask "what would it mean to produce this task's output through this channel's format?" This is derivable for any combination.
 
-This extends the existing channel-wins-reframe pattern uniformly across all channels.
+The only cases that need explicit data are **cautionary**: combinations that tend to produce poor output for structural reasons the universal rule cannot predict (e.g., simulation is inherently narrative and cannot be meaningfully executed as a shell script). These are enumerated in `CROSS_AXIS_COMPOSITION` and surfaced in `bar help llm` — not injected into the prompt.
 
 ### Part A: Introduce `CROSS_AXIS_COMPOSITION` in axisConfig.py
 
 Add a structured dict that captures cross-axis composition semantics as data. The structure uses two keys per axis pair:
 
-- `"natural"` — tokens that combine with the channel and reliably produce good output without the LLM needing explicit instruction about what to produce. When in doubt, use `reframe` with a positive description; promote to `natural` after ADR-0085 validation confirms consistent score-4.
-- `"reframe"` — a dict of `{token: description}` giving the output semantics when the combination is not natural. Descriptions may be positive ("produces X") or cautionary ("tends to produce poor output because Y; prefer Z instead")
+- `"natural"` — tokens that combine with the channel and reliably produce good output without any special interpretation. Listed for "Choosing Channel" rendering in `bar help llm`.
+- `"cautionary"` — a dict of `{token: warning}` for combinations that tend to produce poor output for structural reasons not derivable from the universal rule. Only entries that are genuinely non-obvious belong here. Format: "tends to produce X because Y; prefer Z instead".
 
 ```python
-# lib/axisConfig.py
-#
-# Cross-axis composition semantics. Structure:
-#   axis_a → token_a → axis_b → {"natural": [...], "reframe": {token: description}}
-#
-# "natural": token_b combinations that work with token_a without any special
-#            interpretation. Listed for completeness and for "Choosing Channel"
-#            rendering; the LLM produces normal output.
-#
-# "reframe": token_b combinations where the LLM should interpret token_b as a
-#            content lens within token_a's format. The description says what the
-#            combination should produce. Descriptions may be positive or cautionary.
-#            No combination is blocked — these are guidance, not restrictions.
-#
+# lib/axisConfig.py — cautionary entries only; positive cases handled by Reference Key universal rule
 CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
     "channel": {
         "shellscript": {
             "task": {
                 "natural": ["make", "fix", "show", "trans", "pull"],
-                "reframe": {
-                    "pick":  "interactive select-menu script (e.g. bash select) for choosing between options",
-                    "diff":  "shell script that diffs or compares the two subjects",
-                    "sort":  "shell script that filters or orders the items",
-                    "sim":   "a script nominally about the scenario — tends to produce thin output "
-                             "since simulation is inherently narrative; consider remote or no channel instead",
-                    "probe": "a diagnostic script checking the subject — valid for narrow system-probe "
-                             "use cases; tends to miss the analytical depth a prose channel provides",
-                    "check": "a shell script that validates or asserts the conditions",
-                    "plan":  "a shell script that sets up the plan as executable steps",
+                "cautionary": {
+                    "sim":   "tends to produce thin output — simulation is inherently narrative, not executable",
+                    "probe": "tends to miss analytical depth — valid only for narrow system-probe scripts",
                 },
             },
             "audience": {
                 "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
                             "to-platform-team", "to-llm"],
-                "reframe": {
-                    "to-ceo":          "shell output to a non-technical audience — tends to be inaccessible; consider plain or presenterm instead",
-                    "to-managers":     "shell output to a non-technical audience — tends to be inaccessible; consider plain or sync instead",
-                    "to-stakeholders": "shell output to a non-technical audience — tends to be inaccessible; consider plain or presenterm instead",
-                    "to-team":         "shell output to a mixed audience — accessible only to technical members; consider plain instead",
+                "cautionary": {
+                    "to-ceo":          "tends to be inaccessible; consider plain or presenterm instead",
+                    "to-managers":     "tends to be inaccessible; consider plain or sync instead",
+                    "to-stakeholders": "tends to be inaccessible; consider plain or presenterm instead",
+                    "to-team":         "accessible only to technical members; consider plain instead",
                 },
             },
         },
-        "adr": {
-            "task": {
-                "natural": ["plan", "probe", "make"],
-                "reframe": {
-                    "pull":  "ADR capturing what was extracted and the decision context around it",
-                    "diff":  "ADR recording the comparison and the decision rationale it supports",
-                    "sort":  "ADR recording the prioritization criteria and outcome",
-                    "sim":   "ADR capturing the scenario explored and its architectural implications",
-                    "check": "ADR recording what was evaluated, findings, and decision",
-                    "pick":  "ADR recording the options considered and the final selection rationale",
-                    "fix":   "ADR recording what was changed, why, and the trade-offs accepted",
-                    "show":  "ADR framing what was demonstrated and what it implies for the architecture",
-                },
-            },
-        },
+        "adr":      {"task": {"natural": ["plan", "probe", "make"]}},
+        "gherkin":  {"task": {"natural": ["make", "check"]}},
         "sync": {
             "completeness": {
                 "natural": ["full", "minimal", "gist"],
-                "reframe": {
-                    "max":  "exhaustive session plan — tends to be unusable; session plans require "
-                            "practical brevity; max completeness treats omissions as errors and "
-                            "produces overloaded agendas; use full or minimal instead",
-                    "deep": "deep-dive session plan — workable but risks running long; ensure time-boxing",
-                    "skim": "light-pass session plan — valid for quick standups or check-ins",
+                "cautionary": {
+                    "max": "tends to be unusable — session plans require brevity; use full or minimal instead",
                 },
             },
         },
         "code": {
             "task": {
                 "natural": ["make", "fix", "show", "trans", "pull", "check"],
-                "reframe": {
-                    "sim":   "code that nominally represents the simulation — tends to produce "
-                             "thin placeholder code since simulation is narrative; consider remote or no channel",
-                    "probe": "code that inspects or queries the subject — valid for narrow introspection "
-                             "use cases; tends to miss the analytical depth prose provides",
-                    "diff":  "code that implements a comparison of the subjects",
-                    "sort":  "code that sorts or filters the items",
-                    "pick":  "code that implements the selection logic",
-                    "plan":  "code skeleton or scaffolding for the plan steps",
+                "cautionary": {
+                    "sim":   "tends to produce thin placeholder code — simulation is narrative, not executable",
+                    "probe": "tends to miss analytical depth — valid only for narrow introspection scripts",
                 },
             },
             "audience": {
                 "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
                             "to-platform-team", "to-llm"],
-                "reframe": {
-                    "to-ceo":          "code output to a non-technical audience — inaccessible; use plain or presenterm instead",
-                    "to-managers":     "code output to a non-technical audience — inaccessible; use plain instead",
-                    "to-stakeholders": "code output to a non-technical audience — inaccessible; use plain or presenterm instead",
-                    "to-team":         "code output to a mixed audience — accessible only to technical members",
+                "cautionary": {
+                    "to-ceo":          "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-managers":     "inaccessible to a non-technical audience; use plain instead",
+                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-team":         "accessible only to technical members of a mixed audience",
                 },
             },
         },
         "codetour": {
             "task": {
                 "natural": ["make", "fix", "show", "pull"],
-                "reframe": {
-                    "sim":   "CodeTour nominally about a scenario — no code subject to navigate; tends to be incoherent",
-                    "sort":  "CodeTour nominally about sorted items — no navigable code; tends to be incoherent",
-                    "probe": "CodeTour that navigates relevant code locations to support the analysis",
-                    "diff":  "CodeTour walking through the two subjects side-by-side in code",
-                    "plan":  "CodeTour outlining planned code locations — valid for architecture planning",
-                    "check": "CodeTour walking through the code locations being evaluated",
-                    "pick":  "CodeTour comparing code implementations of the options",
-                },
-            },
-        },
-        "gherkin": {
-            "task": {
-                "natural": ["make", "check"],
-                "reframe": {
-                    "probe":  "Gherkin scenarios specifying the structural properties the analysis revealed",
-                    "diff":   "Gherkin scenarios expressing differences as behavioral distinctions",
-                    "sort":   "Gherkin scenarios capturing the sorted items as ordered acceptance criteria",
-                    "pick":   "Gherkin scenarios expressing the selection criteria as behavioral tests",
-                    "pull":   "Gherkin scenarios capturing the extracted content as behavioral specifications",
-                    "sim":    "Gherkin scenarios walking through the simulation as Given/When/Then steps",
-                    "plan":   "Gherkin scenarios expressing planned behavior as acceptance criteria",
-                    "show":   "Gherkin scenarios demonstrating the subject's behavior",
-                    "fix":    "Gherkin scenarios specifying what the fix must satisfy",
-                    "trans":  "Gherkin scenarios specifying the transformation as behavioral contracts",
+                "cautionary": {
+                    "sim":  "tends to be incoherent — simulation is narrative with no code subject to navigate",
+                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
                 },
             },
         },
@@ -193,13 +128,9 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         "commit": {
             "completeness": {
                 "natural": ["gist", "minimal"],
-                "reframe": {
-                    "max":   "commit message with exhaustive detail — the format has no room for depth; "
-                             "tends to produce truncated or overloaded commit messages; use gist or minimal",
-                    "deep":  "commit message with deep analysis — same constraint as max; use gist or minimal",
-                    "full":  "commit message with full coverage — workable but may feel verbose for the format",
-                    "skim":  "commit message with only the most obvious change noted — may omit important context",
-                    "narrow": "commit message restricted to one aspect — valid for focused commits",
+                "cautionary": {
+                    "max":  "tends to produce truncated or overloaded messages — format has no room for depth; use gist or minimal",
+                    "deep": "same constraint as max — format cannot accommodate deep analysis; use gist or minimal",
                 },
             },
         },
@@ -207,16 +138,24 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
 }
 ```
 
-### Part B: Render `CROSS_AXIS_COMPOSITION` in help_llm.go
+### Part B: Update Reference Key in `metaPromptConfig.py`
 
-Add a `renderCrossAxisComposition(w, grammar)` function that produces two things in a single Go change:
+Extend two places in the Channel bullet of `PROMPT_REFERENCE_KEY`:
 
-1. **"Choosing Channel" section** — for each channel, lists the natural task combinations and notes the reframe semantics for others
-2. **Universal channel-wins-reframe rule in Reference Key** — replaces the current selective documentation (only gherkin/codetour/adr) with a universally stated rule, plus per-channel reframe examples pulled from the data:
+1. **Channel constraint description** — extend from "delivery context: platform formatting conventions only" to include the task-as-lens rule: when a channel is present, the task becomes a content lens — ask "what would it mean to produce this task's output through this channel's format?"
 
-> "When a channel token is combined with any task: the channel defines output format; the task becomes a content lens within that format. For all channel+task combinations, `CROSS_AXIS_COMPOSITION` defines the output description. If no natural combination exists for a given task, the reframe description tells the LLM what to produce or warns that the combination tends to produce low-quality output."
+2. **Precedence bullet** — extend the existing specification-artifact-only rule to a universal statement covering all channels (executable, specification, and delivery).
 
-When new channel+task entries are added to `CROSS_AXIS_COMPOSITION`, the rendered output updates automatically — no Go changes required.
+This is the primary mechanism for score-2 improvement — the LLM reads this at execution time in every `bar build` prompt.
+
+### Part C: Render `CROSS_AXIS_COMPOSITION` in `help_llm.go`
+
+Add a `renderCrossAxisComposition(w, grammar)` function that renders a **"Choosing Channel" section** in `bar help llm`:
+
+- For each channel, lists the natural task/audience/completeness combinations
+- Lists cautionary warnings for non-natural combinations that tend to produce poor output
+
+This is pre-selection guidance — the LLM reads it when learning the grammar, not at execution time. The cautionary warnings here complement the universal rule in the Reference Key.
 
 ---
 
@@ -225,11 +164,11 @@ When new channel+task entries are added to `CROSS_AXIS_COMPOSITION`, the rendere
 ### Positive
 
 - **P1 resolved**: Cross-axis relationships are machine-readable data. Code can render "Choosing Channel" systematically and validate entries against the token catalog.
-- **P2 resolved**: Every channel+task pair has defined output semantics. The LLM no longer silently mishandles undocumented combinations.
-- **Composability principle unified**: The channel-wins-reframe pattern now applies to all channels, not just specification artifact channels. The Reference Key states the rule once; `CROSS_AXIS_COMPOSITION` provides the per-combination output descriptions.
-- **Score-2 reduction**: Combinations with useful reframe semantics (`shellscript+diff`, `shellscript+sort`, `adr+pull`, `gherkin+sim`, etc.) may improve from score-2 to score-3 or score-4 once the LLM has guidance on what to produce.
-- **Cautionary reframes**: Combinations like `shellscript+sim` now produce defined (poor) output with an explanation and a better-path suggestion, rather than producing undefined output silently.
-- **Growing dict**: New channel+task observations from ADR-0085 shuffle cycles can be added as `reframe` entries without Go changes.
+- **P2 resolved**: The universal Reference Key rule gives the LLM first-principles guidance for any channel+task combination. Cautionary exceptions are enumerated for the structurally-broken cases the universal rule cannot predict.
+- **Composability principle unified**: The channel-wins-reframe pattern now applies to all channels universally, stated once in the Reference Key, with cautionary exceptions in `CROSS_AXIS_COMPOSITION`.
+- **Score-2 reduction**: The primary mechanism is the Reference Key universal rule (execution-time). Cautionary entries prevent the structurally-broken combinations (`shellscript+sim`, `code+sim`, `codetour+sim/sort`) from silently producing poor output.
+- **Minimal dict**: `cautionary` contains only entries that are non-derivable from first principles. New entries are only added when observed in ADR-0085 shuffle cycles and confirmed not explainable by the universal rule.
+- **Growing dict**: New cautionary observations can be added to `CROSS_AXIS_COMPOSITION` without Go changes.
 
 ### Risks and open questions
 
@@ -249,25 +188,31 @@ All combinations remain permitted by the grammar. The `CROSS_AXIS_COMPOSITION` d
 
 ## Implementation Plan
 
-### Phase 1: Data structure (axisConfig.py)
+### Phase 1: Data structure (axisConfig.py) ✅ Done
 
-1. Add `CROSS_AXIS_COMPOSITION` dict to `lib/axisConfig.py`
-2. Add helper function `get_cross_axis_composition(axis: str, token: str) → dict`
-3. Populate initial entries (shellscript, adr, sync, code, codetour, gherkin for channel axis; commit for form axis)
-4. Leave `AXIS_KEY_TO_GUIDANCE` prose unchanged — migration of overlapping cross-axis notes is deferred to Phase 5 audit
+1. ~~Add `CROSS_AXIS_COMPOSITION` dict to `lib/axisConfig.py`~~ — done; cautionary-only entries
+2. ~~Add helper function `get_cross_axis_composition(axis: str, token: str) → dict`~~ — done
+3. ~~Populate initial entries~~ — done; `adr`/`gherkin` have natural-only (no cautionary); `shellscript`/`code`/`codetour`/`sync`/`commit` have cautionary entries
+4. Leave `AXIS_KEY_TO_GUIDANCE` prose unchanged — migration deferred to Phase 5 audit
 
-### Phase 2: Grammar export
+### Phase 2: Grammar export ✅ Done
 
-1. Add `CrossAxisComposition` field to grammar JSON
-2. Export from `lib/promptGrammar.py`; read in `grammar.go`
-3. `make bar-grammar-update` to regenerate
+1. ~~Add `CrossAxisComposition` field to grammar JSON~~ — done; `cross_axis_composition` under `axes`
+2. ~~Export from `lib/promptGrammar.py`; read in `grammar.go`~~ — done; `CrossAxisPair` struct + accessor
+3. ~~`make bar-grammar-update` to regenerate~~ — done
 
-### Phase 3: help_llm rendering (replaces F4)
+### Phase 3a: Reference Key universal rule (`metaPromptConfig.py`)
+
+1. Extend Channel bullet in CONSTRAINTS: add task-as-lens rule
+2. Extend Precedence bullet: replace specification-artifact-only statement with universal rule covering all channels
+3. `make bar-grammar-update` to regenerate; verify rule appears in `bar build` output
+
+### Phase 3b: `help_llm` Choosing Channel (`help_llm.go`)
 
 1. Add `renderCrossAxisComposition(w, grammar)` in `help_llm.go`
-2. Renders "Choosing Channel" section from natural+reframe data per channel
-3. Renders universal channel-wins-reframe rule in Reference Key, replacing the current selective gherkin/codetour/adr-only statement
-4. "Grammar-enforced restrictions" section already handled by F5 fix — no further change needed
+2. Renders "Choosing Channel" section from `natural` + `cautionary` data per channel
+3. Wire into `renderTokenSelectionHeuristics`
+4. Fix `TestLLMHelpHeuristicsTokensExist`: persona audience tokens (e.g. `to-programmer`) are not in `grammar.Axes.Definitions` — either exclude them from rendered backtick tokens or extend the test's known-token set to include persona tokens
 
 ### Phase 4: ADR-0085 validation
 

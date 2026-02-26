@@ -249,7 +249,7 @@ def render_axis_config() -> str:
             \"\"\"Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
 
             Returns a dict keyed by partner axis, each value being
-            {\"natural\": [...], \"reframe\": {token: description}}.
+            {\"natural\": [...], \"cautionary\": {token: warning}}.
             Returns an empty dict if the axis or token has no entry.
             \"\"\"
             return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})
@@ -339,19 +339,17 @@ def get_usage_patterns() -> list[dict]:
                 f"# labels spanning multiple tokens and stays hardcoded until a future ADR.\n"
                 f"AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {routing_concept_body}",
                 f"# ADR-0147: Cross-axis composition semantics.\n"
-                f"# Structure: axis_a → token_a → axis_b → {{\"natural\": [...], \"reframe\": {{token: description}}}}\n"
+                f"# Structure: axis_a → token_a → axis_b → {{\"natural\": [...], \"cautionary\": {{token: warning}}}}\n"
                 f"#\n"
                 f"# \"natural\": token_b combinations that work with token_a without any special\n"
-                f"#            interpretation. The LLM produces good output without explicit guidance\n"
-                f"#            about what to produce. Promote to natural after ADR-0085 validation\n"
-                f"#            confirms consistent score-4; when in doubt, use reframe with a positive\n"
-                f"#            description.\n"
+                f"#            interpretation. The LLM produces good output without explicit guidance.\n"
+                f"#            Positive \"what does this produce\" cases are handled by the universal\n"
+                f"#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py).\n"
                 f"#\n"
-                f"# \"reframe\": token_b combinations where the LLM benefits from an explicit output\n"
-                f"#            description. The description says what the combination produces.\n"
-                f"#            Descriptions may be positive (\"produces X\") or cautionary\n"
-                f"#            (\"tends to produce poor output because Y; prefer Z instead\").\n"
-                f"#            No combination is blocked — these are guidance, not restrictions.\n"
+                f"# \"cautionary\": token_b combinations that tend to produce poor output for structural\n"
+                f"#               reasons the universal rule cannot predict. Only non-derivable entries\n"
+                f"#               belong here. Format: \"tends to X because Y; prefer Z instead\".\n"
+                f"#               No combination is blocked — these are guidance, not restrictions.\n"
                 f"#\n"
                 f"CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {cross_axis_body}",
                 dataclasses.rstrip(),

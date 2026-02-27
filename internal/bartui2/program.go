@@ -1768,6 +1768,12 @@ func (m model) renderTokensPane() string {
 	var selectedUseWhen string  // Store routing trigger phrase (ADR-0142)
 	var selectedValue string    // Store token value for cross-axis lookup (ADR-0148)
 
+	// Chip traffic light: active when task/completeness axis is browsed and a channel/form
+	// token is already selected (ADR-0148 Phase 1c). Scope: task and completeness only.
+	showPrefixColumn := m.crossAxisCompositionFor != nil && paneHeight >= 12 &&
+		(currentStage == "task" || currentStage == "completeness") &&
+		(len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["form"]) > 0)
+
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
 	} else if len(m.completions) == 0 {
@@ -1803,15 +1809,23 @@ func (m model) renderTokensPane() string {
 				right.WriteString("\n")
 				lastSemanticGroup = c.SemanticGroup
 			}
-			prefix := "  "
+			selectionMark := "  "
 			style := dimStyle
 			if i == m.completionIndex {
-				prefix = "▸ "
+				selectionMark = "▸ "
 				style = completionSelectedStyle
 				selectedDesc = c.Description  // Capture full description
 				selectedGuidance = c.Guidance // Capture guidance if present
 				selectedUseWhen = c.UseWhen   // Capture routing phrase if present
 				selectedValue = c.Value       // Capture token value for cross-axis lookup (ADR-0148)
+			}
+			// Chip traffic light prefix column (ADR-0148 Phase 1c).
+			// Column is always present when showPrefixColumn to avoid layout shift.
+			var prefix string
+			if showPrefixColumn {
+				prefix = m.chipState(currentStage, c.Value) + selectionMark
+			} else {
+				prefix = selectionMark
 			}
 			display := c.Display
 			if strings.TrimSpace(display) == "" {
@@ -2115,6 +2129,42 @@ func (m model) renderResultPane() string {
 	}
 
 	return paneStyle.Width(width).Height(paneHeight).Render(content.String())
+}
+
+// chipState returns the traffic-light prefix character for a token when the chip prefix column
+// is active (ADR-0148 Phase 1c). It iterates all active channel/form selections and returns:
+// "⚠" if any has a cautionary entry for the given axis+token, "✓" if any has a natural listing,
+// or " " otherwise. Cautionary takes precedence over natural.
+func (m model) chipState(axis, token string) string {
+	if m.crossAxisCompositionFor == nil {
+		return " "
+	}
+	hasCautionary := false
+	hasNatural := false
+	for _, channelAxis := range []string{"channel", "form"} {
+		for _, activeToken := range m.tokensByCategory[channelAxis] {
+			natural, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
+			if cauts, ok := cautionary[axis]; ok {
+				if _, ok := cauts[token]; ok {
+					hasCautionary = true
+				}
+			}
+			if nats, ok := natural[axis]; ok {
+				for _, n := range nats {
+					if n == token {
+						hasNatural = true
+					}
+				}
+			}
+		}
+	}
+	if hasCautionary {
+		return "⚠"
+	}
+	if hasNatural {
+		return "✓"
+	}
+	return " "
 }
 
 // sortedStringKeys returns the keys of a map[string]string sorted alphabetically.

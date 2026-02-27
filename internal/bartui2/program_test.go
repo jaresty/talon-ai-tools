@@ -2722,6 +2722,49 @@ func TestCrossAxisCompositionDirectionB(t *testing.T) {
 	}
 }
 
+// TestCrossAxisChipPrefixColumn specifies that when browsing the task axis with an active
+// channel token that has composition data, each task row shows a 1-char prefix:
+// ✓ for natural, ⚠ for cautionary, and a space for neutral (ADR-0148 Phase 1c).
+func TestCrossAxisChipPrefixColumn(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "channel" && token == "shellscript" {
+			return map[string][]string{
+					"task": {"make"},
+				},
+				map[string]map[string]string{
+					"task": {"sim": "tends to produce thin output — simulation is inherently narrative"},
+				}
+		}
+		return nil, nil
+	}
+
+	// testCategoriesTaskChannel has task={sim, make} and channel={shellscript}.
+	// Initializing with shellscript advances past channel to task stage.
+	// Height 50: paneHeight = 13 >= 12, prefix column enabled (ADR-0148 R1).
+	m := newModel(Options{
+		TokenCategories:         testCategoriesTaskChannel(),
+		InitialTokens:           []string{"shellscript"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "task" {
+		t.Fatalf("expected task stage, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+
+	if !strings.Contains(view, "⚠") {
+		t.Errorf("chip prefix: expected ⚠ before cautionary token 'sim'; view:\n%s", view)
+	}
+	if !strings.Contains(view, "✓") {
+		t.Errorf("chip prefix: expected ✓ before natural token 'make'; view:\n%s", view)
+	}
+}
+
 func TestAddendumPassedToPreviewAndCommand(t *testing.T) {
 	var capturedAddendum string
 	preview := func(subject string, addendum string, tokens []string) (string, error) {

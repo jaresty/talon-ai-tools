@@ -14,8 +14,8 @@
 </script>
 
 <script lang="ts">
-	import { METHOD_CATEGORY_ORDER } from './grammar.js';
-	import type { TokenMeta } from './grammar.js';
+	import { METHOD_CATEGORY_ORDER, getCompositionData, getChipState } from './grammar.js';
+	import type { TokenMeta, Grammar } from './grammar.js';
 
 	interface Props {
 		axis: string;
@@ -25,9 +25,12 @@
 		onToggle: (token: string) => void;
 		onTabNext?: () => void;
 		onTabPrev?: () => void;
+		// ADR-0148: cross-axis composition data
+		grammar?: Grammar;
+		activeTokensByAxis?: Record<string, string[]>;
 	}
 
-	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev }: Props = $props();
+	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev, grammar, activeTokensByAxis }: Props = $props();
 
 	let filter = $state('');
 	let activeToken = $state<string | null>(null);
@@ -83,6 +86,21 @@
 	);
 
 	let activeMeta = $derived(tokens.find((t) => t.token === activeToken) ?? null);
+
+	// ADR-0148: cross-axis composition data for the focused channel/form token (direction A).
+	// Always-on: no selection state needed.
+	let activeMetaComposition = $derived(
+		grammar && activeMeta && (axis === 'channel' || axis === 'form')
+			? getCompositionData(grammar, axis, activeMeta.token)
+			: null
+	);
+
+	// ADR-0148: chip traffic light — only task and completeness axes; audience excluded.
+	const TRAFFIC_LIGHT_AXES = new Set(['task', 'completeness']);
+	function resolveChipState(token: string): 'natural' | 'cautionary' | null {
+		if (!grammar || !activeTokensByAxis || !TRAFFIC_LIGHT_AXES.has(axis)) return null;
+		return getChipState(grammar, activeTokensByAxis, axis, token);
+	}
 
 	let panelStyle = $state('');
 
@@ -312,6 +330,8 @@
 						class:selected={isSelected}
 						class:disabled={atCap}
 						class:active-meta={isActive}
+						class:chip--natural={resolveChipState(meta.token) === 'natural'}
+						class:chip--cautionary={resolveChipState(meta.token) === 'cautionary'}
 						role="option"
 						aria-selected={isSelected}
 						data-token={meta.token}
@@ -364,6 +384,8 @@
 					class:selected={isSelected}
 					class:disabled={atCap}
 					class:active-meta={isActive}
+					class:chip--natural={resolveChipState(meta.token) === 'natural'}
+					class:chip--cautionary={resolveChipState(meta.token) === 'cautionary'}
 					role="option"
 					aria-selected={isSelected}
 					data-token={meta.token}
@@ -433,6 +455,24 @@
 						<span class="meta-section-label">Notes</span>
 						<p>{activeMeta.guidance}</p>
 					</div>
+				{/if}
+				{#if activeMetaComposition}
+					{@const naturalEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => pair.natural)}
+					{@const cautionEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => Object.entries(pair.cautionary))}
+					{#if naturalEntries.length > 0}
+						<div class="meta-section">
+							<span class="meta-section-label">Works well with</span>
+							<p>{naturalEntries.join(', ')}</p>
+						</div>
+					{/if}
+					{#if cautionEntries.length > 0}
+						<div class="meta-section meta-caution">
+							<span class="meta-section-label">Caution</span>
+							{#each cautionEntries as [token, warning]}
+								<p><code>{token}</code> — {warning}</p>
+							{/each}
+						</div>
+					{/if}
 				{/if}
 			</div>
 			<div class="meta-footer">
@@ -561,6 +601,15 @@
 		cursor: not-allowed;
 	}
 
+	/* ADR-0148: chip traffic light — natural (green left border) and cautionary (amber left border) */
+	.token-chip.chip--natural {
+		border-left: 3px solid #9ece6a;
+	}
+
+	.token-chip.chip--cautionary {
+		border-left: 3px solid #e0af68;
+	}
+
 	code {
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
@@ -678,6 +727,19 @@
 		padding: 0.4rem 0.5rem;
 		border-top: none;
 		margin-top: 0.4rem;
+	}
+
+	/* ADR-0148: caution section in meta panel */
+	.meta-caution {
+		background: color-mix(in srgb, var(--color-surface) 80%, #e0af6820);
+		border-radius: calc(var(--radius) - 2px);
+		padding: 0.4rem 0.5rem;
+		border-top: none;
+		margin-top: 0.4rem;
+	}
+
+	.meta-caution .meta-section-label {
+		color: #e0af68;
 	}
 
 	.meta-footer {

@@ -21,6 +21,12 @@ export interface GrammarPattern {
   tokens: Record<string, string[]>;
 }
 
+// CrossAxisPair holds natural/cautionary composition data for one axis_a+token_a+axis_b triple (ADR-0148).
+export interface CrossAxisPair {
+	natural: string[];
+	cautionary: Record<string, string>;
+}
+
 export interface Grammar {
 	axes: {
 		definitions: Record<string, Record<string, string>>;
@@ -30,6 +36,7 @@ export interface Grammar {
 		kanji: Record<string, Record<string, string>>; // ADR-0143
 		categories?: Record<string, Record<string, string>>; // ADR-0144: semantic family groupings for method tokens
 		routing_concept?: Record<string, Record<string, string>>; // ADR-0146: distilled routing concept phrases
+		cross_axis_composition?: Record<string, Record<string, Record<string, CrossAxisPair>>>; // ADR-0148
 	};
 	tasks: {
 		descriptions: Record<string, string>;
@@ -202,4 +209,46 @@ export function getUsagePatterns(grammar: Grammar): GrammarPattern[] {
 
 export function getStarterPacks(grammar: Grammar): StarterPack[] {
 	return grammar.starter_packs ?? [];
+}
+
+// getCompositionData returns the cross-axis composition entry for a channel/form token (ADR-0148).
+// Returns null if no entry is defined. The result is keyed by partner axis, each value being a
+// CrossAxisPair with natural token lists and cautionary token→warning maps.
+export function getCompositionData(
+	grammar: Grammar,
+	axis: string,
+	token: string
+): Record<string, CrossAxisPair> | null {
+	const cac = grammar.axes.cross_axis_composition;
+	if (!cac) return null;
+	const byToken = cac[axis];
+	if (!byToken) return null;
+	const entry = byToken[token];
+	return entry ?? null;
+}
+
+// getChipState returns the traffic-light state for a chip token given active selections (ADR-0148).
+// Iterates all channel and form entries in activeTokensByAxis. Returns 'cautionary' if any active
+// channel/form has a cautionary entry for the chip token on the given axis; 'natural' if any has
+// a natural listing; null if none match. Cautionary takes precedence over natural.
+// Scope: intended for task and completeness axes only (audience excluded per ADR-0148 §Chip scope).
+export function getChipState(
+	grammar: Grammar,
+	activeTokensByAxis: Record<string, string[]>,
+	chipAxis: string,
+	chipToken: string
+): 'natural' | 'cautionary' | null {
+	const cac = grammar.axes.cross_axis_composition;
+	if (!cac) return null;
+	let hasNatural = false;
+	for (const channelAxis of ['channel', 'form']) {
+		const activeTokens = activeTokensByAxis[channelAxis] ?? [];
+		for (const activeToken of activeTokens) {
+			const entry = cac[channelAxis]?.[activeToken]?.[chipAxis];
+			if (!entry) continue;
+			if (entry.cautionary?.[chipToken]) return 'cautionary';
+			if (entry.natural?.includes(chipToken)) hasNatural = true;
+		}
+	}
+	return hasNatural ? 'natural' : null;
 }

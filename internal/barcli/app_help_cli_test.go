@@ -50,13 +50,13 @@ func TestAxisGuidanceAccessorReturnsNonEmpty(t *testing.T) {
 	if guidance := grammar.TaskGuidance("fix"); guidance == "" {
 		t.Error("task:fix must have guidance defined (ADR-0110 D2)")
 	}
-	// channel:code must warn against narrative tasks
-	if guidance := grammar.AxisGuidance("channel", "code"); guidance == "" {
-		t.Error("channel:code must have guidance defined (ADR-0110 D2)")
+	// channel:code must warn against narrative tasks (now via cross-axis composition — ADR-0148 Part C)
+	if data := grammar.CrossAxisCompositionFor("channel", "code"); len(data) == 0 {
+		t.Error("channel:code must have cross-axis composition defined (ADR-0148 Part C)")
 	}
-	// channel:html must warn against narrative tasks
-	if guidance := grammar.AxisGuidance("channel", "html"); guidance == "" {
-		t.Error("channel:html must have guidance defined (ADR-0110 D2)")
+	// channel:html must warn against narrative tasks (now via cross-axis composition — ADR-0148 Part C)
+	if data := grammar.CrossAxisCompositionFor("channel", "html"); len(data) == 0 {
+		t.Error("channel:html must have cross-axis composition defined (ADR-0148 Part C)")
 	}
 }
 
@@ -567,19 +567,21 @@ func TestHelpLLMRoutingConceptInGrammar(t *testing.T) {
 }
 
 // TestHelpLLMChannelAudienceGuidanceInSSoT specifies that channel:code and
-// channel:shellscript guidance must include the non-technical audience
-// incompatibility note (ADR-0146 Change 2). The hardcoded bullet in help_llm.go
-// must be absent; the guidance renders via Composition Rules > Token Guidance.
+// channel:shellscript cross-axis composition must include the non-technical audience
+// incompatibility note (ADR-0146 Change 2, ADR-0148 Part C). The hardcoded bullet in help_llm.go
+// must be absent; audience restrictions render via cross-axis composition (Choosing Channel section).
 // codetour already documents the audience restriction and needs no change.
 func TestHelpLLMChannelAudienceGuidanceInSSoT(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
+	// After ADR-0148 Part C, audience incompatibility lives in CrossAxisCompositionFor (not guidance)
 	for _, token := range []string{"code", "shellscript"} {
-		g := grammar.AxisGuidance("channel", token)
-		if !strings.Contains(g, "non-technical") {
-			t.Errorf("ADR-0146 Change 2: channel:%s guidance must mention non-technical audience incompatibility, got: %q", token, g)
+		data := grammar.CrossAxisCompositionFor("channel", token)
+		audiencePair, ok := data["audience"]
+		if !ok || len(audiencePair.Cautionary) == 0 {
+			t.Errorf("ADR-0148 Part C: channel:%s must have audience cautionary entries in cross-axis composition", token)
 		}
 	}
 

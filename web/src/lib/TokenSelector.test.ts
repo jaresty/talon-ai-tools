@@ -741,3 +741,176 @@ describe('TokenSelector — focus returning to filter clears chip focus and clos
 		expect(screen.queryByText('When to use')).toBeNull();
 	});
 });
+
+// ── ADR-0148: Cross-axis composition in meta panel and chip traffic light ──────
+
+const channelTokens = [
+	{
+		token: 'shellscript',
+		label: 'ShellScript',
+		description: 'Shell script output for executable code.',
+		guidance: '',
+		use_when: ''
+	},
+	{
+		token: 'slack',
+		label: 'Slack',
+		description: 'Slack message format.',
+		guidance: '',
+		use_when: ''
+	}
+];
+
+const taskTokens = [
+	{ token: 'sim', label: 'Sim', description: 'Simulate a scenario.', guidance: '', use_when: '' },
+	{ token: 'make', label: 'Make', description: 'Create new content.', guidance: '', use_when: '' },
+	{ token: 'show', label: 'Show', description: 'Surface existing content.', guidance: '', use_when: '' }
+];
+
+const testGrammar = {
+	axes: {
+		definitions: {},
+		labels: {},
+		guidance: {},
+		use_when: {},
+		kanji: {},
+		cross_axis_composition: {
+			channel: {
+				shellscript: {
+					task: {
+						natural: ['make', 'show'],
+						cautionary: { sim: 'tends to produce thin output — simulation is inherently narrative' }
+					}
+				}
+			}
+		}
+	},
+	tasks: { descriptions: {}, labels: {}, guidance: {} },
+	hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+	persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } }
+} as unknown as import('./grammar.js').Grammar;
+
+describe('TokenSelector — ADR-0148 cross-axis meta panel (direction A)', () => {
+	it('meta panel shows "Works well with" section for channel token with natural data', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: {}
+			}
+		});
+		const chip = screen.getByText('shellscript').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Works well with')).toBeTruthy();
+		expect(screen.getByText(/make/)).toBeTruthy();
+	});
+
+	it('meta panel shows "Caution" section for channel token with cautionary data', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: {}
+			}
+		});
+		const chip = screen.getByText('shellscript').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Caution')).toBeTruthy();
+		expect(screen.getByText('sim', { selector: 'code' })).toBeTruthy();
+	});
+
+	it('meta panel shows no composition sections for channel token without data', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: {}
+			}
+		});
+		const slackChip = screen.getByText('slack').closest('.token-chip')!;
+		await fireEvent.click(slackChip);
+		expect(screen.queryByText('Works well with')).toBeNull();
+		expect(screen.queryByText('Caution')).toBeNull();
+	});
+});
+
+describe('TokenSelector — ADR-0148 chip traffic light (task/completeness axes)', () => {
+	it('task chips show chip--cautionary class when shellscript is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: taskTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { channel: ['shellscript'] }
+			}
+		});
+		const simChip = screen.getByText('sim').closest('.token-chip')! as HTMLElement;
+		expect(simChip.classList.contains('chip--cautionary')).toBe(true);
+	});
+
+	it('task chips show chip--natural class for natural tokens when shellscript is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: taskTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { channel: ['shellscript'] }
+			}
+		});
+		const makeChip = screen.getByText('make').closest('.token-chip')! as HTMLElement;
+		expect(makeChip.classList.contains('chip--natural')).toBe(true);
+	});
+
+	it('task chips show no traffic light class when no channel/form token is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: taskTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: {}
+			}
+		});
+		const simChip = screen.getByText('sim').closest('.token-chip')! as HTMLElement;
+		expect(simChip.classList.contains('chip--cautionary')).toBe(false);
+		expect(simChip.classList.contains('chip--natural')).toBe(false);
+	});
+
+	it('audience chips never show traffic light classes (scope exclusion)', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'audience',
+				tokens: taskTokens, // reuse as dummy tokens
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { channel: ['shellscript'] }
+			}
+		});
+		for (const chipEl of document.querySelectorAll('.token-chip')) {
+			expect((chipEl as HTMLElement).classList.contains('chip--cautionary')).toBe(false);
+			expect((chipEl as HTMLElement).classList.contains('chip--natural')).toBe(false);
+		}
+	});
+});

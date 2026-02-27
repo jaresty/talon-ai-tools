@@ -29,7 +29,9 @@ vi.mock('$lib/grammar.js', () => ({
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
-	getStarterPacks: vi.fn().mockReturnValue([])
+	getStarterPacks: vi.fn().mockReturnValue([]),
+	getCompositionData: vi.fn().mockReturnValue(null),
+	getChipState: vi.fn().mockReturnValue(null)
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({

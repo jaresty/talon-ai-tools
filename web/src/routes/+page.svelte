@@ -562,6 +562,8 @@
 					onToggle={(t) => toggle('task', t)}
 					onTabNext={goToNextTab}
 					onTabPrev={focusActiveTab}
+					{grammar}
+					activeTokensByAxis={selected}
 				/>
 				{/if}
 				{#each AXES as axis (axis)}
@@ -574,6 +576,8 @@
 						onToggle={(t) => toggle(axis, t)}
 						onTabNext={goToNextTab}
 						onTabPrev={goToPrevTab}
+						{grammar}
+						activeTokensByAxis={selected}
 					/>
 					{/if}
 				{/each}

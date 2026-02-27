@@ -456,27 +456,14 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # Distinct from hard incompatibilities in hierarchy.incompatibilities.
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
-        "adr": "Task-affinity for decision-making tasks (plan, probe, make). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce "
-        "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback). Exception: when a structural form token (e.g., ladder, "
-        "case) is also present, it may act as a content lens that reframes the task as a decision-adjacent structure (e.g., pull+ladder+adr = a hierarchical extraction organized as an "
-        "ADR) — coherence depends on the subject.",
-        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code. Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, "
-        "to-team). Prefer diagram, presenterm, sketch, or plain for non-technical audiences.",
-        "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan. "
-        "Requires a developer audience — produces a VS Code CodeTour JSON file. Avoid with manager, PM, executive, CEO, stakeholder, analyst, or designer audiences.",
-        "gherkin": "Outputs only Gherkin Given/When/Then syntax. Primary use: make tasks creating acceptance tests or feature specifications. With analysis tasks (probe, diff, check, sort), "
-        "output is reframed as Gherkin scenarios that specify the analyzed properties — the analysis becomes evidence; scenarios express what should be true given that evidence. "
-        "Avoid with prose-structure forms (story, case, log, questions, recipe).",
-        "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code. Audience incompatibility: avoid with "
-        "non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team).",
+        "gherkin": "Avoid with prose-structure forms (story, case, log, questions, recipe).",
         "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both.",
     },
     "completeness": {
         "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that "
         "require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
         "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer "
-        "grow for disciplined minimalism. Avoid pairing with sync channel — sync implies practical session brevity; max treating omissions as errors produces unusable session plans.",
+        "grow for disciplined minimalism.",
         "narrow": "Restricts discussion to a small topic slice. Compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) work with "
         "narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, "
         "prefer full or deep completeness so the directional can range freely.",
@@ -488,7 +475,7 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "
         "diagram/sketch) — case-building requires prose structure those channels cannot accommodate. Use with no channel or prose-compatible channels (jira, slack, plain, remote, sync).",
-        "commit": "Conventional commit message (type: scope header + optional body). Brief artifact by design — avoid deep or max completeness (no room to express depth) and compound directionals "
+        "commit": "Conventional commit message (type: scope header + optional body). Avoid compound directionals "
         "(fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog, fog). Best with gist or minimal completeness.",
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
@@ -1901,6 +1888,51 @@ USAGE_PATTERNS: list[dict] = [
 def get_usage_patterns() -> list[dict]:
     """Return the USAGE_PATTERNS list (ADR-0134 SSOT)."""
     return USAGE_PATTERNS
+
+
+def axis_key_to_value_map(axis: str) -> dict[str, str]:
+    """Return the key->description map for a given axis."""
+    return AXIS_KEY_TO_VALUE.get(axis, {})
+
+
+def axis_key_to_label_map(axis: str) -> dict[str, str]:
+    """Return the key->label map for a given axis (ADR-0109)."""
+    return AXIS_KEY_TO_LABEL.get(axis, {})
+
+
+def axis_key_to_guidance_map(axis: str) -> dict[str, str]:
+    """Return the key->guidance map for a given axis (ADR-0110)."""
+    return AXIS_KEY_TO_GUIDANCE.get(axis, {})
+
+
+def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
+    """Return the key->use_when map for a given axis (ADR-0132)."""
+    return AXIS_KEY_TO_USE_WHEN.get(axis, {})
+
+
+def axis_key_to_kanji_map(
+    axis: str,
+) -> Union[Dict[str, str], Dict[str, Dict[str, str]]]:
+    """Return the key->kanji map for a given axis (ADR-0143).
+
+    For regular axes returns Dict[str, str] (token -> kanji).
+    For 'persona' returns Dict[str, Dict[str, str]] (sub-axis -> token -> kanji).
+    """
+    return AXIS_KEY_TO_KANJI.get(axis, {})
+
+
+def axis_key_to_category_map(axis: str) -> dict[str, str]:
+    """Return the key->category map for a given axis (ADR-0144)."""
+    return AXIS_KEY_TO_CATEGORY.get(axis, {})
+
+
+def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
+    """Return the key->routing_concept map for a given axis (ADR-0146).
+
+    Returns per-token distilled routing concept phrases. Tokens sharing the same
+    phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
+    """
+    return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
 
 
 # ADR-0147: Cross-axis composition semantics.

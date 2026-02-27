@@ -414,7 +414,9 @@ func TestLLMHelpADR0107TokenDescriptions(t *testing.T) {
 }
 
 // TestLLMHelpADR0107Decisions verifies that ADR-0107 D2 (adr channel
-// task-affinity) is reflected in bar help llm § Token Guidance.
+// task-affinity) is reflected in bar help llm § Choosing Channel.
+// After ADR-0148 Part C, cross-axis content moved from Token Guidance (guidance prose)
+// to Choosing Channel (rendered from CROSS_AXIS_COMPOSITION).
 // Note: D1 (interactive-form conflicts) is superseded by ADR-0108.
 func TestLLMHelpADR0107Decisions(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
@@ -422,23 +424,20 @@ func TestLLMHelpADR0107Decisions(t *testing.T) {
 	renderLLMHelp(&buf, grammar, "", false)
 	output := buf.String()
 
-	// Check Token Guidance section for channel token guidance
-	tokenGuidanceStart := strings.Index(output, "**Token Guidance:**")
-	if tokenGuidanceStart == -1 {
-		t.Fatal("could not locate **Token Guidance:** section")
+	// D2: adr channel task-affinity restriction appears in Choosing Channel section
+	choosingChannelStart := strings.Index(output, "### Choosing Channel")
+	if choosingChannelStart == -1 {
+		t.Fatal("D2: could not locate ### Choosing Channel section")
 	}
-	sectionStart := tokenGuidanceStart + len("**Token Guidance:**")
-	sectionEnd := strings.Index(output[sectionStart:], "\n##")
-	var tokenGuidance string
+	sectionEnd := strings.Index(output[choosingChannelStart:], "\n##")
+	var choosingChannel string
 	if sectionEnd == -1 {
-		tokenGuidance = output[sectionStart:]
+		choosingChannel = output[choosingChannelStart:]
 	} else {
-		tokenGuidance = output[sectionStart : sectionStart+sectionEnd]
+		choosingChannel = output[choosingChannelStart : choosingChannelStart+sectionEnd]
 	}
-
-	// D2: adr channel task-affinity restriction
-	if !strings.Contains(tokenGuidance, "`adr`") {
-		t.Error("D2: § Token Guidance missing adr channel task-affinity restriction (expected '`adr`')")
+	if !strings.Contains(choosingChannel, "`adr`") {
+		t.Error("D2: § Choosing Channel missing adr channel task-affinity data (ADR-0148 Part C moved it here from Token Guidance)")
 	}
 }
 

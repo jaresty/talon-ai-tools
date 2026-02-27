@@ -2,7 +2,7 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251223.1` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20260227.1` (update this string when the helper changes; work-log entries must reference it exactly).
 **Work-log separation:** ADR bodies remain directional references; each ADR tracks in-flight loops in its sibling `*.work-log.md` file while detailed evidence continues under `docs/adr/evidence/<adr-id>/loop-<n>.md`. Keep ADR edits focused on decisions, guardrails, and validation contracts; defer incremental progress updates to the work-log and evidence tree.
 
 **Work-log maintenance:** Derive the work-log filename from the ADR slug on first use (for example, `0123-sample-adr.md` → `0123-sample-adr.work-log.md`), create the file with a heading when it does not exist, and append a dated entry for every slice. Each loop records which heading was updated so later readers can replay the sequence without guessing. ADR body content: decisions, scope changes, guardrails, validation contracts, and pivots. Work-log content: per-loop progress notes, timestamps, evidence references, and iteration observations.
@@ -116,6 +116,7 @@ A loop entry is compliant when all statements hold:
 - The ADR section and salient task ID for the targeted behaviour are cited, and the entry states that this behaviour carries the active constraint while parking other items in `residual_constraints`.
 - A depth-first path enumerates the mitigation ladder for relieving the active constraint; loops stay on this path until the targeted rung lands green or blocker evidence is recorded. Example: Rung 1 — reproduce failure with minimal fixture (red evidence); Rung 2 — isolate root cause with targeted test (red evidence); Rung 3 — implement fix and confirm (green evidence). A compliant entry stays on the current rung until it produces green evidence or records blocker evidence before descending.
 - The work-log entry updated in this slice is cited by heading or timestamp so auditors can trace the refreshed note alongside the code change.
+- **Work-log entry is part of the loop's observable delta and must be committed before the loop closes.** A loop is not closed until its work-log entry is present in version control alongside or immediately after the implementation artefacts — in the same commit or in an immediately following commit before any other loop begins. An agent session that commits implementation without a corresponding work-log entry has produced an *incomplete loop*. When a subsequent session writes the work-log for an incomplete loop, it MUST use the Reconstructed Evidence protocol (see Evidence Specification → Reconstructed Evidence). Approximating timestamps, using commit metadata as an evidence anchor, or adding a disclaimer such as "captured at implementation time" are non-compliant substitutes regardless of whether a NOTE is present.
 - The targeted ADR behaviour outcome stands as the sole objective for the loop.
 - A constraint is the specific factor inside this repository that currently limits progress toward that objective—the bottleneck that, unless relieved (or stabilized) by code or artefact changes under version control, prevents the targeted behaviour from landing green. The entry records a falsifiable statement that the cited validation command can prove red or green. A falsifiable active-constraint statement names an observable command outcome (e.g., "the CLI exits non-zero on an unrecognised token, demonstrated by `bar build invalid 2>&1; echo $?`"). Vague quality judgements (e.g., "the implementation feels incomplete") are not falsifiable and are non-compliant. Limiting factors that sit outside this repository are treated as out of scope: the loop captures the evidence, parks it in `residual_constraints` with mitigation/monitoring, and references the owning ADR. Entries that record `none`, `n/a`, or the restated objective as the active constraint are non-compliant. Documentation-only loops cite the last in-repo bottleneck they attempted before logging blocker evidence, record the blocker command or evidence pointer inside `delta_summary`, and the very next loop for that constraint must attempt a tangible mitigation (code, tests, regeneration, or equivalent) rather than restating the same blocker.
 - The loop entry names the active constraint and records the next action only when that action measurably relieves or stabilizes the constraint and therefore increases the probability of achieving the objective.
@@ -188,6 +189,28 @@ Every compliant loop includes a structured block similar to:
     behaviour <name> fails again after temporary revert | inline
 ```
 Replace placeholders with real commands, timestamps, and pointers. When aggregation is used, append headings inside `<ARTEFACT_LOG>` (`## loop-217 red`, `## loop-217 green`) so auditors can trace evidence quickly. Teams using multiple validation targets should append one red/green/removal trio per target under a shared loop heading.
+
+### Reconstructed Evidence (Incomplete Loop Recovery)
+
+When a loop's implementation was committed before its work-log entry was written (an *incomplete loop*), evidence must be reconstructed by actually running the validation command against both the pre-loop and post-implementation file states — drawn from VCS history. Approximated timestamps and commit-metadata anchors are not acceptable substitutes.
+
+Reconstructed evidence is compliant when:
+- The red record shows `<VALIDATION_TARGET>` failing against the pre-loop file state, with a live UTC timestamp and failure excerpt from that run.
+- The green record shows the same command passing against the post-implementation state, with a live UTC timestamp.
+- Every record carries a `reconstructed` marker so auditors can distinguish it from live evidence.
+- The pre-loop commit sha is cited so the baseline is reproducible.
+
+```
+- red | reconstructed | <UTC timestamp of reconstruction run> | exit 1 | <VALIDATION_TARGET> (at pre-loop sha: <sha>)
+    helper:diff-snapshot=0 files changed (reconstruction baseline)
+    <failure excerpt> | inline
+- green | reconstructed | <UTC timestamp of reconstruction run> | exit 0 | <VALIDATION_TARGET>
+    helper:diff-snapshot=<stat from impl commit>
+    <pass excerpt> | inline
+- removal | reconstructed | follows from red record above | inline
+```
+
+Reconstruction is only permitted for already-committed incomplete loops; a loop whose implementation has not yet been committed must capture live evidence. If the pre-loop commit cannot be isolated (history squashed, validation target did not exist before the loop), the loop is classified as *unverifiable*: record `red | unverifiable | <UTC timestamp> | <reason>` and treat the loop as open until a follow-up loop strengthens the specifying validation and captures live evidence.
 
 ---
 

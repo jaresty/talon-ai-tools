@@ -487,23 +487,18 @@
     },
     "guidance": {
       "channel": {
-        "adr": "Task-affinity for decision-making tasks (plan, probe, make). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback). Exception: when a structural form token (e.g., ladder, case) is also present, it may act as a content lens that reframes the task as a decision-adjacent structure (e.g., pull+ladder+adr = a hierarchical extraction organized as an ADR) — coherence depends on the subject.",
-        "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code. Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team). Prefer diagram, presenterm, sketch, or plain for non-technical audiences.",
-        "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan. Requires a developer audience — produces a VS Code CodeTour JSON file. Avoid with manager, PM, executive, CEO, stakeholder, analyst, or designer audiences.",
-        "gherkin": "Outputs only Gherkin Given/When/Then syntax. Primary use: make tasks creating acceptance tests or feature specifications. With analysis tasks (probe, diff, check, sort), output is reframed as Gherkin scenarios that specify the analyzed properties — the analysis becomes evidence; scenarios express what should be true given that evidence. Avoid with prose-structure forms (story, case, log, questions, recipe).",
-        "html": "Avoid with narrative tasks (sim, probe) that produce prose rather than code.",
-        "shellscript": "Shell script output. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort) - these don't produce code. Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, to-team).",
+        "gherkin": "Avoid with prose-structure forms (story, case, log, questions, recipe).",
         "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both."
       },
       "completeness": {
         "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
-        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer grow for disciplined minimalism. Avoid pairing with sync channel — sync implies practical session brevity; max treating omissions as errors produces unusable session plans.",
+        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer grow for disciplined minimalism.",
         "narrow": "Restricts discussion to a small topic slice. Compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) work with narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, prefer full or deep completeness so the directional can range freely.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none. Tension with rigor method: skim constrains response volume while rigor demands disciplined depth — the light pass cannot accommodate the rigorous reasoning rigor requires; expect score-3 output."
       },
       "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, diagram/sketch) — case-building requires prose structure those channels cannot accommodate. Use with no channel or prose-compatible channels (jira, slack, plain, remote, sync).",
-        "commit": "Conventional commit message (type: scope header + optional body). Brief artifact by design — avoid deep or max completeness (no room to express depth) and compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog, fog). Best with gist or minimal completeness.",
+        "commit": "Conventional commit message (type: scope header + optional body). Avoid compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog, fog). Best with gist or minimal completeness.",
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
         "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",
@@ -3614,7 +3609,7 @@
     }
   ],
   "checksums": {
-    "axes": "74920ed2f9be5d6c2b1f7bda70ec93ab986193c724725346813c1dafcaa7b7ff",
+    "axes": "c3bba4c0e4463c508899dccb648c6d793253c3ecd2ca6b45e5ed8e361431ae80",
     "tasks": "ae0113d67a811a6c84c580c1601746b125a45ac6d56b9cf0d6abce1877f0f139",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

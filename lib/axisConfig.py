@@ -457,9 +457,9 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Task-affinity for decision-making tasks (plan, probe, make). The ADR format (Context, Decision, Consequences) is a decision artifact — it does not accommodate tasks that produce "
-        "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback). "
-        "Exception: when a structural form token (e.g., ladder, case) is also present, it may act as a content lens that reframes the task as a decision-adjacent structure "
-        "(e.g., pull+ladder+adr = a hierarchical extraction organized as an ADR) — coherence depends on the subject.",
+        "non-decision outputs. Avoid with sort (sorted list), pull (extraction), diff (comparison), or sim (scenario playback). Exception: when a structural form token (e.g., ladder, "
+        "case) is also present, it may act as a content lens that reframes the task as a decision-adjacent structure (e.g., pull+ladder+adr = a hierarchical extraction organized as an "
+        "ADR) — coherence depends on the subject.",
         "code": "Avoid with narrative tasks (sim, probe) that produce prose rather than code. Audience incompatibility: avoid with non-technical audiences (to-CEO, to-managers, to-stakeholders, "
         "to-team). Prefer diagram, presenterm, sketch, or plain for non-technical audiences.",
         "codetour": "Best for code-navigation tasks: fix, make (code creation), show (code structure), pull (code extraction). Avoid with sim, sort, probe, diff (no code subject), or plan. "
@@ -473,16 +473,17 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both.",
     },
     "completeness": {
-        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer "
-        "grow for disciplined minimalism. Avoid pairing with sync channel — sync implies practical session brevity; max treating omissions as errors produces unusable session plans.",
         "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that "
         "require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
+        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer "
+        "grow for disciplined minimalism. Avoid pairing with sync channel — sync implies practical session brevity; max treating omissions as errors produces unusable session plans.",
         "narrow": "Restricts discussion to a small topic slice. Compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) work with "
-        "narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, prefer "
-        "full or deep completeness so the directional can range freely.",
+        "narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, "
+        "prefer full or deep completeness so the directional can range freely.",
         "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, "
-        "dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none. "
-        "Tension with rigor method: skim constrains response volume while rigor demands disciplined depth — the light pass cannot accommodate the rigorous reasoning rigor requires; expect score-3 output.",
+        "dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none. Tension with rigor "
+        "method: skim constrains response volume while rigor demands disciplined depth — the light pass cannot accommodate the rigorous reasoning rigor requires; expect score-3 "
+        "output.",
     },
     "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "
@@ -501,9 +502,9 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "socratic": "Avoid with code channels (shellscript, codetour) - they cannot render questions as code output.",
         "spike": "Research spike: problem statement and exploratory questions. Conflicts with code-format channels (codetour, shellscript, svg, html, diagram/sketch, gherkin) — research spikes are "
         "prose question-documents. Use with no channel or prose-compatible channels.",
-        "story": "User story prose (As a / I want / so that). Without a channel: produces prose user stories, avoids Gherkin syntax. With gherkin channel: story acts as a content lens — "
-        "scenarios are shaped around user capabilities and value (As a → Given [user state]; I want → When [action]; So that → Then [outcome]). Use with no channel or prose-compatible "
-        "channels for pure prose user stories; combine with gherkin channel to produce BDD scenarios framed around user value.",
+        "story": "User story prose (As a / I want / so that). Without a channel: produces prose user stories, avoids Gherkin syntax. With gherkin channel: story acts as a content lens — scenarios "
+        "are shaped around user capabilities and value (As a → Given [user state]; I want → When [action]; So that → Then [outcome]). Use with no channel or prose-compatible channels for "
+        "pure prose user stories; combine with gherkin channel to produce BDD scenarios framed around user value.",
         "visual": "Distinct from the diagram channel: visual = abstract/metaphorical prose layout with a short legend; diagram = precise Mermaid code with exact nodes and edges. Use visual when "
         "conceptual overview or spatial metaphor is more useful than diagrammatic precision (e.g., non-technical audience, big-picture emphasis). Use diagram when exact topology, "
         "dependency mapping, or architecture review requires precise structure.",
@@ -517,8 +518,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "selection.",
         "balance": "Distinguish from: resilience (behavior under stress). Balance models opposing forces that offset each other to produce equilibrium; claims of stability must identify specific "
         "countervailing pressures and explain why they don't destabilize the system.",
-        "bound": "Distinguish from: depends (traces what affects what). Bound limits how far effects, state changes, or responsibilities spread — containing analysis to a specific scope "
-        "rather than tracing full dependency chains. Distinguish from: spec (defines correctness criteria). Bound limits scope of influence, not correctness.",
+        "bound": "Distinguish from: depends (traces what affects what). Bound limits how far effects, state changes, or responsibilities spread — containing analysis to a specific scope rather "
+        "than tracing full dependency chains. Distinguish from: spec (defines correctness criteria). Bound limits scope of influence, not correctness.",
         "branch": "Distinguish from: explore (generating options). Branch explores multiple reasoning paths in parallel with evaluation.",
         "cluster": "Distinguish from: meld (balancing constraints). Cluster groups items by shared characteristics.",
         "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce (examples→pattern). Deduce derives conclusions from premises.",
@@ -566,8 +567,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'flowchart', 'sequence diagram', 'draw this out', 'architecture diagram in Mermaid', 'as a diagram' → diagram. Distinct from sketch channel (sketch = D2 diagram format; "
         "diagram = Mermaid format).",
         "gherkin": "Gherkin scenario format: user wants the output as Given/When/Then Gherkin scenarios. Heuristic: 'Gherkin format', 'Given/When/Then', 'BDD scenarios', 'acceptance tests in "
-        "Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (case, log, questions, recipe). Exception: story form composes with gherkin — scenarios "
-        "are shaped by user-value framing rather than pure behavioral conditions.",
+        "Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (case, log, questions, recipe). Exception: story form composes with gherkin — "
+        "scenarios are shaped by user-value framing rather than pure behavioral conditions.",
         "html": "Semantic HTML only, no prose: user wants the complete output as HTML markup with no surrounding explanation. Heuristic: 'HTML output', 'semantic HTML', 'as HTML', 'output as a "
         "webpage', 'HTML page', 'HTML only' → html. Avoid with narrative tasks (sim, probe).",
         "jira": "Jira markup formatting: user wants the response formatted using Jira markdown (headings, lists, panels). Heuristic: 'Jira format', 'Jira markup', 'format for Jira', 'Jira "
@@ -580,8 +581,6 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "remote": "Optimizing output for remote or distributed delivery contexts (video calls, screen sharing, async participants). Heuristic: 'remote delivery', 'distributed session', 'video "
         "call context', 'screen sharing', 'remote-friendly' → remote channel. Note: user saying their team is 'remote' describes context — use remote channel only when delivery "
         "optimization is the explicit goal.",
-        "sync": "Session plan channel: actionable agenda with timing and cues for real-time delivery. Avoid pairing with max completeness — max treats omissions as errors but session plans "
-        "must be concise and deliverable; the combination produces overloaded agendas. Use full or minimal completeness.",
         "shellscript": "Shell script format: user wants the response as executable shell code. Heuristic: 'shell script', 'bash script', 'write a script', 'automate this with a shell script', "
         "'script format', 'shell code only' → shellscript. Avoid with narrative tasks (sim, probe) and selection tasks (pick, diff, sort).",
         "sketch": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source. Heuristic: 'D2 diagram', 'D2 format', 'sketch diagram', 'd2 source' → sketch. Distinct from "
@@ -782,10 +781,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to "
         "the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial "
         "(deliberate attack/exploit focus).",
-        "bound": "Propagation boundary analysis: user wants to explicitly limit how far state changes, effects, or responsibilities propagate through the system — containing analysis to a specific "
-        "scope rather than tracing full dependency chains. Heuristic: 'limit the scope of changes', 'constrain how far effects spread', 'bound the blast radius', 'contain the impact', "
-        "'what happens locally vs globally', 'limit responsibility propagation', 'scope the change impact' → bound. Distinct from depends (depends = trace all dependencies; bound = limit "
-        "how far they spread). Distinct from spec (spec = define correctness; bound = limit reach of influence).",
+        "bound": "Propagation boundary analysis: user wants to explicitly limit how far state changes, effects, or responsibilities propagate through the system — containing analysis to a "
+        "specific scope rather than tracing full dependency chains. Heuristic: 'limit the scope of changes', 'constrain how far effects spread', 'bound the blast radius', 'contain the "
+        "impact', 'what happens locally vs globally', 'limit responsibility propagation', 'scope the change impact' → bound. Distinct from depends (depends = trace all dependencies; "
+        "bound = limit how far they spread). Distinct from spec (spec = define correctness; bound = limit reach of influence).",
         "branch": "Parallel reasoning path exploration: user wants multiple hypotheses or approaches explored simultaneously before evaluation and pruning. Heuristic: 'explore multiple paths', "
         "'consider different approaches in parallel', 'branch the reasoning', 'multiple lines of reasoning', 'explore alternatives before choosing', 'parallel hypotheses' → branch. "
         "Distinct from explore method (explore = survey option space without premature commitment; branch = fork on a key assumption and pursue each path before evaluating).",
@@ -1485,6 +1484,103 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     },
 }
 
+# ADR-0147: Cross-axis composition semantics.
+# Structure: axis_a → token_a → axis_b → {"natural": [...], "cautionary": {token: warning}}
+#
+# "natural": token_b combinations that work with token_a without any special
+#            interpretation. The LLM produces good output without explicit guidance.
+#            Positive "what does this produce" cases are handled by the universal
+#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py).
+#
+# "cautionary": token_b combinations that tend to produce poor output for structural
+#               reasons the universal rule cannot predict. Only non-derivable entries
+#               belong here. Format: "tends to X because Y; prefer Z instead".
+#               No combination is blocked — these are guidance, not restrictions.
+#
+CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
+    "channel": {
+        "shellscript": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull"],
+                "cautionary": {
+                    "sim": "tends to produce thin output — simulation is inherently narrative, not executable; consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow system-probe scripts",
+                },
+            },
+            "audience": {
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-junior-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
+                "cautionary": {
+                    "to-ceo": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-managers": "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
+                    "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-team": "accessible only to technical members of a mixed audience; consider plain instead",
+                },
+            },
+        },
+        "adr": {"task": {"natural": ["plan", "probe", "make"]}},
+        "sync": {
+            "completeness": {
+                "natural": ["full", "minimal", "gist"],
+                "cautionary": {
+                    "max": "tends to be unusable — session plans require practical brevity; max treats omissions as errors and produces overloaded agendas; use full "
+                    "or minimal instead"
+                },
+            }
+        },
+        "code": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "cautionary": {
+                    "sim": "tends to produce thin placeholder code — simulation is narrative, not executable; consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow introspection scripts",
+                },
+            },
+            "audience": {
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-junior-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
+                "cautionary": {
+                    "to-ceo": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-managers": "inaccessible to a non-technical audience; use plain instead",
+                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-team": "accessible only to technical members of a mixed audience",
+                },
+            },
+        },
+        "codetour": {
+            "task": {
+                "natural": ["make", "fix", "show", "pull"],
+                "cautionary": {
+                    "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate",
+                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
+                },
+            }
+        },
+        "gherkin": {"task": {"natural": ["make", "check"]}},
+    },
+    "form": {
+        "commit": {
+            "completeness": {
+                "natural": ["gist", "minimal"],
+                "cautionary": {
+                    "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
+                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
+                },
+            }
+        }
+    },
+}
+
 
 @dataclass(frozen=True)
 class AxisDoc:
@@ -1538,6 +1634,16 @@ def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
     phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
     """
     return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
+
+
+def get_cross_axis_composition(axis: str, token: str) -> dict:
+    """Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
+
+    Returns a dict keyed by partner axis, each value being
+    {"natural": [...], "cautionary": {token: warning}}.
+    Returns an empty dict if the axis or token has no entry.
+    """
+    return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})
 
 
 def axis_docs_for(axis: str) -> list[AxisDoc]:
@@ -1957,125 +2063,3 @@ USAGE_PATTERNS: list[dict] = [
 def get_usage_patterns() -> list[dict]:
     """Return the USAGE_PATTERNS list (ADR-0134 SSOT)."""
     return USAGE_PATTERNS
-
-
-# ADR-0147: Cross-axis composition semantics.
-# Structure: axis_a → token_a → axis_b → {"natural": [...], "cautionary": {token: warning}}
-#
-# "natural": token_b combinations that work with token_a without any special
-#            interpretation. The LLM produces good output without explicit guidance.
-#            Positive "what does this produce" cases are handled by the universal
-#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py) —
-#            no per-combination enumeration needed here.
-#
-# "cautionary": token_b combinations where the combination tends to produce poor
-#               output for structural reasons the universal rule cannot predict.
-#               Only entries that are NOT derivable from first principles belong here.
-#               Format: "tends to produce X because Y; prefer Z instead".
-#               No combination is blocked — these are guidance, not restrictions.
-#
-CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
-    "channel": {
-        "shellscript": {
-            "task": {
-                "natural": ["make", "fix", "show", "trans", "pull"],
-                "cautionary": {
-                    "sim": "tends to produce thin output — simulation is inherently narrative, "
-                    "not executable; consider remote or no channel instead",
-                    "probe": "tends to miss analytical depth — a prose channel provides richer "
-                    "analysis; valid only for narrow system-probe scripts",
-                },
-            },
-            "audience": {
-                "natural": [
-                    "to-programmer",
-                    "to-principal-engineer",
-                    "to-junior-engineer",
-                    "to-platform-team",
-                    "to-llm",
-                ],
-                "cautionary": {
-                    "to-ceo": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-managers": "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
-                    "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-team": "accessible only to technical members of a mixed audience; consider plain instead",
-                },
-            },
-        },
-        "adr": {
-            "task": {
-                "natural": ["plan", "probe", "make"],
-            },
-        },
-        "sync": {
-            "completeness": {
-                "natural": ["full", "minimal", "gist"],
-                "cautionary": {
-                    "max": "tends to be unusable — session plans require practical brevity; "
-                    "max treats omissions as errors and produces overloaded agendas; use full or minimal instead",
-                },
-            },
-        },
-        "code": {
-            "task": {
-                "natural": ["make", "fix", "show", "trans", "pull", "check"],
-                "cautionary": {
-                    "sim": "tends to produce thin placeholder code — simulation is narrative, not executable; "
-                    "consider remote or no channel instead",
-                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; "
-                    "valid only for narrow introspection scripts",
-                },
-            },
-            "audience": {
-                "natural": [
-                    "to-programmer",
-                    "to-principal-engineer",
-                    "to-junior-engineer",
-                    "to-platform-team",
-                    "to-llm",
-                ],
-                "cautionary": {
-                    "to-ceo": "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-managers": "inaccessible to a non-technical audience; use plain instead",
-                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-team": "accessible only to technical members of a mixed audience",
-                },
-            },
-        },
-        "codetour": {
-            "task": {
-                "natural": ["make", "fix", "show", "pull"],
-                "cautionary": {
-                    "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate",
-                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
-                },
-            },
-        },
-        "gherkin": {
-            "task": {
-                "natural": ["make", "check"],
-            },
-        },
-    },
-    "form": {
-        "commit": {
-            "completeness": {
-                "natural": ["gist", "minimal"],
-                "cautionary": {
-                    "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
-                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
-                },
-            },
-        },
-    },
-}
-
-
-def get_cross_axis_composition(axis: str, token: str) -> dict:
-    """Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
-
-    Returns a dict keyed by partner axis, each value being
-    {"natural": [...], "cautionary": {token: warning}}.
-    Returns an empty dict if the axis or token has no entry.
-    """
-    return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})

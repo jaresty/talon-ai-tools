@@ -787,6 +787,7 @@
         "balance": "均",
         "bias": "偏",
         "boom": "極",
+        "bound": "限",
         "branch": "枝",
         "calc": "計",
         "canon": "準",
@@ -3526,7 +3527,7 @@
     }
   ],
   "checksums": {
-    "axes": "4bd99c6861f0300725d08de2329e23686b13ca04028053436e923869fc027c72",
+    "axes": "da5f0d51f608e55d7971bd066a7176f0c6277d2b4818fb1e28d18ef0175e66b3",
     "tasks": "ae0113d67a811a6c84c580c1601746b125a45ac6d56b9cf0d6abce1877f0f139",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

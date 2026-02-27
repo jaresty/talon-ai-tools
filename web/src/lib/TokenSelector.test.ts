@@ -591,6 +591,72 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		expect(headers.length).toBe(0);
 	});
 
+	it('F5: after typing in filter, first chip auto-focuses after delay (enabling arrow navigation)', async () => {
+		vi.useFakeTimers();
+		const onToggle = vi.fn();
+		// manyTokens triggers filter input (only shows when tokens.length > 5)
+		render(TokenSelector, {
+			props: { axis: 'method', tokens: manyTokens, selected: [], maxSelect: 3, onToggle }
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		expect(filterInput).toBeTruthy();
+
+		// Focus the filter input first (simulating user clicking into it)
+		filterInput.focus();
+		expect(document.activeElement).toBe(filterInput);
+
+		// Type to filter results
+		await fireEvent.input(filterInput, { target: { value: 'tok0' } });
+
+		// Simulate user stopping typing (wait for debounce delay)
+		// The implementation should auto-focus first chip after ~350ms
+		await vi.advanceTimersByTimeAsync(400);
+
+		// First chip should now be focused, enabling arrow navigation
+		const firstChip = document.querySelector('[role="option"]') as HTMLElement;
+		expect(document.activeElement).toBe(firstChip);
+		vi.useRealTimers();
+	});
+
+	it('F6: auto-focus on filter does not trigger on mobile (hover: none)', async () => {
+		vi.useFakeTimers();
+		const onToggle = vi.fn();
+
+		// Simulate mobile viewport
+		const originalWidth = window.innerWidth;
+		Object.defineProperty(window, 'innerWidth', { writable: true, value: 375 });
+
+		// Simulate mobile (hover: none media query matches)
+		Object.defineProperty(window, 'matchMedia', {
+			writable: true,
+			value: vi.fn().mockImplementation((query: string) => ({
+				matches: query === '(hover: none)',
+				media: query,
+				onchange: null,
+				addListener: vi.fn(),
+				removeListener: vi.fn(),
+				addEventListener: vi.fn(),
+				removeEventListener: vi.fn(),
+				dispatchEvent: vi.fn(),
+			}))
+		});
+
+		render(TokenSelector, {
+			props: { axis: 'method', tokens: manyTokens, selected: [], maxSelect: 3, onToggle }
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		filterInput.focus();
+		await fireEvent.input(filterInput, { target: { value: 'tok0' } });
+		await vi.advanceTimersByTimeAsync(400);
+
+		// On mobile, filter should retain focus (no auto-focus to chips)
+		expect(document.activeElement).toBe(filterInput);
+
+		// Cleanup
+		Object.defineProperty(window, 'innerWidth', { writable: true, value: originalWidth });
+		vi.useRealTimers();
+	});
+
 	it('renders kanji when present (ADR-0143)', () => {
 		const tokensWithKanji = [
 			{

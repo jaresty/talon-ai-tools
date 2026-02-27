@@ -147,6 +147,35 @@
 		focusedIndex = -1;
 	});
 
+	// Auto-focus first chip after user stops typing in filter (desktop only)
+	// This enables arrow navigation without needing to press Tab first
+	let filterTimeout: ReturnType<typeof setTimeout> | null = null;
+	$effect(() => {
+		const currentFilter = filter;
+		const isMobile = typeof window !== 'undefined' && window.innerWidth <= 767;
+
+		if (!currentFilter.trim() || isMobile || !gridRef) {
+			if (filterTimeout) { clearTimeout(filterTimeout); filterTimeout = null; }
+			return;
+		}
+
+		const filterInput = document.activeElement as HTMLInputElement | null;
+		if (!filterInput?.classList.contains('filter-input')) {
+			if (filterTimeout) { clearTimeout(filterTimeout); filterTimeout = null; }
+			return;
+		}
+
+		if (filterTimeout) clearTimeout(filterTimeout);
+		filterTimeout = setTimeout(() => {
+			if (filtered.length > 0) {
+				focusedIndex = 0;
+				focusChip(0);
+			}
+		}, 350);
+
+		return () => { if (filterTimeout) clearTimeout(filterTimeout); };
+	});
+
 	function chipOptions(): HTMLElement[] {
 		if (!gridRef) return [];
 		return Array.from(gridRef.querySelectorAll<HTMLElement>('[role="option"]'));
@@ -237,10 +266,6 @@
 					e.preventDefault();
 					focusedIndex = 0;
 					focusChip(0);
-				} else if (e.key === 'Enter' && filtered.length > 0) {
-					e.preventDefault();
-					onToggle(filtered[0].token);
-					// Keep focus on filter — allows fast multi-toggle by typing + Enter repeatedly
 				}
 				// Shift+Tab: let browser handle — natural DOM order returns focus to the active tab button
 			}}

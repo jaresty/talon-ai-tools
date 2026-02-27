@@ -95,6 +95,27 @@
 			: null
 	);
 
+	// ADR-0148: direction B — positive and cautionary signals for a focused task/completeness
+	// token based on active channel/form selections.
+	let activeMetaCompositionDirB = $derived((() => {
+		if (!grammar || !activeMeta || !activeTokensByAxis) return null;
+		if (axis !== 'task' && axis !== 'completeness') return null;
+		const cac = grammar.axes.cross_axis_composition;
+		if (!cac) return null;
+		const naturalWith: string[] = [];
+		const cautionWith: Array<[string, string]> = [];
+		for (const channelAxis of ['channel', 'form'] as const) {
+			for (const activeToken of (activeTokensByAxis[channelAxis] ?? [])) {
+				const entry = cac[channelAxis]?.[activeToken]?.[axis];
+				if (!entry) continue;
+				if (entry.natural?.includes(activeMeta.token)) naturalWith.push(activeToken);
+				const warning = entry.cautionary?.[activeMeta.token];
+				if (warning) cautionWith.push([activeToken, warning]);
+			}
+		}
+		return naturalWith.length > 0 || cautionWith.length > 0 ? { naturalWith, cautionWith } : null;
+	})());
+
 	// ADR-0148: chip traffic light — only task and completeness axes; audience excluded.
 	const TRAFFIC_LIGHT_AXES = new Set(['task', 'completeness']);
 	function resolveChipState(token: string): 'natural' | 'cautionary' | null {
@@ -457,8 +478,8 @@
 					</div>
 				{/if}
 				{#if activeMetaComposition}
-					{@const naturalEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => pair.natural)}
-					{@const cautionEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => Object.entries(pair.cautionary))}
+					{@const naturalEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => pair.natural ?? [])}
+					{@const cautionEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => Object.entries(pair.cautionary ?? {}))}
 					{#if naturalEntries.length > 0}
 						<div class="meta-section">
 							<span class="meta-section-label">Works well with</span>
@@ -469,6 +490,22 @@
 						<div class="meta-section meta-caution">
 							<span class="meta-section-label">Caution</span>
 							{#each cautionEntries as [token, warning]}
+								<p><code>{token}</code> — {warning}</p>
+							{/each}
+						</div>
+					{/if}
+				{/if}
+				{#if activeMetaCompositionDirB}
+					{#if activeMetaCompositionDirB.naturalWith.length > 0}
+						<div class="meta-section">
+							<span class="meta-section-label">Works well with</span>
+							<p>{activeMetaCompositionDirB.naturalWith.join(', ')}</p>
+						</div>
+					{/if}
+					{#if activeMetaCompositionDirB.cautionWith.length > 0}
+						<div class="meta-section meta-caution">
+							<span class="meta-section-label">Caution</span>
+							{#each activeMetaCompositionDirB.cautionWith as [token, warning]}
 								<p><code>{token}</code> — {warning}</p>
 							{/each}
 						</div>

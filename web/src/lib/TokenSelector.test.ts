@@ -896,6 +896,91 @@ describe('TokenSelector — ADR-0148 chip traffic light (task/completeness axes)
 		expect(simChip.classList.contains('chip--natural')).toBe(false);
 	});
 
+	it('meta panel shows "Works well with" section for task token with natural active channel', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: taskTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { channel: ['shellscript'] }
+			}
+		});
+		const chip = screen.getByText('make').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Works well with')).toBeTruthy();
+		expect(screen.getByText(/shellscript/)).toBeTruthy();
+	});
+
+	it('meta panel shows "Caution" section for task token with cautionary active channel', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: taskTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { channel: ['shellscript'] }
+			}
+		});
+		const chip = screen.getByText('sim').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Caution')).toBeTruthy();
+		expect(screen.getByText('shellscript', { selector: 'code' })).toBeTruthy();
+	});
+
+	it('meta panel shows no composition sections for task token when no channel active', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: taskTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: {}
+			}
+		});
+		const chip = screen.getByText('make').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(screen.queryByText('Works well with')).toBeNull();
+		expect(screen.queryByText('Caution')).toBeNull();
+	});
+
+	it('direction A does not crash when a composition entry has no cautionary field', async () => {
+		const grammarNaturalOnly = {
+			axes: {
+				definitions: {}, labels: {}, guidance: {}, use_when: {}, kanji: {},
+				cross_axis_composition: {
+					channel: {
+						shellscript: { task: { natural: ['make', 'show'] } }
+					}
+				}
+			},
+			tasks: { descriptions: {}, labels: {}, guidance: {} },
+			hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+			persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } }
+		} as unknown as import('./grammar.js').Grammar;
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: grammarNaturalOnly,
+				activeTokensByAxis: {}
+			}
+		});
+		const chip = screen.getByText('shellscript').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Works well with')).toBeTruthy();
+		expect(screen.queryByText('Caution')).toBeNull();
+	});
+
 	it('audience chips never show traffic light classes (scope exclusion)', () => {
 		render(TokenSelector, {
 			props: {

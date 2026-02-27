@@ -1899,14 +1899,22 @@ func (m model) renderTokensPane() string {
 				}
 			}
 		case "task", "completeness":
-			// Direction B: warn when an active channel/form has a cautionary entry for this token.
+			// Direction B: show natural and cautionary signals from active channel/form tokens.
 			for _, channelAxis := range []string{"channel", "form"} {
 				for _, activeToken := range m.tokensByCategory[channelAxis] {
-					_, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
+					natural, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
 					if axisB, ok := cautionary[currentStage]; ok {
 						if warning, ok := axisB[selectedValue]; ok {
 							crossCauLines = append(crossCauLines,
 								"⚠ With "+activeToken+": "+firstSentenceOf(warning))
+						}
+					}
+					if nats, ok := natural[currentStage]; ok {
+						for _, nat := range nats {
+							if nat == selectedValue {
+								crossNatLines = append(crossNatLines, "✓ With "+activeToken)
+								break
+							}
 						}
 					}
 				}

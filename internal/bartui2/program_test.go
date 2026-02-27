@@ -2681,7 +2681,7 @@ func TestCrossAxisCompositionDirectionA(t *testing.T) {
 func TestCrossAxisCompositionDirectionB(t *testing.T) {
 	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
 		if axis == "channel" && token == "shellscript" {
-			return nil,
+			return map[string][]string{"task": {"make", "show"}},
 				map[string]map[string]string{
 					"task": {"sim": "tends to produce thin output — simulation is inherently narrative"},
 				}
@@ -2704,21 +2704,35 @@ func TestCrossAxisCompositionDirectionB(t *testing.T) {
 	if m.getCurrentStage() != "task" {
 		t.Fatalf("expected task stage after shellscript pre-selected, got %q", m.getCurrentStage())
 	}
-	// Select "sim" completion
+
+	// Select "sim" — should show cautionary signal.
 	for i, c := range m.completions {
 		if c.Value == "sim" {
 			m.completionIndex = i
 			break
 		}
 	}
-
 	view := m.View()
-
 	if !strings.Contains(view, "⚠") {
 		t.Errorf("direction B: expected cautionary indicator (⚠) for sim+shellscript; got:\n%s", view)
 	}
 	if !strings.Contains(view, "shellscript") {
 		t.Errorf("direction B: expected 'shellscript' in cautionary warning; got:\n%s", view)
+	}
+
+	// Select "make" — should show natural signal.
+	for i, c := range m.completions {
+		if c.Value == "make" {
+			m.completionIndex = i
+			break
+		}
+	}
+	view = m.View()
+	if !strings.Contains(view, "✓") {
+		t.Errorf("direction B: expected natural indicator (✓) for make+shellscript; got:\n%s", view)
+	}
+	if !strings.Contains(view, "shellscript") {
+		t.Errorf("direction B: expected 'shellscript' in natural line; got:\n%s", view)
 	}
 }
 

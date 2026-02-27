@@ -175,6 +175,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "perturbation. No configuration may be treated as stable without explaining why countervailing forces fail to overturn it.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
+        "bound": "The response constrains how state changes, effects, or responsibilities propagate through the system, deliberately limiting the surface area and reach of influence.",
         "branch": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
         "canon": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to "
@@ -380,6 +381,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "balance": "Balance analysis: forces and trade-offs",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
+        "bound": "Constrain propagation",
         "branch": "Parallel reasoning paths",
         "calc": "Quantitative or executable reasoning",
         "canon": "Reduce multiple representations to a single authoritative source",
@@ -515,6 +517,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "selection.",
         "balance": "Distinguish from: resilience (behavior under stress). Balance models opposing forces that offset each other to produce equilibrium; claims of stability must identify specific "
         "countervailing pressures and explain why they don't destabilize the system.",
+        "bound": "Distinguish from: depends (traces what affects what). Bound limits how far effects, state changes, or responsibilities spread — containing analysis to a specific scope "
+        "rather than tracing full dependency chains. Distinguish from: spec (defines correctness criteria). Bound limits scope of influence, not correctness.",
         "branch": "Distinguish from: explore (generating options). Branch explores multiple reasoning paths in parallel with evaluation.",
         "cluster": "Distinguish from: meld (balancing constraints). Cluster groups items by shared characteristics.",
         "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce (examples→pattern). Deduce derives conclusions from premises.",
@@ -778,6 +782,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "boom": "Scale extreme analysis: user asks what happens at 10x, 100x, or at the absolute limits of the system. Heuristic: 'at 10x', 'at extreme load', 'what breaks at scale', 'pushed to "
         "the limit', 'at maximum load', 'what dominates at scale', 'scale to the extreme', 'at the limit' → boom. Distinct from resilience (normal stress range) and adversarial "
         "(deliberate attack/exploit focus).",
+        "bound": "Propagation boundary analysis: user wants to explicitly limit how far state changes, effects, or responsibilities propagate through the system — containing analysis to a specific "
+        "scope rather than tracing full dependency chains. Heuristic: 'limit the scope of changes', 'constrain how far effects spread', 'bound the blast radius', 'contain the impact', "
+        "'what happens locally vs globally', 'limit responsibility propagation', 'scope the change impact' → bound. Distinct from depends (depends = trace all dependencies; bound = limit "
+        "how far they spread). Distinct from spec (spec = define correctness; bound = limit reach of influence).",
         "branch": "Parallel reasoning path exploration: user wants multiple hypotheses or approaches explored simultaneously before evaluation and pruning. Heuristic: 'explore multiple paths', "
         "'consider different approaches in parallel', 'branch the reasoning', 'multiple lines of reasoning', 'explore alternatives before choosing', 'parallel hypotheses' → branch. "
         "Distinct from explore method (explore = survey option space without premature commitment; branch = fork on a key assumption and pursue each path before evaluating).",
@@ -1096,6 +1104,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "balance": "均",
         "bias": "偏",
         "boom": "極",
+        "bound": "限",
         "branch": "枝",
         "calc": "計",
         "canon": "準",
@@ -1241,6 +1250,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "balance": "Comparative",
         "bias": "Reasoning",
         "boom": "Exploration",
+        "bound": "Structural",
         "branch": "Exploration",
         "calc": "Reasoning",
         "canon": "Structural",
@@ -1970,20 +1980,25 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "task": {
                 "natural": ["make", "fix", "show", "trans", "pull"],
                 "cautionary": {
-                    "sim":   "tends to produce thin output — simulation is inherently narrative, "
-                             "not executable; consider remote or no channel instead",
+                    "sim": "tends to produce thin output — simulation is inherently narrative, "
+                    "not executable; consider remote or no channel instead",
                     "probe": "tends to miss analytical depth — a prose channel provides richer "
-                             "analysis; valid only for narrow system-probe scripts",
+                    "analysis; valid only for narrow system-probe scripts",
                 },
             },
             "audience": {
-                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
-                            "to-platform-team", "to-llm"],
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-junior-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
                 "cautionary": {
-                    "to-ceo":          "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-managers":     "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
+                    "to-ceo": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-managers": "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
                     "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-team":         "accessible only to technical members of a mixed audience; consider plain instead",
+                    "to-team": "accessible only to technical members of a mixed audience; consider plain instead",
                 },
             },
         },
@@ -1996,8 +2011,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "completeness": {
                 "natural": ["full", "minimal", "gist"],
                 "cautionary": {
-                    "max":  "tends to be unusable — session plans require practical brevity; "
-                            "max treats omissions as errors and produces overloaded agendas; use full or minimal instead",
+                    "max": "tends to be unusable — session plans require practical brevity; "
+                    "max treats omissions as errors and produces overloaded agendas; use full or minimal instead",
                 },
             },
         },
@@ -2005,20 +2020,25 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "task": {
                 "natural": ["make", "fix", "show", "trans", "pull", "check"],
                 "cautionary": {
-                    "sim":   "tends to produce thin placeholder code — simulation is narrative, not executable; "
-                             "consider remote or no channel instead",
+                    "sim": "tends to produce thin placeholder code — simulation is narrative, not executable; "
+                    "consider remote or no channel instead",
                     "probe": "tends to miss analytical depth — a prose channel provides richer analysis; "
-                             "valid only for narrow introspection scripts",
+                    "valid only for narrow introspection scripts",
                 },
             },
             "audience": {
-                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
-                            "to-platform-team", "to-llm"],
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-junior-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
                 "cautionary": {
-                    "to-ceo":          "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-managers":     "inaccessible to a non-technical audience; use plain instead",
+                    "to-ceo": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-managers": "inaccessible to a non-technical audience; use plain instead",
                     "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-team":         "accessible only to technical members of a mixed audience",
+                    "to-team": "accessible only to technical members of a mixed audience",
                 },
             },
         },
@@ -2026,7 +2046,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "task": {
                 "natural": ["make", "fix", "show", "pull"],
                 "cautionary": {
-                    "sim":  "tends to be incoherent — simulation is narrative with no code subject to navigate",
+                    "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate",
                     "sort": "tends to be incoherent — sorted items have no navigable code structure",
                 },
             },
@@ -2042,7 +2062,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "completeness": {
                 "natural": ["gist", "minimal"],
                 "cautionary": {
-                    "max":  "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
+                    "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
                     "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
                 },
             },

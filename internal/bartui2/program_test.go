@@ -2589,6 +2589,139 @@ func TestPreviewReceivesSelectedTokens(t *testing.T) {
 	}
 }
 
+// testCategoriesWithComposition returns test categories for ADR-0148 cross-axis composition tests.
+// Categories are channel-only so the TUI starts at the channel stage immediately.
+func testCategoriesChannelOnly() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "channel",
+			Label:         "Channel",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "shellscript", Slug: "shellscript", Label: "ShellScript", Description: "Shell script output for executable code."},
+				{Value: "slack", Slug: "slack", Label: "Slack", Description: "Slack message format."},
+			},
+		},
+	}
+}
+
+// testCategoriesTaskChannel returns test categories for direction-B tests: task+channel.
+// Initializing with "shellscript" advances past channel to the task stage.
+func testCategoriesTaskChannel() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "task",
+			Label:         "Task",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "sim", Slug: "sim", Label: "Sim", Description: "Simulate a scenario."},
+				{Value: "make", Slug: "make", Label: "Make", Description: "Create new content."},
+			},
+		},
+		{
+			Key:           "channel",
+			Label:         "Channel",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "shellscript", Slug: "shellscript", Label: "ShellScript", Description: "Shell script output."},
+			},
+		},
+	}
+}
+
+// TestCrossAxisCompositionDirectionA specifies that when a channel token is in focus,
+// the detail panel shows "✓ Natural" and "⚠ Caution" lines from CrossAxisCompositionFor (ADR-0148).
+func TestCrossAxisCompositionDirectionA(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "channel" && token == "shellscript" {
+			return map[string][]string{
+					"task": {"make", "fix"},
+				},
+				map[string]map[string]string{
+					"task": {"sim": "tends to produce thin output — simulation is inherently narrative"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Height 50: paneHeight = (50-10)/3 = 13 >= 12, enabling composition sections (ADR-0148 R1).
+	m := newModel(Options{
+		TokenCategories:         testCategoriesChannelOnly(),
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+	// Confirm we're at channel stage with shellscript as first completion
+	if m.getCurrentStage() != "channel" {
+		t.Fatalf("expected channel stage, got %q", m.getCurrentStage())
+	}
+	m.completionIndex = 0 // select shellscript
+
+	view := m.View()
+
+	if !strings.Contains(view, "✓") {
+		t.Errorf("direction A: expected natural pairing indicator (✓) in view for shellscript; got:\n%s", view)
+	}
+	if !strings.Contains(view, "make") {
+		t.Errorf("direction A: expected natural task 'make' in view for shellscript; got:\n%s", view)
+	}
+	if !strings.Contains(view, "⚠") {
+		t.Errorf("direction A: expected cautionary indicator (⚠) in view for shellscript; got:\n%s", view)
+	}
+	if !strings.Contains(view, "sim") {
+		t.Errorf("direction A: expected cautionary token 'sim' in view for shellscript; got:\n%s", view)
+	}
+}
+
+// TestCrossAxisCompositionDirectionB specifies that when a task token is in focus and an active
+// channel token has a cautionary entry for that task, the detail panel shows "⚠ With <channel>: ..."
+// (ADR-0148 direction B).
+func TestCrossAxisCompositionDirectionB(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "channel" && token == "shellscript" {
+			return nil,
+				map[string]map[string]string{
+					"task": {"sim": "tends to produce thin output — simulation is inherently narrative"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Initialize with shellscript channel pre-selected; task stage becomes current.
+	// Height 50: paneHeight = (50-10)/3 = 13 >= 12, enabling composition sections (ADR-0148 R1).
+	m := newModel(Options{
+		TokenCategories:         testCategoriesTaskChannel(),
+		InitialTokens:           []string{"shellscript"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "task" {
+		t.Fatalf("expected task stage after shellscript pre-selected, got %q", m.getCurrentStage())
+	}
+	// Select "sim" completion
+	for i, c := range m.completions {
+		if c.Value == "sim" {
+			m.completionIndex = i
+			break
+		}
+	}
+
+	view := m.View()
+
+	if !strings.Contains(view, "⚠") {
+		t.Errorf("direction B: expected cautionary indicator (⚠) for sim+shellscript; got:\n%s", view)
+	}
+	if !strings.Contains(view, "shellscript") {
+		t.Errorf("direction B: expected 'shellscript' in cautionary warning; got:\n%s", view)
+	}
+}
+
 func TestAddendumPassedToPreviewAndCommand(t *testing.T) {
 	var capturedAddendum string
 	preview := func(subject string, addendum string, tokens []string) (string, error) {

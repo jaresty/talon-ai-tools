@@ -6,6 +6,7 @@ package bartui2
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -49,6 +50,11 @@ type Options struct {
 
 	// InitialCommand seeds the Run Command text input at launch time.
 	InitialCommand string
+
+	// CrossAxisCompositionFor returns natural and cautionary partner tokens for a given axis+token
+	// pair (ADR-0148). natural is keyed by partner axis; cautionary is keyed by partner axis then
+	// partner token. Returns nil maps if no entry is defined. May be nil (disables the feature).
+	CrossAxisCompositionFor func(axis, token string) (natural map[string][]string, cautionary map[string]map[string]string)
 }
 
 // completion represents a single completion option with metadata.
@@ -137,6 +143,9 @@ type model struct {
 
 	// Token categories (for completion)
 	tokenCategories []bartui.TokenCategory
+
+	// Cross-axis composition lookup (ADR-0148); nil when not configured.
+	crossAxisCompositionFor func(axis, token string) (natural map[string][]string, cautionary map[string]map[string]string)
 
 	// Stage-based progression
 	currentStageIndex int // index into stageOrder
@@ -270,9 +279,10 @@ func newModel(opts Options) model {
 		preview:           opts.Preview,
 		runCommand:        opts.RunCommand,
 		commandTimeout:    timeout,
-		clipboardWrite:    opts.ClipboardWrite,
-		width:             opts.InitialWidth,
-		height:            opts.InitialHeight,
+		clipboardWrite:          opts.ClipboardWrite,
+		crossAxisCompositionFor: opts.CrossAxisCompositionFor,
+		width:                   opts.InitialWidth,
+		height:                  opts.InitialHeight,
 	}
 
 	// Categorize initial tokens
@@ -1756,6 +1766,7 @@ func (m model) renderTokensPane() string {
 	var selectedDesc string     // Store full description of selected item
 	var selectedGuidance string // Store guidance of selected item
 	var selectedUseWhen string  // Store routing trigger phrase (ADR-0142)
+	var selectedValue string    // Store token value for cross-axis lookup (ADR-0148)
 
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
@@ -1800,6 +1811,7 @@ func (m model) renderTokensPane() string {
 				selectedDesc = c.Description  // Capture full description
 				selectedGuidance = c.Guidance // Capture guidance if present
 				selectedUseWhen = c.UseWhen   // Capture routing phrase if present
+				selectedValue = c.Value       // Capture token value for cross-axis lookup (ADR-0148)
 			}
 			display := c.Display
 			if strings.TrimSpace(display) == "" {
@@ -1851,8 +1863,49 @@ func (m model) renderTokensPane() string {
 		right.WriteString("\n")
 	}
 
+	// Compute cross-axis composition lines (ADR-0148). Skip when pane is too small.
+	var crossNatLines []string
+	var crossCauLines []string
+	if m.crossAxisCompositionFor != nil && selectedValue != "" && paneHeight >= 12 {
+		switch currentStage {
+		case "channel", "form":
+			// Direction A: show composition profile of the focused channel/form token.
+			natural, cautionary := m.crossAxisCompositionFor(currentStage, selectedValue)
+			for _, axisB := range []string{"task", "completeness"} {
+				if nats, ok := natural[axisB]; ok && len(nats) > 0 {
+					crossNatLines = append(crossNatLines,
+						"✓ Natural "+axisB+": "+strings.Join(nats, ", "))
+				}
+				if cauts, ok := cautionary[axisB]; ok && len(cauts) > 0 {
+					keys := sortedStringKeys(cauts)
+					for _, tok := range keys {
+						crossCauLines = append(crossCauLines,
+							"⚠ Caution: "+tok+" — "+firstSentenceOf(cauts[tok]))
+					}
+				}
+			}
+		case "task", "completeness":
+			// Direction B: warn when an active channel/form has a cautionary entry for this token.
+			for _, channelAxis := range []string{"channel", "form"} {
+				for _, activeToken := range m.tokensByCategory[channelAxis] {
+					_, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
+					if axisB, ok := cautionary[currentStage]; ok {
+						if warning, ok := axisB[selectedValue]; ok {
+							crossCauLines = append(crossCauLines,
+								"⚠ With "+activeToken+": "+firstSentenceOf(warning))
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// Add selected item description area (truncated description preview)
-	if selectedDesc != "" || selectedGuidance != "" || selectedUseWhen != "" {
+	descMaxLines := 3
+	if len(crossNatLines) > 0 || len(crossCauLines) > 0 {
+		descMaxLines = 2 // tighten when composition sections are non-empty (ADR-0148 R1)
+	}
+	if selectedDesc != "" || selectedGuidance != "" || selectedUseWhen != "" || len(crossNatLines) > 0 || len(crossCauLines) > 0 {
 		right.WriteString("\n")
 		right.WriteString(dimStyle.Render("─"))
 		right.WriteString("\n")
@@ -1873,9 +1926,17 @@ func (m model) renderTokensPane() string {
 		}
 		if selectedDesc != "" {
 			// Wrap and truncate description to prevent screen overflow
-			// Limit to 3 lines to keep the UI compact
-			wrappedDesc := wrapAndTruncateText(selectedDesc, rightWidth-2, 3)
+			wrappedDesc := wrapAndTruncateText(selectedDesc, rightWidth-2, descMaxLines)
 			right.WriteString(dimStyle.Render(wrappedDesc))
+		}
+		// Cross-axis composition sections (ADR-0148)
+		for _, line := range crossNatLines {
+			right.WriteString(useWhenStyle.Render(line))
+			right.WriteString("\n")
+		}
+		for _, line := range crossCauLines {
+			right.WriteString(warningStyle.Render(line))
+			right.WriteString("\n")
 		}
 	}
 
@@ -2054,6 +2115,25 @@ func (m model) renderResultPane() string {
 	}
 
 	return paneStyle.Width(width).Height(paneHeight).Render(content.String())
+}
+
+// sortedStringKeys returns the keys of a map[string]string sorted alphabetically.
+func sortedStringKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// firstSentenceOf returns the portion of s up to and including the first period,
+// or the whole string if no period is found. Used for one-line cautionary previews.
+func firstSentenceOf(s string) string {
+	if idx := strings.Index(s, "."); idx >= 0 {
+		return s[:idx+1]
+	}
+	return s
 }
 
 // Snapshot renders a single frame for testing.

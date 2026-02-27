@@ -78,17 +78,33 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		return stdout.String(), stderr.String(), err
 	}
 
+	crossAxisFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		data := grammar.CrossAxisCompositionFor(axis, token)
+		natural := make(map[string][]string)
+		cautionary := make(map[string]map[string]string)
+		for axisB, pair := range data {
+			if len(pair.Natural) > 0 {
+				natural[axisB] = pair.Natural
+			}
+			if len(pair.Cautionary) > 0 {
+				cautionary[axisB] = pair.Cautionary
+			}
+		}
+		return natural, cautionary
+	}
+
 	tuiOpts := bartui2.Options{
-		InitialTokens:   tokens,
-		TokenCategories: tokenCategories,
-		Preview:         preview,
-		ClipboardWrite:  clipboard.WriteAll,
-		RunCommand:      runCommand,
-		CommandTimeout:  30 * time.Second,
-		InitialWidth:    opts.FixtureWidth,
-		InitialHeight:   opts.FixtureHeight,
-		NoAltScreen:     opts.NoAltScreen,
-		InitialCommand:  opts.InitialCommand,
+		InitialTokens:           tokens,
+		TokenCategories:         tokenCategories,
+		Preview:                 preview,
+		ClipboardWrite:          clipboard.WriteAll,
+		RunCommand:              runCommand,
+		CommandTimeout:          30 * time.Second,
+		InitialWidth:            opts.FixtureWidth,
+		InitialHeight:           opts.FixtureHeight,
+		NoAltScreen:             opts.NoAltScreen,
+		InitialCommand:          opts.InitialCommand,
+		CrossAxisCompositionFor: crossAxisFor,
 	}
 
 	if err := startTUI2(tuiOpts); err != nil {

@@ -1114,27 +1114,6 @@
             }
           }
         },
-        "adr": {
-          "task": {
-            "natural": [
-              "plan",
-              "probe",
-              "make"
-            ]
-          }
-        },
-        "sync": {
-          "completeness": {
-            "natural": [
-              "full",
-              "minimal",
-              "gist"
-            ],
-            "cautionary": {
-              "max": "tends to be unusable — session plans require practical brevity; max treats omissions as errors and produces overloaded agendas; use full or minimal instead"
-            }
-          }
-        },
         "code": {
           "task": {
             "natural": [
@@ -1166,6 +1145,44 @@
             }
           }
         },
+        "gherkin": {
+          "task": {
+            "natural": [
+              "make",
+              "check"
+            ]
+          },
+          "completeness": {
+            "natural": [
+              "full",
+              "minimal"
+            ],
+            "cautionary": {
+              "skim": "tends to produce incomplete scenarios — Gherkin steps need concrete action/assertion detail to be executable; use full or minimal instead"
+            }
+          }
+        },
+        "adr": {
+          "task": {
+            "natural": [
+              "plan",
+              "probe",
+              "make"
+            ],
+            "cautionary": {
+              "sim": "tends to be incoherent — scenario playback is narrative; ADR is a decision artifact with no room for simulation output"
+            }
+          },
+          "completeness": {
+            "natural": [
+              "full",
+              "deep"
+            ],
+            "cautionary": {
+              "skim": "tends to produce incomplete decisions — ADRs need full context and consequences to be actionable; use full or deep instead"
+            }
+          }
+        },
         "codetour": {
           "task": {
             "natural": [
@@ -1178,14 +1195,84 @@
               "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate",
               "sort": "tends to be incoherent — sorted items have no navigable code structure"
             }
+          },
+          "audience": {
+            "natural": [
+              "to-programmer",
+              "to-principal-engineer",
+              "to-junior-engineer",
+              "to-platform-team",
+              "to-llm"
+            ],
+            "cautionary": {
+              "to-ceo": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
+              "to-managers": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain instead",
+              "to-stakeholders": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
+              "to-team": "accessible only to technical members of a mixed audience; consider plain instead"
+            }
           }
         },
-        "gherkin": {
+        "sync": {
+          "task": {
+            "natural": [
+              "plan",
+              "make",
+              "show"
+            ],
+            "cautionary": {
+              "sim": "tends to be unfocused — scenario playback is narrative and doesn't produce a structured session agenda; use plan or make instead",
+              "probe": "tends to miss the purpose — analytical probing doesn't translate into actionable session steps; use plan or show instead"
+            }
+          },
+          "completeness": {
+            "natural": [
+              "full",
+              "minimal",
+              "gist"
+            ],
+            "cautionary": {
+              "max": "tends to be unusable — session plans require practical brevity; max treats omissions as errors and produces overloaded agendas; use full or minimal instead"
+            }
+          }
+        },
+        "html": {
           "task": {
             "natural": [
               "make",
+              "fix",
+              "show",
+              "trans",
+              "pull",
               "check"
-            ]
+            ],
+            "cautionary": {
+              "sim": "tends to produce placeholder markup — simulation is narrative, not executable; consider remote or no channel instead",
+              "probe": "tends to miss analytical depth — valid only for narrow introspection scripts; a prose channel provides richer analysis"
+            }
+          }
+        },
+        "presenterm": {
+          "task": {
+            "natural": [
+              "make",
+              "show",
+              "plan",
+              "pull"
+            ],
+            "cautionary": {
+              "fix": "tends to be too granular — code fixes don't translate into slide content; use make or show instead",
+              "probe": "tends to miss depth — analytical probing is hard to condense into slides; use show or plan instead"
+            }
+          },
+          "completeness": {
+            "natural": [
+              "minimal",
+              "gist"
+            ],
+            "cautionary": {
+              "max": "tends to be undeliverable — slides require brevity; max produces overloaded decks; use minimal or gist instead",
+              "deep": "same constraint as max — slide format cannot accommodate deep analysis; use minimal or gist instead"
+            }
           }
         }
       },
@@ -3527,7 +3614,7 @@
     }
   ],
   "checksums": {
-    "axes": "da5f0d51f608e55d7971bd066a7176f0c6277d2b4818fb1e28d18ef0175e66b3",
+    "axes": "74920ed2f9be5d6c2b1f7bda70ec93ab986193c724725346813c1dafcaa7b7ff",
     "tasks": "ae0113d67a811a6c84c580c1601746b125a45ac6d56b9cf0d6abce1877f0f139",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

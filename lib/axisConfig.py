@@ -1484,168 +1484,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     },
 }
 
-# ADR-0147: Cross-axis composition semantics.
-# Structure: axis_a → token_a → axis_b → {"natural": [...], "cautionary": {token: warning}}
-#
-# "natural": token_b combinations that work with token_a without any special
-#            interpretation. The LLM produces good output without explicit guidance.
-#            Positive "what does this produce" cases are handled by the universal
-#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py).
-#
-# "cautionary": token_b combinations that tend to produce poor output for structural
-#               reasons the universal rule cannot predict. Only non-derivable entries
-#               belong here. Format: "tends to X because Y; prefer Z instead".
-#               No combination is blocked — these are guidance, not restrictions.
-#
-CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
-    "channel": {
-        "shellscript": {
-            "task": {
-                "natural": ["make", "fix", "show", "trans", "pull"],
-                "cautionary": {
-                    "sim": "tends to produce thin output — simulation is inherently narrative, not executable; consider remote or no channel instead",
-                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow system-probe scripts",
-                },
-            },
-            "audience": {
-                "natural": [
-                    "to-programmer",
-                    "to-principal-engineer",
-                    "to-junior-engineer",
-                    "to-platform-team",
-                    "to-llm",
-                ],
-                "cautionary": {
-                    "to-ceo": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-managers": "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
-                    "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-team": "accessible only to technical members of a mixed audience; consider plain instead",
-                },
-            },
-        },
-        "adr": {"task": {"natural": ["plan", "probe", "make"]}},
-        "sync": {
-            "completeness": {
-                "natural": ["full", "minimal", "gist"],
-                "cautionary": {
-                    "max": "tends to be unusable — session plans require practical brevity; max treats omissions as errors and produces overloaded agendas; use full "
-                    "or minimal instead"
-                },
-            }
-        },
-        "code": {
-            "task": {
-                "natural": ["make", "fix", "show", "trans", "pull", "check"],
-                "cautionary": {
-                    "sim": "tends to produce thin placeholder code — simulation is narrative, not executable; consider remote or no channel instead",
-                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow introspection scripts",
-                },
-            },
-            "audience": {
-                "natural": [
-                    "to-programmer",
-                    "to-principal-engineer",
-                    "to-junior-engineer",
-                    "to-platform-team",
-                    "to-llm",
-                ],
-                "cautionary": {
-                    "to-ceo": "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-managers": "inaccessible to a non-technical audience; use plain instead",
-                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-team": "accessible only to technical members of a mixed audience",
-                },
-            },
-        },
-        "codetour": {
-            "task": {
-                "natural": ["make", "fix", "show", "pull"],
-                "cautionary": {
-                    "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate",
-                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
-                },
-            }
-        },
-        "gherkin": {"task": {"natural": ["make", "check"]}},
-    },
-    "form": {
-        "commit": {
-            "completeness": {
-                "natural": ["gist", "minimal"],
-                "cautionary": {
-                    "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
-                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
-                },
-            }
-        }
-    },
-}
-
-
-@dataclass(frozen=True)
-class AxisDoc:
-    axis: str
-    key: str
-    description: str
-    group: str | None = None
-    flags: FrozenSet[str] = field(default_factory=frozenset)
-
-
-def axis_key_to_value_map(axis: str) -> dict[str, str]:
-    """Return the key->description map for a given axis."""
-    return AXIS_KEY_TO_VALUE.get(axis, {})
-
-
-def axis_key_to_label_map(axis: str) -> dict[str, str]:
-    """Return the key->label map for a given axis (ADR-0109)."""
-    return AXIS_KEY_TO_LABEL.get(axis, {})
-
-
-def axis_key_to_guidance_map(axis: str) -> dict[str, str]:
-    """Return the key->guidance map for a given axis (ADR-0110)."""
-    return AXIS_KEY_TO_GUIDANCE.get(axis, {})
-
-
-def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
-    """Return the key->use_when map for a given axis (ADR-0132)."""
-    return AXIS_KEY_TO_USE_WHEN.get(axis, {})
-
-
-def axis_key_to_kanji_map(
-    axis: str,
-) -> Union[Dict[str, str], Dict[str, Dict[str, str]]]:
-    """Return the key->kanji map for a given axis (ADR-0143).
-
-    For regular axes returns Dict[str, str] (token -> kanji).
-    For 'persona' returns Dict[str, Dict[str, str]] (sub-axis -> token -> kanji).
-    """
-    return AXIS_KEY_TO_KANJI.get(axis, {})
-
-
-def axis_key_to_category_map(axis: str) -> dict[str, str]:
-    """Return the key->category map for a given axis (ADR-0144)."""
-    return AXIS_KEY_TO_CATEGORY.get(axis, {})
-
-
-def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
-    """Return the key->routing_concept map for a given axis (ADR-0146).
-
-    Returns per-token distilled routing concept phrases. Tokens sharing the same
-    phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
-    """
-    return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
-
-
-def get_cross_axis_composition(axis: str, token: str) -> dict:
-    """Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
-
-    Returns a dict keyed by partner axis, each value being
-    {"natural": [...], "cautionary": {token: warning}}.
-    Returns an empty dict if the axis or token has no entry.
-    """
-    return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})
-
-
 def axis_docs_for(axis: str) -> list[AxisDoc]:
     """Return AxisDoc objects for a given axis."""
     mapping = axis_key_to_value_map(axis)
@@ -2063,3 +1901,183 @@ USAGE_PATTERNS: list[dict] = [
 def get_usage_patterns() -> list[dict]:
     """Return the USAGE_PATTERNS list (ADR-0134 SSOT)."""
     return USAGE_PATTERNS
+
+
+# ADR-0147: Cross-axis composition semantics.
+# Structure: axis_a → token_a → axis_b → {"natural": [...], "cautionary": {token: warning}}
+#
+# "natural": token_b combinations that work with token_a without any special
+#            interpretation. The LLM produces good output without explicit guidance.
+#            Positive "what does this produce" cases are handled by the universal
+#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py) —
+#            no per-combination enumeration needed here.
+#
+# "cautionary": token_b combinations where the combination tends to produce poor
+#               output for structural reasons the universal rule cannot predict.
+#               Only entries that are NOT derivable from first principles belong here.
+#               Format: "tends to produce X because Y; prefer Z instead".
+#               No combination is blocked — these are guidance, not restrictions.
+#
+CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
+    "channel": {
+        "shellscript": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull"],
+                "cautionary": {
+                    "sim":   "tends to produce thin output — simulation is inherently narrative, "
+                             "not executable; consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer "
+                             "analysis; valid only for narrow system-probe scripts",
+                },
+            },
+            "audience": {
+                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
+                            "to-platform-team", "to-llm"],
+                "cautionary": {
+                    "to-ceo":          "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-managers":     "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
+                    "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-team":         "accessible only to technical members of a mixed audience; consider plain instead",
+                },
+            },
+        },
+        "code": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "cautionary": {
+                    "sim":   "tends to produce thin placeholder code — simulation is narrative, not executable; "
+                             "consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; "
+                             "valid only for narrow introspection scripts",
+                },
+            },
+            "audience": {
+                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
+                            "to-platform-team", "to-llm"],
+                "cautionary": {
+                    "to-ceo":          "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-managers":     "inaccessible to a non-technical audience; use plain instead",
+                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-team":         "accessible only to technical members of a mixed audience",
+                },
+            },
+        },
+        "gherkin": {
+            "task": {
+                "natural": ["make", "check"],
+            },
+            "completeness": {
+                "natural": ["full", "minimal"],
+                "cautionary": {
+                    "skim": "tends to produce incomplete scenarios — Gherkin steps need concrete "
+                            "action/assertion detail to be executable; use full or minimal instead",
+                },
+            },
+        },
+        "adr": {
+            "task": {
+                "natural": ["plan", "probe", "make"],
+                "cautionary": {
+                    "sim": "tends to be incoherent — scenario playback is narrative; ADR is a "
+                           "decision artifact with no room for simulation output",
+                },
+            },
+            "completeness": {
+                "natural": ["full", "deep"],
+                "cautionary": {
+                    "skim": "tends to produce incomplete decisions — ADRs need full context and "
+                            "consequences to be actionable; use full or deep instead",
+                },
+            },
+        },
+        "codetour": {
+            "task": {
+                "natural": ["make", "fix", "show", "pull"],
+                "cautionary": {
+                    "sim":  "tends to be incoherent — simulation is narrative with no code subject to navigate",
+                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
+                },
+            },
+            "audience": {
+                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
+                            "to-platform-team", "to-llm"],
+                "cautionary": {
+                    "to-ceo":          "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
+                    "to-managers":     "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain instead",
+                    "to-stakeholders": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
+                    "to-team":         "accessible only to technical members of a mixed audience; consider plain instead",
+                },
+            },
+        },
+        "sync": {
+            "task": {
+                "natural": ["plan", "make", "show"],
+                "cautionary": {
+                    "sim":   "tends to be unfocused — scenario playback is narrative and doesn't "
+                             "produce a structured session agenda; use plan or make instead",
+                    "probe": "tends to miss the purpose — analytical probing doesn't translate "
+                             "into actionable session steps; use plan or show instead",
+                },
+            },
+            "completeness": {
+                "natural": ["full", "minimal", "gist"],
+                "cautionary": {
+                    "max":  "tends to be unusable — session plans require practical brevity; "
+                            "max treats omissions as errors and produces overloaded agendas; use full or minimal instead",
+                },
+            },
+        },
+        "html": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "cautionary": {
+                    "sim":   "tends to produce placeholder markup — simulation is narrative, not executable; "
+                             "consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — valid only for narrow introspection scripts; "
+                             "a prose channel provides richer analysis",
+                },
+            },
+        },
+        "presenterm": {
+            "task": {
+                "natural": ["make", "show", "plan", "pull"],
+                "cautionary": {
+                    "fix":   "tends to be too granular — code fixes don't translate into slide content; "
+                             "use make or show instead",
+                    "probe": "tends to miss depth — analytical probing is hard to condense into slides; "
+                             "use show or plan instead",
+                },
+            },
+            "completeness": {
+                "natural": ["minimal", "gist"],
+                "cautionary": {
+                    "max":  "tends to be undeliverable — slides require brevity; max produces overloaded decks; "
+                            "use minimal or gist instead",
+                    "deep": "same constraint as max — slide format cannot accommodate deep analysis; "
+                            "use minimal or gist instead",
+                },
+            },
+        },
+    },
+    "form": {
+        "commit": {
+            "completeness": {
+                "natural": ["gist", "minimal"],
+                "cautionary": {
+                    "max":  "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
+                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
+                },
+            },
+        },
+    },
+}
+
+
+def get_cross_axis_composition(axis: str, token: str) -> dict:
+    """Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
+
+    Returns a dict keyed by partner axis, each value being
+    {"natural": [...], "cautionary": {token: warning}}.
+    Returns an empty dict if the axis or token has no entry.
+    """
+    return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})

@@ -259,6 +259,8 @@
 			onfocus={(e) => {
 				// Clear filter when returning via keyboard (Shift+Tab), but not on click
 				if (e.detail === 0) filter = '';
+				// Clear chip focus/panel when returning focus to filter
+				activeToken = null;
 			}}
 			onkeydown={(e) => {
 				if (e.key === 'ArrowDown' && filtered.length > 0) {

@@ -719,3 +719,25 @@ describe('TokenSelector — S: single-slot replace (maxSelect=1)', () => {
 		expect(onToggle).toHaveBeenCalledWith('prose');
 	});
 });
+
+describe('TokenSelector — focus returning to filter clears chip focus and closes panel', () => {
+	it('focusing filter input while chip is focused closes the metadata panel', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		expect(filterInput).toBeTruthy();
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		const firstChip = chips[0];
+		await fireEvent.focus(firstChip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+		await fireEvent.focus(filterInput);
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+});

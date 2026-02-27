@@ -2807,3 +2807,46 @@ func TestAddendumPassedToPreviewAndCommand(t *testing.T) {
 		t.Errorf("expected command to contain --addendum flag, got %q", cmd)
 	}
 }
+
+// TestCrossAxisChipPrefixColumnReverse specifies that when browsing the channel axis
+// with an active task token, each channel row shows a 1-char prefix:
+// ⚠ if the active task is in that channel's cautionary map, ✓ if in natural list.
+func TestCrossAxisChipPrefixColumnReverse(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "channel" && token == "shellscript" {
+			return map[string][]string{"task": {"make"}},
+				map[string]map[string]string{
+					"task": {"sim": "tends to produce thin output"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Initialize with sim task pre-selected; channel stage becomes current.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesTaskChannel(),
+		InitialTokens:           []string{"sim"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "channel" {
+		t.Fatalf("expected channel stage after sim pre-selected, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+	// The prefix must appear on the same line as the completion label (not just in the meta pane).
+	foundPrefixOnRow := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "⚠") && strings.Contains(line, "ShellScript") {
+			foundPrefixOnRow = true
+			break
+		}
+	}
+	if !foundPrefixOnRow {
+		t.Errorf("reverse prefix: expected ⚠ on same line as ShellScript when sim active; got:\n%s", view)
+	}
+}

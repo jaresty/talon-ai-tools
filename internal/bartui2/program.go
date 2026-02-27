@@ -1768,11 +1768,14 @@ func (m model) renderTokensPane() string {
 	var selectedUseWhen string  // Store routing trigger phrase (ADR-0142)
 	var selectedValue string    // Store token value for cross-axis lookup (ADR-0148)
 
-	// Chip traffic light: active when task/completeness axis is browsed and a channel/form
-	// token is already selected (ADR-0148 Phase 1c). Scope: task and completeness only.
+	// Chip traffic light: active when task/completeness axis is browsed with an active
+	// channel/form token, or channel/form axis is browsed with an active task/completeness
+	// token (ADR-0148 Phase 1c + reverse direction).
+	hasActiveChannel := len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["form"]) > 0
+	hasActiveTask := len(m.tokensByCategory["task"]) > 0 || len(m.tokensByCategory["completeness"]) > 0
 	showPrefixColumn := m.crossAxisCompositionFor != nil && paneHeight >= 12 &&
-		(currentStage == "task" || currentStage == "completeness") &&
-		(len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["form"]) > 0)
+		(((currentStage == "task" || currentStage == "completeness") && hasActiveChannel) ||
+			((currentStage == "channel" || currentStage == "form") && hasActiveTask))
 
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
@@ -2140,26 +2143,53 @@ func (m model) renderResultPane() string {
 }
 
 // chipState returns the traffic-light prefix character for a token when the chip prefix column
-// is active (ADR-0148 Phase 1c). It iterates all active channel/form selections and returns:
-// "⚠" if any has a cautionary entry for the given axis+token, "✓" if any has a natural listing,
-// or " " otherwise. Cautionary takes precedence over natural.
+// is active (ADR-0148). Forward direction: task/completeness chips with active channel/form.
+// Reverse direction: channel/form chips with active task/completeness. Cautionary takes
+// precedence over natural.
 func (m model) chipState(axis, token string) string {
 	if m.crossAxisCompositionFor == nil {
 		return " "
 	}
 	hasCautionary := false
 	hasNatural := false
-	for _, channelAxis := range []string{"channel", "form"} {
-		for _, activeToken := range m.tokensByCategory[channelAxis] {
-			natural, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
-			if cauts, ok := cautionary[axis]; ok {
-				if _, ok := cauts[token]; ok {
-					hasCautionary = true
+	switch axis {
+	case "task", "completeness":
+		// Forward: iterate active channel/form tokens.
+		for _, channelAxis := range []string{"channel", "form"} {
+			for _, activeToken := range m.tokensByCategory[channelAxis] {
+				natural, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
+				if cauts, ok := cautionary[axis]; ok {
+					if _, ok := cauts[token]; ok {
+						hasCautionary = true
+					}
+				}
+				if nats, ok := natural[axis]; ok {
+					for _, n := range nats {
+						if n == token {
+							hasNatural = true
+						}
+					}
 				}
 			}
-			if nats, ok := natural[axis]; ok {
+		}
+	case "channel", "form":
+		// Reverse: look up this chip's own composition data against active task/completeness tokens.
+		natural, cautionary := m.crossAxisCompositionFor(axis, token)
+		for _, taskAxis := range []string{"task", "completeness"} {
+			if cauts, ok := cautionary[taskAxis]; ok {
+				for _, activeToken := range m.tokensByCategory[taskAxis] {
+					if _, ok := cauts[activeToken]; ok {
+						hasCautionary = true
+					}
+				}
+			}
+			if nats, ok := natural[taskAxis]; ok {
+				natsSet := make(map[string]bool, len(nats))
 				for _, n := range nats {
-					if n == token {
+					natsSet[n] = true
+				}
+				for _, activeToken := range m.tokensByCategory[taskAxis] {
+					if natsSet[activeToken] {
 						hasNatural = true
 					}
 				}

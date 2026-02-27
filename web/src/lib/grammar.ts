@@ -252,3 +252,29 @@ export function getChipState(
 	}
 	return hasNatural ? 'natural' : null;
 }
+
+// getReverseChipState returns traffic-light state for a channel/form chip given active
+// task/completeness selections (ADR-0148 reverse direction). Checks whether any active
+// task/completeness token appears in the chip's own natural or cautionary lists.
+// Cautionary takes precedence over natural.
+export function getReverseChipState(
+	grammar: Grammar,
+	activeTokensByAxis: Record<string, string[]>,
+	chipAxis: string,
+	chipToken: string
+): 'natural' | 'cautionary' | null {
+	const cac = grammar.axes.cross_axis_composition;
+	if (!cac) return null;
+	const entry = cac[chipAxis]?.[chipToken];
+	if (!entry) return null;
+	let hasNatural = false;
+	for (const taskAxis of ['task', 'completeness']) {
+		const pair = entry[taskAxis];
+		if (!pair) continue;
+		for (const activeToken of (activeTokensByAxis[taskAxis] ?? [])) {
+			if (pair.cautionary?.[activeToken]) return 'cautionary';
+			if (pair.natural?.includes(activeToken)) hasNatural = true;
+		}
+	}
+	return hasNatural ? 'natural' : null;
+}

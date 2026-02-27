@@ -981,6 +981,55 @@ describe('TokenSelector — ADR-0148 chip traffic light (task/completeness axes)
 		expect(screen.queryByText('Caution')).toBeNull();
 	});
 
+	it('channel chips show chip--cautionary when selected task is in their cautionary list', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { task: ['sim'] }
+			}
+		});
+		const shellscriptEl = document.querySelector('[data-token="shellscript"]');
+		expect(shellscriptEl?.classList.contains('chip--cautionary')).toBe(true);
+	});
+
+	it('channel chips show chip--natural when selected task is in their natural list', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { task: ['make'] }
+			}
+		});
+		const shellscriptEl = document.querySelector('[data-token="shellscript"]');
+		expect(shellscriptEl?.classList.contains('chip--natural')).toBe(true);
+	});
+
+	it('channel chips with no composition entry show no traffic light class', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { task: ['sim'] }
+			}
+		});
+		const slackEl = document.querySelector('[data-token="slack"]');
+		expect(slackEl?.classList.contains('chip--cautionary')).toBe(false);
+		expect(slackEl?.classList.contains('chip--natural')).toBe(false);
+	});
+
 	it('audience chips never show traffic light classes (scope exclusion)', () => {
 		render(TokenSelector, {
 			props: {

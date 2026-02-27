@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-	import { METHOD_CATEGORY_ORDER, getCompositionData, getChipState } from './grammar.js';
+	import { METHOD_CATEGORY_ORDER, getCompositionData, getChipState, getReverseChipState } from './grammar.js';
 	import type { TokenMeta, Grammar } from './grammar.js';
 
 	interface Props {
@@ -100,7 +100,7 @@
 	let activeMetaCompositionDirB = $derived((() => {
 		if (!grammar || !activeMeta || !activeTokensByAxis) return null;
 		if (axis !== 'task' && axis !== 'completeness') return null;
-		const cac = grammar.axes.cross_axis_composition;
+		const cac = grammar.axes?.cross_axis_composition;
 		if (!cac) return null;
 		const naturalWith: string[] = [];
 		const cautionWith: Array<[string, string]> = [];
@@ -116,11 +116,15 @@
 		return naturalWith.length > 0 || cautionWith.length > 0 ? { naturalWith, cautionWith } : null;
 	})());
 
-	// ADR-0148: chip traffic light — only task and completeness axes; audience excluded.
-	const TRAFFIC_LIGHT_AXES = new Set(['task', 'completeness']);
+	// ADR-0148: chip traffic lights — task/completeness (forward) and channel/form (reverse).
+	// Audience excluded per ADR-0148 §Chip scope.
 	function resolveChipState(token: string): 'natural' | 'cautionary' | null {
-		if (!grammar || !activeTokensByAxis || !TRAFFIC_LIGHT_AXES.has(axis)) return null;
-		return getChipState(grammar, activeTokensByAxis, axis, token);
+		if (!grammar || !activeTokensByAxis) return null;
+		if (axis === 'task' || axis === 'completeness')
+			return getChipState(grammar, activeTokensByAxis, axis, token);
+		if (axis === 'channel' || axis === 'form')
+			return getReverseChipState(grammar, activeTokensByAxis, axis, token);
+		return null;
 	}
 
 	let panelStyle = $state('');
@@ -137,9 +141,11 @@
 		const left = Math.round(rect.left);
 		const w = `min(600px, calc(100vw - ${left}px - 1rem))`;
 		if (spaceBelow >= spaceAbove) {
-			panelStyle = `top:${Math.round(rect.bottom + 4)}px; left:${left}px; width:${w}`;
+			const maxH = Math.round(spaceBelow - 8);
+			panelStyle = `top:${Math.round(rect.bottom + 4)}px; left:${left}px; width:${w}; max-height:${maxH}px`;
 		} else {
-			panelStyle = `bottom:${Math.round(window.innerHeight - rect.top + 4)}px; left:${left}px; width:${w}`;
+			const maxH = Math.round(spaceAbove - 8);
+			panelStyle = `bottom:${Math.round(window.innerHeight - rect.top + 4)}px; left:${left}px; width:${w}; max-height:${maxH}px`;
 		}
 	});
 
@@ -737,6 +743,10 @@
 	.meta-description {
 		margin: 0 0 0.5rem 0;
 		color: var(--color-text);
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	.meta-section {

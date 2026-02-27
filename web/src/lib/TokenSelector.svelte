@@ -256,7 +256,10 @@
 			placeholder="filter…"
 			bind:value={filter}
 			bind:this={filterInputRef}
-			onfocus={(e) => (e.target as HTMLInputElement).select()}
+			onfocus={(e) => {
+				// Clear filter when returning via keyboard (Shift+Tab), but not on click
+				if (e.detail === 0) filter = '';
+			}}
 			onkeydown={(e) => {
 				if (e.key === 'ArrowDown' && filtered.length > 0) {
 					e.preventDefault();

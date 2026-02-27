@@ -8,80 +8,140 @@
 
 ## Context
 
-ADR-0147 introduced `CROSS_AXIS_COMPOSITION` — structured data capturing cautionary pairings for channel/form tokens (e.g., `shellscript+sim` tends to produce thin output; `code+to-ceo` is inaccessible). This data drives `bar help llm`'s "Choosing Channel" section, which provides pre-selection guidance to LLM users invoking bar via the skill.
-
-ADR-0147 explicitly deferred:
+ADR-0147 introduced `CROSS_AXIS_COMPOSITION` — structured data capturing natural pairings and cautionary warnings for channel/form tokens. This data drives `bar help llm`'s "Choosing Channel" section for LLM users. ADR-0147 explicitly deferred:
 > "Surfacing reframe descriptions in TUI2/SPA (would require new UI component)"
 
-The gap is material: a user building prompts interactively in TUI2 or the SPA currently gets no warning when they select `shellscript` and then `sim`. The same user consulting `bar help llm` would see:
-```
-`shellscript`: ...
-- Cautionary:
-  - `sim` — tends to produce thin output — simulation is inherently narrative, not executable
-```
+This ADR addresses that deferral and resolves three gaps identified during the gap analysis:
 
-This asymmetry leaves non-LLM users without the composition guidance that is central to ADR-0147's value.
+**G1 — SPA meta panel requires a click; warning arrives too late.** A user who recognizes `sim` by sight selects it without opening the meta panel, never seeing the cautionary note. The original ADR had chip badges as Phase 3 (deferred). The phase ordering was wrong: chip-level steering is the highest-value pre-selection surface.
 
-### Existing UI state
+**G2 — Meta panel only covers moment #2 (browsing), not moment #3 (after commit).** Once both `shellscript` and `sim` are selected, warnings disappear when focus moves. A persistent surface (selected-token strip or status bar) is not addressed.
 
-**TUI2 selected-item detail panel** (`internal/bartui2/program.go` lines ~1854–1880):
-- Renders for the currently focused token: Use When (cyan), Guidance (amber `→ `), description (wrapped)
-- `TokenOption` fields: `Value`, `Slug`, `Label`, `Description`, `Guidance`, `UseWhen`, `Kanji`, `SemanticGroup`, `RoutingConcept`
-- `CrossAxisCompositionFor()` not called anywhere in TUI2
+**G3 — Natural pairings are invisible.** Warnings steer away from bad combos, but nothing steers toward good ones. The `natural` list in `CROSS_AXIS_COMPOSITION` already encodes this — it just isn't rendered anywhere.
 
-**SPA meta panel** (`web/src/lib/TokenSelector.svelte` lines ~378–417):
-- Renders on chip click: token header, description, "When to use" (use_when), "Notes" (guidance), Select button
-- `TokenMeta` interface: `token`, `label`, `description`, `guidance`, `use_when`, `kanji`, `category`, `routing_concept`
-- `Grammar` TypeScript interface lacks `cross_axis_composition`; no accessor for cautionary warnings
+**G4 — `CROSS_AXIS_COMPOSITION` coverage is too narrow for positive steering.** Current entries cover 6 channel tokens across 2 axes. Key channels (`presenterm`) and axis combinations (`codetour.audience`, `adr.completeness`, `gherkin.completeness`, `sync.task`, `html.task`) are absent, so the natural pairing lists that would drive steering are missing.
 
-### Warning trigger: contextual vs. static
+**G5 — Guidance prose redundancy.** `AXIS_KEY_TO_GUIDANCE` prose for channel tokens contains the same cross-axis avoidance text that `CROSS_AXIS_COMPOSITION` now encodes as structured data. The prose serves a different purpose (intrinsic description in meta panels) but is cluttered with cross-axis avoidance text that should be rendered structurally.
 
-Cautionary warnings are most useful when they are **contextual** — shown only when the user has already selected a token that creates the problematic pairing. Always showing "shellscript has known cautionary pairings" on the shellscript chip would be noisy and uninformative; showing "⚠ sim — tends to produce thin output" only when `sim` is already selected is precisely targeted.
+### Gap analysis — original ADR design
 
-Both TUI2 and SPA have access to the current selection at render time, making contextual warnings achievable without changing token-building logic.
+The original decision (meta-panel-only, contextual, Phase 1 TUI2 → Phase 2 SPA → Phase 3 chip badges) had:
+- Correct direction (contextual is right for cautionary; always-on is right for natural)
+- Wrong phase ordering for SPA (chip badge is higher-signal than meta panel for pre-selection)
+- No coverage for positive steering
+- No prose cleanup plan
+- Underspecified direction-B implementation (checked in Decision, missing in Phase 1 steps)
 
 ---
 
 ## Decision
 
-### Warning model: contextual, render-time, selected-item only
+### Warning and steering model
 
-Warnings appear in the selected-item detail panel (TUI2) or meta panel (SPA) when:
+**Always-on for natural pairings; always-on for cautionary pairings on channel/form tokens.**
 
-1. The token currently in focus (selected item / chip being inspected) appears in the `cautionary` dict of any channel or form token already active in the current selection, **or**
-2. The token currently in focus is a channel or form token and any active token in a partner axis appears in its `cautionary` dict.
+When a channel or form token's meta panel or selected-item detail is open:
+- Show **"Natural pairings"** — positive list of well-supported partner tokens (from `natural` list)
+- Show **"Cautionary pairings"** — list of structurally-broken combinations (from `cautionary` dict)
 
-Direction (a): browsing task tokens while `shellscript` is active → `sim` shows a warning.
-Direction (b): browsing `shellscript` channel token while `sim` is active → `shellscript` shows a warning.
+No selection-state check is needed: the display is always-on for any channel/form token with entries. A user examining `shellscript` always sees "Natural task: make, fix, show, trans, pull" and "Caution: sim, probe." This teaches composition rules proactively, before any token is selected.
 
-Both directions are checked. Warning text comes directly from the `cautionary` dict entry.
+**Chip-level traffic light for partner-axis tokens when a channel/form is active.**
 
-Warnings are rendered only in the **selected-item / meta panel** context, not on token chips. This keeps the chip grid clean for scanning and reserves warnings for the moment the user is actively examining a token.
+When a channel or form token is already in the selection and the user is browsing a partner axis (task, completeness, audience):
+- Natural partner tokens get a **positive indicator** (subtle green tint or ✓ badge)
+- Cautionary partner tokens get a **warning indicator** (⚠ badge)
+- Unlisted tokens: neutral (no indicator; universal rule applies)
+
+This is the primary pre-selection steering surface. It requires selection-state context but targets the moment just before a pairing is committed.
 
 ### Part A: TUI2
 
-**Rendering location:** In `program.go`, inside the selected-item detail section of `renderTokensPane`. After the guidance line, if a contextual cautionary warning applies, render one line:
+**Always-on meta section** (selected-item detail in `renderTokensPane`, `program.go`):
 
+For a channel/form token currently in focus: after the guidance line, add two optional lines using structured `CrossAxisCompositionFor()` data:
 ```
-⚠ Caution: <warning text> (first sentence only if long)
+✓ Natural: <axis>: token1, token2, ...   (using useWhenStyle, cyan)
+⚠ Caution: token — first-sentence warning  (using warningStyle, amber)
 ```
 
-Using `warningStyle` (amber, color 220) to match the existing guidance warning aesthetic.
+For a task/completeness/audience token currently in focus: check if any active channel/form token has a cautionary entry for this token (direction B). If yes, add one amber line:
+```
+⚠ With <channel>: first-sentence warning
+```
 
-**Data access:** `program.go` already has access to `m.grammar` (the Grammar object) and `m.tokens` (the current selection). Use `CrossAxisCompositionFor()` directly at render time — no changes to `TokenOption` struct or token-building functions required.
+**Chip traffic light** (token list in `renderTokensPane`):
 
-**Truncation:** Cautionary note truncated to first sentence (up to the first `. ` or 120 chars) to fit within the existing panel height budget. If a token has cautionary warnings from more than one active partner token, show the first one; the second is accessible by selecting the other token.
+When a channel/form token is active, render a one-character prefix on each partner-axis token row:
+```
+✓ make   — Create new content...       (natural partner)
+⚠ sim    — Playing out a scenario...   (cautionary partner)
+  show   — Surface what already exists  (neutral)
+```
+
+The prefix column is always present (blank for neutral) to avoid layout shift.
+
+**Layout budget:** Natural + cautionary lines in the detail section replace one line of description wrapping (truncate description to 2 lines when either section is non-empty, down from 3). No additional height needed.
 
 ### Part B: SPA
 
-**Rendering location:** In `TokenSelector.svelte`, inside the meta panel, after the "Notes" (guidance) section. A new "Caution" section, styled with a distinct warning background, renders contextual warnings.
+**Always-on meta panel sections** (`TokenSelector.svelte`):
+
+For a channel/form token chip that is clicked: after the "Notes" (guidance) section, add:
+- **"Works well with"** section: natural partner tokens as chips (non-interactive, colored with accent tint)
+- **"Caution"** section: cautionary pairs as `token — warning` items with warning-background styling
+
+**Chip traffic light** (`TokenSelector.svelte` chip grid):
+
+When a channel/form token is active in the selection, the task/completeness/audience chip grid shows:
+- Natural partner chips: subtle green left-border or background tint
+- Cautionary partner chips: small ⚠ badge in top-right corner
 
 **Data pipeline:**
-1. Add `CrossAxisComposition` to the `Grammar` TypeScript interface in `grammar.ts`
-2. Add `getCompositionWarning(grammar, axis, token, activeTokensByAxis) → string | null` accessor — looks up cautionary entry given active channel/form tokens
-3. In `TokenSelector.svelte`, compute `compositionWarning` from `getCompositionWarning()` using the current `selectedTokens` prop; render if non-null
+1. `grammar.ts`: Add `CrossAxisComposition` to Grammar TypeScript interface; add `getCompositionData(grammar, axis, token) → { natural: Record<string, string[]>, cautionary: Record<string, Record<string, string>> } | null` accessor for always-on display; add `getChipWarning(grammar, activeAxis, activeToken, chipAxis, chipToken) → 'natural' | 'cautionary' | null` for traffic-light classification
+2. `TokenSelector.svelte`: Always-on sections in meta panel; chip traffic-light classes from `getChipWarning()`
 
-**Chip indicator (optional, Phase 2):** Evaluate whether a small `⚠` badge on task/audience chips adds value when a cautionary channel is selected. Only implement if signal-to-noise ratio is favorable (task axis cautionary only; defer audience cautionary chips to a later cycle).
+### Part C: Guidance prose cleanup
+
+`AXIS_KEY_TO_GUIDANCE` entries for channel tokens contain cross-axis avoidance text that is now redundant with `CROSS_AXIS_COMPOSITION`. After Parts A and B are live, trim each affected entry to intrinsic description only:
+
+| Token | Remove from prose | Rationale |
+|-------|------------------|-----------|
+| `shellscript` | "Avoid with narrative tasks (sim, probe) and selection tasks... Audience incompatibility..." | Now in `cautionary` dict |
+| `code` | "Avoid with narrative tasks (sim, probe)... Audience incompatibility..." | Now in `cautionary` dict |
+| `adr` | "Avoid with sort, pull, diff, sim..." and task-affinity list | Now in `natural` + `cautionary` |
+| `codetour` | "Best for code-navigation tasks: fix, make, show, pull..." developer-audience note | Now in `natural` + `audience.cautionary` |
+| `gherkin` | Cross-axis reframe note | Now in `natural`; universal rule handles reframes |
+| `sync` | "Avoid pairing with max completeness..." | Now in `cautionary` |
+| `commit` | "Avoid deep or max completeness... and compound directionals..." | Now in `cautionary` |
+
+Cleanup happens in Phase 2 after structured rendering is live. `generate_axis_config.py` must be regenerated.
+
+### Part D: Coverage expansion
+
+Add entries to `CROSS_AXIS_COMPOSITION` to support positive steering and fill gaps identified during the gap analysis.
+
+**Tier 1 — Extend existing channels to new axes (high confidence; derived from guidance prose):**
+
+| Entry | Natural | Cautionary |
+|-------|---------|-----------|
+| `adr.task.cautionary` | — | `sim`: "tends to be incoherent — scenario playback is narrative; ADR is a decision artifact with no room for simulation output" |
+| `adr.completeness` | `full`, `deep` | `skim`: "tends to produce incomplete decisions — ADRs need full context and consequences to be actionable" |
+| `codetour.audience` | `to-programmer`, `to-principal-engineer`, `to-junior-engineer`, `to-platform-team`, `to-llm` | `to-ceo`/`to-managers`/`to-stakeholders`: "codetour produces a VS Code JSON file — inaccessible to non-technical audiences"; `to-team`: "accessible only to technical members" |
+| `gherkin.completeness` | `full`, `minimal` | `skim`: "tends to produce incomplete scenarios — Gherkin steps need concrete action/assertion detail to be executable" |
+| `sync.task` | `plan`, `make`, `show` | `sim`: "tends to be unfocused — scenario playback is narrative and doesn't produce a structured session agenda"; `probe`: "tends to miss the purpose — analytical probing doesn't translate into actionable session steps" |
+
+**Tier 2 — New channels (commonly used, well-understood pairings):**
+
+| Entry | Natural | Cautionary |
+|-------|---------|-----------|
+| `presenterm.task` | `make`, `show`, `plan`, `pull` | `fix`: "tends to be too granular — code fixes don't translate into slide content"; `probe`: "tends to miss depth — analytical probing is hard to condense into slides" |
+| `presenterm.completeness` | `minimal`, `gist` | `max`: "tends to be undeliverable — slides require brevity; max produces overloaded decks"; `deep`: "same constraint as max" |
+| `html.task` | `make`, `fix`, `show`, `trans`, `pull`, `check` | `sim`: "tends to produce placeholder markup — simulation is narrative, not executable"; `probe`: "tends to miss analytical depth — valid only for narrow introspection scripts" |
+
+**Tier 3 — Deferred:**
+
+`plain`, `remote`, `diagram`, `jira`, `slack`, `svg` — no empirical data from ADR-0085 cycles; low cross-axis constraint tokens. Form tokens (vast majority) — no strong composition constraints identified. `directional × form` (commit + compound directionals) — deferred per ADR-0147.
 
 ---
 
@@ -89,46 +149,51 @@ Using `warningStyle` (amber, color 220) to match the existing guidance warning a
 
 ### Positive
 
-- Non-LLM users (TUI2, SPA) receive the same cautionary guidance as LLM users (`bar help llm`)
-- Single SSOT: `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py` drives all three surfaces
-- No new grammar data required — existing `cautionary` dict is used directly
-- Contextual display keeps the token grid clean; warnings appear only when relevant
-- No changes to `TokenOption`, `buildAxisOptions`, or the Python grammar pipeline
+- **Pre-selection steering** via chip traffic light: users see ✓/⚠ on chips before committing a pairing
+- **Proactive grammar teaching** via always-on meta panel: natural + cautionary visible whenever a channel/form token is examined
+- **Single SSOT** drives all surfaces: `CROSS_AXIS_COMPOSITION` → help_llm, TUI2, SPA
+- **Guidance prose cleaned**: `AXIS_KEY_TO_GUIDANCE` entries become concise intrinsic descriptions; cross-axis info is structural
+- **Symmetric treatment**: both positive (natural) and negative (cautionary) pairings are surfaced
 
 ### Risks
 
-**R1 — TUI2 panel height.** Adding a cautionary line to the selected-item area may reduce visible lines for description on terminals with limited height. Mitigation: truncate to first sentence; skip caution line entirely if `paneHeight < 12` (same threshold used for routing concept subtitle).
+**R1 — TUI2 layout budget.** Natural + cautionary lines add 1–2 lines to the selected-item detail. Mitigation: truncate description to 2 lines (from 3) when these sections are non-empty. Skip both if `paneHeight < 12`.
 
-**R2 — SPA chip badge noise.** Non-technical audience tokens (to-ceo, to-managers, to-stakeholders, to-team) all trigger cautionary warnings when `shellscript` or `code` is selected. Showing badges on all four chips simultaneously would dominate the audience section visually. Mitigation: meta panel only in Phase 1; chip badge decision deferred to Phase 2 after observing usage.
+**R2 — SPA chip grid noise.** Cautionary ⚠ badges on all four non-technical audience chips when `shellscript` is active may dominate the audience section. Mitigation: evaluate signal-to-noise during Phase 2 implementation; if too noisy, show only task/completeness chip indicators and keep audience warnings in meta panel only.
 
-**R3 — Type-safety in SPA.** Adding `CrossAxisComposition` to the TypeScript `Grammar` interface requires mapping the nested Python dict structure. The shape is `Record<string, Record<string, Record<string, { natural: string[], cautionary: Record<string, string> }>>>`. Mitigation: use a named TypeScript type `CrossAxisPair` mirroring the Go struct.
+**R3 — Coverage asymmetry.** Channels with entries show natural/cautionary; channels without entries (plain, remote, etc.) show nothing. Users may incorrectly infer uncovered channels have no composition constraints. Mitigation: add a note to uncovered channel meta panels: "No specific pairing guidance — any task or completeness applies via the universal rule."
+
+**R4 — Prose cleanup coordination.** Trimming `AXIS_KEY_TO_GUIDANCE` prose before structured rendering is live removes guidance from TUI2/SPA meta panels temporarily. Mitigation: strict Phase ordering — cleanup happens in Phase 2 only after structured rendering is verified.
+
+**R5 — `generate_axis_config.py` regression.** Prose changes will be overwritten if `make axis-regenerate-apply` is run before updating the regen script. Mitigation: update `generate_axis_config.py` as part of Phase 2 before any regeneration.
 
 ---
 
 ## Implementation Plan
 
-### Phase 1: TUI2 contextual warning (program.go only)
+### Phase 1: Coverage expansion + TUI2 always-on display
 
-1. In `program.go` selected-item render: lookup `m.grammar.CrossAxisCompositionFor(axis, token)` for each channel/form token in `m.tokens`; if current token appears in any `cautionary` map, render one warning line using `warningStyle`
-2. Also check reverse: if current token is a channel/form token, check if any active token in partner axis is in its `cautionary` map
-3. Test: extend TUI2 smoke fixture or unit test to cover cautionary note render path
+1. Add Tier 1 + Tier 2 entries to `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py`; update `scripts/tools/generate_axis_config.py`; run `make bar-grammar-update`
+2. TUI2 selected-item detail: add natural + cautionary sections in `program.go` using `CrossAxisCompositionFor()`; test with extended TUI2 smoke fixture
+3. TUI2 chip prefix: render `✓`/`⚠`/` ` prefix column for partner-axis tokens when channel/form is active
 
-### Phase 2: SPA meta panel warning
+### Phase 2: SPA always-on meta panel + guidance prose cleanup
 
-1. `grammar.ts`: Add `CrossAxisComposition` interface type; add `getCompositionWarning()` accessor
-2. `TokenSelector.svelte`: Add "Caution" section in meta panel; render when `compositionWarning` is non-null; style with warning background (distinct from `.meta-note`)
-3. Test: extend SPA tests to cover the new section; all 110+ existing SPA tests must continue to pass
+1. `grammar.ts`: Add `CrossAxisComposition` type; add `getCompositionData()` and `getChipWarning()` accessors
+2. `TokenSelector.svelte`: Add "Works well with" + "Caution" sections in meta panel; add chip traffic-light class from `getChipWarning()`
+3. After structured rendering verified: trim cross-axis avoidance text from `AXIS_KEY_TO_GUIDANCE` entries per Part C table; update `generate_axis_config.py`; run `make bar-grammar-update`; verify meta panel still shows correct info from structured data
 
-### Phase 3: SPA chip badge (deferred, evaluate post-Phase 2)
+### Phase 3: Evaluate SPA chip noise + Tier 3 coverage
 
-1. Evaluate signal-to-noise: count average number of chips that would show ⚠ in typical selection state
-2. If acceptable, add small ⚠ indicator to chip when compositionWarning applies
-3. Limit to task axis cautionary warnings in initial implementation
+1. Observe signal-to-noise of chip indicators in real usage; adjust audience-axis chip display if noisy
+2. Evaluate Tier 3 channel additions (plain, remote) based on ADR-0085 shuffle cycle data
+3. Consider persistent warning on selected-token strip for committed cautionary pairs (addresses G2)
 
 ---
 
 ## Deferred
 
-- Chip-level badges (Phase 3, signal-to-noise evaluation required)
-- Surfacing `natural` combinations as positive confirmations in the UI (e.g., "✓ Natural pairing" for `shellscript+make`) — low priority; positive cases are already derivable from the Reference Key universal rule
-- Extending warnings to completeness×method tensions (`skim+rigor`) if/when those are added to `CROSS_AXIS_COMPOSITION`
+- G2 persistent warning on selected-token strip / status bar — useful but lower priority once chip traffic light is live
+- Tier 3 channel coverage (plain, remote, diagram, etc.) — no empirical data yet
+- `directional × form` cautionary entries (commit + compound directionals) — already captured in guidance prose; low priority
+- "No pairing guidance" note on uncovered channel meta panels — implement after observing user confusion in practice

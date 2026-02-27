@@ -78,17 +78,17 @@ validation_targets:
   - T-2b: go test ./internal/bartui2/ -run TestCrossAxisCompositionDirectionB
   - T-2c: go test ./... (full regression)
 evidence:
-  NOTE: Loops 2 and 3 were implemented and committed in the same session. Evidence
-  was captured at implementation time and is not re-verifiable without branch surgery.
-  Commit d997e48 (2026-02-27T08:37:16-08:00) is the green artefact.
-  - red   | ~2026-02-27T08:30:00-08:00 | exit 1, 2 ADR-0148 specifying tests fail |
+  - red | reconstructed | 2026-02-27T20:13:58Z | exit 1 (build failed) |
+      git checkout d363a07 -- internal/barcli/tui2.go internal/bartui2/program.go &&
       go test ./internal/bartui2/ -run TestCrossAxisCompositionDirection
-      specifying tests (TestCrossAxisCompositionDirectionA/B) written before impl | inline
-  - green | 2026-02-27T08:37:16-08:00 | commit d997e48 | exit 0, PASS (2/2 tests) |
+      helper:diff-snapshot=0 files changed (reconstruction baseline: pre-loop sha d363a07)
+      FAIL: unknown field CrossAxisCompositionFor in struct literal of type Options
+        (program_test.go:2650, 2697) | inline
+  - green | reconstructed | 2026-02-27T20:14:06Z | exit 0 | PASS (2/2 tests) |
+      git checkout HEAD -- internal/barcli/tui2.go internal/bartui2/program.go &&
       go test ./internal/bartui2/ -run TestCrossAxisCompositionDirection
-      CrossAxisCompositionFor wired in tui2.go; meta section rendering added;
-      description capped at 2 lines when sections non-empty; paneHeight < 12 guard | commit
-  - removal | ~2026-02-27T08:37:00-08:00 | revert impl → 2 fail → restore → 2 pass | inline
+      ok internal/bartui2 0.445s | inline
+  - removal | reconstructed | follows from red record above | inline
 rollback_plan: >
   git restore --source=HEAD internal/barcli/tui2.go internal/bartui2/program.go;
   go test ./internal/bartui2/ -run TestCrossAxisCompositionDirection (should fail)
@@ -132,17 +132,17 @@ validation_targets:
   - T-3a: go test ./internal/bartui2/ -run TestCrossAxisChipPrefixColumn
   - T-3b: go test ./... (full regression)
 evidence:
-  NOTE: Loop 3 was implemented and committed in the same session as Loop 2. Evidence
-  captured at implementation time. Commit 288d43e (2026-02-27T08:39:13-08:00) is
-  the green artefact.
-  - red   | ~2026-02-27T08:38:00-08:00 | exit 1, FAIL TestCrossAxisChipPrefixColumn |
+  - red | reconstructed | 2026-02-27T20:14:06Z | exit 1 | FAIL TestCrossAxisChipPrefixColumn |
+      git checkout d997e48 -- internal/bartui2/program.go &&
       go test ./internal/bartui2/ -run TestCrossAxisChipPrefixColumn
-      specifying test written before impl | inline
-  - green | 2026-02-27T08:39:13-08:00 | commit 288d43e | exit 0, PASS (1/1 test) |
+      helper:diff-snapshot=0 files changed (reconstruction baseline: pre-loop sha d997e48)
+      FAIL: chip prefix: expected ✓ before natural token 'make'
+        (program_test.go:2764) | inline
+  - green | reconstructed | 2026-02-27T20:14:14Z | exit 0 | PASS (1/1 test) |
+      git checkout HEAD -- internal/bartui2/program.go &&
       go test ./internal/bartui2/ -run TestCrossAxisChipPrefixColumn
-      chipState() added; prefix column rendered; cautionary overrides natural;
-      showPrefixColumn guard prevents layout shift | commit
-  - removal | ~2026-02-27T08:39:00-08:00 | revert impl → 1 fail → restore → 1 pass | inline
+      ok internal/bartui2 0.225s | inline
+  - removal | reconstructed | follows from red record above | inline
 rollback_plan: >
   git restore --source=HEAD internal/bartui2/program.go;
   go test ./internal/bartui2/ -run TestCrossAxisChipPrefixColumn (should fail)
@@ -246,4 +246,75 @@ next_work:
   - Update ADR-0148 status from Proposed → Accepted (per loop helper contract).
   - Run bar build sanity check: `bar build shellscript make --subject "test"` to
       confirm cross-axis guidance renders correctly in help llm output.
+```
+
+---
+
+## Reconciliation — helper:v20251223.1 → helper:v20260227.1 (2026-02-27)
+
+```yaml
+helper_version: helper:v20260227.1
+rules_changed:
+  - added: Work-log entry is part of the loop's observable delta and must be
+      committed before the loop closes. An agent that commits implementation
+      without a work-log entry has produced an incomplete loop.
+  - added: Reconstructed Evidence protocol — incomplete loops may use VCS
+      history to produce live evidence post-hoc, with a mandatory `reconstructed`
+      marker on every record.
+validation_mappings_affected:
+  - Loops 2 and 3 had approximated timestamps and NOTE disclaimers that are
+      now explicitly non-compliant. Both loops have been remediated using the
+      Reconstructed Evidence protocol — live reconstruction runs performed
+      2026-02-27T20:13:58Z–20:14:14Z and records updated above.
+compliance_of_existing_loops:
+  - Loop 1: compliant — evidence recorded in same session as implementation;
+      no approximated timestamps.
+  - Loop 2: remediated — reconstructed evidence replaces prior approximations.
+  - Loop 3: remediated — reconstructed evidence replaces prior approximations.
+  - Loop 4: compliant — live evidence captured via git stash/pop protocol.
+follow_up: none
+```
+
+---
+
+## Adversarial Completion Entry — ADR-0148 (2026-02-27)
+
+```yaml
+helper_version: helper:v20260227.1
+adversarial_case_against_completion:
+  - gap_1: Phase 3 deferred without completion-blocking evidence. The ADR
+      defers noise evaluation, Tier 3 coverage, and the G2 persistent warning
+      to "only if user confusion is observed." An adversarial reader could argue
+      this leaves R3 (coverage asymmetry — uncovered channels imply no constraints)
+      unresolved: users browsing `diagram` or `jira` see no composition data and
+      may infer those channels have no cross-axis interactions. This is a real
+      discoverability gap.
+    grounds_for_acceptance: R3 is explicitly tracked (ADR §Risks → R3). The
+      design decision is conservative by intent — premature clutter on every
+      uncovered channel meta panel has higher expected cost than the observed
+      confusion rate. The mitigation trigger (observed user confusion) is concrete
+      and monitorable. Phase 3 remains open as a named successor, not silently
+      dropped.
+  - gap_2: Loops 2 and 3 required post-hoc evidence reconstruction rather than
+      live capture. An adversarial reader could argue the red evidence is weaker
+      (build failure rather than test failure for Loop 2; tests and implementation
+      were committed together rather than tests-first).
+    grounds_for_acceptance: The reconstruction protocol was executed live with
+      actual command runs and real timestamps. The Loop 2 build failure IS the
+      correct red signal — the pre-loop implementation genuinely lacks the
+      `CrossAxisCompositionFor` field. The tests-and-implementation-in-one-commit
+      pattern was a procedural shortcut, not a coverage gap; the specifying tests
+      fully describe the targeted behaviour and remain in the repository as the
+      canonical correctness specification.
+  - gap_3: helper version bump happened within the ADR lifecycle, creating a
+      split-version work-log. Loops 1–4 reference v20251223.1; reconciliation
+      and completion reference v20260227.1.
+    grounds_for_acceptance: The reconciliation entry above satisfies the helper's
+      migration requirement. No prior loop compliance was retroactively invalidated
+      by the new rules (Loops 2 and 3 were already non-compliant under v20251223.1
+      and have been remediated). The split is auditable.
+completion_verdict: >
+  Completion warranted. All four phases shipped with green evidence. Phase 3 is
+  explicitly deferred with a concrete reopen trigger. Residual gaps are accepted
+  on documented grounds, not silently dropped. ADR status updated to Accepted.
 ```

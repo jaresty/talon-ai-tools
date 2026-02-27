@@ -1,7 +1,7 @@
 # ADR 0148: Cross-Axis Composition Warnings in TUI2 and SPA
 
 **Date:** 2026-02-26
-**Status:** Proposed
+**Status:** Accepted
 **Authors:** jaresty
 
 ---

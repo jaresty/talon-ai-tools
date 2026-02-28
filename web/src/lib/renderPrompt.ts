@@ -128,20 +128,61 @@ export function renderPrompt(
 		parts.push(constraints.map((c) => `- ${c}`).join('\n') + '\n\n');
 	}
 
-	// PERSONA section
+	// PERSONA section — mirrors Go CLI's writePersonaSection() in render.go.
+	// Format: "- Label (token): description" when docs exist; "- Label: token" otherwise.
 	const personaLines: string[] = [];
-	if (persona?.preset) {
-		const preset = grammar.persona?.presets?.[persona.preset];
-		if (preset) {
-			if (preset.voice) personaLines.push(`Voice: ${preset.voice}`);
-			if (preset.audience) personaLines.push(`Audience: ${preset.audience}`);
-			if (preset.tone) personaLines.push(`Tone: ${preset.tone}`);
+
+	function personaEntry(label: string, token: string, desc: string): string {
+		if (token && desc) return `- ${label} (${token}): ${desc}`;
+		if (token) return `- ${label}: ${token}`;
+		return '';
+	}
+
+	const presetObj = persona?.preset ? (grammar.persona?.presets?.[persona.preset] ?? null) : null;
+	if (presetObj) {
+		const presetKey = presetObj.key ?? persona!.preset;
+		const presetLabel =
+			presetObj.label && presetObj.label !== presetKey
+				? `${presetKey} — ${presetObj.label}`
+				: presetKey;
+		personaLines.push(`- Preset: ${presetLabel}`);
+		if (presetObj.voice) {
+			const desc = grammar.persona?.docs?.voice?.[presetObj.voice] ?? '';
+			const entry = personaEntry('Voice', presetObj.voice, desc);
+			if (entry) personaLines.push(entry);
+		}
+		if (presetObj.audience) {
+			const desc = grammar.persona?.docs?.audience?.[presetObj.audience] ?? '';
+			const entry = personaEntry('Audience', presetObj.audience, desc);
+			if (entry) personaLines.push(entry);
+		}
+		if (presetObj.tone) {
+			const desc = grammar.persona?.docs?.tone?.[presetObj.tone] ?? '';
+			const entry = personaEntry('Tone', presetObj.tone, desc);
+			if (entry) personaLines.push(entry);
 		}
 	} else if (persona) {
-		if (persona.voice) personaLines.push(`Voice: ${persona.voice}`);
-		if (persona.audience) personaLines.push(`Audience: ${persona.audience}`);
-		if (persona.tone) personaLines.push(`Tone: ${persona.tone}`);
-		if (persona.intent) personaLines.push(`Intent: ${persona.intent}`);
+		if (persona.voice) {
+			const desc = grammar.persona?.docs?.voice?.[persona.voice] ?? '';
+			const entry = personaEntry('Voice', persona.voice, desc);
+			if (entry) personaLines.push(entry);
+		}
+		if (persona.audience) {
+			const desc = grammar.persona?.docs?.audience?.[persona.audience] ?? '';
+			const entry = personaEntry('Audience', persona.audience, desc);
+			if (entry) personaLines.push(entry);
+		}
+		if (persona.tone) {
+			const desc = grammar.persona?.docs?.tone?.[persona.tone] ?? '';
+			const entry = personaEntry('Tone', persona.tone, desc);
+			if (entry) personaLines.push(entry);
+		}
+	}
+	// Intent is always rendered if present — independent of whether a preset is active.
+	if (persona?.intent) {
+		const desc = grammar.persona?.docs?.intent?.[persona.intent] ?? '';
+		const entry = personaEntry('Intent', persona.intent, desc);
+		if (entry) personaLines.push(entry);
 	}
 	parts.push(writeSection('=== PERSONA 人格 (STANCE) ===', personaLines.join('\n') || '(none)'));
 

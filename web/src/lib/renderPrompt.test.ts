@@ -176,4 +176,68 @@ describe('renderPrompt', () => {
 		expect(result.endsWith('\n')).toBe(true);
 		expect(result.endsWith('\n\n')).toBe(false);
 	});
+
+	// --- persona hydration tests ---
+
+	it('renders intent alongside preset axes when both are present', () => {
+		const result = renderPrompt(grammar, {}, 'x', '', {
+			preset: 'designer',
+			voice: '',
+			audience: '',
+			tone: '',
+			intent: 'persuade'
+		});
+		// Preset axes should appear
+		expect(result).toContain('Voice: Design practitioner');
+		// Intent must also appear even though a preset is active
+		expect(result).toContain('Intent: persuade');
+	});
+
+	it('renders persona token descriptions from grammar.persona.docs when available', () => {
+		const grammarWithDocs: Grammar = {
+			...grammar,
+			persona: {
+				...grammar.persona,
+				docs: {
+					voice: { 'Design practitioner': 'Leads with usability and interaction clarity.' },
+					audience: {},
+					tone: {}
+				}
+			}
+		};
+		const result = renderPrompt(grammarWithDocs, {}, 'x', '', {
+			preset: 'designer',
+			voice: '',
+			audience: '',
+			tone: '',
+			intent: ''
+		});
+		// Description from docs must appear in parenthetical format matching Go CLI
+		expect(result).toContain('Voice (Design practitioner): Leads with usability');
+	});
+
+	it('renders descriptions for individual (non-preset) persona axes', () => {
+		const grammarWithDocs: Grammar = {
+			...grammar,
+			persona: {
+				...grammar.persona,
+				docs: {
+					voice: { 'custom voice': 'A custom speaker role.' },
+					audience: { engineers: 'Technical, implementation-ready.' },
+					tone: {},
+					intent: { coach: 'Guide growth and development.' }
+				}
+			}
+		};
+		const result = renderPrompt(grammarWithDocs, {}, 'x', '', {
+			preset: '',
+			voice: 'custom voice',
+			audience: 'engineers',
+			tone: 'direct',
+			intent: 'coach'
+		});
+		expect(result).toContain('Voice (custom voice): A custom speaker role.');
+		expect(result).toContain('Audience (engineers): Technical, implementation-ready.');
+		expect(result).toContain('Intent (coach): Guide growth and development.');
+	});
 });

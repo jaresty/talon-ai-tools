@@ -207,4 +207,45 @@ describe('parseCommand', () => {
 		expect(result.selected.completeness).toEqual(['full']);
 		expect(result.unrecognized).toEqual([]);
 	});
+
+	// --- multi-word slug resolution ---
+	// The real grammar stores canonical multi-word tokens ('as designer', 'to product manager').
+	// The SPA emits slugs in commands ('as-designer', 'to-product-manager').
+	// parseCommand must resolve slug form back to canonical so state matches the dropdown values.
+
+	const multiWordGrammar: Grammar = {
+		...grammar,
+		persona: {
+			...grammar.persona,
+			axes: {
+				voice: ['as designer', 'as teacher'],
+				audience: ['to product manager', 'to CEO'],
+				tone: ['directly', 'casually']
+			}
+		}
+	};
+
+	it('resolves slug-form voice= value to canonical multi-word token', () => {
+		const result = parseCommand('bar build voice=as-designer show', multiWordGrammar);
+		expect(result.persona.voice).toBe('as designer');
+		expect(result.unrecognized).toEqual([]);
+	});
+
+	it('resolves slug-form audience= value to canonical multi-word token', () => {
+		const result = parseCommand('bar build audience=to-product-manager show', multiWordGrammar);
+		expect(result.persona.audience).toBe('to product manager');
+		expect(result.unrecognized).toEqual([]);
+	});
+
+	it('resolves slug-form positional voice token to canonical', () => {
+		const result = parseCommand('bar build as-designer show', multiWordGrammar);
+		expect(result.persona.voice).toBe('as designer');
+		expect(result.unrecognized).toEqual([]);
+	});
+
+	it('resolves slug-form positional audience token to canonical', () => {
+		const result = parseCommand('bar build to-product-manager show', multiWordGrammar);
+		expect(result.persona.audience).toBe('to product manager');
+		expect(result.unrecognized).toEqual([]);
+	});
 });

@@ -68,6 +68,76 @@ func TestRenderPlainTextUsesResultReferenceKey(t *testing.T) {
 
 // TestRenderPlainTextIncludesKanjiInPromptlets specifies that hydrated promptlets
 // include kanji characters when available (ADR-0143).
+// TestRenderPersonaAllFourAxes specifies that RenderPlainText renders all four
+// persona axes (voice, audience, tone, intent) with their descriptions when all
+// are present in PersonaResult and HydratedPersona.
+func TestRenderPersonaAllFourAxes(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		Persona: PersonaResult{
+			Voice:    "as teacher",
+			Audience: "to junior engineer",
+			Tone:     "kindly",
+			Intent:   "coach",
+		},
+		HydratedPersona: []HydratedPromptlet{
+			{Axis: "voice", Token: "as teacher", Description: "Teaches carefully."},
+			{Axis: "audience", Token: "to junior engineer", Description: "Clear for juniors."},
+			{Axis: "tone", Token: "kindly", Description: "Kind and warm."},
+			{Axis: "intent", Token: "coach", Description: "Guide growth."},
+		},
+	}
+
+	output := RenderPlainText(result)
+
+	for _, want := range []string{
+		"- Voice (as teacher): Teaches carefully.",
+		"- Audience (to junior engineer): Clear for juniors.",
+		"- Tone (kindly): Kind and warm.",
+		"- Intent (coach): Guide growth.",
+	} {
+		if !strings.Contains(output, want) {
+			t.Errorf("expected output to contain %q\ngot:\n%s", want, output)
+		}
+	}
+}
+
+// TestRenderPersonaPresetWithIntent specifies that when a preset is combined
+// with an explicit intent, both the preset axes and the intent appear in the
+// PERSONA section.
+func TestRenderPersonaPresetWithIntent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		Persona: PersonaResult{
+			Preset:      "designer_to_pm",
+			PresetLabel: "Designer to PM",
+			Voice:       "as designer",
+			Audience:    "to product manager",
+			Tone:        "directly",
+			Intent:      "persuade",
+		},
+		HydratedPersona: []HydratedPromptlet{
+			{Axis: "persona_preset", Token: "designer_to_pm", Description: "Designer to PM"},
+			{Axis: "voice", Token: "as designer", Description: "Designer voice."},
+			{Axis: "audience", Token: "to product manager", Description: "PM audience."},
+			{Axis: "tone", Token: "directly", Description: "Direct tone."},
+			{Axis: "intent", Token: "persuade", Description: "Persuade the audience."},
+		},
+	}
+
+	output := RenderPlainText(result)
+
+	for _, want := range []string{
+		"- Preset:",
+		"- Voice (as designer): Designer voice.",
+		"- Intent (persuade): Persuade the audience.",
+	} {
+		if !strings.Contains(output, want) {
+			t.Errorf("expected output to contain %q\ngot:\n%s", want, output)
+		}
+	}
+}
+
 func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
 	result := &BuildResult{
 		Task:        "probe fail full",

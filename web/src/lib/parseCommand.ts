@@ -34,12 +34,36 @@ function buildTokenIndex(grammar: Grammar): Map<string, string> {
 	return index;
 }
 
-/** Build a map from positional persona value → persona sub-axis (voice/audience/tone/intent). */
+/**
+ * Resolve a persona token value (possibly a slug like "as-designer") to its
+ * canonical form ("as designer") by checking against the axis token list.
+ * Falls back to the original value if no match is found.
+ */
+function resolvePersonaTokenSlug(val: string, axisTokens: string[]): string {
+	if (axisTokens.includes(val)) return val;
+	const deslug = val.replace(/-/g, ' ');
+	if (axisTokens.includes(deslug)) return deslug;
+	const lower = deslug.toLowerCase();
+	const match = axisTokens.find((t) => t.toLowerCase() === lower);
+	return match ?? val;
+}
+
+/** Build a map from positional persona value → persona sub-axis (voice/audience/tone/intent).
+ *  Indexes both canonical forms ("as designer") and their slug equivalents ("as-designer")
+ *  so that SPA-generated slug commands round-trip cleanly.
+ */
 function buildPersonaIndex(grammar: Grammar): Map<string, string> {
 	const index = new Map<string, string>();
-	for (const v of grammar.persona.axes.voice ?? []) index.set(v, 'voice');
-	for (const v of grammar.persona.axes.audience ?? []) index.set(v, 'audience');
-	for (const v of grammar.persona.axes.tone ?? []) index.set(v, 'tone');
+	const addTokens = (tokens: string[], axis: string) => {
+		for (const v of tokens) {
+			index.set(v, axis);
+			const slug = v.toLowerCase().replace(/\s+/g, '-');
+			if (slug !== v) index.set(slug, axis);
+		}
+	};
+	addTokens(grammar.persona.axes.voice ?? [], 'voice');
+	addTokens(grammar.persona.axes.audience ?? [], 'audience');
+	addTokens(grammar.persona.axes.tone ?? [], 'tone');
 	const intentTokens = grammar.persona.intent?.axis_tokens?.['intent'] ?? [];
 	for (const v of intentTokens) index.set(v, 'intent');
 	return index;
@@ -97,13 +121,13 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 					persona.audience = '';
 					persona.tone = '';
 				} else if (key === 'voice') {
-					persona.voice = val;
+					persona.voice = resolvePersonaTokenSlug(val, grammar.persona.axes.voice ?? []);
 					persona.preset = '';
 				} else if (key === 'audience') {
-					persona.audience = val;
+					persona.audience = resolvePersonaTokenSlug(val, grammar.persona.axes.audience ?? []);
 					persona.preset = '';
 				} else if (key === 'tone') {
-					persona.tone = val;
+					persona.tone = resolvePersonaTokenSlug(val, grammar.persona.axes.tone ?? []);
 					persona.preset = '';
 				} else if (key === 'intent') {
 					persona.intent = val;
@@ -122,9 +146,9 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 			}
 		} else {
 			const personaAxis = personaIndex.get(tok);
-			if (personaAxis === 'voice') { persona.voice = tok; persona.preset = ''; }
-			else if (personaAxis === 'audience') { persona.audience = tok; persona.preset = ''; }
-			else if (personaAxis === 'tone') { persona.tone = tok; persona.preset = ''; }
+			if (personaAxis === 'voice') { persona.voice = resolvePersonaTokenSlug(tok, grammar.persona.axes.voice ?? []); persona.preset = ''; }
+			else if (personaAxis === 'audience') { persona.audience = resolvePersonaTokenSlug(tok, grammar.persona.axes.audience ?? []); persona.preset = ''; }
+			else if (personaAxis === 'tone') { persona.tone = resolvePersonaTokenSlug(tok, grammar.persona.axes.tone ?? []); persona.preset = ''; }
 			else if (personaAxis === 'intent') { persona.intent = tok; }
 			else { unrecognized.push(tok); }
 		}

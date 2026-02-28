@@ -598,21 +598,32 @@ func TestHelpLLMChannelAudienceGuidanceInSSoT(t *testing.T) {
 }
 
 // TestHelpLLMMaxGrowGuidanceInSSoT specifies that the max/grow cross-axis tension
-// note must be present in the grammar's AXIS_KEY_TO_GUIDANCE for completeness:max
-// and method:grow (ADR-0146 Change 1). The hardcoded block in help_llm.go must be
-// absent from the heuristics section; the guidance renders via Composition Rules.
+// must be present in the grammar as structured CROSS_AXIS_COMPOSITION data
+// (ADR-0146 Change 1 → ADR-0147/0148 migration: moved from AXIS_KEY_TO_GUIDANCE prose to
+// CROSS_AXIS_COMPOSITION structured data so TUI2/SPA chip traffic light can surface it).
+// The hardcoded block in help_llm.go must be absent from the heuristics section;
+// the guidance renders via Choosing Channel (CROSS_AXIS_COMPOSITION).
 func TestHelpLLMMaxGrowGuidanceInSSoT(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
-	maxGuidance := grammar.AxisGuidance("completeness", "max")
-	if !strings.Contains(maxGuidance, "grow") {
-		t.Errorf("ADR-0146 Change 1: completeness:max guidance must mention grow contradiction, got: %q", maxGuidance)
+	// max/grow tension now in CROSS_AXIS_COMPOSITION, not AXIS_KEY_TO_GUIDANCE
+	maxComposition := grammar.CrossAxisCompositionFor("completeness", "max")
+	if maxComposition == nil {
+		t.Fatal("ADR-0146 Change 1: completeness:max has no CROSS_AXIS_COMPOSITION entry")
 	}
-	growGuidance := grammar.AxisGuidance("method", "grow")
-	if !strings.Contains(growGuidance, "max") {
-		t.Errorf("ADR-0146 Change 1: method:grow guidance must mention max contradiction, got: %q", growGuidance)
+	methodPair, ok := maxComposition["method"]
+	if !ok || methodPair.Cautionary["grow"] == "" {
+		t.Errorf("ADR-0146 Change 1: completeness:max CROSS_AXIS_COMPOSITION must have method.cautionary.grow, got: %v", maxComposition)
+	}
+	growComposition := grammar.CrossAxisCompositionFor("method", "grow")
+	if growComposition == nil {
+		t.Fatal("ADR-0146 Change 1: method:grow has no CROSS_AXIS_COMPOSITION entry")
+	}
+	completenessPair, ok := growComposition["completeness"]
+	if !ok || completenessPair.Cautionary["max"] == "" {
+		t.Errorf("ADR-0146 Change 1: method:grow CROSS_AXIS_COMPOSITION must have completeness.cautionary.max, got: %v", growComposition)
 	}
 
 	// Hardcoded block must be gone from heuristics

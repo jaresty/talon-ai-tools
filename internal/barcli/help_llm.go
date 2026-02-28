@@ -1016,7 +1016,9 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 
 	fmt.Fprintf(w, "### Choosing Channel\n\n")
 
-	for _, axisA := range []string{"channel", "form"} {
+	partnerAxes := []string{"task", "completeness", "audience", "channel", "form", "directional", "method"}
+
+	for _, axisA := range []string{"channel", "form", "completeness", "method"} {
 		byToken, ok := cac[axisA]
 		if !ok {
 			continue
@@ -1031,7 +1033,7 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 			pairsByAxisB := byToken[tokenA]
 
 			var naturalParts []string
-			for _, axisB := range []string{"task", "completeness", "audience"} {
+			for _, axisB := range partnerAxes {
 				pair, ok := pairsByAxisB[axisB]
 				if !ok || len(pair.Natural) == 0 {
 					continue
@@ -1048,7 +1050,7 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 			}
 
 			var cautionaryLines []string
-			for _, axisB := range []string{"task", "completeness", "audience"} {
+			for _, axisB := range partnerAxes {
 				pair, ok := pairsByAxisB[axisB]
 				if !ok || len(pair.Cautionary) == 0 {
 					continue
@@ -1073,10 +1075,19 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 			}
 
 			qualifier := ""
-			if axisA == "form" {
+			switch axisA {
+			case "form":
 				qualifier = " (form)"
+			case "completeness":
+				qualifier = " (completeness)"
+			case "method":
+				qualifier = " (method)"
 			}
-			fmt.Fprintf(w, "**`%s`**%s: natural: %s\n", tokenA, qualifier, strings.Join(naturalParts, "; "))
+			if len(naturalParts) > 0 {
+				fmt.Fprintf(w, "**`%s`**%s: natural: %s\n", tokenA, qualifier, strings.Join(naturalParts, "; "))
+			} else {
+				fmt.Fprintf(w, "**`%s`**%s:\n", tokenA, qualifier)
+			}
 			if len(cautionaryLines) > 0 {
 				fmt.Fprintf(w, "- Cautionary:\n")
 				for _, line := range cautionaryLines {

@@ -107,12 +107,16 @@ func TestLLMHelpUsagePatternsTokensExist(t *testing.T) {
 func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
-	// Build a set of all known single-word tokens across all axes.
+	// Build a set of all known tokens across all axes.
+	// Multi-word tokens (e.g. "fly rog") are stored with spaces in the grammar but referenced
+	// with hyphens in help text (e.g. "fly-rog"). Register both forms so CROSS_AXIS_COMPOSITION
+	// cautionary entries that use hyphenated compound-directional slugs pass validation.
 	knownTokens := make(map[string]bool)
 	for _, tokenDefs := range grammar.Axes.Definitions {
 		for token := range tokenDefs {
-			if !strings.Contains(token, " ") {
-				knownTokens[token] = true
+			knownTokens[token] = true
+			if strings.Contains(token, " ") {
+				knownTokens[strings.ReplaceAll(token, " ", "-")] = true
 			}
 		}
 	}
@@ -193,39 +197,73 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 }
 
 // TestLLMHelpADR0112D1 verifies ADR-0112 D1 decisions are reflected in bar help llm output:
-//   - prose-output-form conflict guidance present in § Token Guidance (AXIS_KEY_TO_GUIDANCE)
+//   - prose-output-form conflict guidance present in § Choosing Channel (CROSS_AXIS_COMPOSITION,
+//     ADR-0148/ADR-0147 migration from AXIS_KEY_TO_GUIDANCE prose to structured data)
 func TestLLMHelpADR0112D1(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
 	renderLLMHelp(&buf, grammar, "", false)
 	output := buf.String()
 
-	// Check Token Guidance section for form token guidance
-	tokenGuidanceStart := strings.Index(output, "**Token Guidance:**")
-	if tokenGuidanceStart == -1 {
-		t.Fatal("could not locate **Token Guidance:** section")
+	// recipe+codetour and questions+gherkin conflicts migrated from AXIS_KEY_TO_GUIDANCE prose
+	// to CROSS_AXIS_COMPOSITION structured data (ADR-0147/0148 Phase 1). They now render in
+	// § Choosing Channel rather than § Token Guidance.
+	choosingChannelStart := strings.Index(output, "### Choosing Channel")
+	if choosingChannelStart == -1 {
+		t.Fatal("ADR-0112 D1: could not locate ### Choosing Channel section")
 	}
-	sectionStart := tokenGuidanceStart + len("**Token Guidance:**")
-	sectionEnd := strings.Index(output[sectionStart:], "\n##")
-	var tokenGuidance string
+	sectionEnd := strings.Index(output[choosingChannelStart:], "\n##")
+	var choosingChannel string
 	if sectionEnd == -1 {
-		tokenGuidance = output[sectionStart:]
+		choosingChannel = output[choosingChannelStart:]
 	} else {
-		tokenGuidance = output[sectionStart : sectionStart+sectionEnd]
+		choosingChannel = output[choosingChannelStart : choosingChannelStart+sectionEnd]
 	}
 
 	checks := []struct {
 		description string
 		contains    string
 	}{
-		{"recipe guidance present", "recipe"},
+		{"recipe form entry present", "recipe"},
 		{"recipe conflict with codetour mentioned", "codetour"},
-		{"questions guidance present", "questions"},
+		{"questions form entry present", "questions"},
 		{"questions conflict with gherkin mentioned", "gherkin"},
 	}
 	for _, c := range checks {
-		if !strings.Contains(tokenGuidance, c.contains) {
-			t.Errorf("ADR-0112 D1: § Token Guidance missing %s (expected to contain %q)", c.description, c.contains)
+		if !strings.Contains(choosingChannel, c.contains) {
+			t.Errorf("ADR-0112 D1: § Choosing Channel missing %s (expected to contain %q)", c.description, c.contains)
+		}
+	}
+}
+
+// TestChoosingChannelFormEntriesRendered verifies that form tokens with cross-axis channel
+// data render as top-level bold entries in § Choosing Channel (CROSS_AXIS_COMPOSITION form axis).
+// Each form token should appear as **`token`** (form): with natural channel and cautionary entries.
+func TestChoosingChannelFormEntriesRendered(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	choosingChannelStart := strings.Index(output, "### Choosing Channel")
+	if choosingChannelStart == -1 {
+		t.Fatal("could not locate ### Choosing Channel section")
+	}
+	sectionEnd := strings.Index(output[choosingChannelStart:], "\n##")
+	var choosingChannel string
+	if sectionEnd == -1 {
+		choosingChannel = output[choosingChannelStart:]
+	} else {
+		choosingChannel = output[choosingChannelStart : choosingChannelStart+sectionEnd]
+	}
+
+	// Each form entry added in ADR-0147/0148 extension must appear as a top-level bold heading
+	// so token selection guidance is discoverable by LLM consumers.
+	formTokens := []string{"case", "contextualise", "faq", "log", "questions", "recipe", "socratic", "spike"}
+	for _, tok := range formTokens {
+		heading := "**`" + tok + "`** (form):"
+		if !strings.Contains(choosingChannel, heading) {
+			t.Errorf("§ Choosing Channel missing top-level form entry %q", heading)
 		}
 	}
 }

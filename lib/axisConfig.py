@@ -459,40 +459,24 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # where naming traps exist (ADR-0110). Not all tokens need this.
 # Distinct from hard incompatibilities in hierarchy.incompatibilities.
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
-    "channel": {
-        "gherkin": "Avoid with prose-structure forms (story, case, log, questions, recipe).",
-        "sketch": "D2 diagram output only. Avoid with prose forms (indirect, case, walkthrough, variants) - choose diagram OR prose, not both.",
-    },
+    "channel": {"sketch": "D2 diagram output only."},
     "completeness": {
-        "gist": "Brief but complete response. Avoid pairing with compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) that "
-        "require multi-dimensional depth — gist cannot express their full range. Use with simple directionals (jog, rog, dig, ong) or none.",
-        "max": "Contradicts grow method: max = exhaust all coverage; grow = expand only under demonstrated necessity. Avoid pairing max + grow. Prefer max for exhaustive treatment; prefer "
-        "grow for disciplined minimalism.",
+        "gist": "Brief but complete response.",
         "narrow": "Restricts discussion to a small topic slice. Compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) work with "
         "narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, "
         "prefer full or deep completeness so the directional can range freely.",
-        "skim": "Quick-pass constraint: most obvious or critical issues only. Avoid pairing with any compound directional (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, "
-        "dip-ong, dip-bog, dip-rog, fog) that requires multi-phase depth or sustained examination. Use with simple directionals (jog, rog, dig, ong) or none. Tension with rigor "
-        "method: skim constrains response volume while rigor demands disciplined depth — the light pass cannot accommodate the rigorous reasoning rigor requires; expect score-3 "
-        "output.",
+        "skim": "Quick-pass constraint: most obvious or critical issues only.",
     },
     "form": {
-        "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "
-        "diagram/sketch) — case-building requires prose structure those channels cannot accommodate. Use with no channel or prose-compatible channels (jira, slack, plain, remote, sync).",
-        "commit": "Conventional commit message (type: scope header + optional body). Avoid compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, "
-        "dip-rog, fog). Best with gist or minimal completeness.",
-        "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
+        "case": "Layered argument-building prose (background, evidence, alternatives, recommendation).",
+        "commit": "Conventional commit message (type: scope header + optional body).",
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
-        "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",
-        "log": "Work or research log entry with date markers and bullet updates. Conflicts with any non-text output channel (svg, diagram/sketch, codetour, gherkin, shellscript, html) — log "
-        "entries are prose-text artifacts. Use with no channel or prose-compatible channels (jira, slack, remote, sync).",
-        "questions": "Conflicts with gherkin (syntax rigidity). With diagram: produces a question-tree Mermaid diagram. Use with plain, slack, diagram, or no channel.",
-        "recipe": "Conflicts with codetour, code, shellscript, svg, presenterm (schema has no prose slot). Use with plain, slack, or no channel.",
+        "faq": "Question-and-answer prose format.",
+        "log": "Work or research log entry with date markers and bullet updates.",
+        "questions": "With diagram channel: produces a question-tree Mermaid diagram.",
         "scaffold": "Learning-oriented explanation. Avoid with 'make' task producing artifacts (code, diagram, adr) - use only when user wants accompanied explanation. scaffold = explain from "
         "first principles.",
-        "socratic": "Avoid with code channels (shellscript, codetour) - they cannot render questions as code output.",
-        "spike": "Research spike: problem statement and exploratory questions. Conflicts with code-format channels (codetour, shellscript, svg, html, diagram/sketch, gherkin) — research spikes are "
-        "prose question-documents. Use with no channel or prose-compatible channels.",
+        "spike": "Research spike: problem statement and exploratory questions.",
         "story": "User story prose (As a / I want / so that). Without a channel: produces prose user stories, avoids Gherkin syntax. With gherkin channel: story acts as a content lens — scenarios "
         "are shaped around user capabilities and value (As a → Given [user state]; I want → When [action]; So that → Then [outcome]). Use with no channel or prose-compatible channels for "
         "pure prose user stories; combine with gherkin channel to produce BDD scenarios framed around user value.",
@@ -517,8 +501,6 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "explore": "Distinguish from: branch (parallel reasoning with evaluation). Explore generates options without premature commitment.",
         "gap": "Distinguish from: assume (explicit premises held). Gap identifies where implicit assumptions clash with explicit treatment, producing coordination failures. Useful for analyzing "
         "specification gaps, interface mismatches, or implicit expectations that contradict formal rules.",
-        "grow": "Contradicts max completeness: grow = expand only when necessity is demonstrated; max = exhaust all coverage. Avoid pairing grow + max. Prefer grow for disciplined minimalism; "
-        "prefer max for exhaustive treatment.",
         "induce": "Distinguish from: abduce (evidence→hypothesis) and deduce (premises→conclusion). Induce generalizes from examples.",
         "inversion": "Well-suited for architecture evaluation: start from named failure modes (cascade failure, split-brain, thundering herd) and ask which design choices create or amplify them. "
         "Use when failure patterns are named and the question is whether the design protects against them.",
@@ -1574,6 +1556,15 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "instead"
                 },
             },
+            "form": {
+                "natural": ["story"],
+                "cautionary": {
+                    "case": "case-building requires prose structure incompatible with Gherkin Given/When/Then syntax; use plain or no channel",
+                    "log": "log entries are prose-text; Gherkin cannot render date markers and bullet updates; use plain or no channel",
+                    "questions": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel",
+                    "recipe": "recipe prose steps cannot be expressed as Gherkin behavioral assertions; use plain or no channel",
+                },
+            },
         },
         "adr": {
             "task": {
@@ -1611,6 +1602,17 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "to-stakeholders": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
                     "to-team": "accessible only to technical members of a mixed audience; consider plain instead",
                 },
+            },
+        },
+        "sketch": {
+            "task": {"natural": ["make", "plan", "show", "probe"]},
+            "form": {
+                "cautionary": {
+                    "indirect": "sketch produces D2 diagram source; indirect form requires prose without diagram structure; use no channel or diagram instead",
+                    "case": "case-building requires prose flow; D2 format has no slot for argument structure; use no channel or plain",
+                    "walkthrough": "walkthrough is narrative prose; D2 format cannot accommodate step-by-step narrative; use codetour or plain instead",
+                    "variants": "variants produce options-and-probabilities prose; D2 format has no slot for this; use plain or no channel",
+                }
             },
         },
         "sync": {
@@ -1663,6 +1665,169 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
                     "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
                 },
+            },
+            "directional": {
+                "cautionary": {
+                    "fig": "commit message has no room for full vertical (abstract+concrete) range; use gist or minimal completeness",
+                    "bog": "commit message has no room for full horizontal (reflective+acting) range; use gist or minimal completeness",
+                    "fly-ong": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "fly-rog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "fly-bog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "fip-ong": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "fip-rog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "fip-bog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "dip-ong": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "dip-rog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "dip-bog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
+                    "fog": "fog requires multi-dimensional breadth commit format cannot accommodate; use gist or minimal",
+                }
+            },
+        },
+        "case": {
+            "channel": {
+                "natural": ["plain", "slack", "jira", "sync"],
+                "cautionary": {
+                    "gherkin": "case builds layered argument; Gherkin requires Given/When/Then — format conflict; use plain or no channel",
+                    "codetour": "case-building requires prose; CodeTour JSON has no room for argument prose; use plain or no channel",
+                    "shellscript": "case-building requires prose; shell script cannot accommodate layered argument; use plain or no channel",
+                    "html": "case-building requires prose flow; pure HTML output loses the argumentative structure; use plain or jira instead",
+                },
+            }
+        },
+        "contextualise": {
+            "channel": {
+                "natural": ["plain", "sync", "jira", "slack"],
+                "cautionary": {
+                    "gherkin": "contextualise adds explanatory prose; Gherkin syntax has no slot for contextualizing prose; use plain or no channel",
+                    "shellscript": "contextualise renders explanatory prose alongside content; output-only shell format cannot accommodate that; use plain or no "
+                    "channel",
+                    "codetour": "contextualise adds explanatory context; CodeTour JSON has no prose-explanation slot; use plain or no channel",
+                },
+            }
+        },
+        "faq": {
+            "channel": {
+                "natural": ["plain", "slack", "jira"],
+                "cautionary": {
+                    "shellscript": "output format mismatch — Q&A prose cannot be rendered as executable shell code; use plain or no channel",
+                    "code": "output format mismatch — Q&A prose cannot be rendered as code-only output; use plain or no channel",
+                    "codetour": "output format mismatch — Q&A prose cannot be rendered as a CodeTour JSON; use plain or no channel",
+                },
+            }
+        },
+        "log": {
+            "channel": {
+                "natural": ["plain", "jira", "slack", "sync"],
+                "cautionary": {
+                    "svg": "log entries are prose-text — SVG cannot render date markers and bullet updates; use plain or no channel",
+                    "codetour": "log entries are prose-text — CodeTour JSON has no slot for prose log structure; use plain or jira",
+                    "gherkin": "log entries are prose-text — Gherkin syntax is incompatible with log format; use plain or no channel",
+                    "shellscript": "log entries are prose-text — shell script cannot accommodate a research log; use plain or no channel",
+                    "html": "log entries are prose-text — pure HTML output loses the temporal/bullet structure; use jira or plain instead",
+                },
+            }
+        },
+        "questions": {
+            "channel": {
+                "natural": ["plain", "slack", "diagram"],
+                "cautionary": {
+                    "gherkin": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel"
+                },
+            }
+        },
+        "recipe": {
+            "channel": {
+                "natural": ["plain", "slack"],
+                "cautionary": {
+                    "codetour": "recipe steps cannot be expressed as navigable code stops; schema has no prose slot; use plain or no channel",
+                    "code": "recipe cannot be rendered as code-only output; schema has no prose slot; use plain or no channel",
+                    "shellscript": "recipe prose structure cannot be rendered as shell script; schema has no prose slot; use plain or no channel",
+                    "svg": "recipe cannot be expressed as SVG markup; use plain or no channel",
+                    "presenterm": "recipe prose structure cannot be expressed as presenterm slide sections; use plain or sync instead",
+                },
+            }
+        },
+        "socratic": {
+            "channel": {
+                "natural": ["plain", "slack"],
+                "cautionary": {
+                    "shellscript": "Socratic method produces reflective questions — cannot be rendered as executable shell code; use plain or no channel",
+                    "codetour": "Socratic questions cannot be rendered as a VS Code CodeTour JSON; use plain or no channel",
+                },
+            }
+        },
+        "spike": {
+            "channel": {
+                "natural": ["plain", "slack", "jira"],
+                "cautionary": {
+                    "codetour": "spike is a prose research question-document; CodeTour JSON has no slot for open-ended research; use plain or no channel",
+                    "shellscript": "spike produces prose — shell script cannot accommodate a research document; use plain or no channel",
+                    "svg": "spike produces prose — SVG cannot accommodate a research question document; use plain or no channel",
+                    "html": "spike produces prose questions — pure HTML has no semantic slot for open-ended research; use plain or jira",
+                    "gherkin": "spike is open-ended exploration; Gherkin requires concrete Given/When/Then structure incompatible with spike's question framing; use "
+                    "plain",
+                },
+            }
+        },
+    },
+    "completeness": {
+        "gist": {
+            "directional": {
+                "cautionary": {
+                    "fig": "gist cannot express full vertical (abstract+concrete) range simultaneously; use full or deep instead",
+                    "bog": "gist cannot express full horizontal (reflective+acting) range simultaneously; use full or deep instead",
+                    "fly-ong": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "fly-rog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "fly-bog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "fip-ong": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "fip-rog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "fip-bog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "dip-ong": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "dip-rog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                    "dip-bog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
+                }
+            }
+        },
+        "skim": {
+            "directional": {
+                "cautionary": {
+                    "fig": "skim cannot sustain full vertical (abstract+concrete) multi-dimensional examination; use full or deep instead",
+                    "bog": "skim cannot sustain full horizontal (reflective+acting) multi-dimensional examination; use full or deep instead",
+                    "fly-ong": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "fly-rog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "fly-bog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "fip-ong": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "fip-rog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "fip-bog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "dip-ong": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "dip-rog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "dip-bog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
+                    "fog": "fog requires breadth of abstract examination skim cannot provide; use full or deep instead",
+                }
+            },
+            "method": {
+                "cautionary": {
+                    "rigor": "skim constrains response volume; rigor demands disciplined depth — the light pass cannot accommodate rigorous reasoning; expect score-3 "
+                    "output"
+                }
+            },
+        },
+        "max": {
+            "method": {
+                "cautionary": {
+                    "grow": "max = exhaust all coverage; grow = expand only under demonstrated necessity — directly contradictory; prefer max for exhaustive "
+                    "treatment, grow for disciplined minimalism"
+                }
+            }
+        },
+    },
+    "method": {
+        "grow": {
+            "completeness": {
+                "cautionary": {
+                    "max": "grow = expand only under demonstrated necessity; max = exhaust all coverage — directly contradictory; prefer grow for disciplined "
+                    "minimalism, max for exhaustive treatment"
+                }
             }
         }
     },

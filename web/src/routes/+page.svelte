@@ -144,10 +144,10 @@
 		if (persona.preset) {
 			personaTokens.push(`persona=${persona.preset}`);
 		} else {
-			if (persona.voice) personaTokens.push(`voice=${toPersonaSlug(persona.voice)}`);
-			if (persona.audience) personaTokens.push(`audience=${toPersonaSlug(persona.audience)}`);
-			if (persona.tone) personaTokens.push(`tone=${persona.tone}`);
-			if (persona.intent) personaTokens.push(`intent=${persona.intent}`);
+			if (persona.voice) personaTokens.push(toPersonaSlug(persona.voice));
+			if (persona.audience) personaTokens.push(toPersonaSlug(persona.audience));
+			if (persona.tone) personaTokens.push(persona.tone);
+			if (persona.intent) personaTokens.push(persona.intent);
 		}
 		const order = ['task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 		const tokens = [...personaTokens, ...order.flatMap((axis) => selected[axis] ?? [])];

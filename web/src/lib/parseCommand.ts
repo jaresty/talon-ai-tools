@@ -34,6 +34,17 @@ function buildTokenIndex(grammar: Grammar): Map<string, string> {
 	return index;
 }
 
+/** Build a map from positional persona value → persona sub-axis (voice/audience/tone/intent). */
+function buildPersonaIndex(grammar: Grammar): Map<string, string> {
+	const index = new Map<string, string>();
+	for (const v of grammar.persona.axes.voice ?? []) index.set(v, 'voice');
+	for (const v of grammar.persona.axes.audience ?? []) index.set(v, 'audience');
+	for (const v of grammar.persona.axes.tone ?? []) index.set(v, 'tone');
+	const intentTokens = grammar.persona.intent?.axis_tokens?.['intent'] ?? [];
+	for (const v of intentTokens) index.set(v, 'intent');
+	return index;
+}
+
 const PERSONA_KEYS = new Set(['voice', 'audience', 'tone', 'intent', 'persona']);
 
 /**
@@ -53,6 +64,7 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 	[cmd, addendum] = extractFlag(cmd, 'addendum');
 
 	const tokenIndex = buildTokenIndex(grammar);
+	const personaIndex = buildPersonaIndex(grammar);
 
 	const selected: Record<string, string[]> = {
 		task: [],
@@ -109,7 +121,12 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 				selected[axis].push(tok);
 			}
 		} else {
-			unrecognized.push(tok);
+			const personaAxis = personaIndex.get(tok);
+			if (personaAxis === 'voice') { persona.voice = tok; persona.preset = ''; }
+			else if (personaAxis === 'audience') { persona.audience = tok; persona.preset = ''; }
+			else if (personaAxis === 'tone') { persona.tone = tok; persona.preset = ''; }
+			else if (personaAxis === 'intent') { persona.intent = tok; }
+			else { unrecognized.push(tok); }
 		}
 	}
 

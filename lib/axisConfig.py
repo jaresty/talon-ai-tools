@@ -30,6 +30,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram "
         "channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+        "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose "
+        "or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code "
         "blocks.",
@@ -61,6 +63,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
+        "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding "
+        "prose or explanation.",
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
@@ -475,8 +479,8 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation). Conflicts with code-format channels (gherkin, codetour, shellscript, svg, html, "
         "diagram/sketch) — case-building requires prose structure those channels cannot accommodate. Use with no channel or prose-compatible channels (jira, slack, plain, remote, sync).",
-        "commit": "Conventional commit message (type: scope header + optional body). Avoid compound directionals "
-        "(fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog, fog). Best with gist or minimal completeness.",
+        "commit": "Conventional commit message (type: scope header + optional body). Avoid compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, "
+        "dip-rog, fog). Best with gist or minimal completeness.",
         "contextualise": "Works well with text-friendly channels (plain, sync, jira, slack). Avoid with output-only channels (gherkin, shellscript, codetour) - cannot render explanatory context.",
         "facilitate": "When combined with sim, designs a facilitation structure for a simulation exercise rather than performing the simulation directly.",
         "faq": "Question-and-answer prose format. Conflicts with executable output channels: shellscript, code, codetour (output format mismatch). Use with plain, slack, diagram, or no channel.",
@@ -558,6 +562,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "scenarios are shaped by user-value framing rather than pure behavioral conditions.",
         "html": "Semantic HTML only, no prose: user wants the complete output as HTML markup with no surrounding explanation. Heuristic: 'HTML output', 'semantic HTML', 'as HTML', 'output as a "
         "webpage', 'HTML page', 'HTML only' → html. Avoid with narrative tasks (sim, probe).",
+        "image": "Image as the final output: user wants to generate an image. Heuristic: 'generate an image', 'create an image', 'make an image of', 'I want an image of', 'image of', 'DALL-E', "
+        "'Midjourney', 'Stable Diffusion' → image. No surrounding prose.",
         "jira": "Jira markup formatting: user wants the response formatted using Jira markdown (headings, lists, panels). Heuristic: 'Jira format', 'Jira markup', 'format for Jira', 'Jira "
         "ticket format', 'for a Jira comment', 'use Jira markup' → jira. Use with text-friendly channels; avoid with output-only channels.",
         "plain": "Suppress structural formatting: when user explicitly requests plain prose, no lists, no bullets, or no structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain "
@@ -578,6 +584,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'create an SVG' → svg. Output must be minimal and valid SVG with no surrounding prose.",
         "sync": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery. Heuristic: 'session plan', 'live workshop agenda', 'meeting agenda with timing "
         "cues', 'synchronous workshop plan' → sync channel. Combine with facilitate form for facilitator-role outputs.",
+        "video": "Video as the final output: user wants to generate a video. Heuristic: 'generate a video', 'create a video', 'make a video of', 'I want a video of', 'video of', 'Sora', "
+        "'Runway', 'Pika', 'Kling' → video. No surrounding prose.",
     },
     "completeness": {
         "deep": "Substantial depth within the chosen scope: user wants thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case. Heuristic: "
@@ -1006,6 +1014,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "diagram": "図",
         "gherkin": "瓜",
         "html": "標",
+        "image": "像",
         "jira": "票",
         "plain": "文",
         "presenterm": "演",
@@ -1015,6 +1024,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "slack": "通",
         "svg": "画",
         "sync": "期",
+        "video": "映",
     },
     "completeness": {
         "deep": "深",
@@ -1305,6 +1315,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "diagram": "Mermaid diagram",
         "gherkin": "Gherkin scenarios",
         "html": "HTML output",
+        "image": "Image output",
         "jira": "Jira formatting",
         "plain": "Plain prose",
         "presenterm": "Slide deck",
@@ -1314,6 +1325,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "slack": "Slack formatting",
         "svg": "SVG output",
         "sync": "Session plan",
+        "video": "Video output",
     },
     "completeness": {
         "deep": "Deep dive",
@@ -1470,6 +1482,237 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "sort": "Arrange/categorize",
     },
 }
+
+# ADR-0147: Cross-axis composition semantics.
+# Structure: axis_a → token_a → axis_b → {"natural": [...], "cautionary": {token: warning}}
+#
+# "natural": token_b combinations that work with token_a without any special
+#            interpretation. The LLM produces good output without explicit guidance.
+#            Positive "what does this produce" cases are handled by the universal
+#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py).
+#
+# "cautionary": token_b combinations that tend to produce poor output for structural
+#               reasons the universal rule cannot predict. Only non-derivable entries
+#               belong here. Format: "tends to X because Y; prefer Z instead".
+#               No combination is blocked — these are guidance, not restrictions.
+#
+CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
+    "channel": {
+        "shellscript": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull"],
+                "cautionary": {
+                    "sim": "tends to produce thin output — simulation is inherently narrative, not executable; consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow system-probe scripts",
+                },
+            },
+            "audience": {
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-junior-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
+                "cautionary": {
+                    "to-ceo": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-managers": "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
+                    "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
+                    "to-team": "accessible only to technical members of a mixed audience; consider plain instead",
+                },
+            },
+        },
+        "code": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "cautionary": {
+                    "sim": "tends to produce thin placeholder code — simulation is narrative, not executable; consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow introspection scripts",
+                },
+            },
+            "audience": {
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-junior-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
+                "cautionary": {
+                    "to-ceo": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-managers": "inaccessible to a non-technical audience; use plain instead",
+                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
+                    "to-team": "accessible only to technical members of a mixed audience",
+                },
+            },
+        },
+        "gherkin": {
+            "task": {"natural": ["make", "check"]},
+            "completeness": {
+                "natural": ["full", "minimal"],
+                "cautionary": {
+                    "skim": "tends to produce incomplete scenarios — Gherkin steps need concrete action/assertion detail to be executable; use full or minimal "
+                    "instead"
+                },
+            },
+        },
+        "adr": {
+            "task": {
+                "natural": ["plan", "probe", "make"],
+                "cautionary": {
+                    "sim": "tends to be incoherent — scenario playback is narrative; ADR is a decision artifact with no room for simulation output"
+                },
+            },
+            "completeness": {
+                "natural": ["full", "deep"],
+                "cautionary": {
+                    "skim": "tends to produce incomplete decisions — ADRs need full context and consequences to be actionable; use full or deep instead"
+                },
+            },
+        },
+        "codetour": {
+            "task": {
+                "natural": ["make", "fix", "show", "pull"],
+                "cautionary": {
+                    "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate",
+                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
+                },
+            },
+            "audience": {
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-junior-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
+                "cautionary": {
+                    "to-ceo": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
+                    "to-managers": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain instead",
+                    "to-stakeholders": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
+                    "to-team": "accessible only to technical members of a mixed audience; consider plain instead",
+                },
+            },
+        },
+        "sync": {
+            "task": {
+                "natural": ["plan", "make", "show"],
+                "cautionary": {
+                    "sim": "tends to be unfocused — scenario playback is narrative and doesn't produce a structured session agenda; use plan or make instead",
+                    "probe": "tends to miss the purpose — analytical probing doesn't translate into actionable session steps; use plan or show instead",
+                },
+            },
+            "completeness": {
+                "natural": ["full", "minimal", "gist"],
+                "cautionary": {
+                    "max": "tends to be unusable — session plans require practical brevity; max treats omissions as errors and produces overloaded agendas; use full "
+                    "or minimal instead"
+                },
+            },
+        },
+        "html": {
+            "task": {
+                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "cautionary": {
+                    "sim": "tends to produce placeholder markup — simulation is narrative, not executable; consider remote or no channel instead",
+                    "probe": "tends to miss analytical depth — valid only for narrow introspection scripts; a prose channel provides richer analysis",
+                },
+            }
+        },
+        "presenterm": {
+            "task": {
+                "natural": ["make", "show", "plan", "pull"],
+                "cautionary": {
+                    "fix": "tends to be too granular — code fixes don't translate into slide content; use make or show instead",
+                    "probe": "tends to miss depth — analytical probing is hard to condense into slides; use show or plan instead",
+                },
+            },
+            "completeness": {
+                "natural": ["minimal", "gist"],
+                "cautionary": {
+                    "max": "tends to be undeliverable — slides require brevity; max produces overloaded decks; use minimal or gist instead",
+                    "deep": "same constraint as max — slide format cannot accommodate deep analysis; use minimal or gist instead",
+                },
+            },
+        },
+    },
+    "form": {
+        "commit": {
+            "completeness": {
+                "natural": ["gist", "minimal"],
+                "cautionary": {
+                    "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
+                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
+                },
+            }
+        }
+    },
+}
+
+
+@dataclass(frozen=True)
+class AxisDoc:
+    axis: str
+    key: str
+    description: str
+    group: str | None = None
+    flags: FrozenSet[str] = field(default_factory=frozenset)
+
+
+def axis_key_to_value_map(axis: str) -> dict[str, str]:
+    """Return the key->description map for a given axis."""
+    return AXIS_KEY_TO_VALUE.get(axis, {})
+
+
+def axis_key_to_label_map(axis: str) -> dict[str, str]:
+    """Return the key->label map for a given axis (ADR-0109)."""
+    return AXIS_KEY_TO_LABEL.get(axis, {})
+
+
+def axis_key_to_guidance_map(axis: str) -> dict[str, str]:
+    """Return the key->guidance map for a given axis (ADR-0110)."""
+    return AXIS_KEY_TO_GUIDANCE.get(axis, {})
+
+
+def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
+    """Return the key->use_when map for a given axis (ADR-0132)."""
+    return AXIS_KEY_TO_USE_WHEN.get(axis, {})
+
+
+def axis_key_to_kanji_map(
+    axis: str,
+) -> Union[Dict[str, str], Dict[str, Dict[str, str]]]:
+    """Return the key->kanji map for a given axis (ADR-0143).
+
+    For regular axes returns Dict[str, str] (token -> kanji).
+    For 'persona' returns Dict[str, Dict[str, str]] (sub-axis -> token -> kanji).
+    """
+    return AXIS_KEY_TO_KANJI.get(axis, {})
+
+
+def axis_key_to_category_map(axis: str) -> dict[str, str]:
+    """Return the key->category map for a given axis (ADR-0144)."""
+    return AXIS_KEY_TO_CATEGORY.get(axis, {})
+
+
+def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
+    """Return the key->routing_concept map for a given axis (ADR-0146).
+
+    Returns per-token distilled routing concept phrases. Tokens sharing the same
+    phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
+    """
+    return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
+
+
+def get_cross_axis_composition(axis: str, token: str) -> dict:
+    """Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
+
+    Returns a dict keyed by partner axis, each value being
+    {"natural": [...], "cautionary": {token: warning}}.
+    Returns an empty dict if the axis or token has no entry.
+    """
+    return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})
+
 
 def axis_docs_for(axis: str) -> list[AxisDoc]:
     """Return AxisDoc objects for a given axis."""
@@ -1888,228 +2131,3 @@ USAGE_PATTERNS: list[dict] = [
 def get_usage_patterns() -> list[dict]:
     """Return the USAGE_PATTERNS list (ADR-0134 SSOT)."""
     return USAGE_PATTERNS
-
-
-def axis_key_to_value_map(axis: str) -> dict[str, str]:
-    """Return the key->description map for a given axis."""
-    return AXIS_KEY_TO_VALUE.get(axis, {})
-
-
-def axis_key_to_label_map(axis: str) -> dict[str, str]:
-    """Return the key->label map for a given axis (ADR-0109)."""
-    return AXIS_KEY_TO_LABEL.get(axis, {})
-
-
-def axis_key_to_guidance_map(axis: str) -> dict[str, str]:
-    """Return the key->guidance map for a given axis (ADR-0110)."""
-    return AXIS_KEY_TO_GUIDANCE.get(axis, {})
-
-
-def axis_key_to_use_when_map(axis: str) -> dict[str, str]:
-    """Return the key->use_when map for a given axis (ADR-0132)."""
-    return AXIS_KEY_TO_USE_WHEN.get(axis, {})
-
-
-def axis_key_to_kanji_map(
-    axis: str,
-) -> Union[Dict[str, str], Dict[str, Dict[str, str]]]:
-    """Return the key->kanji map for a given axis (ADR-0143).
-
-    For regular axes returns Dict[str, str] (token -> kanji).
-    For 'persona' returns Dict[str, Dict[str, str]] (sub-axis -> token -> kanji).
-    """
-    return AXIS_KEY_TO_KANJI.get(axis, {})
-
-
-def axis_key_to_category_map(axis: str) -> dict[str, str]:
-    """Return the key->category map for a given axis (ADR-0144)."""
-    return AXIS_KEY_TO_CATEGORY.get(axis, {})
-
-
-def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
-    """Return the key->routing_concept map for a given axis (ADR-0146).
-
-    Returns per-token distilled routing concept phrases. Tokens sharing the same
-    phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
-    """
-    return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
-
-
-# ADR-0147: Cross-axis composition semantics.
-# Structure: axis_a → token_a → axis_b → {"natural": [...], "cautionary": {token: warning}}
-#
-# "natural": token_b combinations that work with token_a without any special
-#            interpretation. The LLM produces good output without explicit guidance.
-#            Positive "what does this produce" cases are handled by the universal
-#            channel-wins-reframe rule in the Reference Key (metaPromptConfig.py) —
-#            no per-combination enumeration needed here.
-#
-# "cautionary": token_b combinations where the combination tends to produce poor
-#               output for structural reasons the universal rule cannot predict.
-#               Only entries that are NOT derivable from first principles belong here.
-#               Format: "tends to produce X because Y; prefer Z instead".
-#               No combination is blocked — these are guidance, not restrictions.
-#
-CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
-    "channel": {
-        "shellscript": {
-            "task": {
-                "natural": ["make", "fix", "show", "trans", "pull"],
-                "cautionary": {
-                    "sim":   "tends to produce thin output — simulation is inherently narrative, "
-                             "not executable; consider remote or no channel instead",
-                    "probe": "tends to miss analytical depth — a prose channel provides richer "
-                             "analysis; valid only for narrow system-probe scripts",
-                },
-            },
-            "audience": {
-                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
-                            "to-platform-team", "to-llm"],
-                "cautionary": {
-                    "to-ceo":          "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-managers":     "tends to be inaccessible to a non-technical audience; consider plain or sync instead",
-                    "to-stakeholders": "tends to be inaccessible to a non-technical audience; consider plain or presenterm instead",
-                    "to-team":         "accessible only to technical members of a mixed audience; consider plain instead",
-                },
-            },
-        },
-        "code": {
-            "task": {
-                "natural": ["make", "fix", "show", "trans", "pull", "check"],
-                "cautionary": {
-                    "sim":   "tends to produce thin placeholder code — simulation is narrative, not executable; "
-                             "consider remote or no channel instead",
-                    "probe": "tends to miss analytical depth — a prose channel provides richer analysis; "
-                             "valid only for narrow introspection scripts",
-                },
-            },
-            "audience": {
-                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
-                            "to-platform-team", "to-llm"],
-                "cautionary": {
-                    "to-ceo":          "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-managers":     "inaccessible to a non-technical audience; use plain instead",
-                    "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
-                    "to-team":         "accessible only to technical members of a mixed audience",
-                },
-            },
-        },
-        "gherkin": {
-            "task": {
-                "natural": ["make", "check"],
-            },
-            "completeness": {
-                "natural": ["full", "minimal"],
-                "cautionary": {
-                    "skim": "tends to produce incomplete scenarios — Gherkin steps need concrete "
-                            "action/assertion detail to be executable; use full or minimal instead",
-                },
-            },
-        },
-        "adr": {
-            "task": {
-                "natural": ["plan", "probe", "make"],
-                "cautionary": {
-                    "sim": "tends to be incoherent — scenario playback is narrative; ADR is a "
-                           "decision artifact with no room for simulation output",
-                },
-            },
-            "completeness": {
-                "natural": ["full", "deep"],
-                "cautionary": {
-                    "skim": "tends to produce incomplete decisions — ADRs need full context and "
-                            "consequences to be actionable; use full or deep instead",
-                },
-            },
-        },
-        "codetour": {
-            "task": {
-                "natural": ["make", "fix", "show", "pull"],
-                "cautionary": {
-                    "sim":  "tends to be incoherent — simulation is narrative with no code subject to navigate",
-                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
-                },
-            },
-            "audience": {
-                "natural": ["to-programmer", "to-principal-engineer", "to-junior-engineer",
-                            "to-platform-team", "to-llm"],
-                "cautionary": {
-                    "to-ceo":          "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
-                    "to-managers":     "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain instead",
-                    "to-stakeholders": "codetour produces a VS Code JSON file — inaccessible to non-technical audiences; use plain or presenterm instead",
-                    "to-team":         "accessible only to technical members of a mixed audience; consider plain instead",
-                },
-            },
-        },
-        "sync": {
-            "task": {
-                "natural": ["plan", "make", "show"],
-                "cautionary": {
-                    "sim":   "tends to be unfocused — scenario playback is narrative and doesn't "
-                             "produce a structured session agenda; use plan or make instead",
-                    "probe": "tends to miss the purpose — analytical probing doesn't translate "
-                             "into actionable session steps; use plan or show instead",
-                },
-            },
-            "completeness": {
-                "natural": ["full", "minimal", "gist"],
-                "cautionary": {
-                    "max":  "tends to be unusable — session plans require practical brevity; "
-                            "max treats omissions as errors and produces overloaded agendas; use full or minimal instead",
-                },
-            },
-        },
-        "html": {
-            "task": {
-                "natural": ["make", "fix", "show", "trans", "pull", "check"],
-                "cautionary": {
-                    "sim":   "tends to produce placeholder markup — simulation is narrative, not executable; "
-                             "consider remote or no channel instead",
-                    "probe": "tends to miss analytical depth — valid only for narrow introspection scripts; "
-                             "a prose channel provides richer analysis",
-                },
-            },
-        },
-        "presenterm": {
-            "task": {
-                "natural": ["make", "show", "plan", "pull"],
-                "cautionary": {
-                    "fix":   "tends to be too granular — code fixes don't translate into slide content; "
-                             "use make or show instead",
-                    "probe": "tends to miss depth — analytical probing is hard to condense into slides; "
-                             "use show or plan instead",
-                },
-            },
-            "completeness": {
-                "natural": ["minimal", "gist"],
-                "cautionary": {
-                    "max":  "tends to be undeliverable — slides require brevity; max produces overloaded decks; "
-                            "use minimal or gist instead",
-                    "deep": "same constraint as max — slide format cannot accommodate deep analysis; "
-                            "use minimal or gist instead",
-                },
-            },
-        },
-    },
-    "form": {
-        "commit": {
-            "completeness": {
-                "natural": ["gist", "minimal"],
-                "cautionary": {
-                    "max":  "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
-                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
-                },
-            },
-        },
-    },
-}
-
-
-def get_cross_axis_composition(axis: str, token: str) -> dict:
-    """Return the cross-axis composition entry for a given axis+token pair (ADR-0147).
-
-    Returns a dict keyed by partner axis, each value being
-    {"natural": [...], "cautionary": {token: warning}}.
-    Returns an empty dict if the axis or token has no entry.
-    """
-    return CROSS_AXIS_COMPOSITION.get(axis, {}).get(token, {})

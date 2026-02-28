@@ -489,14 +489,14 @@
 					{#if naturalEntries.length > 0}
 						<div class="meta-section">
 							<span class="meta-section-label">Works well with</span>
-							<p>{naturalEntries.join(', ')}</p>
+							<p class="meta-natural">{naturalEntries.join(', ')}</p>
 						</div>
 					{/if}
 					{#if cautionEntries.length > 0}
 						<div class="meta-section meta-caution">
-							<span class="meta-section-label">Caution</span>
-							{#each cautionEntries as [token, warning]}
-								<p><code>{token}</code> — {warning}</p>
+							<span class="meta-section-label">Caution{cautionEntries.length > 2 ? ` (${cautionEntries.length})` : ''}</span>
+							{#each cautionEntries.slice(0, 2) as [token, warning]}
+								<p class="meta-caution-entry"><code>{token}</code> — {warning}</p>
 							{/each}
 						</div>
 					{/if}
@@ -505,14 +505,14 @@
 					{#if activeMetaCompositionDirB.naturalWith.length > 0}
 						<div class="meta-section">
 							<span class="meta-section-label">Works well with</span>
-							<p>{activeMetaCompositionDirB.naturalWith.join(', ')}</p>
+							<p class="meta-natural">{activeMetaCompositionDirB.naturalWith.join(', ')}</p>
 						</div>
 					{/if}
 					{#if activeMetaCompositionDirB.cautionWith.length > 0}
 						<div class="meta-section meta-caution">
-							<span class="meta-section-label">Caution</span>
-							{#each activeMetaCompositionDirB.cautionWith as [token, warning]}
-								<p><code>{token}</code> — {warning}</p>
+							<span class="meta-section-label">Caution{activeMetaCompositionDirB.cautionWith.length > 2 ? ` (${activeMetaCompositionDirB.cautionWith.length})` : ''}</span>
+							{#each activeMetaCompositionDirB.cautionWith.slice(0, 2) as [token, warning]}
+								<p class="meta-caution-entry"><code>{token}</code> — {warning}</p>
 							{/each}
 						</div>
 					{/if}
@@ -774,6 +774,28 @@
 		padding: 0.4rem 0.5rem;
 		border-top: none;
 		margin-top: 0.4rem;
+	}
+
+	/* Clamp use_when and guidance text — bounds panel height on content-heavy tokens */
+	.meta-section p {
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	/* Natural token list: single line, truncate with ellipsis */
+	.meta-natural {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: block !important;
+		-webkit-line-clamp: unset !important;
+	}
+
+	/* Caution entries: 2-line clamp per entry */
+	.meta-caution-entry {
+		-webkit-line-clamp: 2 !important;
 	}
 
 	/* ADR-0148: caution section in meta panel */

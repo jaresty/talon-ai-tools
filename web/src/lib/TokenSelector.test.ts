@@ -1384,7 +1384,69 @@ const completenessTokens = [
 	{ token: 'max', label: 'Max', description: 'Exhaustive depth.', guidance: '', use_when: '' }
 ];
 
+// Grammar with form→directional composition data (form.commit conflicts with compound directionals).
+const formDirectional = {
+	axes: {
+		definitions: {},
+		labels: {},
+		guidance: {},
+		use_when: {},
+		kanji: {},
+		cross_axis_composition: {
+			form: {
+				commit: {
+					directional: {
+						natural: [],
+						cautionary: { fig: 'commit conflicts with compound directionals' }
+					}
+				}
+			}
+		}
+	},
+	tasks: { descriptions: {}, labels: {}, guidance: {} },
+	hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+	persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } }
+} as unknown as import('./grammar.js').Grammar;
+
+const formTokens = [
+	{ token: 'commit', label: 'Commit', description: 'Git commit message format.', guidance: '', use_when: '' },
+	{ token: 'faq', label: 'FAQ', description: 'Q&A format.', guidance: '', use_when: '' }
+];
+
 describe('TokenSelector — chip traffic lights for directional and method axes', () => {
+	it('form chips show chip--cautionary when conflicting directional is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens: formTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: formDirectional,
+				activeTokensByAxis: { directional: ['fig'] }
+			}
+		});
+		const commitEl = document.querySelector('[data-token="commit"]');
+		expect(commitEl?.classList.contains('chip--cautionary')).toBe(true);
+	});
+
+	it('form chips with no directional conflict show no traffic light class', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens: formTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: formDirectional,
+				activeTokensByAxis: { directional: ['fig'] }
+			}
+		});
+		const faqEl = document.querySelector('[data-token="faq"]');
+		expect(faqEl?.classList.contains('chip--cautionary')).toBe(false);
+		expect(faqEl?.classList.contains('chip--natural')).toBe(false);
+	});
+
 	it('directional chips show chip--cautionary when conflicting completeness is active', () => {
 		render(TokenSelector, {
 			props: {

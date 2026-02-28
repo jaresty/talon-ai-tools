@@ -3132,3 +3132,67 @@ func TestCrossAxisChipPrefixColumnCompletenessWithMethod(t *testing.T) {
 		t.Errorf("method→completeness: expected ⚠ on Max line when grow active; got:\n%s", view)
 	}
 }
+
+// testCategoriesFormDirectional returns categories for form→directional tests.
+func testCategoriesFormDirectional() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "form",
+			Label:         "Form",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "commit", Slug: "commit", Label: "Commit", Description: "Git commit message."},
+				{Value: "faq", Slug: "faq", Label: "FAQ", Description: "Q&A format."},
+			},
+		},
+		{
+			Key:           "directional",
+			Label:         "Directional",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "fig", Slug: "fig", Label: "Fig", Description: "Full vertical span."},
+				{Value: "fog", Slug: "fog", Label: "Fog", Description: "Abstract / general."},
+			},
+		},
+	}
+}
+
+// TestCrossAxisChipPrefixColumnFormWithDirectional specifies that form chips show ⚠
+// when a conflicting directional token is active (form→directional forward lookup).
+func TestCrossAxisChipPrefixColumnFormWithDirectional(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "form" && token == "commit" {
+			return nil,
+				map[string]map[string]string{
+					"directional": {"fig": "commit conflicts with compound directionals"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Pre-select fig directional; form stage becomes current.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesFormDirectional(),
+		InitialTokens:           []string{"fig"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "form" {
+		t.Fatalf("expected form stage after fig pre-selected, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+	foundCautionOnCommit := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "⚠") && strings.Contains(line, "Commit") {
+			foundCautionOnCommit = true
+		}
+	}
+	if !foundCautionOnCommit {
+		t.Errorf("form→directional: expected ⚠ on Commit line when fig active; got:\n%s", view)
+	}
+}

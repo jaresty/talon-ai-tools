@@ -1794,7 +1794,7 @@ func (m model) renderTokensPane() string {
 	showPrefixColumn := m.crossAxisCompositionFor != nil && paneHeight >= 12 &&
 		(((currentStage == "task" || currentStage == "completeness") && hasActiveChannel) ||
 			(currentStage == "channel" && (hasActiveTask || len(m.tokensByCategory["form"]) > 0)) ||
-			(currentStage == "form" && (hasActiveTask || len(m.tokensByCategory["channel"]) > 0)) ||
+			(currentStage == "form" && (hasActiveTask || len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["directional"]) > 0)) ||
 			(currentStage == "directional" && (hasActiveCompleteness || len(m.tokensByCategory["form"]) > 0)) ||
 			(currentStage == "method" && hasActiveCompleteness) ||
 			(currentStage == "completeness" && (len(m.tokensByCategory["method"]) > 0 || len(m.tokensByCategory["directional"]) > 0)))

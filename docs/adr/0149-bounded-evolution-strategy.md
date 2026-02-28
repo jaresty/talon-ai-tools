@@ -2,7 +2,11 @@
 
 ## Status
 
-**Accepted**
+**Partially Accepted — Phase 1 complete; Phases 2–5 deferred**
+
+Phase 1 shipped 2026-02-28: `lib/errors.py` defines `TalonAIError`, `StateError`, `ConfigError`, `ProviderError`, and `error_context` decorator. Existing exceptions (`MissingAPIKeyError`, `GPTRequestError`, `ClipboardImageError`, `UnsupportedProviderCapability`) now extend the hierarchy. 18 new tests, 1270 suite-wide.
+
+Phases 2–5 are documented as a design reference for future consideration but are not committed work. Phase 2 (State Management) is deferred until `GPTState` confusion creates repeated debugging friction. Phase 5 (Provider Abstraction) is deferred until a second provider requires integration. Phases 3 and 4 are deferred pending baseline measurement that shows a real problem.
 
 ## Context
 
@@ -47,13 +51,38 @@ We will implement a **Bounded Evolution Strategy** to systematically address arc
 - Implement provider factory with health checking and failover
 - Centralize provider registration and configuration
 
+### Phase Dependency Graph
+
+Phases have the following execution constraints:
+
+- **Phase 2 requires Phase 1 complete**: `StateManager` uses the error hierarchy from Phase 1
+- **Phase 5 requires Phase 3 complete**: Provider config is validated via the config schemas from Phase 3
+- **Phases 1, 3, and 4** have no inter-phase dependencies and may proceed in parallel if resources allow
+
 ### Implementation Constraints
 
 - **Bounded Changes**: Each phase limited to specific subsystems to minimize blast radius
-- **Backward Compatibility**: Maintain existing interfaces during transition periods
+- **Backward Compatibility**: Maintain existing interfaces during transition periods. Specifically: (a) all existing attribute access patterns on `GPTState` continue to work at the call site without modification; (b) all side effects observable to Talon voice commands (notifications, clipboard writes, text insertions) are preserved; (c) no change to module-level import paths. Behavior that currently fails silently may be promoted to exceptions in Phase 1 without violating this contract.
+- **Concurrency Model**: Talon dispatches voice commands on its own thread. `StateManager` must use `threading.RLock` for all mutable state. `asyncio` primitives must not be used for cross-thread synchronization. This decision is binding for all phases.
 - **Rollback Capability**: All changes designed to be reversible if issues arise
 - **Testing Coverage**: Comprehensive test coverage required before proceeding to next phase
 - **Documentation**: ADRs and documentation updated after each phase completion
+- **Feature Flags**: Phase transitions are gated by Talon `settings` flags (e.g., `user.talon_ai.use_state_manager`), defaulting to `False`. Flags are removed as part of the phase completion checklist once all consumers are migrated.
+
+### Runtime Environment Constraints
+
+All architectural changes must account for Talon's dynamic reload model. Talon's script watcher reloads Python modules at runtime; singletons initialized at import time will re-initialize on each reload, destroying session state, and `atexit` cleanup will not fire on hot-reload.
+
+- Singletons must use Talon's `app.register('ready')` lifecycle hook for initialization
+- Cleanup must hook `app.register('close')` or use Talon's `on_unload` mechanism
+- Phase 2's `StateManager` and Phase 4's lifecycle management must be validated against hot-reload scenarios before each phase is marked complete
+
+### Phase Completion Criteria
+
+Each phase requires both of the following before the next phase begins:
+
+1. Unit tests pass at ≥90% branch coverage for changed modules
+2. Integration test against a live Talon session passes the smoke test script at `tests/smoke/`
 
 ## Consequences
 
@@ -81,17 +110,25 @@ We will implement a **Bounded Evolution Strategy** to systematically address arc
 ### Mitigations
 
 - **Phased Rollout**: Each phase independently testable and deployable
-- **Feature Flags**: Use flags to enable/disable new implementations during transition
+- **Feature Flags**: Implemented via Talon's `settings` mechanism; removed as part of phase completion checklist
 - **Monitoring**: Add metrics to track performance and error rates during migration
 - **Documentation**: Comprehensive guides and examples for new patterns
+
+## Pre-Migration Baselines
+
+The following baselines must be measured and recorded in `docs/adr/0149-baselines.md` before Phase 1 begins. They become the denominator for post-migration success metrics.
+
+- Count of runtime configuration errors per hour in production logs
+- Memory footprint (RSS) after a 24h session
+- Frequency of exception-suppressed-as-notification events per session
 
 ## Implementation Timeline
 
 - **Phase 1**: 2-3 weeks (Error handling)
-- **Phase 2**: 3-4 weeks (State management)
+- **Phase 2**: 3-4 weeks (State management) — requires Phase 1
 - **Phase 3**: 2-3 weeks (Configuration validation)
 - **Phase 4**: 1-2 weeks (Memory management)
-- **Phase 5**: 2-3 weeks (Provider abstraction)
+- **Phase 5**: 2-3 weeks (Provider abstraction) — requires Phase 3
 
 **Total Estimated Duration**: 10-15 weeks
 
@@ -99,14 +136,15 @@ We will implement a **Bounded Evolution Strategy** to systematically address arc
 
 - 100% exception-based error propagation
 - Thread-safe state access with <5ms overhead
-- Zero runtime configuration errors
-- Stable memory usage over 24h operation
+- Zero runtime configuration errors (measured against baseline)
+- Stable memory usage over 24h operation (measured against baseline)
 - Seamless provider switching with <100ms failover time
+- No state loss across hot-reload cycles
 
 This bounded evolution approach balances architectural improvement with operational stability, allowing the Talon-AI-Tools system to mature while maintaining its voice-first functionality and reliability.
 
 ---
 
-*Date: 2026-02-27*  
-*Status: Accepted*  
+*Date: 2026-02-27*
+*Status: Accepted*
 *Related ADRs: ADR-0148 (Cross-axis Warnings TUI2 SPA)*

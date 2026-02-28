@@ -9,6 +9,7 @@ import {
 	getMethodTokensByCategory,
 	toPersonaSlug,
 	getReverseChipState,
+	getChipStateWithReason,
 	type Grammar
 } from './grammar.js';
 import { findConflicts } from './incompatibilities.js';
@@ -396,6 +397,44 @@ describe('getReverseChipState — form/channel cross-axis traffic lights', () =>
 	it('returns null for a form chip with no active conflicting tokens', () => {
 		const state = getReverseChipState(grammarWithComposition, { channel: ['diagram'] }, 'form', 'faq');
 		expect(state).toBeNull();
+	});
+});
+
+describe('getChipStateWithReason — returns state and which active tokens caused it', () => {
+	it('returns cautionary state with cautionWith entries (forward lookup)', () => {
+		const result = getChipStateWithReason(grammarWithComposition, { channel: ['shellscript'] }, 'form', 'faq');
+		expect(result.state).toBe('cautionary');
+		expect(result.cautionWith).toContainEqual(['shellscript', 'Q&A prose cannot be rendered as shell code']);
+		expect(result.naturalWith).toHaveLength(0);
+	});
+
+	it('returns natural state with naturalWith entries (forward lookup)', () => {
+		const result = getChipStateWithReason(grammarWithComposition, { channel: ['plain'] }, 'form', 'faq');
+		expect(result.state).toBe('natural');
+		expect(result.naturalWith).toContain('plain');
+		expect(result.cautionWith).toHaveLength(0);
+	});
+
+	it('returns null state when no active tokens match', () => {
+		const result = getChipStateWithReason(grammarWithComposition, { channel: ['diagram'] }, 'form', 'faq');
+		expect(result.state).toBeNull();
+		expect(result.naturalWith).toHaveLength(0);
+		expect(result.cautionWith).toHaveLength(0);
+	});
+
+	it('returns cautionary state with reason via reverse lookup', () => {
+		// shellscript channel chip affected by faq form (reverse direction)
+		const result = getChipStateWithReason(grammarWithComposition, { form: ['faq'] }, 'channel', 'shellscript');
+		expect(result.state).toBe('cautionary');
+		expect(result.cautionWith).toContainEqual(['faq', 'Q&A prose cannot be rendered as shell code']);
+	});
+
+	it('cautionary takes precedence over natural when both are present', () => {
+		// faq has plain/slack as natural and shellscript as cautionary; both active
+		const result = getChipStateWithReason(grammarWithComposition, { channel: ['plain', 'shellscript'] }, 'form', 'faq');
+		expect(result.state).toBe('cautionary');
+		expect(result.cautionWith.length).toBeGreaterThan(0);
+		expect(result.naturalWith.length).toBeGreaterThan(0);
 	});
 });
 

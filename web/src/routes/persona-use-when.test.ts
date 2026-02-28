@@ -57,7 +57,8 @@ vi.mock('$lib/grammar.js', () => ({
 	getStarterPacks: vi.fn().mockReturnValue([]),
 	getCompositionData: vi.fn().mockReturnValue(null),
 	getChipState: vi.fn().mockReturnValue(null),
-		getReverseChipState: vi.fn().mockReturnValue(null)
+	getReverseChipState: vi.fn().mockReturnValue(null),
+	getChipStateWithReason: vi.fn().mockReturnValue({ state: null, naturalWith: [], cautionWith: [] })
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({

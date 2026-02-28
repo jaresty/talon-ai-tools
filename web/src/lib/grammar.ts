@@ -254,6 +254,50 @@ export function getChipState(
 	return hasNatural ? 'natural' : null;
 }
 
+// getChipStateWithReason returns traffic-light state plus the active tokens causing it,
+// for any axis (ADR-0148 forward + reverse lookups). naturalWith lists active tokens that
+// positively pair with this chip; cautionWith is [token, warning] pairs. Cautionary > natural.
+export function getChipStateWithReason(
+	grammar: Grammar,
+	activeTokensByAxis: Record<string, string[]>,
+	chipAxis: string,
+	chipToken: string
+): { state: 'natural' | 'cautionary' | null; naturalWith: string[]; cautionWith: Array<[string, string]> } {
+	const cac = grammar.axes?.cross_axis_composition;
+	if (!cac) return { state: null, naturalWith: [], cautionWith: [] };
+	const naturalWith: string[] = [];
+	const cautionWith: Array<[string, string]> = [];
+
+	// Forward: check this chip's own composition data against all active axes.
+	const entry = cac[chipAxis]?.[chipToken];
+	if (entry) {
+		for (const [targetAxis, pair] of Object.entries(entry)) {
+			for (const activeToken of (activeTokensByAxis[targetAxis] ?? [])) {
+				const warning = (pair as CrossAxisPair).cautionary?.[activeToken];
+				if (warning) cautionWith.push([activeToken, warning]);
+				else if ((pair as CrossAxisPair).natural?.includes(activeToken)) naturalWith.push(activeToken);
+			}
+		}
+	}
+
+	// Reverse: check if any active token on another axis has composition data pointing to this chip.
+	for (const [otherAxis, otherTokens] of Object.entries(activeTokensByAxis)) {
+		if (otherAxis === chipAxis) continue;
+		for (const otherToken of otherTokens) {
+			const otherEntry = cac[otherAxis]?.[otherToken]?.[chipAxis];
+			if (!otherEntry) continue;
+			const warning = otherEntry.cautionary?.[chipToken];
+			if (warning) cautionWith.push([otherToken, warning]);
+			else if (otherEntry.natural?.includes(chipToken)) naturalWith.push(otherToken);
+		}
+	}
+
+	let state: 'natural' | 'cautionary' | null = null;
+	if (cautionWith.length > 0) state = 'cautionary';
+	else if (naturalWith.length > 0) state = 'natural';
+	return { state, naturalWith, cautionWith };
+}
+
 // getReverseChipState returns traffic-light state for a channel/form chip given active
 // selections on any other axis (ADR-0148 reverse direction + form↔channel extension).
 // Forward check: looks at the chip's own composition data against all active axes.

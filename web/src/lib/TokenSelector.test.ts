@@ -1511,4 +1511,59 @@ describe('TokenSelector — chip traffic lights for directional and method axes'
 		const maxEl = document.querySelector('[data-token="max"]');
 		expect(maxEl?.classList.contains('chip--cautionary')).toBe(true);
 	});
+
+	it('directional chip modal shows "Caution" section and causing token when conflicting completeness is active', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'directional',
+				tokens: directionalTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: directionalCompleteness,
+				activeTokensByAxis: { completeness: ['gist'] }
+			}
+		});
+		const chip = document.querySelector('[data-token="fig"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Caution')).toBeTruthy();
+		expect(screen.getByText('gist', { selector: 'code' })).toBeTruthy();
+	});
+
+	it('directional chip modal shows no caution section when no conflicting token is active', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'directional',
+				tokens: directionalTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: directionalCompleteness,
+				activeTokensByAxis: {}
+			}
+		});
+		const chip = document.querySelector('[data-token="fig"]')!;
+		await fireEvent.click(chip);
+		expect(screen.queryByText('Caution')).toBeNull();
+	});
+
+	it('method chip modal shows "Caution" section and causing token when conflicting completeness is active', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: methodTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn(),
+				grammar: directionalCompleteness,
+				activeTokensByAxis: { completeness: ['max'] }
+			}
+		});
+		const chip = document.querySelector('[data-token="grow"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Caution')).toBeTruthy();
+		// The meta-caution-entry should have a <code>max</code> element
+		const cautionEntry = document.querySelector('.meta-caution-entry code');
+		expect(cautionEntry?.textContent).toBe('max');
+	});
 });

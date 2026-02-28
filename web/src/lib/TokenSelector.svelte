@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-	import { METHOD_CATEGORY_ORDER, getCompositionData, getChipState, getReverseChipState } from './grammar.js';
+	import { METHOD_CATEGORY_ORDER, getCompositionData, getChipState, getReverseChipState, getChipStateWithReason } from './grammar.js';
 	import type { TokenMeta, Grammar } from './grammar.js';
 
 	interface Props {
@@ -97,25 +97,13 @@
 			: null
 	);
 
-	// ADR-0148: direction B — positive and cautionary signals for a focused task/completeness
-	// token based on active channel/form selections.
+	// ADR-0148: traffic light reason for focused chip — covers all non-channel/form axes.
+	// channel/form chips already show always-on composition data via activeMetaComposition.
 	let activeMetaCompositionDirB = $derived((() => {
 		if (!grammar || !activeMeta || !activeTokensByAxis) return null;
-		if (axis !== 'task' && axis !== 'completeness') return null;
-		const cac = grammar.axes?.cross_axis_composition;
-		if (!cac) return null;
-		const naturalWith: string[] = [];
-		const cautionWith: Array<[string, string]> = [];
-		for (const channelAxis of ['channel', 'form'] as const) {
-			for (const activeToken of (activeTokensByAxis[channelAxis] ?? [])) {
-				const entry = cac[channelAxis]?.[activeToken]?.[axis];
-				if (!entry) continue;
-				if (entry.natural?.includes(activeMeta.token)) naturalWith.push(activeToken);
-				const warning = entry.cautionary?.[activeMeta.token];
-				if (warning) cautionWith.push([activeToken, warning]);
-			}
-		}
-		return naturalWith.length > 0 || cautionWith.length > 0 ? { naturalWith, cautionWith } : null;
+		if (axis === 'channel' || axis === 'form' || axis === 'audience') return null;
+		const reason = getChipStateWithReason(grammar, activeTokensByAxis, axis, activeMeta.token);
+		return reason.state !== null ? reason : null;
 	})());
 
 	// ADR-0148: chip traffic lights for all axes except audience.

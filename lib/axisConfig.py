@@ -1500,23 +1500,19 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
 # Shown when no token is selected on an axis tab/section so users understand
 # what the axis means, when to use it, and what skipping it means.
 AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
-    # Grammar axes
+    "audience": "Who this is for — shapes vocabulary, depth, and framing.",
     "channel": "Delivery format — the artifact type or platform the response targets (diagram, script, slides, HTML, image/video, etc.).",
     "completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
     "directional": "Compass modifier shaping the response angle: abstract↑ concrete↓ reflect← act→.",
     "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.).",
-    "method": "Reasoning approach — how to think through the problem. Up to three can be combined.",
-    "scope": "Which dimension of the topic to focus on (entities, structure, meaning, actions, quality). Up to two.",
-    # Static / task axis
-    "task": "What the response does — the primary action to perform.",
-    # Persona axis (SPA combined tab)
-    "persona": "Communication style — who speaks, for whom, and in what tone.",
-    # Persona sub-stages (TUI2 separate stages)
-    "persona_preset": "A bundled preset combining voice, audience, and tone in one choice.",
-    "voice": "Who is speaking — the perspective and expertise level.",
-    "audience": "Who this is for — shapes vocabulary, depth, and framing.",
-    "tone": "The emotional register — how the response sounds.",
     "intent": "The purpose of the response — the motivation the speaker has.",
+    "method": "Reasoning approach — how to think through the problem. Up to three can be combined.",
+    "persona": "Communication style — who speaks, for whom, and in what tone.",
+    "persona_preset": "A bundled preset combining voice, audience, and tone in one choice.",
+    "scope": "Which dimension of the topic to focus on (entities, structure, meaning, actions, quality). Up to two.",
+    "task": "What the response does — the primary action to perform.",
+    "tone": "The emotional register — how the response sounds.",
+    "voice": "Who is speaking — the perspective and expertise level.",
 }
 
 CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {

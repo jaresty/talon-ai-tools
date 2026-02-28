@@ -286,6 +286,22 @@
 			activeToken = null;
 			focusedIndex = -1;
 			filterInputRef?.focus();
+		} else if ((e.key === 'Backspace' || e.key === 'Delete') && filterInputRef !== null) {
+			e.preventDefault();
+			filterInputRef.focus(); // onfocus handler clears filter (e.detail === 0)
+		} else if (
+			e.key.length === 1 &&
+			e.key !== ' ' &&
+			!e.ctrlKey &&
+			!e.metaKey &&
+			!e.altKey &&
+			!e.repeat &&
+			filterInputRef !== null
+		) {
+			e.preventDefault();
+			// Focus first — onfocus clears the filter (e.detail === 0 guard), then append.
+			filterInputRef.focus();
+			filter = e.key;
 		}
 	}
 </script>
@@ -460,6 +476,9 @@
 				</div>
 			{/each}
 		{/if}
+		{#if filtered.length === 0 && filter.trim()}
+			<p class="filter-empty">No tokens match '{filter.trim()}'</p>
+		{/if}
 	</div>
 
 	{#if activeMeta}
@@ -539,6 +558,13 @@
 </div>
 
 <style>
+	.filter-empty {
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+		margin: 0.25rem 0 0 0;
+		font-style: italic;
+	}
+
 	.axis-note {
 		font-size: 0.72rem;
 		color: #888;

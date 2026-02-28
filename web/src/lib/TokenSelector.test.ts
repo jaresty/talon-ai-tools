@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { flushSync } from 'svelte';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import TokenSelector from './TokenSelector.svelte';
 
@@ -1081,5 +1082,251 @@ describe('TokenSelector — axis-level empty-state description', () => {
 		await fireEvent.mouseLeave(axisPanel);
 		expect(document.querySelector('[data-testid="axis-description-panel"]')).not.toBeNull();
 		expect(document.querySelector('[data-testid="axis-description-panel"]')!.textContent).toContain(AXIS_DESC);
+	});
+});
+
+// ── ADR-TBD: Printable-key typeahead redirect to filter ──────────────────────
+// Written BEFORE implementation — all tests must fail red initially.
+// Spec:
+//   P1: printable key on focused chip → filter gets char, filter input focused
+//   P2: Space key is excluded (it's chip toggle)
+//   P3: Ctrl+key is excluded (shortcut)
+//   P4: repeated key (held) is excluded (flood guard)
+//   P5: axis with no filter (≤5 tokens) → no crash, focus unchanged
+
+describe('TokenSelector — P: printable-key typeahead redirect to filter', () => {
+	it('P1: pressing a printable key while chip is focused redirects focus to filter and appends the character', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		expect(filterInput).toBeTruthy();
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		await fireEvent.focus(chips[0]);
+
+		await fireEvent.keyDown(chips[0], { key: 'f' });
+		flushSync();
+
+		expect(document.activeElement).toBe(filterInput);
+		expect(filterInput.value).toBe('f');
+	});
+
+	it('P2: Space key on chip does not redirect to filter (it toggles the chip)', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		await fireEvent.focus(chips[0]);
+
+		await fireEvent.keyDown(chips[0], { key: ' ' });
+		flushSync();
+
+		expect(document.activeElement).not.toBe(filterInput);
+		expect(filterInput.value).toBe('');
+	});
+
+	it('P3: Ctrl+key on chip does not redirect to filter', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		await fireEvent.focus(chips[0]);
+
+		await fireEvent.keyDown(chips[0], { key: 'f', ctrlKey: true });
+		flushSync();
+
+		expect(document.activeElement).not.toBe(filterInput);
+		expect(filterInput.value).toBe('');
+	});
+
+	it('P4: repeated (held) key on chip does not redirect to filter', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		await fireEvent.focus(chips[0]);
+
+		await fireEvent.keyDown(chips[0], { key: 'f', repeat: true });
+		flushSync();
+
+		expect(document.activeElement).not.toBe(filterInput);
+		expect(filterInput.value).toBe('');
+	});
+
+	it('P5: printable key on chip in filterless axis (≤5 tokens) does not crash and focus stays on chip', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens, // 2 tokens — no filter rendered
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement | null;
+		expect(filterInput).toBeNull(); // confirm no filter input
+
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		await fireEvent.focus(chips[0]);
+		const focusedBefore = document.activeElement;
+
+		await fireEvent.keyDown(chips[0], { key: 'f' });
+		flushSync();
+
+		// No crash; focus should not have moved to a filter (there is none)
+		expect(document.querySelector('.filter-input')).toBeNull();
+		// Focus either stays on chip or moves to body — never to a nonexistent filter
+		expect(document.activeElement).toBe(focusedBefore);
+	});
+});
+
+// ── P6/P7: Backspace/Delete on chip focuses filter and clears it ──────────────
+// Written BEFORE implementation — must fail red initially.
+// Spec:
+//   P6: Backspace on chip → filter focused, filter value cleared
+//   P7: Delete on chip → filter focused, filter value cleared
+
+describe('TokenSelector — P6/P7: Backspace/Delete on chip redirects to filter (cleared)', () => {
+	it('P6: Backspace on focused chip focuses the filter input and clears the filter', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		expect(filterInput).toBeTruthy();
+
+		// Pre-populate filter so we can confirm it gets cleared
+		await fireEvent.input(filterInput, { target: { value: 'tok' } });
+		flushSync();
+		expect(filterInput.value).toBe('tok');
+
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		await fireEvent.focus(chips[0]);
+
+		await fireEvent.keyDown(chips[0], { key: 'Backspace' });
+		flushSync();
+
+		expect(document.activeElement).toBe(filterInput);
+		expect(filterInput.value).toBe('');
+	});
+
+	it('P7: Delete on focused chip focuses the filter input and clears the filter', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		expect(filterInput).toBeTruthy();
+
+		await fireEvent.input(filterInput, { target: { value: 'tok' } });
+		flushSync();
+
+		const chips = document.querySelectorAll('[role="option"]') as NodeListOf<HTMLElement>;
+		await fireEvent.focus(chips[0]);
+
+		await fireEvent.keyDown(chips[0], { key: 'Delete' });
+		flushSync();
+
+		expect(document.activeElement).toBe(filterInput);
+		expect(filterInput.value).toBe('');
+	});
+});
+
+// ── E1/E2: Empty state when filter matches nothing ────────────────────────────
+// Written BEFORE implementation — must fail red initially.
+// Spec:
+//   E1: filter with no matches → ".filter-empty" element visible with filter text
+//   E2: filter with matches → no empty state element
+
+describe('TokenSelector — E1/E2: empty state when filter yields no results', () => {
+	it('E1: shows empty-state message containing the filter text when no chips match', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'zzznomatch' } });
+		flushSync();
+
+		const emptyState = document.querySelector('.filter-empty');
+		expect(emptyState).not.toBeNull();
+		expect(emptyState!.textContent).toContain('zzznomatch');
+	});
+
+	it('E2: no empty-state element when filter has matches', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'tok' } });
+		flushSync();
+
+		expect(document.querySelector('.filter-empty')).toBeNull();
+	});
+
+	it('E3: no empty-state element when filter is empty', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: manyTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		// Leave filter empty
+		await fireEvent.input(filterInput, { target: { value: '' } });
+		flushSync();
+
+		expect(document.querySelector('.filter-empty')).toBeNull();
 	});
 });

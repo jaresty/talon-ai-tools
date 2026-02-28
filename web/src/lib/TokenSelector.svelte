@@ -97,11 +97,13 @@
 			: null
 	);
 
-	// ADR-0148: traffic light reason for focused chip — covers all non-channel/form axes.
-	// channel/form chips already show always-on composition data via activeMetaComposition.
+	// ADR-0148: traffic light reason for the focused chip — covers all axes except audience.
+	// channel/form chips: direction A (activeMetaComposition) shows always-on forward data.
+	// This section adds the selection-aware reason, which may differ when the traffic light
+	// is caused by a reverse lookup from an axis not in the chip's own composition data.
 	let activeMetaCompositionDirB = $derived((() => {
 		if (!grammar || !activeMeta || !activeTokensByAxis) return null;
-		if (axis === 'channel' || axis === 'form' || axis === 'audience') return null;
+		if (axis === 'audience') return null;
 		const reason = getChipStateWithReason(grammar, activeTokensByAxis, axis, activeMeta.token);
 		return reason.state !== null ? reason : null;
 	})());

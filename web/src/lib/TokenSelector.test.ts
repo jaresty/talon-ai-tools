@@ -1567,3 +1567,151 @@ describe('TokenSelector — chip traffic lights for directional and method axes'
 		expect(cautionEntry?.textContent).toBe('max');
 	});
 });
+
+// ── ADR-0148: channel/form chips — reverse-lookup reasoning in modal ──────────
+// When a form token is active that lists a channel chip as cautionary (but the
+// channel chip has no own form composition data), the modal must show the reason.
+// Likewise for form chips listed by a channel token.
+
+// Grammar: form.faq has shellscript as cautionary; shellscript has NO own form data.
+const channelReverseGrammar = {
+	axes: {
+		definitions: {}, labels: {}, guidance: {}, use_when: {}, kanji: {},
+		cross_axis_composition: {
+			form: {
+				faq: {
+					channel: {
+						natural: [],
+						cautionary: { shellscript: 'Q&A prose cannot be rendered as shell code' }
+					}
+				}
+			}
+		}
+	},
+	tasks: { descriptions: {}, labels: {}, guidance: {} },
+	hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+	persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } }
+} as unknown as import('./grammar.js').Grammar;
+
+// Grammar: channel.gherkin has story as natural; story has NO own channel data.
+const formReverseGrammar = {
+	axes: {
+		definitions: {}, labels: {}, guidance: {}, use_when: {}, kanji: {},
+		cross_axis_composition: {
+			channel: {
+				gherkin: {
+					form: {
+						natural: ['story'],
+						cautionary: { walkthrough: 'Narrative prose conflicts with Gherkin syntax' }
+					}
+				}
+			}
+		}
+	},
+	tasks: { descriptions: {}, labels: {}, guidance: {} },
+	hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+	persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } }
+} as unknown as import('./grammar.js').Grammar;
+
+const channelReverseTokens = [
+	{ token: 'shellscript', label: 'ShellScript', description: 'Shell output.', guidance: '', use_when: '' },
+	{ token: 'plain', label: 'Plain', description: 'Plain text.', guidance: '', use_when: '' }
+];
+
+const formReverseTokens = [
+	{ token: 'story', label: 'Story', description: 'Narrative format.', guidance: '', use_when: '' },
+	{ token: 'walkthrough', label: 'Walkthrough', description: 'Step-by-step prose.', guidance: '', use_when: '' }
+];
+
+describe('TokenSelector — ADR-0148 reverse traffic light reasoning in modal (channel/form)', () => {
+	it('channel chip modal shows "Caution" section when form token causes reverse traffic light', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelReverseTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: channelReverseGrammar,
+				activeTokensByAxis: { form: ['faq'] }
+			}
+		});
+		const chip = document.querySelector('[data-token="shellscript"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Caution')).toBeTruthy();
+		const cautionEntry = document.querySelector('.meta-caution-entry code');
+		expect(cautionEntry?.textContent).toBe('faq');
+	});
+
+	it('channel chip modal shows no caution when no form token is active', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelReverseTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: channelReverseGrammar,
+				activeTokensByAxis: {}
+			}
+		});
+		const chip = document.querySelector('[data-token="shellscript"]')!;
+		await fireEvent.click(chip);
+		expect(screen.queryByText('Caution')).toBeNull();
+	});
+
+	it('form chip modal shows "Works well with" section when channel token causes reverse natural', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens: formReverseTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: formReverseGrammar,
+				activeTokensByAxis: { channel: ['gherkin'] }
+			}
+		});
+		const chip = document.querySelector('[data-token="story"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Works well with')).toBeTruthy();
+		expect(screen.getByText(/gherkin/)).toBeTruthy();
+	});
+
+	it('form chip modal shows "Caution" section when channel token causes reverse cautionary', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens: formReverseTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: formReverseGrammar,
+				activeTokensByAxis: { channel: ['gherkin'] }
+			}
+		});
+		const chip = document.querySelector('[data-token="walkthrough"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Caution')).toBeTruthy();
+		const cautionEntry = document.querySelector('.meta-caution-entry code');
+		expect(cautionEntry?.textContent).toBe('gherkin');
+	});
+
+	it('form chip modal shows no reasoning when no channel token is active', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens: formReverseTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: formReverseGrammar,
+				activeTokensByAxis: {}
+			}
+		});
+		const chip = document.querySelector('[data-token="walkthrough"]')!;
+		await fireEvent.click(chip);
+		expect(screen.queryByText('Works well with')).toBeNull();
+		expect(screen.queryByText('Caution')).toBeNull();
+	});
+});

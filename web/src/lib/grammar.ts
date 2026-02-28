@@ -265,8 +265,17 @@ export function getChipStateWithReason(
 ): { state: 'natural' | 'cautionary' | null; naturalWith: string[]; cautionWith: Array<[string, string]> } {
 	const cac = grammar.axes?.cross_axis_composition;
 	if (!cac) return { state: null, naturalWith: [], cautionWith: [] };
+	const seenCaution = new Set<string>();
+	const seenNatural = new Set<string>();
 	const naturalWith: string[] = [];
 	const cautionWith: Array<[string, string]> = [];
+
+	const addCaution = (token: string, warning: string) => {
+		if (!seenCaution.has(token)) { seenCaution.add(token); cautionWith.push([token, warning]); }
+	};
+	const addNatural = (token: string) => {
+		if (!seenNatural.has(token)) { seenNatural.add(token); naturalWith.push(token); }
+	};
 
 	// Forward: check this chip's own composition data against all active axes.
 	const entry = cac[chipAxis]?.[chipToken];
@@ -274,8 +283,8 @@ export function getChipStateWithReason(
 		for (const [targetAxis, pair] of Object.entries(entry)) {
 			for (const activeToken of (activeTokensByAxis[targetAxis] ?? [])) {
 				const warning = (pair as CrossAxisPair).cautionary?.[activeToken];
-				if (warning) cautionWith.push([activeToken, warning]);
-				else if ((pair as CrossAxisPair).natural?.includes(activeToken)) naturalWith.push(activeToken);
+				if (warning) addCaution(activeToken, warning);
+				else if ((pair as CrossAxisPair).natural?.includes(activeToken)) addNatural(activeToken);
 			}
 		}
 	}
@@ -287,8 +296,8 @@ export function getChipStateWithReason(
 			const otherEntry = cac[otherAxis]?.[otherToken]?.[chipAxis];
 			if (!otherEntry) continue;
 			const warning = otherEntry.cautionary?.[chipToken];
-			if (warning) cautionWith.push([otherToken, warning]);
-			else if (otherEntry.natural?.includes(chipToken)) naturalWith.push(otherToken);
+			if (warning) addCaution(otherToken, warning);
+			else if (otherEntry.natural?.includes(chipToken)) addNatural(otherToken);
 		}
 	}
 

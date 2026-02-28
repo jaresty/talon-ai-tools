@@ -436,6 +436,27 @@ describe('getChipStateWithReason — returns state and which active tokens cause
 		expect(result.cautionWith.length).toBeGreaterThan(0);
 		expect(result.naturalWith.length).toBeGreaterThan(0);
 	});
+
+	it('deduplicates tokens that appear in both forward and reverse lookups', () => {
+		// grow.completeness.cautionary.max AND completeness.max.method.cautionary.grow both exist —
+		// max should appear exactly once in cautionWith, not twice.
+		const bidirectionalGrammar = {
+			axes: {
+				definitions: {}, labels: {}, guidance: {}, use_when: {}, kanji: {},
+				cross_axis_composition: {
+					method: { grow: { completeness: { natural: [], cautionary: { max: 'grow+max density conflict' } } } },
+					completeness: { max: { method: { natural: [], cautionary: { grow: 'max+grow density conflict' } } } }
+				}
+			},
+			tasks: { descriptions: {}, labels: {}, guidance: {} },
+			hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+			persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } }
+		} as unknown as Grammar;
+		const result = getChipStateWithReason(bidirectionalGrammar, { completeness: ['max'] }, 'method', 'grow');
+		expect(result.state).toBe('cautionary');
+		const maxEntries = result.cautionWith.filter(([t]) => t === 'max');
+		expect(maxEntries).toHaveLength(1);
+	});
 });
 
 describe('findConflicts — cross_axis_composition cautionary pairs', () => {

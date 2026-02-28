@@ -1787,12 +1787,14 @@ func (m model) renderTokensPane() string {
 
 	// Chip traffic light: active when task/completeness axis is browsed with an active
 	// channel/form token, or channel/form axis is browsed with an active task/completeness
-	// token (ADR-0148 Phase 1c + reverse direction).
+	// token, or form/channel axis is browsed with an active token on the opposing axis
+	// (ADR-0148 Phase 1c + reverse direction + form↔channel extension).
 	hasActiveChannel := len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["form"]) > 0
 	hasActiveTask := len(m.tokensByCategory["task"]) > 0 || len(m.tokensByCategory["completeness"]) > 0
 	showPrefixColumn := m.crossAxisCompositionFor != nil && paneHeight >= 12 &&
 		(((currentStage == "task" || currentStage == "completeness") && hasActiveChannel) ||
-			((currentStage == "channel" || currentStage == "form") && hasActiveTask))
+			(currentStage == "channel" && (hasActiveTask || len(m.tokensByCategory["form"]) > 0)) ||
+			(currentStage == "form" && (hasActiveTask || len(m.tokensByCategory["channel"]) > 0)))
 
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
@@ -2161,8 +2163,9 @@ func (m model) renderResultPane() string {
 
 // chipState returns the traffic-light prefix character for a token when the chip prefix column
 // is active (ADR-0148). Forward direction: task/completeness chips with active channel/form.
-// Reverse direction: channel/form chips with active task/completeness. Cautionary takes
-// precedence over natural.
+// Reverse direction: channel/form chips with active task/completeness/form/channel selections.
+// Forward check uses the chip's own composition data; reverse check walks other active tokens'
+// composition data to find entries pointing back to this chip. Cautionary takes precedence.
 func (m model) chipState(axis, token string) string {
 	if m.crossAxisCompositionFor == nil {
 		return " "
@@ -2190,24 +2193,43 @@ func (m model) chipState(axis, token string) string {
 			}
 		}
 	case "channel", "form":
-		// Reverse: look up this chip's own composition data against active task/completeness tokens.
+		// Forward: look up this chip's own composition data against all active axis selections.
 		natural, cautionary := m.crossAxisCompositionFor(axis, token)
-		for _, taskAxis := range []string{"task", "completeness"} {
-			if cauts, ok := cautionary[taskAxis]; ok {
-				for _, activeToken := range m.tokensByCategory[taskAxis] {
-					if _, ok := cauts[activeToken]; ok {
+		for targetAxis, cauts := range cautionary {
+			for _, activeToken := range m.tokensByCategory[targetAxis] {
+				if _, ok := cauts[activeToken]; ok {
+					hasCautionary = true
+				}
+			}
+		}
+		for targetAxis, nats := range natural {
+			natsSet := make(map[string]bool, len(nats))
+			for _, n := range nats {
+				natsSet[n] = true
+			}
+			for _, activeToken := range m.tokensByCategory[targetAxis] {
+				if natsSet[activeToken] {
+					hasNatural = true
+				}
+			}
+		}
+		// Reverse: check active tokens on other axes whose composition data points to this chip.
+		for otherAxis, activeTokens := range m.tokensByCategory {
+			if otherAxis == axis {
+				continue
+			}
+			for _, activeToken := range activeTokens {
+				otherNatural, otherCautionary := m.crossAxisCompositionFor(otherAxis, activeToken)
+				if cauts, ok := otherCautionary[axis]; ok {
+					if _, ok := cauts[token]; ok {
 						hasCautionary = true
 					}
 				}
-			}
-			if nats, ok := natural[taskAxis]; ok {
-				natsSet := make(map[string]bool, len(nats))
-				for _, n := range nats {
-					natsSet[n] = true
-				}
-				for _, activeToken := range m.tokensByCategory[taskAxis] {
-					if natsSet[activeToken] {
-						hasNatural = true
+				if nats, ok := otherNatural[axis]; ok {
+					for _, n := range nats {
+						if n == token {
+							hasNatural = true
+						}
 					}
 				}
 			}

@@ -2808,6 +2808,120 @@ func TestAddendumPassedToPreviewAndCommand(t *testing.T) {
 	}
 }
 
+// testCategoriesFormChannel returns test categories for form/channel cross-axis traffic light tests.
+func testCategoriesFormChannel() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "form",
+			Label:         "Form",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "faq", Slug: "faq", Label: "FAQ", Description: "Q&A format."},
+				{Value: "scaffold", Slug: "scaffold", Label: "Scaffold", Description: "Outline format."},
+			},
+		},
+		{
+			Key:           "channel",
+			Label:         "Channel",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "shellscript", Slug: "shellscript", Label: "ShellScript", Description: "Shell script output."},
+				{Value: "plain", Slug: "plain", Label: "Plain", Description: "Plain prose output."},
+			},
+		},
+	}
+}
+
+// TestCrossAxisChipPrefixColumnFormToChannel specifies that when browsing the channel axis
+// with an active form token (e.g. faq), each channel chip shows ⚠ if that channel is in
+// the form token's cautionary list, ✓ if in natural list.
+func TestCrossAxisChipPrefixColumnFormToChannel(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "form" && token == "faq" {
+			return map[string][]string{"channel": {"plain"}},
+				map[string]map[string]string{
+					"channel": {"shellscript": "Q&A prose cannot be rendered as shell code"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Pre-select faq form; channel stage becomes current.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesFormChannel(),
+		InitialTokens:           []string{"faq"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "channel" {
+		t.Fatalf("expected channel stage after faq pre-selected, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+	foundCautionOnShellscript := false
+	foundNaturalOnPlain := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "⚠") && strings.Contains(line, "ShellScript") {
+			foundCautionOnShellscript = true
+		}
+		if strings.Contains(line, "✓") && strings.Contains(line, "Plain") {
+			foundNaturalOnPlain = true
+		}
+	}
+	if !foundCautionOnShellscript {
+		t.Errorf("form→channel: expected ⚠ on ShellScript line when faq active; got:\n%s", view)
+	}
+	if !foundNaturalOnPlain {
+		t.Errorf("form→channel: expected ✓ on Plain line when faq active; got:\n%s", view)
+	}
+}
+
+// TestCrossAxisChipPrefixColumnChannelToForm specifies that when browsing the form axis
+// with an active channel token (e.g. shellscript), each form chip shows ⚠ if that form
+// appears in the channel's cautionary list (reverse lookup through form composition data).
+func TestCrossAxisChipPrefixColumnChannelToForm(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		// shellscript channel has no form.cautionary — only form knows about the conflict
+		if axis == "form" && token == "faq" {
+			return map[string][]string{"channel": {"plain"}},
+				map[string]map[string]string{
+					"channel": {"shellscript": "Q&A prose cannot be rendered as shell code"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Pre-select shellscript channel; form stage becomes current.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesFormChannel(),
+		InitialTokens:           []string{"shellscript"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "form" {
+		t.Fatalf("expected form stage after shellscript pre-selected, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+	foundCautionOnFaq := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "⚠") && strings.Contains(line, "FAQ") {
+			foundCautionOnFaq = true
+		}
+	}
+	if !foundCautionOnFaq {
+		t.Errorf("channel→form: expected ⚠ on FAQ line when shellscript active; got:\n%s", view)
+	}
+}
+
 // TestCrossAxisChipPrefixColumnReverse specifies that when browsing the channel axis
 // with an active task token, each channel row shows a 1-char prefix:
 // ⚠ if the active task is in that channel's cautionary map, ✓ if in natural list.

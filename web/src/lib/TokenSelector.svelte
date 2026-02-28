@@ -28,9 +28,11 @@
 		// ADR-0148: cross-axis composition data
 		grammar?: Grammar;
 		activeTokensByAxis?: Record<string, string[]>;
+		// axis-level empty-state description (Variant B)
+		axisDescription?: string;
 	}
 
-	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev, grammar, activeTokensByAxis }: Props = $props();
+	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev, grammar, activeTokensByAxis, axisDescription }: Props = $props();
 
 	let filter = $state('');
 	let activeToken = $state<string | null>(null);
@@ -455,6 +457,14 @@
 			{/each}
 		{/if}
 	</div>
+
+	{#if !activeMeta && axisDescription}
+		<div class="meta-panel meta-panel--axis" style={panelStyle} data-testid="axis-description-panel">
+			<div class="meta-body">
+				<p class="meta-description">{axisDescription}</p>
+			</div>
+		</div>
+	{/if}
 
 	{#if activeMeta}
 		{@const isActiveSel = selected.includes(activeMeta.token)}

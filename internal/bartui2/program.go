@@ -55,6 +55,10 @@ type Options struct {
 	// pair (ADR-0148). natural is keyed by partner axis; cautionary is keyed by partner axis then
 	// partner token. Returns nil maps if no entry is defined. May be nil (disables the feature).
 	CrossAxisCompositionFor func(axis, token string) (natural map[string][]string, cautionary map[string]map[string]string)
+
+	// AxisDescriptions maps axis name → axis-level description shown in the empty-state
+	// subtitle area when no token is selected on that axis. May be nil (disables the feature).
+	AxisDescriptions map[string]string
 }
 
 // completion represents a single completion option with metadata.
@@ -146,6 +150,9 @@ type model struct {
 
 	// Cross-axis composition lookup (ADR-0148); nil when not configured.
 	crossAxisCompositionFor func(axis, token string) (natural map[string][]string, cautionary map[string]map[string]string)
+
+	// Axis-level empty-state descriptions; nil when not configured.
+	axisDescriptions map[string]string
 
 	// Stage-based progression
 	currentStageIndex int // index into stageOrder
@@ -281,6 +288,7 @@ func newModel(opts Options) model {
 		commandTimeout:    timeout,
 		clipboardWrite:          opts.ClipboardWrite,
 		crossAxisCompositionFor: opts.CrossAxisCompositionFor,
+		axisDescriptions:        opts.AxisDescriptions,
 		width:                   opts.InitialWidth,
 		height:                  opts.InitialHeight,
 	}
@@ -1930,6 +1938,21 @@ func (m model) renderTokensPane() string {
 	if len(crossNatLines) > 0 || len(crossCauLines) > 0 {
 		descMaxLines = 2 // tighten when composition sections are non-empty (ADR-0148 R1)
 	}
+	// Axis-level empty-state description: shown when no token is selected.
+	axisLevelDesc := ""
+	if selectedDesc == "" && selectedGuidance == "" && selectedUseWhen == "" && len(crossNatLines) == 0 && len(crossCauLines) == 0 {
+		if m.axisDescriptions != nil {
+			axisLevelDesc = m.axisDescriptions[currentStage]
+		}
+	}
+	if axisLevelDesc != "" {
+		right.WriteString("\n")
+		right.WriteString(dimStyle.Render("─"))
+		right.WriteString("\n")
+		wrapped := wrapAndTruncateText(axisLevelDesc, rightWidth-2, 3)
+		right.WriteString(dimStyle.Render(wrapped))
+	}
+
 	if selectedDesc != "" || selectedGuidance != "" || selectedUseWhen != "" || len(crossNatLines) > 0 || len(crossCauLines) > 0 {
 		right.WriteString("\n")
 		right.WriteString(dimStyle.Render("─"))

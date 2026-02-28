@@ -49,6 +49,7 @@ type AxisSection struct {
 	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
 	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
 	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
+	AxisDescriptions    map[string]string                      // axis-level empty-state descriptions
 }
 
 // CrossAxisPair holds the natural/cautionary composition data for one axis_a+token_a+axis_b triple (ADR-0147).
@@ -159,6 +160,7 @@ type rawAxisSection struct {
 	Categories     map[string]map[string]string `json:"categories"`       // ADR-0144
 	RoutingConcept       map[string]map[string]string                `json:"routing_concept"`        // ADR-0146
 	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"` // ADR-0147
+	AxisDescriptions     map[string]string                           `json:"axis_descriptions"`      // axis-level empty-state descriptions
 }
 
 
@@ -263,6 +265,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Categories:     raw.Axes.Categories,
 			RoutingConcept:       raw.Axes.RoutingConcept,
 			CrossAxisComposition: raw.Axes.CrossAxisComposition,
+			AxisDescriptions:     raw.Axes.AxisDescriptions,
 		},
 		Static: StaticSection{
 			Profiles:       profiles,
@@ -996,6 +999,15 @@ func (g *Grammar) AxisGuidanceMap(axis string) map[string]string {
 		return guidance
 	}
 	return nil
+}
+
+// AxisLevelDescription returns the axis-level empty-state description for a given axis.
+// Used by SPA and TUI2 to explain the axis when no token is selected.
+func (g *Grammar) AxisLevelDescription(axis string) string {
+	if g.Axes.AxisDescriptions == nil {
+		return ""
+	}
+	return g.Axes.AxisDescriptions[normalizeAxis(axis)]
 }
 
 // AxisRoutingConcept returns the distilled routing concept phrase for a token (ADR-0146).

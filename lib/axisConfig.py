@@ -1496,6 +1496,25 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
 #               belong here. Format: "tends to X because Y; prefer Z instead".
 #               No combination is blocked — these are guidance, not restrictions.
 #
+# Axis-level descriptions for empty-state UI panels (SPA + TUI2).
+# Shown when no token is selected on an axis tab/section so users understand
+# what the axis means, when to use it, and what skipping it means.
+AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
+    "channel": "The channel token sets the delivery format — the medium or platform the response is targeting. Omitting channel produces default prose. Use channel when the output must be a specific "
+    "artifact: Mermaid diagram, shell script, Slack message, slide deck, HTML, or image/video generation content.",
+    "completeness": "The completeness token controls how deeply the response covers its scope — from a quick skim to an exhaustive treatment. Omitting it lets the model choose. Use it when you need a "
+    "specific depth: a standup-ready summary, a thorough analysis, or the absolute minimum change.",
+    "directional": "The directional token applies a compass modifier that shapes the angle of the response — abstract vs concrete, reflective vs acting, or combinations of both. Omitting it lets the "
+    "model execute the task head-on. Use directional when you want to push the response in a specific direction: zoom out to the principle (fog), ground it in examples (dig), surface "
+    "actions (ong), or examine structure (rog).",
+    "form": "The form token controls the output structure — how the response is organised and presented. Omitting form lets the model choose the most natural structure. Use form when you need a "
+    "specific shape: bullet actions, a comparison table, step-by-step recipe, user story, or Wardley map.",
+    "method": "The method token shapes the reasoning approach — how the response thinks through the problem. Up to three method tokens can be combined. Omitting method lets the model choose its own "
+    "approach. Use method when you want a specific analytical move: compare options, find gaps, map dependencies, stress-test assumptions, or explore analogies.",
+    "scope": "The scope token narrows which dimension of the topic the response should focus on — its entities, structure, meaning, failure modes, quality, or actions. Up to two scope tokens can be "
+    "combined. Omitting scope lets the model cover the topic at its natural breadth. Use scope when you want to restrict the lens rather than cover everything.",
+}
+
 CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
     "channel": {
         "shellscript": {
@@ -1702,6 +1721,11 @@ def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
     phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
     """
     return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
+
+
+def axis_key_to_axis_desc(axis: str) -> str:
+    """Return the axis-level description string for empty-state UI panels."""
+    return AXIS_KEY_TO_AXIS_DESC.get(axis, "")
 
 
 def get_cross_axis_composition(axis: str, token: str) -> dict:

@@ -163,6 +163,9 @@ def render_axis_config() -> str:
     kanji_body = pprint.pformat(kanji_mapping, width=200, sort_dicts=True)
     category_body = pprint.pformat(category_mapping, width=200, sort_dicts=True)
     routing_concept_body = pprint.pformat(routing_concept_mapping, width=200, sort_dicts=True)
+    axis_desc_raw = payload.get("axis_descriptions", {}) or {}
+    axis_desc_mapping: dict[str, str] = dict(sorted(axis_desc_raw.items()))
+    axis_desc_body = pprint.pformat(axis_desc_mapping, width=200, sort_dicts=True)
     cross_axis_raw = payload.get("cross_axis_composition", {}) or {}
     cross_axis_body = pprint.pformat(cross_axis_raw, width=200, sort_dicts=False)
     header = textwrap.dedent(
@@ -243,6 +246,11 @@ def render_axis_config() -> str:
             phrase form a multi-token routing bullet (e.g. thing+struct → 'Entities/boundaries').
             \"\"\"
             return AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {})
+
+
+        def axis_key_to_axis_desc(axis: str) -> str:
+            \"\"\"Return the axis-level description string for empty-state UI panels.\"\"\"
+            return AXIS_KEY_TO_AXIS_DESC.get(axis, "")
 
 
         def get_cross_axis_composition(axis: str, token: str) -> dict:
@@ -351,6 +359,10 @@ def get_usage_patterns() -> list[dict]:
                 f"#               belong here. Format: \"tends to X because Y; prefer Z instead\".\n"
                 f"#               No combination is blocked — these are guidance, not restrictions.\n"
                 f"#\n"
+                f"# Axis-level descriptions for empty-state UI panels (SPA + TUI2).\n"
+                f"# Shown when no token is selected on an axis tab/section so users understand\n"
+                f"# what the axis means, when to use it, and what skipping it means.\n"
+                f"AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {axis_desc_body}",
                 f"CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {cross_axis_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip() + usage_patterns_block,

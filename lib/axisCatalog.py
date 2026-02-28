@@ -217,6 +217,9 @@ def axis_catalog(
         "axis_routing_concept": {
             axis: axisConfig.axis_key_to_routing_concept_map(axis) for axis in axis_map
         },
+        "axis_descriptions": {
+            axis: axisConfig.axis_key_to_axis_desc(axis) for axis in axis_map
+        },
         "static_prompts": static_prompt_catalog(
             static_prompt_list_path if lists_dir else ""
         ),
@@ -253,6 +256,7 @@ def serialize_axis_config(
         "axis_kanji": catalog["axis_kanji"],
         "axis_category": catalog["axis_category"],
         "axis_routing_concept": catalog["axis_routing_concept"],
+        "axis_descriptions": catalog["axis_descriptions"],
     }
     if include_axis_lists:
         payload["axis_list_tokens"] = catalog["axis_list_tokens"]

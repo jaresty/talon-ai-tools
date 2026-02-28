@@ -578,6 +578,7 @@
 						onTabPrev={goToPrevTab}
 						{grammar}
 						activeTokensByAxis={selected}
+						axisDescription={grammar?.axes?.axis_descriptions?.[axis]}
 					/>
 					{/if}
 				{/each}

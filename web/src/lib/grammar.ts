@@ -37,6 +37,7 @@ export interface Grammar {
 		categories?: Record<string, Record<string, string>>; // ADR-0144: semantic family groupings for method tokens
 		routing_concept?: Record<string, Record<string, string>>; // ADR-0146: distilled routing concept phrases
 		cross_axis_composition?: Record<string, Record<string, Record<string, CrossAxisPair>>>; // ADR-0148
+		axis_descriptions?: Record<string, string>; // axis-level empty-state descriptions
 	};
 	tasks: {
 		descriptions: Record<string, string>;

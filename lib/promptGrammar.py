@@ -194,6 +194,13 @@ def _build_axis_section(
         if tokens
     }
 
+    axis_descriptions_raw = catalog.get("axis_descriptions") or {}
+    axis_descriptions: dict[str, str] = {
+        str(axis): str(desc)
+        for axis, desc in sorted(axis_descriptions_raw.items())
+        if desc
+    }
+
     section: dict[str, Any] = {
         "definitions": axis_definitions,
         "list_tokens": axis_list_tokens,
@@ -210,6 +217,8 @@ def _build_axis_section(
         section["categories"] = axis_category
     if axis_routing_concept:
         section["routing_concept"] = axis_routing_concept
+    if axis_descriptions:
+        section["axis_descriptions"] = axis_descriptions
 
     # CrossAxisComposition (ADR-0147): cross-axis composition semantics.
     # Structure: axis_a → token_a → axis_b → {"natural": [...], "reframe": {token: description}}

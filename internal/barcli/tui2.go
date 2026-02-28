@@ -105,6 +105,7 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		NoAltScreen:             opts.NoAltScreen,
 		InitialCommand:          opts.InitialCommand,
 		CrossAxisCompositionFor: crossAxisFor,
+		AxisDescriptions:        grammar.Axes.AxisDescriptions,
 	}
 
 	if err := startTUI2(tuiOpts); err != nil {

@@ -110,7 +110,7 @@
 			) {
 				const active = document.activeElement as HTMLElement | null;
 				const tag = active?.tagName ?? '';
-				if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+				if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 				if (active?.getAttribute('role') === 'option' || active?.closest?.('[role="listbox"]')) return;
 				const filterEl = document.querySelector<HTMLInputElement>('.selector-panel .filter-input');
 				if (!filterEl) return;

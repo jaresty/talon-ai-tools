@@ -704,6 +704,35 @@ describe('Page — G: global printable-key routes to active axis filter (grow st
 		expect(filterInput!.value).toBe('f');
 	});
 
+	it('G1b: printable key with a tab button focused (page-load state) routes to filter', async () => {
+		// Regression: on load, focusActiveTab() focuses the active tab <button>.
+		// The global handler must NOT guard against BUTTON — tab buttons don't handle letter keys.
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		container.querySelector<HTMLElement>('#tab-method')!.click();
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		// Simulate page-load state: active tab button has focus
+		const activeTab = container.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+		expect(activeTab).toBeTruthy();
+		activeTab!.focus();
+		flushSync();
+		expect(document.activeElement?.tagName).toBe('BUTTON');
+
+		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true }));
+		flushSync();
+		await new Promise((r) => setTimeout(r, 10));
+
+		const filterInput = container.querySelector('.selector-panel .filter-input') as HTMLInputElement | null;
+		expect(filterInput).toBeTruthy();
+		expect(document.activeElement).toBe(filterInput);
+		expect(filterInput!.value).toBe('p');
+	});
+
 	it('G2: printable key does not redirect when an INPUT already has focus', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });

@@ -1785,16 +1785,19 @@ func (m model) renderTokensPane() string {
 	var selectedUseWhen string  // Store routing trigger phrase (ADR-0142)
 	var selectedValue string    // Store token value for cross-axis lookup (ADR-0148)
 
-	// Chip traffic light: active when task/completeness axis is browsed with an active
-	// channel/form token, or channel/form axis is browsed with an active task/completeness
-	// token, or form/channel axis is browsed with an active token on the opposing axis
-	// (ADR-0148 Phase 1c + reverse direction + form↔channel extension).
+	// Chip traffic light: show prefix column whenever any other axis has active tokens
+	// that have cross-axis composition data with the current stage (ADR-0148 + extensions).
+	// Covers: task/completeness↔channel/form, form↔channel, completeness↔directional/method.
 	hasActiveChannel := len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["form"]) > 0
 	hasActiveTask := len(m.tokensByCategory["task"]) > 0 || len(m.tokensByCategory["completeness"]) > 0
+	hasActiveCompleteness := len(m.tokensByCategory["completeness"]) > 0
 	showPrefixColumn := m.crossAxisCompositionFor != nil && paneHeight >= 12 &&
 		(((currentStage == "task" || currentStage == "completeness") && hasActiveChannel) ||
 			(currentStage == "channel" && (hasActiveTask || len(m.tokensByCategory["form"]) > 0)) ||
-			(currentStage == "form" && (hasActiveTask || len(m.tokensByCategory["channel"]) > 0)))
+			(currentStage == "form" && (hasActiveTask || len(m.tokensByCategory["channel"]) > 0)) ||
+			(currentStage == "directional" && (hasActiveCompleteness || len(m.tokensByCategory["form"]) > 0)) ||
+			(currentStage == "method" && hasActiveCompleteness) ||
+			(currentStage == "completeness" && (len(m.tokensByCategory["method"]) > 0 || len(m.tokensByCategory["directional"]) > 0)))
 
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
@@ -2173,8 +2176,8 @@ func (m model) chipState(axis, token string) string {
 	hasCautionary := false
 	hasNatural := false
 	switch axis {
-	case "task", "completeness":
-		// Forward: iterate active channel/form tokens.
+	case "task":
+		// Forward: iterate active channel/form tokens and find entries pointing to this chip.
 		for _, channelAxis := range []string{"channel", "form"} {
 			for _, activeToken := range m.tokensByCategory[channelAxis] {
 				natural, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
@@ -2192,7 +2195,7 @@ func (m model) chipState(axis, token string) string {
 				}
 			}
 		}
-	case "channel", "form":
+	case "channel", "form", "directional", "method", "completeness":
 		// Forward: look up this chip's own composition data against all active axis selections.
 		natural, cautionary := m.crossAxisCompositionFor(axis, token)
 		for targetAxis, cauts := range cautionary {

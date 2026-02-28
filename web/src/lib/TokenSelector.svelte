@@ -118,15 +118,12 @@
 		return naturalWith.length > 0 || cautionWith.length > 0 ? { naturalWith, cautionWith } : null;
 	})());
 
-	// ADR-0148: chip traffic lights — task/completeness (forward) and channel/form (reverse).
-	// Audience excluded per ADR-0148 §Chip scope.
+	// ADR-0148: chip traffic lights for all axes except audience.
+	// getReverseChipState handles all directions via forward + reverse cross-axis lookup.
 	function resolveChipState(token: string): 'natural' | 'cautionary' | null {
 		if (!grammar || !activeTokensByAxis) return null;
-		if (axis === 'task' || axis === 'completeness')
-			return getChipState(grammar, activeTokensByAxis, axis, token);
-		if (axis === 'channel' || axis === 'form')
-			return getReverseChipState(grammar, activeTokensByAxis, axis, token);
-		return null;
+		if (axis === 'audience') return null;
+		return getReverseChipState(grammar, activeTokensByAxis, axis, token);
 	}
 
 	let panelStyle = $state('');

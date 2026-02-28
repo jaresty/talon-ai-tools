@@ -1330,3 +1330,123 @@ describe('TokenSelector — E1/E2: empty state when filter yields no results', (
 		expect(document.querySelector('.filter-empty')).toBeNull();
 	});
 });
+
+// Grammar with completeness→directional and completeness→method composition data.
+const directionalCompleteness = {
+	axes: {
+		definitions: {},
+		labels: {},
+		guidance: {},
+		use_when: {},
+		kanji: {},
+		cross_axis_composition: {
+			completeness: {
+				gist: {
+					directional: {
+						natural: [],
+						cautionary: { fig: 'gist conflicts with compound directionals that expand depth' }
+					}
+				},
+				max: {
+					method: {
+						natural: [],
+						cautionary: { grow: 'max+grow creates contradictory density expectations' }
+					}
+				}
+			},
+			method: {
+				grow: {
+					completeness: {
+						natural: [],
+						cautionary: { max: 'grow+max creates contradictory density expectations' }
+					}
+				}
+			}
+		}
+	},
+	tasks: { descriptions: {}, labels: {}, guidance: {} },
+	hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+	persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } }
+} as unknown as import('./grammar.js').Grammar;
+
+const directionalTokens = [
+	{ token: 'fig', label: 'Fig', description: 'Full vertical span.', guidance: '', use_when: '' },
+	{ token: 'fog', label: 'Fog', description: 'Abstract / general.', guidance: '', use_when: '' }
+];
+
+const methodTokens = [
+	{ token: 'grow', label: 'Grow', description: 'Progressive build-up.', guidance: '', use_when: '' },
+	{ token: 'rigor', label: 'Rigor', description: 'Principled analysis.', guidance: '', use_when: '' }
+];
+
+const completenessTokens = [
+	{ token: 'gist', label: 'Gist', description: 'Core insight only.', guidance: '', use_when: '' },
+	{ token: 'max', label: 'Max', description: 'Exhaustive depth.', guidance: '', use_when: '' }
+];
+
+describe('TokenSelector — chip traffic lights for directional and method axes', () => {
+	it('directional chips show chip--cautionary when conflicting completeness is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'directional',
+				tokens: directionalTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: directionalCompleteness,
+				activeTokensByAxis: { completeness: ['gist'] }
+			}
+		});
+		const figEl = document.querySelector('[data-token="fig"]');
+		expect(figEl?.classList.contains('chip--cautionary')).toBe(true);
+	});
+
+	it('directional chips show no traffic light when no conflicting completeness is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'directional',
+				tokens: directionalTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: directionalCompleteness,
+				activeTokensByAxis: { completeness: ['full'] }
+			}
+		});
+		const figEl = document.querySelector('[data-token="fig"]');
+		expect(figEl?.classList.contains('chip--cautionary')).toBe(false);
+		expect(figEl?.classList.contains('chip--natural')).toBe(false);
+	});
+
+	it('method chips show chip--cautionary when conflicting completeness is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: methodTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn(),
+				grammar: directionalCompleteness,
+				activeTokensByAxis: { completeness: ['max'] }
+			}
+		});
+		const growEl = document.querySelector('[data-token="grow"]');
+		expect(growEl?.classList.contains('chip--cautionary')).toBe(true);
+	});
+
+	it('completeness chips show chip--cautionary when conflicting method is active', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'completeness',
+				tokens: completenessTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: directionalCompleteness,
+				activeTokensByAxis: { method: ['grow'] }
+			}
+		});
+		const maxEl = document.querySelector('[data-token="max"]');
+		expect(maxEl?.classList.contains('chip--cautionary')).toBe(true);
+	});
+});

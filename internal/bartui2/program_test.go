@@ -2964,3 +2964,171 @@ func TestCrossAxisChipPrefixColumnReverse(t *testing.T) {
 		t.Errorf("reverse prefix: expected ⚠ on same line as ShellScript when sim active; got:\n%s", view)
 	}
 }
+
+// testCategoriesCompletenessDirectional returns categories for completeness→directional tests.
+func testCategoriesCompletenessDirectional() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "completeness",
+			Label:         "Completeness",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Core insight only."},
+				{Value: "max", Slug: "max", Label: "Max", Description: "Exhaustive depth."},
+			},
+		},
+		{
+			Key:           "directional",
+			Label:         "Directional",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "fig", Slug: "fig", Label: "Fig", Description: "Full vertical span."},
+				{Value: "fog", Slug: "fog", Label: "Fog", Description: "Abstract / general."},
+			},
+		},
+	}
+}
+
+// testCategoriesCompletenessMethod returns categories for completeness→method tests.
+func testCategoriesCompletenessMethod() []bartui.TokenCategory {
+	return []bartui.TokenCategory{
+		{
+			Key:           "completeness",
+			Label:         "Completeness",
+			MaxSelections: 1,
+			Options: []bartui.TokenOption{
+				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Core insight only."},
+				{Value: "max", Slug: "max", Label: "Max", Description: "Exhaustive depth."},
+			},
+		},
+		{
+			Key:           "method",
+			Label:         "Method",
+			MaxSelections: 3,
+			Options: []bartui.TokenOption{
+				{Value: "grow", Slug: "grow", Label: "Grow", Description: "Progressive build-up."},
+				{Value: "rigor", Slug: "rigor", Label: "Rigor", Description: "Principled analysis."},
+			},
+		},
+	}
+}
+
+// TestCrossAxisChipPrefixColumnDirectional specifies that directional chips show ⚠
+// when a conflicting completeness token is active (completeness→directional reverse lookup).
+func TestCrossAxisChipPrefixColumnDirectional(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "completeness" && token == "gist" {
+			return nil,
+				map[string]map[string]string{
+					"directional": {"fig": "gist conflicts with compound directionals"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Pre-select gist completeness; directional stage becomes current.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesCompletenessDirectional(),
+		InitialTokens:           []string{"gist"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "directional" {
+		t.Fatalf("expected directional stage after gist pre-selected, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+	foundCautionOnFig := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "⚠") && strings.Contains(line, "Fig") {
+			foundCautionOnFig = true
+		}
+	}
+	if !foundCautionOnFig {
+		t.Errorf("completeness→directional: expected ⚠ on Fig line when gist active; got:\n%s", view)
+	}
+}
+
+// TestCrossAxisChipPrefixColumnMethod specifies that method chips show ⚠
+// when a conflicting completeness token is active (completeness→method reverse lookup).
+func TestCrossAxisChipPrefixColumnMethod(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "completeness" && token == "max" {
+			return nil,
+				map[string]map[string]string{
+					"method": {"grow": "max+grow creates contradictory density expectations"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Pre-select max completeness; method stage becomes current.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesCompletenessMethod(),
+		InitialTokens:           []string{"max"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "method" {
+		t.Fatalf("expected method stage after max pre-selected, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+	foundCautionOnGrow := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "⚠") && strings.Contains(line, "Grow") {
+			foundCautionOnGrow = true
+		}
+	}
+	if !foundCautionOnGrow {
+		t.Errorf("completeness→method: expected ⚠ on Grow line when max active; got:\n%s", view)
+	}
+}
+
+// TestCrossAxisChipPrefixColumnCompletenessWithMethod specifies that completeness chips show ⚠
+// when a conflicting method token is active (method→completeness, forward lookup via chip's own data).
+func TestCrossAxisChipPrefixColumnCompletenessWithMethod(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "completeness" && token == "max" {
+			return nil,
+				map[string]map[string]string{
+					"method": {"grow": "max+grow creates contradictory density expectations"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Pre-select grow method; completeness stage becomes current.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesCompletenessMethod(),
+		InitialTokens:           []string{"grow"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	if m.getCurrentStage() != "completeness" {
+		t.Fatalf("expected completeness stage after grow pre-selected, got %q", m.getCurrentStage())
+	}
+
+	view := m.View()
+	foundCautionOnMax := false
+	for _, line := range strings.Split(view, "\n") {
+		if strings.Contains(line, "⚠") && strings.Contains(line, "Max") {
+			foundCautionOnMax = true
+		}
+	}
+	if !foundCautionOnMax {
+		t.Errorf("method→completeness: expected ⚠ on Max line when grow active; got:\n%s", view)
+	}
+}

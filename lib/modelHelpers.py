@@ -19,6 +19,7 @@ from talon import actions, app, clip, settings
 from talon import cron
 
 from .pureHelpers import strip_markdown
+from .errors import ConfigError, ProviderError
 from .modelState import GPTState
 from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTool
 from .requestAsync import start_async
@@ -533,8 +534,8 @@ def build_exchange_snapshot(result, kind: str = "response") -> dict:
     }
 
 
-class MissingAPIKeyError(Exception):
-    """Custom exception for missing API keys."""
+class MissingAPIKeyError(ConfigError):
+    """Raised when an API key is absent from settings and environment."""
 
     pass
 
@@ -997,7 +998,7 @@ class CancelledRequest(RuntimeError):
     pass
 
 
-class UnsupportedProviderCapability(RuntimeError):
+class UnsupportedProviderCapability(ProviderError):
     """Raised when a provider lacks required capabilities for the request."""
 
     def __init__(self, provider_id: str, feature: str):
@@ -1857,8 +1858,8 @@ __all__ = [
 ]
 
 
-class GPTRequestError(Exception):
-    """Custom exception for errors during GPT API requests."""
+class GPTRequestError(ProviderError):
+    """Raised when an AI provider API request fails."""
 
     def __init__(self, status_code, error_info):
         super().__init__(
@@ -1866,12 +1867,6 @@ class GPTRequestError(Exception):
         )
         self.status_code = status_code
         self.error_info = error_info
-
-
-class CancelledRequest(RuntimeError):
-    """Raised internally when a cancel is requested mid-stream."""
-
-    pass
 
 
 def send_request_internal(request):
@@ -1926,8 +1921,8 @@ def send_request_internal(request):
     return json_response
 
 
-class ClipboardImageError(Exception):
-    """Custom exception for clipboard image errors."""
+class ClipboardImageError(ProviderError):
+    """Raised when clipboard image retrieval fails due to a provider issue."""
 
     pass
 

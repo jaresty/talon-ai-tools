@@ -70,3 +70,37 @@ if bootstrap is not None:
 
             with self.assertRaises(StateError):
                 fn()
+
+    from talon_user.lib.modelHelpers import (
+        MissingAPIKeyError,
+        GPTRequestError,
+        ClipboardImageError,
+        ClipboardImageUnsupportedProvider,
+        UnsupportedProviderCapability,
+    )
+
+    class ExistingExceptionIntegrationTests(unittest.TestCase):
+        """Verify that existing scattered exceptions are in the TalonAIError hierarchy."""
+
+        def test_missing_api_key_is_config_error(self):
+            self.assertTrue(issubclass(MissingAPIKeyError, ConfigError))
+
+        def test_gpt_request_error_is_provider_error(self):
+            self.assertTrue(issubclass(GPTRequestError, ProviderError))
+
+        def test_clipboard_image_error_is_provider_error(self):
+            self.assertTrue(issubclass(ClipboardImageError, ProviderError))
+
+        def test_clipboard_image_unsupported_provider_is_provider_error(self):
+            self.assertTrue(issubclass(ClipboardImageUnsupportedProvider, ProviderError))
+
+        def test_unsupported_provider_capability_is_provider_error(self):
+            self.assertTrue(issubclass(UnsupportedProviderCapability, ProviderError))
+
+        def test_missing_api_key_catchable_as_talon_ai_error(self):
+            with self.assertRaises(TalonAIError):
+                raise MissingAPIKeyError()
+
+        def test_gpt_request_error_catchable_as_talon_ai_error(self):
+            with self.assertRaises(TalonAIError):
+                raise GPTRequestError(500, "internal server error")

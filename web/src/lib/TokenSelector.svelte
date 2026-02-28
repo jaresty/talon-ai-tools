@@ -296,6 +296,10 @@
 		<span class="axis-cap">0–{maxSelect}</span>
 	</div>
 
+	{#if axisDescription}
+		<p class="axis-desc" data-testid="axis-description-panel">{axisDescription}</p>
+	{/if}
+
 	{#if tokens.length > 5}
 		<input
 			class="filter-input"
@@ -457,14 +461,6 @@
 			{/each}
 		{/if}
 	</div>
-
-	{#if !activeMeta && axisDescription}
-		<div class="meta-panel meta-panel--axis" style={panelStyle} data-testid="axis-description-panel">
-			<div class="meta-body">
-				<p class="meta-description">{axisDescription}</p>
-			</div>
-		</div>
-	{/if}
 
 	{#if activeMeta}
 		{@const isActiveSel = selected.includes(activeMeta.token)}
@@ -710,6 +706,13 @@
 		position: fixed;
 		z-index: 100;
 		pointer-events: none;
+	}
+
+	.axis-desc {
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+		margin: 0 0 0.6rem 0;
+		line-height: 1.4;
 	}
 
 	.meta-body {

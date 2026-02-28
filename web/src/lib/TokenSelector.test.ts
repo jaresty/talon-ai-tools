@@ -1053,7 +1053,7 @@ describe('TokenSelector — ADR-0148 chip traffic light (task/completeness axes)
 describe('TokenSelector — axis-level empty-state description', () => {
 	const AXIS_DESC = 'The form token controls the output structure — how the response is organised.';
 
-	it('shows axis description panel when no token is active and axisDescription is provided', () => {
+	it('shows axis description panel when axisDescription is provided', () => {
 		renderSelector({ axisDescription: AXIS_DESC });
 		const panel = document.querySelector('[data-testid="axis-description-panel"]');
 		expect(panel).not.toBeNull();
@@ -1065,19 +1065,18 @@ describe('TokenSelector — axis-level empty-state description', () => {
 		expect(document.querySelector('[data-testid="axis-description-panel"]')).toBeNull();
 	});
 
-	it('hides axis description panel when a token is activated', async () => {
+	it('keeps axis description panel visible when a token is hovered', async () => {
 		renderSelector({ axisDescription: AXIS_DESC });
-		expect(document.querySelector('[data-testid="axis-description-panel"]')).not.toBeNull();
 		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
 		await fireEvent.mouseEnter(chip);
-		expect(document.querySelector('[data-testid="axis-description-panel"]')).toBeNull();
+		// axis description stays visible while token meta panel floats on top
+		expect(document.querySelector('[data-testid="axis-description-panel"]')).not.toBeNull();
 	});
 
-	it('restores axis description panel after token is deactivated', async () => {
+	it('axis description panel remains after token hover ends', async () => {
 		renderSelector({ axisDescription: AXIS_DESC });
 		const chip = screen.getByText('wardley').closest('.token-chip')! as HTMLElement;
 		await fireEvent.mouseEnter(chip);
-		expect(document.querySelector('[data-testid="axis-description-panel"]')).toBeNull();
 		const axisPanel = document.querySelector('.axis-panel')!;
 		await fireEvent.mouseLeave(axisPanel);
 		expect(document.querySelector('[data-testid="axis-description-panel"]')).not.toBeNull();

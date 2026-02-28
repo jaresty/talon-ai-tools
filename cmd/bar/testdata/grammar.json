@@ -10,6 +10,7 @@
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+        "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks.",
         "presenterm": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: <descriptive title based on the input with colons encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"<!-- end_slide -->\", \"<!-- pause -->\", \"<!-- column_layout: [7, 3] -->\", \"<!-- column: 0 -->\", \"<!-- reset_layout -->\", and \"<!-- jump_to_middle -->\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image. The response emits \"<!-- snippet_output: name -->\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"<\", \"#62;\" for \">\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"&\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies.",
@@ -18,7 +19,8 @@
         "sketch": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
-        "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
+        "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
+        "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding prose or explanation."
       },
       "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
@@ -171,6 +173,7 @@
         "diagram",
         "gherkin",
         "html",
+        "image",
         "jira",
         "plain",
         "presenterm",
@@ -179,7 +182,8 @@
         "sketch",
         "slack",
         "svg",
-        "sync"
+        "sync",
+        "video"
       ],
       "completeness": [
         "deep",
@@ -546,6 +550,7 @@
         "diagram": "Mermaid diagram code only: user wants the response as Mermaid diagram source, inferred to the best diagram type. Heuristic: 'diagram', 'Mermaid diagram', 'draw a diagram', 'flowchart', 'sequence diagram', 'draw this out', 'architecture diagram in Mermaid', 'as a diagram' → diagram. Distinct from sketch channel (sketch = D2 diagram format; diagram = Mermaid format).",
         "gherkin": "Gherkin scenario format: user wants the output as Given/When/Then Gherkin scenarios. Heuristic: 'Gherkin format', 'Given/When/Then', 'BDD scenarios', 'acceptance tests in Gherkin', 'feature file', 'BDD test cases' → gherkin. Avoid with prose-structure forms (case, log, questions, recipe). Exception: story form composes with gherkin — scenarios are shaped by user-value framing rather than pure behavioral conditions.",
         "html": "Semantic HTML only, no prose: user wants the complete output as HTML markup with no surrounding explanation. Heuristic: 'HTML output', 'semantic HTML', 'as HTML', 'output as a webpage', 'HTML page', 'HTML only' → html. Avoid with narrative tasks (sim, probe).",
+        "image": "Image as the final output: user wants to generate an image. Heuristic: 'generate an image', 'create an image', 'make an image of', 'I want an image of', 'image of', 'DALL-E', 'Midjourney', 'Stable Diffusion' → image. No surrounding prose.",
         "jira": "Jira markup formatting: user wants the response formatted using Jira markdown (headings, lists, panels). Heuristic: 'Jira format', 'Jira markup', 'format for Jira', 'Jira ticket format', 'for a Jira comment', 'use Jira markup' → jira. Use with text-friendly channels; avoid with output-only channels.",
         "plain": "Suppress structural formatting: when user explicitly requests plain prose, no lists, no bullets, or no structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain prose', 'continuous prose', 'flowing paragraphs', 'paragraph form' → plain channel.",
         "presenterm": "Presenterm slide deck: user wants the output as a multi-slide presenterm Markdown deck with valid front matter, slide separators, and end_slide directives. Heuristic: 'presenterm deck', 'slide deck', 'presentation slides', 'create slides', 'slide format', 'multi-slide deck', 'presentation' → presenterm. Distinct from sync channel (sync = session plan with timing cues; presenterm = actual slide deck artifact).",
@@ -554,7 +559,8 @@
         "sketch": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source. Heuristic: 'D2 diagram', 'D2 format', 'sketch diagram', 'd2 source' → sketch. Distinct from diagram channel (Mermaid output). If the user just says 'diagram' without specifying D2, use diagram channel.",
         "slack": "Slack-formatted Markdown: user wants the response formatted for Slack with appropriate Markdown, mentions, and code blocks. Heuristic: 'Slack format', 'format for Slack', 'post this to Slack', 'Slack message', 'Slack-friendly format', 'for a Slack post' → slack. Avoid channel-irrelevant decoration.",
         "svg": "SVG markup only: user wants the complete output as SVG for direct use in an `.svg` file. Heuristic: 'SVG format', 'as SVG', 'SVG output', 'output as SVG', 'SVG markup only', 'create an SVG' → svg. Output must be minimal and valid SVG with no surrounding prose.",
-        "sync": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery. Heuristic: 'session plan', 'live workshop agenda', 'meeting agenda with timing cues', 'synchronous workshop plan' → sync channel. Combine with facilitate form for facilitator-role outputs."
+        "sync": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery. Heuristic: 'session plan', 'live workshop agenda', 'meeting agenda with timing cues', 'synchronous workshop plan' → sync channel. Combine with facilitate form for facilitator-role outputs.",
+        "video": "Video as the final output: user wants to generate a video. Heuristic: 'generate a video', 'create a video', 'make a video of', 'I want a video of', 'video of', 'Sora', 'Runway', 'Pika', 'Kling' → video. No surrounding prose."
       },
       "completeness": {
         "deep": "Substantial depth within the chosen scope: user wants thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case. Heuristic: 'go deep', 'really dig in', 'thorough analysis', 'don\\'t skip the nuances', 'unpack this fully', 'I want the details', 'deep dive', 'depth over breadth' → deep. Distinct from max (max = exhaustive across all relevant coverage; deep = depth within a focused scope).",
@@ -698,6 +704,7 @@
         "diagram": "図",
         "gherkin": "瓜",
         "html": "標",
+        "image": "像",
         "jira": "票",
         "plain": "文",
         "presenterm": "演",
@@ -706,7 +713,8 @@
         "sketch": "描",
         "slack": "通",
         "svg": "画",
-        "sync": "期"
+        "sync": "期",
+        "video": "映"
       },
       "completeness": {
         "deep": "深",
@@ -925,6 +933,7 @@
         "diagram": "Mermaid diagram",
         "gherkin": "Gherkin scenarios",
         "html": "HTML output",
+        "image": "Image output",
         "jira": "Jira formatting",
         "plain": "Plain prose",
         "presenterm": "Slide deck",
@@ -933,7 +942,8 @@
         "sketch": "D2 diagram",
         "slack": "Slack formatting",
         "svg": "SVG output",
-        "sync": "Session plan"
+        "sync": "Session plan",
+        "video": "Video output"
       },
       "completeness": {
         "deep": "Deep dive",
@@ -1076,6 +1086,21 @@
         "time": "Sequences/change",
         "view": "Perspectives"
       }
+    },
+    "axis_descriptions": {
+      "audience": "Who this is for — shapes vocabulary, depth, and framing.",
+      "channel": "Delivery format — the artifact type or platform the response targets (diagram, script, slides, HTML, image/video, etc.).",
+      "completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+      "directional": "Compass modifier shaping the response angle: abstract↑ concrete↓ reflect← act→.",
+      "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.).",
+      "intent": "The purpose of the response — the motivation the speaker has.",
+      "method": "Reasoning approach — how to think through the problem. Up to three can be combined.",
+      "persona": "Communication style — who speaks, for whom, and in what tone.",
+      "persona_preset": "A bundled preset combining voice, audience, and tone in one choice.",
+      "scope": "Which dimension of the topic to focus on (entities, structure, meaning, actions, quality). Up to two.",
+      "task": "What the response does — the primary action to perform.",
+      "tone": "The emotional register — how the response sounds.",
+      "voice": "Who is speaking — the perspective and expertise level."
     },
     "cross_axis_composition": {
       "channel": {
@@ -2011,6 +2036,7 @@
         "diagram": "diagram",
         "gherkin": "gherkin",
         "html": "html",
+        "image": "image",
         "jira": "jira",
         "plain": "plain",
         "presenterm": "presenterm",
@@ -2019,7 +2045,8 @@
         "sketch": "sketch",
         "slack": "slack",
         "svg": "svg",
-        "sync": "sync"
+        "sync": "sync",
+        "video": "video"
       },
       "completeness": {
         "deep": "deep",
@@ -2386,6 +2413,7 @@
         "channel=diagram": "channel-diagram",
         "channel=gherkin": "channel-gherkin",
         "channel=html": "channel-html",
+        "channel=image": "channel-image",
         "channel=jira": "channel-jira",
         "channel=plain": "channel-plain",
         "channel=presenterm": "channel-presenterm",
@@ -2394,7 +2422,8 @@
         "channel=sketch": "channel-sketch",
         "channel=slack": "channel-slack",
         "channel=svg": "channel-svg",
-        "channel=sync": "channel-sync"
+        "channel=sync": "channel-sync",
+        "channel=video": "channel-video"
       },
       "directional": {
         "directional=bog": "directional-bog",
@@ -2522,6 +2551,7 @@
       "channel=diagram": "channel-diagram",
       "channel=gherkin": "channel-gherkin",
       "channel=html": "channel-html",
+      "channel=image": "channel-image",
       "channel=jira": "channel-jira",
       "channel=plain": "channel-plain",
       "channel=presenterm": "channel-presenterm",
@@ -2531,6 +2561,7 @@
       "channel=slack": "channel-slack",
       "channel=svg": "channel-svg",
       "channel=sync": "channel-sync",
+      "channel=video": "channel-video",
       "check": "check",
       "checklist": "checklist",
       "cite": "cite",
@@ -2645,6 +2676,7 @@
       "grow": "grow",
       "help": "help",
       "html": "html",
+      "image": "image",
       "indirect": "indirect",
       "induce": "induce",
       "inform": "inform",
@@ -2846,6 +2878,7 @@
       "unknowns": "unknowns",
       "variants": "variants",
       "verify": "verify",
+      "video": "video",
       "view": "view",
       "visual": "visual",
       "voice=as Kent Beck": "voice-as-kent-beck",
@@ -3609,11 +3642,11 @@
     }
   ],
   "checksums": {
-    "axes": "c3bba4c0e4463c508899dccb648c6d793253c3ecd2ca6b45e5ed8e361431ae80",
+    "axes": "4767e2c240fcf9afe80a53bd66fac826048b0e9cf03f40f1258174706214891f",
     "tasks": "ae0113d67a811a6c84c580c1601746b125a45ac6d56b9cf0d6abce1877f0f139",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "1e09f921938c9f61133ea4f97079bf430b48ee66d57a26c03b114c5c4e9c82fc",
+    "slugs": "4994d9a28f9f39bb24a0d26ecc1c45c4be1921bd0ad39038e07e1743ea3c7572",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

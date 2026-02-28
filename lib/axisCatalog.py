@@ -218,7 +218,7 @@ def axis_catalog(
             axis: axisConfig.axis_key_to_routing_concept_map(axis) for axis in axis_map
         },
         "axis_descriptions": {
-            axis: axisConfig.axis_key_to_axis_desc(axis) for axis in axis_map
+            k: v for k, v in axisConfig.AXIS_KEY_TO_AXIS_DESC.items() if v
         },
         "static_prompts": static_prompt_catalog(
             static_prompt_list_path if lists_dir else ""

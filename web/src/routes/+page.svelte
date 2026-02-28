@@ -431,6 +431,9 @@
 				<!-- Persona -->
 				<div class="persona-section">
 					<div class="persona-header">Persona</div>
+					{#if grammar?.axes?.axis_descriptions?.['persona']}
+						<p class="axis-desc">{grammar.axes.axis_descriptions['persona']}</p>
+					{/if}
 
 					<!-- Presets -->
 					<div class="persona-group">
@@ -564,6 +567,7 @@
 					onTabPrev={focusActiveTab}
 					{grammar}
 					activeTokensByAxis={selected}
+					axisDescription={grammar?.axes?.axis_descriptions?.['task']}
 				/>
 				{/if}
 				{#each AXES as axis (axis)}
@@ -998,6 +1002,13 @@
 		color: var(--color-accent);
 		font-weight: 600;
 		margin-bottom: 0.6rem;
+	}
+
+	.axis-desc {
+		font-size: 0.78rem;
+		color: var(--color-text-muted);
+		margin: 0 0 0.75rem 0;
+		line-height: 1.4;
 	}
 
 	.persona-group { margin-bottom: 0.6rem; }

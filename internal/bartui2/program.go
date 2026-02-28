@@ -1771,6 +1771,15 @@ func (m model) renderTokensPane() string {
 	if descWidth < 20 {
 		descWidth = 20
 	}
+	// Axis-level description: always shown below the stage header.
+	if m.axisDescriptions != nil {
+		if axisDesc := m.axisDescriptions[currentStage]; axisDesc != "" {
+			wrapped := wrapAndTruncateText(axisDesc, rightWidth-2, 2)
+			right.WriteString(dimStyle.Render(wrapped))
+			right.WriteString("\n")
+		}
+	}
+
 	var selectedDesc string     // Store full description of selected item
 	var selectedGuidance string // Store guidance of selected item
 	var selectedUseWhen string  // Store routing trigger phrase (ADR-0142)
@@ -1938,21 +1947,6 @@ func (m model) renderTokensPane() string {
 	if len(crossNatLines) > 0 || len(crossCauLines) > 0 {
 		descMaxLines = 2 // tighten when composition sections are non-empty (ADR-0148 R1)
 	}
-	// Axis-level empty-state description: shown when no token is selected.
-	axisLevelDesc := ""
-	if selectedDesc == "" && selectedGuidance == "" && selectedUseWhen == "" && len(crossNatLines) == 0 && len(crossCauLines) == 0 {
-		if m.axisDescriptions != nil {
-			axisLevelDesc = m.axisDescriptions[currentStage]
-		}
-	}
-	if axisLevelDesc != "" {
-		right.WriteString("\n")
-		right.WriteString(dimStyle.Render("─"))
-		right.WriteString("\n")
-		wrapped := wrapAndTruncateText(axisLevelDesc, rightWidth-2, 3)
-		right.WriteString(dimStyle.Render(wrapped))
-	}
-
 	if selectedDesc != "" || selectedGuidance != "" || selectedUseWhen != "" || len(crossNatLines) > 0 || len(crossCauLines) > 0 {
 		right.WriteString("\n")
 		right.WriteString(dimStyle.Render("─"))

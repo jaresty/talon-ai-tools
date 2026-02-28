@@ -5,7 +5,7 @@
 import { flushSync } from 'svelte';
 import { mount } from 'svelte';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getAxisTokens } from '$lib/grammar.js';
+import { getAxisTokens, getTaskTokens } from '$lib/grammar.js';
 
 const mockLocalStorage = {
 	getItem: vi.fn(() => null),
@@ -640,4 +640,132 @@ describe('ADR-0145 — KS: Alt+./Alt+, global shortcuts and filter Enter-to-togg
 	});
 
 	// KS-FILTER: Alt+. focuses filter input after switching tabs
+});
+
+// ── G: global printable-key typeahead (page-level) ──────────────────────────
+// Written BEFORE implementation — grow strategy.
+// G1 (seed) must fail red. G2–G4 (guards) pass before and after implementation.
+//
+// Guard model: check document.activeElement, not e.target — more robust since
+// keyboard events dispatched directly on document have e.target === document.
+//
+// The 'method' axis uses getAxisTokens (mocked to MANY_TOKENS → shows filter).
+// Default activeTab is 'task'; tests click #tab-method to get a filter input.
+
+const MANY_TOKENS_G = Array.from({ length: 9 }, (_, i) => ({
+	token: `meth${i}`,
+	label: `Method ${i}`,
+	description: '',
+	guidance: '',
+	use_when: ''
+}));
+
+describe('Page — G: global printable-key routes to active axis filter (grow strategy)', () => {
+	let container: HTMLDivElement;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockClipboard.writeText.mockClear();
+		vi.mocked(getAxisTokens).mockReturnValue(MANY_TOKENS_G);
+		container = document.createElement('div');
+		document.body.appendChild(container);
+	});
+
+	afterEach(() => {
+		document.body.removeChild(container);
+		vi.mocked(getAxisTokens).mockReturnValue([]);
+		vi.mocked(getTaskTokens).mockReturnValue([
+			{ token: 'show', label: 'Explain', description: 'Explain or describe', guidance: '', use_when: '' }
+		]);
+	});
+
+	it('G1: printable key with body focused routes to the active axis filter and sets char', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		// Switch to method axis — getAxisTokens is mocked → MANY_TOKENS → filter renders
+		container.querySelector<HTMLElement>('#tab-method')!.click();
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		// Blur everything — document.activeElement becomes document.body
+		(document.activeElement as HTMLElement | null)?.blur();
+		flushSync();
+
+		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', bubbles: true }));
+		flushSync();
+		await new Promise((r) => setTimeout(r, 10));
+
+		const filterInput = container.querySelector('.selector-panel .filter-input') as HTMLInputElement | null;
+		expect(filterInput).toBeTruthy();
+		expect(document.activeElement).toBe(filterInput);
+		expect(filterInput!.value).toBe('f');
+	});
+
+	it('G2: printable key does not redirect when an INPUT already has focus', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		container.querySelector<HTMLElement>('#tab-method')!.click();
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		const filterInput = container.querySelector('.selector-panel .filter-input') as HTMLInputElement;
+		expect(filterInput).toBeTruthy();
+		// Pre-fill and focus filter — activeElement is now INPUT
+		filterInput.value = 'existing';
+		filterInput.focus();
+		flushSync();
+
+		// Dispatch on document — global handler should see activeElement === INPUT and skip
+		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+		flushSync();
+
+		// Value must not have been reset to 'x' by the global handler
+		expect(filterInput.value).toBe('existing');
+	});
+
+	it('G3: printable key with Ctrl modifier does not redirect', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		container.querySelector<HTMLElement>('#tab-method')!.click();
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		(document.activeElement as HTMLElement | null)?.blur();
+		flushSync();
+
+		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }));
+		flushSync();
+
+		const filterInput = container.querySelector('.selector-panel .filter-input') as HTMLInputElement | null;
+		expect(document.activeElement).not.toBe(filterInput);
+	});
+
+	it('G4: Space key with body focused does not redirect to filter', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 50));
+		flushSync();
+
+		container.querySelector<HTMLElement>('#tab-method')!.click();
+		flushSync();
+		await new Promise((r) => setTimeout(r, 20));
+
+		(document.activeElement as HTMLElement | null)?.blur();
+		flushSync();
+
+		document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+		flushSync();
+
+		const filterInput = container.querySelector('.selector-panel .filter-input') as HTMLInputElement | null;
+		expect(document.activeElement).not.toBe(filterInput);
+	});
 });

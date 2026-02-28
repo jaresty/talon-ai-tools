@@ -103,6 +103,21 @@
 				e.preventDefault();
 				goToPrevTab(false);
 				setTimeout(focusFilterOrFirst, 0);
+			} else if (
+				e.key.length === 1 &&
+				e.key !== ' ' &&
+				!e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat
+			) {
+				const active = document.activeElement as HTMLElement | null;
+				const tag = active?.tagName ?? '';
+				if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+				if (active?.getAttribute('role') === 'option' || active?.closest?.('[role="listbox"]')) return;
+				const filterEl = document.querySelector<HTMLInputElement>('.selector-panel .filter-input');
+				if (!filterEl) return;
+				e.preventDefault();
+				filterEl.focus(); // onfocus handler clears filter (e.detail === 0)
+				filterEl.value = e.key;
+				filterEl.dispatchEvent(new InputEvent('input', { bubbles: true }));
 			}
 		}
 		document.addEventListener('keydown', handleGlobalKey);

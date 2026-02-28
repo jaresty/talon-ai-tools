@@ -255,8 +255,9 @@ export function getChipState(
 }
 
 // getReverseChipState returns traffic-light state for a channel/form chip given active
-// task/completeness selections (ADR-0148 reverse direction). Checks whether any active
-// task/completeness token appears in the chip's own natural or cautionary lists.
+// selections on any other axis (ADR-0148 reverse direction + form↔channel extension).
+// Forward check: looks at the chip's own composition data against all active axes.
+// Reverse check: looks at active tokens' composition data to see if they point to this chip.
 // Cautionary takes precedence over natural.
 export function getReverseChipState(
 	grammar: Grammar,
@@ -266,16 +267,29 @@ export function getReverseChipState(
 ): 'natural' | 'cautionary' | null {
 	const cac = grammar.axes.cross_axis_composition;
 	if (!cac) return null;
-	const entry = cac[chipAxis]?.[chipToken];
-	if (!entry) return null;
 	let hasNatural = false;
-	for (const taskAxis of ['task', 'completeness']) {
-		const pair = entry[taskAxis];
-		if (!pair) continue;
-		for (const activeToken of (activeTokensByAxis[taskAxis] ?? [])) {
-			if (pair.cautionary?.[activeToken]) return 'cautionary';
-			if (pair.natural?.includes(activeToken)) hasNatural = true;
+
+	// Forward: check this chip's own composition data against all active axes.
+	const entry = cac[chipAxis]?.[chipToken];
+	if (entry) {
+		for (const [targetAxis, pair] of Object.entries(entry)) {
+			for (const activeToken of (activeTokensByAxis[targetAxis] ?? [])) {
+				if (pair.cautionary?.[activeToken]) return 'cautionary';
+				if (pair.natural?.includes(activeToken)) hasNatural = true;
+			}
 		}
 	}
+
+	// Reverse: check if any active token on another axis has composition data pointing to this chip.
+	for (const [otherAxis, otherTokens] of Object.entries(activeTokensByAxis)) {
+		if (otherAxis === chipAxis) continue;
+		for (const otherToken of otherTokens) {
+			const otherEntry = cac[otherAxis]?.[otherToken]?.[chipAxis];
+			if (!otherEntry) continue;
+			if (otherEntry.cautionary?.[chipToken]) return 'cautionary';
+			if (otherEntry.natural?.includes(chipToken)) hasNatural = true;
+		}
+	}
+
 	return hasNatural ? 'natural' : null;
 }

@@ -8,8 +8,10 @@ import {
 	getPersonaIntentTokens,
 	getMethodTokensByCategory,
 	toPersonaSlug,
+	getReverseChipState,
 	type Grammar
 } from './grammar.js';
+import { findConflicts } from './incompatibilities.js';
 
 const minimalGrammar: Grammar = {
 	axes: {
@@ -332,5 +334,94 @@ describe('getStarterPacks', () => {
 			expect(typeof pack.framing).toBe('string');
 			expect(typeof pack.command).toBe('string');
 		}
+	});
+});
+
+// Minimal grammar with cross_axis_composition for form/channel conflict testing
+const grammarWithComposition: Grammar = {
+	...minimalGrammar,
+	axes: {
+		...minimalGrammar.axes,
+		cross_axis_composition: {
+			form: {
+				faq: {
+					channel: {
+						natural: ['plain', 'slack'],
+						cautionary: {
+							shellscript: 'Q&A prose cannot be rendered as shell code',
+							code: 'Q&A prose cannot be rendered as code-only output'
+						}
+					}
+				}
+			},
+			channel: {
+				gherkin: {
+					form: {
+						natural: [],
+						cautionary: {
+							recipe: 'Recipe prose conflicts with Gherkin format'
+						}
+					}
+				}
+			}
+		}
+	}
+};
+
+describe('getReverseChipState — form/channel cross-axis traffic lights', () => {
+	it('returns cautionary for a form chip when a conflicting channel is active', () => {
+		// faq (form) chip should show cautionary when shellscript (channel) is selected
+		const state = getReverseChipState(grammarWithComposition, { channel: ['shellscript'] }, 'form', 'faq');
+		expect(state).toBe('cautionary');
+	});
+
+	it('returns natural for a form chip when a compatible channel is active', () => {
+		// faq (form) chip should show natural when plain (channel) is selected
+		const state = getReverseChipState(grammarWithComposition, { channel: ['plain'] }, 'form', 'faq');
+		expect(state).toBe('natural');
+	});
+
+	it('returns cautionary for a channel chip when a conflicting form is active', () => {
+		// shellscript (channel) chip should show cautionary when faq (form) is selected
+		const state = getReverseChipState(grammarWithComposition, { form: ['faq'] }, 'channel', 'shellscript');
+		expect(state).toBe('cautionary');
+	});
+
+	it('returns cautionary for a channel chip with composition data when a conflicting form is active', () => {
+		// gherkin (channel) chip has its own form.cautionary entry; recipe form should trigger it
+		const state = getReverseChipState(grammarWithComposition, { form: ['recipe'] }, 'channel', 'gherkin');
+		expect(state).toBe('cautionary');
+	});
+
+	it('returns null for a form chip with no active conflicting tokens', () => {
+		const state = getReverseChipState(grammarWithComposition, { channel: ['diagram'] }, 'form', 'faq');
+		expect(state).toBeNull();
+	});
+});
+
+describe('findConflicts — cross_axis_composition cautionary pairs', () => {
+	it('detects form+channel conflict via cross_axis_composition', () => {
+		const conflicts = findConflicts(grammarWithComposition, {
+			form: ['faq'],
+			channel: ['shellscript']
+		});
+		expect(conflicts.length).toBeGreaterThan(0);
+		const conflict = conflicts[0];
+		expect([conflict.tokenA, conflict.tokenB].sort()).toEqual(['faq', 'shellscript']);
+	});
+
+	it('returns no conflict when form and channel are compatible', () => {
+		const conflicts = findConflicts(grammarWithComposition, {
+			form: ['faq'],
+			channel: ['plain']
+		});
+		expect(conflicts).toHaveLength(0);
+	});
+
+	it('returns no conflict when only one token is selected', () => {
+		const conflicts = findConflicts(grammarWithComposition, {
+			form: ['faq']
+		});
+		expect(conflicts).toHaveLength(0);
 	});
 });

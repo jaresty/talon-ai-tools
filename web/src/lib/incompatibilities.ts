@@ -1,4 +1,4 @@
-import type { Grammar } from './grammar.js';
+import type { Grammar, CrossAxisPair } from './grammar.js';
 
 export interface Conflict {
 	tokenA: string;
@@ -46,5 +46,24 @@ export function findConflicts(
 			}
 		}
 	}
+	// Also surface cautionary pairs from cross_axis_composition.
+	const cac = grammar.axes.cross_axis_composition;
+	if (cac) {
+		for (const [axisA, byToken] of Object.entries(cac)) {
+			for (const [tokenA, byAxis] of Object.entries(byToken)) {
+				if (!(selected[axisA] ?? []).includes(tokenA)) continue;
+				for (const [axisB, pair] of Object.entries(byAxis as Record<string, CrossAxisPair>)) {
+					for (const tokenB of Object.keys(pair.cautionary ?? {})) {
+						if (!(selected[axisB] ?? []).includes(tokenB)) continue;
+						const key = [tokenA, tokenB].sort().join('|');
+						if (seen.has(key)) continue;
+						seen.add(key);
+						conflicts.push({ tokenA, axisA, tokenB, axisB });
+					}
+				}
+			}
+		}
+	}
+
 	return conflicts;
 }

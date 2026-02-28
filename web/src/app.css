@@ -28,3 +28,21 @@ body {
 	color: var(--color-text);
 	min-height: 100vh;
 }
+
+/* Block content from showing through the Dynamic Island / notch on iOS PWA.
+   viewport-fit=cover extends the viewport under the safe area, so as the user
+   scrolls down the page content slides into that zone. This fixed overlay
+   paints the app background over the safe-area-inset-top region at all times,
+   regardless of scroll position. Has zero height on devices without a notch. */
+body::before {
+	content: '';
+	display: block;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: env(safe-area-inset-top);
+	background: var(--color-bg);
+	z-index: 9999;
+	pointer-events: none;
+}

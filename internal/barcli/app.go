@@ -877,6 +877,13 @@ func runUpdateInstall(stdout, stderr io.Writer) int {
 	fmt.Fprintf(stdout, "Successfully updated to version %s\n", latestVersion)
 	fmt.Fprintf(stdout, "Backup saved to: %s\n", backupDir)
 
+	// Clear the update cache so the next invocation doesn't show a stale "update available" message.
+	_ = updater.NewUpdateCache().Write(updater.UpdateInfo{
+		Available:     false,
+		LatestVersion: latestVersion,
+		CheckedAt:     time.Now(),
+	})
+
 	return 0
 }
 
@@ -933,9 +940,11 @@ func checkForUpdatesBackground(stderr io.Writer) {
 
 	// Check at most once per 24 hours
 	if !cache.ShouldCheck(24 * time.Hour) {
-		// Check if cached info shows an update is available
+		// Check if cached info shows an update is available.
+		// Guard against stale cache: if the user updated since the cache was written,
+		// the current binary may already be >= the cached latest version.
 		info, err := cache.Read()
-		if err == nil && info.Available {
+		if err == nil && info.Available && updater.CompareVersions(barVersion, info.LatestVersion) < 0 {
 			fmt.Fprintf(stderr, "New bar version %s available. Run 'bar update install' to upgrade.\n", info.LatestVersion)
 		}
 		return

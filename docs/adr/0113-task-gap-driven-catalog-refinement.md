@@ -133,19 +133,21 @@ bar build probe full variants --addendum \
 
 Use the output to ensure each method category has at least 3-5 representative tasks in the evaluation corpus. This prevents systematic under-sampling of Diagnostic or Exploration tasks, which users may describe with lower-frequency vocabulary but are no less important.
 
-**Tertiary pass — channel type stratification:**
+**Tertiary pass — cross-axis composition stratification:**
 
-After ensuring method category coverage, run an additional pass to surface task types where the output channel is a primary quality variable (per ADR-0147):
+After ensuring method category coverage, run an additional pass to surface task types where cross-axis composition is a primary quality variable (per ADR-0147). `CROSS_AXIS_COMPOSITION` covers channel, form, completeness, and method tokens — not just channels.
 
 ```bash
 bar build probe full variants --addendum \
-  "For each channel type — executable (shellscript, code), specification (adr, gherkin, codetour), \
-   delivery (sync, commit), and no-channel (default prose) — list 2-3 realistic bar task types \
-   where choosing that channel type is a meaningful decision. Label each with the channel type \
-   and an example bar command."
+  "For each token group with cross-axis composition entries — executable channels (shellscript, code, html), \
+   specification channels (adr, gherkin, codetour), delivery channels (sync, presenterm), \
+   brevity-sensitive forms (commit), prose-only forms (case, spike, log, recipe), \
+   and brevity completeness tokens (gist, skim) — list 1-2 realistic bar task types \
+   where choosing that token and pairing it with another axis token is a meaningful decision. \
+   Label each with the token and an example bar command."
 ```
 
-Use the output to ensure each channel type has at least 2 representative tasks in the corpus. This prevents systematic under-sampling of channel+task composition gaps, which ADR-0147 identified as a primary quality variable distinct from method and scope gaps.
+Use the output to ensure each group has at least 1-2 representative tasks in the corpus. This prevents systematic under-sampling of composition gaps that `CROSS_AXIS_COMPOSITION` is designed to catch — which span channel, form, completeness, and method axes.
 
 ---
 
@@ -419,11 +421,12 @@ bar build {tokens}
 - Signal: {catalog / skill / model issue to flag}
 
 **Cross-axis composition check (complete before scoring):**
-- [ ] No channel token in this combination → skip; proceed to scoring
-- [ ] Channel token present → check "Choosing Channel" in `bar help llm`:
-  - [ ] **Natural**: combination listed as natural → expected good output; score per normal rubric
-  - [ ] **Cautionary**: combination listed as cautionary → known structural issue; classify as `out-of-scope` or `skill-guidance-wrong` (warn against this combination), not as `missing-token`
-  - [ ] **Unlisted**: apply universal rule (channel wins, task = content lens); check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues before diagnosing a gap
+- [ ] Check each token against `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py` (covers channel, form, completeness, and method tokens — consult the dict, do not guess from memory)
+- [ ] No entry found for any token in this combination → skip; proceed to scoring
+- [ ] Entry found → check the relevant section of `bar help llm` (rendered from `CROSS_AXIS_COMPOSITION`):
+  - [ ] **Natural**: pairing listed as natural → expected good output; score per normal rubric
+  - [ ] **Cautionary**: pairing listed as cautionary → known structural issue; classify as `out-of-scope` or `skill-guidance-wrong` (warn against this combination), not as `missing-token`
+  - [ ] **Unlisted pairing for a token that has an entry**: apply universal rule (channel wins, task = content lens); check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues before diagnosing a gap
 
 **Coverage scores:**
 - Token fitness: {1-5}

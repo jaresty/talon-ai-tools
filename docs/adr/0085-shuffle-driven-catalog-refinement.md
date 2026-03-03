@@ -55,7 +55,7 @@ bar shuffle --seed 102 --include persona_preset --fill 0.0
 
 **Sampling strategy:**
 - Broad sweep: 30-50 fully random shuffles (`--fill 0.5`)
-- **Natural-entry validation**: For each channel with explicit entries in `CROSS_AXIS_COMPOSITION` (shellscript, code, codetour, adr, gherkin, sync, commit), include at least one seed combining that channel with a `natural`-listed task. These validate that `natural` assertions hold empirically — the `natural` list is a structural claim, not a tested guarantee.
+- **Natural-entry validation**: For each token with `natural` entries in `CROSS_AXIS_COMPOSITION` (consult the dict — covers channel, form, completeness, and method tokens), include at least one seed combining it with a `natural`-listed pairing. These validate that `natural` assertions hold empirically — the `natural` list is a structural claim, not a tested guarantee.
 - Category deep-dives: 10-20 per axis with `--include` forcing selection
 - **Method category samples**: 5-10 shuffles per method semantic category (Decision/Understanding/Exploration/Diagnostic) with `--include method` to evaluate whether tokens within each category produce distinguishable, coherent outputs. Tokens in the same category that produce indistinguishable results are a stronger retirement signal than cross-category redundancy.
 - Edge cases: Low-fill (`--fill 0.1`) and high-fill (`--fill 0.9`) extremes
@@ -141,7 +141,7 @@ After evaluating against skills, assess whether `bar help llm` provides adequate
 | **Pattern examples** | Do the "Usage Patterns by Task Type" examples illustrate similar combinations? |
 | **Reference completeness** | Would someone consulting only `bar help llm` understand what this prompt will do? |
 | **Method category legibility** | Do the method category headings (Decision/Understanding/Exploration/Diagnostic) in the "Choosing Method" section clearly guide selection toward the methods in this combination? Score 1 if the category labels misdirected selection, 5 if they immediately surfaced the right methods. |
-| **Choosing Channel coverage** | If this seed includes a channel token: does the "Choosing Channel" section in `bar help llm` explain whether this channel+task/audience combination is natural, cautionary, or derivable via the universal rule? Score 1 if the section is absent or silent on this combination; 5 if it clearly explains the expected output. N/A if no channel token is selected. |
+| **Cross-axis composition coverage** | If this seed includes any token with a `CROSS_AXIS_COMPOSITION` entry (channel, form, completeness, or method — consult the dict): does the relevant section of `bar help llm` explain whether this pairing is natural, cautionary, or derivable via the universal rule? Score 1 if the section is absent or silent on this combination; 5 if it clearly explains the expected output. N/A if no token with an entry is selected. |
 
 **Scoring rubric:**
 
@@ -292,7 +292,7 @@ evidence: [seed_12, seed_34, seed_45]
 #### Edit
 Token concept is valuable but description needs refinement.
 
-For **channel tokens**, add `ssot_target` to route the edit to the correct SSOT:
+For **tokens with `CROSS_AXIS_COMPOSITION` entries** (channel, form, completeness, or method tokens — consult the dict), add `ssot_target` to route the edit to the correct SSOT:
 - `description` — token's short description string (default for all non-channel tokens)
 - `guidance_prose` — `AXIS_KEY_TO_GUIDANCE` narrative (human-facing; TUI2/SPA meta panel)
 - `cautionary_entry` — `CROSS_AXIS_COMPOSITION` warning text (structured; rendered in `bar help llm` "Choosing Channel")
@@ -328,9 +328,10 @@ Cross-axis combination produces structurally poor output for reasons the univers
 
 ```yaml
 action: cautionary-entry
-channel: "shellscript"
-axis: "task"
-token: "sim"
+axis: "channel"        # top-level axis in CROSS_AXIS_COMPOSITION ("channel" or "form")
+token: "shellscript"   # token within that axis
+paired_axis: "task"    # the axis being paired with
+paired_token: "sim"    # the specific token that produces poor output
 warning: "tends to produce thin output — simulation is inherently narrative, not executable"
 reason: "Simulation tasks require narrative flow that cannot be expressed as executable shell commands"
 evidence: [seed_12, seed_34]
@@ -449,15 +450,16 @@ For each shuffled prompt, capture:
 - Signal: {catalog / skill / model issue to flag}
 
 **Cross-axis composition check (complete before scoring):**
-- [ ] No channel token in this combination → skip; proceed to scoring
-- [ ] Channel token present → check "Choosing Channel" in `bar help llm` (or `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py`):
-  - [ ] **Natural**: combination listed as natural → expected good output; score per normal rubric
-  - [ ] **Cautionary**: combination listed as cautionary → known structural issue; score per normal rubric but exclude from token retirement aggregation; add note below
-  - [ ] **Unlisted**: check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues before scoring; apply universal rule (channel wins, task = content lens)
+- [ ] Check each token in this combination against `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py` (covers channel, form, completeness, and method tokens — consult the dict, do not guess from memory)
+- [ ] No entry found for any token in this combination → skip; proceed to scoring
+- [ ] Entry found → check the relevant section of `bar help llm` (rendered from `CROSS_AXIS_COMPOSITION`):
+  - [ ] **Natural**: pairing listed as natural → expected good output; score per normal rubric
+  - [ ] **Cautionary**: pairing listed as cautionary → known structural issue; score per normal rubric but exclude from token retirement aggregation; add note below
+  - [ ] **Unlisted pairing for a token that has an entry**: check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues; apply universal rule (channel wins, task = content lens)
 
 **If cautionary combination detected:**
-- Channel: {channel token}
-- Cautionary pairing: {task/audience/completeness token}
+- Axis / token: {e.g., channel/shellscript, form/commit, completeness/skim, method/grow}
+- Cautionary pairing: {paired axis + token, e.g., task/sim, directional/fig, method/rigor}
 - Warning (from CROSS_AXIS_COMPOSITION): {text}
 - Exclude from token retirement aggregation: ✓
 
@@ -489,7 +491,7 @@ For each shuffled prompt, capture:
 - Description clarity: {1-5}
 - Selection guidance: {1-5}
 - Pattern examples: {1-5}
-- Choosing Channel coverage: {1-5 or N/A}
+- Cross-axis composition coverage: {1-5 or N/A}
 - **Reference overall**: {1-5}
 
 **Notes:**

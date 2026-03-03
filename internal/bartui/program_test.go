@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image/color"
 	"reflect"
 	"strconv"
 	"strings"
@@ -12,7 +13,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	lipgloss "charm.land/lipgloss/v2"
-	"github.com/muesli/termenv"
+	"charm.land/lipgloss/v2/compat"
+	"github.com/charmbracelet/colorprofile"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func updateModel(t *testing.T, m model, msg tea.Msg) (model, tea.Cmd) {
@@ -23,6 +26,10 @@ func updateModel(t *testing.T, m model, msg tea.Msg) (model, tea.Cmd) {
 		t.Fatalf("expected model, got %T", updated)
 	}
 	return mm, cmd
+}
+
+func modelViewContent(m model) string {
+	return ansi.Strip(m.View().Content)
 }
 
 func updateExpectNoCmd(t *testing.T, m model, msg tea.Msg) model {
@@ -107,11 +114,20 @@ func trueColorSequenceFromHex(t *testing.T, hexColor string) string {
 	return fmt.Sprintf(";38;2;%d;%d;%dm", r, g, b)
 }
 
-func assertTrueColorSequence(t *testing.T, rendered string, hexColor string, description string) {
+func trueColorSequenceFromColor(t *testing.T, c color.Color) string {
 	t.Helper()
-	expected := trueColorSequenceFromHex(t, hexColor)
+	r32, g32, b32, _ := c.RGBA()
+	r := r32 >> 8
+	g := g32 >> 8
+	b := b32 >> 8
+	return fmt.Sprintf(";38;2;%d;%d;%dm", r, g, b)
+}
+
+func assertTrueColorSequence(t *testing.T, rendered string, c color.Color, description string) {
+	t.Helper()
+	expected := trueColorSequenceFromColor(t, c)
 	if !strings.Contains(rendered, expected) {
-		t.Fatalf("expected %s %s in %q", description, hexColor, rendered)
+		t.Fatalf("expected %s in %q", description, rendered)
 	}
 }
 
@@ -141,7 +157,7 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 		t.Fatalf("expected clipboard source label, got %q", m.pendingSubject.source)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if got := m.subject.Value(); got != "from clipboard" {
 		t.Fatalf("expected subject to update after confirmation, got %q", got)
 	}
@@ -160,7 +176,7 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 		t.Fatalf("expected subject history kind, got %v", kinds)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	if got := m.subject.Value(); got != "existing subject" {
 		t.Fatalf("expected undo to restore previous subject, got %q", got)
 	}
@@ -199,7 +215,7 @@ func TestCancelSubjectReplacement(t *testing.T) {
 		t.Fatalf("expected pending subject after clipboard load")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEsc})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEsc})
 	if m.pendingSubject != nil {
 		t.Fatalf("expected pending subject to clear after cancellation")
 	}
@@ -238,7 +254,7 @@ func TestReinsertLastResultAppliesImmediately(t *testing.T) {
 		t.Fatalf("expected undo to be available after subject replacement")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	if got := m.subject.Value(); got != "original" {
 		t.Fatalf("expected undo to restore original subject, got %q", got)
 	}
@@ -277,7 +293,7 @@ func TestReinsertLastResultFallsBackToPreview(t *testing.T) {
 		t.Fatalf("expected undo to be available after preview fallback")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	if got := m.subject.Value(); got != "original" {
 		t.Fatalf("expected undo to restore original subject, got %q", got)
 	}
@@ -299,11 +315,11 @@ func TestSubjectInputAcceptsNewlines(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	type keySeq []tea.KeyMsg
+	type keySeq []tea.KeyPressMsg
 	seq := keySeq{
-		{Type: tea.KeyRunes, Runes: []rune{'H'}},
-		{Type: tea.KeyEnter},
-		{Type: tea.KeyRunes, Runes: []rune{'i'}},
+		{Code: 'H', Text: "H"},
+		{Code: tea.KeyEnter},
+		{Code: 'i', Text: "i"},
 	}
 
 	for _, key := range seq {
@@ -338,7 +354,7 @@ func TestCopyBuildCommandToClipboard(t *testing.T) {
 	m.subject.SetValue(subject)
 	(&m).refreshPreview()
 
-	msg := tea.KeyMsg{Type: tea.KeyCtrlB}
+	msg := tea.KeyPressMsg{Code: 'b', Mod: tea.ModCtrl}
 	m, cmd := updateModel(t, m, msg)
 	if cmd != nil {
 		t.Fatalf("expected no command after copying build command, got %T", cmd)
@@ -421,7 +437,7 @@ func TestExecuteSubjectCommand(t *testing.T) {
 		t.Fatalf("expected UsedPreview to be false")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if got := m.subject.Value(); got != "new subject" {
 		t.Fatalf("expected subject to update after confirmation, got %q", got)
 	}
@@ -488,7 +504,7 @@ func TestExecutePreviewCommandAndReinsert(t *testing.T) {
 		t.Fatalf("expected undo available after subject replacement")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	if got := m.subject.Value(); got != "" {
 		t.Fatalf("expected undo to restore original subject, got %q", got)
 	}
@@ -528,7 +544,7 @@ func TestCancelCommandWithEsc(t *testing.T) {
 	}()
 	<-started
 
-	escMsg := tea.KeyMsg{Type: tea.KeyEsc}
+	escMsg := tea.KeyPressMsg{Code: tea.KeyEsc}
 	m, next := updateModel(t, m, escMsg)
 	if next != nil {
 		t.Fatalf("expected no quit command while cancelling, got %T", next)
@@ -588,7 +604,7 @@ func TestEnvironmentAllowlistVisible(t *testing.T) {
 		t.Fatalf("expected status message to mention missing vars, got %q", m.statusMessage)
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "Environment allowlist:") {
 		t.Fatalf("expected view to mention environment allowlist, got:\n%s", view)
 	}
@@ -639,7 +655,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 		t.Fatalf("expected 2 allowed env entries, got %d", got)
 	}
 
-	tab := tea.KeyMsg{Type: tea.KeyTab}
+	tab := tea.KeyPressMsg{Code: tea.KeyTab}
 	m, cmd := updateModel(t, m, tab)
 	if cmd != nil {
 		t.Fatalf("unexpected command during first tab: %T", cmd)
@@ -664,7 +680,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 		t.Fatalf("expected focusEnvironment after third tab, got %v", m.focus)
 	}
 
-	toggle := tea.KeyMsg{Type: tea.KeyCtrlE}
+	toggle := tea.KeyPressMsg{Code: 'e', Mod: tea.ModCtrl}
 	m, cmd = updateModel(t, m, toggle)
 	if cmd != nil {
 		t.Fatalf("unexpected command when toggling: %T", cmd)
@@ -673,7 +689,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 		t.Fatalf("expected only ORG_ID to remain, got %v", m.allowedEnv)
 	}
 
-	selectAll := tea.KeyMsg{Type: tea.KeyCtrlA}
+	selectAll := tea.KeyPressMsg{Code: 'a', Mod: tea.ModCtrl}
 	m, cmd = updateModel(t, m, selectAll)
 	if cmd != nil {
 		t.Fatalf("unexpected command when selecting all: %T", cmd)
@@ -682,7 +698,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 		t.Fatalf("expected allowlist to repopulate, got %v", m.allowedEnv)
 	}
 
-	clear := tea.KeyMsg{Type: tea.KeyCtrlX}
+	clear := tea.KeyPressMsg{Code: 'x', Mod: tea.ModCtrl}
 	m, cmd = updateModel(t, m, clear)
 	if cmd != nil {
 		t.Fatalf("unexpected command when clearing: %T", cmd)
@@ -699,7 +715,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 		t.Fatalf("expected allowlist to repopulate after clear, got %v", m.allowedEnv)
 	}
 
-	down := tea.KeyMsg{Type: tea.KeyDown}
+	down := tea.KeyPressMsg{Code: tea.KeyDown}
 	m, cmd = updateModel(t, m, down)
 	if cmd != nil {
 		t.Fatalf("unexpected command when moving selection: %T", cmd)
@@ -730,16 +746,16 @@ func TestToggleShortcutReference(t *testing.T) {
 	}
 
 	m := newModel(opts)
-	if strings.Contains(m.View(), "Shortcut reference") {
+	if strings.Contains(modelViewContent(m),"Shortcut reference") {
 		t.Fatalf("expected shortcut reference to be hidden by default")
 	}
 
-	helpKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}}
+	helpKey := tea.KeyPressMsg{Code: '?', Text: "?"}
 	m, cmd := updateModel(t, m, helpKey)
 	if cmd != nil {
 		cmd()
 	}
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected view to include shortcut reference contents, got:\n%s", view)
 	}
@@ -766,7 +782,7 @@ func TestToggleShortcutReference(t *testing.T) {
 	if cmd != nil {
 		cmd()
 	}
-	if strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
+	if strings.Contains(modelViewContent(m),"Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected shortcut reference to be hidden after second toggle")
 	}
 }
@@ -785,29 +801,29 @@ func TestViewportFocusToggleSubject(t *testing.T) {
 	}
 
 	m := newModel(opts)
-	baselineSubject := m.subjectViewport.Height
-	baselineResult := m.resultViewport.Height
+	baselineSubject := m.subjectViewport.Height()
+	baselineResult := m.resultViewport.Height()
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlJ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'j', Mod: tea.ModCtrl})
 	if m.viewportMode != viewportModeSubject {
 		t.Fatalf("expected viewport mode subject, got %v", m.viewportMode)
 	}
-	if m.subjectViewport.Height <= baselineSubject {
-		t.Fatalf("expected subject viewport height to increase, baseline=%d new=%d", baselineSubject, m.subjectViewport.Height)
+	if m.subjectViewport.Height() <= baselineSubject {
+		t.Fatalf("expected subject viewport height to increase, baseline=%d new=%d", baselineSubject, m.subjectViewport.Height())
 	}
 	if !strings.Contains(strings.ToLower(m.statusMessage), "subject viewport") {
 		t.Fatalf("expected status to mention subject viewport, got %q", m.statusMessage)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlJ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'j', Mod: tea.ModCtrl})
 	if m.viewportMode != viewportModeNormal {
 		t.Fatalf("expected viewport mode reset to normal, got %v", m.viewportMode)
 	}
-	if m.subjectViewport.Height != baselineSubject {
-		t.Fatalf("expected subject viewport height to restore, baseline=%d restored=%d", baselineSubject, m.subjectViewport.Height)
+	if m.subjectViewport.Height() != baselineSubject {
+		t.Fatalf("expected subject viewport height to restore, baseline=%d restored=%d", baselineSubject, m.subjectViewport.Height())
 	}
-	if m.resultViewport.Height != baselineResult {
-		t.Fatalf("expected result viewport height to restore, baseline=%d restored=%d", baselineResult, m.resultViewport.Height)
+	if m.resultViewport.Height() != baselineResult {
+		t.Fatalf("expected result viewport height to restore, baseline=%d restored=%d", baselineResult, m.resultViewport.Height())
 	}
 }
 
@@ -825,29 +841,29 @@ func TestViewportFocusToggleResult(t *testing.T) {
 	}
 
 	m := newModel(opts)
-	baselineSubject := m.subjectViewport.Height
-	baselineResult := m.resultViewport.Height
+	baselineSubject := m.subjectViewport.Height()
+	baselineResult := m.resultViewport.Height()
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlK})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'k', Mod: tea.ModCtrl})
 	if m.viewportMode != viewportModeResult {
 		t.Fatalf("expected viewport mode result, got %v", m.viewportMode)
 	}
-	if m.resultViewport.Height <= baselineResult {
-		t.Fatalf("expected result viewport height to increase, baseline=%d new=%d", baselineResult, m.resultViewport.Height)
+	if m.resultViewport.Height() <= baselineResult {
+		t.Fatalf("expected result viewport height to increase, baseline=%d new=%d", baselineResult, m.resultViewport.Height())
 	}
 	if !strings.Contains(strings.ToLower(m.statusMessage), "result viewport") {
 		t.Fatalf("expected status to mention result viewport, got %q", m.statusMessage)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlK})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'k', Mod: tea.ModCtrl})
 	if m.viewportMode != viewportModeNormal {
 		t.Fatalf("expected viewport mode reset to normal, got %v", m.viewportMode)
 	}
-	if m.resultViewport.Height != baselineResult {
-		t.Fatalf("expected result viewport height to restore, baseline=%d restored=%d", baselineResult, m.resultViewport.Height)
+	if m.resultViewport.Height() != baselineResult {
+		t.Fatalf("expected result viewport height to restore, baseline=%d restored=%d", baselineResult, m.resultViewport.Height())
 	}
-	if m.subjectViewport.Height != baselineSubject {
-		t.Fatalf("expected subject viewport height to restore, baseline=%d restored=%d", baselineSubject, m.subjectViewport.Height)
+	if m.subjectViewport.Height() != baselineSubject {
+		t.Fatalf("expected subject viewport height to restore, baseline=%d restored=%d", baselineSubject, m.subjectViewport.Height())
 	}
 }
 
@@ -866,21 +882,21 @@ func TestShortcutReferenceEscClosesDialog(t *testing.T) {
 	m := newModel(opts)
 	initialStatus := m.statusMessage
 
-	helpKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}}
+	helpKey := tea.KeyPressMsg{Code: '?', Text: "?"}
 	m, cmd := updateModel(t, m, helpKey)
 	if cmd != nil {
 		cmd()
 	}
-	if !strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
+	if !strings.Contains(modelViewContent(m),"Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected shortcut reference to be visible after toggle")
 	}
 
-	escKey := tea.KeyMsg{Type: tea.KeyEsc}
+	escKey := tea.KeyPressMsg{Code: tea.KeyEsc}
 	m, cmd = updateModel(t, m, escKey)
 	if cmd != nil {
 		cmd()
 	}
-	if strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
+	if strings.Contains(modelViewContent(m),"Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected shortcut reference to be hidden after Esc")
 	}
 	if m.statusMessage != initialStatus {
@@ -941,7 +957,7 @@ func TestTokenKeyboardToggle(t *testing.T) {
 		t.Fatalf("expected initial tokens todo/focus, got %v", m.tokens)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	if m.focus != focusTokens {
 		t.Fatalf("expected focusTokens after tab, got %v", m.focus)
 	}
@@ -949,17 +965,17 @@ func TestTokenKeyboardToggle(t *testing.T) {
 		t.Fatalf("expected initial token category index 0, got %d", m.tokenCategoryIndex)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
 	if m.tokenCategoryIndex != 1 {
 		t.Fatalf("expected category index 1 after moving right, got %d", m.tokenCategoryIndex)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	if m.tokenOptionIndex != 1 {
 		t.Fatalf("expected option index 1 after moving down, got %d", m.tokenOptionIndex)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	expectedTokens := []string{"todo", "focus", "breadth"}
 	if !reflect.DeepEqual(m.tokens, expectedTokens) {
 		t.Fatalf("expected tokens %v after adding breadth, got %v", expectedTokens, m.tokens)
@@ -969,12 +985,12 @@ func TestTokenKeyboardToggle(t *testing.T) {
 		t.Fatalf("expected scope selections focus/breadth, got %v", m.tokenStates[1].selected)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDelete})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDelete})
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus"}) {
 		t.Fatalf("expected scope selection to revert to focus, got %v", m.tokenStates[1].selected)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
 		t.Fatalf("expected undo to restore breadth, got %v", m.tokenStates[1].selected)
 	}
@@ -1002,15 +1018,15 @@ func TestTokenPaletteToggle(t *testing.T) {
 	m := newModel(opts)
 	var cmd tea.Cmd
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // add breadth inline
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter}) // add breadth inline
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
 		t.Fatalf("expected inline add to select focus/breadth, got %v", m.tokenStates[1].selected)
 	}
 
-	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, cmd = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected token palette to be visible")
 	}
@@ -1019,19 +1035,19 @@ func TestTokenPaletteToggle(t *testing.T) {
 		t.Fatalf("expected palette filter to show CLI command, got %q", m.tokenPaletteFilter.Value())
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})  // move from filter to options
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})   // skip copy action entry
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})  // toggle focus option off
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})  // move from filter to options
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDown})   // skip copy action entry
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})  // toggle focus option off
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"breadth"}) {
 		t.Fatalf("expected palette toggle to remove focus, got %v", m.tokenStates[1].selected)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
 		t.Fatalf("expected undo inside palette to restore focus, got %v", m.tokenStates[1].selected)
 	}
 
-	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, cmd = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if cmd != nil {
 		t.Fatalf("expected no command when closing palette, got %T", cmd)
 	}
@@ -1054,17 +1070,17 @@ func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected token palette to be visible")
 	}
 
 	for _, r := range []rune{'t', 'o', 'd', 'o'} {
-		m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		m, _ = updateModel(t, m, tea.KeyPressMsg{Code: r, Text: string(r)})
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // move focus to options
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter}) // move focus to options
 	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
 		t.Fatalf("expected palette focus to move to options, got %v", m.tokenPaletteFocus)
 	}
@@ -1073,16 +1089,16 @@ func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
 	}
 
 	for m.tokenPaletteOptionIndex < len(m.tokenPaletteOptions) && m.tokenPaletteOptions[m.tokenPaletteOptionIndex] < 0 {
-		m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
+		m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // apply selection
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter}) // apply selection
 
 	if len(m.tokens) != 1 || m.tokens[0] != "todo" {
 		t.Fatalf("expected todo token to be applied, got tokens=%v state=%v options=%v index=%d", m.tokens, m.tokenStates[0].selected, m.tokenPaletteOptions, m.tokenPaletteOptionIndex)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 
 	if len(m.tokens) != 0 {
 		t.Fatalf("expected undo to restore empty token selection, got %v", m.tokens)
@@ -1129,25 +1145,25 @@ func TestToggleCurrentTokenOptionShowsToast(t *testing.T) {
 }
 
 func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
-	originalBG := lipgloss.HasDarkBackground()
-	originalProfile := lipgloss.ColorProfile()
+	originalBG := compat.HasDarkBackground
+	originalProfile := compat.Profile
 	t.Cleanup(func() {
-		lipgloss.SetHasDarkBackground(originalBG)
-		lipgloss.SetColorProfile(originalProfile)
+		compat.HasDarkBackground = originalBG
+		compat.Profile = originalProfile
 	})
 
-	lipgloss.SetColorProfile(termenv.TrueColor)
+	compat.Profile = colorprofile.TrueColor
 
 	m := model{
 		toastVisible: true,
 		toastMessage: "task=todo applied · CLI: bar build todo · Ctrl+Z undo",
 	}
 
-	lipgloss.SetHasDarkBackground(true)
+	compat.HasDarkBackground = true
 	dark := m.renderToastOverlay()
 	assertTrueColorSequence(t, dark, composerTheme.toastForeground.Dark, "dark background toast color")
 
-	lipgloss.SetHasDarkBackground(false)
+	compat.HasDarkBackground = false
 	light := m.renderToastOverlay()
 	assertTrueColorSequence(t, light, composerTheme.toastForeground.Light, "light background toast color")
 
@@ -1157,22 +1173,22 @@ func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
 }
 
 func TestSidebarSectionThemeUsesCharmtonePalette(t *testing.T) {
-	originalBG := lipgloss.HasDarkBackground()
-	originalProfile := lipgloss.ColorProfile()
+	originalBG := compat.HasDarkBackground
+	originalProfile := compat.Profile
 	t.Cleanup(func() {
-		lipgloss.SetHasDarkBackground(originalBG)
-		lipgloss.SetColorProfile(originalProfile)
+		compat.HasDarkBackground = originalBG
+		compat.Profile = originalProfile
 	})
 
-	lipgloss.SetColorProfile(termenv.TrueColor)
+	compat.Profile = colorprofile.TrueColor
 
-	lipgloss.SetHasDarkBackground(true)
+	compat.HasDarkBackground = true
 	darkHeader := renderSidebarSectionHeader("History")
 	assertTrueColorSequence(t, darkHeader, composerTheme.sectionHeaderForeground.Dark, "dark header color")
 	darkHint := renderSidebarSectionHint("(Ctrl+H toggles)")
 	assertTrueColorSequence(t, darkHint, composerTheme.sectionHintForeground.Dark, "dark hint color")
 
-	lipgloss.SetHasDarkBackground(false)
+	compat.HasDarkBackground = false
 	lightHeader := renderSidebarSectionHeader("History")
 	assertTrueColorSequence(t, lightHeader, composerTheme.sectionHeaderForeground.Light, "light header color")
 	lightHint := renderSidebarSectionHint("(Ctrl+H toggles)")
@@ -1184,11 +1200,11 @@ func TestSidebarSectionThemeUsesCharmtonePalette(t *testing.T) {
 }
 
 func TestSummaryStripRespectsThemePalette(t *testing.T) {
-	originalBG := lipgloss.HasDarkBackground()
-	originalProfile := lipgloss.ColorProfile()
+	originalBG := compat.HasDarkBackground
+	originalProfile := compat.Profile
 	t.Cleanup(func() {
-		lipgloss.SetHasDarkBackground(originalBG)
-		lipgloss.SetColorProfile(originalProfile)
+		compat.HasDarkBackground = originalBG
+		compat.Profile = originalProfile
 	})
 
 	opts := Options{
@@ -1202,12 +1218,12 @@ func TestSummaryStripRespectsThemePalette(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	lipgloss.SetColorProfile(termenv.TrueColor)
-	lipgloss.SetHasDarkBackground(true)
+	compat.Profile = colorprofile.TrueColor
+	compat.HasDarkBackground = true
 	darkSummary := m.renderSummaryStrip()
 	assertTrueColorSequence(t, darkSummary, composerTheme.summaryStripForeground.Dark, "dark summary color")
 
-	lipgloss.SetHasDarkBackground(false)
+	compat.HasDarkBackground = false
 	lightSummary := m.renderSummaryStrip()
 	assertTrueColorSequence(t, lightSummary, composerTheme.summaryStripForeground.Light, "light summary color")
 
@@ -1262,7 +1278,7 @@ func TestComposeSectionShowsTelemetrySparkline(t *testing.T) {
 	}
 	m := newModel(opts)
 	m.tokenSparkline = []int{0, 1, 2, 3}
-	view := m.View()
+	view := modelViewContent(m)
 	if !viewContains(view, "Token telemetry (") {
 		t.Fatalf("expected compose section to include token telemetry sparkline, got view:\n%s", view)
 	}
@@ -1280,7 +1296,7 @@ func TestInitialFocusBreadcrumbs(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "[SUBJECT]") {
 		t.Fatalf("expected breadcrumbs to highlight subject, got view:\n%s", view)
 	}
@@ -1312,7 +1328,7 @@ func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
 	m.activePresetName = "starter"
 	m.activePresetTokens = []string{"todo"}
 
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "Preset: starter") {
 		t.Fatalf("expected summary to include preset, got view:\n%s", view)
 	}
@@ -1327,7 +1343,7 @@ func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
 	if copied == "" {
 		t.Fatalf("expected CLI command to be copied")
 	}
-	view = m.View()
+	view = modelViewContent(m)
 	if !strings.Contains(view, "Destination: clipboard — CLI command copied") {
 		t.Fatalf("expected summary to note CLI copy, got view:\n%s", view)
 	}
@@ -1337,7 +1353,7 @@ func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
 	}
 
 	m.copyPreviewToClipboard()
-	view = m.View()
+	view = modelViewContent(m)
 	if !strings.Contains(view, "Destination: clipboard — Preview copied") {
 		t.Fatalf("expected summary to note preview copy, got view:\n%s", view)
 	}
@@ -1368,33 +1384,33 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected palette to open")
 	}
 
 	// In CLI command input mode, use Tab to cycle completions to find "todo"
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab}) // cycle to first completion
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab}) // cycle to first completion
 
 	// Move to options and apply
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
 		t.Fatalf("expected palette focus to move to options, got %v", m.tokenPaletteFocus)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown}) // skip copy action
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDown}) // skip copy action
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if len(m.paletteHistory) == 0 {
 		t.Fatalf("expected palette history to record an entry")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'h', Mod: tea.ModCtrl})
 	if !m.paletteHistoryVisible {
 		t.Fatalf("expected palette history to be visible after Ctrl+H")
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	if !viewContains(view, "[TOKENS]") {
 		t.Fatalf("expected focus breadcrumbs to highlight tokens, got view:\n%s", view)
 	}
@@ -1419,7 +1435,7 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 		t.Fatalf("expected status message to confirm history copy, got %q", m.statusMessage)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'h', Mod: tea.ModCtrl})
 	if m.paletteHistoryVisible {
 		t.Fatalf("expected palette history to hide after second Ctrl+H")
 	}
@@ -1444,7 +1460,7 @@ func TestSidebarToggleVisibility(t *testing.T) {
 		t.Fatalf("expected sidebar to be visible initially, got width %d", m.sidebarColumnWidth)
 	}
 
-	toggle := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{''}}
+	toggle := tea.KeyPressMsg{Code: 'g', Mod: tea.ModCtrl}
 	m, _ = updateModel(t, m, toggle)
 	if m.sidebarPreference != sidebarPreferenceHidden {
 		t.Fatalf("expected sidebar preference hidden after toggle, got %v", m.sidebarPreference)
@@ -1452,7 +1468,7 @@ func TestSidebarToggleVisibility(t *testing.T) {
 	if m.sidebarColumnWidth != 0 {
 		t.Fatalf("expected sidebar width 0 after hiding, got %d", m.sidebarColumnWidth)
 	}
-	view := m.View()
+	view := modelViewContent(m)
 	if strings.Contains(view, "HISTORY (Ctrl+H toggles") {
 		t.Fatalf("expected history section to be hidden when sidebar is hidden, view:\n%s", view)
 	}
@@ -1464,7 +1480,7 @@ func TestSidebarToggleVisibility(t *testing.T) {
 	if m.sidebarColumnWidth == 0 {
 		t.Fatalf("expected sidebar width to be restored, got %d", m.sidebarColumnWidth)
 	}
-	restored := m.View()
+	restored := modelViewContent(m)
 	if !strings.Contains(restored, "HISTORY (Ctrl+H toggles") {
 		t.Fatalf("expected history section when sidebar is visible, view:\n%s", restored)
 	}
@@ -1478,7 +1494,7 @@ func TestSidebarToggleVisibility(t *testing.T) {
 	if m.sidebarColumnWidth != 0 {
 		t.Fatalf("expected sidebar width 0 when terminal is narrow, got %d", m.sidebarColumnWidth)
 	}
-	stacked := m.View()
+	stacked := modelViewContent(m)
 	if !strings.Contains(stacked, "HISTORY (Ctrl+H toggles") {
 		t.Fatalf("expected history section to render in stacked layout, view:\n%s", stacked)
 	}
@@ -1619,13 +1635,13 @@ func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	}
 	m := newModel(opts)
 	// Focus tokens and open palette
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected palette to be visible")
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	if !viewContains(view, "[TOKENS]") {
 		t.Fatalf("expected focus breadcrumbs to highlight tokens, got view:\n%s", view)
 	}
@@ -1654,12 +1670,12 @@ func TestTokenPaletteEnterMovesFocusToOptions(t *testing.T) {
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if m.tokenPaletteFocus != tokenPaletteFocusFilter {
 		t.Fatalf("expected palette focus to start on filter, got %v", m.tokenPaletteFocus)
 	}
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
 		t.Fatalf("expected Enter to move focus to options, got %v", m.tokenPaletteFocus)
 	}
@@ -1686,38 +1702,28 @@ func TestCtrlRuneOpensPalette(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	combined := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'\t', rune(16)}}
-	m, _ = updateModel(t, m, combined)
+	// In v2, ctrl+p is sent as a proper key press
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
-		t.Fatalf("expected palette to be visible after ctrl rune event")
+		t.Fatalf("expected palette to be visible after ctrl+p")
 	}
 	if value := m.subject.Value(); value != "" {
 		t.Fatalf("expected subject to remain empty, got %q", value)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if m.tokenPaletteVisible {
 		t.Fatalf("expected palette to close on Ctrl+P toggle")
 	}
 
-	single := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{rune(16)}}
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, single)
+	// Tab then ctrl+p also opens palette
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
-		t.Fatalf("expected palette to open from single ctrl rune")
+		t.Fatalf("expected palette to open after tab + ctrl+p")
 	}
 	if value := m.subject.Value(); value != "" {
-		t.Fatalf("expected subject to remain empty after single ctrl rune, got %q", value)
-	}
-
-	m = newModel(opts)
-	escaped := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'\\', 't', '\\', 'u', '0', '0', '1', '0'}}
-	m, _ = updateModel(t, m, escaped)
-	if !m.tokenPaletteVisible {
-		t.Fatalf("expected palette to open from escaped ctrl rune sequence")
-	}
-	if value := m.subject.Value(); value != "" {
-		t.Fatalf("expected subject to remain empty after escaped ctrl rune sequence, got %q", value)
+		t.Fatalf("expected subject to remain empty after ctrl+p, got %q", value)
 	}
 }
 
@@ -1737,12 +1743,12 @@ func TestPaletteRemainsVisibleWithinWindowHeight(t *testing.T) {
 
 	window := tea.WindowSizeMsg{Width: 80, Height: 20}
 	m, _ = updateModel(t, m, window)
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected palette to be visible after Ctrl+P")
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	if !viewContains(view, "Token palette (Esc closes") {
 		t.Fatalf("expected token palette block to render within the terminal window, got:\n%s", view)
 	}
@@ -1767,10 +1773,10 @@ func TestTokenPaletteResetToPreset(t *testing.T) {
 	m := newModel(opts)
 	(&m).setActivePreset("demo", []string{"todo", "focus"})
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // move from filter to options
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter}) // move from filter to options
 
 	if len(m.tokenPaletteOptions) < 2 {
 		t.Fatalf("expected palette to include action and reset entries, got %v", m.tokenPaletteOptions)
@@ -1789,12 +1795,12 @@ func TestTokenPaletteResetToPreset(t *testing.T) {
 		t.Fatalf("expected palette focus to begin on copy action, got entry %d (index %d)", entryBefore, m.tokenPaletteOptionIndex)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
 	if m.tokenPaletteOptions[m.tokenPaletteOptionIndex] != tokenPaletteResetOption {
 		t.Fatalf("expected palette focus to land on reset option after moving down, got entry %d", m.tokenPaletteOptions[m.tokenPaletteOptionIndex])
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus"}) {
 		t.Fatalf("expected reset to preset to restore focus, got %v (status: %q)", m.tokenStates[1].selected, m.statusMessage)
 	}
@@ -1818,11 +1824,11 @@ func TestTokenPaletteResetRenderingHasNoSideEffects(t *testing.T) {
 	m := newModel(opts)
 	(&m).setActivePreset("demo", []string{"todo", "focus"})
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyRight})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 
 	if len(m.tokenPaletteOptions) < 2 || m.tokenPaletteOptions[1] != tokenPaletteResetOption {
 		t.Fatalf("expected reset option to appear when preset diverges")
@@ -1831,7 +1837,7 @@ func TestTokenPaletteResetRenderingHasNoSideEffects(t *testing.T) {
 	beforeSelection := append([]string(nil), m.tokenStates[1].selected...)
 	beforeTokens := append([]string(nil), m.tokens...)
 
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "[reset] Reset to preset") {
 		t.Fatalf("expected view to mention reset option, got:\n%s", view)
 	}
@@ -1857,18 +1863,18 @@ func TestTokenPaletteKeepsIndexAfterOptionUpdate(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})  // filter -> categories
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})  // categories -> options
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown}) // highlight scope option
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})  // filter -> categories
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})  // categories -> options
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDown}) // highlight scope option
 
 	if len(m.tokenPaletteOptions) == 0 {
 		t.Fatalf("expected palette options to be present")
 	}
 	beforeEntry := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // toggle selection
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter}) // toggle selection
 
 	if len(m.tokenPaletteOptions) == 0 {
 		t.Fatalf("expected palette options to remain after toggle")
@@ -1893,20 +1899,20 @@ func TestTokenPaletteFilterNoMatchesWithoutPreset(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'x', Text: "x"})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Text: "z"})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Text: "z"})
 
-	view := m.View()
+	view := modelViewContent(m)
 	normalized := normalizeWhitespace(view)
 	if strings.Contains(normalized, "[reset] Reset to preset") {
 		t.Fatalf("expected no reset option when no preset is active, got:\n%s", view)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlW})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'w', Mod: tea.ModCtrl})
 	// After Ctrl+W, filter resets to CLI command format
 	if !strings.HasPrefix(m.tokenPaletteFilter.Value(), "bar build ") {
 		t.Fatalf("expected filter to reset to CLI command, got %q", m.tokenPaletteFilter.Value())
@@ -1935,13 +1941,13 @@ func TestHelpOverlayMentionsCopyCommandPaletteHint(t *testing.T) {
 	m := newModel(opts)
 
 	// Toggle help overlay
-	view := m.View()
+	view := modelViewContent(m)
 	if strings.Contains(view, "copy command") {
 		t.Fatalf("expected help overlay to be hidden in initial view")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
-	view = m.View()
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: '?', Text: "?"})
+	view = modelViewContent(m)
 
 	if !strings.Contains(view, "Type category=value") {
 		t.Fatalf("expected help overlay to instruct category=value palette input, got:\n%s", view)
@@ -1967,7 +1973,7 @@ func TestResultSummaryNoCommand(t *testing.T) {
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "Result summary:") {
 		t.Fatalf("expected result summary heading in view, got:\n%s", view)
 	}
@@ -1993,7 +1999,7 @@ func TestResultSummaryRunning(t *testing.T) {
 	m.runningCommand = "echo hello"
 	m.runningMode = commandModePreview
 	m.allowedEnv = []string{"FOO"}
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "Running \"echo hello\"") {
 		t.Fatalf("expected running summary with command, got:\n%s", view)
 	}
@@ -2026,7 +2032,7 @@ func TestResultSummaryLastResultSuccess(t *testing.T) {
 		ExitCode:    0,
 		HasExitCode: true,
 	}
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "✔ Command \"echo hello\" completed") {
 		t.Fatalf("expected success summary, got:\n%s", view)
 	}
@@ -2056,7 +2062,7 @@ func TestResultSummaryLastResultFailure(t *testing.T) {
 		ExitCode:    1,
 		HasExitCode: true,
 	}
-	view := m.View()
+	view := modelViewContent(m)
 	if !viewContains(view, "✖ Command \"echo boom\" failed: boom") {
 		t.Fatalf("expected failure summary to include command and failure, got view:\n%s", view)
 	}
@@ -2093,7 +2099,7 @@ func TestPaletteOpenStatusMentionsCopyCommand(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 
 	if !strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected palette status to mention copy command hint, got %q", m.statusMessage)
@@ -2130,10 +2136,10 @@ func TestPaletteClearWhenEmptyRetainsCopyHint(t *testing.T) {
 		}
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	// Type something so Ctrl+W has content to clear
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}})
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlW})
+	applyKey(tea.KeyPressMsg{Code: 'x', Text: "x"})
+	applyKey(tea.KeyPressMsg{Code: 'w', Mod: tea.ModCtrl})
 
 	if !strings.Contains(m.statusMessage, "CLI command reset") {
 		t.Fatalf("expected status to mention CLI command reset, got %q", m.statusMessage)
@@ -2167,11 +2173,11 @@ func TestPaletteOptionsNoMatchesStillHintsCopyCommand(t *testing.T) {
 		}
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	// Type non-matching filter
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}})
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
+	applyKey(tea.KeyPressMsg{Code: 'x', Text: "x"})
+	applyKey(tea.KeyPressMsg{Code: 'z', Text: "z"})
+	applyKey(tea.KeyPressMsg{Code: 'z', Text: "z"})
 
 	// In CLI command input mode, Tab cycles completions, not focus
 	// Verify status mentions no completions match
@@ -2205,7 +2211,7 @@ func TestTokenControlsFocusMentionsCopyHint(t *testing.T) {
 		}
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyTab})
+	applyKey(tea.KeyPressMsg{Code: tea.KeyTab})
 
 	if m.focus != focusTokens {
 		t.Fatalf("expected focusTokens after tab, got %v", m.focus)
@@ -2239,12 +2245,12 @@ func TestPaletteCloseStatusMentionsCopyHint(t *testing.T) {
 		}
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected palette to be visible after Ctrl+P")
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if m.tokenPaletteVisible {
 		t.Fatalf("expected palette to close after second Ctrl+P")
 	}
@@ -2277,18 +2283,18 @@ func TestHelpOverlayCloseRestoresTokenCopyHint(t *testing.T) {
 		}
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyTab})
+	applyKey(tea.KeyPressMsg{Code: tea.KeyTab})
 	if !strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected token controls status to mention copy hint, got %q", m.statusMessage)
 	}
 	statusBefore := m.statusMessage
 
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	applyKey(tea.KeyPressMsg{Code: '?', Text: "?"})
 	if strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected help overlay to replace copy hint, got %q", m.statusMessage)
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	applyKey(tea.KeyPressMsg{Code: '?', Text: "?"})
 	if !strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected help overlay close to restore copy hint, got %q", m.statusMessage)
 	}
@@ -2321,23 +2327,23 @@ func TestHelpOverlayCloseRestoresPaletteCopyHint(t *testing.T) {
 		}
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected palette to be visible after Ctrl+P")
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if m.tokenPaletteVisible {
 		t.Fatalf("expected palette to close after second Ctrl+P")
 	}
 	statusBefore := m.statusMessage
 
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	applyKey(tea.KeyPressMsg{Code: '?', Text: "?"})
 	if strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected help overlay to replace copy hint, got %q", m.statusMessage)
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	applyKey(tea.KeyPressMsg{Code: '?', Text: "?"})
 	if !strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected closing help overlay to restore copy hint, got %q", m.statusMessage)
 	}
@@ -2449,8 +2455,8 @@ func TestPaletteCopyActionStatusHint(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // move from filter to options
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter}) // move from filter to options
 
 	if !strings.Contains(m.statusMessage, "Copy command action") {
 		t.Fatalf("expected palette status to mention copy action, got %q", m.statusMessage)
@@ -2477,8 +2483,8 @@ func TestPaletteCategoryStatusIncludesLabel(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // move from filter to options
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter}) // move from filter to options
 	// Move to categories focus by going back through options
 	m.tokenPaletteFocus = tokenPaletteFocusCategories
 	m.refreshPaletteStatus()
@@ -2519,9 +2525,9 @@ func TestPaletteFilterStatusIncludesValue(t *testing.T) {
 		}
 	}
 
-	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
-	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}})
+	applyKey(tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
+	applyKey(tea.KeyPressMsg{Code: 's', Text: "s"})
+	applyKey(tea.KeyPressMsg{Code: 'c', Text: "c"})
 
 	status := m.statusMessage
 
@@ -2548,7 +2554,7 @@ func TestPaletteOptionStatusNamesToken(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	// Set up categories and options focus directly for this test
 	m.tokenCategoryIndex = 1 // Scope category
 	m.tokenPaletteFocus = tokenPaletteFocusOptions
@@ -2593,7 +2599,7 @@ func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	m.subject.SetValue(subject)
 	(&m).refreshPreview()
 
-	m, cmd := updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, cmd := updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if cmd == nil {
 		t.Fatalf("expected palette open command")
 	}
@@ -2602,13 +2608,13 @@ func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	}
 
 	// Clear filter to ensure options are available, then Enter to move to options
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlW})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'w', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
 		t.Fatalf("expected palette focus options, got %v", m.tokenPaletteFocus)
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	normalized := normalizeWhitespace(view)
 	if !strings.Contains(normalized, "Token palette (Esc closes") {
 		t.Fatalf("expected palette view, got view:\n%s", view)
@@ -2621,7 +2627,7 @@ func TestTokenPaletteCopyCommandAction(t *testing.T) {
 		t.Fatalf("expected clipboard to be empty before selecting action, got %q", copied)
 	}
 
-	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, cmd = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if cmd != nil {
 		t.Fatalf("unexpected command when selecting palette action: %T", cmd)
 	}
@@ -2781,7 +2787,7 @@ func TestTokenSummaryNoHighlightWhenSubjectFocused(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	view := m.View()
+	view := modelViewContent(m)
 	if strings.Contains(view, "» [ ") {
 		t.Fatalf("expected no highlighted token when subject is focused, got:\n%s", view)
 	}
@@ -2827,7 +2833,7 @@ func TestPresetPaneLoadPreset(t *testing.T) {
 	}
 
 	m := newModel(opts)
-	m, cmd := updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlS})
+	m, cmd := updateModel(t, m, tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl})
 	if cmd != nil {
 		t.Fatalf("unexpected command opening pane: %T", cmd)
 	}
@@ -2835,7 +2841,7 @@ func TestPresetPaneLoadPreset(t *testing.T) {
 		t.Fatalf("expected preset pane to be visible")
 	}
 
-	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, cmd = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if cmd != nil {
 		t.Fatalf("unexpected command when applying preset: %T", cmd)
 	}
@@ -2851,7 +2857,7 @@ func TestPresetPaneLoadPreset(t *testing.T) {
 	if m.tokensDiverged() {
 		t.Fatalf("expected no divergence immediately after loading preset")
 	}
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "Preset: daily") {
 		t.Fatalf("expected view to show active preset, got:\n%s", view)
 	}
@@ -2897,15 +2903,15 @@ func TestPresetPaneSavePreset(t *testing.T) {
 	}
 
 	m := newModel(opts)
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlS})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlN})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'n', Mod: tea.ModCtrl})
 	if m.presetMode != presetModeSaving {
 		t.Fatalf("expected preset save mode, got %v", m.presetMode)
 	}
 	m.presetNameInput.SetValue("daily")
 	m.presetDescriptionInput.SetValue("morning plan")
 
-	m, cmd := updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, cmd := updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if cmd != nil {
 		t.Fatalf("unexpected command when saving preset: %T", cmd)
 	}
@@ -2963,17 +2969,17 @@ func TestPresetPaneDeleteAndUndo(t *testing.T) {
 	}
 
 	m := newModel(opts)
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlS})
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if m.activePresetName != "daily" {
 		t.Fatalf("expected daily to be active after loading, got %q", m.activePresetName)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDelete})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyDelete})
 	if m.presetMode != presetModeConfirmDelete {
 		t.Fatalf("expected confirm delete mode, got %v", m.presetMode)
 	}
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyEnter})
 	if len(presets) != 0 {
 		t.Fatalf("expected preset to be removed, got %v", presets)
 	}
@@ -2987,7 +2993,7 @@ func TestPresetPaneDeleteAndUndo(t *testing.T) {
 		t.Fatalf("expected status message to mention deletion, got %q", m.statusMessage)
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	if len(presets) != 1 {
 		t.Fatalf("expected preset to be restored, got %v", presets)
 	}
@@ -3010,10 +3016,10 @@ func TestHistoryHighlightRecentEntry(t *testing.T) {
 		},
 		CommandTimeout: time.Second,
 	}
-	originalProfile := lipgloss.ColorProfile()
-	lipgloss.SetColorProfile(termenv.TrueColor)
+	originalProfile := compat.Profile
+	compat.Profile = colorprofile.TrueColor
 	t.Cleanup(func() {
-		lipgloss.SetColorProfile(originalProfile)
+		compat.Profile = originalProfile
 	})
 
 	m := newModel(opts)
@@ -3045,10 +3051,10 @@ func TestHistoryHighlightExpires(t *testing.T) {
 		},
 		CommandTimeout: time.Second,
 	}
-	originalProfile := lipgloss.ColorProfile()
-	lipgloss.SetColorProfile(termenv.TrueColor)
+	originalProfile := compat.Profile
+	compat.Profile = colorprofile.TrueColor
 	t.Cleanup(func() {
-		lipgloss.SetColorProfile(originalProfile)
+		compat.Profile = originalProfile
 	})
 
 	m := newModel(opts)
@@ -3088,7 +3094,7 @@ func TestPaletteShowsCLICommand(t *testing.T) {
 	m := newModel(opts)
 
 	// Open palette
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected token palette to be visible")
 	}
@@ -3123,16 +3129,16 @@ func TestPaletteTabCyclesCompletions(t *testing.T) {
 	m := newModel(opts)
 
 	// Open palette
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl})
 
 	// Type partial token to filter
 	for _, r := range "to" {
-		m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+		m, _ = updateModel(t, m, tea.KeyPressMsg{Code: r, Text: string(r)})
 	}
 
 	// Tab should cycle through completions matching "to" (e.g., "todo")
 	filterBefore := m.tokenPaletteFilter.Value()
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyPressMsg{Code: tea.KeyTab})
 	filterAfter := m.tokenPaletteFilter.Value()
 
 	// Tab should have applied a completion, changing the filter value

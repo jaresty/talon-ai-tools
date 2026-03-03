@@ -313,7 +313,7 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 		if errors.As(err, &cliErr) {
 			return cliErr
 		}
-		return s.errorf(errorFormat, err.Error())
+		return s.errorf(errorFormat, "%s", err.Error())
 	}
 	return nil
 }
@@ -749,7 +749,7 @@ func (s *buildState) finalise() *CLIError {
 			msg.WriteString("\n")
 		}
 		msg.WriteString("\nRun 'bar help tokens task' to see all tasks with detailed descriptions.")
-		return s.errorf(errorMissingStatic, msg.String())
+		return s.errorf(errorMissingStatic, "%s", msg.String())
 	}
 
 	// Sort scope and method for deterministic output while preserving initial order for text.

@@ -10,6 +10,10 @@ import (
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
+func modelViewContent(m model) string {
+	return m.View().Content
+}
+
 func TestSnapshotBasicLayout(t *testing.T) {
 	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		return "=== TASK ===\nTest preview", nil
@@ -248,7 +252,7 @@ func TestCompletionGuidanceRenderedInDetailPane(t *testing.T) {
 	m.selectCompletion(m.completions[0])
 
 	// Render the view
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Guidance should appear in the detail pane with the arrow indicator
 	// (The guidance shown is for the next stage's completions after selecting task)
@@ -297,7 +301,7 @@ func TestCompletionUseWhenRenderedInDetailPane(t *testing.T) {
 	}
 
 	// Render the view
-	view := m.View()
+	view := modelViewContent(m)
 
 	// UseWhen should appear in the detail pane
 	if !strings.Contains(view, "Use when you need comprehensive coverage") {
@@ -368,7 +372,7 @@ func TestCompletionKanjiRenderedInView(t *testing.T) {
 	m.updateCompletions()
 
 	// Render the view
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Kanji "全" should appear in the rendered view for "full" token
 	if !strings.Contains(view, "全") {
@@ -686,7 +690,7 @@ func TestSubjectModalRendering(t *testing.T) {
 	m.showSubjectModal = true
 	m.subjectInput.Focus()
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show subject modal header
 	if !strings.Contains(view, "SUBJECT INPUT") {
@@ -715,7 +719,7 @@ func TestSubjectModalHidesMainView(t *testing.T) {
 	// Open subject modal
 	m.showSubjectModal = true
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should NOT show main view elements when modal is open
 	if strings.Contains(view, "COMPLETIONS") {
@@ -941,7 +945,7 @@ func TestToastDisplaysInHotkeyBar(t *testing.T) {
 	// Set toast message
 	m.toastMessage = "Test toast!"
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show toast instead of hotkeys
 	if !strings.Contains(view, "Test toast!") {
@@ -959,7 +963,7 @@ func TestToastClearedOnKeyPress(t *testing.T) {
 	m.toastMessage = "Test toast!"
 
 	// Simulate a key press (down arrow) and capture returned model
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyDown})
 	m2 := updated.(model)
 
 	// Toast should be cleared
@@ -980,7 +984,7 @@ func TestCommandModalRendering(t *testing.T) {
 	m.showCommandModal = true
 	m.shellCommandInput.Focus()
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show command modal header
 	if !strings.Contains(view, "RUN COMMAND") {
@@ -1009,7 +1013,7 @@ func TestCommandModalHidesMainView(t *testing.T) {
 	// Open command modal
 	m.showCommandModal = true
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should NOT show main view elements when modal is open
 	if strings.Contains(view, "COMPLETIONS") {
@@ -1113,7 +1117,7 @@ func TestResultPaneRendering(t *testing.T) {
 	m.resultViewport.SetContent("test output")
 	m.lastShellCommand = "echo test"
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show result header
 	if !strings.Contains(view, "RESULT") {
@@ -1143,7 +1147,7 @@ func TestResultModeHotkeyBar(t *testing.T) {
 	m.showingResult = true
 	m.commandResult = "test"
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show result-specific shortcuts
 	if !strings.Contains(view, "^Y: copy") {
@@ -1197,7 +1201,7 @@ func TestEscReturnFromResult(t *testing.T) {
 	m.commandResult = "some result"
 
 	// Press Esc to return to preview
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyEsc})
 	m2 := updated.(model)
 
 	if m2.showingResult {
@@ -1220,9 +1224,9 @@ func TestCtrlRReturnFromResult(t *testing.T) {
 	m.commandResult = "some result"
 
 	// Press Ctrl+R to return to preview
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'r'}, Alt: false})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'r', Text: "r"})
 	// Actually need to simulate ctrl+r properly
-	updated, _ = m.Update(tea.KeyMsg{Type: tea.KeyCtrlR})
+	updated, _ = m.Update(tea.KeyPressMsg{Code: 'r', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	if m2.showingResult {
@@ -1265,25 +1269,25 @@ func TestPreviewViewportScrolling(t *testing.T) {
 	m.ready = true
 
 	// Initial position should be at top
-	if m.previewViewport.YOffset != 0 {
-		t.Errorf("expected viewport at top, got offset %d", m.previewViewport.YOffset)
+	if m.previewViewport.YOffset() != 0 {
+		t.Errorf("expected viewport at top, got offset %d", m.previewViewport.YOffset())
 	}
 
 	// Scroll down with Ctrl+D
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'd', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should have scrolled down
-	if m2.previewViewport.YOffset == 0 {
+	if m2.previewViewport.YOffset() == 0 {
 		t.Error("expected viewport to scroll down after Ctrl+D")
 	}
 
 	// Scroll back up with Ctrl+U
-	updated, _ = m2.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
+	updated, _ = m2.Update(tea.KeyPressMsg{Code: 'u', Mod: tea.ModCtrl})
 	m3 := updated.(model)
 
 	// Should have scrolled up
-	if m3.previewViewport.YOffset >= m2.previewViewport.YOffset {
+	if m3.previewViewport.YOffset() >= m2.previewViewport.YOffset() {
 		t.Error("expected viewport to scroll up after Ctrl+U")
 	}
 }
@@ -1303,11 +1307,11 @@ func TestResultViewportScrolling(t *testing.T) {
 	m.resultViewport.SetContent(longResult)
 
 	// Scroll down with Ctrl+D
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlD})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'd', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should have scrolled down
-	if m2.resultViewport.YOffset == 0 {
+	if m2.resultViewport.YOffset() == 0 {
 		t.Error("expected result viewport to scroll down after Ctrl+D")
 	}
 }
@@ -1347,11 +1351,11 @@ func TestPreviewShowsScrollPercentage(t *testing.T) {
 	m.ready = true
 
 	// Set viewport dimensions to make content scrollable
-	m.previewViewport.Width = 70
-	m.previewViewport.Height = 10
+	m.previewViewport.SetWidth(70)
+	m.previewViewport.SetHeight(10)
 	m.previewViewport.SetContent(longContent)
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show scroll percentage when content is scrollable
 	if !strings.Contains(view, "%") {
@@ -1374,7 +1378,7 @@ func TestBackspaceNavigatesBackward(t *testing.T) {
 	}
 
 	// Press Backspace with no filter - should remove "todo" and go back to static stage
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyBackspace})
 	m2 := updated.(model)
 
 	// Should be back at static stage
@@ -1512,7 +1516,7 @@ func TestShiftTabGoesToPreviousStage(t *testing.T) {
 	}
 
 	// Press Shift+Tab - should go back to static stage
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyShiftTab})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyTab, Mod: tea.ModShift})
 	m2 := updated.(model)
 
 	// Should be back at static stage
@@ -1541,7 +1545,7 @@ func TestCtrlKClearsAllTokens(t *testing.T) {
 	}
 
 	// Press Ctrl+K - should clear all tokens
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlK})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'k', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should have no tokens
@@ -1683,7 +1687,7 @@ func TestSelectedItemDescriptionArea(t *testing.T) {
 	}
 
 	// Get the view
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show the full description of the selected item (first completion)
 	// The selected item description should appear in the view
@@ -1716,7 +1720,7 @@ func TestCtrlRQuickRerun(t *testing.T) {
 	m.lastShellCommand = "echo test"
 
 	// Now press Ctrl+R (not in result mode) - should run the last command immediately
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlR})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'r', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should have run the command
@@ -1750,7 +1754,7 @@ func TestCtrlROpensModalWhenNoLastCommand(t *testing.T) {
 	m.lastShellCommand = ""
 
 	// Press Ctrl+R - should open modal instead of running
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlR})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'r', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should show command modal
@@ -1775,7 +1779,7 @@ func TestCtrlSPipelinesResultToSubject(t *testing.T) {
 	m.commandResult = "This is the command output that should become the subject"
 
 	// Press Ctrl+S to pipeline result into subject
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlS})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should no longer be showing result
@@ -1810,7 +1814,7 @@ func TestCtrlSShowsToastConfirmation(t *testing.T) {
 	m.commandResult = "result"
 
 	// Press Ctrl+S
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlS})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should show toast confirmation
@@ -1834,7 +1838,7 @@ func TestHotkeyBarShowsPipelineShortcut(t *testing.T) {
 	m.showingResult = true
 	m.commandResult = "result"
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Should show Ctrl+S pipeline shortcut in result mode hotkey bar
 	if !strings.Contains(view, "^S") {
@@ -1886,7 +1890,7 @@ func TestCompletionListScrolling(t *testing.T) {
 	// Navigate down past visible area
 	maxShow := m.getCompletionMaxShow()
 	for i := 0; i < maxShow+2; i++ {
-		newM, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+		newM, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyDown})
 		m = newM.(model)
 	}
 
@@ -1900,7 +1904,7 @@ func TestCompletionListScrolling(t *testing.T) {
 
 	// The selected item should still be visible in the view.
 	// Options display as "slug — label" format (ADR-0111 D4).
-	view := m.View()
+	view := modelViewContent(m)
 	expectedOption := fmt.Sprintf("option%d — Option %d", maxShow+3, maxShow+3) // slug — label format
 	if !strings.Contains(view, expectedOption) {
 		t.Errorf("expected view to contain selected option %q after scrolling", expectedOption)
@@ -1908,7 +1912,7 @@ func TestCompletionListScrolling(t *testing.T) {
 
 	// Navigate back up
 	for i := 0; i < maxShow+2; i++ {
-		newM, _ := m.Update(tea.KeyMsg{Type: tea.KeyUp})
+		newM, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyUp})
 		m = newM.(model)
 	}
 
@@ -2150,7 +2154,7 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 	m.selectCompletion(m.completions[0])
 
 	// The display (View) should show ALL tokens including auto-filled ones
-	view := m.View()
+	view := modelViewContent(m)
 
 	// Both preset and auto-filled token should appear in the display
 	if !strings.Contains(view, "coach") {
@@ -2343,7 +2347,7 @@ func TestUndoTokenSelection(t *testing.T) {
 	}
 
 	// Undo with Ctrl+Z
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Token should be removed
@@ -2365,7 +2369,7 @@ func TestRedoTokenSelection(t *testing.T) {
 	m.selectCompletion(m.completions[0]) // select "todo"
 
 	// Undo
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Verify undone
@@ -2374,7 +2378,7 @@ func TestRedoTokenSelection(t *testing.T) {
 	}
 
 	// Redo with Ctrl+Y
-	updated, _ = m2.Update(tea.KeyMsg{Type: tea.KeyCtrlY})
+	updated, _ = m2.Update(tea.KeyPressMsg{Code: 'y', Mod: tea.ModCtrl})
 	m3 := updated.(model)
 
 	// Token should be restored
@@ -2407,7 +2411,7 @@ func TestUndoMultipleSelections(t *testing.T) {
 	}
 
 	// Undo once - should remove second token
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	if len(m2.getAllTokensInOrder()) != 1 {
@@ -2415,7 +2419,7 @@ func TestUndoMultipleSelections(t *testing.T) {
 	}
 
 	// Undo again - should remove first token
-	updated, _ = m2.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	updated, _ = m2.Update(tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	m3 := updated.(model)
 
 	if len(m3.getAllTokensInOrder()) != 0 {
@@ -2436,7 +2440,7 @@ func TestUndoShowsToast(t *testing.T) {
 	m.selectCompletion(m.completions[0])
 
 	// Undo
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should show toast
@@ -2454,7 +2458,7 @@ func TestUndoNothingToUndo(t *testing.T) {
 	m.ready = true
 
 	// Try to undo with no history
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyCtrlZ})
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'z', Mod: tea.ModCtrl})
 	m2 := updated.(model)
 
 	// Should show "nothing to undo" toast
@@ -2659,7 +2663,7 @@ func TestCrossAxisCompositionDirectionA(t *testing.T) {
 	}
 	m.completionIndex = 0 // select shellscript
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	if !strings.Contains(view, "✓") {
 		t.Errorf("direction A: expected natural pairing indicator (✓) in view for shellscript; got:\n%s", view)
@@ -2712,7 +2716,7 @@ func TestCrossAxisCompositionDirectionB(t *testing.T) {
 			break
 		}
 	}
-	view := m.View()
+	view := modelViewContent(m)
 	if !strings.Contains(view, "⚠") {
 		t.Errorf("direction B: expected cautionary indicator (⚠) for sim+shellscript; got:\n%s", view)
 	}
@@ -2727,7 +2731,7 @@ func TestCrossAxisCompositionDirectionB(t *testing.T) {
 			break
 		}
 	}
-	view = m.View()
+	view = modelViewContent(m)
 	if !strings.Contains(view, "✓") {
 		t.Errorf("direction B: expected natural indicator (✓) for make+shellscript; got:\n%s", view)
 	}
@@ -2769,7 +2773,7 @@ func TestCrossAxisChipPrefixColumn(t *testing.T) {
 		t.Fatalf("expected task stage, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 
 	if !strings.Contains(view, "⚠") {
 		t.Errorf("chip prefix: expected ⚠ before cautionary token 'sim'; view:\n%s", view)
@@ -2861,7 +2865,7 @@ func TestCrossAxisChipPrefixColumnFormToChannel(t *testing.T) {
 		t.Fatalf("expected channel stage after faq pre-selected, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	foundCautionOnShellscript := false
 	foundNaturalOnPlain := false
 	for _, line := range strings.Split(view, "\n") {
@@ -2910,7 +2914,7 @@ func TestCrossAxisChipPrefixColumnChannelToForm(t *testing.T) {
 		t.Fatalf("expected form stage after shellscript pre-selected, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	foundCautionOnFaq := false
 	for _, line := range strings.Split(view, "\n") {
 		if strings.Contains(line, "⚠") && strings.Contains(line, "FAQ") {
@@ -2951,7 +2955,7 @@ func TestCrossAxisChipPrefixColumnReverse(t *testing.T) {
 		t.Fatalf("expected channel stage after sim pre-selected, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	// The prefix must appear on the same line as the completion label (not just in the meta pane).
 	foundPrefixOnRow := false
 	for _, line := range strings.Split(view, "\n") {
@@ -3041,7 +3045,7 @@ func TestCrossAxisChipPrefixColumnDirectional(t *testing.T) {
 		t.Fatalf("expected directional stage after gist pre-selected, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	foundCautionOnFig := false
 	for _, line := range strings.Split(view, "\n") {
 		if strings.Contains(line, "⚠") && strings.Contains(line, "Fig") {
@@ -3081,7 +3085,7 @@ func TestCrossAxisChipPrefixColumnMethod(t *testing.T) {
 		t.Fatalf("expected method stage after max pre-selected, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	foundCautionOnGrow := false
 	for _, line := range strings.Split(view, "\n") {
 		if strings.Contains(line, "⚠") && strings.Contains(line, "Grow") {
@@ -3121,7 +3125,7 @@ func TestCrossAxisChipPrefixColumnCompletenessWithMethod(t *testing.T) {
 		t.Fatalf("expected completeness stage after grow pre-selected, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	foundCautionOnMax := false
 	for _, line := range strings.Split(view, "\n") {
 		if strings.Contains(line, "⚠") && strings.Contains(line, "Max") {
@@ -3185,7 +3189,7 @@ func TestCrossAxisChipPrefixColumnFormWithDirectional(t *testing.T) {
 		t.Fatalf("expected form stage after fig pre-selected, got %q", m.getCurrentStage())
 	}
 
-	view := m.View()
+	view := modelViewContent(m)
 	foundCautionOnCommit := false
 	for _, line := range strings.Split(view, "\n") {
 		if strings.Contains(line, "⚠") && strings.Contains(line, "Commit") {

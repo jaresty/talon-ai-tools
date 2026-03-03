@@ -71,3 +71,82 @@ next_work:
     opts; textinput.Width= → SetWidth(); viewport Width/Height fields → setters if
     needed; plus any further errors the compiler surfaces.
 ```
+
+---
+
+## Loop 2 — 2026-03-03T08:03:39Z
+
+```
+helper_version: helper:v20260227.1
+focus: ADR-0150 Phases 2–4 — v2 API breakage fixes across both TUI packages + test
+  infrastructure + barcli vet (T-2)
+active_constraint: go build ./... fails on 70+ v2 API incompatibilities (View()
+  return type, key.Type/.Runes, tea.WithAltScreen, tea.KeyCtrl* constants,
+  viewport.New args, viewport field setters, textinput.Width field). Falsifiable:
+  go build ./... exits non-zero. Ranked above skill updates (Loop 6 scope) because
+  builds must pass before tests can validate. Alternative: fix packages one-at-a-time
+  — rejected because all three packages form a single dependency chain; partial fixes
+  don't yield a green build gate.
+
+validation_targets:
+  - T-2: go test ./... exits 0 (includes build + vet + runtime tests)
+
+evidence:
+  - red  | 2026-03-03T08:03:39Z | exit 1 | go build ./...
+      helper:diff-snapshot=0 (loop-1 commit state)
+      72 errors in bartui/program.go + bartui2/program.go: undefined tea.WithAltScreen,
+      View() return type mismatch, lipgloss.AdaptiveColor, viewport.New args,
+      key.Type/.Runes/.KeyCtrl*, viewport field assignments | inline
+  - green | 2026-03-03T08:44:59Z | exit 0 | go test ./...
+      helper:diff-snapshot=7 files changed, 447 insertions(+), 422 deletions(-)
+      all packages pass | inline
+  - removal | 2026-03-03T08:45:07Z | exit 1 | git stash && go build ./...
+      reverted to loop-1 state; build fails: undefined tea.WithAltScreen +
+      View() type mismatch | inline
+
+rollback_plan: git restore internal/bartui/program.go internal/bartui/program_test.go
+  internal/bartui2/program.go internal/bartui2/program_test.go internal/barcli/tui.go
+  internal/barcli/build.go cmd/bar/testdata/tui_smoke.json — replay go build to
+  confirm errors return.
+
+delta_summary:
+  helper:diff-snapshot: 7 files changed, 447 insertions(+), 422 deletions(-)
+  bartui/program.go: View() string→tea.View; tea.WithAltScreen removed (AltScreen
+    field on View); lipgloss.AdaptiveColor→compat.AdaptiveColor; viewport.New(w,h)
+    →WithWidth/WithHeight opts; viewport field assigns →SetWidth/SetHeight; viewport
+    Width/Height reads →Width()/Height() methods; key.Type switch →String() switch;
+    tea.KeyCtrl* →string literals "ctrl+c" etc.; keyMsg.Runes →[]rune(Key().Text);
+    v.ViewUp/ViewDown/HalfViewUp/HalfViewDown →ScrollUp/ScrollDown(n); tea.KeyRunes
+    check →Key().Text!=""; tea.Program.Start →Run.
+  bartui/program_test.go: View() return type update in test helpers; modelViewContent
+    →m.View().Content; added ansi.Strip() to strip ANSI codes before string checks
+    (v2 Lip Gloss renders ANSI even in non-terminal; v1 did not).
+  bartui2/program.go: View() string→tea.View; viewport.New opts; textinput.SetWidth;
+    tea.KeyMsg→tea.KeyPressMsg; key switch →String() switch; tea.WithAltScreen removed.
+  bartui2/program_test.go: View() return type updates.
+  barcli/tui.go: tea.Program.Start →Run.
+  barcli/build.go: two errorf call-sites given "%s" format + value as arg (Go 1.24.2
+    vet check, triggered by bubbletea v2 requiring Go 1.24.2).
+  tui_smoke.json: regenerated expected_view with ANSI-coded v2 output.
+
+loops_remaining_forecast:
+  3 loops remaining:
+  Loop 3 — Phase 5 new feature adoption (SoftWrap on preview viewport) — quick
+  Loop 4 — go mod tidy + verify no stale v1 deps
+  Loop 5 — Phase 6 skill file updates (bubbles-inputs, bubbletea-overlays, lipgloss-*)
+
+residual_constraints:
+  - "v1 Charm packages still in go.mod as dependencies" (severity L×H×L=3): v1 lipgloss
+    v1.1.0, bubbletea v0.25.0, bubbles v0.17.1 may still appear as indirect deps.
+    Mitigation: go mod tidy in Loop 3. Monitoring: go mod tidy output.
+  - "skill files still document v1 patterns" (severity M×M×H=12): future TUI work guided
+    by old skills will produce v1 code. Mitigation: Loop 5 updates all charm skills.
+    Monitoring: open new session after Loop 5 and verify generated code compiles.
+
+next_work:
+  Behaviour T-3: enable SoftWrap on preview viewport (Phase 5 ADR-0150)
+  Validation: go test ./... (regression guard); manual verify SoftWrap visible in
+    bar tui fixture output.
+  Behaviour T-4: go mod tidy removes v1 deps from go.mod.
+  Behaviour T-5: all charm skills updated to document v2 APIs.
+```

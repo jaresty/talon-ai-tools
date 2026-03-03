@@ -25,7 +25,8 @@ func defaultTUIStarter(opts bartui.Options) error {
 	if err != nil {
 		return err
 	}
-	return program.Start()
+	_, err = program.Run()
+	return err
 }
 
 func runTUI(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {

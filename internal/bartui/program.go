@@ -20,6 +20,7 @@ import (
 	textinput "charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2/compat"
 	lipgloss "charm.land/lipgloss/v2"
 )
 
@@ -206,10 +207,10 @@ func paletteDebugViewSummary(m *model, view string) {
 		m.presetPaneVisible,
 		m.width,
 		m.height,
-		m.subjectViewport.Width,
-		m.subjectViewport.Height,
-		m.resultViewport.Width,
-		m.resultViewport.Height,
+		m.subjectViewport.Width(),
+		m.subjectViewport.Height(),
+		m.resultViewport.Width(),
+		m.resultViewport.Height(),
 		len(m.subject.Value()),
 		len(m.command.Value()),
 		len(m.preview),
@@ -315,10 +316,6 @@ func NewProgram(opts Options) (*tea.Program, error) {
 	if opts.Output != nil {
 		programOptions = append(programOptions, tea.WithOutput(opts.Output))
 	}
-	if opts.UseAltScreen {
-		programOptions = append(programOptions, tea.WithAltScreen())
-	}
-
 	program := tea.NewProgram(model, programOptions...)
 	return program, nil
 }
@@ -360,43 +357,43 @@ const historyHighlightLifetime = 2 * time.Second
 var composerTheme = newGrammarComposerTheme()
 
 type grammarComposerTheme struct {
-	toastForeground           lipgloss.AdaptiveColor
+	toastForeground           compat.AdaptiveColor
 	toastStyle                lipgloss.Style
-	sectionHeaderForeground   lipgloss.AdaptiveColor
+	sectionHeaderForeground   compat.AdaptiveColor
 	sectionHeaderStyle        lipgloss.Style
-	sectionHintForeground     lipgloss.AdaptiveColor
+	sectionHintForeground     compat.AdaptiveColor
 	sectionHintStyle          lipgloss.Style
-	summaryStripForeground    lipgloss.AdaptiveColor
+	summaryStripForeground    compat.AdaptiveColor
 	summaryStripStyle         lipgloss.Style
-	historyActiveForeground   lipgloss.AdaptiveColor
-	historyActiveBackground   lipgloss.AdaptiveColor
+	historyActiveForeground   compat.AdaptiveColor
+	historyActiveBackground   compat.AdaptiveColor
 	historyActiveStyle        lipgloss.Style
 }
 
 func newGrammarComposerTheme() grammarComposerTheme {
-	toastForeground := lipgloss.AdaptiveColor{
-		Light: "#3C1053", // Charmtone plum on light backgrounds
-		Dark:  "#F3D57C", // Charmtone amber on dark backgrounds
+	toastForeground := compat.AdaptiveColor{
+		Light: lipgloss.Color("#3C1053"), // Charmtone plum on light backgrounds
+		Dark:  lipgloss.Color("#F3D57C"), // Charmtone amber on dark backgrounds
 	}
-	sectionHeaderForeground := lipgloss.AdaptiveColor{
-		Light: "#5B2A86", // Charmtone violet for headings on light backgrounds
-		Dark:  "#EAD8FF", // Charmtone lilac for headings on dark backgrounds
+	sectionHeaderForeground := compat.AdaptiveColor{
+		Light: lipgloss.Color("#5B2A86"), // Charmtone violet for headings on light backgrounds
+		Dark:  lipgloss.Color("#EAD8FF"), // Charmtone lilac for headings on dark backgrounds
 	}
-	sectionHintForeground := lipgloss.AdaptiveColor{
-		Light: "#6F6B8A", // Charmtone slate for meta text on light backgrounds
-		Dark:  "#B7B2D6", // Charmtone mist for meta text on dark backgrounds
+	sectionHintForeground := compat.AdaptiveColor{
+		Light: lipgloss.Color("#6F6B8A"), // Charmtone slate for meta text on light backgrounds
+		Dark:  lipgloss.Color("#B7B2D6"), // Charmtone mist for meta text on dark backgrounds
 	}
-	summaryStripForeground := lipgloss.AdaptiveColor{
-		Light: "#1E1633", // Charmtone ink for summary emphasis on light backgrounds
-		Dark:  "#F5F1FF", // Charmtone pearl for summary emphasis on dark backgrounds
+	summaryStripForeground := compat.AdaptiveColor{
+		Light: lipgloss.Color("#1E1633"), // Charmtone ink for summary emphasis on light backgrounds
+		Dark:  lipgloss.Color("#F5F1FF"), // Charmtone pearl for summary emphasis on dark backgrounds
 	}
-	historyActiveForeground := lipgloss.AdaptiveColor{
-		Light: "#1C1333", // Charmtone ink accent for highlighted history rows on light backgrounds
-		Dark:  "#F6EFFF", // Charmtone pearl accent for highlighted history rows on dark backgrounds
+	historyActiveForeground := compat.AdaptiveColor{
+		Light: lipgloss.Color("#1C1333"), // Charmtone ink accent for highlighted history rows on light backgrounds
+		Dark:  lipgloss.Color("#F6EFFF"), // Charmtone pearl accent for highlighted history rows on dark backgrounds
 	}
-	historyActiveBackground := lipgloss.AdaptiveColor{
-		Light: "#F2E8FF", // Charmtone lilac wash for highlighted history rows on light backgrounds
-		Dark:  "#352040", // Charmtone plum wash for highlighted history rows on dark backgrounds
+	historyActiveBackground := compat.AdaptiveColor{
+		Light: lipgloss.Color("#F2E8FF"), // Charmtone lilac wash for highlighted history rows on light backgrounds
+		Dark:  lipgloss.Color("#352040"), // Charmtone plum wash for highlighted history rows on dark backgrounds
 	}
 
 	return grammarComposerTheme{
@@ -873,6 +870,7 @@ type model struct {
 	focusBeforePane        focusArea
 	lastDeletedPreset      *PresetDetails
 	lastDeletedDescription string
+	useAltScreen           bool
 }
 
 func newModel(opts Options) model {
@@ -935,9 +933,9 @@ func newModel(opts Options) model {
 		status += " Missing environment variables: " + strings.Join(missingEnv, ", ") + " (not set)."
 	}
 
-	subjectViewport := viewport.New(defaultViewportWidth, minSubjectViewport)
-	tokenViewport := viewport.New(defaultViewportWidth, minTokenViewport)
-	resultViewport := viewport.New(defaultViewportWidth, minResultViewport)
+	subjectViewport := viewport.New(viewport.WithWidth(defaultViewportWidth), viewport.WithHeight(minSubjectViewport))
+	tokenViewport := viewport.New(viewport.WithWidth(defaultViewportWidth), viewport.WithHeight(minTokenViewport))
+	resultViewport := viewport.New(viewport.WithWidth(defaultViewportWidth), viewport.WithHeight(minResultViewport))
 
 	initialWidth := opts.InitialWidth
 	if initialWidth <= 0 {
@@ -992,6 +990,7 @@ func newModel(opts Options) model {
 		lastDeletedDescription: "",
 		sidebarPreference:      sidebarPreferenceShown,
 		now:                    time.Now,
+		useAltScreen:           opts.UseAltScreen,
 	}
 	m.tokenSparkline = []int{len(m.tokens)}
 	m.destinationSummary = "clipboard — Ctrl+B copies CLI"
@@ -1087,21 +1086,21 @@ func (m *model) layoutViewports() {
 	m.columnGap = gap
 
 	if sidebarWidth == 0 {
-		m.subjectViewport.Width = maxInt(1, width)
-		m.resultViewport.Width = maxInt(1, width)
-		m.tokenViewport.Width = maxInt(1, width)
+		m.subjectViewport.SetWidth(maxInt(1, width))
+		m.resultViewport.SetWidth(maxInt(1, width))
+		m.tokenViewport.SetWidth(maxInt(1, width))
 	} else {
-		m.subjectViewport.Width = maxInt(1, mainWidth)
-		m.resultViewport.Width = maxInt(1, mainWidth)
-		m.tokenViewport.Width = maxInt(1, sidebarWidth)
+		m.subjectViewport.SetWidth(maxInt(1, mainWidth))
+		m.resultViewport.SetWidth(maxInt(1, mainWidth))
+		m.tokenViewport.SetWidth(maxInt(1, sidebarWidth))
 	}
 
-	m.tokenViewport.Height = maxInt(1, tokenHeight)
-	m.subjectViewport.Height = maxInt(minSubjectViewport, subjectHeight)
-	m.resultViewport.Height = maxInt(minResultViewport, resultHeight)
+	m.tokenViewport.SetHeight(maxInt(1, tokenHeight))
+	m.subjectViewport.SetHeight(maxInt(minSubjectViewport, subjectHeight))
+	m.resultViewport.SetHeight(maxInt(minResultViewport, resultHeight))
 
-	m.subject.SetWidth(m.subjectViewport.Width)
-	m.subject.SetHeight(m.subjectViewport.Height)
+	m.subject.SetWidth(m.subjectViewport.Width())
+	m.subject.SetHeight(m.subjectViewport.Height())
 }
 
 func computeColumnLayout(width int) (mainWidth int, gap int, sidebarWidth int) {
@@ -1254,17 +1253,17 @@ func (m *model) handleWindowSize(msg tea.WindowSizeMsg) {
 }
 
 func (m *model) handleViewportScroll(v *viewport.Model, key tea.KeyMsg, allowHalf bool) bool {
-	switch key.Type {
-	case tea.KeyPgUp:
-		v.ViewUp()
+	switch key.String() {
+	case "pgup":
+		v.PageUp()
 		return true
-	case tea.KeyPgDown:
-		v.ViewDown()
+	case "pgdown":
+		v.PageDown()
 		return true
-	case tea.KeyHome:
+	case "home":
 		v.GotoTop()
 		return true
-	case tea.KeyEnd:
+	case "end":
 		v.GotoBottom()
 		return true
 	}
@@ -1273,10 +1272,10 @@ func (m *model) handleViewportScroll(v *viewport.Model, key tea.KeyMsg, allowHal
 	}
 	switch key.String() {
 	case "ctrl+u":
-		v.HalfViewUp()
+		v.HalfPageUp()
 		return true
 	case "ctrl+d":
-		v.HalfViewDown()
+		v.HalfPageDown()
 		return true
 	}
 	return false
@@ -2525,14 +2524,14 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 	if !m.tokenPaletteVisible {
 		return false, nil
 	}
-	switch key.Type {
-	case tea.KeyEsc:
+	switch key.String() {
+	case "esc":
 		cmd := m.closeTokenPalette()
 		return true, cmd
-	case tea.KeyCtrlC:
+	case "ctrl+c":
 		cmd := m.closeTokenPalette()
 		return true, cmd
-	case tea.KeyTab:
+	case "tab":
 		if m.tokenPaletteFocus == tokenPaletteFocusFilter {
 			// Tab cycles through completions when in filter mode (CLI command input)
 			m.applyNextCompletion(1)
@@ -2540,7 +2539,7 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		}
 		cmd := m.advancePaletteFocus(1)
 		return true, cmd
-	case tea.KeyShiftTab:
+	case "shift+tab":
 		if m.tokenPaletteFocus == tokenPaletteFocusFilter {
 			// Shift+Tab cycles backwards through completions
 			m.applyNextCompletion(-1)
@@ -2548,11 +2547,11 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		}
 		cmd := m.advancePaletteFocus(-1)
 		return true, cmd
-	case tea.KeyUp:
+	case "up":
 		return m.handlePaletteNavigation(-1, key)
-	case tea.KeyDown:
+	case "down":
 		return m.handlePaletteNavigation(1, key)
-	case tea.KeyEnter, tea.KeySpace:
+	case "enter", "space":
 		if m.tokenPaletteFocus == tokenPaletteFocusFilter {
 			if len(m.tokenPaletteOptions) == 0 {
 				return true, nil
@@ -2567,12 +2566,9 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		}
 		cmd := m.applyPaletteSelection()
 		return true, cmd
-	case tea.KeyCtrlZ:
+	case "ctrl+z":
 		cmd := m.undoTokenChange()
 		return true, cmd
-	}
-
-	switch key.String() {
 	case "ctrl+p":
 		cmd := m.closeTokenPalette()
 		return true, cmd
@@ -3153,8 +3149,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		decodedRunes := decodeKeyRunes(keyMsg.Runes)
-		paletteDebugLog(&m, "UpdateKey", fmt.Sprintf("key=%q type=%v len=%d runes=%v decoded=%q palette=%t focus=%d", keyMsg.String(), keyMsg.Type, len(keyMsg.Runes), keyMsg.Runes, string(decodedRunes), m.tokenPaletteVisible, m.focus))
+		decodedRunes := decodeKeyRunes([]rune(keyMsg.Key().Text))
+		paletteDebugLog(&m, "UpdateKey", fmt.Sprintf("key=%q text=%q decoded=%q palette=%t focus=%d", keyMsg.String(), keyMsg.Key().Text, string(decodedRunes), m.tokenPaletteVisible, m.focus))
 		if handled, cmd := (&m).handleSubjectReplacementKey(keyMsg); handled {
 			if cmd != nil {
 				return m, cmd
@@ -3182,7 +3178,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
-		if keyMsg.Type == tea.KeyRunes && len(decodedRunes) > 0 {
+		if keyMsg.Key().Text != "" && len(decodedRunes) > 0 {
 			handledRunes := false
 			var seqCmds []tea.Cmd
 			for _, r := range decodedRunes {
@@ -3211,22 +3207,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		}
-		switch keyMsg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
+		switch keyMsg.String() {
+		case "ctrl+c", "esc":
 			if cmd, handled := m.handleCancelKey(); handled {
 				if cmd != nil {
 					return m, cmd
 				}
 				return m, nil
 			}
-		case tea.KeyTab:
+		case "tab":
 			if handled, cmd := m.handleKeyString("tab"); handled {
 				if cmd != nil {
 					return m, cmd
 				}
 				return m, nil
 			}
-		case tea.KeyEnter:
+		case "enter":
 			if m.focus == focusCommand {
 				return m, (&m).executeSubjectCommand()
 			}
@@ -3240,14 +3236,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.toggleSelectedEnv()
 				return m, nil
 			}
-		case tea.KeySpace:
+		case "space":
 			if m.focus == focusTokens {
 				if cmd := m.toggleCurrentTokenOption(); cmd != nil {
 					return m, cmd
 				}
 				return m, nil
 			}
-		case tea.KeyUp:
+		case "up":
 			if m.focus == focusTokens {
 				m.moveTokenOption(-1)
 				return m, nil
@@ -3256,7 +3252,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.moveEnvSelection(-1)
 				return m, nil
 			}
-		case tea.KeyDown:
+		case "down":
 			if m.focus == focusTokens {
 				m.moveTokenOption(1)
 				return m, nil
@@ -3265,17 +3261,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.moveEnvSelection(1)
 				return m, nil
 			}
-		case tea.KeyLeft:
+		case "left":
 			if m.focus == focusTokens {
 				m.moveTokenCategory(-1)
 				return m, nil
 			}
-		case tea.KeyRight:
+		case "right":
 			if m.focus == focusTokens {
 				m.moveTokenCategory(1)
 				return m, nil
 			}
-		case tea.KeyDelete, tea.KeyBackspace:
+		case "delete", "backspace":
 			if m.focus == focusTokens {
 				if cmd := m.removeCurrentTokenOption(); cmd != nil {
 					return m, cmd
@@ -3286,7 +3282,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.setAllEnv(false)
 				return m, nil
 			}
-		case tea.KeyCtrlZ:
+		case "ctrl+z":
 			if m.focus == focusTokens || m.tokenPaletteVisible {
 				if cmd := m.undoTokenChange(); cmd != nil {
 					return m, cmd
@@ -3353,14 +3349,14 @@ func (m *model) handleSubjectReplacementKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		return false, nil
 	}
 
-	switch key.Type {
-	case tea.KeyEnter:
+	switch key.String() {
+	case "enter":
 		m.applyPendingSubjectReplacement()
 		return true, nil
-	case tea.KeyEsc, tea.KeyCtrlC:
+	case "esc", "ctrl+c":
 		m.cancelPendingSubjectReplacement()
 		return true, nil
-	case tea.KeyCtrlZ:
+	case "ctrl+z":
 		m.cancelPendingSubjectReplacement()
 		return true, nil
 	}
@@ -3847,7 +3843,7 @@ func (m *model) renderSidebarContent() string {
 	return strings.TrimRight(strings.Join(filtered, "\n\n"), "\n")
 }
 
-func (m model) View() string {
+func (m model) View() tea.View {
 	paletteDebugLog(&m, "View", "")
 	var b strings.Builder
 	b.WriteString("bar prompt editor (Bubble Tea prototype)\n\n")
@@ -3908,11 +3904,19 @@ func (m model) View() string {
 	if dlg, ok := m.dialogs.top(); ok {
 		dialogView := dlg.View(m.dialogViewWidth(), m.height)
 		paletteDebugViewSummary(&m, dialogView)
-		return dialogView
+		v := tea.NewView(dialogView)
+		if m.useAltScreen {
+			v.AltScreen = true
+		}
+		return v
 	}
 
 	paletteDebugViewSummary(&m, output)
-	return output
+	v := tea.NewView(output)
+	if m.useAltScreen {
+		v.AltScreen = true
+	}
+	return v
 }
 
 func (m *model) toggleFocus() {
@@ -4780,7 +4784,7 @@ func (m *model) suggestPresetName() string {
 }
 
 func (m *model) handlePresetPaneKey(key tea.KeyMsg) (bool, tea.Cmd) {
-	if key.Type == tea.KeyCtrlS && !m.presetPaneVisible {
+	if key.String() == "ctrl+s" && !m.presetPaneVisible {
 		m.openPresetPane()
 		return true, nil
 	}
@@ -4788,8 +4792,8 @@ func (m *model) handlePresetPaneKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		return false, nil
 	}
 
-	switch key.Type {
-	case tea.KeyCtrlC, tea.KeyEsc:
+	switch key.String() {
+	case "ctrl+c", "esc":
 		if m.presetMode == presetModeSaving {
 			m.cancelPresetSave()
 		} else if m.presetMode == presetModeConfirmDelete {
@@ -4798,7 +4802,7 @@ func (m *model) handlePresetPaneKey(key tea.KeyMsg) (bool, tea.Cmd) {
 			m.closePresetPane()
 		}
 		return true, nil
-	case tea.KeyCtrlS:
+	case "ctrl+s":
 		if m.presetMode == presetModeSaving {
 			m.submitPresetSave()
 			return true, nil
@@ -4808,15 +4812,15 @@ func (m *model) handlePresetPaneKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		}
 		m.closePresetPane()
 		return true, nil
-	case tea.KeyCtrlN:
+	case "ctrl+n":
 		if m.presetMode == presetModeList {
 			m.enterPresetSaveMode()
 		}
 		return true, nil
-	case tea.KeyCtrlZ:
+	case "ctrl+z":
 		m.undoLastDeletedPreset()
 		return true, nil
-	case tea.KeyEnter:
+	case "enter":
 		switch m.presetMode {
 		case presetModeSaving:
 			m.submitPresetSave()
@@ -4828,17 +4832,17 @@ func (m *model) handlePresetPaneKey(key tea.KeyMsg) (bool, tea.Cmd) {
 			}
 		}
 		return true, nil
-	case tea.KeyUp:
+	case "up":
 		if m.presetMode == presetModeList && len(m.presetSummaries) > 0 {
 			m.movePresetSelection(-1)
 		}
 		return true, nil
-	case tea.KeyDown, tea.KeyTab:
+	case "down", "tab":
 		if m.presetMode == presetModeList && len(m.presetSummaries) > 0 {
 			m.movePresetSelection(1)
 		}
 		return true, nil
-	case tea.KeyDelete, tea.KeyBackspace:
+	case "delete", "backspace":
 		if m.presetMode == presetModeList {
 			m.startPresetDelete()
 		}
@@ -4930,5 +4934,5 @@ func Snapshot(opts Options, subject string) (view string, preview string, err er
 	model.subject.SetValue(subject)
 	model.updateSubjectViewportContent()
 	model.refreshPreview()
-	return model.View(), model.preview, nil
+	return model.View().Content, model.preview, nil
 }

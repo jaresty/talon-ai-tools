@@ -198,8 +198,9 @@ type model struct {
 	redoStack []stateSnapshot
 
 	// State
-	ready bool
-	err   error
+	ready       bool
+	err         error
+	noAltScreen bool
 }
 
 // stateSnapshot captures token state for undo/redo.
@@ -217,8 +218,6 @@ func NewProgram(opts Options) (*tea.Program, error) {
 	var teaOpts []tea.ProgramOption
 	if opts.NoAltScreen {
 		teaOpts = append(teaOpts, tea.WithoutCatchPanics())
-	} else {
-		teaOpts = append(teaOpts, tea.WithAltScreen())
 	}
 
 	return tea.NewProgram(m, teaOpts...), nil
@@ -229,7 +228,7 @@ func newModel(opts Options) model {
 	ti.Placeholder = "bar build "
 	ti.Focus()
 	ti.CharLimit = 256
-	ti.Width = 60
+	ti.SetWidth(60)
 
 	// Seed with "bar build " prefix
 	ti.SetValue("bar build ")
@@ -253,7 +252,7 @@ func newModel(opts Options) model {
 	sci := textinput.New()
 	sci.Placeholder = "Enter shell command (e.g., pbcopy, claude)"
 	sci.CharLimit = 512
-	sci.Width = 60
+	sci.SetWidth(60)
 	if opts.InitialCommand != "" {
 		sci.SetValue(opts.InitialCommand)
 		sci.CursorEnd()
@@ -266,10 +265,10 @@ func newModel(opts Options) model {
 	}
 
 	// Initialize viewports for preview and result scrolling
-	previewVP := viewport.New(60, 10)
+	previewVP := viewport.New(viewport.WithWidth(60), viewport.WithHeight(10))
 	previewVP.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("252")) // Light gray for readability
 
-	resultVP := viewport.New(60, 10)
+	resultVP := viewport.New(viewport.WithWidth(60), viewport.WithHeight(10))
 	resultVP.Style = lipgloss.NewStyle()
 
 	m := model{
@@ -291,6 +290,7 @@ func newModel(opts Options) model {
 		axisDescriptions:        opts.AxisDescriptions,
 		width:                   opts.InitialWidth,
 		height:                  opts.InitialHeight,
+		noAltScreen:             opts.NoAltScreen,
 	}
 
 	// Categorize initial tokens
@@ -345,7 +345,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = wsm.Width
 		m.height = wsm.Height
 		m.ready = true
-		m.commandInput.Width = m.width - 4
+		m.commandInput.SetWidth(m.width - 4)
 		// Resize subject textarea to fit modal
 		m.subjectInput.SetWidth(m.width - 10)
 		m.subjectInput.SetHeight((m.height - 10) / 2)
@@ -358,10 +358,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if vpHeight < 4 {
 			vpHeight = 4
 		}
-		m.previewViewport.Width = vpWidth
-		m.previewViewport.Height = vpHeight
-		m.resultViewport.Width = vpWidth
-		m.resultViewport.Height = vpHeight
+		m.previewViewport.SetWidth(vpWidth)
+		m.previewViewport.SetHeight(vpHeight)
+		m.resultViewport.SetWidth(vpWidth)
+		m.resultViewport.SetHeight(vpHeight)
 	}
 
 	// Route input based on modal state
@@ -460,17 +460,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "pgup", "ctrl+u":
 			// Scroll up in preview/result viewport
 			if m.showingResult {
-				m.resultViewport.HalfViewUp()
+				m.resultViewport.HalfPageUp()
 			} else {
-				m.previewViewport.HalfViewUp()
+				m.previewViewport.HalfPageUp()
 			}
 			return m, nil
 		case "pgdown", "ctrl+d":
 			// Scroll down in preview/result viewport
 			if m.showingResult {
-				m.resultViewport.HalfViewDown()
+				m.resultViewport.HalfPageDown()
 			} else {
-				m.previewViewport.HalfViewDown()
+				m.previewViewport.HalfPageDown()
 			}
 			return m, nil
 		case "up":
@@ -543,8 +543,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// But we still need to handle text input for filtering
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyBackspace:
+		switch msg.String() {
+		case "backspace":
 			// Check if there's a filter partial to delete first
 			partial := m.getFilterPartial()
 			if partial != "" {
@@ -560,13 +560,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.updatePreview()
 			return m, tea.Batch(cmds...)
-		case tea.KeyRunes:
-			// Handle typing for filter
-			var cmd tea.Cmd
-			m.commandInput, cmd = m.commandInput.Update(msg)
-			cmds = append(cmds, cmd)
-			m.updateCompletions()
-			return m, tea.Batch(cmds...)
+		default:
+			if msg.Key().Text != "" {
+				// Handle typing for filter
+				var cmd tea.Cmd
+				m.commandInput, cmd = m.commandInput.Update(msg)
+				cmds = append(cmds, cmd)
+				m.updateCompletions()
+				return m, tea.Batch(cmds...)
+			}
 		}
 	}
 
@@ -1572,24 +1574,32 @@ func (m model) getRemainingStages() []string {
 }
 
 // View implements tea.Model.
-func (m model) View() string {
+func (m model) View() tea.View {
+	makeView := func(content string) tea.View {
+		v := tea.NewView(content)
+		if !m.noAltScreen {
+			v.AltScreen = true
+		}
+		return v
+	}
+
 	if !m.ready {
-		return "Initializing..."
+		return makeView("Initializing...")
 	}
 
 	// Show subject modal if active
 	if m.showSubjectModal {
-		return m.renderSubjectModal()
+		return makeView(m.renderSubjectModal())
 	}
 
 	// Show addendum modal if active
 	if m.showAddendumModal {
-		return m.renderAddendumModal()
+		return makeView(m.renderAddendumModal())
 	}
 
 	// Show command modal if active
 	if m.showCommandModal {
-		return m.renderCommandModal()
+		return makeView(m.renderCommandModal())
 	}
 
 	var b strings.Builder
@@ -1613,7 +1623,7 @@ func (m model) View() string {
 	// Pane 4: Hotkey bar
 	b.WriteString(m.renderHotkeyBar())
 
-	return b.String()
+	return makeView(b.String())
 }
 
 // Styles
@@ -2011,7 +2021,7 @@ func (m model) renderPreviewPane() string {
 	content.WriteString(headerStyle.Render("PREVIEW"))
 
 	// Show scroll indicator if content is scrollable
-	if m.previewViewport.TotalLineCount() > m.previewViewport.Height {
+	if m.previewViewport.TotalLineCount() > m.previewViewport.Height() {
 		scrollPct := int(m.previewViewport.ScrollPercent() * 100)
 		content.WriteString(dimStyle.Render(fmt.Sprintf(" (%d%%)", scrollPct)))
 	}
@@ -2149,7 +2159,7 @@ func (m model) renderResultPane() string {
 	content.WriteString(dimStyle.Render(fmt.Sprintf(" (%s)", m.lastShellCommand)))
 
 	// Show scroll indicator if content is scrollable
-	if m.resultViewport.TotalLineCount() > m.resultViewport.Height {
+	if m.resultViewport.TotalLineCount() > m.resultViewport.Height() {
 		scrollPct := int(m.resultViewport.ScrollPercent() * 100)
 		content.WriteString(dimStyle.Render(fmt.Sprintf(" %d%%", scrollPct)))
 	}
@@ -2276,5 +2286,5 @@ func Snapshot(opts Options) (string, error) {
 	if m.height == 0 {
 		m.height = 24
 	}
-	return m.View(), nil
+	return m.View().Content, nil
 }

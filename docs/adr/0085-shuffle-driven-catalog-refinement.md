@@ -232,7 +232,7 @@ bar build probe full domains gap \
 | **Sampling adequacy** | Did seed selection cover cross-axis edge cases, or only within-axis patterns? Are grammar gap patterns (channel+task, form+completeness) deliberately sampled? |
 | **Release pipeline** | Are dev-repo guidance fixes visible in the installed binary? Is there a release lag between `make bar-grammar-update` and what users actually see? |
 | **Fix closure rate** | Of recommendations from prior cycles, how many were implemented? How many remain open? Is the backlog growing faster than it's being resolved? |
-| **Score calibration** | Were skill alignment and reference utility scores calibrated, or single-evaluator estimates? Are the 1–5 rubric boundaries consistently applied? |
+| **Score calibration** | Was calibration run per Phase 0? If single-evaluator, was the within-evaluator consistency check completed (max delta ≤ 1) and documented in evaluation headers? An undocumented single-evaluator run is a gap; a documented single-evaluator run with boundary rationale captured is a valid path. Are the 1–5 rubric boundaries consistently applied across the cycle? |
 | **Meta-analysis cadence** | How many rapid evaluation cycles since the last meta-analysis? Was deferral appropriate, or did documentation gaps compound undetected? |
 | **Rapid evaluation blind spots** | Does the scoring methodology surface score-3 cases with the same rigor as score-2? Are "sparse" score-3 combos tracked for patterns, or dismissed as noise? |
 | **Feedback loop closure** | After a fix is applied and released, are the original evidence seeds re-tested against the installed binary? Is there a post-release validation step? |
@@ -256,7 +256,7 @@ bar build probe full domains gap \
 - [ ] Sampling: {describe gap in seed selection strategy}
 - [ ] Release pipeline: {describe lag or missing verification}
 - [ ] Fix closure: {list open recommendations from prior cycles}
-- [ ] Calibration: {single-evaluator estimates; no calibration run}
+- [ ] Calibration: {undocumented single-evaluator run / Phase 0 skipped / boundary rationale not captured}
 - [ ] Cadence: {N cycles deferred; gaps compounded}
 - [ ] Blind spots: {describe systematic omissions in rapid evaluation}
 - [ ] Feedback loop: {post-release validation missing or incomplete}
@@ -295,14 +295,14 @@ Token concept is valuable but description needs refinement.
 For **tokens with `CROSS_AXIS_COMPOSITION` entries** (channel, form, completeness, or method tokens — consult the dict), add `ssot_target` to route the edit to the correct SSOT:
 - `description` — token's short description string (default for all non-channel tokens)
 - `guidance_prose` — `AXIS_KEY_TO_GUIDANCE` narrative (human-facing; TUI2/SPA meta panel)
-- `cautionary_entry` — `CROSS_AXIS_COMPOSITION` warning text (structured; rendered in `bar help llm` "Choosing Channel")
+- `cautionary_entry` — `CROSS_AXIS_COMPOSITION` warning text (structured; rendered in `bar help llm` cross-axis composition sections)
 - `use_when` — `AXIS_KEY_TO_USE_WHEN` selection guidance
 
 ```yaml
 action: edit
 token: "focus"
 axis: scope
-ssot_target: description  # required for channel tokens; optional but encouraged for others
+ssot_target: description  # required for tokens with CROSS_AXIS_COMPOSITION entries; optional but encouraged for others
 current: "The response stays within the selected target."
 proposed: "The response addresses only the specific item named, excluding related items."
 reason: "Current description too vague; users unsure what 'target' means"
@@ -322,19 +322,38 @@ evidence: [seed_15, seed_31]
 ```
 
 #### Add Cautionary Entry
-Cross-axis combination produces structurally poor output for reasons the universal Reference Key rule cannot resolve — typically because the task's inherent modality (narrative, interactive, non-executable) is incompatible with the channel's output format.
+Cross-axis combination produces structurally poor output that cannot be resolved by the pairing tokens' individual descriptions. The structural incompatibility may be any of:
+- **Format incompatibility**: the task's inherent modality (narrative, non-executable) conflicts with the channel's output format (e.g., `shellscript+sim`)
+- **Capacity incompatibility**: one token constrains output volume in a way that prevents another token from doing its job (e.g., `gist+fig`, `skim+rigor`, `commit+max`)
+- **Directional range incompatibility**: output format cannot accommodate multi-dimensional directional range (e.g., `commit+fog`, `gist+bog`)
 
-**Before adding**: verify the combination is not derivable under the universal rule ("what would it mean to produce this task's output through this channel's format?"). Only combinations that produce poor output *even with the universal rule applied* belong here.
+**Before adding**: verify the combination cannot be rescued by the universal rule or form-as-lens mechanism. Only combinations that produce poor output *even after applying those rescues* belong here.
 
 ```yaml
 action: cautionary-entry
-axis: "channel"        # top-level axis in CROSS_AXIS_COMPOSITION ("channel" or "form")
+axis: "channel"        # top-level axis in CROSS_AXIS_COMPOSITION ("channel", "form", "completeness", or "method")
 token: "shellscript"   # token within that axis
 paired_axis: "task"    # the axis being paired with
 paired_token: "sim"    # the specific token that produces poor output
 warning: "tends to produce thin output — simulation is inherently narrative, not executable"
 reason: "Simulation tasks require narrative flow that cannot be expressed as executable shell commands"
 evidence: [seed_12, seed_34]
+```
+
+#### Reclassify Natural Entry
+A combination listed as `natural` in `CROSS_AXIS_COMPOSITION` consistently produces poor output in practice — the `natural` assertion was a structural hypothesis that empirical evaluation has falsified.
+
+```yaml
+action: reclassify-natural
+axis: "channel"
+token: "adr"
+paired_axis: "task"
+paired_token: "probe"
+from: natural
+to: cautionary
+proposed_warning: "tends to produce shallow decisions — probe's open-ended analysis resists ADR's conclusion-first structure"
+reason: "Natural assertion not borne out: 3/3 evaluated seeds scored ≤3"
+evidence: [seed_51, seed_62, seed_78]
 ```
 
 #### Add
@@ -450,9 +469,9 @@ For each shuffled prompt, capture:
 - Signal: {catalog / skill / model issue to flag}
 
 **Cross-axis composition check (complete before scoring):**
-- [ ] Check each token in this combination against `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py` (covers channel, form, completeness, and method tokens — consult the dict, do not guess from memory)
+- [ ] Check each token in this combination against `bar help llm` cross-axis composition sections (covers channel, form, completeness, and method tokens). If binary version is ahead of dev repo (per evaluation session header), fall back to `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py` as the authoritative source.
 - [ ] No entry found for any token in this combination → skip; proceed to scoring
-- [ ] Entry found → check the relevant section of `bar help llm` (rendered from `CROSS_AXIS_COMPOSITION`):
+- [ ] Entry found → evaluate against the rendered guidance:
   - [ ] **Natural**: pairing listed as natural → expected good output; score per normal rubric
   - [ ] **Cautionary**: pairing listed as cautionary → known structural issue; score per normal rubric but exclude from token retirement aggregation; add note below
   - [ ] **Unlisted pairing for a token that has an entry**: check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues; apply universal rule (channel wins, task = content lens)

@@ -421,9 +421,9 @@ bar build {tokens}
 - Signal: {catalog / skill / model issue to flag}
 
 **Cross-axis composition check (complete before scoring):**
-- [ ] Check each token against `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py` (covers channel, form, completeness, and method tokens — consult the dict, do not guess from memory)
+- [ ] Check each token against `bar help llm` cross-axis composition sections (covers channel, form, completeness, and method tokens). If binary version is ahead of dev repo (per evaluation session header), fall back to `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py` as the authoritative source.
 - [ ] No entry found for any token in this combination → skip; proceed to scoring
-- [ ] Entry found → check the relevant section of `bar help llm` (rendered from `CROSS_AXIS_COMPOSITION`):
+- [ ] Entry found → evaluate against the rendered guidance:
   - [ ] **Natural**: pairing listed as natural → expected good output; score per normal rubric
   - [ ] **Cautionary**: pairing listed as cautionary → known structural issue; classify as `out-of-scope` or `skill-guidance-wrong` (warn against this combination), not as `missing-token`
   - [ ] **Unlisted pairing for a token that has an entry**: apply universal rule (channel wins, task = content lens); check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues before diagnosing a gap

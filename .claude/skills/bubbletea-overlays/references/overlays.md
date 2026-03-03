@@ -7,7 +7,7 @@ This reference captures the detailed workflow for building multi-pane Bubble Tea
 A responsive root model always tracks the latest `tea.WindowSizeMsg` values and exposes helper methods so child components can size themselves lazily.
 
 ```go
-import tea "github.com/charmbracelet/bubbletea"
+import tea "charm.land/bubbletea/v2"  // v2 import path
 
 type RootModel struct {
   width, height int
@@ -82,7 +82,7 @@ The modal stack lives behind a narrow interface so you can swap implementations.
 type Overlay interface {
   Init() tea.Cmd
   Update(tea.Msg) (Overlay, tea.Cmd)
-  View() string
+  View() tea.View  // v2: return tea.NewView(content) instead of a plain string
   ID() string
   Position(size tea.WindowSizeMsg) (x, y int)
 }
@@ -181,3 +181,12 @@ Expose these gutter values from a shared theme or layout package so other compon
 - [ ] Block input while overlays are active
 - [ ] Centralize gutter and chrome measurements to avoid overlapping content
 - [ ] Emit domain messages from overlays for clean state transitions
+
+## v2 Migration Notes (charm.land/bubbletea/v2)
+
+- **Import**: `charm.land/bubbletea/v2` (vanity domain redirect from `github.com/charmbracelet/bubbletea`)
+- **`View()` return type**: must return `tea.View` not `string`; wrap content with `tea.NewView(content)`. Set `v.AltScreen = true` on the returned view instead of using `tea.WithAltScreen()` in program options.
+- **Key messages**: `tea.KeyMsg` is now an interface; the concrete type for key presses is `tea.KeyPressMsg`. Match keys with `msg.String()` (e.g., `"ctrl+c"`, `"shift+tab"`, `"esc"`).
+- **Program start**: `program.Start()` → `program.Run()`.
+- **AltScreen**: remove `tea.WithAltScreen()` from program options; instead set `v.AltScreen = true` in the `View()` return value.
+- **ANSI in tests**: v2 Lip Gloss renders ANSI codes even in non-terminal test environments; use `github.com/charmbracelet/x/ansi.Strip()` before string comparisons in tests.

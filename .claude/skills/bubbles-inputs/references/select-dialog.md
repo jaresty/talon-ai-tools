@@ -2,6 +2,8 @@
 
 Use this reference to build searchable command palettes, grouped pickers, or keyboard-driven selects using `bubbles/list` and `bubbles/textinput` components.
 
+> **v2 import paths**: `charm.land/bubbles/v2/list`, `charm.land/bubbles/v2/textinput`
+
 ## Core Building Blocks
 
 ### List Items
@@ -46,7 +48,7 @@ Handle keyboard shortcuts before delegating to the list:
 
 ```go
 switch msg := msg.(type) {
-case tea.KeyMsg:
+case tea.KeyPressMsg:  // v2: was tea.KeyMsg in v1
   switch msg.String() {
   case "enter":
     if choice, ok := lst.SelectedItem().(item); ok {
@@ -75,7 +77,7 @@ For grouped options, either:
 Reference `lipgloss-theme-foundations` for colors. Delegate styles control title, pagination, and item rendering:
 
 ```go
-delegate.Styles.SelectedTitle = theme.Title.Copy().Foreground(theme.Primary)
+delegate.Styles.SelectedTitle = theme.Title.Foreground(theme.Primary)  // v2: no .Copy() needed, Style is a value type
 delegate.Styles.SelectedDesc = theme.Muted
 lst.Styles.Title = theme.Title
 lst.Styles.FilterPrompt = theme.SubtleText

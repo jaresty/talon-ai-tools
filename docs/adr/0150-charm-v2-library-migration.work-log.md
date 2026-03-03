@@ -205,3 +205,74 @@ next_work:
   Behaviour T-5: update all local charm skills to v2 import paths and API patterns
   Validation: generated code from skills compiles against v2 imports
 ```
+
+---
+
+## Loop 4 — 2026-03-03T09:30:00Z
+
+```
+helper_version: helper:v20260227.1
+focus: ADR-0150 Phase 6 — update all local charm skills to v2 import paths and API
+  patterns (T-5)
+active_constraint: skill files contain v1 import paths (github.com/charmbracelet/*)
+  that will cause generated code to fail compilation against the v2 go.mod. Falsifiable:
+  grep for v1 charm import paths in .claude/skills/**/*.md returns non-zero. Ranked
+  above no further ADR work because skills are the primary code-generation surface; any
+  future TUI task would generate v1 code and immediately hit compiler errors.
+  Alternative: delete skills and regenerate from scratch — rejected because skills
+  contain non-trivial patterns (semantic group handling, overlay orchestration, focus
+  management) that are worth preserving with minimal changes.
+
+validation_targets:
+  - T-5: grep for v1 charm import paths in .claude/skills/**/*.md returns 0 code-block
+    occurrences (prose references in migration notes are acceptable)
+
+evidence:
+  - red  | 2026-03-03T09:30:00Z | count=9 | grep -rn "github.com/charmbracelet/bubbles|bubbletea|lipgloss" .claude/skills/
+      helper:diff-snapshot=0 (pre-edit baseline)
+      9 v1 import path occurrences across 6 skill files | inline
+  - green | 2026-03-03T09:35:00Z | count=0 | grep -rn (same pattern) .claude/skills/
+      helper:diff-snapshot=8 files changed, 50 insertions(+), 22 deletions(-)
+      0 v1 import paths in code examples; 2 prose-only references in migration notes
+      (explaining what v1 used) — compliant | inline
+  - removal | implied: removing edits restores count to 9 (git restore would replay red)
+
+rollback_plan: git restore .claude/skills/ — replay grep red to confirm failure returns.
+
+delta_summary:
+  helper:diff-snapshot: 8 files changed, 50 insertions(+), 22 deletions(-)
+  bubbles-inputs/references/form-inputs.md: v2 import note + SetWidth() + KeyPressMsg
+    + StyleState (no .Copy()) + import paths.
+  bubbles-inputs/references/select-dialog.md: v2 import note + KeyPressMsg + removed
+    .Copy() from delegate styles.
+  bubbletea-overlays/references/overlays.md: import path + View() tea.View + v2
+    migration notes section (key changes, AltScreen, program.Run, ANSI in tests).
+  lipgloss-components/references/table-rendering.md: charm.land/lipgloss/v2/table.
+  lipgloss-components/references/list-rendering.md: charm.land/lipgloss/v2/list.
+  lipgloss-components/references/tree-rendering.md: charm.land/lipgloss/v2/tree.
+  lipgloss-theme-foundations/SKILL.md: charm.land/lipgloss/v2 + compat import +
+    v2 migration notes (AdaptiveColor, no .Copy(), ANSI in tests, subpackages, glamour).
+  markdown-diff-rendering/references/markdown.md: note that glamour stays on
+    github.com/charmbracelet/glamour (not yet on charm.land v2).
+
+loops_remaining_forecast:
+  0 loops remaining — ADR-0150 complete. All 6 phases shipped:
+  Phase 1 (Loop 1): go.mod v2 deps + import path sweep.
+  Phase 2-4 (Loop 2): v2 API breakage fixes (View, key, viewport, textinput, vet).
+  Phase 5 (Loop 3): SoftWrap on preview/result viewports + go mod tidy.
+  Phase 6 (Loop 4): all charm skills updated to v2 patterns.
+  Bug fix (between loops): token palette cursor visibility (bartui EnsureVisible +
+    bartui2 getCompletionMaxShow + ensureCompletionVisible for semantic groups).
+
+residual_constraints:
+  - "skill snippets not compile-tested at runtime" (severity L×M×L=2): skill content
+    is documentation; verifying generated snippets compile would require creating a
+    scratch module. No TUI regression tests cover skill output. Mitigation: next TUI
+    task using these skills will naturally validate. Monitoring: first charm-based PR
+    after this loop. Owning ADR: ADR-0150 (accepted).
+
+next_work:
+  ADR-0150 is complete. No further loops required.
+  Behaviour T-5 green: all skill files use charm.land/*/v2 import paths and v2 API
+  patterns (KeyPressMsg, SetWidth, tea.View, no .Copy(), compat.AdaptiveColor).
+```

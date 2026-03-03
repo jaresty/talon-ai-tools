@@ -2,6 +2,8 @@
 
 Render Markdown in terminal UIs using `github.com/charmbracelet/glamour`.
 
+> **v2 note**: glamour has not yet moved to the `charm.land` vanity domain. Continue using `github.com/charmbracelet/glamour` regardless of whether the rest of the project is on charm.land v2 modules.
+
 ## Basic Renderer
 
 ```go

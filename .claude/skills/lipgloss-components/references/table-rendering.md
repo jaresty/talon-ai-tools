@@ -1,11 +1,11 @@
 # Lip Gloss Table Rendering Reference
 
-Render structured data using `github.com/charmbracelet/lipgloss/table`.
+Render structured data using `charm.land/lipgloss/v2/table`.
 
 ## Setup
 
 ```go
-import "github.com/charmbracelet/lipgloss/table"
+import "charm.land/lipgloss/v2/table"
 
 rows := [][]string{
   {"Category", "Token", "Active"},

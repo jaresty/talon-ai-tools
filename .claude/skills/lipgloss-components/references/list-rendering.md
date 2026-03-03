@@ -5,7 +5,7 @@ Build bullet, numbered, or custom enumerated lists for terminal summaries.
 ## Basic Usage
 
 ```go
-import "github.com/charmbracelet/lipgloss/list"
+import "charm.land/lipgloss/v2/list"
 
 l := list.New(
   "Ctrl+P opens palette",

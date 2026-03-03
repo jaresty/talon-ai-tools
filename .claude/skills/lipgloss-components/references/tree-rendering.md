@@ -1,11 +1,11 @@
 # Lip Gloss Tree Rendering Reference
 
-Visualise hierarchies using `github.com/charmbracelet/lipgloss/tree`.
+Visualise hierarchies using `charm.land/lipgloss/v2/tree`.
 
 ## Constructing Trees
 
 ```go
-import "github.com/charmbracelet/lipgloss/tree"
+import "charm.land/lipgloss/v2/tree"
 
 t := tree.Root("Tokens").
   Child("scope",

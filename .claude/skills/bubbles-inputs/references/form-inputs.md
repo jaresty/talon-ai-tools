@@ -2,6 +2,12 @@
 
 Use this reference when building multi-field forms, chat editors, or focused input workflows with Charmbracelet’s `bubbles/textinput` and `bubbles/textarea` components.
 
+> **v2 import paths** (charm.land module):
+> ```go
+> import "charm.land/bubbles/v2/textinput"
+> import "charm.land/bubbles/v2/textarea"
+> ```
+
 ## Core Components
 
 ### Text Inputs
@@ -10,12 +16,12 @@ Use this reference when building multi-field forms, chat editors, or focused inp
 - For read-only values (e.g., generated IDs), leave the field blurred and render with a secondary style.
 
 ```go
-import "github.com/charmbracelet/bubbles/textinput"
+import "charm.land/bubbles/v2/textinput"
 
 ti := textinput.New()
 ti.Placeholder = "Project name"
 ti.CharLimit = 64
-ti.Width = 40
+ti.SetWidth(40)  // v2: Width is now set via SetWidth(), not a public field
 ti.Focus()
 ```
 
@@ -24,7 +30,7 @@ ti.Focus()
 - Configure width/height and placeholder text, and disable line numbers unless editing code snippets.
 
 ```go
-import "github.com/charmbracelet/bubbles/textarea"
+import "charm.land/bubbles/v2/textarea"
 
 ta := textarea.New()
 ta.SetWidth(80)
@@ -49,7 +55,7 @@ Inside `Update`:
 
 ```go
 switch msg := msg.(type) {
-case tea.KeyMsg:
+case tea.KeyPressMsg:  // v2: was tea.KeyMsg in v1
   switch msg.String() {
   case "tab":
     m.focusNext(+1)
@@ -78,17 +84,16 @@ Render attachment previews or toggles adjacent to the focused input using Lip Gl
 
 ## Styling
 
-Apply theme-aware styles via `textinput.Styles{}` or `textarea.Styles{}`.
+Apply theme-aware styles via `textinput.StyleState` (v2) or `textinput.Styles{}` (v1).
 
 ```go
-styles := textinput.Styles{
-  Text:       theme.Base.Foreground(theme.Text),
+// v2: lipgloss styles are value types — no .Copy() needed
+styles := textinput.StyleState{
+  Text:        theme.Base.Foreground(theme.Text),
   Placeholder: theme.Subtle,
-  Cursor:     theme.Primary,
-  Focused:    theme.Base.Copy().Border(theme.PrimaryColor),
+  Cursor:      theme.Primary,
 }
-
-ti.SetStyles(styles)
+ti.Styles.Focused = styles
 ```
 
 Allow the root theme to supply sizes so the form adapts to compact vs. wide layouts.

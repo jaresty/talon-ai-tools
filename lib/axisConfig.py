@@ -170,8 +170,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, "
         "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
         "attributed solely to preferences or incentives without modeling how affordances influenced selection.",
-        "align": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring global coherence across the system.",
-        "amorph": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit organization, indicating lack of crystallized system form.",
+        "align": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring global coherence "
+        "across the system.",
+        "amorph": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit "
+        "organization, indicating lack of crystallized system form.",
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
@@ -181,32 +183,38 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "perturbation. No configuration may be treated as stable without explaining why countervailing forces fail to overturn it.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
-        "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring effects remain within intended conceptual or operational regions.",
+        "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
+        "effects remain within intended conceptual or operational regions.",
         "branch": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
         "canon": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to "
         "derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as "
         "independent causal or justificatory elements without specifying their dependency relationship.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
-        "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global inconsistency or breakdown.",
+        "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
+        "inconsistency or breakdown.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning "
         "of the items.",
         "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision "
         "factors. Use when the user presents options and asks which to choose or how they differ.",
         "control": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
         "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
-        "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
+        "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization "
+        "rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment "
         "explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
-        "derive": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than inferred intuitively.",
+        "derive": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than "
+        "inferred intuitively.",
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
         "proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
-        "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
+        "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
+        "allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
-        "entangle": "The response enhances the task by identifying where domains, responsibilities, or meanings are intermixed or mutually dependent in ways that prevent clear separation of influence, suggesting structural coupling or boundary ambiguity.",
+        "entangle": "The response enhances the task by identifying where domains, responsibilities, or meanings are intermixed or mutually dependent in ways that prevent clear separation of "
+        "influence, suggesting structural coupling or boundary ambiguity.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "explore": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing to a single "
@@ -250,13 +258,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
         "forecast.",
-        "sever": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only through explicit, controlled interfaces.",
+        "sever": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only "
+        "through explicit, controlled interfaces.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
         "spec": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions "
         "must be justified against this governing layer and may not redefine it during execution.",
-        "spill": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases coupling, ambiguity, or fragility.",
+        "spill": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases "
+        "coupling, ambiguity, or fragility.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
@@ -525,11 +535,13 @@ AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
         "clash": "Distinct from gap (gap = implicit treated as explicit producing coordination failure; clash = conflict between explicitly stated structures). Distinct from adversarial "
         "(adversarial = construct attacks to stress-test; clash = diagnose existing structural conflicts between explicit elements).",
         "cluster": "Distinguish from: meld (balancing constraints). Cluster groups items by shared characteristics.",
-        "control": "Distinct from agent scope (agent = identify who has decision-making authority; control = focus evaluation and effort exclusively on factors within agency, ignoring those outside it).",
-        "crystal": "Distinct from spec (spec = define correctness criteria first; crystal = shape the whole system toward explicit structural determination of behavior and meaning). Distinct from "
-        "reify (reify = surface one implicit pattern as an explicit rule; crystal = systemic shift toward structural explicitness).",
+        "control": "Distinct from agent scope (agent = identify who has decision-making authority; control = focus evaluation and effort exclusively on factors within agency, ignoring those "
+        "outside it).",
+        "crystal": "Distinct from spec (spec = define correctness criteria first; crystal = shape the whole system toward explicit structural determination of behavior and meaning). Distinct "
+        "from reify (reify = surface one implicit pattern as an explicit rule; crystal = systemic shift toward structural explicitness).",
         "deduce": "Distinguish from: abduce (evidence→hypothesis) and induce (examples→pattern). Deduce derives conclusions from premises.",
-        "derive": "Distinct from deduce (deduce = apply deductive logic to stated premises; derive = make the generative structure itself explicit so conclusions are structurally readable without additional inference).",
+        "derive": "Distinct from deduce (deduce = apply deductive logic to stated premises; derive = make the generative structure itself explicit so conclusions are structurally readable "
+        "without additional inference).",
         "drift": "Distinct from gap (gap = implicit assumptions masquerade as explicit rules producing coordination failure; drift = structural looseness allows interpretive inference to "
         "substitute for derivability in conclusions). Distinct from derive (derive = restructure to make conclusions derivable; drift = diagnose where derivability is absent).",
         "entangle": "Distinct from spill (spill = unidirectional overreach of one concern into another; entangle = bidirectional mutual dependency preventing clean separation). Distinct from "
@@ -827,10 +839,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "cite": "Evidence-anchored response with sources: user wants claims backed by references, citations, or named sources for verification. Heuristic: 'cite your sources', 'include "
         "references', 'back this up with evidence', 'link to sources', 'where does this come from', 'support with citations', 'show your evidence' → cite. Distinct from verify method "
         "(verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check).",
-        "clash": "Conflict and misalignment analysis: user wants to identify where locally valid structures, rules, or commitments produce contradictions or breakdown globally. Heuristic: "
-        "'where do these conflict', 'rule conflicts', 'inconsistent constraints', 'local validity but global failure', 'what commitments contradict each other', 'misaligned rules', "
-        "'structural conflict', 'find the incompatibilities' → clash. Distinct from gap method (gap = implicit treated as explicit producing coordination failures; clash = conflict "
-        "between explicitly stated structures). Distinct from adversarial (adversarial = construct attacks to stress-test; clash = identify existing structural conflicts).",
+        "clash": "Conflict and misalignment analysis: user wants to identify where locally valid structures, rules, or commitments produce contradictions or breakdown globally. Heuristic: 'where "
+        "do these conflict', 'rule conflicts', 'inconsistent constraints', 'local validity but global failure', 'what commitments contradict each other', 'misaligned rules', 'structural "
+        "conflict', 'find the incompatibilities' → clash. Distinct from gap method (gap = implicit treated as explicit producing coordination failures; clash = conflict between "
+        "explicitly stated structures). Distinct from adversarial (adversarial = construct attacks to stress-test; clash = identify existing structural conflicts).",
         "cluster": "Group items by shared characteristics: user wants existing items organized into categories or clusters without reinterpreting their content. Heuristic: 'group these', "
         "'cluster by', 'categorize', 'organize into groups', 'what themes emerge', 'sort into buckets', 'group by similarity', 'classify these items' → cluster. Distinct from compare "
         "method (compare = evaluate alternatives against criteria; cluster = group without evaluating) and meld method (meld = balance constraints; cluster = organize by shared "
@@ -839,14 +851,14 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "do these differ', 'tradeoffs between', 'evaluate these options', 'side by side comparison', 'which should I choose', 'pros and cons' → compare. Distinct from converge method "
         "(converge = narrow from exploration to recommendation; compare = explicit criteria-based evaluation of specified alternatives).",
         "control": "Agency-scoped focus: user wants the response to distinguish controllable from uncontrollable factors and concentrate evaluation and effort exclusively on the former. "
-        "Heuristic: 'focus on what I can control', \"what's within my control\", 'stop worrying about X and focus on Y', 'what can I actually do', 'controllable vs uncontrollable', "
-        "'dichotomy of control', 'stoic framing', 'agency-focused analysis', 'what is mine to act on' → control. Distinct from agent scope (agent = identify who has decision-making "
-        "authority in a system; control = direct evaluation exclusively toward factors within agency, excluding those outside it).",
+        "Heuristic: 'focus on what I can control', \"what's within my control\", 'stop worrying about X and focus on Y', 'what can I actually do', 'controllable vs "
+        "uncontrollable', 'dichotomy of control', 'stoic framing', 'agency-focused analysis', 'what is mine to act on' → control. Distinct from agent scope (agent = identify who has "
+        "decision-making authority in a system; control = direct evaluation exclusively toward factors within agency, excluding those outside it).",
         "converge": "Narrowing from exploration to focused recommendation: user wants broad options filtered down to the best choice with explicit trade-off reasoning. Heuristic: 'narrow it "
         "down', 'which one should I go with', 'help me pick', 'synthesize into a recommendation', 'from all options, which is best', 'converge on an answer', 'filter and recommend' → "
         "converge. Distinct from compare method (compare = evaluate alternatives side by side; converge = narrow exploration toward a single recommendation).",
-        "crystal": "Structure crystallization: user wants to reshape a system so that behavior and meaning are determined by explicit structural organization rather than implicit reasoning "
-        "or uncontrolled coupling. Heuristic: 'make this explicit', 'crystallize the structure', 'replace implicit reasoning with structural enforcement', 'explicit organization over "
+        "crystal": "Structure crystallization: user wants to reshape a system so that behavior and meaning are determined by explicit structural organization rather than implicit reasoning or "
+        "uncontrolled coupling. Heuristic: 'make this explicit', 'crystallize the structure', 'replace implicit reasoning with structural enforcement', 'explicit organization over "
         "interpretation', 'reduce reliance on tacit knowledge', 'formalize the implicit into structure', 'behavior should follow from structure directly' → crystal. Distinct from spec "
         "method (spec = define correctness criteria first; crystal = broadly shape system toward explicit structural determination). Distinct from reify (reify = surface one implicit "
         "pattern as an explicit rule; crystal = systemic shift toward structural explicitness). Distinct from amorph (amorph = diagnose lack of crystallized structure; crystal = "
@@ -871,20 +883,20 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "domains": "Bounded context and domain boundary analysis: user wants to identify where one problem domain ends and another begins, or what the distinct capabilities are. Heuristic: 'what "
         "are the domains', 'where are the bounded contexts', 'domain-driven design', 'what are the distinct capabilities', 'domain boundaries', 'how to carve up the system into "
         "domains', 'which team owns which' → domains. Distinct from struct scope (struct = internal arrangement; domains = identify bounded context separations and capabilities).",
-        "drift": "Conclusion-enforcement gap analysis: user wants to identify where a representation treats conclusions as necessary but does not structurally enforce them, allowing "
-        "interpretive inference or hidden assumptions to substitute. Heuristic: \"where are we assuming necessity without derivability\", 'conclusions that depend on interpretation', "
-        "'hidden assumptions substituting for structure', 'where reasoning could diverge', 'identify underenforced conclusions', 'conclusions that are implicit not derivable', 'where "
-        "does the representation allow inconsistency' → drift. Distinct from gap method (gap = implicit assumptions in rules or roles produce coordination failures; drift = structural "
-        "looseness allows interpretive inference to substitute for derivability). Distinct from derive (derive = restructure to make conclusions derivable; drift = diagnose where "
-        "derivability is absent).",
+        "drift": "Conclusion-enforcement gap analysis: user wants to identify where a representation treats conclusions as necessary but does not structurally enforce them, allowing interpretive "
+        "inference or hidden assumptions to substitute. Heuristic: \"where are we assuming necessity without derivability\", 'conclusions that depend on interpretation', 'hidden "
+        "assumptions substituting for structure', 'where reasoning could diverge', 'identify underenforced conclusions', 'conclusions that are implicit not derivable', 'where does the "
+        "representation allow inconsistency' → drift. Distinct from gap method (gap = implicit assumptions in rules or roles produce coordination failures; drift = structural looseness "
+        "allows interpretive inference to substitute for derivability). Distinct from derive (derive = restructure to make conclusions derivable; drift = diagnose where derivability is "
+        "absent).",
         "effects": "Second and third-order consequence tracing: user wants to look beyond immediate outcomes to downstream ripple effects. Heuristic: 'what are the downstream effects', 'second "
         "order effects', 'ripple effects', 'what happens next after that', 'unintended consequences', 'how does this propagate', 'what follows downstream' → effects. Distinct from "
         "grove method (grove = how effects accumulate and compound; effects = trace the chain of consequences).",
         "entangle": "Coupling and intermixing analysis: user wants to identify where domains or responsibilities are so intermixed that clean separation is structurally prevented. Heuristic: "
-        "'where are these coupled', 'find the entanglement', 'mutual dependency analysis', \"where can't these be separated\", 'coupling analysis', 'boundary ambiguity', 'what is "
-        "tangled together', 'identify the intermixing', 'what prevents clean separation' → entangle. Distinct from spill (spill = one concern overreaches into another unidirectionally; "
-        "entangle = bidirectional mutual dependency preventing clean separation). Distinct from sever (sever = restructure to introduce separations; entangle = diagnose structural "
-        "coupling that prevents them).",
+        "'where are these coupled', 'find the entanglement', 'mutual dependency analysis', \"where can't these be separated\", 'coupling analysis', 'boundary ambiguity', "
+        "'what is tangled together', 'identify the intermixing', 'what prevents clean separation' → entangle. Distinct from spill (spill = one concern overreaches into another "
+        "unidirectionally; entangle = bidirectional mutual dependency preventing clean separation). Distinct from sever (sever = restructure to introduce separations; entangle = "
+        "diagnose structural coupling that prevents them).",
         "experimental": "Concrete experiment design: user wants specific, runnable experiments with expected outcomes and hypothesis-updating logic. Heuristic: 'design an experiment', 'how would "
         "we test this', 'what experiment would prove this', 'propose tests', 'how do we validate', 'what would we measure', 'design a study', 'run a test to find out' → "
         "experimental. Distinct from verify method (verify = apply falsification pressure analytically; experimental = propose actual runnable tests).",
@@ -966,10 +978,10 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "reify": "Implicit pattern formalization: user wants to surface hidden assumptions, conventions, or relationships and make them explicit as formal rules, entities, or distinctions. "
         "Heuristic: 'what's the hidden assumption', 'make implicit explicit', 'what conventions govern this', 'what's unstated but assumed', 'formalize the informal', 'what rules "
         "actually apply here' → reify. Distinct from analysis method (analysis = describe and structure; reify = convert implicit patterns into explicit formal rules).",
-        "release": "Attachment-loosening reframe: user wants to reduce distortion or disturbance arising from identification with transient states, roles, or outcomes. Heuristic: 'let go of "
-        "the outcome', 'detach from the result', 'stop over-identifying with the role', 'reduce attachment', 'clarity through non-attachment', 'separate the outcome from the person', "
-        "'non-attached analysis', 'release the assumption', 'stop holding onto X' → release. Distinct from shift method (shift = rotate through multiple cognitive perspectives; release "
-        "= reduce distortion by loosening identification with transient states or roles rather than rotating perspective).",
+        "release": "Attachment-loosening reframe: user wants to reduce distortion or disturbance arising from identification with transient states, roles, or outcomes. Heuristic: 'let go of the "
+        "outcome', 'detach from the result', 'stop over-identifying with the role', 'reduce attachment', 'clarity through non-attachment', 'separate the outcome from the person', "
+        "'non-attached analysis', 'release the assumption', 'stop holding onto X' → release. Distinct from shift method (shift = rotate through multiple cognitive perspectives; "
+        "release = reduce distortion by loosening identification with transient states or roles rather than rotating perspective).",
         "resilience": "System stress and recovery analysis: user wants to understand how the system behaves under failure, load, or disruption — fragility, robustness, and margin of safety. "
         "Heuristic: 'how resilient is this', 'what happens under load', 'failure recovery', 'margin of safety', 'fragility vs robustness', 'how does it behave under stress', "
         "'graceful degradation', 'fault tolerance' → resilience. Distinct from robust method (robust = choose options that perform across uncertain futures; resilience = analyze "
@@ -987,8 +999,8 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "sever": "Separation enforcement: user wants the response to introduce or reinforce structural boundaries between domains, ensuring all interaction occurs through explicit controlled "
         "interfaces. Heuristic: 'separate these concerns', 'introduce a boundary here', 'enforce domain separation', 'make these modules independent', 'controlled interfaces only', "
         "'decouple these', 'introduce an abstraction boundary', 'route interactions through explicit interfaces' → sever. Distinct from bound method (bound = limit how far effects "
-        "propagate; sever = introduce a structural separation that routes all interaction through explicit interfaces). Distinct from domains method (domains = identify bounded contexts; "
-        "sever = introduce or reinforce separations between them). Distinct from entangle (entangle = diagnose intermixing; sever = address it by structural separation).",
+        "propagate; sever = introduce a structural separation that routes all interaction through explicit interfaces). Distinct from domains method (domains = identify bounded "
+        "contexts; sever = introduce or reinforce separations between them). Distinct from entangle (entangle = diagnose intermixing; sever = address it by structural separation).",
         "shift": "Perspective rotation: user wants the same facts reinterpreted through several distinct frames or cognitive modes to surface what each reveals. Heuristic: 'look at this from "
         "multiple angles', 'different perspectives', 'rotate through lenses', 'six thinking hats', 'shift perspectives', 'what would X think about this', 'see it through different "
         "frames', 'consider multiple viewpoints' → shift. Distinct from models method (models = apply named mental models; shift = rotate through distinct cognitive modes or stakeholder "
@@ -1001,11 +1013,11 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "spec": "Correctness criteria before implementation: user wants explicit success criteria defined first, with implementation required to satisfy the prior specification. Heuristic: "
         "'define the spec first', 'test-driven design', 'what should it do before how', 'specification before implementation', 'write the tests first', 'define success criteria', 'TDD', "
         "'correctness criteria' → spec. Distinct from grow method (grow = evolve incrementally from minimal; spec = define the target criteria first and measure compliance against them).",
-        "spill": "Scope leakage analysis: user wants to identify where influence, responsibility, or meaning escapes its intended boundary, increasing coupling or fragility. Heuristic: "
-        "'where does this leak', 'scope creep', 'responsibility overreach', 'bleeding concerns', 'what crosses boundary lines uninvited', 'where is influence extending too far', "
-        "'coupling from overreach', 'what is reaching outside its scope' → spill. Distinct from bound method (bound = introduce or reinforce propagation limits proactively; spill = "
-        "identify where those limits have been violated or never existed). Distinct from cross scope (cross = concerns spanning modules by design; spill = concerns overreaching their "
-        "intended scope unintentionally).",
+        "spill": "Scope leakage analysis: user wants to identify where influence, responsibility, or meaning escapes its intended boundary, increasing coupling or fragility. Heuristic: 'where "
+        "does this leak', 'scope creep', 'responsibility overreach', 'bleeding concerns', 'what crosses boundary lines uninvited', 'where is influence extending too far', 'coupling from "
+        "overreach', 'what is reaching outside its scope' → spill. Distinct from bound method (bound = introduce or reinforce propagation limits proactively; spill = identify where "
+        "those limits have been violated or never existed). Distinct from cross scope (cross = concerns spanning modules by design; spill = concerns overreaching their intended scope "
+        "unintentionally).",
         "split": "Deliberate decomposition into isolated parts: user wants the subject broken into components for separate analysis before considering interactions. Heuristic: 'break this into "
         "parts', 'decompose', 'analyze each component separately', 'isolate the pieces', 'divide and analyze', 'separate concerns', 'split into sub-problems', 'analyze in isolation' → "
         "split. Distinct from dimension method (dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis).",

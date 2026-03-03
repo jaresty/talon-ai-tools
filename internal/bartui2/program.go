@@ -489,11 +489,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Navigate completions down
 			if m.completionIndex < len(m.completions)-1 {
 				m.completionIndex++
-				// Adjust scroll offset if selection moved below visible window
-				maxShow := m.getCompletionMaxShow()
-				if m.completionIndex >= m.completionScrollOffset+maxShow {
-					m.completionScrollOffset = m.completionIndex - maxShow + 1
-				}
+				(&m).ensureCompletionVisible()
 			}
 			return m, nil
 		case "tab":
@@ -1184,17 +1180,63 @@ func (m model) getPreviewPaneHeight() int {
 }
 
 // getCompletionMaxShow returns the maximum number of completions that can be shown.
+// Must match the renderer formula in renderTokensPane (paneHeight - 8).
 func (m model) getCompletionMaxShow() int {
 	paneHeight := (m.height - 10) / 3
 	if paneHeight < 4 {
 		paneHeight = 4
 	}
-	// Reserve space for: header, "more above", completions, "more below", "Then:" hint, selected desc
-	maxShow := paneHeight - 7
+	// Reserve space for: header, "more above", completions, "more below", "Then:" hint, selected desc,
+	// and one extra line for the routing concept subtitle on the selected item.
+	maxShow := paneHeight - 8
 	if maxShow < 1 {
 		maxShow = 1
 	}
 	return maxShow
+}
+
+// countGroupHeaders returns the number of semantic group headers that would be rendered
+// in completions[startIdx:endIdx]. Each header takes one display line.
+func (m model) countGroupHeaders(startIdx, endIdx int) int {
+	if startIdx >= endIdx || len(m.completions) == 0 {
+		return 0
+	}
+	count := 0
+	var lastGroup string
+	if startIdx > 0 {
+		lastGroup = m.completions[startIdx-1].SemanticGroup
+	}
+	for i := startIdx; i < endIdx && i < len(m.completions); i++ {
+		g := m.completions[i].SemanticGroup
+		if g != "" && g != lastGroup {
+			count++
+			lastGroup = g
+		}
+	}
+	return count
+}
+
+// ensureCompletionVisible adjusts completionScrollOffset so the currently selected
+// completion is within the visible window, accounting for semantic group headers that
+// consume extra display lines.
+func (m *model) ensureCompletionVisible() {
+	maxShow := m.getCompletionMaxShow()
+
+	// First pass: basic index-based check.
+	if m.completionIndex >= m.completionScrollOffset+maxShow {
+		m.completionScrollOffset = m.completionIndex - maxShow + 1
+	}
+
+	// Second pass: account for group headers that push the selected item off-screen.
+	// Iterate the scroll offset forward until the item's effective line fits in maxShow.
+	for m.completionScrollOffset < m.completionIndex {
+		headers := m.countGroupHeaders(m.completionScrollOffset, m.completionIndex+1)
+		itemLine := (m.completionIndex - m.completionScrollOffset) + headers
+		if itemLine < maxShow {
+			break
+		}
+		m.completionScrollOffset++
+	}
 }
 
 // getCategoryForToken returns the category label for a given token value.

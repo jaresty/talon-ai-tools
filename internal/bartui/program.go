@@ -3081,6 +3081,23 @@ func (m *model) renderTokenViewportContent() string {
 
 func (m *model) updateTokenViewportContent() {
 	m.tokenViewport.SetContent(m.renderTokenViewportContent())
+	if !m.tokenPaletteVisible {
+		return
+	}
+	// Scroll the palette viewport so the focused row stays visible.
+	// Palette layout (0-indexed lines): summary(0), filter(1), "Categories:"(2),
+	// one line per category (3..3+N-1), "Options:"(3+N), one line per option (3+N+1..).
+	nCats := len(m.tokenStates)
+	switch m.tokenPaletteFocus {
+	case tokenPaletteFocusCategories:
+		if m.tokenCategoryIndex >= 0 {
+			m.tokenViewport.EnsureVisible(3+m.tokenCategoryIndex, 0, 0)
+		}
+	case tokenPaletteFocusOptions:
+		if m.tokenPaletteOptionIndex >= 0 && len(m.tokenPaletteOptions) > 0 {
+			m.tokenViewport.EnsureVisible(4+nCats+m.tokenPaletteOptionIndex, 0, 0)
+		}
+	}
 }
 
 func (m model) Init() tea.Cmd {

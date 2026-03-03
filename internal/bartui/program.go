@@ -16,11 +16,11 @@ import (
 
 	"math"
 
-	textarea "github.com/charmbracelet/bubbles/textarea"
-	textinput "github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	lipgloss "github.com/charmbracelet/lipgloss"
+	textarea "charm.land/bubbles/v2/textarea"
+	textinput "charm.land/bubbles/v2/textinput"
+	"charm.land/bubbles/v2/viewport"
+	tea "charm.land/bubbletea/v2"
+	lipgloss "charm.land/lipgloss/v2"
 )
 
 // PreviewFunc produces the preview text for the given subject and tokens.

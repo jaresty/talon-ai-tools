@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	lipgloss "github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	lipgloss "charm.land/lipgloss/v2"
 	"github.com/muesli/termenv"
 )
 

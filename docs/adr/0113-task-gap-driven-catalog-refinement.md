@@ -108,9 +108,14 @@ with approximate probabilities, for example:
 
 **Sampling strategy:**
 
-- Select tasks proportional to weight: higher-weight tasks appear more often in the evaluation corpus
-- Include at least one task from each broad domain (code, analysis, writing, planning, design)
-- Add edge-case tasks: cross-domain tasks, very brief tasks, tasks with strong format requirements
+The sampling procedure is stratified with proportional allocation within floors:
+
+1. **Method category floors first**: Apply the secondary pass (below) to ensure ≥3 tasks per method category (Decision, Understanding, Exploration, Diagnostic). These slots are reserved before proportional allocation.
+2. **Proportional within remaining quota**: Allocate remaining sample slots proportional to probability weight. Higher-weight tasks appear more often in the remaining corpus.
+3. **Domain coverage check**: Verify at least one task from each broad domain (code, analysis, writing, planning, design) — if a domain is missing, add it even if proportional allocation did not select it.
+4. **Edge cases**: Add cross-domain tasks, very brief tasks, tasks with strong format requirements.
+
+Note: The method category floors structurally override proportional sampling for underrepresented categories. This is intentional — frequency underrepresents Diagnostic and Exploration tasks that are no less important to cover.
 
 **Output artifact:** `docs/adr/evidence/0113/task-taxonomy.md`
 
@@ -128,6 +133,20 @@ bar build probe full variants --addendum \
 
 Use the output to ensure each method category has at least 3-5 representative tasks in the evaluation corpus. This prevents systematic under-sampling of Diagnostic or Exploration tasks, which users may describe with lower-frequency vocabulary but are no less important.
 
+**Tertiary pass — channel type stratification:**
+
+After ensuring method category coverage, run an additional pass to surface task types where the output channel is a primary quality variable (per ADR-0147):
+
+```bash
+bar build probe full variants --addendum \
+  "For each channel type — executable (shellscript, code), specification (adr, gherkin, codetour), \
+   delivery (sync, commit), and no-channel (default prose) — list 2-3 realistic bar task types \
+   where choosing that channel type is a meaningful decision. Label each with the channel type \
+   and an example bar command."
+```
+
+Use the output to ensure each channel type has at least 2 representative tasks in the corpus. This prevents systematic under-sampling of channel+task composition gaps, which ADR-0147 identified as a primary quality variable distinct from method and scope gaps.
+
 ---
 
 ### Phase 2: Apply Bar Skills
@@ -135,6 +154,8 @@ Use the output to ensure each method category has at least 3-5 representative ta
 For each sampled task, run bar-autopilot to select tokens and construct the bar command. This
 mirrors how an LLM using bar in practice would approach the task — making the skill the selection
 agent tests both the catalog and the skill simultaneously.
+
+**Scope limitation**: This process measures skill-mediated coverage, not user coverage. A user may approach a task via starter packs, direct `bar help llm` consultation, or prior experience — paths this process does not exercise. Findings apply directly to skill guidance quality; implications for catalog coverage require triangulation with starter pack paths (see Phase 3) and direct user observation.
 
 **For each task in the corpus:**
 
@@ -197,14 +218,16 @@ serve the task*.
 - **2 - Poor coverage**: The combination misrepresents the task or skill misrouted badly
 - **1 - No coverage**: No adequate token combination exists for this task type
 
-**Starter pack check (secondary):**
+**Starter pack check (co-primary):**
 
-After scoring the skill-selected combination, check whether a starter pack covers this task type:
+Score starter pack coverage in parallel with autopilot selection. Starter packs are the primary user entry point for bar — evaluating them alongside autopilot prevents a systematic blind spot where catalog coverage looks poor when it is actually adequate via the pack path.
 
 - Is there a starter pack that maps to this task type? If yes, name it and score its coverage: {1-5}
 - Pack vs autopilot: [Pack better / Autopilot better / Equivalent]
-- If pack is better: what does it provide that autopilot missed? (candidate for skill-guidance-wrong diagnosis)
-- If no relevant pack exists: does this task type warrant a new starter pack? (candidate for `starter-pack-add` recommendation)
+- **If pack is better**: classify as `skill-guidance-wrong` (pointing toward the existing pack), not as a catalog gap
+- **If autopilot is better**: note what the pack misses as a candidate for `starter-pack-update`
+- **If no relevant pack exists**: does this task type warrant a new starter pack? (candidate for `starter-pack-add` recommendation)
+- **Reporting**: include both scores in the coverage summary; if they diverge by ≥2, investigate before diagnosing a gap
 
 **Output artifact:** `docs/adr/evidence/0113/evaluations/task_T01_eval.md`
 
@@ -359,6 +382,10 @@ Aggregate gap diagnoses into actionable recommendations following the same taxon
 ```markdown
 ## Task: {ID} — {Task type name}
 
+**Evaluation session:**
+- Binary version: {bar --version output}
+- Dev repo ahead of binary: {yes/no}
+
 **Task description:** {Concrete example phrasing}
 **Probability weight:** {from taxonomy}
 **Domain:** {code / analysis / writing / planning / design}
@@ -391,6 +418,13 @@ bar build {tokens}
 - Root cause: {static prompt / token combo / skill selection / model limitation}
 - Signal: {catalog / skill / model issue to flag}
 
+**Cross-axis composition check (complete before scoring):**
+- [ ] No channel token in this combination → skip; proceed to scoring
+- [ ] Channel token present → check "Choosing Channel" in `bar help llm`:
+  - [ ] **Natural**: combination listed as natural → expected good output; score per normal rubric
+  - [ ] **Cautionary**: combination listed as cautionary → known structural issue; classify as `out-of-scope` or `skill-guidance-wrong` (warn against this combination), not as `missing-token`
+  - [ ] **Unlisted**: apply universal rule (channel wins, task = content lens); check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues before diagnosing a gap
+
 **Coverage scores:**
 - Token fitness: {1-5}
 - Token completeness: {1-5}
@@ -401,10 +435,12 @@ bar build {tokens}
 **Gap diagnosis:** {gap type or "none"} — [missing-token / undiscoverable-token / skill-guidance-wrong / category-misrouting / out-of-scope]
 {Gap YAML block if applicable}
 
-**Starter pack check:**
+**Starter pack check (co-primary):**
 - Relevant pack: {pack name or "none"}
-- Pack coverage score: {1-5 or N/A}
+- Autopilot coverage: {1-5}
+- Pack coverage: {1-5 or N/A}
 - Pack vs autopilot: [Pack better / Autopilot better / Equivalent / N/A]
+- Gap diagnosis adjustment: {if pack ≥ autopilot+2, reclassify as skill-guidance-wrong toward pack}
 - Notes: {what pack adds or misses vs autopilot selection}
 
 **Notes:**
@@ -480,16 +516,24 @@ Before evaluating any tasks, establish evaluator consistency:
 
 ### Procedure
 
-Both evaluators independently scored the same 10 tasks without consulting each other.
+**Multi-evaluator:** Both evaluators independently scored the same 10 tasks without consulting each other.
+
+**Single-evaluator (when multi-evaluator is unavailable):** Score the same 5 tasks twice with at least a 24-hour gap between rounds. Flag any dimension where delta > 1 as a calibration concern. Note this limitation in all evaluation headers for this cycle.
+
+### Boundary Rationale
+
+For each score boundary where evaluators (or rounds) disagreed, write one sentence explaining why the example is a 3 and not a 2, or a 4 and not a 3. This rationale becomes the calibration artifact for subsequent rounds — agreement on scores alone does not establish shared criteria across unseen cases.
 
 ### Results
 
-**Agreement rate:** {X}/10 = {Y}%
+**Agreement rate:** {X}/10 = {Y}% (multi-evaluator) or within-evaluator max delta: {Z} (single-evaluator)
 **Score delta average:** {Z} (mean absolute difference)
+**Boundary rationale captured:** {yes/no}
 
 ### Resolution
 
 - [ ] **Calibrated (agreement ≥ 80%):** Proceed with full evaluation
+- [ ] **Single-evaluator consistent (max delta ≤ 1):** Proceed, noting single-evaluator limitation in evaluation headers
 - [ ] **Discuss and re-score:** Below threshold — resolve discrepancies, clarify rubric
 ```
 
@@ -512,11 +556,13 @@ If ADR-0085 (shuffle-driven) has been run, compare findings before finalizing re
 | Token: {X} | gap: missing-token | score 5 (coherent) | **Task-only signal** | Validate with next shuffle |
 | Token: {Y} | gap: undiscoverable | edit recommended | **Aligned** | Proceed with priority |
 | Skill: {S} | gap: skill-guidance-wrong | n/a | **Single-signal** | Validate with shuffle |
-| Method: {M} | gap: missing-token | no issues | **Confirmed gap** | Add to recommendations |
+| Method: {M} | gap: missing-token | no issues | **Corroborated gap** | Add to recommendations |
+
+> **Note on corroboration**: Because both processes share an evaluator, skill set, and reference document, agreement between them is corroboration, not independent confirmation. Corroborated findings warrant higher confidence but should be treated as confirmed only when tested by a structurally independent observer or method.
 
 ### Findings Summary
 
-- **Confirmed:** {both processes agree on gap}
+- **Corroborated:** {both processes agree — note shared evaluator limitation}
 - **Aligned:** {related issues, same root cause}
 - **Task-only:** {gaps found only in task analysis — validate with shuffle}
 - **Shuffle-only:** {coherence issues not affecting real tasks — lower priority}
@@ -540,6 +586,8 @@ Questions this step is designed to surface:
 - Does the task taxonomy's probability weighting treat LLM-estimated frequency as a reliable proxy for actual usage?
 - Are coverage scores treating the five rubric dimensions as independent when they are entangled?
 - Does the process assume that fixing skill guidance is sufficient when the catalog description is also contributing?
+
+**Limitation**: `probe gap` is itself a bar prompt — LLM-evaluated, non-deterministic, and subject to the same implicit assumption tendencies the process is trying to detect. Treat its output as an input signal for human review, not as a structural safeguard. It cannot validate its own output. If the probe returns findings that suggest the process is broken, escalate to human judgment — there is no automated resolution path.
 
 Capture output as a brief note appended to `gap-catalog.md` before handing off to human review.
 

@@ -55,6 +55,7 @@ bar shuffle --seed 102 --include persona_preset --fill 0.0
 
 **Sampling strategy:**
 - Broad sweep: 30-50 fully random shuffles (`--fill 0.5`)
+- **Natural-entry validation**: For each channel with explicit entries in `CROSS_AXIS_COMPOSITION` (shellscript, code, codetour, adr, gherkin, sync, commit), include at least one seed combining that channel with a `natural`-listed task. These validate that `natural` assertions hold empirically — the `natural` list is a structural claim, not a tested guarantee.
 - Category deep-dives: 10-20 per axis with `--include` forcing selection
 - **Method category samples**: 5-10 shuffles per method semantic category (Decision/Understanding/Exploration/Diagnostic) with `--include method` to evaluate whether tokens within each category produce distinguishable, coherent outputs. Tokens in the same category that produce indistinguishable results are a stronger retirement signal than cross-category redundancy.
 - Edge cases: Low-fill (`--fill 0.1`) and high-fill (`--fill 0.9`) extremes
@@ -69,7 +70,7 @@ For each generated prompt, evaluate against the prompt key (ADR 0083):
 | **Constraint independence** | Do constraints shape HOW without redefining WHAT? |
 | **Persona coherence** | Does the persona stance make sense for this task? |
 | **Category alignment** | Is each token doing the job of its stated category? |
-| **Combination harmony** | Do the selected tokens work together or fight? |
+| **Combination harmony** | Do the selected tokens work together or fight? When a channel token is present, apply the universal rule first: channel wins, task becomes a content lens. A combination is harmonious if the reframe is derivable — score it on output quality, not apparent conflict. Consult "Choosing Channel" in `bar help llm` for cautionary exceptions. |
 | **Method category coherence** | When multiple method tokens are selected, do their semantic categories (Decision/Understanding/Exploration/Diagnostic) make complementary analytical sense together? |
 
 **Scoring rubric:**
@@ -140,6 +141,7 @@ After evaluating against skills, assess whether `bar help llm` provides adequate
 | **Pattern examples** | Do the "Usage Patterns by Task Type" examples illustrate similar combinations? |
 | **Reference completeness** | Would someone consulting only `bar help llm` understand what this prompt will do? |
 | **Method category legibility** | Do the method category headings (Decision/Understanding/Exploration/Diagnostic) in the "Choosing Method" section clearly guide selection toward the methods in this combination? Score 1 if the category labels misdirected selection, 5 if they immediately surfaced the right methods. |
+| **Choosing Channel coverage** | If this seed includes a channel token: does the "Choosing Channel" section in `bar help llm` explain whether this channel+task/audience combination is natural, cautionary, or derivable via the universal rule? Score 1 if the section is absent or silent on this combination; 5 if it clearly explains the expected output. N/A if no channel token is selected. |
 
 **Scoring rubric:**
 
@@ -274,6 +276,8 @@ Based on evaluation, categorize findings into actions:
 #### Retire
 Token produces consistently low scores or is indistinguishable from another.
 
+**Aggregation requirement before retiring**: Tally the token's appearances across all evaluated seeds in this cycle. Exclude any appearances flagged as known-cautionary cross-axis combinations (per the cross-axis composition check) — those scores reflect a structural channel+task incompatibility, not a token quality issue. Compute mean score and minimum score across remaining qualifying appearances. "Consistently low" means ≥3 qualifying appearances with mean ≤2.5, or any single score of 1. If fewer than 3 qualifying appearances are available, gather additional targeted seeds before proceeding to a retirement recommendation.
+
 **Priority signal — same-category redundancy**: If the redundant token shares a semantic category (Decision/Understanding/Exploration/Diagnostic) with the token it overlaps, retirement is higher priority than cross-category overlap. Tokens in the same category are explicitly positioned as peers; indistinguishable outputs within a category are unambiguous redundancy, not a framing difference.
 
 ```yaml
@@ -288,10 +292,17 @@ evidence: [seed_12, seed_34, seed_45]
 #### Edit
 Token concept is valuable but description needs refinement.
 
+For **channel tokens**, add `ssot_target` to route the edit to the correct SSOT:
+- `description` — token's short description string (default for all non-channel tokens)
+- `guidance_prose` — `AXIS_KEY_TO_GUIDANCE` narrative (human-facing; TUI2/SPA meta panel)
+- `cautionary_entry` — `CROSS_AXIS_COMPOSITION` warning text (structured; rendered in `bar help llm` "Choosing Channel")
+- `use_when` — `AXIS_KEY_TO_USE_WHEN` selection guidance
+
 ```yaml
 action: edit
 token: "focus"
 axis: scope
+ssot_target: description  # required for channel tokens; optional but encouraged for others
 current: "The response stays within the selected target."
 proposed: "The response addresses only the specific item named, excluding related items."
 reason: "Current description too vague; users unsure what 'target' means"
@@ -308,6 +319,21 @@ from_axis: form
 to_axis: completeness
 reason: "'Tight' controls depth/verbosity more than structure"
 evidence: [seed_15, seed_31]
+```
+
+#### Add Cautionary Entry
+Cross-axis combination produces structurally poor output for reasons the universal Reference Key rule cannot resolve — typically because the task's inherent modality (narrative, interactive, non-executable) is incompatible with the channel's output format.
+
+**Before adding**: verify the combination is not derivable under the universal rule ("what would it mean to produce this task's output through this channel's format?"). Only combinations that produce poor output *even with the universal rule applied* belong here.
+
+```yaml
+action: cautionary-entry
+channel: "shellscript"
+axis: "task"
+token: "sim"
+warning: "tends to produce thin output — simulation is inherently narrative, not executable"
+reason: "Simulation tasks require narrative flow that cannot be expressed as executable shell commands"
+evidence: [seed_12, seed_34]
 ```
 
 #### Add
@@ -371,14 +397,16 @@ If ADR-0113 (task-driven refinement) has been run, compare findings before final
 
 | Finding | ADR-0085 | ADR-0113 | Correlation | Action |
 |---------|----------|----------|-------------|--------|
-| Token: {X} | retire (redundancy) | absent from all tasks | **Confirmed** | Proceed |
+| Token: {X} | retire (redundancy) | absent from all tasks | **Corroborated** | Proceed |
 | Token: {Y} | edit (description) | gap: undiscoverable | **Aligned** | Priority |
 | Skill: {S} | n/a | gap: skill-guidance-wrong | **Single-signal** | Validate with shuffle |
 | Token: {Z} | score 5 (coherent) | gap: missing-token | **Contradictory** | Skill fix, not catalog |
 
+> **Note on corroboration**: Because both processes share an evaluator, skill set, and reference document, agreement between them is corroboration, not independent confirmation. Corroborated findings warrant higher confidence but should be treated as confirmed only when tested by a structurally independent observer or method.
+
 ### Findings Summary
 
-- **Confirmed:** {both processes agree}
+- **Corroborated:** {both processes agree — note shared evaluator limitation}
 - **Aligned:** {related issues, same root cause}
 - **Contradictory:** {one process found, other missed — investigate}
 - **ADR-0113-only:** {task gaps not in shuffle — validate with next shuffle run}
@@ -392,6 +420,11 @@ For each shuffled prompt, capture:
 
 ```markdown
 ## Seed: {N}
+
+**Evaluation session:**
+- Binary version: {bar --version output}
+- Dev repo ahead of binary: {yes/no}
+- If yes: Phase 2c (bar help llm) findings are potentially stale — note in help-llm-feedback.md
 
 **Tokens selected:**
 - static: {token}
@@ -415,12 +448,28 @@ For each shuffled prompt, capture:
 - Root cause: {static prompt / token combo / token description / model limitation}
 - Signal: {catalog / skill / model issue to flag}
 
+**Cross-axis composition check (complete before scoring):**
+- [ ] No channel token in this combination → skip; proceed to scoring
+- [ ] Channel token present → check "Choosing Channel" in `bar help llm` (or `CROSS_AXIS_COMPOSITION` in `lib/axisConfig.py`):
+  - [ ] **Natural**: combination listed as natural → expected good output; score per normal rubric
+  - [ ] **Cautionary**: combination listed as cautionary → known structural issue; score per normal rubric but exclude from token retirement aggregation; add note below
+  - [ ] **Unlisted**: check `AXIS_KEY_TO_GUIDANCE` prose for form-as-lens rescues before scoring; apply universal rule (channel wins, task = content lens)
+
+**If cautionary combination detected:**
+- Channel: {channel token}
+- Cautionary pairing: {task/audience/completeness token}
+- Warning (from CROSS_AXIS_COMPOSITION): {text}
+- Exclude from token retirement aggregation: ✓
+
 **Scores (vs Prompt Key):**
 - Task clarity: {1-5}
 - Constraint independence: {1-5}
 - Persona coherence: {1-5}
 - Category alignment: {1-5}
 - Combination harmony: {1-5}
+  - 5: Tokens reinforce each other naturally; or channel+task reframe is derivable under universal rule and produces coherent output
+  - 3: Reframe is derivable but strained; or one token feels redundant
+  - 1: Tokens actively contradict; or combination is in CROSS_AXIS_COMPOSITION cautionary list (flag as cautionary; exclude from token retirement aggregation)
 - Method category coherence: {1-5}
   - 5: All methods from compatible categories (e.g., two Diagnostic methods, or Exploration→Understanding progression)
   - 3: Mix of categories with plausible rationale
@@ -440,6 +489,7 @@ For each shuffled prompt, capture:
 - Description clarity: {1-5}
 - Selection guidance: {1-5}
 - Pattern examples: {1-5}
+- Choosing Channel coverage: {1-5 or N/A}
 - **Reference overall**: {1-5}
 
 **Notes:**
@@ -485,6 +535,7 @@ The refinement cycle produces:
 Run this process periodically or when catalog drift is suspected:
 
 1. **Calibrate**: Run calibration check with multiple evaluators to establish scoring consistency
+1a. **Version check**: Record `bar --version` (installed binary) and compare to dev repo HEAD. Document in each evaluation header. If binary is behind dev repo, flag all Phase 2c (bar help llm) findings as potentially stale.
 2. **Generate**: Create 50+ shuffled prompts across sampling strategies
 3. **Evaluate**: Score each against prompt key rubric, capture notes, record LLM execution outcome
 4. **Meta-Evaluate Skills**: Score each against bar skills, identify skill gaps and catalog issues (Phase 2b)
@@ -512,16 +563,24 @@ Before evaluating any prompts, establish evaluator consistency:
 
 ### Procedure
 
-Both evaluators independently scored the same 10 prompts without consulting each other.
+**Multi-evaluator:** Both evaluators independently scored the same 10 prompts without consulting each other.
+
+**Single-evaluator (when multi-evaluator is unavailable):** Score the same 5 prompts twice with at least a 24-hour gap between rounds. Flag any dimension where delta > 1 as a calibration concern. Note this limitation in all evaluation headers for this cycle.
+
+### Boundary Rationale
+
+For each score boundary where evaluators (or rounds) disagreed, write one sentence explaining why the example is a 3 and not a 2, or a 4 and not a 3. This rationale becomes the calibration artifact for subsequent rounds — agreement on scores alone does not establish shared criteria across unseen cases.
 
 ### Results
 
-**Agreement rate:** {X}/10 = {Y}%
+**Agreement rate:** {X}/10 = {Y}% (multi-evaluator) or within-evaluator max delta: {Z} (single-evaluator)
 **Score delta average:** {Z} (mean absolute difference)
+**Boundary rationale captured:** {yes/no}
 
 ### Resolution
 
 - [ ] **Calibrated (agreement ≥ 80%):** Proceed with full evaluation
+- [ ] **Single-evaluator consistent (max delta ≤ 1):** Proceed, noting single-evaluator limitation in evaluation headers
 - [ ] **Discuss and re-score:** Below threshold — resolve discrepancies, clarify rubric
 ```
 
@@ -543,6 +602,8 @@ Questions this step is designed to surface:
 - Are retirement thresholds ("multiple low scores") treating a quantitative bar as self-evident when it isn't?
 - Does the cross-validation assume ADR-0085 and ADR-0113 measure independent things when they may share blind spots?
 - Are any recommendation actions (retire/edit/recategorize) treating their own scope as obvious?
+
+**Limitation**: `probe gap` is itself a bar prompt — LLM-evaluated, non-deterministic, and subject to the same implicit assumption tendencies the process is trying to detect. Treat its output as an input signal for human review, not as a structural safeguard. It cannot validate its own output. If the probe returns findings that suggest the process is broken, escalate to human judgment — there is no automated resolution path.
 
 Capture output as a brief note appended to `recommendations.yaml` before handing off to human review.
 

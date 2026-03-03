@@ -1,5 +1,5 @@
 # ADR-0150 – Charm v2 Library Migration (Bubble Tea, Lip Gloss, Bubbles)
-Status: Proposed
+Status: Accepted
 Date: 2026-03-02
 Owners: CLI Working Group
 

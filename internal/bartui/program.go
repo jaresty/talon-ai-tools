@@ -936,6 +936,7 @@ func newModel(opts Options) model {
 	subjectViewport := viewport.New(viewport.WithWidth(defaultViewportWidth), viewport.WithHeight(minSubjectViewport))
 	tokenViewport := viewport.New(viewport.WithWidth(defaultViewportWidth), viewport.WithHeight(minTokenViewport))
 	resultViewport := viewport.New(viewport.WithWidth(defaultViewportWidth), viewport.WithHeight(minResultViewport))
+	resultViewport.SoftWrap = true
 
 	initialWidth := opts.InitialWidth
 	if initialWidth <= 0 {

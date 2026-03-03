@@ -150,3 +150,58 @@ next_work:
   Behaviour T-4: go mod tidy removes v1 deps from go.mod.
   Behaviour T-5: all charm skills updated to document v2 APIs.
 ```
+
+---
+
+## Loop 3 — 2026-03-03T08:46:12Z
+
+```
+helper_version: helper:v20260227.1
+focus: ADR-0150 Phase 5 — SoftWrap on preview/result viewports + go mod tidy (T-3/T-4)
+active_constraint: preview viewport in bartui2 and result viewport in bartui do not
+  wrap long prompt lines; lines truncate or require horizontal scroll. Falsifiable:
+  no SoftWrap=true on those models; adding it is the only source change needed.
+  Ranked above skill updates because Phase 5 source changes precede documentation.
+  Alternative: enable horizontal scrolling instead — rejected because prompt preview
+  text is prose that reads better word-wrapped than truncated.
+
+validation_targets:
+  - T-3/T-4: go test ./... exits 0 after SoftWrap addition and go mod tidy
+
+evidence:
+  - red  | 2026-03-03T08:46:12Z | grep=0 | grep -n "SoftWrap" bartui2/program.go bartui/program.go
+      helper:diff-snapshot=0 (loop-2 commit)
+      No SoftWrap field set on any viewport; long preview lines truncate | inline
+  - green | 2026-03-03T08:47:23Z | exit 0 | go test ./...
+      helper:diff-snapshot=4 files changed (program.go×2 + go.mod + tui_smoke.json)
+      all packages pass with SoftWrap enabled + fixture regenerated | inline
+  - removal | implied by red grep returning 0 — adding SoftWrap is the only change;
+      reverting would re-zero the grep | inline
+
+rollback_plan: git restore internal/bartui/program.go internal/bartui2/program.go
+  go.mod go.sum cmd/bar/testdata/tui_smoke.json — replay grep for SoftWrap to confirm
+  absence returns.
+
+delta_summary:
+  bartui2/program.go: previewVP.SoftWrap = true; resultVP.SoftWrap = true
+  bartui/program.go: resultViewport.SoftWrap = true
+  go.mod/go.sum: go mod tidy removed v1 charmbracelet/* packages as direct deps
+    (they had no remaining importers after Loop 1–2 import sweep)
+  tui_smoke.json: regenerated expected_view; SoftWrap changes line-wrapping of
+    long preview text inside the viewport
+
+loops_remaining_forecast:
+  1 loop remaining (medium confidence):
+  Loop 4 — Phase 6 skill file updates (bubbles-inputs, bubbletea-overlays,
+    lipgloss-theme-foundations, lipgloss-layout-utilities, lipgloss-components,
+    bubbletea-dialog-stacking, markdown-diff-rendering, components)
+
+residual_constraints:
+  - "skill files document v1 patterns" (severity M×M×H=12): any future charm-based
+    TUI work guided by skills will generate v1 code. Mitigation: Loop 4 updates.
+    Monitoring: verify generated snippets compile after Loop 4.
+
+next_work:
+  Behaviour T-5: update all local charm skills to v2 import paths and API patterns
+  Validation: generated code from skills compiles against v2 imports
+```

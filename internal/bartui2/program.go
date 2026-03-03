@@ -267,9 +267,11 @@ func newModel(opts Options) model {
 	// Initialize viewports for preview and result scrolling
 	previewVP := viewport.New(viewport.WithWidth(60), viewport.WithHeight(10))
 	previewVP.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("252")) // Light gray for readability
+	previewVP.SoftWrap = true
 
 	resultVP := viewport.New(viewport.WithWidth(60), viewport.WithHeight(10))
 	resultVP.Style = lipgloss.NewStyle()
+	resultVP.SoftWrap = true
 
 	m := model{
 		commandInput:      ti,

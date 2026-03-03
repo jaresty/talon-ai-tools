@@ -33,6 +33,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose "
         "or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+        "notebook": "The response is delivered as a valid Jupyter notebook (`.ipynb` JSON), with an ordered sequence of markdown and code cells appropriate to the task, structured for execution "
+        "and exploration. No surrounding prose outside the notebook structure.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code "
         "blocks.",
         "presenterm": 'The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: "--- newline title: <descriptive title '
@@ -602,6 +604,9 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'Midjourney', 'Stable Diffusion' → image. No surrounding prose.",
         "jira": "Jira markup formatting: user wants the response formatted using Jira markdown (headings, lists, panels). Heuristic: 'Jira format', 'Jira markup', 'format for Jira', 'Jira "
         "ticket format', 'for a Jira comment', 'use Jira markup' → jira. Use with text-friendly channels; avoid with output-only channels.",
+        "notebook": "Jupyter notebook format: user wants the response as a runnable `.ipynb` notebook with code cells, markdown narrative, and structured outputs. Heuristic: 'Jupyter notebook', "
+        "'notebook format', 'as a notebook', '.ipynb', 'runnable notebook', 'notebook with code cells', 'data exploration notebook', 'interactive notebook' → notebook. Well-suited "
+        "for data analysis, exploration, and tutorial tasks. Avoid with non-code or pure prose tasks.",
         "plain": "Suppress structural formatting: when user explicitly requests plain prose, no lists, no bullets, or no structural decoration. Heuristic: 'no bullets', 'no formatting', 'plain "
         "prose', 'continuous prose', 'flowing paragraphs', 'paragraph form' → plain channel.",
         "presenterm": "Presenterm slide deck: user wants the output as a multi-slide presenterm Markdown deck with valid front matter, slide separators, and end_slide directives. Heuristic: "
@@ -1428,6 +1433,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "html": "HTML output",
         "image": "Image output",
         "jira": "Jira formatting",
+        "notebook": "Jupyter notebook",
         "plain": "Plain prose",
         "presenterm": "Slide deck",
         "remote": "Remote delivery",

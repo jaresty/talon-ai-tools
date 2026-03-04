@@ -103,29 +103,67 @@ export function renderPrompt(
 		parts.push(writeSection('=== ADDENDUM 追加 (CLARIFICATION) ===', addendum.trim()));
 	}
 
+	// ADR-0153 T-1: apply form-token default completeness override when the user
+	// has not selected a completeness token explicitly.
+	const effectiveSelected = { ...selected };
+	const formTokens = effectiveSelected.form ?? [];
+	if ((effectiveSelected.completeness ?? []).length === 0 && formTokens.length > 0) {
+		const formDefault =
+			grammar.axes?.form_default_completeness?.[formTokens[0]] ?? null;
+		if (formDefault) {
+			effectiveSelected.completeness = [formDefault];
+		}
+	}
+
+	// ADR-0153 T-2: build conflict-note index from cross_axis_composition cautionary_notes.
+	// Maps axis → token → conflictNote string for the current selection.
+	const conflictNotes: Record<string, Record<string, string>> = {};
+	const cac = grammar.axes?.cross_axis_composition ?? {};
+	for (const [axisA, byTokenA] of Object.entries(cac)) {
+		for (const [tokenA, byAxisB] of Object.entries(byTokenA)) {
+			if (!(effectiveSelected[axisA] ?? []).includes(tokenA)) continue;
+			for (const [axisB, pair] of Object.entries(
+				byAxisB as Record<string, { cautionary_notes?: Record<string, string> }>
+			)) {
+				const notes = pair.cautionary_notes ?? {};
+				for (const [tokenB, note] of Object.entries(notes)) {
+					if ((effectiveSelected[axisB] ?? []).includes(tokenB)) {
+						conflictNotes[axisA] ??= {};
+						conflictNotes[axisA][tokenA] = note;
+					}
+				}
+			}
+		}
+	}
+
 	// CONSTRAINTS section
-	const constraints: string[] = [];
+	const constraintLines: string[] = [];
 	for (const axis of CONSTRAINT_AXES) {
-		const tokens = selected[axis] ?? [];
+		const tokens = effectiveSelected[axis] ?? [];
 		const kanjiMap = grammar.axes?.kanji?.[axis] ?? {};
 		for (const token of tokens) {
 			const desc = grammar.axes?.definitions?.[axis]?.[token] ?? '';
 			const heading = axisHeading(axis);
 			const kanji = kanjiMap[token] ?? '';
 			const tokenWithKanji = kanji ? `${token} ${kanji}` : token;
+			let line = '';
 			if (token && desc) {
-				constraints.push(`${heading} (${tokenWithKanji}): ${desc}`);
+				line = `- ${heading} (${tokenWithKanji}): ${desc}`;
 			} else if (token) {
-				constraints.push(`${heading}: ${tokenWithKanji}`);
+				line = `- ${heading}: ${tokenWithKanji}`;
+			}
+			if (line) {
+				const note = conflictNotes[axis]?.[token];
+				constraintLines.push(note ? `${line}\n  ↳ ${note}` : line);
 			}
 		}
 	}
 
 	parts.push('=== CONSTRAINTS 制約 (GUARDRAILS) ===\n');
-	if (constraints.length === 0) {
+	if (constraintLines.length === 0) {
 		parts.push('(none)\n\n');
 	} else {
-		parts.push(constraints.map((c) => `- ${c}`).join('\n') + '\n\n');
+		parts.push(constraintLines.join('\n') + '\n\n');
 	}
 
 	// PERSONA section — mirrors Go CLI's writePersonaSection() in render.go.

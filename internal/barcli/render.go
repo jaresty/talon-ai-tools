@@ -44,6 +44,9 @@ func RenderPlainText(result *BuildResult) string {
 			formatted := formatPromptlet(constraint)
 			if formatted != "" {
 				fmt.Fprintf(&b, "- %s\n", formatted)
+				if constraint.ConflictNote != "" {
+					fmt.Fprintf(&b, "  \u21b3 %s\n", constraint.ConflictNote)
+				}
 			}
 		}
 		b.WriteString("\n")

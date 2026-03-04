@@ -48,14 +48,16 @@ type AxisSection struct {
 	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
 	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
 	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
-	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
-	AxisDescriptions    map[string]string                      // axis-level empty-state descriptions
+	CrossAxisComposition   map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
+	AxisDescriptions       map[string]string                              // axis-level empty-state descriptions
+	FormDefaultCompleteness map[string]string                             // ADR-0153: per-form-token completeness override
 }
 
 // CrossAxisPair holds the natural/cautionary composition data for one axis_a+token_a+axis_b triple (ADR-0147).
 type CrossAxisPair struct {
-	Natural   []string          `json:"natural"`
-	Cautionary map[string]string `json:"cautionary"`
+	Natural         []string          `json:"natural"`
+	Cautionary      map[string]string `json:"cautionary"`
+	CautionaryNotes map[string]string `json:"cautionary_notes,omitempty"` // ADR-0153: render-time conflict notes
 }
 
 type StaticSection struct {
@@ -159,8 +161,9 @@ type rawAxisSection struct {
 	Kanji          map[string]map[string]string `json:"kanji"`            // ADR-0143
 	Categories     map[string]map[string]string `json:"categories"`       // ADR-0144
 	RoutingConcept       map[string]map[string]string                `json:"routing_concept"`        // ADR-0146
-	CrossAxisComposition map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"` // ADR-0147
-	AxisDescriptions     map[string]string                           `json:"axis_descriptions"`      // axis-level empty-state descriptions
+	CrossAxisComposition    map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"`     // ADR-0147
+	AxisDescriptions        map[string]string                              `json:"axis_descriptions"`          // axis-level empty-state descriptions
+	FormDefaultCompleteness map[string]string                              `json:"form_default_completeness"`  // ADR-0153
 }
 
 
@@ -264,8 +267,9 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Kanji:          raw.Axes.Kanji,
 			Categories:     raw.Axes.Categories,
 			RoutingConcept:       raw.Axes.RoutingConcept,
-			CrossAxisComposition: raw.Axes.CrossAxisComposition,
-			AxisDescriptions:     raw.Axes.AxisDescriptions,
+			CrossAxisComposition:    raw.Axes.CrossAxisComposition,
+			AxisDescriptions:        raw.Axes.AxisDescriptions,
+			FormDefaultCompleteness: raw.Axes.FormDefaultCompleteness,
 		},
 		Static: StaticSection{
 			Profiles:       profiles,
@@ -1050,6 +1054,15 @@ func (g *Grammar) CrossAxisCompositionFor(axis, token string) map[string]CrossAx
 		}
 	}
 	return nil
+}
+
+// FormDefaultCompletenessFor returns the preferred default completeness token for a form token (ADR-0153).
+// Returns "" if no override is defined for the token.
+func (g *Grammar) FormDefaultCompletenessFor(formToken string) string {
+	if g.Axes.FormDefaultCompleteness == nil {
+		return ""
+	}
+	return g.Axes.FormDefaultCompleteness[normalizeToken(formToken)]
 }
 
 // AxisUseWhen returns the use_when discoverability hint for a token (ADR-0132).

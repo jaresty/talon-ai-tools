@@ -240,4 +240,108 @@ describe('renderPrompt', () => {
 		expect(result).toContain('Audience (engineers): Technical, implementation-ready.');
 		expect(result).toContain('Intent (coach): Guide growth and development.');
 	});
+
+	// ADR-0153 T-1: form tokens with form_default_completeness override the global default.
+	it('uses form_default_completeness when no completeness token is selected (ADR-0153 T-1)', () => {
+		const grammarWithDefault: Grammar = {
+			...grammar,
+			axes: {
+				...grammar.axes,
+				definitions: {
+					...grammar.axes.definitions,
+					completeness: {
+						...grammar.axes.definitions.completeness,
+						gist: 'Brief but complete.',
+					},
+					form: { commit: 'Conventional commit message.' },
+				},
+				form_default_completeness: { commit: 'gist' },
+			},
+		};
+		const result = renderPrompt(grammarWithDefault, { task: ['show'], form: ['commit'] }, 'x', '');
+		expect(result).toContain('Completeness (gist): Brief but complete.');
+		expect(result).not.toContain('Completeness (full');
+	});
+
+	it('does not override explicit completeness when form_default_completeness is set (ADR-0153 T-1)', () => {
+		const grammarWithDefault: Grammar = {
+			...grammar,
+			axes: {
+				...grammar.axes,
+				definitions: {
+					...grammar.axes.definitions,
+					form: { commit: 'Conventional commit message.' },
+				},
+				form_default_completeness: { commit: 'gist' },
+			},
+		};
+		const result = renderPrompt(
+			grammarWithDefault,
+			{ task: ['show'], completeness: ['full'], form: ['commit'] },
+			'x',
+			''
+		);
+		expect(result).toContain('Completeness (full 全): Comprehensive coverage');
+	});
+
+	// ADR-0153 T-2: cautionary_notes render as ↳ conflict lines.
+	it('renders conflict note for cautionary pair with cautionary_notes (ADR-0153 T-2)', () => {
+		const grammarWithNotes: Grammar = {
+			...grammar,
+			axes: {
+				...grammar.axes,
+				definitions: {
+					...grammar.axes.definitions,
+					completeness: { gist: 'Brief but complete.' },
+					directional: { fig: 'Span abstract and concrete.' },
+				},
+				cross_axis_composition: {
+					completeness: {
+						gist: {
+							directional: {
+								natural: [],
+								cautionary: { fig: 'gist cannot express full vertical range' },
+								cautionary_notes: { fig: 'Conflict: gist brevity limits directional range — completeness governs.' },
+							},
+						},
+					},
+				},
+			},
+		};
+		const result = renderPrompt(
+			grammarWithNotes,
+			{ completeness: ['gist'], directional: ['fig'] },
+			'x',
+			''
+		);
+		expect(result).toContain('↳ Conflict: gist brevity limits directional range — completeness governs.');
+	});
+
+	it('does not render conflict note for non-conflicting pairs (ADR-0153 T-2)', () => {
+		const grammarWithNotes: Grammar = {
+			...grammar,
+			axes: {
+				...grammar.axes,
+				cross_axis_composition: {
+					completeness: {
+						gist: {
+							directional: {
+								natural: [],
+								cautionary: { fig: 'gist cannot express full vertical range' },
+								cautionary_notes: { fig: 'Conflict: gist brevity limits directional range.' },
+							},
+						},
+					},
+				},
+			},
+		};
+		// rog is not in cautionary_notes, so no conflict note
+		const result = renderPrompt(
+			grammarWithNotes,
+			{ completeness: ['gist'], directional: ['rog'] },
+			'x',
+			''
+		);
+		expect(result).not.toContain('↳');
+	});
 });

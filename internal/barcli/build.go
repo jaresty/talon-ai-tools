@@ -54,10 +54,11 @@ type PersonaResult struct {
 }
 
 type HydratedPromptlet struct {
-	Axis        string `json:"axis"`
-	Token       string `json:"token"`
-	Description string `json:"description"`
-	Kanji       string `json:"kanji,omitempty"`
+	Axis         string `json:"axis"`
+	Token        string `json:"token"`
+	Description  string `json:"description"`
+	Kanji        string `json:"kanji,omitempty"`
+	ConflictNote string `json:"conflict_note,omitempty"` // ADR-0153: render-time constraint conflict note
 }
 
 type buildState struct {
@@ -756,6 +757,14 @@ func (s *buildState) finalise() *CLIError {
 	s.scope = dedupeInOrder(s.scope)
 	s.method = dedupeInOrder(s.method)
 
+	// ADR-0153 T-1: if a form token declares a default completeness and the user has not
+	// specified one explicitly, override the global default ("full") with the form's preferred default.
+	if !s.completenessExplicit && len(s.form) > 0 {
+		if override := s.grammar.FormDefaultCompletenessFor(s.form[0]); override != "" {
+			s.completeness = override
+		}
+	}
+
 	s.hydratedConstraints = s.buildHydratedConstraints()
 	s.hydratedPersona = s.buildHydratedPersona()
 	return nil
@@ -797,6 +806,36 @@ func (s *buildState) buildHydratedConstraints() []HydratedPromptlet {
 	}
 	if s.directional != "" {
 		add("directional", []string{s.directional})
+	}
+
+	// ADR-0153 T-2: inject conflict notes for cautionary pairs that carry a render-time note.
+	// For each active token, check cross-axis composition against other active tokens.
+	dirKey := normalizeToken(s.directional)
+	if s.completeness != "" && dirKey != "" {
+		cac := s.grammar.CrossAxisCompositionFor("completeness", s.completeness)
+		if pair, ok := cac["directional"]; ok {
+			if note, ok := pair.CautionaryNotes[dirKey]; ok {
+				for i, e := range entries {
+					if e.Axis == "completeness" {
+						entries[i].ConflictNote = note
+						break
+					}
+				}
+			}
+		}
+	}
+	if len(s.form) > 0 && dirKey != "" {
+		cac := s.grammar.CrossAxisCompositionFor("form", s.form[0])
+		if pair, ok := cac["directional"]; ok {
+			if note, ok := pair.CautionaryNotes[dirKey]; ok {
+				for i, e := range entries {
+					if e.Axis == "form" {
+						entries[i].ConflictNote = note
+						break
+					}
+				}
+			}
+		}
 	}
 
 	return entries

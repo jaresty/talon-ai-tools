@@ -226,6 +226,11 @@ def _build_axis_section(
     if cross_axis_raw:
         section["cross_axis_composition"] = cross_axis_raw
 
+    # FormDefaultCompleteness (ADR-0153): per-form-token completeness overrides.
+    form_default_completeness = catalog.get("form_default_completeness") or {}
+    if form_default_completeness:
+        section["form_default_completeness"] = form_default_completeness
+
     return (section, axis_slugs)
 
 

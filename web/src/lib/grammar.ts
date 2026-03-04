@@ -25,6 +25,7 @@ export interface GrammarPattern {
 export interface CrossAxisPair {
 	natural: string[];
 	cautionary: Record<string, string>;
+	cautionary_notes?: Record<string, string>; // ADR-0153: render-time conflict notes (bar only, not displayed in SPA)
 }
 
 export interface Grammar {
@@ -38,6 +39,7 @@ export interface Grammar {
 		routing_concept?: Record<string, Record<string, string>>; // ADR-0146: distilled routing concept phrases
 		cross_axis_composition?: Record<string, Record<string, Record<string, CrossAxisPair>>>; // ADR-0148
 		axis_descriptions?: Record<string, string>; // axis-level empty-state descriptions
+		form_default_completeness?: Record<string, string>; // ADR-0153: per-form-token completeness override
 	};
 	tasks: {
 		descriptions: Record<string, string>;

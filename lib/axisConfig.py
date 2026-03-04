@@ -113,7 +113,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "recommendation that addresses objections and constraints.",
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an "
-        "output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With one, formats the artifact to expose decision points and invite response.",
+        "output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With one, formats the artifact to expose decision points and invite "
+        "response.",
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it "
         "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
@@ -173,8 +174,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
-        "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show "
-        "how they offset one another.",
+        "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how "
+        "they offset one another.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
@@ -1820,7 +1821,21 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "dip-rog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
                     "dip-bog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
                     "fog": "fog requires multi-dimensional breadth commit format cannot accommodate; use gist or minimal",
-                }
+                },
+                "cautionary_notes": {
+                    "fig": "Conflict: commit format constrains range — format governs over directional.",
+                    "bog": "Conflict: commit format constrains range — format governs over directional.",
+                    "fly-ong": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "fly-rog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "fly-bog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "fip-ong": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "fip-rog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "fip-bog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "dip-ong": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "dip-rog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "dip-bog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+                    "fog": "Conflict: commit format constrains breadth — format governs over directional.",
+                },
             },
         },
         "case": {
@@ -1925,7 +1940,20 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "dip-ong": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
                     "dip-rog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
                     "dip-bog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
-                }
+                },
+                "cautionary_notes": {
+                    "fig": "Conflict: gist brevity limits directional range — completeness governs.",
+                    "bog": "Conflict: gist brevity limits directional range — completeness governs.",
+                    "fly-ong": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "fly-rog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "fly-bog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "fip-ong": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "fip-rog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "fip-bog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "dip-ong": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "dip-rog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                    "dip-bog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+                },
             }
         },
         "skim": {
@@ -1943,7 +1971,21 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "dip-rog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
                     "dip-bog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
                     "fog": "fog requires breadth of abstract examination skim cannot provide; use full or deep instead",
-                }
+                },
+                "cautionary_notes": {
+                    "fig": "Conflict: skim brevity limits directional range — completeness governs.",
+                    "bog": "Conflict: skim brevity limits directional range — completeness governs.",
+                    "fly-ong": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "fly-rog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "fly-bog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "fip-ong": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "fip-rog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "fip-bog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "dip-ong": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "dip-rog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "dip-bog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+                    "fog": "Conflict: skim brevity limits abstract breadth — completeness governs.",
+                },
             },
             "method": {
                 "cautionary": {
@@ -1972,6 +2014,13 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         }
     },
 }
+
+# Default completeness token for format-constrained form tokens (ADR-0153).
+# When a form token structurally limits response depth and the user has not
+# specified a completeness token, the render pipeline uses this value instead
+# of the global "full" default. Only define entries where the format's brevity
+# constraint is structural — not a user preference.
+FORM_DEFAULT_COMPLETENESS: Dict[str, str] = {"commit": "gist"}
 
 
 @dataclass(frozen=True)

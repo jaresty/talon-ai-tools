@@ -168,6 +168,10 @@ def render_axis_config() -> str:
     axis_desc_body = pprint.pformat(axis_desc_mapping, width=200, sort_dicts=True)
     cross_axis_raw = payload.get("cross_axis_composition", {}) or {}
     cross_axis_body = pprint.pformat(cross_axis_raw, width=200, sort_dicts=False)
+    form_default_completeness_raw = payload.get("form_default_completeness", {}) or {}
+    form_default_completeness_body = pprint.pformat(
+        dict(sorted(form_default_completeness_raw.items())), width=200, sort_dicts=True
+    )
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -364,6 +368,12 @@ def get_usage_patterns() -> list[dict]:
                 f"# what the axis means, when to use it, and what skipping it means.\n"
                 f"AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {axis_desc_body}",
                 f"CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {cross_axis_body}",
+                f"# Default completeness token for format-constrained form tokens (ADR-0153).\n"
+                f"# When a form token structurally limits response depth and the user has not\n"
+                f"# specified a completeness token, the render pipeline uses this value instead\n"
+                f"# of the global \"full\" default. Only define entries where the format's brevity\n"
+                f"# constraint is structural — not a user preference.\n"
+                f"FORM_DEFAULT_COMPLETENESS: Dict[str, str] = {form_default_completeness_body}",
                 dataclasses.rstrip(),
                 helpers.rstrip() + usage_patterns_block,
             ]

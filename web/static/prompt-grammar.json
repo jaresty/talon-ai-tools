@@ -1437,6 +1437,20 @@
               "dip-rog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
               "dip-bog": "compound directional requires multi-dimensional depth commit format cannot accommodate; use gist or minimal",
               "fog": "fog requires multi-dimensional breadth commit format cannot accommodate; use gist or minimal"
+            },
+            "cautionary_notes": {
+              "fig": "Conflict: commit format constrains range — format governs over directional.",
+              "bog": "Conflict: commit format constrains range — format governs over directional.",
+              "fly-ong": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "fly-rog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "fly-bog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "fip-ong": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "fip-rog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "fip-bog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "dip-ong": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "dip-rog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "dip-bog": "Conflict: commit format cannot accommodate compound directional depth — format governs.",
+              "fog": "Conflict: commit format constrains breadth — format governs over directional."
             }
           }
         },
@@ -1573,6 +1587,19 @@
               "dip-ong": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
               "dip-rog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead",
               "dip-bog": "compound directional requires multi-dimensional depth gist cannot accommodate; use full or deep instead"
+            },
+            "cautionary_notes": {
+              "fig": "Conflict: gist brevity limits directional range — completeness governs.",
+              "bog": "Conflict: gist brevity limits directional range — completeness governs.",
+              "fly-ong": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "fly-rog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "fly-bog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "fip-ong": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "fip-rog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "fip-bog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "dip-ong": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "dip-rog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
+              "dip-bog": "Conflict: gist brevity limits compound directional depth — completeness governs."
             }
           }
         },
@@ -1591,6 +1618,20 @@
               "dip-rog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
               "dip-bog": "compound directional requires sustained examination skim cannot provide; use full or deep instead",
               "fog": "fog requires breadth of abstract examination skim cannot provide; use full or deep instead"
+            },
+            "cautionary_notes": {
+              "fig": "Conflict: skim brevity limits directional range — completeness governs.",
+              "bog": "Conflict: skim brevity limits directional range — completeness governs.",
+              "fly-ong": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "fly-rog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "fly-bog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "fip-ong": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "fip-rog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "fip-bog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "dip-ong": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "dip-rog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "dip-bog": "Conflict: skim brevity limits compound directional depth — completeness governs.",
+              "fog": "Conflict: skim brevity limits abstract breadth — completeness governs."
             }
           },
           "method": {
@@ -1616,6 +1657,9 @@
           }
         }
       }
+    },
+    "form_default_completeness": {
+      "commit": "gist"
     }
   },
   "tasks": {
@@ -3996,7 +4040,7 @@
     }
   ],
   "checksums": {
-    "axes": "05208652f7723a8f53ace7aa79379c6b257b077afabab9d8ffe8abac2d172742",
+    "axes": "303ae6b6b69e0a0ada1f838ee2801334b02deabc2096f379f0560c9c2fed4764",
     "tasks": "ae0113d67a811a6c84c580c1601746b125a45ac6d56b9cf0d6abce1877f0f139",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -1,6 +1,6 @@
 # ADR-0152 – Token Description Spill Reduction
 
-Status: Draft
+Status: Accepted
 Date: 2026-03-03
 Owners: Architecture Review
 

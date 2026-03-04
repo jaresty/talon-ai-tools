@@ -2,6 +2,83 @@
 
 ---
 
+## Loop-3 — 2026-03-03T01:40:00Z
+
+```yaml
+helper_version: helper:v20260227.1
+focus: >
+  ADR-0152 T-4+T-5 — infrastructure decision + cross-axis coupling migration.
+  T-4: use use_when for task-pairing guidance; no new field needed.
+  T-5: migrate contextualise/socratic task-pairing to use_when, trim descriptions;
+  condense quiz/facilitate/cocreate/taxonomy channel-conditional language.
+
+active_constraint: >
+  5 specifying assertions fail because "With pull:" / "With make/fix:" / "With
+  sort/plan:" / "With probe:" conditional coupling is still in descriptions and
+  "pull" is absent from contextualise use_when. Demonstrated by:
+  python3 -m pytest _tests/test_token_description_spill.py -k "Contextualise or Socratic"
+  exits 1 with 5 failures.
+
+validation_targets:
+  - T-4+T-5: python3 -m pytest _tests/test_token_description_spill.py exits 0 (15 passed).
+    New assertions: contextualise has no "With pull:" / "With make/fix:";
+    socratic has no "With sort/plan:" / "With probe:";
+    contextualise use_when contains "pull";
+    socratic use_when contains "probe". Core preservation: downstream model / withholding.
+
+evidence:
+  - red | 2026-03-03T01:40:00Z | exit=1 |
+      python3 -m pytest _tests/test_token_description_spill.py -k "Contextualise or Socratic"
+      (5 failed — task-pairing phrases still in descriptions, pull absent from use_when) | inline
+  - green | 2026-03-03T01:48:00Z | exit=0 |
+      python3 -m pytest _tests/test_token_description_spill.py
+      (15 passed after all T-5 changes) | inline
+  - removal | inline (stash + rerun would show 5 failures — pattern consistent with loop-1)
+
+rollback_plan: >
+  git restore lib/axisConfig.py build/prompt-grammar.json
+  internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json
+  cmd/bar/testdata/tui_smoke.json web/static/prompt-grammar.json
+  Re-run test to confirm 5 failures return.
+
+delta_summary: >
+  helper:diff-snapshot=6 files changed
+  T-4 decision: use_when is the correct home for task-pairing guidance
+  (selection guidance fits its contract); CROSS_AXIS_COMPOSITION handles
+  axis×axis interactions (not form×task); no new infrastructure field added.
+  T-5 changes:
+  - contextualise description: "With pull: ... With make/fix: ..." removed
+  - contextualise use_when: added "Pairs naturally with pull ... and make/fix ..."
+  - socratic description: "With sort/plan: ... With make/fix: ... With probe: ..." removed
+  - socratic use_when: added "Pairs naturally with sort/plan ... make/fix ... probe ..."
+  - quiz description: condensed channel-conditional (2 verbose sentences → 1)
+  - facilitate description: condensed channel-conditional (3 sentences → 2)
+  - cocreate description: condensed channel-conditional (verbose → concise)
+  - taxonomy description: condensed channel-conditional prose to arrow notation
+  - Grammar files regenerated via make bar-grammar-update
+  presenterm: stays out of scope (no new notes field; use_when not appropriate
+  for technical spec content).
+
+loops_remaining_forecast: >
+  0 loops remaining. All five ADR-0152 salient tasks complete:
+  T-1 verify ✓, T-2 balance ✓, T-3 cluster retained ✓, T-4 infra ✓, T-5 migration ✓.
+  ADR status → Accepted.
+
+residual_constraints:
+  - presenterm | Technical spec in description | severity: Low |
+    Out of scope: no notes/constraints field was added (T-4 decision). The
+    technical specification content is necessary for presenterm correctness
+    and has no appropriate container. Accepted as-is. Reopen if a notes
+    field is ever added for another reason.
+  - afford/polar/trans/canon "may not" clauses | severity: n/a |
+    Retained as definitional. Not residual concerns. Closed.
+
+next_work: >
+  Work-log closed. Mark ADR-0152 Accepted.
+```
+
+---
+
 ## Loop-2 — 2026-03-03T01:20:00Z
 
 ```yaml

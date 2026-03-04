@@ -57,6 +57,83 @@ class VerifyDescriptionSpillTests(unittest.TestCase):
         )
 
 
+try:
+    from talon_user.lib.axisConfig import AXIS_KEY_TO_USE_WHEN
+except ImportError:
+    AXIS_KEY_TO_USE_WHEN = None  # type: ignore[assignment]
+
+
+@unittest.skipIf(AXIS_KEY_TO_VALUE is None, "axisConfig not importable in this environment")
+class ContextualiseDescriptionSpillTests(unittest.TestCase):
+    def setUp(self):
+        self.desc = AXIS_KEY_TO_VALUE["form"]["contextualise"]
+        self.use_when = (AXIS_KEY_TO_USE_WHEN or {}).get("form", {}).get("contextualise", "")
+
+    def test_no_with_pull_task_coupling_in_description(self):
+        """contextualise description must not contain task-pairing conditional."""
+        self.assertNotIn(
+            "With pull:",
+            self.desc,
+            "'With pull:' task-pairing found in contextualise description (ADR-0152 T-5)",
+        )
+
+    def test_no_with_make_fix_task_coupling_in_description(self):
+        """contextualise description must not contain make/fix task-pairing."""
+        self.assertNotIn(
+            "With make/fix:",
+            self.desc,
+            "'With make/fix:' task-pairing found in contextualise description (ADR-0152 T-5)",
+        )
+
+    def test_pull_task_pairing_migrated_to_use_when(self):
+        """contextualise use_when must contain the pull task-pairing guidance."""
+        self.assertIn(
+            "pull",
+            self.use_when,
+            "pull task-pairing not found in contextualise use_when (ADR-0152 T-5)",
+        )
+
+    def test_downstream_model_core_preserved(self):
+        """contextualise description must retain its downstream-model core."""
+        self.assertIn("downstream model", self.desc)
+
+
+@unittest.skipIf(AXIS_KEY_TO_VALUE is None, "axisConfig not importable in this environment")
+class SocraticDescriptionSpillTests(unittest.TestCase):
+    def setUp(self):
+        self.desc = AXIS_KEY_TO_VALUE["form"]["socratic"]
+        self.use_when = (AXIS_KEY_TO_USE_WHEN or {}).get("form", {}).get("socratic", "")
+
+    def test_no_with_sort_plan_task_coupling_in_description(self):
+        """socratic description must not contain sort/plan task-pairing conditional."""
+        self.assertNotIn(
+            "With sort/plan:",
+            self.desc,
+            "'With sort/plan:' task-pairing found in socratic description (ADR-0152 T-5)",
+        )
+
+    def test_no_with_probe_task_coupling_in_description(self):
+        """socratic description must not contain probe task-pairing conditional."""
+        self.assertNotIn(
+            "With probe:",
+            self.desc,
+            "'With probe:' task-pairing found in socratic description (ADR-0152 T-5)",
+        )
+
+    def test_probe_task_pairing_migrated_to_use_when(self):
+        """socratic use_when must contain the probe task-pairing guidance."""
+        self.assertIn(
+            "probe",
+            self.use_when,
+            "probe task-pairing not found in socratic use_when (ADR-0152 T-5)",
+        )
+
+    def test_socratic_core_preserved(self):
+        """socratic description must retain its question-led Socratic core."""
+        self.assertIn("question", self.desc.lower())
+        self.assertIn("withholding", self.desc)
+
+
 @unittest.skipIf(AXIS_KEY_TO_VALUE is None, "axisConfig not importable in this environment")
 class BalanceDescriptionSpillTests(unittest.TestCase):
     def setUp(self):

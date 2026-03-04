@@ -113,17 +113,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "recommendation that addresses objections and constraints.",
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an "
-        "output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With an output-exclusive channel, formats the artifact to expose decision "
-        "points, show alternative moves, and make the response-inviting structure visible within the output.",
+        "output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With one, formats the artifact to expose decision points and invite response.",
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it "
-        "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten. "
-        "With pull: wraps extracted content with the context needed to interpret it. With make/fix: accompanies the output with purpose, constraints, and framing so the downstream "
-        "model understands how to use it.",
+        "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work "
-        "solo. Without an output-exclusive channel, acts as a live facilitator: proposes structure and invites participation interactively. With an output-exclusive channel, produces "
-        "a static facilitation guide: agenda, goals, cues, and session structure as a deliverable artifact.",
+        "solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
@@ -135,23 +131,20 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an "
-        "output-exclusive channel, conducts this as an interactive exchange: poses questions, waits for responses, then clarifies or deepens. With an output-exclusive channel, structures "
-        "the output itself as a quiz — question headings with revealed answers, test sections, knowledge checks — without requiring live interaction.",
+        "output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full "
-        "conclusions until enough answers exist or the user explicitly requests a summary. With sort/plan: asks clarifying questions about criteria before producing output. With "
-        "make/fix: asks diagnostic questions then provides the solution. With probe: naturally extends to deeper inquiry.",
+        "conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
         "focused on questions and learning rather than implementation tasks.",
         "story": 'The response formats the backlog item as a user story using "As a <persona>, I want <capability>, so that <value>." It may include a short description and high-level acceptance '
         "criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
         "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes "
-        "clearly. Adapts to the channel: when combined with a code channel, the taxonomy is expressed through the type system (interfaces, enums, inheritance hierarchies); with a "
-        "markup channel, as hierarchical markup structure; without a channel, as prose classification sections.",
+        "clearly. Output adapts to channel: code channel → type system (interfaces, enums, hierarchies); markup → hierarchical structure; no channel → prose sections.",
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, "
         "boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
@@ -703,8 +696,9 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'conventional commit', 'git commit message', 'commit message', 'type: scope format' → commit. Best with gist or minimal completeness — the format is brief by design.",
         "contextualise": "Preparing content to be passed to another LLM operation: user wants output that is self-contained and includes all necessary context for a downstream model to process "
         "without additional explanation. Heuristic: 'pass this to another model', 'use this as context for', 'prepare for downstream processing', 'make this self-contained for an "
-        "LLM', 'include all necessary context', 'so I can feed this to' → contextualise. Distinct from make (make = create the artifact; contextualise = package existing content "
-        "with full context for another LLM to act on it).",
+        "LLM', 'include all necessary context', 'so I can feed this to' → contextualise. Pairs naturally with pull (wraps extracted content with interpretation context) and "
+        "make/fix (accompanies output with purpose, constraints, and framing for downstream use). Distinct from make (make = create the artifact; contextualise = package existing "
+        "content with full context for another LLM to act on it).",
         "direct": "Conclusion-first narrative: user wants the main point or recommendation stated first, followed only by the most relevant supporting context. Heuristic: 'lead with the answer', "
         "'bottom line up front', 'BLUF', 'give me the conclusion first', 'direct response', 'state the recommendation first', 'don\\'t bury the lede' → direct. Distinct from indirect "
         "form (indirect = background first, conclusion last; direct = main point first, supporting detail after).",
@@ -743,7 +737,9 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "understanding).",
         "socratic": "Question-led dialogue to surface the user's own thinking: user wants to be asked questions rather than given answers, or wants to reason through a topic interactively. "
         "Heuristic: 'ask me questions', 'help me think through', 'challenge my assumptions with questions', 'Socratic dialogue', 'probe my thinking', 'question me as we work through "
-        "this', 'help me reason this out' → socratic. Distinct from adversarial method (adversarial = stress-test the design; socratic = question the USER's reasoning via dialogue).",
+        "this', 'help me reason this out' → socratic. Pairs naturally with sort/plan (clarifying questions about criteria before output), make/fix (diagnostic questions before "
+        "solution), and probe (extends to deeper inquiry). Distinct from adversarial method (adversarial = stress-test the design; socratic = question the USER's reasoning via "
+        "dialogue).",
         "spike": "Framing a technology investigation or adoption decision as a backlog spike artifact (problem statement + exploratory questions). Use make task (not plan) — the spike IS the "
         "artifact. Heuristic: 'should we adopt X?', 'spike on Y', 'investigation backlog item' → make + spike.",
         "story": "User story format: user wants a backlog item expressed as 'As a <persona>, I want <capability>, so that <value>.' Heuristic: 'user story', 'write as a user story', 'as a user I "

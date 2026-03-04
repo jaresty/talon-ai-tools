@@ -150,18 +150,37 @@
 	// Close panel on page scroll or touch scroll, but not when scrolling inside the panel itself.
 	// Set touchBecameSwipe BEFORE the meta-panel early-return so swipes that start inside the
 	// panel still suppress the ghost click.
+	//
+	// iOS can fire a window 'scroll' event (not a TouchEvent) when inner scroll reaches the
+	// boundary and overscroll propagates to the page. We track whether the active touch sequence
+	// started inside .meta-panel so the window scroll handler can ignore those spurious events.
 	$effect(() => {
 		if (!activeToken) return;
+
+		let touchOriginatedInPanel = false;
+
+		const onTouchStart = (e: TouchEvent) => {
+			touchOriginatedInPanel = !!(e.target as Element)?.closest?.('.meta-panel');
+		};
+		const onTouchEnd = () => { touchOriginatedInPanel = false; };
 
 		const handleScroll = (e: Event) => {
 			if (e instanceof TouchEvent) touchBecameSwipe = true;
 			if (e instanceof TouchEvent && (e.target as Element)?.closest?.('.meta-panel')) return;
+			if (touchOriginatedInPanel) return;
 			activeToken = null;
 		};
+
+		window.addEventListener('touchstart', onTouchStart, { passive: true });
+		window.addEventListener('touchend', onTouchEnd, { passive: true });
+		window.addEventListener('touchcancel', onTouchEnd, { passive: true });
 		window.addEventListener('scroll', handleScroll, { passive: true });
 		window.addEventListener('touchmove', handleScroll, { passive: true });
 
 		return () => {
+			window.removeEventListener('touchstart', onTouchStart);
+			window.removeEventListener('touchend', onTouchEnd);
+			window.removeEventListener('touchcancel', onTouchEnd);
 			window.removeEventListener('scroll', handleScroll);
 			window.removeEventListener('touchmove', handleScroll);
 		};

@@ -3,7 +3,7 @@ from __future__ import annotations
 from talon import settings
 from .axisMappings import axis_key_to_kanji_map
 from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
-from .axisConfig import FORM_DEFAULT_COMPLETENESS, get_cross_axis_composition  # ADR-0153
+from .axisMappings import FORM_DEFAULT_COMPLETENESS, get_cross_axis_composition  # ADR-0153
 from .personaConfig import (
     normalize_intent_token,
     persona_docs_map,

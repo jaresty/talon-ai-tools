@@ -260,6 +260,49 @@ describe('Page — Swipe to Switch Tabs', () => {
 		expect(container.querySelector('.action-overlay')?.classList.contains('mobile-visible')).toBe(false);
 	});
 
+	it('swipe starting inside .meta-panel does NOT switch tabs', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		// Inject a fake .meta-panel element inside the layout to simulate an open modal
+		const layout = container.querySelector('.layout') as HTMLElement;
+		const fakePanel = document.createElement('div');
+		fakePanel.className = 'meta-panel';
+		layout.appendChild(fakePanel);
+
+		const before = activeTabLabel(container);
+
+		// Swipe starting inside the modal panel — should be suppressed
+		fireTouchStart(fakePanel, 300, 600);
+		fireTouchEnd(fakePanel, 150, 610); // dx = -150, would normally switch tabs
+		await new Promise(r => setTimeout(r, 300));
+
+		expect(activeTabLabel(container)).toBe(before);
+		fakePanel.remove();
+	});
+
+	it('panel does NOT translate during touchmove starting inside .meta-panel', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		const layout = container.querySelector('.layout') as HTMLElement;
+		const fakePanel = document.createElement('div');
+		fakePanel.className = 'meta-panel';
+		layout.appendChild(fakePanel);
+
+		const selectorPanel = container.querySelector('.selector-panel') as HTMLElement;
+
+		fireTouchStart(fakePanel, 300, 600);
+		fireTouchMove(fakePanel, 240, 602); // dx = -60, would normally translate
+		flushSync();
+
+		// The selector panel should NOT have a transform applied
+		expect(selectorPanel.style.transform ?? '').toBe('');
+		fakePanel.remove();
+	});
+
 	it('touchend has defaultPrevented=true when a swipe completes (belt-and-suspenders)', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });

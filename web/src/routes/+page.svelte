@@ -213,6 +213,7 @@
 
 	let touchStartX = 0;
 	let touchStartY = 0;
+	let touchStartedInModal = false;
 	let swipeOffset = $state(0);
 	let swipeAnimating = $state(false);
 	let panelSlideDir = $state<'next' | 'prev' | null>(null);
@@ -238,11 +239,13 @@
 	function handleTouchStart(e: TouchEvent) {
 		touchStartX = e.touches[0].clientX;
 		touchStartY = e.touches[0].clientY;
+		touchStartedInModal = !!(e.target as Element)?.closest?.('.meta-panel');
 		swipeOffset = 0;
 		swipeAnimating = false;
 	}
 
 	function handleTouchMove(e: TouchEvent) {
+		if (touchStartedInModal) return;
 		const dx = e.touches[0].clientX - touchStartX;
 		const dy = e.touches[0].clientY - touchStartY;
 		if (Math.abs(dx) > Math.abs(dy)) {
@@ -254,6 +257,12 @@
 		const dx = e.changedTouches[0].clientX - touchStartX;
 		const dy = e.changedTouches[0].clientY - touchStartY;
 		const target = e.target as Element;
+
+		if (touchStartedInModal) {
+			swipeAnimating = true;
+			swipeOffset = 0;
+			return;
+		}
 
 		if (target.closest('input, textarea, select')) {
 			swipeAnimating = true;

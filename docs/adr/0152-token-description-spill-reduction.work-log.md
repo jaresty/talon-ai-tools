@@ -2,6 +2,94 @@
 
 ---
 
+## Loop-2 — 2026-03-03T01:20:00Z
+
+```yaml
+helper_version: helper:v20260227.1
+focus: >
+  ADR-0152 T-3 — load-bearing test of the "may not be attributed" cluster:
+  afford, polar, trans, canon. Documentation loop; no executable artefacts change.
+
+active_constraint: >
+  The "may not be attributed to X without Y" clauses in afford, polar, trans,
+  canon cannot be trimmed until their load-bearing status is determined.
+  Blocker evidence: no behavioral tests exist to distinguish definitional
+  clauses from prescriptive spill for these tokens.
+
+validation_targets:
+  - T-3 (documentation-only): per-token written analysis recorded in work-log;
+    no executable validation; decision governs whether T-5 scope includes these
+    tokens.
+
+evidence:
+  - red | 2026-03-03T01:20:00Z | documentation-only |
+    No per-token decision recorded; trimming any of the four without analysis
+    risks removing definitional content. | inline
+
+delta_summary: >
+  helper:diff-snapshot=0 files changed (documentation-only loop).
+  Blocker: no executable artefacts change; per-token analysis follows.
+
+  Per-token analysis:
+  - afford: "Outcomes may not be attributed solely to preferences or incentives
+    without modeling how affordances influenced selection." — This IS the
+    negative-space definition of affordance theory. Affordance analysis is
+    distinguished from preference/incentive analysis by exactly this exclusion.
+    Removing it would allow shallow "preferences shaped behavior" conclusions
+    to pass as afford analysis. Decision: KEEP.
+  - canon: "Explanations may not treat multiple representations of the same
+    knowledge as independent causal or justificatory elements without specifying
+    their dependency relationship." — Canonicalization is defined by what it
+    prohibits: treating duplicate representations as independent. Without this
+    clause, canon is just "use one authoritative source" which doesn't guard
+    against the failure mode (multiple references to the same concept without
+    declared dependency). Decision: KEEP.
+  - polar: "Outcomes may not be attributed solely to positive objectives without
+    modeling active avoidance pressures." — Polar dynamics requires BOTH
+    attractors and repellers. Without this clause, polar becomes indistinguishable
+    from single-attractor goal-maximization. The clause is the structural
+    definition of polarity. Decision: KEEP.
+  - trans: "Outcomes may not be attributed to communication without specifying
+    how the signal survived, degraded, or was corrected during transmission." —
+    Shannon information theory's core claim: "communication occurred" is not
+    complete without modeling the channel and noise. Without this, trans can
+    be used for casual message-passing analysis that lacks information-theoretic
+    rigor. Decision: KEEP.
+
+  Structural test that separates definitional "may not" from spill "may not":
+  Spill (verify, balance): the "may not" clause expresses a POLICY (who is
+  the authority, what procedure to follow) external to the concept's meaning.
+  Definitional (afford, canon, polar, trans): the "may not" clause expresses
+  what the concept EXCLUDES or PROHIBITS — the negative space that defines the
+  concept's boundary. Removing it would allow misapplication by conflation
+  with adjacent concepts.
+
+loops_remaining_forecast: >
+  2 loops remaining.
+  Loop-3: T-4+T-5 — infrastructure decision + migrate contextualise/socratic
+  task-pairing to use_when; condense quiz/facilitate/cocreate/taxonomy
+  channel-conditional language.
+  presenterm stays blocked (no notes field; decision: no new infrastructure).
+
+residual_constraints:
+  - T-4/T-5 | Cross-axis coupling migration | severity: Medium |
+    contextualise and socratic embed task-pairing conditionals in descriptions;
+    quiz/facilitate/cocreate/taxonomy have channel-conditional descriptions.
+    use_when already partially covers some cases (quiz). Next loop. ADR: 0152.
+  - presenterm | Technical spec | severity: Low |
+    Stays blocked: T-4 decision (next loop) will confirm no new notes field,
+    leaving presenterm out of scope. ADR: 0152.
+
+next_work:
+  - Behaviour T-4+T-5: Add task-pairing guidance to contextualise and socratic
+    use_when; remove "With X:" conditionals from their descriptions. Condense
+    quiz/facilitate/cocreate/taxonomy channel-conditional language. Run
+    bar-grammar-update. Specifying validation: absence assertions for
+    "With pull:" in contextualise and "With sort/plan:" in socratic.
+```
+
+---
+
 ## Loop-1 — 2026-03-03T01:00:00Z
 
 ```yaml

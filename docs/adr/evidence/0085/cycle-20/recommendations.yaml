@@ -1,0 +1,47 @@
+# ADR 0085: Cycle 20 Recommendations
+# Generated: 2026-03-03
+# Based on: 40-prompt shuffled corpus evaluation (seeds 616-655) + 6 detailed template evaluations
+# Evaluator: Claude (human-assisted)
+
+# Priority levels: P0=Critical (breaks prompts), P1=High (major confusion), P2=Medium (minor issues), P3=Low (nice to have)
+
+recommendations:
+
+  # ============================================================
+  # TRACKING: Known issues from prior cycles
+  # ============================================================
+
+  - action: tracking
+    priority: P1
+    id: R36
+    token: "gist, skim"
+    axis: completeness
+    reason: "Compound directionals + gist/skim produce suboptimal output (score 2)"
+    evidence: [seed_632 (skim+fly-bog), seed_635 (skim+dip-ong)]
+    status: Documented in cycle 11; guidance in place
+    notes: "Statistical clustering - expected floor of 1-4 hits per 40-seed cycle"
+
+  - action: tracking
+    priority: P1
+    id: R40
+    token: "shellscript"
+    axis: channel
+    reason: "Cross-axis incompatibility with pick/diff/sort tasks not grammar-enforced"
+    evidence: [seed_639 (shellscript+pick)]
+    status: Fourth consecutive cycle with shellscript grammar gap
+    notes: "R41-grammar-hardening deferred from cycle 19 - cross-axis incompatibility enforcement requires schema work"
+
+  # ============================================================
+  # NEW FINDINGS: Presenterm + deep/max
+  # ============================================================
+
+  - action: edit
+    priority: P3
+    token: "presenterm"
+    axis: channel
+    ssot_target: guidance_prose
+    current: "Presenterm slide deck description"
+    proposed: "Add to Notes field in bar help llm: 'Avoid with deep or max completeness — slide format cannot accommodate deep analysis; use minimal or gist instead'"
+    reason: "Seed 626 (make + deep + story + presenterm) scored 3 - presenterm+deep is documented in CROSS_AXIS_COMPOSITION but not prominently surfaced in token description"
+    evidence: [seed_626]
+    notes: "Warning exists in cross-axis composition section but could be more prominent in token description"

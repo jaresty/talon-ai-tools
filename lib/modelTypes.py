@@ -3,6 +3,7 @@ from __future__ import annotations
 from talon import settings
 from .axisMappings import axis_key_to_kanji_map
 from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
+from .axisConfig import FORM_DEFAULT_COMPLETENESS, get_cross_axis_composition  # ADR-0153
 from .personaConfig import (
     normalize_intent_token,
     persona_docs_map,
@@ -317,6 +318,31 @@ class GPTSystemPrompt:
                 desc = "The goal is to " + desc[len("aim to") :].strip()
             return desc or raw
 
+        # ADR-0153 T-1: apply form_default_completeness override when the user
+        # has not set completeness explicitly and a form token with a structural
+        # brevity constraint is active.
+        form_token_raw = self.get_form().split()[0] if self.get_form() else ""
+        completeness_explicit = bool(self.completeness)
+        effective_completeness = self.get_completeness()
+        if not completeness_explicit and form_token_raw:
+            override = FORM_DEFAULT_COMPLETENESS.get(form_token_raw, "")
+            if override:
+                effective_completeness = override
+
+        # ADR-0153 T-2: precompute directional key for conflict-note lookup.
+        # Compound directional tokens use spaces in the SSOT but hyphens in
+        # cautionary_notes keys — normalise here so lookups match.
+        directional_token_raw = self.get_directional()
+        directional_key = directional_token_raw.replace(" ", "-") if directional_token_raw else ""
+
+        def _conflict_note(comp_axis: str, comp_token: str) -> str:
+            """Return cautionary_note for comp_token × directional pair, or ''."""
+            if not directional_key or not comp_token:
+                return ""
+            cac = get_cross_axis_composition(comp_axis, comp_token)
+            notes = cac.get("directional", {}).get("cautionary_notes", {})
+            return notes.get(directional_key, "")
+
         lines = [
             # Reference key explains how to interpret the structured tokens
             PROMPT_REFERENCE_KEY.strip(),
@@ -327,14 +353,29 @@ class GPTSystemPrompt:
             f"Audience: {_audience_phrase()}",
             f"Intent: {_intent_phrase()}",
             # Constraint axes (how to complete the task)
-            f"Completeness: {hydrate('completeness', self.get_completeness())}",
+            f"Completeness: {hydrate('completeness', effective_completeness)}",
+        ]
+
+        # ADR-0153 T-2: conflict note for completeness × directional
+        note = _conflict_note("completeness", effective_completeness)
+        if note:
+            lines.append(f"  \u21b3 {note}")
+
+        lines.extend([
             f"Scope: {hydrate('scope', self.get_scope())}",
             f"Method: {hydrate('method', self.get_method())}",
             f"Form: {hydrate('form', self.get_form())}",
-            f"Channel: {hydrate('channel', self.get_channel())}",
-        ]
+        ])
 
-        directional_text = hydrate("directional", self.get_directional())
+        # ADR-0153 T-2: conflict note for form × directional
+        if form_token_raw:
+            note = _conflict_note("form", form_token_raw)
+            if note:
+                lines.append(f"  \u21b3 {note}")
+
+        lines.append(f"Channel: {hydrate('channel', self.get_channel())}")
+
+        directional_text = hydrate("directional", directional_token_raw)
         if directional_text:
             lines.append(f"Directional: {directional_text}")
 

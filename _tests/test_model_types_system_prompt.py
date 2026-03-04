@@ -93,6 +93,81 @@ if bootstrap is not None:
                 )
             )
 
+        # ADR-0153 T-1: form_default_completeness override
+
+        def test_commit_form_defaults_to_gist_completeness(self):
+            """ADR-0153 T-1: commit form without explicit completeness uses gist."""
+            settings.set("user.model_default_completeness", "")
+            prompt = GPTSystemPrompt(form="commit")
+            lines = prompt.format_as_array()
+            gist_desc = axis_key_to_value_map_for("completeness").get("gist", "gist")
+            self.assertTrue(
+                any(line.startswith(f"Completeness: {gist_desc}") for line in lines),
+                f"ADR-0153 T-1: commit form should default to gist completeness, got: {lines}",
+            )
+            full_desc = axis_key_to_value_map_for("completeness").get("full", "full")
+            self.assertFalse(
+                any(line.startswith(f"Completeness: {full_desc}") for line in lines),
+                f"ADR-0153 T-1: commit form must not use full completeness by default, got: {lines}",
+            )
+
+        def test_explicit_completeness_not_overridden_by_form_default(self):
+            """ADR-0153 T-1: explicit completeness wins over form_default_completeness."""
+            settings.set("user.model_default_completeness", "")
+            prompt = GPTSystemPrompt(form="commit", completeness="full")
+            lines = prompt.format_as_array()
+            full_desc = axis_key_to_value_map_for("completeness").get("full", "full")
+            self.assertTrue(
+                any(line.startswith(f"Completeness: {full_desc}") for line in lines),
+                f"ADR-0153 T-1: explicit full completeness must not be overridden by form default, got: {lines}",
+            )
+
+        # ADR-0153 T-2: conflict notes
+
+        def test_gist_fig_renders_conflict_note(self):
+            """ADR-0153 T-2: gist + fig must render a ↳ conflict note."""
+            settings.set("user.model_default_completeness", "")
+            prompt = GPTSystemPrompt(completeness="gist", directional="fig")
+            lines = prompt.format_as_array()
+            self.assertTrue(
+                any("↳" in line for line in lines),
+                f"ADR-0153 T-2: expected conflict note (↳) for gist+fig, got: {lines}",
+            )
+            self.assertTrue(
+                any("completeness governs" in line for line in lines),
+                f"ADR-0153 T-2: conflict note must declare which constraint governs, got: {lines}",
+            )
+
+        def test_skim_fog_renders_conflict_note(self):
+            """ADR-0153 T-2: skim + fog must render a ↳ conflict note."""
+            settings.set("user.model_default_completeness", "")
+            prompt = GPTSystemPrompt(completeness="skim", directional="fog")
+            lines = prompt.format_as_array()
+            self.assertTrue(
+                any("↳" in line for line in lines),
+                f"ADR-0153 T-2: expected conflict note (↳) for skim+fog, got: {lines}",
+            )
+
+        def test_non_conflicting_pair_has_no_note(self):
+            """ADR-0153 T-2: non-cautionary combination must not render a conflict note."""
+            settings.set("user.model_default_completeness", "")
+            prompt = GPTSystemPrompt(completeness="full", directional="fig")
+            lines = prompt.format_as_array()
+            self.assertFalse(
+                any("↳" in line for line in lines),
+                f"ADR-0153 T-2: non-conflicting full+fig must not render a conflict note, got: {lines}",
+            )
+
+        def test_commit_form_fig_directional_renders_conflict_note(self):
+            """ADR-0153 T-2: commit form + fig directional must render a form-level conflict note."""
+            settings.set("user.model_default_completeness", "")
+            prompt = GPTSystemPrompt(form="commit", directional="fig")
+            lines = prompt.format_as_array()
+            self.assertTrue(
+                any("↳" in line for line in lines),
+                f"ADR-0153 T-2: expected conflict note (↳) for commit+fig, got: {lines}",
+            )
+
 else:
     if not TYPE_CHECKING:
 

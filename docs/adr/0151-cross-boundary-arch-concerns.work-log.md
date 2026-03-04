@@ -2,6 +2,66 @@
 
 ---
 
+## Loop-3 — 2026-03-03T00:20:00Z
+
+```yaml
+helper_version: helper:v20260227.1
+focus: >
+  ADR-0151 §Grammar Pipeline — record that bar-grammar-check already addresses
+  the concern; update ADR and close work-log. Salient task: T-3.
+
+active_constraint: >
+  ADR-0151 Recommendation 3 documents a gap that does not actually exist:
+  bar-grammar-check validates all 5 consumer copies including web/static/
+  prompt-grammar.json and runs in CI. The constraint is a documentation
+  inaccuracy, not a missing implementation.
+
+validation_targets:
+  - T-3: >
+      git diff docs/adr/0151-cross-boundary-arch-concerns.md exits 0 after
+      updating Recommendation 3 to reflect the pre-existing bar-grammar-check
+      coverage. Documentation-only loop; blocker evidence: no executable
+      artifact to add because the concern is already mitigated.
+
+evidence:
+  - red | 2026-03-03T00:20:00Z | documentation-only |
+      ADR-0151 Recommendation 3 states "Formalize the update sequence as a
+      make target or CI check" — but bar-grammar-check already does this and
+      runs in CI test.yml step "Verify grammar sync across all copies". | inline
+  - green | 2026-03-03T00:22:00Z | documentation-only |
+      ADR updated: Recommendation 3 crossed out and annotated "Resolved
+      (pre-existing)" with enumeration of all 5 checked files. | inline
+
+rollback_plan: >
+  git restore docs/adr/0151-cross-boundary-arch-concerns.md
+  No executable artefacts changed; rollback has no observable test impact.
+
+delta_summary: >
+  helper:diff-snapshot=1 file changed (docs/adr/0151-cross-boundary-arch-concerns.md)
+  Recommendation 3 updated to strike-through + resolved annotation.
+  All three salient tasks now complete: T-1 (loop-1), T-2 (loop-2), T-3 (loop-3).
+
+loops_remaining_forecast: >
+  0 loops remaining. All three validated concerns from ADR-0151 triage have
+  been addressed: T-1 (axis import guard), T-2 (persona resolution logging),
+  T-3 (grammar pipeline — pre-existing). Two speculative concerns (request
+  state triplication, canvas coordination) remain deferred as documented.
+
+residual_constraints:
+  - Request state triplication | severity: Low | No causal evidence (no race
+    condition observed). Deferred in ADR. Reopen if a race condition is debugged
+    to this triplication. Owning ADR: 0151.
+  - Canvas coordination | severity: Low | No coordination failure observed.
+    Deferred in ADR. Reopen if a canvas coordination bug is reported. Owning: 0151.
+
+next_work: >
+  Work-log closed. No open behaviour outcomes remain. ADR-0151 status: Accepted.
+  Future reopening conditions: race condition in request state modules, or
+  canvas coordination failure in production.
+```
+
+---
+
 ## Loop-2 — 2026-03-03T00:10:00Z
 
 ```yaml

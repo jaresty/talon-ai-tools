@@ -810,7 +810,25 @@ describe('TokenSelector — ADR-0148 cross-axis meta panel (direction A)', () =>
 		expect(screen.getByText(/make/)).toBeTruthy();
 	});
 
-	it('meta panel shows "Caution" section for channel token with cautionary data', async () => {
+	it('meta panel shows "Caution" section for channel token only when conflicting token is selected', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'channel',
+				tokens: channelTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				grammar: testGrammar,
+				activeTokensByAxis: { task: ['sim'] }
+			}
+		});
+		const chip = screen.getByText('shellscript').closest('.token-chip')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Caution')).toBeTruthy();
+		expect(screen.getByText('sim', { selector: 'code' })).toBeTruthy();
+	});
+
+	it('meta panel shows no "Caution" section for channel token when conflicting token is not selected', async () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'channel',
@@ -824,8 +842,7 @@ describe('TokenSelector — ADR-0148 cross-axis meta panel (direction A)', () =>
 		});
 		const chip = screen.getByText('shellscript').closest('.token-chip')!;
 		await fireEvent.click(chip);
-		expect(screen.getByText('Caution')).toBeTruthy();
-		expect(screen.getByText('sim', { selector: 'code' })).toBeTruthy();
+		expect(screen.queryByText('Caution')).toBeNull();
 	});
 
 	it('meta panel shows no composition sections for channel token without data', async () => {

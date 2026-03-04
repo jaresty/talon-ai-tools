@@ -497,33 +497,28 @@
 				{/if}
 				{#if activeMetaComposition}
 					{@const naturalEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => pair.natural ?? [])}
-					{@const cautionEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => Object.entries(pair.cautionary ?? {}))}
 					{#if naturalEntries.length > 0}
 						<div class="meta-section">
 							<span class="meta-section-label">Works well with</span>
 							<p class="meta-natural">{naturalEntries.join(', ')}</p>
 						</div>
 					{/if}
-					{#if cautionEntries.length > 0}
-						<div class="meta-section meta-caution">
-							<span class="meta-section-label">Caution{cautionEntries.length > 2 ? ` (${cautionEntries.length})` : ''}</span>
-							{#each cautionEntries.slice(0, 2) as [token, warning]}
-								<p class="meta-caution-entry"><code>{token}</code> — {warning}</p>
-							{/each}
-						</div>
-					{/if}
 				{/if}
 				{#if activeMetaCompositionDirB}
-					{#if activeMetaCompositionDirB.naturalWith.length > 0}
+					{@const dirANaturals = activeMetaComposition
+						? new Set(Object.entries(activeMetaComposition).flatMap(([, pair]) => pair.natural ?? []))
+						: new Set<string>()}
+					{@const filteredNaturalWith = activeMetaCompositionDirB.naturalWith.filter(t => !dirANaturals.has(t))}
+					{#if filteredNaturalWith.length > 0}
 						<div class="meta-section">
 							<span class="meta-section-label">Works well with</span>
-							<p class="meta-natural">{activeMetaCompositionDirB.naturalWith.join(', ')}</p>
+							<p class="meta-natural">{filteredNaturalWith.join(', ')}</p>
 						</div>
 					{/if}
 					{#if activeMetaCompositionDirB.cautionWith.length > 0}
 						<div class="meta-section meta-caution">
-							<span class="meta-section-label">Caution{activeMetaCompositionDirB.cautionWith.length > 2 ? ` (${activeMetaCompositionDirB.cautionWith.length})` : ''}</span>
-							{#each activeMetaCompositionDirB.cautionWith.slice(0, 2) as [token, warning]}
+							<span class="meta-section-label">Caution</span>
+							{#each activeMetaCompositionDirB.cautionWith as [token, warning]}
 								<p class="meta-caution-entry"><code>{token}</code> — {warning}</p>
 							{/each}
 						</div>
@@ -897,6 +892,13 @@
 			font-size: 1rem;
 			line-height: 1.6;
 			padding-bottom: 0;
+			overscroll-behavior: contain;
+		}
+
+		/* Prevent panel's internal scroll from propagating to page (avoids spurious window
+		   scroll events that would dismiss the panel while the user scrolls inside it) */
+		.meta-body {
+			overscroll-behavior: contain;
 		}
 
 		.meta-section-label {

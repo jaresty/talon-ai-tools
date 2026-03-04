@@ -228,8 +228,9 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		expect(container.querySelector('.meta-panel')).toBeNull();
 	});
 
-	it('body scroll is locked (position:fixed) while meta-panel is open on mobile', () => {
-		// Simulate mobile viewport
+	it('body scroll is NOT locked (position:fixed not set) when meta-panel opens — no layout disruption', () => {
+		// The body-scroll-lock approach broke iOS pointerdown hit-testing after scrolling.
+		// The fix uses a non-passive touchmove listener on the panel instead.
 		Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
 
 		mount(TokenSelector, {
@@ -237,22 +238,13 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
 		});
 
-		expect(document.body.style.position).toBe('');
-
 		const tokenChip = container.querySelector('.token-chip') as HTMLElement;
 		tokenChip.click();
 		flushSync();
 
-		expect(document.body.style.position).toBe('fixed');
+		// Body must NOT be position:fixed — that was the bug
+		expect(document.body.style.position).not.toBe('fixed');
 
-		// Closing the panel restores body scroll
-		const closeBtn = container.querySelector('.meta-close') as HTMLElement;
-		closeBtn.click();
-		flushSync();
-
-		expect(document.body.style.position).toBe('');
-
-		// Restore default innerWidth
 		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
 	});
 

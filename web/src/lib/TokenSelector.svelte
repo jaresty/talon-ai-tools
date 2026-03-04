@@ -186,24 +186,50 @@
 		};
 	});
 
-	// On mobile: lock body scroll while modal is open so the page behind the bottom sheet
-	// doesn't scroll when the user touches/drags on the panel. Desktop intentionally keeps
-	// pointer-events: none on the panel so mouse-hover still reaches chips behind it.
+	// On mobile: prevent touch scroll from bleeding through the panel to the page behind it.
+	// Uses a non-passive touchmove listener on the panel itself rather than body scroll lock
+	// (body position:fixed breaks iOS pointerdown hit-testing, causing chip taps to fail after scroll).
+	// Desktop intentionally keeps pointer-events: none so mouse-hover reaches chips behind it.
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		if (window.innerWidth > 767) return;
 		if (!activeToken) return;
 
-		const scrollY = window.scrollY;
-		document.body.style.position = 'fixed';
-		document.body.style.top = `-${scrollY}px`;
-		document.body.style.width = '100%';
+		const panel = document.querySelector('.meta-panel');
+		if (!panel) return;
 
+		let lastTouchY = 0;
+
+		const onPanelTouchStart = (e: TouchEvent) => {
+			lastTouchY = e.touches[0].clientY;
+		};
+
+		const onPanelTouchMove = (e: TouchEvent) => {
+			const metaBody = panel.querySelector('.meta-body') as HTMLElement | null;
+			// No scrollable body — block all scroll
+			if (!metaBody) { e.preventDefault(); return; }
+
+			const target = e.target as Element;
+			// Touch outside meta-body (e.g. header, footer) — block scroll
+			if (!metaBody.contains(target)) { e.preventDefault(); return; }
+
+			// meta-body content fits without scrolling — block scroll
+			if (metaBody.scrollHeight <= metaBody.clientHeight) { e.preventDefault(); return; }
+
+			// At scroll boundaries — block to prevent iOS overscroll chaining to page
+			const touchY = e.touches[0].clientY;
+			const dy = touchY - lastTouchY;
+			lastTouchY = touchY;
+			const atTop = metaBody.scrollTop <= 0;
+			const atBottom = metaBody.scrollTop >= metaBody.scrollHeight - metaBody.clientHeight - 1;
+			if ((dy > 0 && atTop) || (dy < 0 && atBottom)) { e.preventDefault(); }
+		};
+
+		panel.addEventListener('touchstart', onPanelTouchStart, { passive: true });
+		panel.addEventListener('touchmove', onPanelTouchMove, { passive: false });
 		return () => {
-			document.body.style.position = '';
-			document.body.style.top = '';
-			document.body.style.width = '';
-			window.scrollTo(0, scrollY);
+			panel.removeEventListener('touchstart', onPanelTouchStart);
+			panel.removeEventListener('touchmove', onPanelTouchMove);
 		};
 	});
 

@@ -1,0 +1,17 @@
+id: no-direct-axisconfig-import
+language: python
+message: >
+  Import axis symbols via axisMappings or axisCatalog, not axisConfig directly.
+  axisConfig is a private implementation module; its symbols must be accessed
+  through the axisMappings or axisCatalog façades. See ADR-0151.
+severity: error
+rule:
+  any:
+    - pattern: from .axisConfig import $SYMBOL
+    - pattern: from ..lib.axisConfig import $SYMBOL
+ignores:
+  - lib/axisConfig.py
+  - lib/axisMappings.py
+  - lib/axisCatalog.py
+  - _tests/**
+  - tests/**

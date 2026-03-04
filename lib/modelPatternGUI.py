@@ -28,7 +28,7 @@ from .historyLifecycle import last_drop_reason, set_drop_reason
 
 from .modelHelpers import notify
 from .surfaceGuidance import guard_surface_request
-from .axisConfig import AXIS_KEY_TO_VALUE
+from .axisMappings import AXIS_KEY_TO_VALUE
 
 from .personaCatalog import get_persona_intent_catalog
 from .personaOrchestrator import get_persona_intent_orchestrator

@@ -43,7 +43,13 @@ grammar-update-all: bar-grammar-update axis-regenerate-apply
 	@PYTHONPATH=. $(PYTHON) scripts/tools/refresh_readme_axis_section.py
 	@echo "✓ Grammar, axis config, and README all updated. Review with 'git diff' before committing."
 
-.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all
+axis-import-guard:
+	@command -v ast-grep >/dev/null 2>&1 || { echo "ast-grep not found; install with: npm install -g @ast-grep/cli" >&2; exit 1; }
+	@echo "Checking for direct axisConfig imports in production code..."
+	@ast-grep scan --rule rules/no-direct-axisconfig-import.yml lib/ GPT/
+	@echo "✓ No direct axisConfig imports in production code"
+
+.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all axis-import-guard
 
 test:
 	$(PYTHON) -m unittest discover -s tests

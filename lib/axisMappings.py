@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from .axisConfig import AXIS_KEY_TO_VALUE, axis_key_to_value_map
+from .axisConfig import (
+    AXIS_KEY_TO_VALUE,
+    axis_docs_for,
+    axis_key_to_kanji_map,
+    axis_key_to_value_map,
+)
 
 
 def _ensure_not_style_axis(axis: str) -> None:

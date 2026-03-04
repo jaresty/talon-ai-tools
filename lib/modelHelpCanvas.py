@@ -5,7 +5,7 @@ from talon import skia
 
 from .canvasFont import apply_canvas_typeface
 from .overlayHelpers import apply_scroll_delta, clamp_scroll
-from .axisConfig import axis_docs_for
+from .axisMappings import axis_docs_for
 from .axisCatalog import axis_catalog
 
 from .modelState import GPTState

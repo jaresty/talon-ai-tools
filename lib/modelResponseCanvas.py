@@ -24,7 +24,7 @@ from .responseCanvasFallback import (
 
 from .surfaceGuidance import guard_surface_request
 
-from .axisConfig import axis_docs_for
+from .axisMappings import axis_docs_for
 from .axisMappings import axis_registry_tokens
 from .suggestionCoordinator import (
     last_recipe_snapshot,

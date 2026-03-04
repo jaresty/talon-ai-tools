@@ -62,3 +62,9 @@ jobs:
 
       - name: Run tests
         run: python3 -m unittest discover -s tests -v
+
+      - name: Install ast-grep
+        run: npm install -g @ast-grep/cli
+
+      - name: Run axis import guard
+        run: make axis-import-guard

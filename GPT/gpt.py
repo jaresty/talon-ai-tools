@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 import threading
 from typing import List, Optional, Union, cast
 import re
+
+_log = logging.getLogger(__name__)
 
 from ..lib.talonSettings import (
     ApplyPromptConfiguration,
@@ -313,6 +316,12 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
             lower = raw_s.lower()
             normalised = _normalise_persona_alias_token(raw_s)
 
+    _log.debug(
+        "persona_resolution_fallback axis=%s raw=%r level=docs_map orchestrator=%s",
+        axis_key,
+        raw_s,
+        orchestrator is not None,
+    )
     try:
         docs = persona_docs_map(axis)
     except Exception:

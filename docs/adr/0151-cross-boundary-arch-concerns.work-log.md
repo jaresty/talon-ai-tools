@@ -2,6 +2,73 @@
 
 ---
 
+## Loop-2 — 2026-03-03T00:10:00Z
+
+```yaml
+helper_version: helper:v20260227.1
+focus: >
+  ADR-0151 §Persona Resolution Observability — add debug logging at the docs-map
+  fallback level in _canonical_persona_value (GPT/gpt.py:270-329).
+  Salient task: T-2 (Persona Resolution Observability).
+
+active_constraint: >
+  _canonical_persona_value has a 5-level implicit fallback with no observability;
+  the docs-map fallback (level 5) is reached silently when all higher-priority
+  levels miss. Demonstrated by:
+  python3 -m pytest _tests/test_persona_resolution_fallback_log.py exits 1
+  ("no logs of level DEBUG or higher triggered on talon_user.GPT.gpt").
+  Outranks T-3 (grammar pipeline already mitigated by bar-grammar-check).
+
+validation_targets:
+  - T-2: >
+      python3 -m pytest _tests/test_persona_resolution_fallback_log.py exits 0.
+      Test patches orchestrator to None and canonical_persona_token to "", then
+      asserts assertLogs captures a "docs_map" record at DEBUG level.
+
+evidence:
+  - red | 2026-03-03T00:10:00Z | exit=1 |
+      python3 -m pytest _tests/test_persona_resolution_fallback_log.py
+      (test file present, logging absent in gpt.py —
+      "no logs of level DEBUG or higher triggered on talon_user.GPT.gpt") | inline
+  - green | 2026-03-03T00:14:00Z | exit=0 |
+      python3 -m pytest _tests/test_persona_resolution_fallback_log.py
+      (1 passed after adding _log = logging.getLogger(__name__) and
+      _log.debug("persona_resolution_fallback ... level=docs_map ...") before
+      the docs loop in _canonical_persona_value) | inline
+  - removal | 2026-03-03T00:15:00Z | exit=1 |
+      git stash && python3 -m pytest _tests/test_persona_resolution_fallback_log.py
+      (reverted gpt.py logging; test fails again with "no logs"; git stash pop) | inline
+
+rollback_plan: >
+  git restore GPT/gpt.py && rm _tests/test_persona_resolution_fallback_log.py
+  Re-run red validation to confirm failure returns.
+
+delta_summary: >
+  helper:diff-snapshot=2 files changed
+  - GPT/gpt.py: import logging + _log = logging.getLogger(__name__) at top;
+    _log.debug("persona_resolution_fallback axis=%s raw=%r level=docs_map
+    orchestrator=%s", ...) inserted before the docs loop in _canonical_persona_value
+  - _tests/test_persona_resolution_fallback_log.py: new specifying validation;
+    patches orchestrator/personaConfig/persona_docs_map, asserts assertLogs fires
+    at DEBUG level with "docs_map" in message
+
+loops_remaining_forecast: >
+  1 loop remaining (confidence: high).
+  T-3 (Grammar pipeline) — bar-grammar-check already addresses this concern;
+  loop will update ADR-0151 to record it as resolved and close the work-log.
+
+residual_constraints:
+  - T-3 | Grammar pipeline | severity: Low |
+    bar-grammar-check validates all 5 consumer copies including web/static.
+    Concern from ADR-0151 is already mitigated. ADR update pending in loop-3.
+
+next_work:
+  - Behaviour T-3: Update ADR-0151 to note grammar pipeline concern is already
+    resolved by bar-grammar-check (no code change needed). Close work-log.
+```
+
+---
+
 ## Loop-1 — 2026-03-03T00:00:00Z
 
 ```yaml

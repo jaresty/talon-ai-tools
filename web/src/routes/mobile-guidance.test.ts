@@ -196,6 +196,38 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		expect(selectBtn.disabled).toBe(false);
 	});
 
+	it('window scroll event does NOT dismiss panel when touch started inside .meta-panel', () => {
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
+		});
+
+		const tokenChip = container.querySelector('.token-chip') as HTMLElement;
+		tokenChip.click();
+		flushSync();
+		expect(container.querySelector('.meta-panel')).toBeTruthy();
+
+		// Simulate touchstart inside the panel (dispatch on panel so e.target is panel when it bubbles to window)
+		const panel = container.querySelector('.meta-panel') as HTMLElement;
+		const touchObj = { identifier: 1, target: panel, clientX: 100, clientY: 400 } as unknown as Touch;
+		panel.dispatchEvent(new TouchEvent('touchstart', { touches: [touchObj], changedTouches: [touchObj], bubbles: true }));
+		flushSync();
+
+		// Now fire a bare window scroll event (what iOS fires when in-panel scroll overscrolls to page)
+		window.dispatchEvent(new Event('scroll'));
+		flushSync();
+
+		// Panel must still be open
+		expect(container.querySelector('.meta-panel')).toBeTruthy();
+
+		// After touchend, a page scroll SHOULD dismiss (touch sequence ended)
+		window.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [touchObj], bubbles: true }));
+		flushSync();
+		window.dispatchEvent(new Event('scroll'));
+		flushSync();
+		expect(container.querySelector('.meta-panel')).toBeNull();
+	});
+
 	it('Select button shows "At limit" and is disabled for multi-slot axes when at capacity', () => {
 		const multiTokens = [
 			...tokens,

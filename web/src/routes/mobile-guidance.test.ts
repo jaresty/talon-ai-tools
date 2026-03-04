@@ -228,6 +228,34 @@ describe('TokenSelector — Mobile Meta Panel Accessibility', () => {
 		expect(container.querySelector('.meta-panel')).toBeNull();
 	});
 
+	it('body scroll is locked (position:fixed) while meta-panel is open on mobile', () => {
+		// Simulate mobile viewport
+		Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+
+		mount(TokenSelector, {
+			target: container,
+			props: { axis: 'task', tokens, selected: [], maxSelect: 1, onToggle: vi.fn() }
+		});
+
+		expect(document.body.style.position).toBe('');
+
+		const tokenChip = container.querySelector('.token-chip') as HTMLElement;
+		tokenChip.click();
+		flushSync();
+
+		expect(document.body.style.position).toBe('fixed');
+
+		// Closing the panel restores body scroll
+		const closeBtn = container.querySelector('.meta-close') as HTMLElement;
+		closeBtn.click();
+		flushSync();
+
+		expect(document.body.style.position).toBe('');
+
+		// Restore default innerWidth
+		Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
+	});
+
 	it('Select button shows "At limit" and is disabled for multi-slot axes when at capacity', () => {
 		const multiTokens = [
 			...tokens,

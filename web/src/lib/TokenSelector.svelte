@@ -186,6 +186,27 @@
 		};
 	});
 
+	// On mobile: lock body scroll while modal is open so the page behind the bottom sheet
+	// doesn't scroll when the user touches/drags on the panel. Desktop intentionally keeps
+	// pointer-events: none on the panel so mouse-hover still reaches chips behind it.
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		if (window.innerWidth > 767) return;
+		if (!activeToken) return;
+
+		const scrollY = window.scrollY;
+		document.body.style.position = 'fixed';
+		document.body.style.top = `-${scrollY}px`;
+		document.body.style.width = '100%';
+
+		return () => {
+			document.body.style.position = '';
+			document.body.style.top = '';
+			document.body.style.width = '';
+			window.scrollTo(0, scrollY);
+		};
+	});
+
 	// On touch: blur the chip when the panel closes so swipe-back can't re-trigger it via focus restore
 	$effect(() => {
 		if (activeToken !== null) return;

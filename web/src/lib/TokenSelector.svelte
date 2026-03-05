@@ -863,26 +863,12 @@
 		margin-top: 0.4rem;
 	}
 
-	/* Clamp use_when and guidance text — bounds panel height on content-heavy tokens */
-	.meta-section p {
-		display: -webkit-box;
-		-webkit-line-clamp: 3;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
 	/* Natural token list: single line, truncate with ellipsis */
 	.meta-natural {
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		display: block !important;
-		-webkit-line-clamp: unset !important;
-	}
-
-	/* Caution entries: 2-line clamp per entry */
-	.meta-caution-entry {
-		-webkit-line-clamp: 2 !important;
 	}
 
 	/* ADR-0148: caution section in meta panel */

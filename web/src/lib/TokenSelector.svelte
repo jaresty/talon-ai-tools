@@ -831,7 +831,6 @@
 		margin: 0 0 0.5rem 0;
 		color: var(--color-text);
 		display: -webkit-box;
-		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

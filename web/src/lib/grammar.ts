@@ -4,6 +4,17 @@ export interface StarterPack {
 	command: string;
 }
 
+export interface TaskMetadataDistinction {
+	token: string;
+	note: string;
+}
+
+export interface TaskMetadata {
+	definition: string;
+	heuristics: string[];
+	distinctions: TaskMetadataDistinction[];
+}
+
 export interface PersonaPreset {
 	key: string;
 	label: string;
@@ -48,6 +59,7 @@ export interface Grammar {
 		use_when?: Record<string, string>;           // ADR-0142
 		kanji?: Record<string, string>;              // ADR-0143
 		routing_concept?: Record<string, string>;    // ADR-0146
+		metadata?: Record<string, TaskMetadata>;     // ADR-0154
 	};
 	hierarchy: {
 		axis_priority: string[];
@@ -83,6 +95,7 @@ export interface TokenMeta {
 	kanji: string;
 	category: string; // ADR-0144: semantic family for method tokens; empty for other axes
 	routing_concept: string; // ADR-0146: distilled routing concept phrase
+	metadata: TaskMetadata | null; // ADR-0154: structured definition, heuristics, distinctions
 }
 
 import { base } from '$app/paths';
@@ -152,6 +165,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 	const use_when = grammar.tasks.use_when ?? {};
 	const kanji = grammar.tasks.kanji ?? {};
 	const routing_concepts = grammar.tasks.routing_concept ?? {};
+	const metadata = grammar.tasks.metadata ?? {};
 	return Object.keys(descs)
 		.sort()
 		.map((token) => ({
@@ -162,7 +176,8 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 			use_when: use_when[token] ?? '',
 			kanji: kanji[token] ?? '',
 			category: '',
-			routing_concept: routing_concepts[token] ?? ''
+			routing_concept: routing_concepts[token] ?? '',
+			metadata: metadata[token] ?? null
 		}));
 }
 

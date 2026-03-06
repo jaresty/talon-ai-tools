@@ -33,3 +33,33 @@
 **residual_constraints:** None
 
 **next_work:** T-2 — Update consumers to read structured metadata fields
+
+---
+
+## Loop 2: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-2 — Update SPA (grammar.ts) to read new metadata fields from grammar JSON.
+
+**active_constraint:** None — wiring complete.
+
+**validation_targets:**
+- `cd web && npx svelte-check --threshold error`
+- `cd web && npm test`
+
+**evidence:**
+- green | 2026-03-06T00:35:00Z | exit 0 | npx svelte-check → 0 errors
+- green | 2026-03-06T00:35:00Z | exit 0 | npm test → 294 tests passed
+
+**rollback_plan:** `git restore --source=HEAD web/src/lib/grammar.ts`
+
+**delta_summary:** helper:diff-snapshot=1 file changed — web/src/lib/grammar.ts (added TaskMetadata and TaskMetadataDistinction interfaces, added metadata field to TokenMeta, updated getTaskTokens to include metadata).
+
+**loops_remaining_forecast:** 2 loops remaining:
+- T-3: Add JSON schema validation
+- T-4: Document migration completion
+
+**residual_constraints:** None
+
+**next_work:** T-3 — Add JSON schema validation

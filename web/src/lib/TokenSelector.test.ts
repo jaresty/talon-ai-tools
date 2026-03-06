@@ -1861,3 +1861,84 @@ describe('TokenSelector — ADR-0154 structured metadata panel', () => {
 		expect(dots.length).toBe(0);
 	});
 });
+
+// ── ADR-0155 T-1: distinction chip highlight on hover ─────────────────────────
+// Hovering a distinction entry highlights the referenced token chip in the grid.
+
+describe('TokenSelector — ADR-0155 distinction chip highlight', () => {
+	// taskTokenWithMetadata has distinctions: [{token:'pull', note:'...'}]
+	// probe is the hovered token; pull is the distinction reference
+	const probeToken = {
+		token: 'probe',
+		label: 'Probe',
+		description: 'Analyzes to surface structure.',
+		guidance: '',
+		use_when: '',
+		kanji: '',
+		category: '',
+		routing_concept: '',
+		metadata: {
+			definition: 'Analyzes to surface structure.',
+			heuristics: ['analyze'],
+			distinctions: [{ token: 'pull', note: 'probe = analyze broadly; pull = extract subset' }]
+		}
+	};
+	const pullToken = {
+		token: 'pull',
+		label: 'Pull',
+		description: 'Extract a subset.',
+		guidance: '',
+		use_when: '',
+		kanji: '',
+		category: '',
+		routing_concept: '',
+		metadata: {
+			definition: 'Extract a subset.',
+			heuristics: ['extract'],
+			distinctions: []
+		}
+	};
+
+	it('hovering a distinction entry adds chip--distinction-ref to the referenced chip', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: [probeToken, pullToken],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		// Open probe's meta panel
+		const probeChip = document.querySelector('[data-token="probe"]')!;
+		await fireEvent.click(probeChip);
+
+		// Hover the distinction entry for 'pull'
+		const entry = document.querySelector('.meta-distinction-entry')!;
+		await fireEvent.mouseEnter(entry);
+
+		const pullChip = document.querySelector('[data-token="pull"]')!;
+		expect(pullChip.classList.contains('chip--distinction-ref')).toBe(true);
+	});
+
+	it('mousing out of distinction entry clears chip--distinction-ref', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: [probeToken, pullToken],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const probeChip = document.querySelector('[data-token="probe"]')!;
+		await fireEvent.click(probeChip);
+
+		const entry = document.querySelector('.meta-distinction-entry')!;
+		await fireEvent.mouseEnter(entry);
+		await fireEvent.mouseLeave(entry);
+
+		const pullChip = document.querySelector('[data-token="pull"]')!;
+		expect(pullChip.classList.contains('chip--distinction-ref')).toBe(false);
+	});
+});

@@ -48,6 +48,8 @@
 	// Set when a touchmove/scroll closes the panel mid-gesture; suppresses the stray synthetic
 	// click that iOS fires at touchend even after a swipe (which would re-open a random chip's panel)
 	let touchBecameSwipe = $state(false);
+	// ADR-0155 T-1: token referenced by the currently hovered distinction entry
+	let hoveredDistinctionToken = $state<string | null>(null);
 
 	// True when any token has a non-empty category — enables grouped rendering
 	let hasCategoryGroups = $derived(tokens.some((t) => t.category));
@@ -434,6 +436,7 @@
 						class:active-meta={isActive}
 						class:chip--natural={resolveChipState(meta.token) === 'natural'}
 						class:chip--cautionary={resolveChipState(meta.token) === 'cautionary'}
+						class:chip--distinction-ref={hoveredDistinctionToken === meta.token}
 						role="option"
 						aria-selected={isSelected}
 						data-token={meta.token}
@@ -488,6 +491,7 @@
 					class:active-meta={isActive}
 					class:chip--natural={resolveChipState(meta.token) === 'natural'}
 					class:chip--cautionary={resolveChipState(meta.token) === 'cautionary'}
+					class:chip--distinction-ref={hoveredDistinctionToken === meta.token}
 					role="option"
 					aria-selected={isSelected}
 					data-token={meta.token}
@@ -564,7 +568,10 @@
 						<div class="meta-section meta-distinctions">
 							<span class="meta-section-label">Distinctions</span>
 							{#each activeMeta.metadata.distinctions as d}
-								<p class="meta-distinction-entry"><code>{d.token}</code> — {d.note}</p>
+								<p class="meta-distinction-entry"
+									onmouseenter={() => hoveredDistinctionToken = d.token}
+									onmouseleave={() => hoveredDistinctionToken = null}
+								><code>{d.token}</code> — {d.note}</p>
 							{/each}
 						</div>
 					{/if}
@@ -752,6 +759,12 @@
 
 	.token-chip.chip--cautionary {
 		border-left: 3px solid #e0af68;
+	}
+
+	/* ADR-0155 T-1: distinction cross-reference highlight */
+	.token-chip.chip--distinction-ref {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
 	}
 
 	code {

@@ -17,6 +17,7 @@ from .staticPromptConfig import (
     static_prompt_label_overrides as _static_prompt_label_overrides,
     static_prompt_routing_concept_overrides as _static_prompt_routing_concept_overrides,
     static_prompt_use_when_overrides as _static_prompt_use_when_overrides,
+    task_metadata as _task_metadata,
 )
 
 # Map axis names to their Talon list filenames (optional/auxiliary) so we can
@@ -233,6 +234,7 @@ def axis_catalog(
         "usage_patterns": axisConfig.get_usage_patterns(),
         "cross_axis_composition": axisConfig.CROSS_AXIS_COMPOSITION,  # ADR-0147
         "form_default_completeness": axisConfig.FORM_DEFAULT_COMPLETENESS,  # ADR-0153
+        "task_metadata": _task_metadata(),  # ADR-0154
     }
 
 
@@ -266,8 +268,12 @@ def serialize_axis_config(
         payload["static_prompt_descriptions"] = catalog["static_prompt_descriptions"]
         payload["static_prompt_profiles"] = catalog["static_prompt_profiles"]
         payload["static_prompt_kanji"] = catalog.get("static_prompt_kanji", {})
-        payload["static_prompt_routing_concept"] = catalog.get("static_prompt_routing_concept", {})
+        payload["static_prompt_routing_concept"] = catalog.get(
+            "static_prompt_routing_concept", {}
+        )
     payload["usage_patterns"] = catalog["usage_patterns"]
     payload["cross_axis_composition"] = catalog["cross_axis_composition"]  # ADR-0147
-    payload["form_default_completeness"] = catalog["form_default_completeness"]  # ADR-0153
+    payload["form_default_completeness"] = catalog[
+        "form_default_completeness"
+    ]  # ADR-0153
     return payload

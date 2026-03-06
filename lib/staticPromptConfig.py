@@ -20,6 +20,17 @@ class StaticPromptProfile(TypedDict, total=False):
     channel: Union[str, list[str]]
 
 
+class TaskMetadataDistinction(TypedDict):
+    token: str
+    note: str
+
+
+class TaskMetadata(TypedDict, total=False):
+    definition: str
+    heuristics: list[str]
+    distinctions: list[TaskMetadataDistinction]
+
+
 COMPLETENESS_FREEFORM_ALLOWLIST: Set[str] = {"path"}
 
 
@@ -293,20 +304,220 @@ _STATIC_PROMPT_USE_WHEN: dict[str, str] = {
     ),
 }
 
+# Structured task metadata (ADR-0154).
+# Replaces the flat _STATIC_PROMPT_GUIDANCE and _STATIC_PROMPT_USE_WHEN with
+# structured fields: definition, heuristics, distinctions.
+_TASK_METADATA: dict[str, TaskMetadata] = {
+    "fix": {
+        "definition": "Reformatting or restructuring existing content while keeping its meaning.",
+        "heuristics": [
+            "reformat",
+            "restructure",
+            "convert to",
+            "clean up",
+            "change format",
+            "transform into",
+        ],
+        "distinctions": [
+            {
+                "token": "make",
+                "note": "fix = reformat existing content; make = create new",
+            }
+        ],
+    },
+    "diff": {
+        "definition": "Comparing or contrasting two or more subjects for the reader to decide.",
+        "heuristics": [
+            "compare",
+            "contrast",
+            "X vs Y",
+            "similarities and differences",
+            "tradeoffs between",
+            "how do X and Y differ",
+        ],
+        "distinctions": [
+            {
+                "token": "pick",
+                "note": "diff = structured comparison for reader to decide; pick = LLM makes selection",
+            }
+        ],
+    },
+    "make": {
+        "definition": "Creating new content or artifacts that did not previously exist.",
+        "heuristics": [
+            "write",
+            "create",
+            "draft",
+            "generate",
+            "build",
+            "produce",
+            "author",
+            "design",
+        ],
+        "distinctions": [
+            {"token": "fix", "note": "make = create new; fix = reformat existing"}
+        ],
+    },
+    "check": {
+        "definition": "Verifying or auditing against criteria.",
+        "heuristics": [
+            "verify",
+            "audit",
+            "validate",
+            "does this satisfy",
+            "check for",
+            "evaluate against",
+            "review for compliance",
+            "does X meet criteria Y",
+        ],
+        "distinctions": [
+            {
+                "token": "probe",
+                "note": "probe = analyze broadly; check = evaluate against a condition",
+            }
+        ],
+    },
+    "plan": {
+        "definition": "Proposing steps, structure, or strategy to reach a goal.",
+        "heuristics": [
+            "plan",
+            "roadmap",
+            "steps to",
+            "how do I get from X to Y",
+            "migration plan",
+            "strategy for",
+            "sequence of actions",
+        ],
+        "distinctions": [
+            {
+                "token": "sim",
+                "note": "plan = steps to take; sim = what plays out if a condition is met",
+            }
+        ],
+    },
+    "sim": {
+        "definition": "Playing out a scenario over time — what would happen if.",
+        "heuristics": [
+            "what would happen if",
+            "play out the scenario where",
+            "simulate what happens when",
+            "walk me through what would occur if",
+            "hypothetically if we did X then what",
+        ],
+        "distinctions": [
+            {
+                "token": "plan",
+                "note": "sim = narrate scenario unfolding over time; plan = steps to take",
+            },
+            {
+                "token": "probe",
+                "note": "sim = temporal narration; probe = surface implications analytically",
+            },
+        ],
+    },
+    "probe": {
+        "definition": "Analyzing structure, surfacing assumptions, or diagnosing a problem.",
+        "heuristics": [
+            "analyze",
+            "debug",
+            "troubleshoot",
+            "diagnose",
+            "root cause",
+            "why is this happening",
+            "investigate the error",
+            "what assumptions",
+            "surface implications",
+        ],
+        "distinctions": [
+            {"token": "pull", "note": "probe = analyze broadly; pull = extract subset"}
+        ],
+    },
+    "show": {
+        "definition": "Explaining or describing something for an audience.",
+        "heuristics": [
+            "explain",
+            "describe",
+            "walk me through",
+            "what is",
+            "tell me about",
+            "how does X work",
+            "overview of",
+        ],
+        "distinctions": [
+            {
+                "token": "pull",
+                "note": "show = explain a concept; pull = compress source material",
+            }
+        ],
+    },
+    "pull": {
+        "definition": "Extracting a subset of information from source material.",
+        "heuristics": [
+            "extract",
+            "list the",
+            "what are the risks",
+            "pull out",
+            "summarize this document",
+            "give me just the",
+            "identify the",
+        ],
+        "distinctions": [
+            {
+                "token": "show",
+                "note": "pull = compress source material; show = explain a concept",
+            },
+            {
+                "token": "probe",
+                "note": "pull = extract subset; probe = analyze broadly",
+            },
+        ],
+    },
+    "pick": {
+        "definition": "Selecting from alternatives — the LLM makes the choice.",
+        "heuristics": [
+            "which should I use",
+            "choose between X/Y/Z",
+            "recommend one",
+            "what would you pick",
+            "which is better for my situation",
+        ],
+        "distinctions": [
+            {
+                "token": "diff",
+                "note": "pick = LLM selects; diff = structured comparison for reader to decide",
+            }
+        ],
+    },
+    "sort": {
+        "definition": "Arranging items into categories or order.",
+        "heuristics": [
+            "group",
+            "categorize",
+            "cluster",
+            "rank",
+            "order by",
+            "organize into themes",
+            "sort by",
+            "prioritize this list",
+        ],
+        "distinctions": [],
+    },
+}
+
 # Distilled routing concept phrases for task tokens (ADR-0146).
 # Parallel to AXIS_KEY_TO_ROUTING_CONCEPT; SSOT for task routing labels in TUI2/SPA.
 _STATIC_PROMPT_ROUTING_CONCEPT: dict[str, str] = {
     "check": "Evaluate pass/fail",
-    "diff":  "Compare subjects",
-    "fix":   "Reformat/edit",
-    "make":  "Create new content",
-    "pick":  "Choose from options",
-    "plan":  "Propose strategy",
+    "diff": "Compare subjects",
+    "fix": "Reformat/edit",
+    "make": "Create new content",
+    "pick": "Choose from options",
+    "plan": "Propose strategy",
     "probe": "Analyse/surface structure",
-    "pull":  "Extract/select subset",
-    "show":  "Explain/describe",
-    "sim":   "Play out scenario",
-    "sort":  "Arrange/categorize",
+    "pull": "Extract/select subset",
+    "show": "Explain/describe",
+    "sim": "Play out scenario",
+    "sort": "Arrange/categorize",
 }
 
 # Kanji icons for task tokens (ADR-0143)
@@ -338,6 +549,11 @@ def static_prompt_guidance_overrides() -> dict[str, str]:
 def static_prompt_use_when_overrides() -> dict[str, str]:
     """Return name->use_when map for task tokens (ADR-0142)."""
     return dict(_STATIC_PROMPT_USE_WHEN)
+
+
+def task_metadata() -> dict[str, TaskMetadata]:
+    """Return structured metadata for task tokens (ADR-0154)."""
+    return dict(_TASK_METADATA)
 
 
 def static_prompt_kanji_overrides() -> dict[str, str]:

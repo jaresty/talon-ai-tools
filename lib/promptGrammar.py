@@ -22,6 +22,7 @@ from .staticPromptConfig import STATIC_PROMPT_CONFIG
 from .talonSettings import axis_incompatibilities, axis_priority, axis_soft_caps
 
 SCHEMA_VERSION = "1.0"
+PROMPT_METADATA_SCHEMA = "prompt-metadata/v2"  # ADR-0154
 
 
 _SLUG_INVALID_CHARS = re.compile(r"[^a-z0-9_-]+")
@@ -190,7 +191,9 @@ def _build_axis_section(
     axis_routing_concept_raw = catalog.get("axis_routing_concept") or {}
     axis_routing_concept: dict[str, dict[str, str]] = {
         str(axis): {str(k): str(v) for k, v in sorted(tokens.items())}
-        for axis, tokens in sorted(axis_routing_concept_raw.items(), key=lambda i: str(i[0]))
+        for axis, tokens in sorted(
+            axis_routing_concept_raw.items(), key=lambda i: str(i[0])
+        )
         if tokens
     }
 
@@ -246,6 +249,7 @@ def _build_static_section(
     static_use_when = catalog.get("static_prompt_use_when") or {}
     static_kanji = catalog.get("static_prompt_kanji") or {}
     static_routing_concept = catalog.get("static_prompt_routing_concept") or {}
+    task_metadata = catalog.get("task_metadata") or {}  # ADR-0154
 
     section: dict[str, Any] = {
         "catalog": _normalize(_strip_none(static_catalog)),
@@ -262,6 +266,8 @@ def _build_static_section(
         section["kanji"] = _canonicalize_mapping(static_kanji)
     if static_routing_concept:
         section["routing_concept"] = _canonicalize_mapping(static_routing_concept)
+    if task_metadata:
+        section["metadata"] = task_metadata  # ADR-0154
 
     labels: set[str] = set(section["profiles"].keys()) | set(
         section["descriptions"].keys()
@@ -523,6 +529,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
     patterns_section = _build_patterns_section(catalog)
 
     from talon_user.lib.starterPacks import STARTER_PACKS
+
     starter_packs_section = [
         {"name": p.name, "framing": p.framing, "command": p.command}
         for p in STARTER_PACKS
@@ -542,6 +549,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
 
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
+        "$schema": PROMPT_METADATA_SCHEMA,  # ADR-0154
         "reference_key": PROMPT_REFERENCE_KEY,
         **sections,
         "checksums": checksums,
@@ -549,4 +557,4 @@ def prompt_grammar_payload() -> dict[str, Any]:
     return payload
 
 
-__all__ = ["SCHEMA_VERSION", "prompt_grammar_payload"]
+__all__ = ["SCHEMA_VERSION", "PROMPT_METADATA_SCHEMA", "prompt_grammar_payload"]

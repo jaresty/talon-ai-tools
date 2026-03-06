@@ -161,7 +161,9 @@ Keep free-form text. Accept the coupling — changing `drift`'s definition requi
 - **T-5** Wire Go `grammar.go` `TaskMetadata` structs + `TaskMetadataFor()` accessor
 - **T-6** Replace `help_llm.go` free-form task rendering with structured metadata
 - **T-7** Replace SPA `TokenSelector.svelte` task `use_when` section with `metadata.heuristics`/`distinctions`
-- **T-8** Remove Python flat dicts; stop exporting `guidance`/`use_when` for static tasks
+- **T-8** Remove Python flat dicts; stop exporting `guidance`/`use_when` for static tasks — **complete**
+- **T-9** Migrate `helpHub.py` cheat sheet to consume `task_metadata.definition` (removes last `_STATIC_PROMPT_GUIDANCE` consumer → full removal)
+- **T-10** SPA chip dot indicator: show for task tokens with structured `metadata` (not just `use_when`)
 
 ## Consequences
 

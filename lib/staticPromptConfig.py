@@ -174,52 +174,6 @@ _STATIC_PROMPT_LABELS: dict[str, str] = {
     "sort": "Arrange items into categories or order",
 }
 
-# Selection guidance for task tokens where the description alone is ambiguous
-# or where naming traps exist (ADR-0110, ADR-0128).
-_STATIC_PROMPT_GUIDANCE: dict[str, str] = {
-    "fix": (
-        "In bar's grammar, fix means reformat — not debug. "
-        "To analyze/debug: use probe with diagnose, inversion, or adversarial. "
-        "To implement the fix: use fix (reformat) or make (create new)."
-    ),
-    "diff": "Works well with: jira (comparison tables), log (structured diff), "
-    "codetour (code comparison). "
-    "Distinct from pick: diff = structured comparison for the reader to decide; "
-    "pick = LLM makes the selection. When narrowing to a recommendation, pair "
-    "diff with converge or branch method.",
-    "make": "Works well with: svg, adr, diagram, codetour. "
-    "For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
-    "check": "Works well with: log, gherkin, test. "
-    "For test coverage gaps: use check, not make ('check' = evaluate existing; 'make' = create new).",
-    "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), "
-    "jira (backlog items).",
-    "sim": "Temporal scenario walkthrough: use when the user wants to trace what "
-    "unfolds over time if a condition occurs. Heuristic: 'what would happen "
-    "if', 'play out the scenario where', 'simulate what happens when', "
-    "'walk me through what would occur if', 'hypothetically if we did X then "
-    "what' → sim. Distinct from plan (plan = steps to take; sim = what plays "
-    "out if a condition is met), probe (probe = surface implications "
-    "analytically; sim = narrate the scenario unfolding over time), and "
-    "simulation method (simulation = enriches probe/plan/etc with "
-    "thought-experiment reasoning about feedback loops; sim = the scenario "
-    "narrative is the primary task). "
-    "Works well with: diagram (Mermaid scenarios), slack (session format), "
-    "sync (agenda format).",
-    "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. "
-    "probe = analyze broadly; pull = extract subset. "
-    "For debugging/troubleshooting: use probe + diagnose method (not fix — fix is content reformatting, not bug-fixing). "
-    "Heuristic: 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe + diagnose.",
-    "show": "For summarisation of long documents, prefer 'pull' (extraction). "
-    "show = explain a concept; pull = compress source material.",
-    "pull": "For summarisation: extract the conceptual core from source material with gist scope. "
-    "For risk extraction: works well with fail scope.",
-    "pick": "Use when the task asks the LLM to make a selection, not just compare. "
-    "Distinct from diff: diff = structured comparison for the reader to decide; "
-    "pick = LLM chooses. Heuristic: 'which should I use', 'choose between X/Y/Z', "
-    "'recommend one' → pick; 'compare X vs Y' → diff. "
-    "Pair with branch method when comparison is needed before selecting.",
-}
-
 _TASK_METADATA: dict[str, TaskMetadata] = {
     "fix": {
         "definition": "Reformatting or restructuring existing content while keeping its meaning.",
@@ -457,10 +411,6 @@ def static_prompt_label_overrides() -> dict[str, str]:
     """Return name->label map for static prompts (ADR-0109)."""
     return dict(_STATIC_PROMPT_LABELS)
 
-
-def static_prompt_guidance_overrides() -> dict[str, str]:
-    """Return name->guidance map for static prompts (ADR-0110)."""
-    return dict(_STATIC_PROMPT_GUIDANCE)
 
 
 def task_metadata() -> dict[str, TaskMetadata]:

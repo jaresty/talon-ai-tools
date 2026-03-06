@@ -1144,7 +1144,7 @@ def _axis_guidance_lines() -> List[str]:
     try:
         catalog = axis_catalog()
         axis_guidance = catalog.get("axis_guidance", {})
-        static_guidance = catalog.get("static_prompt_guidance", {})
+        task_meta = catalog.get("task_metadata", {})  # ADR-0154
 
         # Collect guidance for each axis
         all_guidance: List[tuple[str, str, str]] = []
@@ -1156,10 +1156,11 @@ def _axis_guidance_lines() -> List[str]:
                 if guidance:
                     all_guidance.append((axis, token, guidance))
 
-        # Add static prompt guidance (e.g., "fix" task)
-        for token, guidance in static_guidance.items():
-            if guidance:
-                all_guidance.append(("task", token, guidance))
+        # Add task token guidance from structured metadata (ADR-0154)
+        for token, meta in task_meta.items():
+            definition = meta.get("definition", "") if isinstance(meta, dict) else ""
+            if definition:
+                all_guidance.append(("task", token, definition))
 
         # Format guidance lines
         if all_guidance:

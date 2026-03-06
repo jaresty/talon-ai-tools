@@ -279,3 +279,44 @@
 - SPA chip `.use-when-dot` indicator still checks `meta.use_when` — task tokens no longer have `use_when` in grammar JSON so dots will not appear for them. This is acceptable (dots were hints at panel content; task panels now show structured metadata). Severity: Low.
 
 **next_work:** N/A — ADR-0154 implementation complete. Update ADR status to Accepted.
+
+---
+
+## Loop 10: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-9 (scope extension) — Migrate `helpHub.py` `_axis_guidance_lines()` from `static_prompt_guidance` catalog key to `task_metadata.definition`; remove `_STATIC_PROMPT_GUIDANCE` dict and `static_prompt_guidance_overrides()` from `staticPromptConfig.py`; remove import + catalog entry from `axisCatalog.py`. This eliminates the last consumer of `_STATIC_PROMPT_GUIDANCE`, completing structured metadata dominance over all task token guidance surfaces.
+
+**active_constraint:** `_axis_guidance_lines()` in `helpHub.py` reads `static_prompt_guidance` from catalog (populated by `_STATIC_PROMPT_GUIDANCE`). Falsifiable: `test_cheat_sheet_task_guidance_uses_metadata_definition` fails red when implementation reads `static_prompt_guidance` instead of `task_metadata.definition`.
+
+**Expected value:**
+| Factor           | Value | Rationale |
+|-----------------|-------|-----------|
+| Impact           | High  | Removes last `_STATIC_PROMPT_GUIDANCE` consumer → full dict removal |
+| Probability      | High  | Deterministic — catalog key swap |
+| Time Sensitivity | Low   | No external deadline |
+Expected value: H×H×L = 9
+
+**validation_targets:**
+- `python3 -m pytest _tests/test_help_hub.py::test_cheat_sheet_task_guidance_uses_metadata_definition -x -q` (specifying)
+- `python3 -m pytest _tests/ -x -q` (full suite)
+- `go test ./...`
+
+**evidence:**
+- red | 2026-03-06T17:00:00Z | exit 1 | test_cheat_sheet_task_guidance_uses_metadata_definition — AssertionError: definition text should appear in guidance | inline
+- green | 2026-03-06T17:10:00Z | exit 0 | test_cheat_sheet_task_guidance_uses_metadata_definition PASS | inline
+- green | 2026-03-06T17:10:00Z | exit 0 | python3 -m pytest _tests/ -x -q → 1302 passed | inline
+- green | 2026-03-06T17:10:00Z | exit 0 | go test ./... — all packages pass | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/helpHub.py lib/staticPromptConfig.py lib/axisCatalog.py _tests/test_help_hub.py docs/adr/0154-prompt-metadata-domain-separation.md && make bar-grammar-update`
+
+**delta_summary:** helper:diff-snapshot=5 files changed, 57 insertions(+), 78 deletions(−) — `helpHub.py` (_axis_guidance_lines: reads task_metadata from catalog, not static_prompt_guidance); `staticPromptConfig.py` (_STATIC_PROMPT_GUIDANCE dict removed + static_prompt_guidance_overrides() removed); `axisCatalog.py` (import + catalog entry removed); `test_help_hub.py` (3 existing tests updated to monkeypatch axisCatalog._task_metadata; 1 new specifying test added); ADR updated with T-9/T-10 and T-8 marked complete.
+
+**loops_remaining_forecast:** 1 loop remaining (T-10: SPA chip dot), confidence high.
+
+**residual_constraints:**
+- SPA chip dot (`.use-when-dot`) still shows only for `meta.use_when` — task tokens no longer have `use_when`, so their chips show no dot. Severity: Low — cosmetic, T-10 next loop.
+
+**next_work:**
+- Behaviour T-10: Change `{#if meta.use_when}` → `{#if meta.use_when || meta.metadata}` in `TokenSelector.svelte` (lines 469, 523). Validation: `cd web && npm test`

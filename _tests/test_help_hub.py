@@ -1353,8 +1353,7 @@ def test_help_hub_search_results_for_is_pure_and_label_based():
 
 def test_cheat_sheet_includes_guidance_when_present(monkeypatch):
     """Test that cheat sheet includes guidance section when axis_guidance is defined (ADR-0114)."""
-    from lib import axisConfig
-    from lib import staticPromptConfig
+    from lib import axisConfig, axisCatalog
 
     captured_guidance = {}
 
@@ -1362,17 +1361,21 @@ def test_cheat_sheet_includes_guidance_when_present(monkeypatch):
         return captured_guidance.get(axis, {})
 
     monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
+    # ADR-0154: task guidance now comes from task_metadata.definition, not static_prompt_guidance
     monkeypatch.setattr(
-        staticPromptConfig,
-        "static_prompt_guidance_overrides",
-        lambda: captured_guidance.get("task", {}),
+        axisCatalog,
+        "_task_metadata",
+        lambda: {
+            "fix": {
+                "definition": "In bar's grammar, fix means reformat - not debug.",
+                "heuristics": [],
+                "distinctions": [],
+            }
+        },
     )
 
     captured_guidance["channel"] = {
         "codetour": "Best for code-navigation: fix, make, show. Avoid with sim, probe.",
-    }
-    captured_guidance["task"] = {
-        "fix": "In bar's grammar, fix means reformat - not debug.",
     }
 
     lines = helpHub._axis_guidance_lines()
@@ -1386,7 +1389,7 @@ def test_cheat_sheet_includes_guidance_when_present(monkeypatch):
 
 def test_cheat_sheet_guidance_truncation(monkeypatch):
     """Test that long guidance text is truncated to ~60 chars (ADR-0114)."""
-    from lib import axisConfig, staticPromptConfig
+    from lib import axisConfig, axisCatalog
 
     captured_guidance = {}
 
@@ -1394,11 +1397,8 @@ def test_cheat_sheet_guidance_truncation(monkeypatch):
         return captured_guidance.get(axis, {})
 
     monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
-    monkeypatch.setattr(
-        staticPromptConfig,
-        "static_prompt_guidance_overrides",
-        lambda: captured_guidance.get("task", {}),
-    )
+    # ADR-0154: suppress real task_metadata to isolate axis truncation test
+    monkeypatch.setattr(axisCatalog, "_task_metadata", lambda: {})
 
     long_guidance = "This is a very long guidance text that definitely exceeds sixty characters and should be truncated appropriately."
 
@@ -1416,7 +1416,7 @@ def test_cheat_sheet_guidance_truncation(monkeypatch):
 
 def test_cheat_sheet_guidance_empty_and_special_chars(monkeypatch):
     """Test guidance handling with empty strings and special characters (ADR-0114)."""
-    from lib import axisConfig, staticPromptConfig
+    from lib import axisConfig, axisCatalog
 
     captured_guidance = {}
 
@@ -1424,11 +1424,8 @@ def test_cheat_sheet_guidance_empty_and_special_chars(monkeypatch):
         return captured_guidance.get(axis, {})
 
     monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
-    monkeypatch.setattr(
-        staticPromptConfig,
-        "static_prompt_guidance_overrides",
-        lambda: captured_guidance.get("task", {}),
-    )
+    # ADR-0154: suppress real task_metadata to isolate axis test
+    monkeypatch.setattr(axisCatalog, "_task_metadata", lambda: {})
 
     captured_guidance["method"] = {
         "actors": "",  # Empty string - should be filtered
@@ -1444,3 +1441,34 @@ def test_cheat_sheet_guidance_empty_and_special_chars(monkeypatch):
         assert "actors" not in line or "guidance" not in line, (
             "Empty guidance should not appear"
         )
+
+
+def test_cheat_sheet_task_guidance_uses_metadata_definition(monkeypatch):
+    """T-9 (ADR-0154): _axis_guidance_lines reads task_metadata.definition, not static_prompt_guidance."""
+    from lib import axisConfig, axisCatalog
+
+    def mock_axis_guidance_map(axis):
+        return {}
+
+    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
+    monkeypatch.setattr(
+        axisCatalog,
+        "_task_metadata",
+        lambda: {
+            "probe": {
+                "definition": "Surfaces structure and assumptions analytically.",
+                "heuristics": ["analyze", "debug"],
+                "distinctions": [],
+            }
+        },
+    )
+
+    lines = helpHub._axis_guidance_lines()
+
+    assert any("probe" in line for line in lines), (
+        "probe task token should appear in guidance lines from task_metadata.definition"
+    )
+    assert any("Surfaces structure" in line for line in lines), (
+        "definition text should appear in guidance"
+    )
+    # static_prompt_guidance is NOT the source — even if it has different text, it's ignored

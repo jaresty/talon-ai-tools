@@ -26,6 +26,26 @@ if bootstrap is not None:
                 AXIS_KEY_TO_VALUE,
                 "Generated axis config map must match current axisConfig AXIS_KEY_TO_VALUE",
             )
+            
+            # Validate execution safety - check for unexpected global variables
+            expected_globals = {"AXIS_KEY_TO_VALUE", "__builtins__"}
+            allowed_helpers = {
+                'AXIS_KEY_TO_LABEL', 'AXIS_KEY_TO_GUIDANCE', 'AXIS_KEY_TO_USE_WHEN',
+                'AXIS_KEY_TO_KANJI', 'AXIS_KEY_TO_CATEGORY', 'AXIS_KEY_TO_ROUTING_CONCEPT',
+                'AXIS_KEY_TO_AXIS_DESC', 'CROSS_AXIS_COMPOSITION', 'FORM_DEFAULT_COMPLETENESS',
+                'USAGE_PATTERNS', 'AxisDoc', 'axis_key_to_value_map', 'axis_key_to_label_map',
+                'axis_key_to_guidance_map', 'axis_key_to_use_when_map', 'axis_key_to_kanji_map',
+                'axis_key_to_category_map', 'axis_key_to_routing_concept_map',
+                'axis_key_to_axis_desc', 'get_cross_axis_composition', 'axis_docs_for',
+                'axis_docs_index', 'get_usage_patterns', 'dataclass', 'field', 'Any', 'Dict',
+                'FrozenSet', 'Union', 'annotations', '__doc__', '__annotations__', '__conditional_annotations__'
+            }
+            unexpected_globals = set(globals_dict.keys()) - expected_globals - allowed_helpers
+            if unexpected_globals:
+                self.fail(
+                    f"Generated code created unexpected global variables: {unexpected_globals}. "
+                    "This indicates potential side effects or namespace pollution."
+                )
 
         def test_markdown_includes_all_axes_and_tokens(self) -> None:
             markdown = render_axis_markdown()

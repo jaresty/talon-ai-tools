@@ -29,6 +29,18 @@ if not TYPE_CHECKING:
                     AXIS_KEY_TO_VALUE,
                     "axisConfig drift detected; regenerate with `make axis-regenerate` to sync to the registry",
                 )
+                
+                # Validate that generated code produces same result as internal function
+                rendered_code = generate_axis_config.render_axis_config()
+                globals_dict = {}
+                exec(rendered_code, globals_dict)
+                code_generated = globals_dict.get("AXIS_KEY_TO_VALUE")
+                
+                self.assertDictEqual(
+                    generated_map,
+                    code_generated,
+                    "Internal function and generated code should produce identical results",
+                )
             finally:
                 __import__("sys").path[:] = sys_path_was
 

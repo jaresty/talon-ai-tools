@@ -63,3 +63,31 @@
 **residual_constraints:** None
 
 **next_work:** T-3 — Add JSON schema validation
+
+---
+
+## Loop 3: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-3 — Add JSON schema validation test to verify task metadata conforms to ADR-0154 schema.
+
+**active_constraint:** None — validation complete.
+
+**validation_targets:**
+- `python3 -m pytest _tests/test_static_prompt_config.py::StaticPromptConfigDomainTests::test_task_metadata_conforms_to_schema -v`
+
+**evidence:**
+- green | 2026-03-06T00:40:00Z | exit 0 | test_task_metadata_conforms_to_schema → PASSED
+- green | 2026-03-06T00:40:00Z | exit 0 | python3 -m pytest _tests/test_static_prompt_config.py → 11 passed
+
+**rollback_plan:** `git restore --source=HEAD _tests/test_static_prompt_config.py`
+
+**delta_summary:** helper:diff-snapshot=1 file changed — _tests/test_static_prompt_config.py (added test_task_metadata_conforms_to_schema to validate definition maxLength, heuristics array size/items, distinctions required fields).
+
+**loops_remaining_forecast:** 1 loop remaining:
+- T-4: Document migration completion (future enhancement: render metadata in SPA UI)
+
+**residual_constraints:** None
+
+**next_work:** T-4 — Update ADR status to Accepted (implementation complete)

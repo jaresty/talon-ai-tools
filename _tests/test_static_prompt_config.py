@@ -15,6 +15,7 @@ if bootstrap is not None:
         get_static_prompt_axes,
         get_static_prompt_profile,
         static_prompt_settings_catalog,
+        task_metadata,
     )
 
     class StaticPromptConfigDomainTests(unittest.TestCase):
@@ -124,6 +125,70 @@ if bootstrap is not None:
                 overlap,
                 f"Static prompt tokens must not overlap method axis tokens (found {sorted(overlap)})",
             )
+
+        def test_task_metadata_conforms_to_schema(self) -> None:
+            from talon_user.lib.staticPromptConfig import task_metadata
+            import re
+
+            metadata = task_metadata()
+            self.assertGreater(len(metadata), 0, "Task metadata must not be empty")
+
+            for token, data in metadata.items():
+                self.assertIn("definition", data, f"Task {token} must have definition")
+                self.assertIn("heuristics", data, f"Task {token} must have heuristics")
+                self.assertIn(
+                    "distinctions", data, f"Task {token} must have distinctions"
+                )
+
+                self.assertIsInstance(
+                    data["definition"], str, f"Task {token} definition must be string"
+                )
+                self.assertIsInstance(
+                    data["heuristics"], list, f"Task {token} heuristics must be list"
+                )
+                self.assertIsInstance(
+                    data["distinctions"],
+                    list,
+                    f"Task {token} distinctions must be list",
+                )
+
+                self.assertLessEqual(
+                    len(data["definition"]),
+                    500,
+                    f"Task {token} definition exceeds 500 chars",
+                )
+                self.assertLessEqual(
+                    len(data["heuristics"]),
+                    20,
+                    f"Task {token} heuristics exceeds 20 items",
+                )
+
+                for h in data["heuristics"]:
+                    self.assertIsInstance(
+                        h, str, f"Task {token} heuristic must be string"
+                    )
+                    self.assertLessEqual(
+                        len(h), 100, f"Task {token} heuristic exceeds 100 chars"
+                    )
+
+                for d in data["distinctions"]:
+                    self.assertIn(
+                        "token", d, f"Task {token} distinction must have token"
+                    )
+                    self.assertIn("note", d, f"Task {token} distinction must have note")
+                    self.assertIsInstance(
+                        d["token"],
+                        str,
+                        f"Task {token} distinction token must be string",
+                    )
+                    self.assertIsInstance(
+                        d["note"], str, f"Task {token} distinction note must be string"
+                    )
+                    self.assertLessEqual(
+                        len(d["note"]),
+                        200,
+                        f"Task {token} distinction note exceeds 200 chars",
+                    )
 
 
 else:

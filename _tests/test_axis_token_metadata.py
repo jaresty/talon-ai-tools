@@ -153,5 +153,51 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
         self.assertIn("dig", distinction_tokens, "fig must distinguish from dig")
 
 
+class ScopeAxisMetadataTests(unittest.TestCase):
+    """ADR-0155 T-6: scope axis has structured metadata for all 13 tokens."""
+
+    AXIS = "scope"
+    EXPECTED_TOKENS = {
+        "act", "agent", "assume", "cross", "fail", "good",
+        "mean", "motifs", "stable", "struct", "thing", "time", "view",
+    }
+
+    def setUp(self):
+        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+
+    def test_scope_metadata_covers_all_tokens(self):
+        """All 13 scope tokens must have metadata entries."""
+        self.assertEqual(
+            set(self.meta.keys()),
+            self.EXPECTED_TOKENS,
+            f"scope metadata keys mismatch — "
+            f"missing: {self.EXPECTED_TOKENS - set(self.meta.keys())}, "
+            f"extra: {set(self.meta.keys()) - self.EXPECTED_TOKENS}",
+        )
+
+    def test_scope_metadata_schema_conformance(self):
+        """Each scope token must have definition + heuristics + distinctions."""
+        for token, data in self.meta.items():
+            with self.subTest(token=token):
+                self.assertIn("definition", data)
+                self.assertIn("heuristics", data)
+                self.assertIn("distinctions", data)
+                self.assertTrue(data["definition"].strip())
+                self.assertGreater(len(data["heuristics"]), 0)
+
+    def test_act_distinguishes_from_thing(self):
+        """act must distinguish from thing (act=what entities do; thing=what entities exist)."""
+        act = self.meta.get("act", {})
+        distinction_tokens = [d["token"] for d in act.get("distinctions", [])]
+        self.assertIn("thing", distinction_tokens, "act must distinguish from thing")
+
+    def test_cross_distinguishes_from_struct_and_motifs(self):
+        """cross must distinguish from both struct and motifs."""
+        cross = self.meta.get("cross", {})
+        distinction_tokens = [d["token"] for d in cross.get("distinctions", [])]
+        self.assertIn("struct", distinction_tokens, "cross must distinguish from struct")
+        self.assertIn("motifs", distinction_tokens, "cross must distinguish from motifs")
+
+
 if __name__ == "__main__":
     unittest.main()

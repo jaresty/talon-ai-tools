@@ -1865,6 +1865,254 @@
             "what does the organisation tell us"
           ]
         }
+      },
+      "scope": {
+        "act": {
+          "definition": "Actions and intended operations focus: what is being done or needs to be done, not why or how it is structured.",
+          "distinctions": [
+            {
+              "note": "act = what entities are doing or performing; thing = what entities exist",
+              "token": "thing"
+            }
+          ],
+          "heuristics": [
+            "what actions",
+            "what operations are involved",
+            "what tasks are performed",
+            "what does it actually do",
+            "what work is happening",
+            "what are the intended operations",
+            "the activities it performs"
+          ]
+        },
+        "agent": {
+          "definition": "Decision-making or agency focus: who can act, who has authority, or how choices are made between actors.",
+          "distinctions": [
+            {
+              "note": "agent = who has decision-making authority; view = how the subject appears from a specific vantage point",
+              "token": "view"
+            }
+          ],
+          "heuristics": [
+            "who decides",
+            "who has authority",
+            "who can approve",
+            "decision-making",
+            "agency",
+            "who is responsible"
+          ]
+        },
+        "assume": {
+          "definition": "Assumptions and premises focus: what must be true, what is taken for granted, or what preconditions are embedded in the design.",
+          "distinctions": [],
+          "heuristics": [
+            "what assumptions",
+            "what are we assuming",
+            "what must be true",
+            "what preconditions",
+            "hidden assumptions",
+            "what are we taking for granted"
+          ]
+        },
+        "cross": {
+          "definition": "Cross-cutting concerns spanning the system: a concern that appears across many unrelated modules (logging, error handling, auth, observability).",
+          "distinctions": [
+            {
+              "note": "cross = concerns that propagate and span across module boundaries; motifs = structural patterns that repeat",
+              "token": "motifs"
+            },
+            {
+              "note": "cross = horizontal span across module boundaries; struct = internal topology and arrangement within units",
+              "token": "struct"
+            }
+          ],
+          "heuristics": [
+            "scattered across",
+            "spans multiple services",
+            "consistent across",
+            "cross-cutting",
+            "appears throughout",
+            "horizontal concern",
+            "error handling across our codebase",
+            "where does X live across the system"
+          ]
+        },
+        "fail": {
+          "definition": "Failure modes, breakdowns, and limits focus: how and when something stops working, what the edge cases are, or where fragility lives.",
+          "distinctions": [
+            {
+              "note": "fail = scope of breakdown conditions; good = quality criteria and success standards (often paired)",
+              "token": "good"
+            }
+          ],
+          "heuristics": [
+            "failure modes",
+            "where does it break",
+            "what are the edge cases",
+            "what can go wrong",
+            "under what conditions does it fail",
+            "limits",
+            "fragility",
+            "what stress would break this"
+          ]
+        },
+        "good": {
+          "definition": "Quality criteria or success standards focus: what makes something good, what criteria matter, or how to judge quality.",
+          "distinctions": [
+            {
+              "note": "good = quality and success standards; fail = breakdown conditions (often paired together)",
+              "token": "fail"
+            },
+            {
+              "note": "good = how to judge quality; mean = conceptual framing before evaluation",
+              "token": "mean"
+            }
+          ],
+          "heuristics": [
+            "quality criteria",
+            "what makes it good",
+            "how to judge",
+            "success criteria",
+            "well-designed",
+            "what good looks like",
+            "standards for",
+            "what does success look like"
+          ]
+        },
+        "mean": {
+          "definition": "Conceptual framing and definitional focus: what something means, how it is understood, or what its purpose is before evaluating or acting.",
+          "distinctions": [
+            {
+              "note": "mean = conceptual framing before evaluation; good = how to judge quality",
+              "token": "good"
+            }
+          ],
+          "heuristics": [
+            "what does X mean",
+            "how should I think about",
+            "what is the purpose of",
+            "how is this concept defined",
+            "how is this categorized",
+            "what does this term refer to",
+            "how do we conceptualize this",
+            "theoretical framing"
+          ]
+        },
+        "motifs": {
+          "definition": "Recurring or repeated patterns across the codebase or system: structures or idioms that appear in multiple places.",
+          "distinctions": [
+            {
+              "note": "motifs = patterns that repeat across the system; struct = one system's internal arrangement",
+              "token": "struct"
+            },
+            {
+              "note": "motifs = structural patterns that repeat; cross = concerns that propagate and span across module boundaries",
+              "token": "cross"
+            }
+          ],
+          "heuristics": [
+            "recurring patterns",
+            "repeated across",
+            "appears in multiple places",
+            "common idioms",
+            "what keeps showing up",
+            "same pattern in different places"
+          ]
+        },
+        "stable": {
+          "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
+          "distinctions": [
+            {
+              "note": "stable = what persists; time = how things evolve (often paired)",
+              "token": "time"
+            }
+          ],
+          "heuristics": [
+            "stable",
+            "unlikely to change",
+            "won't change",
+            "what persists",
+            "what is settled",
+            "fixed constraints",
+            "what has remained stable",
+            "backward-compatible"
+          ]
+        },
+        "struct": {
+          "definition": "Internal arrangement and dependency focus: how parts of a system relate and are organized — the internal topology, not cross-cutting span.",
+          "distinctions": [
+            {
+              "note": "struct = internal topology and arrangement within units; cross = horizontal span across module boundaries",
+              "token": "cross"
+            }
+          ],
+          "heuristics": [
+            "how is it structured",
+            "what are the dependencies",
+            "how are the components organized",
+            "internal architecture",
+            "how do the parts relate",
+            "what holds it together",
+            "the coordination and constraints inside"
+          ]
+        },
+        "thing": {
+          "definition": "Entity and bounded unit focus: what objects, roles, systems, or domains are in scope — what the relevant entities are.",
+          "distinctions": [
+            {
+              "note": "thing = what entities exist; act = what those entities are doing or performing",
+              "token": "act"
+            }
+          ],
+          "heuristics": [
+            "what entities",
+            "what are the main objects",
+            "what roles are involved",
+            "what systems are in scope",
+            "what are the bounded domains",
+            "what things exist here",
+            "name the components",
+            "what are we talking about"
+          ]
+        },
+        "time": {
+          "definition": "Temporal or sequential focus: sequence, history, phases, or how something changes over time.",
+          "distinctions": [
+            {
+              "note": "time = how things evolve; stable = what persists (often paired)",
+              "token": "stable"
+            }
+          ],
+          "heuristics": [
+            "step by step",
+            "in order",
+            "over time",
+            "what happens when",
+            "sequence",
+            "timeline",
+            "history",
+            "how did we get here",
+            "phases"
+          ]
+        },
+        "view": {
+          "definition": "Stakeholder or positional perspective focus: how the subject appears from a specific role or vantage point.",
+          "distinctions": [
+            {
+              "note": "view = how the subject appears from a specific vantage point; agent = who has decision-making authority",
+              "token": "agent"
+            }
+          ],
+          "heuristics": [
+            "from the user's perspective",
+            "from the manager's point of view",
+            "how does the team see this",
+            "from a security perspective",
+            "how does this look to stakeholders",
+            "from a customer's view",
+            "through the lens of"
+          ]
+        }
       }
     },
     "cross_axis_composition": {
@@ -4904,7 +5152,7 @@
     }
   ],
   "checksums": {
-    "axes": "5cbbb1e2c79368808c56566394cb38a6ede2d15a3ffa31e7c1e46a3e51e52d07",
+    "axes": "87f66e4d3655f9862561c1e4b2fd09f15da1676df404adf72351b8eeaccdebf1",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

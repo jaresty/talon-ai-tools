@@ -467,8 +467,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	if !compact {
 		fmt.Fprintf(w, "Pre-composed prompt strategies:\n\n")
 	}
-	fmt.Fprintf(w, "| Token | Label | Description | Notes | When to use |\n")
-	fmt.Fprintf(w, "|-------|-------|-------------|-------|-------------|\n")
+	fmt.Fprintf(w, "| Token | Label | Definition | Heuristics | Distinctions |\n")
+	fmt.Fprintf(w, "|-------|-------|------------|------------|--------------|\n")
 
 	staticNames := make([]string, 0, len(grammar.Static.Profiles))
 	for name := range grammar.Static.Profiles {
@@ -477,18 +477,23 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 	sort.Strings(staticNames)
 
 	for _, name := range staticNames {
-		desc := strings.TrimSpace(grammar.TaskDescription(name))
-		if desc == "" {
-			desc = "(no description)"
-		}
 		slug := grammar.slugForToken(name)
 		if slug == "" {
 			slug = name
 		}
 		label := grammar.TaskLabel(name)
-		guidance := grammar.TaskGuidance(name)
-		useWhen := grammar.TaskUseWhen(name)
-		fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s |\n", slug, label, desc, guidance, useWhen)
+		meta := grammar.TaskMetadataFor(name)
+		definition, heuristics, distinctions := "", "", ""
+		if meta != nil {
+			definition = meta.Definition
+			heuristics = strings.Join(meta.Heuristics, ", ")
+			parts := make([]string, 0, len(meta.Distinctions))
+			for _, d := range meta.Distinctions {
+				parts = append(parts, d.Token+": "+d.Note)
+			}
+			distinctions = strings.Join(parts, "; ")
+		}
+		fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s |\n", slug, label, definition, heuristics, distinctions)
 	}
 	fmt.Fprintf(w, "\n")
 

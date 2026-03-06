@@ -210,9 +210,9 @@ func TestHelpLLMTokenCatalogHasLabelColumn(t *testing.T) {
 		t.Error("Token Catalog must include scope:act label 'Tasks and intended actions' (ADR-0109 D5)")
 	}
 
-	// task:fix guidance must appear in the Notes column
-	if !strings.Contains(output, "fix means reformat") {
-		t.Error("Token Catalog must include task:fix guidance in Notes column (ADR-0110 D4)")
+	// task:fix distinctions must appear — fix/probe distinction from structured metadata (ADR-0154)
+	if !strings.Contains(output, "fix = reformat existing content") {
+		t.Error("Token Catalog must include task:fix distinction text in Distinctions column (ADR-0154)")
 	}
 }
 

@@ -167,9 +167,11 @@ func TestTaskUseWhenPopulated(t *testing.T) {
 	}
 }
 
-// TestHelpLLMTaskTableHasUseWhenColumn specifies that bar help llm output
-// contains a "When to use" column header in the Tasks section (ADR-0142 B1).
-func TestHelpLLMTaskTableHasUseWhenColumn(t *testing.T) {
+// TestHelpLLMTaskTableUsesStructuredMetadata specifies that bar help llm output
+// renders task token rows using structured metadata fields (ADR-0154 T-6):
+// definition, heuristics (comma-separated), and distinctions (token: note pairs).
+// Supersedes ADR-0142 use_when column (plain text replaced by structured heuristics).
+func TestHelpLLMTaskTableUsesStructuredMetadata(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("load embedded grammar: %v", err)
@@ -177,14 +179,24 @@ func TestHelpLLMTaskTableHasUseWhenColumn(t *testing.T) {
 	var buf strings.Builder
 	renderLLMHelp(&buf, grammar, "", false)
 	out := buf.String()
-	// Tasks table should have 5 columns matching axis tables
-	if !strings.Contains(out, "| When to use |") {
-		t.Fatal("help llm Tasks table missing 'When to use' column (ADR-0142 B1)")
-	}
-	// Routing data now lives in the Token Catalog "When to use" column, not a
-	// separate "Choosing Task" heuristic section. Verify the catalog section exists.
+
 	if !strings.Contains(out, "### Tasks (required)") {
-		t.Fatal("help llm missing Tasks catalog section (ADR-0142 B1)")
+		t.Fatal("help llm missing Tasks catalog section")
+	}
+	// Structured column headers replace free-form Notes/When-to-use columns
+	if !strings.Contains(out, "| Heuristics |") {
+		t.Fatal("help llm Tasks table missing '| Heuristics |' column (ADR-0154)")
+	}
+	if !strings.Contains(out, "| Distinctions |") {
+		t.Fatal("help llm Tasks table missing '| Distinctions |' column (ADR-0154)")
+	}
+	// probe row must contain a known heuristic trigger phrase
+	if !strings.Contains(out, "analyze") {
+		t.Fatal("help llm Tasks table probe row missing 'analyze' heuristic (ADR-0154)")
+	}
+	// fix row must contain the probe distinction
+	if !strings.Contains(out, "probe") {
+		t.Fatal("help llm Tasks table fix row missing 'probe' distinction (ADR-0154)")
 	}
 }
 

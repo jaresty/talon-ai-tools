@@ -183,3 +183,35 @@
 
 **next_work:**
 - Behaviour T-6: Replace `help_llm.go` task token rendering with structured `TaskMetadataFor()` fields; remove old `TaskGuidance()`/`TaskUseWhen()` reads for static tasks. Validation: `go test ./internal/barcli/... -run TestHelp`
+
+---
+
+## Loop 7: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-6 — Replace `renderTokenCatalog` task row rendering in `help_llm.go` with structured `TaskMetadataFor()` fields: `Definition`, `Heuristics` (comma-joined), and `Distinctions` (token: note pairs, semicolon-joined). Column headers renamed from `Description | Notes | When to use` to `Definition | Heuristics | Distinctions`. Update `TestHelpLLMTaskTableHasUseWhenColumn` (ADR-0142) → `TestHelpLLMTaskTableUsesStructuredMetadata` (ADR-0154) and update `TestHelpLLMTokenCatalogHasLabelColumn` (ADR-0110) to assert on new structured fix distinction text.
+
+**active_constraint:** `renderTokenCatalog` writes `TaskGuidance()`/`TaskUseWhen()` free-form strings into task table rows; `TestHelpLLMTaskTableUsesStructuredMetadata` fails red because `| Heuristics |` column header is absent. Falsifiable: test fails with "missing '| Heuristics |' column" before implementation.
+
+**validation_targets:**
+- `go test ./internal/barcli/... -run TestHelpLLMTaskTableUsesStructuredMetadata -v`
+- `go test ./...`
+
+**evidence:**
+- red | 2026-03-06T15:20:00Z | exit 1 | TestHelpLLMTaskTableUsesStructuredMetadata → missing '| Heuristics |' column | inline
+- green | 2026-03-06T15:25:00Z | exit 0 | TestHelpLLMTaskTableUsesStructuredMetadata PASS | inline
+- green | 2026-03-06T15:25:00Z | exit 0 | go test ./... — all packages pass | inline
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/help_llm.go internal/barcli/build_test.go internal/barcli/app_help_cli_test.go`
+
+**delta_summary:** helper:diff-snapshot=3 files changed — `help_llm.go` (renderTokenCatalog task section: column headers + row rendering replaced with structured metadata); `build_test.go` (TestHelpLLMTaskTableHasUseWhenColumn → TestHelpLLMTaskTableUsesStructuredMetadata); `app_help_cli_test.go` (updated "fix means reformat" → "fix = reformat existing content" assertion).
+
+**loops_remaining_forecast:** 2 loops remaining (T-7, T-8), confidence high.
+
+**residual_constraints:**
+- `TaskGuidance()` and `TaskUseWhen()` accessors still exist in `grammar.go` though no longer called for task rendering. Removal deferred to T-8 (Python cleanup loop) when the fields themselves are removed from the grammar JSON. Severity: Low (dead code, not a correctness issue). Monitoring: T-8.
+- SPA `TokenSelector.svelte` still renders `activeMeta.use_when` free-form string for task tokens. Severity: Medium. Monitoring: T-7 loop.
+
+**next_work:**
+- Behaviour T-7: Replace SPA `TokenSelector.svelte` task `use_when` section with `metadata.heuristics` (chip/tag display) and `metadata.distinctions` (token→note list). Validation: `cd web && npm test`

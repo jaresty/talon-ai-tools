@@ -38,17 +38,29 @@ func TestAxisLabelAccessorReturnsNonEmpty(t *testing.T) {
 	}
 }
 
-// TestAxisGuidanceAccessorReturnsNonEmpty specifies that Grammar.AxisGuidance and
-// Grammar.TaskGuidance return non-empty selection hints for the audit tokens
-// identified in ADR-0110 D2.
-func TestAxisGuidanceAccessorReturnsNonEmpty(t *testing.T) {
+// TestAxisGuidanceAndTaskMetadataPopulated specifies that Grammar.AxisGuidance returns
+// non-empty hints for axis tokens (ADR-0110 D2) and Grammar.TaskMetadataFor returns
+// non-empty structured metadata for task tokens (ADR-0154, supersedes TaskGuidance check).
+func TestAxisGuidanceAndTaskMetadataPopulated(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
-	// task:fix must redirect selectors away from debug use
-	if guidance := grammar.TaskGuidance("fix"); guidance == "" {
-		t.Error("task:fix must have guidance defined (ADR-0110 D2)")
+	// task:fix must have structured metadata with probe distinction (ADR-0154)
+	fixMeta := grammar.TaskMetadataFor("fix")
+	if fixMeta == nil {
+		t.Error("task:fix must have structured metadata (ADR-0154)")
+	} else {
+		found := false
+		for _, d := range fixMeta.Distinctions {
+			if d.Token == "probe" {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("task:fix distinctions must include probe (ADR-0154)")
+		}
 	}
 	// channel:code must warn against narrative tasks (now via cross-axis composition — ADR-0148 Part C)
 	if data := grammar.CrossAxisCompositionFor("channel", "code"); len(data) == 0 {

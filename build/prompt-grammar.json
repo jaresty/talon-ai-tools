@@ -1822,31 +1822,6 @@
       "sim": "Play out a scenario over time",
       "sort": "Arrange items into categories or order"
     },
-    "guidance": {
-      "check": "Works well with: log, gherkin, test. For test coverage gaps: use check, not make ('check' = evaluate existing; 'make' = create new).",
-      "diff": "Works well with: jira (comparison tables), log (structured diff), codetour (code comparison). Distinct from pick: diff = structured comparison for the reader to decide; pick = LLM makes the selection. When narrowing to a recommendation, pair diff with converge or branch method.",
-      "fix": "In bar's grammar, fix means reformat — not debug. To analyze/debug: use probe with diagnose, inversion, or adversarial. To implement the fix: use fix (reformat) or make (create new).",
-      "make": "Works well with: svg, adr, diagram, codetour. For test plans: use make, not check ('make' = create artifact; 'check' = evaluate existing).",
-      "pick": "Use when the task asks the LLM to make a selection, not just compare. Distinct from diff: diff = structured comparison for the reader to decide; pick = LLM chooses. Heuristic: 'which should I use', 'choose between X/Y/Z', 'recommend one' → pick; 'compare X vs Y' → diff. Pair with branch method when comparison is needed before selecting.",
-      "plan": "Works well with: adr (architecture decisions), diagram (flowcharts), jira (backlog items).",
-      "probe": "For extraction tasks ('what are the risks?', 'list the issues'), prefer 'pull' over 'probe'. probe = analyze broadly; pull = extract subset. For debugging/troubleshooting: use probe + diagnose method (not fix — fix is content reformatting, not bug-fixing). Heuristic: 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe + diagnose.",
-      "pull": "For summarisation: extract the conceptual core from source material with gist scope. For risk extraction: works well with fail scope.",
-      "show": "For summarisation of long documents, prefer 'pull' (extraction). show = explain a concept; pull = compress source material.",
-      "sim": "Temporal scenario walkthrough: use when the user wants to trace what unfolds over time if a condition occurs. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = what plays out if a condition is met), probe (probe = surface implications analytically; sim = narrate the scenario unfolding over time), and simulation method (simulation = enriches probe/plan/etc with thought-experiment reasoning about feedback loops; sim = the scenario narrative is the primary task). Works well with: diagram (Mermaid scenarios), slack (session format), sync (agenda format)."
-    },
-    "use_when": {
-      "check": "Verifying or auditing against criteria. Heuristic: 'verify', 'audit', 'validate', 'does this satisfy', 'check for', 'evaluate against', 'review for compliance', 'does X meet criteria Y' → check. Distinct from probe (probe = analyze broadly; check = evaluate against a condition).",
-      "diff": "Comparing or contrasting two or more subjects for the reader to decide. Heuristic: 'compare', 'contrast', 'X vs Y', 'similarities and differences', 'tradeoffs between', 'how do X and Y differ' → diff. Distinct from pick (diff = reader decides; pick = LLM selects). Pair with converge or branch method when narrowing to a recommendation.",
-      "fix": "Reformatting or restructuring existing content while keeping its meaning. Heuristic: 'reformat', 'restructure', 'convert to', 'clean up', 'change format', 'transform into' → fix. In bar's grammar, fix means reformat — not bug-fix. For debugging: use probe + diagnose. For creating new: use make.",
-      "make": "Creating new content or artifacts that did not previously exist. Heuristic: 'write', 'create', 'draft', 'generate', 'build', 'produce', 'author', 'design' → make. Distinct from fix (fix = reformat existing content; make = create new).",
-      "pick": "Selecting from alternatives — the LLM makes the choice. Heuristic: 'which should I use', 'choose between X/Y/Z', 'recommend one', 'what would you pick', 'which is better for my situation' → pick. Distinct from diff (diff = structured comparison for the reader to decide; pick = LLM selects). Pair with branch method when comparison precedes selection.",
-      "plan": "Proposing steps, structure, or strategy to reach a goal. Heuristic: 'plan', 'roadmap', 'steps to', 'how do I get from X to Y', 'migration plan', 'strategy for', 'sequence of actions' → plan. Distinct from sim (plan = steps to take; sim = what plays out if a condition is met).",
-      "probe": "Analyzing structure, surfacing assumptions, or diagnosing a problem. Heuristic: 'analyze', 'what assumptions', 'surface implications', 'debug', 'troubleshoot', 'diagnose', 'root cause', 'why is this happening', 'investigate the error' → probe (pair with diagnose method for debugging). Distinct from pull (pull = extract a subset; probe = analyze broadly).",
-      "pull": "Extracting a subset of information from source material. Heuristic: 'extract', 'list the', 'what are the risks', 'pull out', 'summarize this document', 'give me just the', 'identify the' → pull. Distinct from show (show = explain a concept; pull = compress source material). For risk extraction: pair with fail scope.",
-      "show": "Explaining or describing something for an audience. Heuristic: 'explain', 'describe', 'walk me through', 'what is', 'tell me about', 'how does X work', 'overview of' → show. Distinct from pull (pull = compress/extract source material; show = explain a concept).",
-      "sim": "Playing out a scenario over time — what would happen if. Heuristic: 'what would happen if', 'play out the scenario where', 'simulate what happens when', 'walk me through what would occur if', 'hypothetically if we did X then what' → sim. Distinct from plan (plan = steps to take; sim = narrate the scenario unfolding over time), probe (probe = surface implications analytically; sim = temporal narration), and simulation method (simulation method = enriches probe/plan/etc with thought-experiment reasoning about feedback loops; sim = the scenario narrative is the primary task). They can compose: sim+simulation = scenario played out via explicit feedback-loop modeling.",
-      "sort": "Arranging items into categories or order. Heuristic: 'group', 'categorize', 'cluster', 'rank', 'order by', 'organize into themes', 'sort by', 'prioritize this list' → sort. Pair with cluster method for thematic grouping."
-    },
     "kanji": {
       "check": "検",
       "diff": "較",
@@ -4257,7 +4232,7 @@
   ],
   "checksums": {
     "axes": "482a723cedf3bf72bd57f708949d6a3f4bc7bb431190ad2fba77065af38115c3",
-    "tasks": "4d630a476ed1792bd0eb679ba56f3a7fd3224cdd48af3e2b6ff77d1b068f2a5c",
+    "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "dd08e01edc9a161f0668cdd7bc86ff8fb1c10d63f4a0c290a3c613c299b90d4a",

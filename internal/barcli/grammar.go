@@ -74,13 +74,11 @@ type TaskMetadata struct {
 }
 
 type StaticSection struct {
-	Profiles     map[string]StaticProfile
-	Descriptions map[string]string
-	Labels       map[string]string // ADR-0109: short CLI-facing selection labels
-	Guidance     map[string]string // ADR-0110: selection-oriented prose hints
-	UseWhen        map[string]string // ADR-0142: routing trigger phrases for nav surfaces
-	Kanji          map[string]string // ADR-0143: kanji icons for visual display
-	RoutingConcept map[string]string // ADR-0146: distilled routing concept phrases
+	Profiles       map[string]StaticProfile
+	Descriptions   map[string]string
+	Labels         map[string]string       // ADR-0109: short CLI-facing selection labels
+	Kanji          map[string]string       // ADR-0143: kanji icons for visual display
+	RoutingConcept map[string]string       // ADR-0146: distilled routing concept phrases
 	Metadata       map[string]TaskMetadata // ADR-0154: structured definition, heuristics, distinctions
 }
 
@@ -189,11 +187,9 @@ type rawStatic struct {
 			Axes        map[string]any `json:"axes"`
 		} `json:"profiled"`
 	} `json:"catalog"`
-	Profiles     map[string]StaticProfile `json:"profiles"`
-	Descriptions map[string]string        `json:"descriptions"`
-	Labels       map[string]string        `json:"labels"`   // ADR-0109
-	Guidance     map[string]string        `json:"guidance"` // ADR-0110
-	UseWhen        map[string]string        `json:"use_when"`        // ADR-0142
+	Profiles       map[string]StaticProfile `json:"profiles"`
+	Descriptions   map[string]string        `json:"descriptions"`
+	Labels         map[string]string        `json:"labels"`          // ADR-0109
 	Kanji          map[string]string        `json:"kanji"`           // ADR-0143
 	RoutingConcept map[string]string        `json:"routing_concept"` // ADR-0146
 	Metadata       map[string]TaskMetadata  `json:"metadata"`        // ADR-0154
@@ -290,8 +286,6 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Profiles:       profiles,
 			Descriptions:   raw.Static.Descriptions,
 			Labels:         raw.Static.Labels,
-			Guidance:       raw.Static.Guidance,
-			UseWhen:        raw.Static.UseWhen,
 			Kanji:          raw.Static.Kanji,
 			RoutingConcept: raw.Static.RoutingConcept,
 			Metadata:       raw.Static.Metadata,
@@ -1099,32 +1093,6 @@ func (g *Grammar) AxisUseWhen(axis, token string) string {
 		if text, ok := hints[strings.ToLower(tokenKey)]; ok {
 			return text
 		}
-	}
-	return ""
-}
-
-// TaskGuidance returns the optional selection-guidance text for the given task token (ADR-0110).
-// Returns empty string if no guidance is defined.
-func (g *Grammar) TaskGuidance(name string) string {
-	key := normalizeToken(name)
-	if text, ok := g.Static.Guidance[key]; ok {
-		return text
-	}
-	if text, ok := g.Static.Guidance[strings.ToLower(key)]; ok {
-		return text
-	}
-	return ""
-}
-
-// TaskUseWhen returns the routing trigger phrase for the given task token (ADR-0142).
-// Returns empty string if no use_when is defined.
-func (g *Grammar) TaskUseWhen(name string) string {
-	key := normalizeToken(name)
-	if text, ok := g.Static.UseWhen[key]; ok {
-		return text
-	}
-	if text, ok := g.Static.UseWhen[strings.ToLower(key)]; ok {
-		return text
 	}
 	return ""
 }

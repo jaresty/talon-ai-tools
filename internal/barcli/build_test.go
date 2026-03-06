@@ -150,19 +150,26 @@ func TestBuildResultCarriesReferenceKey(t *testing.T) {
 
 // TestGrammarPatternsLoaded verifies that the embedded grammar JSON includes
 // the patterns list from the Python SSOT (ADR-0134 D3).
-// TestTaskUseWhenPopulated specifies that all 11 task tokens carry a non-empty
-// use_when string in the embedded grammar. This is the specifying validation for
-// ADR-0142 behaviour 1: task tokens expose use_when through the grammar schema.
-func TestTaskUseWhenPopulated(t *testing.T) {
+// TestTaskMetadataPopulated specifies that all 11 task tokens carry non-empty
+// structured metadata (definition + heuristics) in the embedded grammar (ADR-0154).
+// Supersedes TestTaskUseWhenPopulated (ADR-0142) — use_when replaced by metadata.heuristics.
+func TestTaskMetadataPopulated(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 	wantTasks := []string{"check", "diff", "fix", "make", "pick", "plan", "probe", "pull", "show", "sim", "sort"}
 	for _, task := range wantTasks {
-		uw := grammar.TaskUseWhen(task)
-		if strings.TrimSpace(uw) == "" {
-			t.Errorf("task token %q: use_when is empty (ADR-0142)", task)
+		meta := grammar.TaskMetadataFor(task)
+		if meta == nil {
+			t.Errorf("task token %q: TaskMetadataFor returned nil (ADR-0154)", task)
+			continue
+		}
+		if strings.TrimSpace(meta.Definition) == "" {
+			t.Errorf("task token %q: definition is empty (ADR-0154)", task)
+		}
+		if len(meta.Heuristics) == 0 {
+			t.Errorf("task token %q: heuristics is empty (ADR-0154)", task)
 		}
 	}
 }

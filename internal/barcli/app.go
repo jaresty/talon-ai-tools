@@ -1082,8 +1082,10 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 				} else {
 					fmt.Fprintf(w, "  - %s: %s\n", display, desc)
 				}
-				if guidance := grammar.TaskGuidance(name); guidance != "" {
-					fmt.Fprintf(w, "    ↳ %s\n", guidance)
+				if meta := grammar.TaskMetadataFor(name); meta != nil && len(meta.Distinctions) > 0 {
+					// ADR-0154: show first distinction as inline hint
+					d := meta.Distinctions[0]
+					fmt.Fprintf(w, "    ↳ vs %s: %s\n", d.Token, d.Note)
 				}
 			}
 		}

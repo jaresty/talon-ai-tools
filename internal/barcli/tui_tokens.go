@@ -192,13 +192,23 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 		if label == "" {
 			label = displayLabel(value, description)
 		}
+		// ADR-0154: format structured metadata into TUI string fields
+		var taskGuidance, taskUseWhen string
+		if meta := grammar.TaskMetadataFor(value); meta != nil {
+			taskUseWhen = strings.Join(meta.Heuristics, ", ")
+			parts := make([]string, 0, len(meta.Distinctions))
+			for _, d := range meta.Distinctions {
+				parts = append(parts, d.Token+": "+d.Note)
+			}
+			taskGuidance = strings.Join(parts, "; ")
+		}
 		options = append(options, bartui.TokenOption{
-			Value:       value,
-			Slug:        grammar.slugForToken(value),
-			Label:       label,
-			Description: description,
-			Guidance:       grammar.TaskGuidance(value),
-			UseWhen:        grammar.TaskUseWhen(value),
+			Value:          value,
+			Slug:           grammar.slugForToken(value),
+			Label:          label,
+			Description:    description,
+			Guidance:       taskGuidance,
+			UseWhen:        taskUseWhen,
 			Kanji:          grammar.TaskKanji(value),
 			RoutingConcept: grammar.TaskRoutingConcept(value),
 		})

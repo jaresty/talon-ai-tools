@@ -247,3 +247,35 @@
 
 **next_work:**
 - Behaviour T-8: Remove `_STATIC_PROMPT_GUIDANCE` and `_STATIC_PROMPT_USE_WHEN` from Python SSOT; stop exporting `guidance`/`use_when` for static tasks in `_build_static_section`; remove dead `TaskGuidance()`/`TaskUseWhen()` Go accessors. Validation: `python3 -m pytest _tests/ -x -q && go test ./...`
+
+---
+
+## Loop 9: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-8 — Remove legacy flat dicts and stop exporting them. Scope finding: `_STATIC_PROMPT_GUIDANCE` must be retained (used by `helpHub.py` cheat sheet — out of ADR-0154 scope). `_STATIC_PROMPT_USE_WHEN` fully removed (no other consumer). Go `TaskGuidance()`/`TaskUseWhen()` accessors removed; `StaticSection.Guidance`/`UseWhen` fields removed; `tui_tokens.go` and `app.go` updated to derive strings from `TaskMetadataFor()`.
+
+**active_constraint:** Grammar JSON still exports `guidance`/`use_when` fields for static tasks, and Go code still calls `TaskGuidance()`/`TaskUseWhen()` which read those fields. Falsifiable: `go test ./...` passes before changes (old accessors work); must also pass after (removed accessors, structured source).
+
+**validation_targets:**
+- `python3 -m pytest _tests/ -x -q`
+- `go test ./...`
+- `make bar-grammar-update` (regenerate grammar without guidance/use_when)
+
+**evidence:**
+- green | 2026-03-06T16:00:00Z | exit 0 | baseline — go test ./... all pass before changes | inline
+- green | 2026-03-06T16:15:00Z | exit 0 | python3 -m pytest _tests/ -x -q → 1301 passed | inline
+- green | 2026-03-06T16:15:00Z | exit 0 | go test ./... — all packages pass | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/staticPromptConfig.py lib/axisCatalog.py lib/promptGrammar.py internal/barcli/grammar.go internal/barcli/tui_tokens.go internal/barcli/app.go build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json web/static/prompt-grammar.json && go test ./...`
+
+**delta_summary:** helper:diff-snapshot=8 files changed — `staticPromptConfig.py` (_STATIC_PROMPT_USE_WHEN dict + static_prompt_use_when_overrides() removed); `axisCatalog.py` (import + catalog entry for use_when removed); `promptGrammar.py` (static_guidance/static_use_when no longer written to grammar JSON); `grammar.go` (Guidance/UseWhen removed from StaticSection and rawStatic; TaskGuidance/TaskUseWhen accessors removed); `tui_tokens.go` (formats TaskMetadataFor() into Guidance/UseWhen strings); `app.go` (uses TaskMetadataFor() for inline hint); test files updated to supersede ADR-0142 use_when/ADR-0110 guidance assertions with ADR-0154 metadata assertions; grammar JSONs regenerated.
+
+**loops_remaining_forecast:** 0 loops remaining — all T-1 through T-8 complete. ADR ready for Accepted status.
+
+**residual_constraints:**
+- `_STATIC_PROMPT_GUIDANCE` remains in Python SSOT (helpHub.py cheat sheet consumer, out of ADR-0154 scope). Severity: Low — no correctness impact. Monitoring: future ADR if help hub is migrated to structured metadata.
+- SPA chip `.use-when-dot` indicator still checks `meta.use_when` — task tokens no longer have `use_when` in grammar JSON so dots will not appear for them. This is acceptable (dots were hints at panel content; task panels now show structured metadata). Severity: Low.
+
+**next_work:** N/A — ADR-0154 implementation complete. Update ADR status to Accepted.

@@ -244,8 +244,6 @@ def _build_static_section(
     static_descriptions = catalog.get("static_prompt_descriptions") or {}
 
     static_labels = catalog.get("static_prompt_labels") or {}
-    static_guidance = catalog.get("static_prompt_guidance") or {}
-    static_use_when = catalog.get("static_prompt_use_when") or {}
     static_kanji = catalog.get("static_prompt_kanji") or {}
     static_routing_concept = catalog.get("static_prompt_routing_concept") or {}
     task_metadata = catalog.get("task_metadata") or {}  # ADR-0154
@@ -257,10 +255,6 @@ def _build_static_section(
     }
     if static_labels:
         section["labels"] = _canonicalize_mapping(static_labels)
-    if static_guidance:
-        section["guidance"] = _canonicalize_mapping(static_guidance)
-    if static_use_when:
-        section["use_when"] = _canonicalize_mapping(static_use_when)
     if static_kanji:
         section["kanji"] = _canonicalize_mapping(static_kanji)
     if static_routing_concept:

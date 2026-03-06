@@ -16,7 +16,6 @@ from .staticPromptConfig import (
     static_prompt_kanji_overrides as _static_prompt_kanji_overrides,
     static_prompt_label_overrides as _static_prompt_label_overrides,
     static_prompt_routing_concept_overrides as _static_prompt_routing_concept_overrides,
-    static_prompt_use_when_overrides as _static_prompt_use_when_overrides,
     task_metadata as _task_metadata,
 )
 
@@ -227,7 +226,6 @@ def axis_catalog(
         "static_prompt_descriptions": static_prompt_description_overrides(),
         "static_prompt_labels": _static_prompt_label_overrides(),
         "static_prompt_guidance": _static_prompt_guidance_overrides(),
-        "static_prompt_use_when": _static_prompt_use_when_overrides(),
         "static_prompt_kanji": _static_prompt_kanji_overrides(),
         "static_prompt_routing_concept": _static_prompt_routing_concept_overrides(),
         "static_prompt_profiles": STATIC_PROMPT_CONFIG,

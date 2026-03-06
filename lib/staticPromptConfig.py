@@ -322,7 +322,11 @@ _TASK_METADATA: dict[str, TaskMetadata] = {
             {
                 "token": "make",
                 "note": "fix = reformat existing content; make = create new",
-            }
+            },
+            {
+                "token": "probe",
+                "note": "fix = reformat existing content; probe = analyze or debug",
+            },
         ],
     },
     "diff": {

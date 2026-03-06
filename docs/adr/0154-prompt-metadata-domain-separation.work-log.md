@@ -120,3 +120,35 @@
 
 **next_work:**
 - Behaviour T-4: Fix review gaps — add `fix` ≠ debug/repair distinction to `_TASK_METADATA["fix"]`, add token coverage assertion (`set(metadata.keys()) == EXPECTED_TASK_TOKENS`), remove `$schema` from `promptGrammar.py` export. Validation: `python3 -m pytest _tests/test_static_prompt_config.py -v`
+
+---
+
+## Loop 5: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-4 — Fix three review gaps: (1) add `fix` ≠ debug/repair distinction to `_TASK_METADATA["fix"]`; (2) add `test_task_metadata_covers_all_task_tokens` and `test_fix_token_has_probe_distinction` as specifying validations; (3) remove `$schema`/`PROMPT_METADATA_SCHEMA` from `promptGrammar.py` (no phased migration needed).
+
+**active_constraint:** `_TASK_METADATA["fix"].distinctions` does not include `probe`, so the most common `fix` misuse (using `fix` to mean debug/repair) is undocumented in the structured metadata. Falsifiable: `test_fix_token_has_probe_distinction` fails red before the distinction is added.
+
+**validation_targets:**
+- `python3 -m pytest _tests/test_static_prompt_config.py -v`
+- `python3 -m pytest _tests/ -x -q`
+
+**evidence:**
+- red | 2026-03-06T14:50:00Z | exit 1 | test_fix_token_has_probe_distinction → AssertionError: 'probe' not found in ['make'] | inline
+- green | 2026-03-06T14:55:00Z | exit 0 | python3 -m pytest _tests/test_static_prompt_config.py -v → 13 passed | inline
+- green | 2026-03-06T14:57:00Z | exit 0 | python3 -m pytest _tests/ -x -q → 1301 passed | inline
+- perturbation | 2026-03-06T14:58:00Z | exit 0 | removed probe from fix.distinctions → test_fix_token_has_probe_distinction correctly fails | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/staticPromptConfig.py lib/promptGrammar.py _tests/test_static_prompt_config.py && make bar-grammar-update`
+
+**delta_summary:** helper:diff-snapshot=4 files changed — `_tests/test_static_prompt_config.py` (added test_task_metadata_covers_all_task_tokens + test_fix_token_has_probe_distinction), `lib/staticPromptConfig.py` (added probe distinction to fix), `lib/promptGrammar.py` (removed PROMPT_METADATA_SCHEMA + $schema from payload), grammar JSONs regenerated.
+
+**loops_remaining_forecast:** 4 loops remaining (T-5 through T-8), confidence high.
+
+**residual_constraints:**
+- Go CLI not yet reading structured metadata — `TaskGuidance()`/`TaskUseWhen()` for static tasks still serve free-form strings. Severity: Medium (CLI help output is degraded vs structured intent). Monitoring: T-5/T-6 loops. Owning: ADR-0154 T-5.
+
+**next_work:**
+- Behaviour T-5: Wire Go `grammar.go` — add `TaskMetadataDistinction`/`TaskMetadata` structs, `Metadata` field to `StaticSection` + `rawStatic`, wire in `LoadGrammar`, add `TaskMetadataFor()` accessor. Validation: `go test ./internal/barcli/... -run TestGrammar`

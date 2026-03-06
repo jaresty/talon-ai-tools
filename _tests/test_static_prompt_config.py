@@ -126,6 +126,35 @@ if bootstrap is not None:
                 f"Static prompt tokens must not overlap method axis tokens (found {sorted(overlap)})",
             )
 
+        def test_task_metadata_covers_all_task_tokens(self) -> None:
+            """All 11 task tokens must have entries — no silent omissions (ADR-0154)."""
+            from talon_user.lib.staticPromptConfig import task_metadata
+
+            EXPECTED_TASK_TOKENS = {
+                "fix", "diff", "make", "check", "plan", "sim",
+                "probe", "show", "pull", "pick", "sort",
+            }
+            metadata = task_metadata()
+            self.assertEqual(
+                set(metadata.keys()),
+                EXPECTED_TASK_TOKENS,
+                f"task_metadata keys mismatch — missing: {EXPECTED_TASK_TOKENS - set(metadata.keys())}, "
+                f"extra: {set(metadata.keys()) - EXPECTED_TASK_TOKENS}",
+            )
+
+        def test_fix_token_has_probe_distinction(self) -> None:
+            """fix must distinguish itself from probe (fix=reformat, probe=debug) — ADR-0154 review."""
+            from talon_user.lib.staticPromptConfig import task_metadata
+
+            metadata = task_metadata()
+            fix = metadata["fix"]
+            distinction_tokens = [d["token"] for d in fix["distinctions"]]
+            self.assertIn(
+                "probe",
+                distinction_tokens,
+                "fix distinctions must include probe (fix=reformat, not debug)",
+            )
+
         def test_task_metadata_conforms_to_schema(self) -> None:
             from talon_user.lib.staticPromptConfig import task_metadata
             import re

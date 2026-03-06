@@ -22,7 +22,6 @@ from .staticPromptConfig import STATIC_PROMPT_CONFIG
 from .talonSettings import axis_incompatibilities, axis_priority, axis_soft_caps
 
 SCHEMA_VERSION = "1.0"
-PROMPT_METADATA_SCHEMA = "prompt-metadata/v2"  # ADR-0154
 
 
 _SLUG_INVALID_CHARS = re.compile(r"[^a-z0-9_-]+")
@@ -549,7 +548,6 @@ def prompt_grammar_payload() -> dict[str, Any]:
 
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
-        "$schema": PROMPT_METADATA_SCHEMA,  # ADR-0154
         "reference_key": PROMPT_REFERENCE_KEY,
         **sections,
         "checksums": checksums,
@@ -557,4 +555,4 @@ def prompt_grammar_payload() -> dict[str, Any]:
     return payload
 
 
-__all__ = ["SCHEMA_VERSION", "PROMPT_METADATA_SCHEMA", "prompt_grammar_payload"]
+__all__ = ["SCHEMA_VERSION", "prompt_grammar_payload"]

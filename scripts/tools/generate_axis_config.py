@@ -172,6 +172,10 @@ def render_axis_config() -> str:
     form_default_completeness_body = pprint.pformat(
         dict(sorted(form_default_completeness_raw.items())), width=200, sort_dicts=True
     )
+    axis_token_metadata_raw = payload.get("axis_token_metadata", {}) or {}
+    axis_token_metadata_body = pprint.pformat(
+        dict(sorted(axis_token_metadata_raw.items())), width=200, sort_dicts=True
+    )
     header = textwrap.dedent(
         """\
         \"\"\"Axis configuration as static Python maps (token -> description).
@@ -316,7 +320,7 @@ def get_usage_patterns() -> list[dict]:
     return USAGE_PATTERNS
 """
 
-    adr0155_block = """\
+    adr0155_block = f"""
 
 
 # ADR-0155: Structured metadata for axis tokens (same shape as task token metadata).
@@ -332,7 +336,7 @@ class AxisTokenMetadata(TypedDict, total=False):
 
 
 # Nested dict keyed by axis then token. Populated axis-by-axis in T-3–T-8.
-AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {}
+AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {axis_token_metadata_body}
 
 
 def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:

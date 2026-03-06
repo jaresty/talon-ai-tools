@@ -273,4 +273,5 @@ def serialize_axis_config(
     payload["form_default_completeness"] = catalog[
         "form_default_completeness"
     ]  # ADR-0153
+    payload["axis_token_metadata"] = catalog["axis_token_metadata"]  # ADR-0155
     return payload

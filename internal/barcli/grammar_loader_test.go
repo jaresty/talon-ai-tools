@@ -136,23 +136,30 @@ func TestTaskMetadataForReturnsStructuredFields(t *testing.T) {
 	}
 }
 
-// TestAxisMetadataForReturnsNilWhenNoContent specifies T-2 pipeline wiring —
-// AxisMetadataFor must exist and return nil before any axis content is added (ADR-0155 T-2).
-func TestAxisMetadataForReturnsNilWhenNoContent(t *testing.T) {
+// TestAxisMetadataForAccessorContract specifies T-2 pipeline wiring —
+// AxisMetadataFor returns metadata for known populated axes and nil for unknown ones (ADR-0155 T-2/T-3).
+func TestAxisMetadataForAccessorContract(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// No axis metadata populated yet — accessor must return nil, not panic.
-	if grammar.AxisMetadataFor("completeness", "gist") != nil {
-		t.Error("AxisMetadataFor must return nil when no axis metadata is present")
-	}
-
-	// Unknown axis and token also return nil safely.
+	// Unknown axis/token must return nil safely (not panic).
 	if grammar.AxisMetadataFor("nonexistent", "nonexistent") != nil {
 		t.Error("AxisMetadataFor must return nil for unknown axis/token")
+	}
+
+	// completeness axis is populated (T-3): gist must have non-nil metadata.
+	gistMeta := grammar.AxisMetadataFor("completeness", "gist")
+	if gistMeta == nil {
+		t.Fatal("AxisMetadataFor(completeness, gist) must not return nil after T-3 migration")
+	}
+	if gistMeta.Definition == "" {
+		t.Error("completeness/gist definition must not be empty")
+	}
+	if len(gistMeta.Heuristics) == 0 {
+		t.Error("completeness/gist heuristics must not be empty")
 	}
 }
 

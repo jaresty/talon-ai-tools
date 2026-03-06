@@ -488,13 +488,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # Distinct from hard incompatibilities in hierarchy.incompatibilities.
 AXIS_KEY_TO_GUIDANCE: Dict[str, Dict[str, str]] = {
     "channel": {"sketch": "D2 diagram output only."},
-    "completeness": {
-        "gist": "Brief but complete response.",
-        "narrow": "Restricts discussion to a small topic slice. Compound directionals (fig, bog, fly-ong, fly-bog, fly-rog, fip-ong, fip-bog, fip-rog, dip-ong, dip-bog, dip-rog) work with "
-        "narrow but the combination examines the slice from multiple analytical dimensions simultaneously — cognitively demanding. If multi-dimensional analysis is the goal, "
-        "prefer full or deep completeness so the directional can range freely.",
-        "skim": "Quick-pass constraint: most obvious or critical issues only.",
-    },
     "form": {
         "case": "Layered argument-building prose (background, evidence, alternatives, recommendation).",
         "commit": "Conventional commit message (type: scope header + optional body).",
@@ -621,26 +614,6 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "cues', 'synchronous workshop plan' → sync channel. Combine with facilitate form for facilitator-role outputs.",
         "video": "Video as the final output: user wants to generate a video. Heuristic: 'generate a video', 'create a video', 'make a video of', 'I want a video of', 'video of', 'Sora', "
         "'Runway', 'Pika', 'Kling' → video. No surrounding prose.",
-    },
-    "completeness": {
-        "deep": "Substantial depth within the chosen scope: user wants thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case. Heuristic: "
-        "'go deep', 'really dig in', 'thorough analysis', 'don\\'t skip the nuances', 'unpack this fully', 'I want the details', 'deep dive', 'depth over breadth' → deep. Distinct "
-        "from max (max = exhaustive across all relevant coverage; deep = depth within a focused scope).",
-        "full": "Thorough but not exhaustive: user wants a complete answer covering all major aspects without every micro-detail. Heuristic: 'complete', 'comprehensive', 'cover everything "
-        "important', 'thorough', 'full picture', 'don\\'t leave anything major out', 'complete treatment' → full. Distinct from max (max = treat omissions as errors; full = "
-        "thorough normal coverage) and deep (deep = substantial depth within scope; full = breadth across major aspects).",
-        "gist": "Brief but complete response needed: user wants a quick summary or overview without deep exploration. Heuristic: 'quick summary', 'overview', 'brief', 'tldr', 'just the "
-        "main points', 'high-level', 'standup update', 'just the gist' → gist. Distinct from skim (skim = light pass, may miss non-obvious; gist = brief but complete).",
-        "max": "Exhaustive and leave nothing out: user explicitly wants the most complete possible response, treating omissions as errors. Heuristic: 'be exhaustive', 'miss nothing', "
-        "'everything relevant', 'leave nothing out', 'as complete as possible', 'comprehensive and exhaustive', 'cover every case', 'I need everything' → max. Distinct from full "
-        "(full = thorough normal coverage; max = every relevant item, omissions are errors).",
-        "minimal": "Smallest satisfying answer only: user wants the minimum change or response that addresses the core need, no extras. Heuristic: 'minimal change', 'just what\\'s needed', "
-        "'no more than necessary', 'smallest fix', 'keep it small', 'just the minimum', 'don\\'t add anything extra', 'bare minimum', 'only what I asked for' → minimal. Distinct "
-        "from narrow (narrow = restrict to a small topic slice; minimal = smallest valid answer to the request).",
-        "narrow": "Response should focus on a very specific slice only: user explicitly limits scope to one aspect. Heuristic: 'specifically', 'only about', 'just this part', 'restricted "
-        "to', 'nothing beyond', 'only X' → narrow. Distinct from minimal (minimal = smallest answer; narrow = very small slice of topic).",
-        "skim": "Light, surface-level pass needed: user wants a quick scan for obvious issues without depth. Heuristic: 'light review', 'quick pass', 'spot check', 'just flag obvious "
-        "problems', 'surface-level look', 'sanity check', 'quick skim' → skim. Distinct from gist (gist = brief but complete; skim = light pass that may miss non-obvious issues).",
     },
     "directional": {
         "bog": "Span the full horizontal spectrum — reflective AND acting: user wants the response to cover both the reflective/structural dimension (rog) AND the acting/extending dimension "
@@ -2534,7 +2507,152 @@ class AxisTokenMetadata(TypedDict, total=False):
 
 
 # Nested dict keyed by axis then token. Populated axis-by-axis in T-3–T-8.
-AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {}
+AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
+    "completeness": {
+        "deep": {
+            "definition": "Substantial depth within the chosen scope: thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case.",
+            "distinctions": [
+                {
+                    "note": "deep = depth within a focused scope; max = exhaustive across all relevant coverage",
+                    "token": "max",
+                },
+                {
+                    "note": "deep = substantial depth within scope; full = breadth across major aspects",
+                    "token": "full",
+                },
+            ],
+            "heuristics": [
+                "go deep",
+                "really dig in",
+                "thorough analysis",
+                "don't skip the nuances",
+                "unpack this fully",
+                "I want the details",
+                "deep dive",
+                "depth over breadth",
+            ],
+        },
+        "full": {
+            "definition": "Thorough but not exhaustive: covers all major aspects without every micro-detail.",
+            "distinctions": [
+                {
+                    "note": "full = thorough normal coverage; max = treat omissions as errors",
+                    "token": "max",
+                },
+                {
+                    "note": "full = breadth across major aspects; deep = substantial depth within scope",
+                    "token": "deep",
+                },
+            ],
+            "heuristics": [
+                "complete",
+                "comprehensive",
+                "cover everything important",
+                "thorough",
+                "full picture",
+                "don't leave anything major out",
+                "complete treatment",
+            ],
+        },
+        "gist": {
+            "definition": "Brief but complete response: quick summary or overview without deep exploration.",
+            "distinctions": [
+                {
+                    "note": "gist = brief but complete; skim = light pass, may miss non-obvious issues",
+                    "token": "skim",
+                }
+            ],
+            "heuristics": [
+                "quick summary",
+                "overview",
+                "brief",
+                "tldr",
+                "just the main points",
+                "high-level",
+                "standup update",
+                "just the gist",
+            ],
+        },
+        "max": {
+            "definition": "Exhaustive and leave nothing out: user explicitly wants the most complete possible response, treating omissions as errors.",
+            "distinctions": [
+                {
+                    "note": "max = every relevant item, omissions are errors; full = thorough normal coverage",
+                    "token": "full",
+                },
+                {
+                    "note": "max = exhaustive across all relevant coverage; deep = depth within a focused scope",
+                    "token": "deep",
+                },
+            ],
+            "heuristics": [
+                "be exhaustive",
+                "miss nothing",
+                "everything relevant",
+                "leave nothing out",
+                "as complete as possible",
+                "comprehensive and exhaustive",
+                "cover every case",
+                "I need everything",
+            ],
+        },
+        "minimal": {
+            "definition": "Smallest satisfying answer only: minimum change or response that addresses the core need, no extras.",
+            "distinctions": [
+                {
+                    "note": "minimal = smallest valid answer to the request; narrow = restrict to a small topic slice",
+                    "token": "narrow",
+                }
+            ],
+            "heuristics": [
+                "minimal change",
+                "just what's needed",
+                "no more than necessary",
+                "smallest fix",
+                "keep it small",
+                "just the minimum",
+                "don't add anything extra",
+                "bare minimum",
+                "only what I asked for",
+            ],
+        },
+        "narrow": {
+            "definition": "Restricts discussion to a very specific topic slice: user explicitly limits scope to one aspect.",
+            "distinctions": [
+                {
+                    "note": "narrow = very small slice of topic; minimal = smallest answer",
+                    "token": "minimal",
+                }
+            ],
+            "heuristics": [
+                "specifically",
+                "only about",
+                "just this part",
+                "restricted to",
+                "nothing beyond",
+                "only X",
+            ],
+        },
+        "skim": {
+            "definition": "Light, surface-level pass: quick scan for most obvious or critical issues without depth.",
+            "distinctions": [
+                {
+                    "note": "skim = light pass that may miss non-obvious issues; gist = brief but complete",
+                    "token": "gist",
+                }
+            ],
+            "heuristics": [
+                "light review",
+                "quick pass",
+                "spot check",
+                "just flag obvious problems",
+                "surface-level look",
+                "sanity check",
+                "quick skim",
+            ],
+        },
+    }
+}
 
 
 def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:

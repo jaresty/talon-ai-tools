@@ -1830,4 +1830,34 @@ describe('TokenSelector — ADR-0154 structured metadata panel', () => {
 		expect(screen.getByText('When to use')).toBeTruthy();
 		expect(screen.getByText('Use when a Wardley map output is needed.')).toBeTruthy();
 	});
+
+	// T-10 (ADR-0154): chip dot indicator shows for task tokens with structured metadata
+	it('task token chip shows use-when-dot when metadata is present (no use_when string)', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: [taskTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const dots = document.querySelectorAll('.use-when-dot');
+		expect(dots.length).toBe(1);
+	});
+
+	it('axis token chip shows NO use-when-dot when use_when is empty and metadata is null', () => {
+		const axisNoUseWhen = { ...axisTokenNoMetadata, use_when: '', metadata: null };
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens: [axisNoUseWhen],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const dots = document.querySelectorAll('.use-when-dot');
+		expect(dots.length).toBe(0);
+	});
 });

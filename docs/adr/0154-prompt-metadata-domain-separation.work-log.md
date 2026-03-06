@@ -320,3 +320,39 @@ Expected value: H×H×L = 9
 
 **next_work:**
 - Behaviour T-10: Change `{#if meta.use_when}` → `{#if meta.use_when || meta.metadata}` in `TokenSelector.svelte` (lines 469, 523). Validation: `cd web && npm test`
+
+---
+
+## Loop 11: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-10 — SPA chip dot indicator: show `.use-when-dot` for task tokens with `metadata` (not just `use_when`); CSS polish for heuristic chips (pill shape) and distinctions section (subtle background, inline code styling).
+
+**active_constraint:** `{#if meta.use_when}` gate suppresses the dot for task tokens whose `use_when` was removed in T-8. Falsifiable: `task token chip shows use-when-dot when metadata is present` test fails red before fix.
+
+**Expected value:**
+| Factor           | Value | Rationale |
+|-----------------|-------|-----------|
+| Impact           | Med   | Visual completeness — dot restores discoverability of task panel |
+| Probability      | High  | Deterministic — two-character condition change |
+| Time Sensitivity | Low   | No external deadline |
+Expected value: M×H×L = 6
+
+**validation_targets:**
+- `npm test -- --run` (specifying: T-10 dot tests red before, green after)
+
+**evidence:**
+- red | 2026-03-06T17:20:00Z | exit 1 | task token chip shows use-when-dot when metadata is present — expected 1, received 0 | inline
+- green | 2026-03-06T17:25:00Z | exit 0 | npm test -- --run → 300 passed | inline
+
+**rollback_plan:** `git restore --source=HEAD web/src/lib/TokenSelector.svelte web/src/lib/TokenSelector.test.ts`
+
+**delta_summary:** helper:diff-snapshot=2 files changed, 58 insertions(+), 6 deletions(−) — `TokenSelector.svelte` ({#if meta.use_when} → {#if meta.use_when || meta.metadata} at 2 locations; CSS: heuristic chips → pill radius (9999px) + monospace; distinctions section → subtle background; distinction entry code → styled inline pill); `TokenSelector.test.ts` (2 new T-10 specifying tests: dot shows for task metadata token; dot absent when use_when="" and metadata=null).
+
+**loops_remaining_forecast:** 0 loops remaining — T-1 through T-10 all complete. ADR-0154 Accepted.
+
+**residual_constraints:**
+- None — all static task token guidance surfaces now consume structured metadata exclusively. `_STATIC_PROMPT_GUIDANCE` removed from codebase.
+
+**next_work:** N/A — ADR-0154 fully complete across Python SSOT, grammar JSON, Go CLI, SPA panel rendering, SPA chip dot, and helpHub cheat sheet.

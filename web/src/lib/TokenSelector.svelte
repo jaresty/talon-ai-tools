@@ -466,7 +466,7 @@
 						{#if meta.label}
 							<span class="token-label">{meta.label}</span>
 						{/if}
-						{#if meta.use_when}
+						{#if meta.use_when || meta.metadata}
 							<span class="use-when-dot">●</span>
 						{/if}
 						{#if meta.routing_concept}
@@ -520,7 +520,7 @@
 					{#if meta.label}
 						<span class="token-label">{meta.label}</span>
 					{/if}
-					{#if meta.use_when}
+					{#if meta.use_when || meta.metadata}
 						<span class="use-when-dot">●</span>
 					{/if}
 					{#if meta.routing_concept}
@@ -909,23 +909,45 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.3rem;
-		margin-top: 0.3rem;
+		margin-top: 0.35rem;
 	}
 
 	.meta-heuristic-chip {
 		font-size: 0.72rem;
-		padding: 0.1rem 0.4rem;
+		padding: 0.15rem 0.5rem;
 		background: var(--color-accent-muted);
 		border: 1px solid var(--color-accent);
-		border-radius: var(--radius);
+		border-radius: 9999px;
 		color: var(--color-text);
+		font-family: monospace;
 	}
 
 	/* ADR-0154: distinctions section */
+	.meta-distinctions {
+		background: color-mix(in srgb, var(--color-surface) 85%, var(--color-accent-muted));
+		border-radius: calc(var(--radius) - 2px);
+		padding: 0.4rem 0.5rem;
+		border-top: none;
+		margin-top: 0.4rem;
+	}
+
 	.meta-distinction-entry {
-		margin: 0.2rem 0 0 0;
+		margin: 0.25rem 0 0 0;
 		color: var(--color-text);
 		font-size: 0.8rem;
+		line-height: 1.4;
+	}
+
+	.meta-distinction-entry:first-of-type {
+		margin-top: 0.1rem;
+	}
+
+	.meta-distinction-entry code {
+		font-size: 0.75rem;
+		padding: 0.05rem 0.3rem;
+		background: color-mix(in srgb, var(--color-accent-muted) 60%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+		border-radius: 3px;
 	}
 
 	.meta-footer {

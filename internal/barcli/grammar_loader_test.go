@@ -136,6 +136,26 @@ func TestTaskMetadataForReturnsStructuredFields(t *testing.T) {
 	}
 }
 
+// TestAxisMetadataForReturnsNilWhenNoContent specifies T-2 pipeline wiring —
+// AxisMetadataFor must exist and return nil before any axis content is added (ADR-0155 T-2).
+func TestAxisMetadataForReturnsNilWhenNoContent(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+
+	// No axis metadata populated yet — accessor must return nil, not panic.
+	if grammar.AxisMetadataFor("completeness", "gist") != nil {
+		t.Error("AxisMetadataFor must return nil when no axis metadata is present")
+	}
+
+	// Unknown axis and token also return nil safely.
+	if grammar.AxisMetadataFor("nonexistent", "nonexistent") != nil {
+		t.Error("AxisMetadataFor must return nil for unknown axis/token")
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

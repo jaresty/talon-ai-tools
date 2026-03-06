@@ -192,7 +192,7 @@ def render_axis_config() -> str:
         from __future__ import annotations
 
         from dataclasses import dataclass, field
-        from typing import Any, Dict, FrozenSet, Union
+        from typing import Any, Dict, FrozenSet, TypedDict, Union
         """
     )
     dataclasses = textwrap.dedent(
@@ -316,6 +316,30 @@ def get_usage_patterns() -> list[dict]:
     return USAGE_PATTERNS
 """
 
+    adr0155_block = """\
+
+
+# ADR-0155: Structured metadata for axis tokens (same shape as task token metadata).
+class AxisTokenDistinction(TypedDict):
+    token: str
+    note: str
+
+
+class AxisTokenMetadata(TypedDict, total=False):
+    definition: str
+    heuristics: list[str]
+    distinctions: list[AxisTokenDistinction]
+
+
+# Nested dict keyed by axis then token. Populated axis-by-axis in T-3–T-8.
+AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {}
+
+
+def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:
+    \"\"\"Return structured metadata for axis tokens (ADR-0155).\"\"\"
+    return dict(AXIS_TOKEN_METADATA)
+"""
+
     return (
         "\n\n".join(
             [
@@ -375,7 +399,7 @@ def get_usage_patterns() -> list[dict]:
                 f"# constraint is structural — not a user preference.\n"
                 f"FORM_DEFAULT_COMPLETENESS: Dict[str, str] = {form_default_completeness_body}",
                 dataclasses.rstrip(),
-                helpers.rstrip() + usage_patterns_block,
+                helpers.rstrip() + usage_patterns_block + adr0155_block,
             ]
         ).rstrip()
         + "\n"

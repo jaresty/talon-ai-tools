@@ -16,7 +16,7 @@ When renaming/removing tokens:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, FrozenSet, Union
+from typing import Any, Dict, FrozenSet, TypedDict, Union
 
 AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
@@ -2519,3 +2519,24 @@ USAGE_PATTERNS: list[dict] = [
 def get_usage_patterns() -> list[dict]:
     """Return the USAGE_PATTERNS list (ADR-0134 SSOT)."""
     return USAGE_PATTERNS
+
+
+# ADR-0155: Structured metadata for axis tokens (same shape as task token metadata).
+class AxisTokenDistinction(TypedDict):
+    token: str
+    note: str
+
+
+class AxisTokenMetadata(TypedDict, total=False):
+    definition: str
+    heuristics: list[str]
+    distinctions: list[AxisTokenDistinction]
+
+
+# Nested dict keyed by axis then token. Populated axis-by-axis in T-3–T-8.
+AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {}
+
+
+def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:
+    """Return structured metadata for axis tokens (ADR-0155)."""
+    return dict(AXIS_TOKEN_METADATA)

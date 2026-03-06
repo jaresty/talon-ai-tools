@@ -51,6 +51,7 @@ type AxisSection struct {
 	CrossAxisComposition   map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
 	AxisDescriptions       map[string]string                              // axis-level empty-state descriptions
 	FormDefaultCompleteness map[string]string                             // ADR-0153: per-form-token completeness override
+	Metadata                map[string]map[string]TaskMetadata            // ADR-0155: structured metadata per axis token
 }
 
 // CrossAxisPair holds the natural/cautionary composition data for one axis_a+token_a+axis_b triple (ADR-0147).
@@ -176,6 +177,7 @@ type rawAxisSection struct {
 	CrossAxisComposition    map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"`     // ADR-0147
 	AxisDescriptions        map[string]string                              `json:"axis_descriptions"`          // axis-level empty-state descriptions
 	FormDefaultCompleteness map[string]string                              `json:"form_default_completeness"`  // ADR-0153
+	Metadata                map[string]map[string]TaskMetadata             `json:"metadata"`                   // ADR-0155
 }
 
 
@@ -281,6 +283,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			CrossAxisComposition:    raw.Axes.CrossAxisComposition,
 			AxisDescriptions:        raw.Axes.AxisDescriptions,
 			FormDefaultCompleteness: raw.Axes.FormDefaultCompleteness,
+			Metadata:                raw.Axes.Metadata,
 		},
 		Static: StaticSection{
 			Profiles:       profiles,
@@ -1131,6 +1134,27 @@ func (g *Grammar) TaskMetadataFor(name string) *TaskMetadata {
 		return &meta
 	}
 	if meta, ok := g.Static.Metadata[strings.ToLower(key)]; ok {
+		return &meta
+	}
+	return nil
+}
+
+// AxisMetadataFor returns the structured metadata for an axis token (ADR-0155).
+// Returns nil if no metadata is defined for the given axis/token pair.
+func (g *Grammar) AxisMetadataFor(axis, token string) *TaskMetadata {
+	if g.Axes.Metadata == nil {
+		return nil
+	}
+	axisKey := normalizeAxis(axis)
+	tokenKey := normalizeToken(token)
+	axisMap, ok := g.Axes.Metadata[axisKey]
+	if !ok {
+		return nil
+	}
+	if meta, ok := axisMap[tokenKey]; ok {
+		return &meta
+	}
+	if meta, ok := axisMap[strings.ToLower(tokenKey)]; ok {
 		return &meta
 	}
 	return nil

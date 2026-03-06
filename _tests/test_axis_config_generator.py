@@ -26,7 +26,7 @@ if bootstrap is not None:
                 AXIS_KEY_TO_VALUE,
                 "Generated axis config map must match current axisConfig AXIS_KEY_TO_VALUE",
             )
-            
+
             # Validate execution safety - check for unexpected global variables
             expected_globals = {"AXIS_KEY_TO_VALUE", "__builtins__"}
             allowed_helpers = {
@@ -38,7 +38,10 @@ if bootstrap is not None:
                 'axis_key_to_category_map', 'axis_key_to_routing_concept_map',
                 'axis_key_to_axis_desc', 'get_cross_axis_composition', 'axis_docs_for',
                 'axis_docs_index', 'get_usage_patterns', 'dataclass', 'field', 'Any', 'Dict',
-                'FrozenSet', 'Union', 'annotations', '__doc__', '__annotations__', '__conditional_annotations__'
+                'FrozenSet', 'TypedDict', 'Union', 'annotations', '__doc__', '__annotations__',
+                '__conditional_annotations__',
+                # ADR-0155: axis token structured metadata
+                'AxisTokenDistinction', 'AxisTokenMetadata', 'AXIS_TOKEN_METADATA', 'axis_token_metadata',
             }
             unexpected_globals = set(globals_dict.keys()) - expected_globals - allowed_helpers
             if unexpected_globals:

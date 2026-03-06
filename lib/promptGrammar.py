@@ -222,6 +222,11 @@ def _build_axis_section(
     if axis_descriptions:
         section["axis_descriptions"] = axis_descriptions
 
+    # Metadata (ADR-0155): structured definition/heuristics/distinctions per axis token.
+    axis_token_metadata_raw = catalog.get("axis_token_metadata") or {}
+    if axis_token_metadata_raw:
+        section["metadata"] = axis_token_metadata_raw
+
     # CrossAxisComposition (ADR-0147): cross-axis composition semantics.
     # Structure: axis_a → token_a → axis_b → {"natural": [...], "reframe": {token: description}}
     cross_axis_raw = catalog.get("cross_axis_composition") or {}

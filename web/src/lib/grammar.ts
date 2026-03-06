@@ -51,6 +51,7 @@ export interface Grammar {
 		cross_axis_composition?: Record<string, Record<string, Record<string, CrossAxisPair>>>; // ADR-0148
 		axis_descriptions?: Record<string, string>; // axis-level empty-state descriptions
 		form_default_completeness?: Record<string, string>; // ADR-0153: per-form-token completeness override
+		metadata?: Record<string, Record<string, TaskMetadata>>; // ADR-0155: structured metadata per axis token
 	};
 	tasks: {
 		descriptions: Record<string, string>;
@@ -118,6 +119,7 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 	const kanji = grammar.axes.kanji?.[axis] ?? {};
 	const categories = grammar.axes.categories?.[axis] ?? {};
 	const routing_concepts = grammar.axes.routing_concept?.[axis] ?? {};
+	const axisMetadata = grammar.axes.metadata?.[axis] ?? {};
 	return Object.keys(defs)
 		.sort()
 		.map((token) => ({
@@ -128,7 +130,8 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 			use_when: use_when[token] ?? '',
 			kanji: kanji[token] ?? '',
 			category: categories[token] ?? '',
-			routing_concept: routing_concepts[token] ?? ''
+			routing_concept: routing_concepts[token] ?? '',
+			metadata: axisMetadata[token] ?? null
 		}));
 }
 

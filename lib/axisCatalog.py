@@ -231,6 +231,7 @@ def axis_catalog(
         "cross_axis_composition": axisConfig.CROSS_AXIS_COMPOSITION,  # ADR-0147
         "form_default_completeness": axisConfig.FORM_DEFAULT_COMPLETENESS,  # ADR-0153
         "task_metadata": _task_metadata(),  # ADR-0154
+        "axis_token_metadata": axisConfig.axis_token_metadata(),  # ADR-0155
     }
 
 

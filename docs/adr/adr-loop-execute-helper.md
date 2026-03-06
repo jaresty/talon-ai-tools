@@ -15,6 +15,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 
 - **Behaviour outcome** – the ADR-defined behaviour or decision this loop changes or observes.
 - **Validation command** – the smallest executable that exercises a behaviour outcome and records red/green/removal evidence.
+- **Perturbation testing** – intentional modification of the implementation to explore boundary conditions and edge cases, verifying the specifying validation captures what it should fail on. Perturbation explores what changes would cause the validation to fail, confirming the test coverage is sufficient. Run perturbation after green evidence to confirm the validation is specific enough, not just incidentally passing.
 - **Specifying validation** – a validation target that defines correctness, not merely observes it. Examples: a new or tightened test, invariant, schema rule, type contract, golden output, or assertion whose failure uniquely identifies the targeted behaviour outcome. (This prevents “big integration command went red/green” from standing in as a spec.)
 
   **Clarification — Specifying validations**
@@ -139,6 +140,7 @@ A loop entry is compliant when all statements hold:
 **Validation registered**
 - The loop pre-plan names the `<VALIDATION_TARGET>` that exercises the cited salient task artefact before editing begins; validation commands are omitted only for documentation-only loops that already logged blocker evidence.
 - Specifying validation required — Any loop that changes a behaviour outcome MUST introduce or strengthen at least one specifying validation—a validation target that encodes a new or refined expectation attributable to this loop. Re-running an unchanged validation command that merely observes existing behaviour is insufficient unless blocker evidence proves specification cannot advance in this slice. A behaviour outcome is changed when an executable artefact is modified in a way that alters observable runtime behaviour. Comment updates, documentation edits, and refactors that leave all existing test assertions passing are not behaviour changes and do not trigger this requirement.
+- Perturbation verification recommended — After achieving green evidence, run perturbation testing to confirm the specifying validation captures boundary conditions. Record perturbation results as part of the evidence block. If perturbation reveals the validation passes for unintended reasons, this indicates the validation needs strengthening before the loop closes.
 - A recorded `<VALIDATION_TARGET>` denotes that the command executed within the loop; missing red or green evidence for that target renders the entry non-compliant.
 - Red evidence records the canonical command failing end-to-end with non-zero exit, UTC ISO-8601 timestamp, and failure excerpt for the targeted behaviour.
 - Green evidence reuses the same command (or mapped target) and records exit 0, and removal evidence runs `<VCS_REVERT>` followed by the red command to show the failure returning or documents the tightening required when it does not.

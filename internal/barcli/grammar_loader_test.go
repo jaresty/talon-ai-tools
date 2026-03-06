@@ -90,6 +90,52 @@ func TestLoadGrammarEnvOverrideMissingFile(t *testing.T) {
 	}
 }
 
+// TestTaskMetadataForReturnsStructuredFields specifies that TaskMetadataFor returns
+// definition, heuristics, and distinctions for task tokens from the embedded grammar
+// (ADR-0154 T-5: wire Go grammar.go structs and accessor).
+func TestTaskMetadataForReturnsStructuredFields(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+
+	meta := grammar.TaskMetadataFor("probe")
+	if meta == nil {
+		t.Fatal("TaskMetadataFor(probe) must not return nil")
+	}
+	if meta.Definition == "" {
+		t.Error("probe definition must not be empty")
+	}
+	if len(meta.Heuristics) == 0 {
+		t.Error("probe heuristics must not be empty")
+	}
+	if len(meta.Distinctions) == 0 {
+		t.Error("probe distinctions must not be empty")
+	}
+
+	// fix must have probe in its distinctions (ADR-0154 Loop 5 review gap)
+	fixMeta := grammar.TaskMetadataFor("fix")
+	if fixMeta == nil {
+		t.Fatal("TaskMetadataFor(fix) must not return nil")
+	}
+	foundProbe := false
+	for _, d := range fixMeta.Distinctions {
+		if d.Token == "probe" {
+			foundProbe = true
+			break
+		}
+	}
+	if !foundProbe {
+		t.Error("fix distinctions must include probe (fix=reformat, not debug)")
+	}
+
+	// nil for unknown token
+	if grammar.TaskMetadataFor("nonexistent") != nil {
+		t.Error("TaskMetadataFor(nonexistent) must return nil")
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

@@ -152,3 +152,34 @@
 
 **next_work:**
 - Behaviour T-5: Wire Go `grammar.go` — add `TaskMetadataDistinction`/`TaskMetadata` structs, `Metadata` field to `StaticSection` + `rawStatic`, wire in `LoadGrammar`, add `TaskMetadataFor()` accessor. Validation: `go test ./internal/barcli/... -run TestGrammar`
+
+---
+
+## Loop 6: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-5 — Wire Go `grammar.go` to read structured `tasks.metadata` from grammar JSON. Add `TaskMetadataDistinction` and `TaskMetadata` Go structs, `Metadata` field to `StaticSection` and `rawStatic`, wire in `LoadGrammar`, add `TaskMetadataFor()` accessor.
+
+**active_constraint:** `Grammar` type has no `TaskMetadataFor` accessor and `StaticSection` has no `Metadata` field — structured task metadata is present in the embedded JSON but unreadable from Go code. Falsifiable: `TestTaskMetadataForReturnsStructuredFields` fails to compile.
+
+**validation_targets:**
+- `go test ./internal/barcli/... -run TestTaskMetadataForReturnsStructuredFields -v`
+- `go test ./...`
+
+**evidence:**
+- red | 2026-03-06T15:05:00Z | exit 1 | build failed — grammar.TaskMetadataFor undefined | inline
+- green | 2026-03-06T15:10:00Z | exit 0 | TestTaskMetadataForReturnsStructuredFields PASS | inline
+- green | 2026-03-06T15:10:00Z | exit 0 | go test ./... — all packages pass | inline
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/grammar.go internal/barcli/grammar_loader_test.go`
+
+**delta_summary:** helper:diff-snapshot=2 files changed — `grammar.go` (added `TaskMetadataDistinction`/`TaskMetadata` structs, `Metadata` field to `StaticSection`/`rawStatic`, `Metadata` wired in LoadGrammar, `TaskMetadataFor()` accessor); `grammar_loader_test.go` (added `TestTaskMetadataForReturnsStructuredFields`).
+
+**loops_remaining_forecast:** 3 loops remaining (T-6, T-7, T-8), confidence high.
+
+**residual_constraints:**
+- `help_llm.go` still reads `TaskGuidance()`/`TaskUseWhen()` free-form strings for rendering task token table. Severity: Medium (rendering outputs unstructured text rather than structured fields). Monitoring: T-6 loop. Owning: ADR-0154 T-6.
+
+**next_work:**
+- Behaviour T-6: Replace `help_llm.go` task token rendering with structured `TaskMetadataFor()` fields; remove old `TaskGuidance()`/`TaskUseWhen()` reads for static tasks. Validation: `go test ./internal/barcli/... -run TestHelp`

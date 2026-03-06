@@ -60,6 +60,19 @@ type CrossAxisPair struct {
 	CautionaryNotes map[string]string `json:"cautionary_notes,omitempty"` // ADR-0153: render-time conflict notes
 }
 
+// TaskMetadataDistinction is a single cross-token distinction entry (ADR-0154).
+type TaskMetadataDistinction struct {
+	Token string `json:"token"`
+	Note  string `json:"note"`
+}
+
+// TaskMetadata holds structured metadata for a task token (ADR-0154).
+type TaskMetadata struct {
+	Definition   string                    `json:"definition"`
+	Heuristics   []string                  `json:"heuristics"`
+	Distinctions []TaskMetadataDistinction `json:"distinctions"`
+}
+
 type StaticSection struct {
 	Profiles     map[string]StaticProfile
 	Descriptions map[string]string
@@ -68,6 +81,7 @@ type StaticSection struct {
 	UseWhen        map[string]string // ADR-0142: routing trigger phrases for nav surfaces
 	Kanji          map[string]string // ADR-0143: kanji icons for visual display
 	RoutingConcept map[string]string // ADR-0146: distilled routing concept phrases
+	Metadata       map[string]TaskMetadata // ADR-0154: structured definition, heuristics, distinctions
 }
 
 type StaticProfile struct {
@@ -182,6 +196,7 @@ type rawStatic struct {
 	UseWhen        map[string]string        `json:"use_when"`        // ADR-0142
 	Kanji          map[string]string        `json:"kanji"`           // ADR-0143
 	RoutingConcept map[string]string        `json:"routing_concept"` // ADR-0146
+	Metadata       map[string]TaskMetadata  `json:"metadata"`        // ADR-0154
 }
 
 type rawPersona struct {
@@ -279,6 +294,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			UseWhen:        raw.Static.UseWhen,
 			Kanji:          raw.Static.Kanji,
 			RoutingConcept: raw.Static.RoutingConcept,
+			Metadata:       raw.Static.Metadata,
 		},
 		Persona: PersonaSection{
 			Axes:           raw.Persona.Axes,
@@ -1134,6 +1150,22 @@ func (g *Grammar) TaskRoutingConcept(name string) string {
 		return concept
 	}
 	return ""
+}
+
+// TaskMetadataFor returns the structured metadata for a task token (ADR-0154).
+// Returns nil if no metadata is defined for the given token.
+func (g *Grammar) TaskMetadataFor(name string) *TaskMetadata {
+	if g.Static.Metadata == nil {
+		return nil
+	}
+	key := normalizeToken(name)
+	if meta, ok := g.Static.Metadata[key]; ok {
+		return &meta
+	}
+	if meta, ok := g.Static.Metadata[strings.ToLower(key)]; ok {
+		return &meta
+	}
+	return nil
 }
 
 // PersonaLabel returns the short CLI-facing label for the given persona axis token (ADR-0111).

@@ -90,4 +90,33 @@
 
 **residual_constraints:** None
 
-**next_work:** T-4 — Update ADR status to Accepted (implementation complete)
+**next_work:** T-4 — Fix review gaps: add `fix` ≠ debug/repair distinction; add token coverage assertion; remove `$schema` from export
+
+---
+
+## Loop 4: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** ADR update — remove phased migration (single-consumer repository), remove `$schema` versioning, expand scope to include Go CLI wiring (T-5, T-6), SPA `use_when` replacement (T-7), and Python flat-dict removal (T-8). Revise salient task list accordingly. Informed by review of Loops 1–3 and user decision that no backward-compatibility migration is needed.
+
+**active_constraint:** ADR body does not reflect the clean-cutover decision or the full consumer scope (Go CLI, SPA `use_when`), making the salient task list incomplete and the remaining loop plan ambiguous. Falsifiable: the ADR salient task list omits T-5 through T-8 prior to this loop.
+
+**validation_targets:**
+- (documentation-only loop) — blocker evidence: ADR body missing T-5–T-8 and phased-migration retraction; next loop (T-4) is executable.
+
+**evidence:**
+- red | 2026-03-06T14:40:00Z | N/A | ADR salient task list ends at T-4 (document migration completion); Go CLI, SPA use_when replacement, and Python cleanup absent | inline
+- green | 2026-03-06T14:46:01Z | exit 0 | ADR rewritten: phased migration removed, $schema dropped, T-4–T-8 added, consumer table updated | inline
+
+**rollback_plan:** `git restore --source=HEAD docs/adr/0154-prompt-metadata-domain-separation.md`
+
+**delta_summary:** helper:diff-snapshot=1 file changed — docs/adr/0154-prompt-metadata-domain-separation.md: removed Schema Versioning and Migration Timeline table, removed $schema from proposed schema example, added Go CLI + SPA use_when + Python cleanup to consumer requirements and salient task list (T-4–T-8), status updated to Active.
+
+**loops_remaining_forecast:** 5 loops remaining (T-4 through T-8), confidence high — scope is fully enumerated and each loop has a clear validation target.
+
+**residual_constraints:**
+- SPA rendering of `metadata.heuristics`/`distinctions` (T-7) depends on T-5/T-6 Go wiring being complete first for end-to-end validation parity. Severity: Low (independent surfaces; SPA can be validated via npm test). Monitoring: track in T-7 loop entry.
+
+**next_work:**
+- Behaviour T-4: Fix review gaps — add `fix` ≠ debug/repair distinction to `_TASK_METADATA["fix"]`, add token coverage assertion (`set(metadata.keys()) == EXPECTED_TASK_TOKENS`), remove `$schema` from `promptGrammar.py` export. Validation: `python3 -m pytest _tests/test_static_prompt_config.py -v`

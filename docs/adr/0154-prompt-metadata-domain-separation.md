@@ -2,11 +2,11 @@
 
 ## Status
 
-Draft
+Active
 
 ## Context
 
-Prompt metadata for tokens (task, scope, method, form, channel, directional, persona) lives in two locations:
+Prompt metadata for task tokens lives in two locations:
 
 1. **`prompt-grammar.json`** — the grammar JSON exported for CLI/SPA/TUI
 2. **`staticPromptConfig.py`** — Python SSOT for task token configuration
@@ -15,9 +15,9 @@ Both files contain multiple metadata fields that serve different purposes:
 
 | Field | Location | Intended purpose |
 |-------|----------|------------------|
-| `definitions` | grammar.json | What the token means (semantic definition) |
-| `guidance` | grammar.json | How this token differs from similar tokens |
-| `use_when` | grammar.json | When to select this token (heuristics/triggers) |
+| `definitions` | grammar.json tasks | What the token means (semantic definition) |
+| `guidance` | grammar.json tasks | How this token differs from similar tokens |
+| `use_when` | grammar.json tasks | When to select this token (heuristics/triggers) |
 | `_STATIC_PROMPT_GUIDANCE` | staticPromptConfig.py | Naming traps, ambiguity resolution |
 | `_STATIC_PROMPT_USE_WHEN` | staticPromptConfig.py | Routing triggers (parallel to JSON) |
 | `description` | tasks.catalog | Task profile description |
@@ -55,13 +55,14 @@ Similarly, `use_when` strings contain both heuristics ("Heuristic: 'analyze', 'd
 
 ## Decision
 
-Structure each metadata field to contain only one domain, using sub-fields rather than free-form text:
+Structure each metadata field to contain only one domain, using sub-fields rather than free-form text.
+
+This project is the sole consumer of `prompt-grammar.json` (CLI, SPA, and TUI all live in this repository). There is no phased migration or backward compatibility requirement — consumers are updated in the same commit sequence as the schema change.
 
 ### Proposed schema
 
 ```json
 {
-  "$schema": "prompt-metadata/v2",
   "tasks": {
     "metadata": {
       "probe": {
@@ -83,25 +84,18 @@ Structure each metadata field to contain only one domain, using sub-fields rathe
 
 - **`definition`**: Pure semantic meaning — what the token does, no context about selection
 - **`heuristics`**: Array of trigger phrases users would say to invoke this token
-- **`distinctions`**: Structured map of other tokens this differs from, with explanation
+- **`distinctions`**: Structured array of other tokens this differs from, with explanation
 
 ### Changes required
 
-1. Migrate `staticPromptConfig.py` dictionaries (`_STATIC_PROMPT_GUIDANCE`, `_STATIC_PROMPT_USE_WHEN`) to nested structure
-2. Update grammar generator to flatten to JSON with new schema
-3. Update consumer code (SPA, TUI, CLI help) to read structured fields
-4. Add schema-based validation (see Validation section below)
-
-### Schema Versioning and Migration Timeline
-
-The new schema includes a `$schema` field for version detection:
-
-| Phase | Timeline | Schema Version | Consumer Behavior |
-|-------|----------|----------------|------------------|
-| v1 (current) | Now | (none) | Read legacy free-form fields |
-| v2 (transition) | Month 1-3 | `prompt-metadata/v2` | Check for `$schema`; fallback to legacy if missing |
-| v3 (new) | Month 4-6 | `prompt-metadata/v2` | Read new structured fields only |
-| v4 (cleanup) | Month 7+ | `prompt-metadata/v2` | Legacy format support removed |
+1. Migrate `staticPromptConfig.py` dictionaries (`_STATIC_PROMPT_GUIDANCE`, `_STATIC_PROMPT_USE_WHEN`) to nested `_TASK_METADATA` structure — **done (Loop 1)**
+2. Wire SPA `grammar.ts` types to read structured `metadata` field — **done (Loop 2)**
+3. Add schema-based validation test — **done (Loop 3)**
+4. Fix review gaps (add `fix` ≠ debug/repair distinction; add token coverage assertion; remove `$schema` field from export) — **T-4**
+5. Wire Go `grammar.go` structs and `TaskMetadataFor()` accessor — **T-5**
+6. Replace Go `help_llm.go` free-form rendering with structured field rendering; remove old `TaskGuidance()`/`TaskUseWhen()` static accessors — **T-6**
+7. Replace SPA `TokenSelector.svelte` task `use_when` section with `metadata.heuristics` and `metadata.distinctions` rendering — **T-7**
+8. Remove old Python flat dicts (`_STATIC_PROMPT_GUIDANCE`, `_STATIC_PROMPT_USE_WHEN`) and stop exporting `guidance`/`use_when` for static tasks in `_build_static_section` — **T-8**
 
 ### Migration Decision Rules
 
@@ -142,16 +136,11 @@ Replace fragile pattern-matching with JSON Schema validation:
 
 ### Consumer Requirements
 
-Different surfaces need different data fields:
-
 | Consumer | Fields Needed | Rendering |
 |----------|---------------|-----------|
-| CLI help | `definition` + `heuristics[0:3]` | Text with inline examples |
-| SPA tooltips | `heuristics` only | Chip/tag array display |
-| SPA hover highlighting | `distinctions[].token` | On hover, find all entries where `token === hovered` for bidirectional highlighting |
+| CLI help (`help_llm.go`) | `definition` + `heuristics` + `distinctions` | Structured table — definition prose, heuristics as comma-separated triggers, distinctions as token→note pairs |
+| SPA token panel (`TokenSelector.svelte`) | `heuristics` + `distinctions` | Heuristics as chip/tag array; distinctions as structured notes replacing free-form `use_when` text |
 | TUI panels | All fields | Full structured view |
-| Documentation generation | `definition` | Prose paragraphs |
-| Internal analytics | `heuristics` + `distinctions` | Structured export for analysis |
 
 ### Alternative considered: Leave as-is
 
@@ -163,23 +152,32 @@ Keep free-form text. Accept the coupling — changing `drift`'s definition requi
 - **Consumption**: Different surfaces need different grain sizes (UI wants heuristics array, docs want definition string)
 - **Validation**: Currently impossible to verify that distinctions are consistent with definitions
 
+## Salient Task List
+
+- **T-1** Migrate Python SSOT (`staticPromptConfig.py`) to `_TASK_METADATA` nested structure — **complete**
+- **T-2** Wire SPA `grammar.ts` types — **complete**
+- **T-3** Add schema validation test — **complete**
+- **T-4** Fix review gaps: `fix` ≠ debug distinction; token coverage assertion; remove `$schema` from export
+- **T-5** Wire Go `grammar.go` `TaskMetadata` structs + `TaskMetadataFor()` accessor
+- **T-6** Replace `help_llm.go` free-form task rendering with structured metadata
+- **T-7** Replace SPA `TokenSelector.svelte` task `use_when` section with `metadata.heuristics`/`distinctions`
+- **T-8** Remove Python flat dicts; stop exporting `guidance`/`use_when` for static tasks
+
 ## Consequences
 
 ### Positive
 
 - Clearer ownership: definition changes don't require hunting "Distinct from" clauses
 - Validation possible: can verify heuristics contain no definitions, definitions contain no heuristics
-- Surface-specific rendering: UI can pull `heuristics` array for tooltips, `definition` string for help panels
+- Surface-specific rendering: UI can pull `heuristics` array for chip display, `definition` string for help panels
+- No migration complexity: single-consumer repository allows clean cutover
 
 ### Negative
 
-- Migration cost: all existing metadata must be refactored
-- Backward compatibility: consumers require phased migration (see Migration Timeline)
+- Migration cost: all existing metadata must be refactored (scope limited to task tokens for this ADR)
 - Some entries may not cleanly separate; decision rules provided for handling
-- Validation requires schema migration alongside content migration
 
 ### Unknown
 
 - Whether the "Distinct from" clauses are actually maintained consistently today — no validation exists
-- How many tokens have cross-references that would need updating during migration
-- How many entries will require `unresolved: true` deferral to Phase 2
+- How many entries will require `unresolved: true` deferral

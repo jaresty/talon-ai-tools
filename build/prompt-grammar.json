@@ -1866,6 +1866,600 @@
           ]
         }
       },
+      "form": {
+        "actions": {
+          "definition": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
+          "distinctions": [
+            {
+              "note": "checklist = imperative checkbox items designed to be ticked off; actions = broader action-structured output including tasks, steps, and next moves",
+              "token": "checklist"
+            },
+            {
+              "note": "walkthrough = guided sequential narration; actions = direct action list without guided narration",
+              "token": "walkthrough"
+            }
+          ],
+          "heuristics": [
+            "give me actions",
+            "what do I actually do",
+            "concrete steps",
+            "action items",
+            "what are my next actions",
+            "just the actions",
+            "tasks to do",
+            "list of actions"
+          ]
+        },
+        "activities": {
+          "definition": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+          "distinctions": [
+            {
+              "note": "facilitate = overall facilitation plan with session goals and participation mechanics; activities = segment-by-segment content of what to do and when",
+              "token": "facilitate"
+            }
+          ],
+          "heuristics": [
+            "what activities should we do",
+            "activities for each block",
+            "session activities",
+            "design sprint activities",
+            "what happens in each segment",
+            "activities list for the workshop"
+          ]
+        },
+        "bug": {
+          "definition": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details.",
+          "distinctions": [
+            {
+              "note": "log = work log entry for archival and reference; bug = structured defect report with reproduction steps and expected/actual behavior",
+              "token": "log"
+            }
+          ],
+          "heuristics": [
+            "file a bug report",
+            "write this up as a bug",
+            "bug report format",
+            "steps to reproduce",
+            "expected vs actual behavior",
+            "create a bug ticket"
+          ]
+        },
+        "bullets": {
+          "definition": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
+          "distinctions": [
+            {
+              "note": "checklist = imperative action items designed to be ticked off; bullets = general bullet-point organization, not necessarily imperative",
+              "token": "checklist"
+            }
+          ],
+          "heuristics": [
+            "bullet points",
+            "use bullets",
+            "bulleted list",
+            "as bullet points",
+            "short bullets",
+            "list format with bullets",
+            "no paragraphs, just bullets"
+          ]
+        },
+        "cards": {
+          "definition": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
+          "distinctions": [
+            {
+              "note": "bullets = brief bullet items; cards = richer discrete units each with a heading and short body",
+              "token": "bullets"
+            }
+          ],
+          "heuristics": [
+            "cards",
+            "card layout",
+            "each item as a card",
+            "discrete cards",
+            "card format",
+            "organize as cards",
+            "section cards with headings"
+          ]
+        },
+        "case": {
+          "definition": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation.",
+          "distinctions": [
+            {
+              "note": "indirect = softer narrative reasoning that converges on a point; case = structured argument with explicit evidence, alternatives, and objection handling before the recommendation",
+              "token": "indirect"
+            }
+          ],
+          "heuristics": [
+            "build the case",
+            "lay out the argument before the recommendation",
+            "walk through the evidence first",
+            "structured argument",
+            "present the case",
+            "evidence then conclusion",
+            "case for X"
+          ]
+        },
+        "checklist": {
+          "definition": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
+          "distinctions": [
+            {
+              "note": "actions = general action-structured output; checklist = specifically checkbox-style imperative items designed to be ticked off",
+              "token": "actions"
+            }
+          ],
+          "heuristics": [
+            "checklist",
+            "give me a checklist",
+            "checkbox list",
+            "actionable checklist",
+            "checkboxes",
+            "items to check off",
+            "pre-flight checklist"
+          ]
+        },
+        "cocreate": {
+          "definition": "The response structures itself as a collaborative process—small moves, explicit decision points, and alignment checks rather than a one-shot answer.",
+          "distinctions": [
+            {
+              "note": "variants = present a choice of distinct designs; cocreate = iterative process with decision points and alignment checks",
+              "token": "variants"
+            }
+          ],
+          "heuristics": [
+            "work through incrementally",
+            "with decision points",
+            "iterative design"
+          ]
+        },
+        "commit": {
+          "definition": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
+          "distinctions": [
+            {
+              "note": "log = dated work log entry with bullet updates; commit = short type/scope header format for version control",
+              "token": "log"
+            }
+          ],
+          "heuristics": [
+            "write a commit message",
+            "commit message for this",
+            "conventional commit",
+            "git commit message",
+            "commit message",
+            "type: scope format"
+          ]
+        },
+        "contextualise": {
+          "definition": "The response packages the subject to be passed directly to another LLM operation, enriching content with all context a downstream model needs to act on it without further explanation.",
+          "distinctions": [
+            {
+              "note": "merge = combine multiple sources into one coherent whole; contextualise = package existing content with full context for another LLM to act on it",
+              "token": "merge"
+            }
+          ],
+          "heuristics": [
+            "pass this to another model",
+            "use this as context for",
+            "prepare for downstream processing",
+            "make this self-contained for an LLM",
+            "include all necessary context",
+            "so I can feed this to"
+          ]
+        },
+        "direct": {
+          "definition": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
+          "distinctions": [
+            {
+              "note": "indirect = background first, conclusion last; direct = main point first, supporting detail after",
+              "token": "indirect"
+            }
+          ],
+          "heuristics": [
+            "lead with the answer",
+            "bottom line up front",
+            "BLUF",
+            "give me the conclusion first",
+            "direct response",
+            "state the recommendation first",
+            "don't bury the lede"
+          ]
+        },
+        "facilitate": {
+          "definition": "The response structures itself as a facilitation plan—framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo.",
+          "distinctions": [
+            {
+              "note": "walkthrough = linear narrated steps through a process; facilitate = session structure with participation cues and facilitation agenda",
+              "token": "walkthrough"
+            },
+            {
+              "note": "activities = segment-level content of what to do; facilitate = overall facilitation structure with goals and participation mechanics",
+              "token": "activities"
+            }
+          ],
+          "heuristics": [
+            "facilitate a X",
+            "run a retrospective",
+            "workshop planning"
+          ]
+        },
+        "faq": {
+          "definition": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim.",
+          "distinctions": [
+            {
+              "note": "questions = response IS a list of questions to investigate (no answers); faq = questions paired with their answers as a reference artifact",
+              "token": "questions"
+            }
+          ],
+          "heuristics": [
+            "FAQ format",
+            "as a FAQ",
+            "Q and A format",
+            "frequently asked questions",
+            "questions and answers",
+            "write as Q&A",
+            "question headings with answers below"
+          ]
+        },
+        "formats": {
+          "definition": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
+          "distinctions": [
+            {
+              "note": "table = present content as a columnar grid; formats = the response IS about document types and their suitability",
+              "token": "table"
+            }
+          ],
+          "heuristics": [
+            "what format should I use",
+            "what template fits",
+            "which document type",
+            "writing format options",
+            "what structure should this take",
+            "what are the format options",
+            "format comparison"
+          ]
+        },
+        "indirect": {
+          "definition": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+          "distinctions": [
+            {
+              "note": "direct = conclusion first, supporting detail after; indirect = reasoning first, conclusion last",
+              "token": "direct"
+            },
+            {
+              "note": "case = structured argument with explicit evidence and objection handling; indirect = softer narrative reasoning that converges on a bottom-line point",
+              "token": "case"
+            }
+          ],
+          "heuristics": [
+            "walk me through the reasoning first",
+            "build up to the recommendation",
+            "show your thinking before the conclusion",
+            "give me the context before the answer",
+            "reasoning before conclusion"
+          ]
+        },
+        "ladder": {
+          "definition": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
+          "distinctions": [],
+          "heuristics": [
+            "step up and down abstraction levels",
+            "root cause hierarchy",
+            "why at a systems level"
+          ]
+        },
+        "log": {
+          "definition": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
+          "distinctions": [
+            {
+              "note": "walkthrough = guided sequential narration; log = concise dated entry format for archival and reference",
+              "token": "walkthrough"
+            },
+            {
+              "note": "bug = structured defect report with reproduction steps; log = work or research log entry",
+              "token": "bug"
+            }
+          ],
+          "heuristics": [
+            "write this as a log entry",
+            "work log",
+            "research log",
+            "log format",
+            "dated entry",
+            "journal entry",
+            "log what we did",
+            "write up as a log"
+          ]
+        },
+        "merge": {
+          "definition": "The response combines multiple sources into a single coherent whole while preserving essential information.",
+          "distinctions": [
+            {
+              "note": "contextualise = package with context for downstream LLM; merge = combine multiple sources into one coherent whole",
+              "token": "contextualise"
+            }
+          ],
+          "heuristics": [
+            "merge these",
+            "combine into one",
+            "consolidate",
+            "synthesize these sources",
+            "merge the content",
+            "bring these together",
+            "unify these documents",
+            "integrate these into a single output"
+          ]
+        },
+        "questions": {
+          "definition": "The response presents the answer as a series of probing or clarifying questions rather than statements.",
+          "distinctions": [
+            {
+              "note": "socratic = LLM asks the USER questions interactively to surface their thinking; questions = response IS a question-list artifact the user takes away",
+              "token": "socratic"
+            },
+            {
+              "note": "faq = questions paired with their answers as a reference artifact; questions = response IS a question-list without answers",
+              "token": "faq"
+            }
+          ],
+          "heuristics": [
+            "what questions should I ask",
+            "give me questions to investigate",
+            "what should I be asking about",
+            "frame this as questions",
+            "questions I should explore",
+            "diagnostic questions for"
+          ]
+        },
+        "quiz": {
+          "definition": "The response organizes content as a quiz structure—questions posed before explanations, testing understanding through active recall before providing answers.",
+          "distinctions": [
+            {
+              "note": "socratic = question-led dialogue to surface user reasoning; quiz = test recall via question-then-answer structure",
+              "token": "socratic"
+            }
+          ],
+          "heuristics": [
+            "quiz me",
+            "make a quiz",
+            "quiz format",
+            "questions before answers",
+            "test my knowledge",
+            "knowledge check",
+            "quiz questions on",
+            "multiple choice quiz"
+          ]
+        },
+        "recipe": {
+          "definition": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+          "distinctions": [
+            {
+              "note": "walkthrough = linear narrated steps without custom notation; recipe = structured recipe with a custom mini-language and notation key",
+              "token": "walkthrough"
+            }
+          ],
+          "heuristics": [
+            "document as recipe",
+            "structured setup guide with repeating patterns"
+          ]
+        },
+        "scaffold": {
+          "definition": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain them.",
+          "distinctions": [
+            {
+              "note": "walkthrough = guided sequential steps through a known process; scaffold = pedagogical first-principles introduction that builds understanding",
+              "token": "walkthrough"
+            }
+          ],
+          "heuristics": [
+            "explain from scratch",
+            "teach me this",
+            "start from first principles",
+            "build up my understanding",
+            "I'm a beginner",
+            "explain step by step as if I'm new to this",
+            "scaffold my learning"
+          ]
+        },
+        "socratic": {
+          "definition": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers are given.",
+          "distinctions": [
+            {
+              "note": "questions = response IS a question-list artifact the user takes away; socratic = LLM asks the USER questions interactively to surface their thinking",
+              "token": "questions"
+            },
+            {
+              "note": "quiz = test recall via question-then-answer structure; socratic = question-led dialogue to surface reasoning",
+              "token": "quiz"
+            }
+          ],
+          "heuristics": [
+            "ask me questions",
+            "help me think through",
+            "challenge my assumptions with questions",
+            "Socratic dialogue",
+            "probe my thinking",
+            "question me as we work through this",
+            "help me reason this out"
+          ]
+        },
+        "spike": {
+          "definition": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning outcomes.",
+          "distinctions": [
+            {
+              "note": "story = user-facing value statement with acceptance criteria; spike = research question artifact focused on unknowns",
+              "token": "story"
+            }
+          ],
+          "heuristics": [
+            "should we adopt X?",
+            "spike on Y",
+            "investigation backlog item"
+          ]
+        },
+        "story": {
+          "definition": "The response formats the backlog item as a user story using 'As a <persona>, I want <capability>, so that <value>.' It may include a short description and high-level acceptance criteria.",
+          "distinctions": [
+            {
+              "note": "spike = research question artifact focused on unknowns; story = user-facing value statement with acceptance criteria",
+              "token": "spike"
+            }
+          ],
+          "heuristics": [
+            "user story",
+            "write as a user story",
+            "as a user I want",
+            "story format",
+            "user story for this feature",
+            "backlog user story",
+            "story card"
+          ]
+        },
+        "table": {
+          "definition": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
+          "distinctions": [
+            {
+              "note": "cards = discrete headed items; table = columnar grid layout",
+              "token": "cards"
+            }
+          ],
+          "heuristics": [
+            "table format",
+            "present as a table",
+            "markdown table",
+            "tabular comparison",
+            "show in a table",
+            "grid format",
+            "as a table",
+            "column-row layout"
+          ]
+        },
+        "taxonomy": {
+          "definition": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly.",
+          "distinctions": [
+            {
+              "note": "table = flat columnar comparison; taxonomy = type hierarchy with defined relationships and distinguishing attributes",
+              "token": "table"
+            }
+          ],
+          "heuristics": [
+            "classify all types of X",
+            "what kinds of Y exist",
+            "type hierarchy"
+          ]
+        },
+        "test": {
+          "definition": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type.",
+          "distinctions": [
+            {
+              "note": "checklist = imperative tasks to complete; test = structured test scenarios with setup/execute/assert structure",
+              "token": "checklist"
+            }
+          ],
+          "heuristics": [
+            "write test cases",
+            "test cases for",
+            "happy path and edge cases",
+            "unit test structure",
+            "test scenarios",
+            "write the tests",
+            "test case format with setup and assertion"
+          ]
+        },
+        "tight": {
+          "definition": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
+          "distinctions": [
+            {
+              "note": "plain = no structural decoration as a delivery format (channel); tight = concise dense prose style (form) that avoids filler",
+              "token": "plain"
+            }
+          ],
+          "heuristics": [
+            "tight prose",
+            "concise and dense",
+            "no bullets or tables",
+            "compact freeform",
+            "dense prose",
+            "brevity without structure",
+            "just prose, no formatting"
+          ]
+        },
+        "variants": {
+          "definition": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description.",
+          "distinctions": [
+            {
+              "note": "cocreate = iterative process with decision points and alignment checks; variants = present distinct labeled options without necessarily evaluating them against each other",
+              "token": "cocreate"
+            }
+          ],
+          "heuristics": [
+            "give me options",
+            "present several approaches",
+            "show me alternatives",
+            "multiple variants",
+            "different approaches",
+            "what are the options with labels",
+            "present 3 options",
+            "decision-ready alternatives"
+          ]
+        },
+        "visual": {
+          "definition": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend, emphasising big-picture structure over diagrammatic precision.",
+          "distinctions": [
+            {
+              "note": "diagram = precise Mermaid code with exact nodes and edges; visual = abstract/metaphorical prose layout with a short legend when conceptual overview is more useful than diagrammatic precision",
+              "token": "diagram"
+            }
+          ],
+          "heuristics": [
+            "abstract visual",
+            "conceptual layout",
+            "big-picture structure for non-technical audience"
+          ]
+        },
+        "walkthrough": {
+          "definition": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
+          "distinctions": [
+            {
+              "note": "actions = list of actions to take; walkthrough = guided sequential narration that builds understanding",
+              "token": "actions"
+            },
+            {
+              "note": "scaffold = pedagogical first-principles introduction; walkthrough = guided sequential steps through a known process",
+              "token": "scaffold"
+            }
+          ],
+          "heuristics": [
+            "walk me through",
+            "step by step walkthrough",
+            "guide me through",
+            "take me through it",
+            "step-by-step guide",
+            "walkthrough of",
+            "narrate the steps"
+          ]
+        },
+        "wardley": {
+          "definition": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
+          "distinctions": [],
+          "heuristics": [
+            "Wardley map",
+            "map on evolution axis",
+            "genesis to commodity"
+          ]
+        },
+        "wasinawa": {
+          "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
+          "distinctions": [
+            {
+              "note": "inversion method = pre-mortem that assumes future failure; wasinawa = reflection on past events",
+              "token": "inversion"
+            }
+          ],
+          "heuristics": [
+            "reflect on incident",
+            "what went wrong and what to do next",
+            "lessons learned"
+          ]
+        }
+      },
       "scope": {
         "act": {
           "definition": "Actions and intended operations focus: what is being done or needs to be done, not why or how it is structured.",
@@ -5152,7 +5746,7 @@
     }
   ],
   "checksums": {
-    "axes": "87f66e4d3655f9862561c1e4b2fd09f15da1676df404adf72351b8eeaccdebf1",
+    "axes": "0b4ac11c46118ad48efc535fa14719be0d4123e37c08b59b149af371be362b49",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -239,6 +239,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
+        "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "
+        "or detection mechanisms.",
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states). Explanations must "
         "distinguish pursuit from avoidance, account for how negative boundaries constrain trajectories, and specify whether outcomes arise from optimization toward a goal or evasion of "
         "an undesirable state. Outcomes may not be attributed solely to positive objectives without modeling active avoidance pressures.",
@@ -961,6 +963,11 @@ AXIS_KEY_TO_USE_WHEN: Dict[str, Dict[str, str]] = {
         "'how did we get here', 'what is the history of', 'why does it look this way', 'what past decisions led to this', 'origin story', 'historical context', 'how did this evolve', "
         "'archaeology of the codebase', 'why is this the way it is' → origin. Distinct from time scope (time = sequential/temporal emphasis; origin = specifically causal history and "
         "why the present state is as it is).",
+        "perturb": "Controlled variation testing: user wants to introduce deliberate changes, faults, or variations into a system to observe how it responds and test its safeguards, assumptions, "
+        "or detection mechanisms. Heuristic: 'what if we break this', 'test the failure modes', 'introduce faults', 'perturb the system', 'stress test by changing inputs', 'what "
+        "happens when we modify', 'test the assumptions', 'check detection mechanisms', 'probe resilience' → perturb. Distinct from adversarial (adversarial = construct attacks to "
+        "find weaknesses; perturb = introduce controlled variations to observe response). Distinct from experimental (experimental = design experiments to test hypotheses; perturb = "
+        "actively vary the system to see effects).",
         "polar": "Attractor-repeller dynamics analysis: user wants to understand behavior as shaped by both desired states (attractors pursued) and undesired states (repellers avoided). "
         "Heuristic: 'what attracts and repels', 'pull toward and push away from', 'what are the incentives and disincentives', 'what's rewarded and penalized', 'attractors and "
         "repellers', 'positive and negative motivations' → polar. Distinct from balance (balance = forces offsetting each other; polar = attraction toward some states and aversion from "
@@ -1230,6 +1237,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "operations": "営",
         "order": "順",
         "origin": "起",
+        "perturb": "擾",
         "polar": "磁",
         "prioritize": "優",
         "probability": "確",
@@ -1387,6 +1395,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "operations": "Temporal/Dynamic",
         "order": "Structural",
         "origin": "Structural",
+        "perturb": "Diagnostic",
         "polar": "Comparative",
         "prioritize": "Comparative",
         "probability": "Reasoning",
@@ -1553,6 +1562,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "operations": "Operations research",
         "order": "Abstract ordering",
         "origin": "Historical causation",
+        "perturb": "Introduce controlled variations",
         "polar": "Attractors/repellers",
         "prioritize": "Rank by importance",
         "probability": "Statistical reasoning",

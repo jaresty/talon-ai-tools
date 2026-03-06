@@ -1181,6 +1181,258 @@
       "voice": "Who is speaking — the perspective and expertise level."
     },
     "metadata": {
+      "channel": {
+        "adr": {
+          "definition": "Architecture Decision Record format: structures output as an ADR document with Context, Decision, and Consequences sections.",
+          "distinctions": [],
+          "heuristics": [
+            "write an ADR",
+            "architecture decision record",
+            "document this decision as an ADR",
+            "ADR format",
+            "decision record"
+          ]
+        },
+        "code": {
+          "definition": "Code or markup only, no prose: outputs only executable or markup with no surrounding explanation.",
+          "distinctions": [],
+          "heuristics": [
+            "just the code",
+            "code only",
+            "no explanation, just the implementation",
+            "output code only",
+            "code without prose",
+            "just the markup",
+            "implementation without explanation"
+          ]
+        },
+        "codetour": {
+          "definition": "VS Code CodeTour JSON file: structures the response as a valid CodeTour `.tour` file for navigating code in VS Code.",
+          "distinctions": [],
+          "heuristics": [
+            "codetour",
+            "VS Code tour",
+            "code tour file",
+            "interactive code walkthrough",
+            "create a codetour"
+          ]
+        },
+        "diagram": {
+          "definition": "Mermaid diagram code only: response is Mermaid diagram source, inferred to the best diagram type.",
+          "distinctions": [
+            {
+              "note": "diagram = Mermaid format; sketch = D2 diagram format",
+              "token": "sketch"
+            }
+          ],
+          "heuristics": [
+            "diagram",
+            "Mermaid diagram",
+            "draw a diagram",
+            "flowchart",
+            "sequence diagram",
+            "draw this out",
+            "architecture diagram in Mermaid",
+            "as a diagram"
+          ]
+        },
+        "gherkin": {
+          "definition": "Gherkin scenario format: output as Given/When/Then Gherkin scenarios.",
+          "distinctions": [],
+          "heuristics": [
+            "Gherkin format",
+            "Given/When/Then",
+            "BDD scenarios",
+            "acceptance tests in Gherkin",
+            "feature file",
+            "BDD test cases"
+          ]
+        },
+        "html": {
+          "definition": "Semantic HTML only, no prose: complete output as HTML markup with no surrounding explanation.",
+          "distinctions": [],
+          "heuristics": [
+            "HTML output",
+            "semantic HTML",
+            "as HTML",
+            "output as a webpage",
+            "HTML page",
+            "HTML only"
+          ]
+        },
+        "image": {
+          "definition": "Image as the final output: user wants to generate an image.",
+          "distinctions": [
+            {
+              "note": "image = static image generation; video = video generation",
+              "token": "video"
+            }
+          ],
+          "heuristics": [
+            "generate an image",
+            "create an image",
+            "make an image of",
+            "I want an image of",
+            "image of",
+            "DALL-E",
+            "Midjourney",
+            "Stable Diffusion"
+          ]
+        },
+        "jira": {
+          "definition": "Jira markup formatting: response formatted using Jira markdown (headings, lists, panels).",
+          "distinctions": [],
+          "heuristics": [
+            "Jira format",
+            "Jira markup",
+            "format for Jira",
+            "Jira ticket format",
+            "for a Jira comment",
+            "use Jira markup"
+          ]
+        },
+        "notebook": {
+          "definition": "Jupyter notebook format: response as a runnable `.ipynb` notebook with code cells, markdown narrative, and structured outputs.",
+          "distinctions": [],
+          "heuristics": [
+            "Jupyter notebook",
+            "notebook format",
+            "as a notebook",
+            ".ipynb",
+            "runnable notebook",
+            "notebook with code cells",
+            "data exploration notebook",
+            "interactive notebook"
+          ]
+        },
+        "plain": {
+          "definition": "Suppress structural formatting: explicitly requests plain prose with no lists, bullets, or structural decoration.",
+          "distinctions": [],
+          "heuristics": [
+            "no bullets",
+            "no formatting",
+            "plain prose",
+            "continuous prose",
+            "flowing paragraphs",
+            "paragraph form"
+          ]
+        },
+        "presenterm": {
+          "definition": "Presenterm slide deck: output as a multi-slide presenterm Markdown deck with valid front matter, slide separators, and end_slide directives.",
+          "distinctions": [
+            {
+              "note": "presenterm = actual slide deck artifact; sync = session plan with timing cues",
+              "token": "sync"
+            }
+          ],
+          "heuristics": [
+            "presenterm deck",
+            "slide deck",
+            "presentation slides",
+            "create slides",
+            "slide format",
+            "multi-slide deck",
+            "presentation"
+          ]
+        },
+        "remote": {
+          "definition": "Optimizing output for remote or distributed delivery contexts (video calls, screen sharing, async participants).",
+          "distinctions": [],
+          "heuristics": [
+            "remote delivery",
+            "distributed session",
+            "video call context",
+            "screen sharing",
+            "remote-friendly"
+          ]
+        },
+        "shellscript": {
+          "definition": "Shell script format: response as executable shell code.",
+          "distinctions": [],
+          "heuristics": [
+            "shell script",
+            "bash script",
+            "write a script",
+            "automate this with a shell script",
+            "script format",
+            "shell code only"
+          ]
+        },
+        "sketch": {
+          "definition": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source.",
+          "distinctions": [
+            {
+              "note": "sketch = D2 diagram format; diagram = Mermaid format",
+              "token": "diagram"
+            }
+          ],
+          "heuristics": [
+            "D2 diagram",
+            "D2 format",
+            "sketch diagram",
+            "d2 source"
+          ]
+        },
+        "slack": {
+          "definition": "Slack-formatted Markdown: response formatted for Slack with appropriate Markdown, mentions, and code blocks.",
+          "distinctions": [],
+          "heuristics": [
+            "Slack format",
+            "format for Slack",
+            "post this to Slack",
+            "Slack message",
+            "Slack-friendly format",
+            "for a Slack post"
+          ]
+        },
+        "svg": {
+          "definition": "SVG markup only: complete output as SVG for direct use in an `.svg` file.",
+          "distinctions": [],
+          "heuristics": [
+            "SVG format",
+            "as SVG",
+            "SVG output",
+            "output as SVG",
+            "SVG markup only",
+            "create an SVG"
+          ]
+        },
+        "sync": {
+          "definition": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery.",
+          "distinctions": [
+            {
+              "note": "sync = session plan with timing cues; presenterm = actual slide deck artifact",
+              "token": "presenterm"
+            }
+          ],
+          "heuristics": [
+            "session plan",
+            "live workshop agenda",
+            "meeting agenda with timing cues",
+            "synchronous workshop plan"
+          ]
+        },
+        "video": {
+          "definition": "Video as the final output: user wants to generate a video.",
+          "distinctions": [
+            {
+              "note": "video = video generation; image = static image generation",
+              "token": "image"
+            }
+          ],
+          "heuristics": [
+            "generate a video",
+            "create a video",
+            "make a video of",
+            "I want a video of",
+            "video of",
+            "Sora",
+            "Runway",
+            "Pika",
+            "Kling"
+          ]
+        }
+      },
       "completeness": {
         "deep": {
           "definition": "Substantial depth within the chosen scope: thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case.",
@@ -4363,7 +4615,7 @@
     }
   ],
   "checksums": {
-    "axes": "146f9d96782c0c44a8891a9ca5c8c9a454d8af17de3a46136fb922b013c882ac",
+    "axes": "c49efaf1f097326076570aeff58d8b42fa0bc610deb620f0b574da5eb88ad647",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

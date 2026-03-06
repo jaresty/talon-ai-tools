@@ -58,5 +58,51 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         self.assertIn("deep", distinction_tokens, "full distinctions must reference deep")
 
 
+class ChannelAxisMetadataTests(unittest.TestCase):
+    """ADR-0155 T-4: channel axis has structured metadata for all 18 tokens."""
+
+    AXIS = "channel"
+    EXPECTED_TOKENS = {
+        "adr", "code", "codetour", "diagram", "gherkin", "html", "image",
+        "jira", "notebook", "plain", "presenterm", "remote", "shellscript",
+        "sketch", "slack", "svg", "sync", "video",
+    }
+
+    def setUp(self):
+        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+
+    def test_channel_metadata_covers_all_tokens(self):
+        """All 18 channel tokens must have metadata entries."""
+        self.assertEqual(
+            set(self.meta.keys()),
+            self.EXPECTED_TOKENS,
+            f"channel metadata keys mismatch — "
+            f"missing: {self.EXPECTED_TOKENS - set(self.meta.keys())}, "
+            f"extra: {set(self.meta.keys()) - self.EXPECTED_TOKENS}",
+        )
+
+    def test_channel_metadata_schema_conformance(self):
+        """Each channel token must have definition + heuristics + distinctions."""
+        for token, data in self.meta.items():
+            with self.subTest(token=token):
+                self.assertIn("definition", data, f"{token} must have definition")
+                self.assertIn("heuristics", data, f"{token} must have heuristics")
+                self.assertIn("distinctions", data, f"{token} must have distinctions")
+                self.assertTrue(data["definition"].strip(), f"{token} definition must not be empty")
+                self.assertGreater(len(data["heuristics"]), 0, f"{token} must have at least one heuristic")
+
+    def test_sketch_distinguishes_from_diagram(self):
+        """sketch must distinguish from diagram (sketch=D2; diagram=Mermaid)."""
+        sketch = self.meta.get("sketch", {})
+        distinction_tokens = [d["token"] for d in sketch.get("distinctions", [])]
+        self.assertIn("diagram", distinction_tokens, "sketch distinctions must reference diagram")
+
+    def test_presenterm_distinguishes_from_sync(self):
+        """presenterm must distinguish from sync (presenterm=deck artifact; sync=session plan)."""
+        presenterm = self.meta.get("presenterm", {})
+        distinction_tokens = [d["token"] for d in presenterm.get("distinctions", [])]
+        self.assertIn("sync", distinction_tokens, "presenterm distinctions must reference sync")
+
+
 if __name__ == "__main__":
     unittest.main()

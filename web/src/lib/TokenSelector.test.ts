@@ -1732,3 +1732,102 @@ describe('TokenSelector — ADR-0148 reverse traffic light reasoning in modal (c
 		expect(screen.queryByText('Caution')).toBeNull();
 	});
 });
+
+// ── ADR-0154: structured metadata panel for task tokens ───────────────────────
+// Task tokens carry metadata.heuristics + metadata.distinctions.
+// The panel must render these instead of the legacy use_when / guidance fields.
+// Non-task (axis) tokens with metadata=null must still render use_when / guidance.
+
+const taskTokenWithMetadata = {
+	token: 'probe',
+	label: 'Probe',
+	description: 'Analyzes to surface structure, assumptions, or implications.',
+	guidance: '',
+	use_when: '',
+	kanji: '',
+	category: '',
+	routing_concept: '',
+	metadata: {
+		definition: 'Analyzes to surface structure, assumptions, or implications.',
+		heuristics: ['analyze', 'debug', 'troubleshoot'],
+		distinctions: [{ token: 'pull', note: 'probe = analyze broadly; pull = extract subset' }]
+	}
+};
+
+const axisTokenNoMetadata = {
+	token: 'wardley',
+	label: 'Wardley Map',
+	description: 'Strategic mapping tool.',
+	guidance: 'Pair with a strategic intent task.',
+	use_when: 'Use when a Wardley map output is needed.',
+	kanji: '',
+	category: '',
+	routing_concept: '',
+	metadata: null
+};
+
+describe('TokenSelector — ADR-0154 structured metadata panel', () => {
+	it('task token panel shows Heuristics section with trigger phrases', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: [taskTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="probe"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Heuristics')).toBeTruthy();
+		expect(screen.getByText('analyze')).toBeTruthy();
+		expect(screen.getByText('debug')).toBeTruthy();
+	});
+
+	it('task token panel shows Distinctions section with token→note pairs', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: [taskTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="probe"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Distinctions')).toBeTruthy();
+		expect(screen.getByText(/probe = analyze broadly; pull = extract subset/)).toBeTruthy();
+	});
+
+	it('task token panel does NOT show legacy "When to use" section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: [taskTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="probe"]')!;
+		await fireEvent.click(chip);
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
+	it('axis token panel (metadata=null) still shows legacy "When to use" section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'form',
+				tokens: [axisTokenNoMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="wardley"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('When to use')).toBeTruthy();
+		expect(screen.getByText('Use when a Wardley map output is needed.')).toBeTruthy();
+	});
+});

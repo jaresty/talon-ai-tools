@@ -215,3 +215,35 @@
 
 **next_work:**
 - Behaviour T-7: Replace SPA `TokenSelector.svelte` task `use_when` section with `metadata.heuristics` (chip/tag display) and `metadata.distinctions` (token→note list). Validation: `cd web && npm test`
+
+---
+
+## Loop 8: 2026-03-06
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-7 — Replace `TokenSelector.svelte` panel rendering for task tokens. When `activeMeta.metadata` is non-null (task token), render `metadata.heuristics` as chip array and `metadata.distinctions` as token→note pairs instead of legacy `use_when`/`guidance` sections. Axis tokens (metadata=null) keep the existing rendering path.
+
+**active_constraint:** `TokenSelector.svelte` renders `activeMeta.use_when` free-form text for all tokens; task token panels show "When to use" instead of structured heuristics/distinctions. Falsifiable: `TestHelpLLMTaskTableUsesStructuredMetadata`-equivalent SPA tests fail red before implementation.
+
+**validation_targets:**
+- `cd web && npm test`
+- `cd web && npx svelte-check --threshold error`
+
+**evidence:**
+- red | 2026-03-06T15:35:00Z | exit 1 | task panel Heuristics/Distinctions tests fail — "Unable to find element with text: Heuristics" | inline
+- green | 2026-03-06T15:42:00Z | exit 0 | npm test → 298 passed | inline
+- green | 2026-03-06T15:42:00Z | exit 0 | svelte-check → 0 errors 0 warnings | inline
+
+**rollback_plan:** `git restore --source=HEAD web/src/lib/TokenSelector.svelte web/src/lib/TokenSelector.test.ts`
+
+**delta_summary:** helper:diff-snapshot=2 files changed — `TokenSelector.svelte` (panel body: use_when/guidance wrapped in `{:else}` branch of `{#if activeMeta.metadata}` conditional; new heuristics chip array + distinctions list in `{#if}` branch; CSS for `.meta-heuristics`, `.meta-heuristic-chip`, `.meta-distinction-entry`); `TokenSelector.test.ts` (added ADR-0154 describe block with 4 tests covering task/axis rendering paths).
+
+**loops_remaining_forecast:** 1 loop remaining (T-8: Python flat dict removal), confidence high.
+
+**residual_constraints:**
+- Chip dot indicator (`.use-when-dot`) still checks `meta.use_when` — task token dots will disappear after Loop 9 removes `use_when` from grammar. This is acceptable; the dot's purpose was hinting at panel content, and task panels now show metadata instead. Will naturally resolve in T-8. Severity: Low.
+- `TaskGuidance()`/`TaskUseWhen()` Go accessors still exist as dead code. Will be removed in T-8. Severity: Low.
+
+**next_work:**
+- Behaviour T-8: Remove `_STATIC_PROMPT_GUIDANCE` and `_STATIC_PROMPT_USE_WHEN` from Python SSOT; stop exporting `guidance`/`use_when` for static tasks in `_build_static_section`; remove dead `TaskGuidance()`/`TaskUseWhen()` Go accessors. Validation: `python3 -m pytest _tests/ -x -q && go test ./...`

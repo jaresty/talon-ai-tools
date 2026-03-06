@@ -549,17 +549,38 @@
 				{#if activeMeta.description}
 					<p class="meta-description">{activeMeta.description}</p>
 				{/if}
-				{#if activeMeta.use_when}
-					<div class="meta-section">
-						<span class="meta-section-label">When to use</span>
-						<p>{activeMeta.use_when}</p>
-					</div>
-				{/if}
-				{#if activeMeta.guidance}
-					<div class="meta-section meta-note">
-						<span class="meta-section-label">Notes</span>
-						<p>{activeMeta.guidance}</p>
-					</div>
+				{#if activeMeta.metadata}
+					{#if activeMeta.metadata.heuristics.length > 0}
+						<div class="meta-section">
+							<span class="meta-section-label">Heuristics</span>
+							<div class="meta-heuristics">
+								{#each activeMeta.metadata.heuristics as h}
+									<span class="meta-heuristic-chip">{h}</span>
+								{/each}
+							</div>
+						</div>
+					{/if}
+					{#if activeMeta.metadata.distinctions.length > 0}
+						<div class="meta-section meta-distinctions">
+							<span class="meta-section-label">Distinctions</span>
+							{#each activeMeta.metadata.distinctions as d}
+								<p class="meta-distinction-entry"><code>{d.token}</code> — {d.note}</p>
+							{/each}
+						</div>
+					{/if}
+				{:else}
+					{#if activeMeta.use_when}
+						<div class="meta-section">
+							<span class="meta-section-label">When to use</span>
+							<p>{activeMeta.use_when}</p>
+						</div>
+					{/if}
+					{#if activeMeta.guidance}
+						<div class="meta-section meta-note">
+							<span class="meta-section-label">Notes</span>
+							<p>{activeMeta.guidance}</p>
+						</div>
+					{/if}
 				{/if}
 				{#if activeMetaComposition}
 					{@const naturalEntries = Object.entries(activeMetaComposition).flatMap(([, pair]) => pair.natural ?? [])}
@@ -881,6 +902,30 @@
 
 	.meta-caution .meta-section-label {
 		color: #e0af68;
+	}
+
+	/* ADR-0154: heuristics chip array */
+	.meta-heuristics {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+		margin-top: 0.3rem;
+	}
+
+	.meta-heuristic-chip {
+		font-size: 0.72rem;
+		padding: 0.1rem 0.4rem;
+		background: var(--color-accent-muted);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		color: var(--color-text);
+	}
+
+	/* ADR-0154: distinctions section */
+	.meta-distinction-entry {
+		margin: 0.2rem 0 0 0;
+		color: var(--color-text);
+		font-size: 0.8rem;
 	}
 
 	.meta-footer {

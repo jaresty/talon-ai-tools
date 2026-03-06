@@ -104,5 +104,54 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         self.assertIn("sync", distinction_tokens, "presenterm distinctions must reference sync")
 
 
+class DirectionalAxisMetadataTests(unittest.TestCase):
+    """ADR-0155 T-5: directional axis has structured metadata for all 16 tokens."""
+
+    AXIS = "directional"
+    EXPECTED_TOKENS = {
+        "bog", "dig", "dip bog", "dip ong", "dip rog",
+        "fig", "fip bog", "fip ong", "fip rog",
+        "fly bog", "fly ong", "fly rog",
+        "fog", "jog", "ong", "rog",
+    }
+
+    def setUp(self):
+        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+
+    def test_directional_metadata_covers_all_tokens(self):
+        """All 16 directional tokens must have metadata entries."""
+        self.assertEqual(
+            set(self.meta.keys()),
+            self.EXPECTED_TOKENS,
+            f"directional metadata keys mismatch — "
+            f"missing: {self.EXPECTED_TOKENS - set(self.meta.keys())}, "
+            f"extra: {set(self.meta.keys()) - self.EXPECTED_TOKENS}",
+        )
+
+    def test_directional_metadata_schema_conformance(self):
+        """Each directional token must have definition + heuristics + distinctions."""
+        for token, data in self.meta.items():
+            with self.subTest(token=token):
+                self.assertIn("definition", data)
+                self.assertIn("heuristics", data)
+                self.assertIn("distinctions", data)
+                self.assertTrue(data["definition"].strip(), f"{token} definition must not be empty")
+                self.assertGreater(len(data["heuristics"]), 0, f"{token} must have at least one heuristic")
+
+    def test_bog_distinguishes_from_rog_and_ong(self):
+        """bog must distinguish from both rog and ong (bog = full horizontal span)."""
+        bog = self.meta.get("bog", {})
+        distinction_tokens = [d["token"] for d in bog.get("distinctions", [])]
+        self.assertIn("rog", distinction_tokens, "bog must distinguish from rog")
+        self.assertIn("ong", distinction_tokens, "bog must distinguish from ong")
+
+    def test_fig_distinguishes_from_fog_and_dig(self):
+        """fig must distinguish from both fog and dig (fig = full vertical span)."""
+        fig = self.meta.get("fig", {})
+        distinction_tokens = [d["token"] for d in fig.get("distinctions", [])]
+        self.assertIn("fog", distinction_tokens, "fig must distinguish from fog")
+        self.assertIn("dig", distinction_tokens, "fig must distinguish from dig")
+
+
 if __name__ == "__main__":
     unittest.main()

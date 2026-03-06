@@ -1576,6 +1576,295 @@
             "quick skim"
           ]
         }
+      },
+      "directional": {
+        "bog": {
+          "definition": "Span the full horizontal spectrum — reflective AND acting: covers both the reflective/structural dimension (rog) AND the acting/extending dimension (ong). bog = rog + ong.",
+          "distinctions": [
+            {
+              "note": "bog = full horizontal span (reflective + acting); rog = reflective pole only",
+              "token": "rog"
+            },
+            {
+              "note": "bog = full horizontal span (reflective + acting); ong = acting pole only",
+              "token": "ong"
+            }
+          ],
+          "heuristics": [
+            "examine what it means AND tell me what to do about it",
+            "both the structural reflection and the next steps",
+            "understand it structurally and then act on that understanding",
+            "analysis and actions both"
+          ]
+        },
+        "dig": {
+          "definition": "Ground in concrete specifics: examples, real cases, and grounded details rather than abstract analysis.",
+          "distinctions": [
+            {
+              "note": "dig = stay concrete and grounded; fog = step back to the abstract principle",
+              "token": "fog"
+            }
+          ],
+          "heuristics": [
+            "be concrete",
+            "give me specific examples",
+            "show me an actual case",
+            "not abstract — real examples",
+            "ground this in reality",
+            "practical examples only",
+            "make it tangible",
+            "I need specifics not theory"
+          ]
+        },
+        "dip bog": {
+          "definition": "Start with concrete examples and grounded details, examine their structure and reflect on patterns, then identify actions and extensions.",
+          "distinctions": [
+            {
+              "note": "dip bog = concrete → reflective → acting sequence; dig = concrete pole only",
+              "token": "dig"
+            },
+            {
+              "note": "dip bog = starts concrete (dig) before spanning horizontal; bog = horizontal span without initial concrete anchoring",
+              "token": "bog"
+            }
+          ],
+          "heuristics": [
+            "concrete first then structure and actions",
+            "ground it then reflect and act",
+            "examples first then what they reveal and what to do"
+          ]
+        },
+        "dip ong": {
+          "definition": "Start with concrete examples, then identify actions to take from them and extend those actions to related situations.",
+          "distinctions": [
+            {
+              "note": "dip ong = concrete → acting sequence; dig = concrete pole only",
+              "token": "dig"
+            },
+            {
+              "note": "dip ong = starts concrete (dig) before acting; ong = acting pole without initial concrete anchoring",
+              "token": "ong"
+            }
+          ],
+          "heuristics": [
+            "concrete examples then next steps",
+            "ground it then tell me what to do",
+            "practical first then actions"
+          ]
+        },
+        "dip rog": {
+          "definition": "Examine concrete details and grounded examples, then reflect on their structural patterns and what they reveal.",
+          "distinctions": [
+            {
+              "note": "dip rog = concrete → reflective sequence; dig = concrete pole only",
+              "token": "dig"
+            },
+            {
+              "note": "dip rog = starts concrete (dig) before reflecting; rog = structural reflection without initial concrete anchoring",
+              "token": "rog"
+            }
+          ],
+          "heuristics": [
+            "concrete examples then structural reflection",
+            "ground it then reflect on its structure",
+            "specifics first then what the pattern reveals"
+          ]
+        },
+        "fig": {
+          "definition": "Span the full vertical spectrum — abstract AND concrete: covers both the abstract/general dimension (fog) AND the concrete/specific dimension (dig). fig = fog + dig.",
+          "distinctions": [
+            {
+              "note": "fig = full vertical span (abstract + concrete); fog = abstract pole only",
+              "token": "fog"
+            },
+            {
+              "note": "fig = full vertical span (abstract + concrete); dig = concrete pole only",
+              "token": "dig"
+            }
+          ],
+          "heuristics": [
+            "address both the principle and the specifics",
+            "give me the concept and the grounded examples",
+            "both the theory and the concrete reality",
+            "be abstract and concrete",
+            "cover the full range from general to specific"
+          ]
+        },
+        "fip bog": {
+          "definition": "Move between abstract principles and concrete examples, examine their structural patterns and reflect on them, then identify actions and extend them to related contexts.",
+          "distinctions": [
+            {
+              "note": "fip bog = vertical span then full horizontal (all 4 directions); fig = vertical span only",
+              "token": "fig"
+            },
+            {
+              "note": "fip bog = includes vertical span before horizontal; bog = horizontal span only",
+              "token": "bog"
+            }
+          ],
+          "heuristics": [
+            "full vertical and horizontal coverage",
+            "abstract and concrete, reflective and acting",
+            "cover all four compass directions"
+          ]
+        },
+        "fip ong": {
+          "definition": "Alternate between abstract principles and concrete examples, then identify actions to take and extend them to related situations.",
+          "distinctions": [
+            {
+              "note": "fip ong = vertical span then acting; fig = vertical span only",
+              "token": "fig"
+            },
+            {
+              "note": "fip ong = vertical span precedes acting; ong = acting pole only",
+              "token": "ong"
+            }
+          ],
+          "heuristics": [
+            "principles and examples then actions",
+            "vertical span then act",
+            "abstract and concrete then what to do"
+          ]
+        },
+        "fip rog": {
+          "definition": "Move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
+          "distinctions": [
+            {
+              "note": "fip rog = vertical span then structural reflection; fig = vertical span only",
+              "token": "fig"
+            },
+            {
+              "note": "fip rog = vertical span precedes reflection; rog = structural reflection only",
+              "token": "rog"
+            }
+          ],
+          "heuristics": [
+            "principles and examples then structural reflection",
+            "vertical span then reflect on structure",
+            "abstract and concrete then structural meaning"
+          ]
+        },
+        "fly bog": {
+          "definition": "Identify abstract patterns and general principles, examine their structure and reflect on it, then identify actions and extend them to related contexts.",
+          "distinctions": [
+            {
+              "note": "fly bog = abstract → horizontal span; fog = abstract pole only",
+              "token": "fog"
+            },
+            {
+              "note": "fly bog = starts abstract (fog) before spanning horizontal; bog = horizontal span without abstract anchoring",
+              "token": "bog"
+            }
+          ],
+          "heuristics": [
+            "abstract first then structure and actions",
+            "big picture then reflect and act",
+            "principles first then what they mean and what to do"
+          ]
+        },
+        "fly ong": {
+          "definition": "Identify abstract patterns and general principles, then propose concrete actions and extend them to related contexts.",
+          "distinctions": [
+            {
+              "note": "fly ong = abstract → acting sequence; fog = abstract pole only",
+              "token": "fog"
+            },
+            {
+              "note": "fly ong = starts abstract (fog) before acting; ong = acting pole without abstract anchoring",
+              "token": "ong"
+            }
+          ],
+          "heuristics": [
+            "abstract first then actions",
+            "big picture then what to do",
+            "principles first then concrete next steps"
+          ]
+        },
+        "fly rog": {
+          "definition": "Identify abstract patterns and general principles, then examine their structural relationships and reflect on their implications.",
+          "distinctions": [
+            {
+              "note": "fly rog = abstract → structural reflection sequence; fog = abstract pole only",
+              "token": "fog"
+            },
+            {
+              "note": "fly rog = starts abstract (fog) before reflecting; rog = structural reflection without abstract anchoring",
+              "token": "rog"
+            }
+          ],
+          "heuristics": [
+            "abstract first then structural reflection",
+            "big picture then what it reveals structurally",
+            "principles first then structural meaning"
+          ]
+        },
+        "fog": {
+          "definition": "Surface the abstract pattern or principle: move from specific cases to the general insight.",
+          "distinctions": [
+            {
+              "note": "fog = abstract upward from specifics; dig = stay concrete and grounded",
+              "token": "dig"
+            }
+          ],
+          "heuristics": [
+            "step back and tell me the general principle",
+            "abstract away from the details",
+            "what does this reveal more broadly",
+            "what's the big picture here",
+            "what underlying pattern do these cases share",
+            "zoom out",
+            "what's the broader implication"
+          ]
+        },
+        "jog": {
+          "definition": "Execute directly without hedging or clarification: immediate answer, no questions back.",
+          "distinctions": [],
+          "heuristics": [
+            "just answer",
+            "don't ask me questions",
+            "make a call",
+            "just do it",
+            "don't hedge",
+            "go ahead",
+            "I don't need options, just pick one",
+            "stop asking and decide",
+            "just tell me"
+          ]
+        },
+        "ong": {
+          "definition": "Push toward concrete action and extension: identify what to do and extend those actions to related contexts.",
+          "distinctions": [
+            {
+              "note": "ong = acting/extending pole (right); rog = reflective/structural pole (left)",
+              "token": "rog"
+            }
+          ],
+          "heuristics": [
+            "what actions should I take and what comes next after each",
+            "give me the actions with follow-on steps",
+            "what do I do and what's the next step after that",
+            "concrete next steps and their extensions"
+          ]
+        },
+        "rog": {
+          "definition": "Push toward structural reflection: examine how the subject is organised and reflect on what that structure reveals.",
+          "distinctions": [
+            {
+              "note": "rog = reflective/structural pole (left); ong = acting/extending pole (right)",
+              "token": "ong"
+            },
+            {
+              "note": "rog = push toward structural reflection; fog = push toward abstract",
+              "token": "fog"
+            }
+          ],
+          "heuristics": [
+            "describe the structure then tell me what it means",
+            "how is it organised and what does that reveal",
+            "walk me through the structure and reflect on the implications",
+            "what does the organisation tell us"
+          ]
+        }
       }
     },
     "cross_axis_composition": {
@@ -4615,7 +4904,7 @@
     }
   ],
   "checksums": {
-    "axes": "c49efaf1f097326076570aeff58d8b42fa0bc610deb620f0b574da5eb88ad647",
+    "axes": "5cbbb1e2c79368808c56566394cb38a6ede2d15a3ffa31e7c1e46a3e51e52d07",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

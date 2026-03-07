@@ -248,13 +248,26 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 		if label == "" {
 			label = displayLabel(value, description)
 		}
+		// ADR-0155 T-11: use structured metadata for Guidance/UseWhen, same adapter pattern as task tokens.
+		var axisGuidance, axisUseWhen string
+		if meta := grammar.AxisMetadataFor(axis, value); meta != nil {
+			axisUseWhen = strings.Join(meta.Heuristics, ", ")
+			parts := make([]string, 0, len(meta.Distinctions))
+			for _, d := range meta.Distinctions {
+				parts = append(parts, d.Token+": "+d.Note)
+			}
+			axisGuidance = strings.Join(parts, "; ")
+		} else {
+			axisGuidance = grammar.AxisGuidance(axis, value)
+			axisUseWhen = grammar.AxisUseWhen(axis, value)
+		}
 		options = append(options, bartui.TokenOption{
 			Value:          value,
 			Slug:           grammar.slugForToken(value),
 			Label:          label,
 			Description:    description,
-			Guidance:       grammar.AxisGuidance(axis, value),
-			UseWhen:        grammar.AxisUseWhen(axis, value),
+			Guidance:       axisGuidance,
+			UseWhen:        axisUseWhen,
 			Kanji:          grammar.AxisKanji(axis, value),
 			SemanticGroup:  grammar.AxisCategory(axis, value),
 			RoutingConcept: grammar.AxisRoutingConcept(axis, value),

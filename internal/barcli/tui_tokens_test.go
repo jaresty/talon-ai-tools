@@ -1,6 +1,7 @@
 package barcli
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
@@ -294,5 +295,42 @@ func TestBuildAxisOptionsSharedRoutingConceptPhrase(t *testing.T) {
 	if concepts["thing"] != concepts["struct"] {
 		t.Errorf("expected scope:thing and scope:struct to share RoutingConcept phrase for grouped rendering, got thing=%q struct=%q",
 			concepts["thing"], concepts["struct"])
+	}
+}
+
+// TestBuildAxisOptionsUsesStructuredMetadata specifies ADR-0155 T-11:
+// buildAxisOptions derives UseWhen from heuristics and Guidance from distinctions
+// when AxisMetadataFor returns non-nil structured metadata.
+func TestBuildAxisOptionsUsesStructuredMetadata(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	// completeness/gist has structured metadata with heuristics and distinctions
+	options := buildAxisOptions(grammar, "completeness")
+	var gistOpt *bartui.TokenOption
+	for i := range options {
+		if options[i].Value == "gist" {
+			gistOpt = &options[i]
+			break
+		}
+	}
+	if gistOpt == nil {
+		t.Fatal("expected to find 'gist' token in completeness options")
+	}
+	if gistOpt.UseWhen == "" {
+		t.Error("completeness/gist UseWhen must be populated from heuristics (ADR-0155 T-11)")
+	}
+	if gistOpt.Guidance == "" {
+		t.Error("completeness/gist Guidance must be populated from distinctions (ADR-0155 T-11)")
+	}
+	// Heuristics are comma-joined; must contain at least one trigger phrase
+	if !strings.Contains(gistOpt.UseWhen, "brief") && !strings.Contains(gistOpt.UseWhen, "gist") && !strings.Contains(gistOpt.UseWhen, "summary") {
+		t.Errorf("completeness/gist UseWhen must contain a heuristic trigger phrase, got %q", gistOpt.UseWhen)
+	}
+	// Distinctions reference 'skim'
+	if !strings.Contains(gistOpt.Guidance, "skim") {
+		t.Errorf("completeness/gist Guidance must reference 'skim' distinction, got %q", gistOpt.Guidance)
 	}
 }

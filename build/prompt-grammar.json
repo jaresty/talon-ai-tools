@@ -1408,7 +1408,7 @@
           "definition": "Ground in concrete specifics: examples, real cases, and grounded details rather than abstract analysis.",
           "distinctions": [
             {
-              "note": "dig = stay concrete and grounded; fog = step back to the abstract principle",
+              "note": "dig = stay concrete and grounded; fog = orient toward the abstract principle",
               "token": "fog"
             }
           ],
@@ -1618,7 +1618,7 @@
           "definition": "Surface the abstract pattern or principle: orient toward the general insight that transcends specific cases.",
           "distinctions": [
             {
-              "note": "fog = abstract upward from specifics; dig = stay concrete and grounded",
+              "note": "fog = orient toward the abstract and general; dig = stay concrete and grounded",
               "token": "dig"
             },
             {
@@ -7836,7 +7836,7 @@
     }
   ],
   "checksums": {
-    "axes": "0323fa893b81f9d942f3c5c842d0ae9a5628eba1d9cba52ad313d2a715bce93e",
+    "axes": "f6a2dbf276f798f3888a0c53655937ab8bc27d2064643b9ddbcee61fb05603e7",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -2385,7 +2385,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "Ground in concrete specifics: examples, real cases, and grounded details rather than abstract analysis.",
             "distinctions": [
                 {
-                    "note": "dig = stay concrete and grounded; fog = step back to the abstract principle",
+                    "note": "dig = stay concrete and grounded; fog = orient toward the abstract principle",
                     "token": "fog",
                 }
             ],
@@ -2598,7 +2598,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "Surface the abstract pattern or principle: orient toward the general insight that transcends specific cases.",
             "distinctions": [
                 {
-                    "note": "fog = abstract upward from specifics; dig = stay concrete and grounded",
+                    "note": "fog = orient toward the abstract and general; dig = stay concrete and grounded",
                     "token": "dig",
                 },
                 {

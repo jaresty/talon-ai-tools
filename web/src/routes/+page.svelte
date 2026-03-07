@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, getPersonaIntentTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, getPersonaIntentTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks, personaTokenHint, personaTokenDistinctionText } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
@@ -474,8 +474,8 @@
 											activePresetGuidance = '';
 										} else {
 											persona = { preset: preset.key, voice: '', audience: '', tone: '', intent: persona.intent };
-											activePresetUseWhen = grammar!.persona.use_when?.presets?.[preset.key] ?? '';
-											activePresetGuidance = grammar!.persona.guidance?.presets?.[preset.key] ?? '';
+											activePresetUseWhen = personaTokenHint(grammar!, 'presets', preset.key);
+											activePresetGuidance = personaTokenDistinctionText(grammar!, 'presets', preset.key);
 										}
 									}}
 								>{preset.label}</button>
@@ -511,11 +511,11 @@
 										<option value={v}>{v}</option>
 									{/each}
 								</select>
-								{#if persona.voice && grammar.persona.use_when?.voice?.[persona.voice]}
-									<span class="persona-hint">{grammar.persona.use_when.voice[persona.voice]}</span>
+								{#if persona.voice && personaTokenHint(grammar, 'voice', persona.voice)}
+									<span class="persona-hint">{personaTokenHint(grammar, 'voice', persona.voice)}</span>
 								{/if}
-								{#if persona.voice && grammar.persona.guidance?.voice?.[persona.voice]}
-									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.voice[persona.voice]}</span>
+								{#if persona.voice && personaTokenDistinctionText(grammar, 'voice', persona.voice)}
+									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'voice', persona.voice)}</span>
 								{/if}
 							</label>
 							<label class="persona-select-label">
@@ -530,11 +530,11 @@
 										<option value={a}>{a}</option>
 									{/each}
 								</select>
-								{#if persona.audience && grammar.persona.use_when?.audience?.[persona.audience]}
-									<span class="persona-hint">{grammar.persona.use_when.audience[persona.audience]}</span>
+								{#if persona.audience && personaTokenHint(grammar, 'audience', persona.audience)}
+									<span class="persona-hint">{personaTokenHint(grammar, 'audience', persona.audience)}</span>
 								{/if}
-								{#if persona.audience && grammar.persona.guidance?.audience?.[persona.audience]}
-									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.audience[persona.audience]}</span>
+								{#if persona.audience && personaTokenDistinctionText(grammar, 'audience', persona.audience)}
+									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'audience', persona.audience)}</span>
 								{/if}
 							</label>
 							<label class="persona-select-label">
@@ -549,11 +549,11 @@
 										<option value={t}>{t}</option>
 									{/each}
 								</select>
-								{#if persona.tone && grammar.persona.use_when?.tone?.[persona.tone]}
-									<span class="persona-hint">{grammar.persona.use_when.tone[persona.tone]}</span>
+								{#if persona.tone && personaTokenHint(grammar, 'tone', persona.tone)}
+									<span class="persona-hint">{personaTokenHint(grammar, 'tone', persona.tone)}</span>
 								{/if}
-								{#if persona.tone && grammar.persona.guidance?.tone?.[persona.tone]}
-									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.tone[persona.tone]}</span>
+								{#if persona.tone && personaTokenDistinctionText(grammar, 'tone', persona.tone)}
+									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'tone', persona.tone)}</span>
 								{/if}
 							</label>
 							<label class="persona-select-label">
@@ -568,11 +568,11 @@
 										<option value={it}>{it}</option>
 									{/each}
 								</select>
-								{#if persona.intent && grammar.persona.use_when?.intent?.[persona.intent]}
-									<span class="persona-hint">{grammar.persona.use_when.intent[persona.intent]}</span>
+								{#if persona.intent && personaTokenHint(grammar, 'intent', persona.intent)}
+									<span class="persona-hint">{personaTokenHint(grammar, 'intent', persona.intent)}</span>
 								{/if}
-								{#if persona.intent && grammar.persona.guidance?.intent?.[persona.intent]}
-									<span class="persona-hint persona-hint-note">{grammar.persona.guidance.intent[persona.intent]}</span>
+								{#if persona.intent && personaTokenDistinctionText(grammar, 'intent', persona.intent)}
+									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'intent', persona.intent)}</span>
 								{/if}
 							</label>
 						</div>

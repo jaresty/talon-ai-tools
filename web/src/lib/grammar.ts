@@ -223,6 +223,17 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 	}));
 }
 
+/** Returns heuristic trigger phrases for a persona token, joined by '; '. ADR-0156. */
+export function personaTokenHint(grammar: Grammar, axis: string, token: string): string {
+	return grammar.persona?.metadata?.[axis]?.[token]?.heuristics?.join('; ') ?? '';
+}
+
+/** Returns distinction text for a persona token ("vs X: note; vs Y: note"). ADR-0156. */
+export function personaTokenDistinctionText(grammar: Grammar, axis: string, token: string): string {
+	const d = grammar.persona?.metadata?.[axis]?.[token]?.distinctions ?? [];
+	return d.map((x) => `vs ${x.token}: ${x.note}`).join('; ');
+}
+
 export function getUsagePatterns(grammar: Grammar): GrammarPattern[] {
 	return grammar.patterns ?? [];
 }

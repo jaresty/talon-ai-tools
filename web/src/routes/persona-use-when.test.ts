@@ -34,9 +34,21 @@ vi.mock('$lib/grammar.js', () => ({
 				}
 			},
 			axes: { voice: [], audience: ['to managers'], tone: [] },
-			use_when: {
-				presets: { engineer_to_engineer: PRESET_USE_WHEN },
-				audience: { 'to managers': AUDIENCE_USE_WHEN }
+			metadata: {
+				presets: {
+					engineer_to_engineer: {
+						definition: 'Peer-level technical explanation.',
+						heuristics: [PRESET_USE_WHEN],
+						distinctions: []
+					}
+				},
+				audience: {
+					'to managers': {
+						definition: 'Address managers.',
+						heuristics: [AUDIENCE_USE_WHEN],
+						distinctions: []
+					}
+				}
 			}
 		},
 		patterns: []
@@ -58,7 +70,14 @@ vi.mock('$lib/grammar.js', () => ({
 	getCompositionData: vi.fn().mockReturnValue(null),
 	getChipState: vi.fn().mockReturnValue(null),
 	getReverseChipState: vi.fn().mockReturnValue(null),
-	getChipStateWithReason: vi.fn().mockReturnValue({ state: null, naturalWith: [], cautionWith: [] })
+	getChipStateWithReason: vi.fn().mockReturnValue({ state: null, naturalWith: [], cautionWith: [] }),
+	// ADR-0156: structured metadata helpers replace persona.use_when/guidance reads
+	personaTokenHint: vi.fn().mockImplementation((_grammar, axis, token) => {
+		if (axis === 'presets' && token === 'engineer_to_engineer') return PRESET_USE_WHEN;
+		if (axis === 'audience' && token === 'to managers') return AUDIENCE_USE_WHEN;
+		return '';
+	}),
+	personaTokenDistinctionText: vi.fn().mockReturnValue('')
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({

@@ -72,8 +72,9 @@ func TestAxisGuidanceAndTaskMetadataPopulated(t *testing.T) {
 	}
 }
 
-// TestAxisUseWhenAccessorReturnsNonEmpty specifies that Grammar.AxisUseWhen returns
-// non-empty discoverability hints for the 9 specialist form tokens identified in ADR-0132.
+// TestAxisUseWhenAccessorReturnsNonEmpty specifies that every specialist form token
+// identified in ADR-0132 has at least one discoverability signal — either structured
+// metadata heuristics (ADR-0155, preferred) or a legacy use_when string (ADR-0132).
 func TestAxisUseWhenAccessorReturnsNonEmpty(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -84,8 +85,12 @@ func TestAxisUseWhenAccessorReturnsNonEmpty(t *testing.T) {
 		"taxonomy", "facilitate", "recipe", "visual",
 	}
 	for _, token := range specialistForms {
+		// ADR-0155: structured metadata heuristics supersede use_when for migrated axes.
+		if meta := grammar.AxisMetadataFor("form", token); meta != nil && len(meta.Heuristics) > 0 {
+			continue
+		}
 		if hint := grammar.AxisUseWhen("form", token); hint == "" {
-			t.Errorf("form:%s must have use_when defined (ADR-0132)", token)
+			t.Errorf("form:%s must have use_when or structured metadata heuristics (ADR-0132 / ADR-0155)", token)
 		}
 	}
 }

@@ -256,6 +256,37 @@ func TestPersonaMetadataForAudienceContent(t *testing.T) {
 	}
 }
 
+// TestPersonaMetadataForToneContent specifies T-4 — tone axis populated (ADR-0156 T-4).
+func TestPersonaMetadataForToneContent(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	casuallyMeta := grammar.PersonaMetadataFor("tone", "casually")
+	if casuallyMeta == nil {
+		t.Fatal("PersonaMetadataFor(tone, casually) must not return nil after T-4")
+	}
+	if len(casuallyMeta.Heuristics) == 0 {
+		t.Error("tone/casually heuristics must not be empty")
+	}
+	// gently must distinguish from kindly
+	gentlyMeta := grammar.PersonaMetadataFor("tone", "gently")
+	if gentlyMeta == nil {
+		t.Fatal("PersonaMetadataFor(tone, gently) must not return nil after T-4")
+	}
+	found := false
+	for _, d := range gentlyMeta.Distinctions {
+		if d.Token == "kindly" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("tone/gently must distinguish from kindly")
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

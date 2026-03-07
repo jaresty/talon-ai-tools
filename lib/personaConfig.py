@@ -472,6 +472,104 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
 # SSOT for persona discoverability — replaces PERSONA_KEY_TO_USE_WHEN + PERSONA_KEY_TO_GUIDANCE
 # for migrated axes after T-10 cutover.
 PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
+    "tone": {
+        "casually": {
+            "definition": "Casual, conversational register: use when formality would feel stiff or the subject benefits from a relaxed tone.",
+            "heuristics": [
+                "keep it casual",
+                "conversational tone",
+                "informal",
+                "relaxed",
+                "don't be stiff",
+            ],
+            "distinctions": [
+                {
+                    "token": "formally",
+                    "note": "casually = relaxed, conversational; formally = professional, structured, appropriate for leadership or compliance",
+                },
+                {
+                    "token": "directly",
+                    "note": "casually = informal register; directly = no-hedging register (can be casual or formal)",
+                },
+            ],
+        },
+        "formally": {
+            "definition": "Formal, professional register: use when the output will be shared with leadership, external parties, or compliance contexts.",
+            "heuristics": [
+                "formal tone",
+                "professional register",
+                "for leadership review",
+                "compliance context",
+                "external audience",
+            ],
+            "distinctions": [
+                {
+                    "token": "casually",
+                    "note": "formally = structured, professional; casually = relaxed, conversational",
+                },
+                {
+                    "token": "directly",
+                    "note": "formally = register (level of formality); directly = hedging style (can be formal or informal)",
+                },
+            ],
+        },
+        "directly": {
+            "definition": "Direct, no-hedging register: the user wants a straight answer without softening or qualifications.",
+            "heuristics": [
+                "be direct",
+                "no hedging",
+                "straight answer",
+                "bottom line",
+                "don't soften it",
+            ],
+            "distinctions": [
+                {
+                    "token": "casually",
+                    "note": "directly = no hedging or softening (orthogonal to formality); casually = informal register",
+                },
+                {
+                    "token": "gently",
+                    "note": "directly = no softening; gently = supportive, sensitive framing for difficult subjects",
+                },
+            ],
+        },
+        "gently": {
+            "definition": "Gentle, supportive register: use when the subject involves sensitive feedback, interpersonal difficulty, or someone who needs encouragement.",
+            "heuristics": [
+                "be gentle",
+                "sensitive feedback",
+                "interpersonal difficulty",
+                "supportive tone",
+                "don't be harsh",
+            ],
+            "distinctions": [
+                {
+                    "token": "kindly",
+                    "note": "gently = sensitive, supportive for difficult or emotional subjects; kindly = warm alongside substance for coaching or junior audiences",
+                },
+                {
+                    "token": "directly",
+                    "note": "gently = softens delivery; directly = no softening",
+                },
+            ],
+        },
+        "kindly": {
+            "definition": "Kind, warm register: the response conveys warmth alongside substance — for coaching, junior audiences, or emotionally charged contexts.",
+            "heuristics": [
+                "warm tone",
+                "kind",
+                "encouraging",
+                "appreciative framing",
+                "emotionally warm",
+            ],
+            "distinctions": [
+                {
+                    "token": "gently",
+                    "note": "kindly = warmth and positive regard alongside substance; gently = protective softening for difficult or sensitive subjects",
+                },
+            ],
+        },
+    },
     "audience": {
         "to managers": {
             "definition": "Address managers focused on outcomes and risk: the audience cares about staffing, risk, and results rather than technical implementation.",

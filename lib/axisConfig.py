@@ -45,7 +45,7 @@ from typing import Any, Dict, FrozenSet, TypedDict, Union
 AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready "
-        "for version control.",
+        "for version control. Best suited for decision-making tasks and architectural tradeoffs.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
         "surrounding explanation.",

@@ -202,6 +202,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
+        "arrow": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
         "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how "
         "they offset one another.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
@@ -434,6 +435,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
+        "arrow": "Intent-constrained meaning governance",
         "balance": "Balance analysis: forces and trade-offs",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
@@ -617,6 +619,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "analog": "類",
         "analysis": "析",
         "argue": "論",
+        "arrow": "矢",
         "balance": "均",
         "bias": "偏",
         "boom": "極",
@@ -778,6 +781,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "analog": "Generative",
         "analysis": "Structural",
         "argue": "Reasoning",
+        "arrow": "Structural",
         "balance": "Comparative",
         "bias": "Reasoning",
         "boom": "Exploration",
@@ -949,6 +953,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
+        "arrow": "Align intent to downstream",
         "balance": "Equilibrium forces",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
@@ -3494,6 +3499,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "build the logical case",
                 "argument and rebuttal",
                 "explicit reasoning structure",
+            ],
+        },
+        "arrow": {
+            "definition": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
+            "distinctions": [
+                {
+                    "note": "bound = restrict propagation of effects to a region; arrow = constrain downstream meaning to align with explicit intent",
+                    "token": "bound",
+                },
+                {
+                    "note": "control = focus on what is within your control; arrow = enforce intent constraints on how meaning propagates through representations",
+                    "token": "control",
+                },
+            ],
+            "heuristics": [
+                "ensure intent governs downstream",
+                "align meaning to intent",
+                "intent constraints on representations",
+                "constrain downstream meaning",
+                "explicit intent alignment",
+                "meaning governed by intent",
+                "keep downstream aligned with intent",
             ],
         },
         "balance": {

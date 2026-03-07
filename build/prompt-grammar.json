@@ -96,6 +96,7 @@
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
+        "arrow": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
         "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how they offset one another.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
@@ -275,6 +276,7 @@
         "analog",
         "analysis",
         "argue",
+        "arrow",
         "balance",
         "bias",
         "boom",
@@ -451,6 +453,7 @@
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
+        "arrow": "Intent-constrained meaning governance",
         "balance": "Balance analysis: forces and trade-offs",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
@@ -628,6 +631,7 @@
         "analog": "類",
         "analysis": "析",
         "argue": "論",
+        "arrow": "矢",
         "balance": "均",
         "bias": "偏",
         "boom": "極",
@@ -724,6 +728,7 @@
         "analog": "Generative",
         "analysis": "Structural",
         "argue": "Reasoning",
+        "arrow": "Structural",
         "balance": "Comparative",
         "bias": "Reasoning",
         "boom": "Exploration",
@@ -888,6 +893,7 @@
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
+        "arrow": "Align intent to downstream",
         "balance": "Equilibrium forces",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
@@ -2472,6 +2478,28 @@
             "build the logical case",
             "argument and rebuttal",
             "explicit reasoning structure"
+          ]
+        },
+        "arrow": {
+          "definition": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
+          "distinctions": [
+            {
+              "note": "bound = restrict propagation of effects to a region; arrow = constrain downstream meaning to align with explicit intent",
+              "token": "bound"
+            },
+            {
+              "note": "control = focus on what is within your control; arrow = enforce intent constraints on how meaning propagates through representations",
+              "token": "control"
+            }
+          ],
+          "heuristics": [
+            "ensure intent governs downstream",
+            "align meaning to intent",
+            "intent constraints on representations",
+            "constrain downstream meaning",
+            "explicit intent alignment",
+            "meaning governed by intent",
+            "keep downstream aligned with intent"
           ]
         },
         "balance": {
@@ -6253,6 +6281,7 @@
         "analog": "analog",
         "analysis": "analysis",
         "argue": "argue",
+        "arrow": "arrow",
         "balance": "balance",
         "bias": "bias",
         "boom": "boom",
@@ -6463,6 +6492,7 @@
         "method=analog": "method-analog",
         "method=analysis": "method-analysis",
         "method=argue": "method-argue",
+        "method=arrow": "method-arrow",
         "method=balance": "method-balance",
         "method=bias": "method-bias",
         "method=boom": "method-boom",
@@ -6669,6 +6699,7 @@
       "announce": "announce",
       "appreciate": "appreciate",
       "argue": "argue",
+      "arrow": "arrow",
       "as Kent Beck": "as-kent-beck",
       "as PM": "as-pm",
       "as designer": "as-designer",
@@ -6881,6 +6912,7 @@
       "method=analog": "method-analog",
       "method=analysis": "method-analysis",
       "method=argue": "method-argue",
+      "method=arrow": "method-arrow",
       "method=balance": "method-balance",
       "method=bias": "method-bias",
       "method=boom": "method-boom",
@@ -7837,11 +7869,11 @@
     }
   ],
   "checksums": {
-    "axes": "e49a337a72dbe7de7284fdcf29bdf7408feb16afb97810cbfe38e607da57b386",
+    "axes": "d0473669cc343fb2921088a2c1332c694f24e05d1ce1282294fd8f9730f5915c",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "e84f2212318755ddb20a4edb179a4acddf807aa55a9a899487bfb3ef8e614dc8",
+    "slugs": "924c6bdbf915d7dca0c094b51874cb915b922ebfe2c327794df9a1e1c80c99b8",
     "patterns": "e219303cafd7d90cec9332450df0357518044ed06e8d0142196d1f4f50c91f25",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

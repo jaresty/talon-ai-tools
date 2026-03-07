@@ -2661,13 +2661,12 @@
           ],
           "heuristics": [
             "focus on what I can control",
-            "s within my control\",",
-            ",",
-            ",",
-            ",",
-            ",",
-            ",",
-            ","
+            "what's within my control",
+            "what's outside my control",
+            "separate what's up to me from what's not",
+            "what can I influence",
+            "what's within my agency",
+            "focus on what's in my control"
           ]
         },
         "converge": {
@@ -2884,11 +2883,10 @@
             "where are these coupled",
             "find the entanglement",
             "mutual dependency analysis",
-            "t these be separated\",",
-            ",",
-            ",",
-            ",",
-            ","
+            "can these be separated",
+            "where is ownership unclear",
+            "what's intermixed",
+            "identify coupling"
           ]
         },
         "experimental": {
@@ -2975,13 +2973,12 @@
             }
           ],
           "heuristics": [
-            "what",
-            ",",
-            ",",
-            ",",
-            ",",
-            "s assumed but not stated",
-            "implicit vs explicit mismatch"
+            "what's assumed but not stated",
+            "implicit vs explicit mismatch",
+            "what's implicit but treated as explicit",
+            "where are the hidden assumptions",
+            "what's taken for granted",
+            "gap between stated and actual"
           ]
         },
         "grove": {
@@ -3018,9 +3015,9 @@
             "add only what you need",
             "simplest thing that works",
             "evolve as needed",
-            "don",
-            ",",
-            ","
+            "don't over-engineer",
+            "grow when needed",
+            "build incrementally"
           ]
         },
         "induce": {
@@ -3285,9 +3282,10 @@
             "what attracts and repels",
             "pull toward and push away from",
             "what are the incentives and disincentives",
-            "what",
-            ",",
-            ","
+            "goals and anti-goals",
+            "what pulls toward and pushes away",
+            "what's the attractor and repeller",
+            "positive and negative forces"
           ]
         },
         "prioritize": {
@@ -3358,13 +3356,12 @@
             }
           ],
           "heuristics": [
-            "what",
-            ",",
-            ",",
-            ",",
-            "s unstated but assumed",
+            "what's unstated but assumed",
             "formalize the informal",
-            "what rules actually apply here"
+            "what rules actually apply here",
+            "make implicit patterns explicit",
+            "what constraints are assumed",
+            "what rules constrain this"
           ]
         },
         "release": {
@@ -7718,7 +7715,7 @@
     }
   ],
   "checksums": {
-    "axes": "7a99782e4f8ca718712b19a6513153fb4e2bd483c6fc15b3e762330fe8b15d32",
+    "axes": "15e98c45de66fe5df0276f8d45d1b93cff23f8015ee378f754fe4f0088143e33",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

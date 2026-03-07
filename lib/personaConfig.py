@@ -472,6 +472,257 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
 # SSOT for persona discoverability — replaces PERSONA_KEY_TO_USE_WHEN + PERSONA_KEY_TO_GUIDANCE
 # for migrated axes after T-10 cutover.
 PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
+    "audience": {
+        "to managers": {
+            "definition": "Address managers focused on outcomes and risk: the audience cares about staffing, risk, and results rather than technical implementation.",
+            "heuristics": [
+                "for my manager",
+                "management update",
+                "manager audience",
+                "outcome-focused for leadership",
+            ],
+            "distinctions": [
+                {
+                    "token": "to stakeholders",
+                    "note": "to managers = specific management layer, operational ownership; to stakeholders = mixed roles, cross-functional impact clarity",
+                },
+                {
+                    "token": "to CEO",
+                    "note": "to managers = operational managers; to CEO = C-suite, business impact, crisp asks",
+                },
+            ],
+        },
+        "to product manager": {
+            "definition": "Address a product manager with scope and user value framing: the audience is a PM connecting user needs to scope decisions.",
+            "heuristics": [
+                "for the PM",
+                "product manager audience",
+                "scope and user value",
+                "product decision",
+            ],
+            "distinctions": [
+                {
+                    "token": "to managers",
+                    "note": "to product manager = scope, user value, product decisions; to managers = operational outcomes, risk, staffing",
+                },
+            ],
+        },
+        "to CEO": {
+            "definition": "Address a CEO with business impact and crisp asks: the audience is a CEO or C-suite executive who needs crisp business framing.",
+            "heuristics": [
+                "for the CEO",
+                "executive audience",
+                "business impact",
+                "C-suite framing",
+            ],
+            "distinctions": [
+                {
+                    "token": "to managers",
+                    "note": "to CEO = C-suite, business impact framing; to managers = operational managers, risk and results",
+                },
+                {
+                    "token": "to stakeholders",
+                    "note": "to CEO = single executive, decisive framing; to stakeholders = mixed group, broad clarity on what matters",
+                },
+            ],
+        },
+        "to LLM": {
+            "definition": "Address another language model: output will be consumed by another LLM — make it explicit, unambiguous, and free of prose fluff.",
+            "heuristics": [
+                "pass this to a model",
+                "LLM pipeline",
+                "downstream model",
+                "machine-readable framing",
+            ],
+            "distinctions": [
+                {
+                    "token": "to programmer",
+                    "note": "to LLM = output consumed by a language model, precision and no prose fluff; to programmer = output consumed by a human developer",
+                },
+            ],
+        },
+        "to junior engineer": {
+            "definition": "Address a junior engineer with clear, encouraging guidance: the audience needs thorough explanation and supportive tone.",
+            "heuristics": [
+                "for a junior dev",
+                "explain to someone new to this",
+                "beginner-friendly",
+                "onboarding",
+            ],
+            "distinctions": [
+                {
+                    "token": "to programmer",
+                    "note": "to junior engineer = thorough, scaffolded, encouraging; to programmer = concise, implementation-ready, assumes competence",
+                },
+                {
+                    "token": "to principal engineer",
+                    "note": "to junior engineer = explain, scaffold, encourage; to principal engineer = concise, architectural, minimal hand-holding",
+                },
+            ],
+        },
+        "to stakeholders": {
+            "definition": "Address a broad stakeholder group focused on impact and decisions: the audience includes mixed roles needing clarity on what matters and why.",
+            "heuristics": [
+                "for stakeholders",
+                "mixed audience",
+                "cross-functional group",
+                "impact and decision clarity",
+            ],
+            "distinctions": [
+                {
+                    "token": "to managers",
+                    "note": "to stakeholders = mixed roles, cross-functional clarity; to managers = specific management layer",
+                },
+                {
+                    "token": "to team",
+                    "note": "to stakeholders = external or cross-org clarity; to team = immediate team, actionable and collaborative",
+                },
+            ],
+        },
+        "to team": {
+            "definition": "Address your own team with actionable, collaborative framing: direct, implementation-ready communication.",
+            "heuristics": [
+                "for the team",
+                "team update",
+                "share with my team",
+                "team-facing",
+            ],
+            "distinctions": [
+                {
+                    "token": "to stakeholders",
+                    "note": "to team = immediate team, collaborative and direct; to stakeholders = mixed external roles, impact-focused",
+                },
+            ],
+        },
+        "to designer": {
+            "definition": "Address a designer with UX and visual clarity framing: the audience cares about user flows, interaction patterns, and design rationale.",
+            "heuristics": [
+                "for the designer",
+                "design audience",
+                "UX framing",
+                "explain to a designer",
+            ],
+            "distinctions": [
+                {
+                    "token": "as designer",
+                    "note": "audience:to designer = output addressed TO a designer reader; voice:as designer = output speaks FROM a designer perspective",
+                },
+            ],
+        },
+        "to analyst": {
+            "definition": "Address an analyst with structured, data-framed output: the audience needs evidence, metrics, and structured results for further analysis.",
+            "heuristics": [
+                "for an analyst",
+                "data-framed",
+                "analyst audience",
+                "structured findings",
+            ],
+            "distinctions": [
+                {
+                    "token": "to programmer",
+                    "note": "to analyst = data, structure, metrics; to programmer = implementation code, technical precision",
+                },
+            ],
+        },
+        "to programmer": {
+            "definition": "Address a programmer with technical, implementation-ready output: the audience is a developer who expects precision and wants to act directly.",
+            "heuristics": [
+                "for a developer",
+                "technical audience",
+                "implementation-ready",
+                "programmer framing",
+            ],
+            "distinctions": [
+                {
+                    "token": "as programmer",
+                    "note": "audience:to programmer = output addressed TO a programmer reader; voice:as programmer = output speaks FROM an engineering perspective",
+                },
+                {
+                    "token": "to junior engineer",
+                    "note": "to programmer = concise, assumes competence; to junior engineer = scaffolded, encouraging",
+                },
+            ],
+        },
+        "to principal engineer": {
+            "definition": "Address a principal engineer with concise, architectural framing: the audience is a senior technical leader who wants trade-offs and minimal hand-holding.",
+            "heuristics": [
+                "for a principal engineer",
+                "senior technical audience",
+                "architectural framing",
+                "assume deep expertise",
+            ],
+            "distinctions": [
+                {
+                    "token": "to programmer",
+                    "note": "to principal engineer = architectural, trade-offs, systems thinking; to programmer = implementation-focused",
+                },
+                {
+                    "token": "to junior engineer",
+                    "note": "to principal engineer = concise, assume expertise; to junior engineer = thorough, scaffold, encourage",
+                },
+            ],
+        },
+        "to Kent Beck": {
+            "definition": "Address Kent Beck's values — concrete, test-minded, iterative: the audience values small batches, working code, and simplicity.",
+            "heuristics": [
+                "XP framing",
+                "test-driven",
+                "Kent Beck style",
+                "iterative design",
+            ],
+            "distinctions": [
+                {
+                    "token": "to XP enthusiast",
+                    "note": "to Kent Beck = specifically Kent Beck's philosophy; to XP enthusiast = general XP practitioner audience",
+                },
+            ],
+        },
+        "to platform team": {
+            "definition": "Address a platform team focused on reliability and paved paths: the audience cares about leverage, reliability contracts, and making the right thing easy.",
+            "heuristics": [
+                "for the platform team",
+                "reliability framing",
+                "paved path",
+                "infrastructure audience",
+            ],
+            "distinctions": [
+                {
+                    "token": "to stream aligned team",
+                    "note": "to platform team = reliability contracts, paved paths, leverage; to stream aligned team = flow, local ownership, delivery speed",
+                },
+            ],
+        },
+        "to stream aligned team": {
+            "definition": "Address a stream-aligned team focused on flow and local ownership: the audience cares about delivery speed, reducing dependencies, and owning their domain.",
+            "heuristics": [
+                "stream-aligned team",
+                "delivery flow",
+                "local ownership",
+                "feature team framing",
+            ],
+            "distinctions": [
+                {
+                    "token": "to platform team",
+                    "note": "to stream aligned team = flow, delivery, local ownership; to platform team = reliability, paved paths, leverage",
+                },
+            ],
+        },
+        "to XP enthusiast": {
+            "definition": "Address an XP enthusiast who values social programming and production validation: the audience practices small batches, pair/mob, and continuous delivery.",
+            "heuristics": [
+                "XP framing",
+                "pair programming audience",
+                "continuous delivery context",
+                "extreme programming values",
+            ],
+            "distinctions": [
+                {
+                    "token": "to Kent Beck",
+                    "note": "to XP enthusiast = general XP community; to Kent Beck = specifically Kent Beck's philosophy and style",
+                },
+            ],
+        },
+    },
     "voice": {
         "as programmer": {
             "definition": "Adopt a programmer's technical stance: the response reasons and explains like an engineer — precise, implementation-minded, direct.",

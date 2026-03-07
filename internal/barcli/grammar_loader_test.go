@@ -221,6 +221,41 @@ func TestPersonaMetadataForVoiceContent(t *testing.T) {
 	}
 }
 
+// TestPersonaMetadataForAudienceContent specifies T-3 — audience axis populated (ADR-0156 T-3).
+func TestPersonaMetadataForAudienceContent(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	managersMeta := grammar.PersonaMetadataFor("audience", "to managers")
+	if managersMeta == nil {
+		t.Fatal("PersonaMetadataFor(audience, to managers) must not return nil after T-3")
+	}
+	if len(managersMeta.Heuristics) == 0 {
+		t.Error("audience/to managers heuristics must not be empty")
+	}
+	// to team must distinguish from to stakeholders
+	teamMeta := grammar.PersonaMetadataFor("audience", "to team")
+	if teamMeta == nil {
+		t.Fatal("PersonaMetadataFor(audience, to team) must not return nil after T-3")
+	}
+	teamDistinctions := make([]string, 0)
+	for _, d := range teamMeta.Distinctions {
+		teamDistinctions = append(teamDistinctions, d.Token)
+	}
+	found := false
+	for _, tok := range teamDistinctions {
+		if tok == "to stakeholders" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("audience/to team must distinguish from to stakeholders; got: %v", teamDistinctions)
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

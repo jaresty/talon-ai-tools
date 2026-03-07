@@ -133,6 +133,40 @@ func TestBuildPersonaOptionsPopulatesKanji(t *testing.T) {
 	}
 }
 
+// TestBuildPersonaOptionsUsesStructuredMetadata specifies T-9: buildPersonaOptions must
+// populate UseWhen from PersonaMetadataFor heuristics and Guidance from distinctions
+// when structured metadata is available (ADR-0156 T-9).
+func TestBuildPersonaOptionsUsesStructuredMetadata(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	// voice:as designer has structured metadata with heuristics and a distinction
+	// (vs to designer) — verify these are wired into UseWhen and Guidance.
+	options := buildPersonaOptions(grammar, "voice")
+
+	var designerOption *bartui.TokenOption
+	for i := range options {
+		if options[i].Value == "as designer" {
+			designerOption = &options[i]
+			break
+		}
+	}
+	if designerOption == nil {
+		t.Fatal("expected to find 'as designer' token in voice options")
+	}
+
+	// UseWhen must come from structured metadata heuristics (not legacy PersonaUseWhen)
+	if !strings.Contains(designerOption.UseWhen, "designer") {
+		t.Errorf("ADR-0156 T-9: voice/as designer UseWhen must contain heuristic content; got: %q", designerOption.UseWhen)
+	}
+	// Guidance must come from structured metadata distinctions (vs to designer)
+	if !strings.Contains(designerOption.Guidance, "to designer") {
+		t.Errorf("ADR-0156 T-9: voice/as designer Guidance must contain distinction 'to designer'; got: %q", designerOption.Guidance)
+	}
+}
+
 // TestMethodAxisGroupedBySemanticCategory specifies that buildAxisOptions for the
 // method axis returns tokens grouped by SemanticGroup (all tokens of the same group
 // are adjacent), not interleaved alphabetically (ADR-0144).

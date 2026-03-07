@@ -139,13 +139,27 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 			personaSlug = strings.TrimSpace(grammar.slugForToken(value))
 		}
 
+		// ADR-0156 T-9: use structured metadata for Guidance/UseWhen, same adapter
+		// pattern as axis tokens (ADR-0155 T-11).
+		var presetGuidance, presetUseWhen string
+		if meta := grammar.PersonaMetadataFor("presets", value); meta != nil {
+			presetUseWhen = strings.Join(meta.Heuristics, ", ")
+			parts := make([]string, 0, len(meta.Distinctions))
+			for _, d := range meta.Distinctions {
+				parts = append(parts, d.Token+": "+d.Note)
+			}
+			presetGuidance = strings.Join(parts, "; ")
+		} else {
+			presetGuidance = grammar.PersonaGuidance("presets", value)
+			presetUseWhen = grammar.PersonaUseWhen("presets", value)
+		}
 		options = append(options, bartui.TokenOption{
-			Value:       value,
-			Slug:        personaSlug,
-			Label:       label,
-			Description: label,
-			Guidance:       grammar.PersonaGuidance("presets", value),
-			UseWhen:        grammar.PersonaUseWhen("presets", value),
+			Value:          value,
+			Slug:           personaSlug,
+			Label:          label,
+			Description:    label,
+			Guidance:       presetGuidance,
+			UseWhen:        presetUseWhen,
 			RoutingConcept: grammar.PersonaRoutingConcept("presets", value),
 			Fills:          fills,
 		})
@@ -318,13 +332,27 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 		if label == "" {
 			label = displayLabel(value, description)
 		}
+		// ADR-0156 T-9: use structured metadata for Guidance/UseWhen, same adapter
+		// pattern as axis tokens (ADR-0155 T-11).
+		var personaGuidance, personaUseWhen string
+		if meta := grammar.PersonaMetadataFor(axis, value); meta != nil {
+			personaUseWhen = strings.Join(meta.Heuristics, ", ")
+			parts := make([]string, 0, len(meta.Distinctions))
+			for _, d := range meta.Distinctions {
+				parts = append(parts, d.Token+": "+d.Note)
+			}
+			personaGuidance = strings.Join(parts, "; ")
+		} else {
+			personaGuidance = grammar.PersonaGuidance(axis, value)
+			personaUseWhen = grammar.PersonaUseWhen(axis, value)
+		}
 		options = append(options, bartui.TokenOption{
-			Value:       value,
-			Slug:        grammar.slugForToken(value),
-			Label:       label,
-			Description: description,
-			Guidance:       grammar.PersonaGuidance(axis, value),
-			UseWhen:        grammar.PersonaUseWhen(axis, value),
+			Value:          value,
+			Slug:           grammar.slugForToken(value),
+			Label:          label,
+			Description:    description,
+			Guidance:       personaGuidance,
+			UseWhen:        personaUseWhen,
 			Kanji:          grammar.PersonaKanji(axis, value),
 			RoutingConcept: grammar.PersonaRoutingConcept(axis, value),
 		})

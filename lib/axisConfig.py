@@ -2377,7 +2377,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
             "heuristics": [
                 "examine what it means AND tell me what to do about it",
-                "both the structural reflection and the next steps",
+                "both the structural examination and the actions",
                 "understand it structurally while also acting on that understanding",
                 "analysis and actions both",
             ],
@@ -2452,7 +2452,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "concrete examples then structural reflection",
+                "concrete examples then structural examination",
                 "ground it then reflect on its structure",
                 "specifics first then what the pattern reveals",
                 "give me a specific example then analyze its structural pattern",
@@ -2531,8 +2531,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "principles and examples then structural reflection",
-                "vertical span then reflect on structure",
+                "principles and examples then structural examination",
+                "vertical span then structural examination",
                 "abstract and concrete then structural meaning",
                 "span abstract to concrete, then what does the structure tell us",
             ],
@@ -2589,7 +2589,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "abstract first then structural reflection",
+                "abstract first then structural examination",
                 "big picture then what it reveals structurally",
                 "principles first then structural meaning",
                 "start with the principle then examine how it is organized",

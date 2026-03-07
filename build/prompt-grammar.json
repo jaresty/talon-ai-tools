@@ -1399,7 +1399,7 @@
           ],
           "heuristics": [
             "examine what it means AND tell me what to do about it",
-            "both the structural reflection and the next steps",
+            "both the structural examination and the actions",
             "understand it structurally while also acting on that understanding",
             "analysis and actions both"
           ]
@@ -1474,7 +1474,7 @@
             }
           ],
           "heuristics": [
-            "concrete examples then structural reflection",
+            "concrete examples then structural examination",
             "ground it then reflect on its structure",
             "specifics first then what the pattern reveals",
             "give me a specific example then analyze its structural pattern"
@@ -1551,8 +1551,8 @@
             }
           ],
           "heuristics": [
-            "principles and examples then structural reflection",
-            "vertical span then reflect on structure",
+            "principles and examples then structural examination",
+            "vertical span then structural examination",
             "abstract and concrete then structural meaning",
             "span abstract to concrete, then what does the structure tell us"
           ]
@@ -1608,7 +1608,7 @@
             }
           ],
           "heuristics": [
-            "abstract first then structural reflection",
+            "abstract first then structural examination",
             "big picture then what it reveals structurally",
             "principles first then structural meaning",
             "start with the principle then examine how it is organized"
@@ -7836,7 +7836,7 @@
     }
   ],
   "checksums": {
-    "axes": "2524c61d46fdc480f0ae02a2c229ee8c0b406475c5708116a94a81ecaddcb3ff",
+    "axes": "54b2ec4725ccd94ab6a63c4e192bcddefcd5ae3ff721f1666eea42d24c2a337b",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -213,3 +213,62 @@ Expected value: M×H×L = 6
 **next_work:** Behaviour T-9: wire `tui_tokens.go` `buildPersonaOptions()` + `buildPersonaPresetOptions()` to use `PersonaMetadataFor()` adapter (heuristics → UseWhen, distinctions → Guidance).
 
 ---
+
+## Loop 9: 2026-03-07
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-9 — wire `tui_tokens.go` persona options to `PersonaMetadataFor()`. `buildPersonaOptions`: heuristics → UseWhen, distinctions → Guidance, fallback to `PersonaGuidance`/`PersonaUseWhen`. `buildPersonaPresetOptions`: same pattern.
+
+**active_constraint:** `TestBuildPersonaOptionsUsesStructuredMetadata` fails — Guidance empty. Falsifiable: test exits 1 before implementation.
+
+**Expected value:** M×H×L = 6
+
+**validation_targets:**
+- `go test ./internal/barcli/... -run TestBuildPersonaOptionsUsesStructuredMetadata`
+
+**evidence:**
+- red | 2026-03-07T18:00:00Z | exit 1 | Guidance empty for voice/as designer | inline
+- green | 2026-03-07T18:01:00Z | exit 0 | all tests pass; 1330 Python; 310 SPA | inline
+
+**rollback_plan:** `git restore --source=HEAD internal/barcli/tui_tokens.go internal/barcli/tui_tokens_test.go`
+
+**delta_summary:** helper:diff-snapshot=2 files changed, 74 insertions(+), 12 deletions(−). Commit: 474d9302.
+
+**loops_remaining_forecast:** 1 loop remaining (T-10 cleanup). Confidence high.
+
+**residual_constraints:**
+- Legacy `PERSONA_KEY_TO_USE_WHEN`/`PERSONA_KEY_TO_GUIDANCE` still present for co-existence. Severity: Low (removed in T-10).
+
+**next_work:** Behaviour T-10: remove legacy flat dicts and full pipeline.
+
+---
+
+## Loop 10: 2026-03-07
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-10 — full removal of `PERSONA_KEY_TO_GUIDANCE` and `PERSONA_KEY_TO_USE_WHEN` pipeline. User requested complete deletion rather than emptying (correct — dicts were unused). Removed: Python dicts + accessor functions; `promptGrammar.py` exports; Go struct fields (`PersonaSection.Guidance`, `PersonaSection.UseWhen`) + accessor functions (`PersonaGuidance()`, `PersonaUseWhen()`); fallback calls in `tui_tokens.go`, `help_llm.go`, `app.go`; SPA types + 2 dead tests. `formally`+channel conflict already migrated to `CROSS_AXIS_COMPOSITION` in T-8 — no data lost.
+
+**active_constraint:** `test_legacy_persona_flat_dicts_removed_after_migration` fails — dicts still present. Expected value: M×H×L = 6.
+
+**validation_targets:**
+- `python3 -m pytest _tests/test_persona_catalog.py::PersonaCatalogTests::test_legacy_persona_flat_dicts_removed_after_migration`
+- `go test ./internal/barcli/...`
+- SPA: 308 tests pass
+
+**evidence:**
+- red | 2026-03-07T18:05:00Z | exit 1 | dicts still present | inline
+- green | 2026-03-07T18:17:00Z | exit 0 | 1331 Python; all Go ok; 308 SPA | inline
+
+**rollback_plan:** `git revert c2a8cf35`
+
+**delta_summary:** helper:diff-snapshot=13 files changed, 54 insertions(+), 674 deletions(−). Commit: c2a8cf35. ADR-0156 status: Draft → Accepted.
+
+**loops_remaining_forecast:** 0 loops remaining. ADR complete.
+
+**residual_constraints:** None — all persona axes fully migrated, legacy pipeline removed.
+
+**next_work:** (none — ADR-0156 complete)
+
+---

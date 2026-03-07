@@ -45,7 +45,7 @@
         "fly bog": "The response additionally orients toward the abstract across the full horizontal span — anchored in general patterns and principles, shaped by structural examination and action together.",
         "fly ong": "The response additionally orients toward the abstract and acting — anchored in general patterns and principles, shaped toward identifying what to do and extending those actions.",
         "fly rog": "The response additionally orients toward the abstract and structural — anchored in general patterns and principles, shaped by how they are organized and what that reveals.",
-        "fog": "The response additionally orients toward the abstract and general — identifying patterns and principles from the specifics, moving from particular cases to broader insights.",
+        "fog": "The response additionally orients toward the abstract and general — identifying patterns and principles that transcend the specifics, reaching toward broader insights.",
         "jog": "The response applies no directional orientation. Use when a directional token is required by the grammar but no compass push is desired.",
         "ong": "The response additionally orients toward action and extension — identifying what to do and extending those actions to related situations or next steps.",
         "rog": "The response additionally orients toward the structural and reflective dimension — how the subject is organized and what that organization reveals."
@@ -390,20 +390,20 @@
       "directional": {
         "bog": "Span reflection and action (rog + ong)",
         "dig": "Ground in concrete details",
-        "dip bog": "Concrete-first, then span reflection and action",
-        "dip ong": "Concrete-first, then act and extend",
-        "dip rog": "Concrete-first, then reflect on structure",
+        "dip bog": "Concrete with full horizontal orientation",
+        "dip ong": "Concrete and acting orientation",
+        "dip rog": "Concrete and structural orientation",
         "fig": "Span abstract and concrete (fog + dig)",
-        "fip bog": "Full spectrum: abstract+concrete, then reflection+action",
-        "fip ong": "Full spectrum: abstract+concrete, then act and extend",
-        "fip rog": "Full spectrum: abstract+concrete, then reflect on structure",
-        "fly bog": "Abstract-first, then span reflection and action",
-        "fly ong": "Abstract-first, then act and extend",
-        "fly rog": "Abstract-first, then reflect on structure",
+        "fip bog": "All four compass orientations",
+        "fip ong": "Full vertical and acting orientation",
+        "fip rog": "Full vertical and structural orientation",
+        "fly bog": "Abstract with full horizontal orientation",
+        "fly ong": "Abstract and acting orientation",
+        "fly rog": "Abstract and structural orientation",
         "fog": "Surface abstract patterns and principles",
         "jog": "Execute intent directly, no clarification",
         "ong": "Identify concrete actions, extend outward",
-        "rog": "Examine structure, then reflect outward"
+        "rog": "Structural and reflective orientation"
       },
       "form": {
         "actions": "Concrete actions and tasks",
@@ -827,16 +827,16 @@
       "directional": {
         "bog": "Reflect + act",
         "dig": "Concrete/specific",
-        "dip bog": "Concrete, reflect, act",
-        "dip ong": "Concrete then act",
-        "dip rog": "Concrete then reflect",
+        "dip bog": "Concrete, structural, and acting",
+        "dip ong": "Concrete and acting",
+        "dip rog": "Concrete and structural",
         "fig": "Abstract + concrete",
-        "fip bog": "Full range, reflect, act",
-        "fip ong": "Full range, then act",
-        "fip rog": "Full range, then reflect",
-        "fly bog": "Abstract, reflect, act",
-        "fly ong": "Abstract then act",
-        "fly rog": "Abstract then reflect",
+        "fip bog": "All four compass directions",
+        "fip ong": "Full vertical and acting",
+        "fip rog": "Full vertical and structural",
+        "fly bog": "Abstract, structural, and acting",
+        "fly ong": "Abstract and acting",
+        "fly rog": "Abstract and structural",
         "fog": "Abstractify/generalise",
         "jog": "Execute directly",
         "ong": "Act and extend",
@@ -1455,10 +1455,10 @@
             }
           ],
           "heuristics": [
-            "concrete examples then next steps",
-            "ground it then tell me what to do",
-            "practical first then actions",
-            "show me a real case then tell me what to do about it"
+            "concrete examples with action orientation",
+            "ground it in specifics and orient toward what to do",
+            "practical examples with actions",
+            "real cases with actionable direction"
           ]
         },
         "dip rog": {
@@ -1474,10 +1474,10 @@
             }
           ],
           "heuristics": [
-            "concrete examples then structural examination",
-            "ground it then reflect on its structure",
-            "specifics first then what the pattern reveals",
-            "give me a specific example then analyze its structural pattern"
+            "concrete examples with structural orientation",
+            "ground it in specifics and orient toward its structure",
+            "specifics and what their structure reveals",
+            "specific example oriented toward structural patterns"
           ]
         },
         "fig": {
@@ -1592,7 +1592,7 @@
             "abstract grounding with action orientation",
             "big picture anchoring, oriented toward action",
             "principles shaping what to do",
-            "start from the big picture and orient toward actions"
+            "big picture anchoring with action orientation"
           ]
         },
         "fly rog": {
@@ -1611,11 +1611,11 @@
             "abstract grounding with structural orientation",
             "big picture anchoring, oriented toward structure",
             "principles shaping what the structure reveals",
-            "start from the big picture and orient toward structural meaning"
+            "big picture anchoring with structural orientation"
           ]
         },
         "fog": {
-          "definition": "Surface the abstract pattern or principle: move from specific cases to the general insight.",
+          "definition": "Surface the abstract pattern or principle: orient toward the general insight that transcends specific cases.",
           "distinctions": [
             {
               "note": "fog = abstract upward from specifics; dig = stay concrete and grounded",
@@ -7836,7 +7836,7 @@
     }
   ],
   "checksums": {
-    "axes": "8f0558f67be3e03c1ff001fc53923593c7bd3e19951e9bf1ade98ae2ef5cad2b",
+    "axes": "c641a9c0bc84160cd1894b15cde44f6d3822577355f7a855ee2dd7a88cff3588",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

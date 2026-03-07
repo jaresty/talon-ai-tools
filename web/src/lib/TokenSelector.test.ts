@@ -2026,3 +2026,86 @@ describe('TokenSelector — ADR-0155 T-9: axis token structured metadata panel',
 		expect(dots.length).toBe(1);
 	});
 });
+
+// ── ADR-0156 T-7: persona token metadata panel renders structured heuristics + distinctions ──
+// Persona tokens now carry metadata (populated in T-2 through T-6).
+// The panel must render heuristics + distinctions and suppress the legacy "When to use" section.
+
+const personaTokenWithMetadata = {
+	token: 'as designer',
+	label: '',
+	description: "Adopt a designer's stance focused on usability and interaction.",
+	guidance: '',
+	use_when: "from a designer's perspective",
+	kanji: '',
+	category: '',
+	routing_concept: '',
+	metadata: {
+		definition: "Adopt a designer's stance focused on usability and interaction.",
+		heuristics: ["from a designer's perspective", 'as a designer would', 'UX perspective'],
+		distinctions: [{ token: 'to designer', note: 'voice:as designer = speaks FROM designer; audience:to designer = addressed TO designer' }]
+	}
+};
+
+describe('TokenSelector — ADR-0156 T-7: persona token structured metadata panel', () => {
+	it('persona token with metadata shows Heuristics section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'voice',
+				tokens: [personaTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="as designer"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Heuristics')).toBeTruthy();
+		expect(screen.getByText("from a designer's perspective")).toBeTruthy();
+	});
+
+	it('persona token with metadata shows Distinctions section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'voice',
+				tokens: [personaTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="as designer"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Distinctions')).toBeTruthy();
+		expect(screen.getByText(/voice:as designer = speaks FROM designer/)).toBeTruthy();
+	});
+
+	it('persona token with metadata does NOT show legacy "When to use" section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'voice',
+				tokens: [personaTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="as designer"]')!;
+		await fireEvent.click(chip);
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
+	it('persona token with metadata shows use-when-dot chip indicator', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'voice',
+				tokens: [personaTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const dots = document.querySelectorAll('.use-when-dot');
+		expect(dots.length).toBe(1);
+	});
+});

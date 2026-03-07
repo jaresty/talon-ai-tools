@@ -60,7 +60,6 @@ const minimalGrammar: Grammar = {
 		presets: {},
 		axes: { voice: [], audience: ['to managers', 'to product manager'], tone: [] },
 		docs: { audience: { 'to managers': 'Audience focused on outcomes and risk.' } },
-		use_when: { audience: { 'to managers': 'Use when addressing outcome-focused leadership.' } },
 		kanji: { audience: { 'to managers': '経営' }, voice: { 'as-expert': '專' } }
 	},
 	patterns: [
@@ -176,12 +175,13 @@ describe('getUsagePatterns', () => {
 });
 
 describe('getPersonaAxisTokensMeta', () => {
-	it('returns sorted tokens with description and use_when from persona docs/use_when', () => {
+	it('returns sorted tokens with description from persona docs', () => {
 		const metas = getPersonaAxisTokensMeta(minimalGrammar, 'audience');
 		expect(metas.map((m) => m.token)).toEqual(['to managers', 'to product manager']);
 		const mgr = metas.find((m) => m.token === 'to managers')!;
 		expect(mgr.description).toBe('Audience focused on outcomes and risk.');
-		expect(mgr.use_when).toBe('Use when addressing outcome-focused leadership.');
+		// use_when now comes from structured metadata only (persona.use_when flat dict removed in ADR-0156 T-10)
+		expect(mgr.use_when).toBe('');
 	});
 
 	it('returns empty string for description/use_when when not in docs', () => {
@@ -211,23 +211,6 @@ describe('getPersonaAxisTokensMeta', () => {
 		expect(mgr.kanji).toBe('経営');
 	});
 
-	it('populates guidance from persona.guidance when present', () => {
-		const grammarWithGuidance = {
-			...minimalGrammar,
-			persona: {
-				...minimalGrammar.persona,
-				guidance: { audience: { 'to managers': 'Note: very outcome-focused; avoid implementation details.' } }
-			}
-		};
-		const metas = getPersonaAxisTokensMeta(grammarWithGuidance, 'audience');
-		const mgr = metas.find((m) => m.token === 'to managers')!;
-		expect(mgr.guidance).toBe('Note: very outcome-focused; avoid implementation details.');
-	});
-
-	it('returns empty guidance when persona.guidance is absent', () => {
-		const metas = getPersonaAxisTokensMeta(minimalGrammar, 'audience');
-		expect(metas.every((m) => m.guidance === '')).toBe(true);
-	});
 });
 
 describe('getPersonaIntentTokens', () => {

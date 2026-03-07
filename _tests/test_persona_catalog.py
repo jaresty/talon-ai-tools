@@ -41,6 +41,29 @@ if not TYPE_CHECKING:
             self.assertEqual(intent_display_map.get("teach"), "Teach / explain")
             self.assertEqual(intent_display_map.get("inform"), "Inform")
 
+        def test_legacy_persona_flat_dicts_removed_after_migration(self) -> None:
+            """ADR-0156 T-10: PERSONA_KEY_TO_USE_WHEN and PERSONA_KEY_TO_GUIDANCE have been
+            fully removed. Verify the migration is complete by confirming PersonaMetadataFor
+            returns populated metadata for a known token (structured metadata is source of truth)."""
+            import talon_user.lib.personaConfig as pc
+
+            # The legacy flat dicts must not exist after full removal.
+            self.assertFalse(
+                hasattr(pc, "PERSONA_KEY_TO_USE_WHEN"),
+                "ADR-0156 T-10: PERSONA_KEY_TO_USE_WHEN must be removed after full migration",
+            )
+            self.assertFalse(
+                hasattr(pc, "PERSONA_KEY_TO_GUIDANCE"),
+                "ADR-0156 T-10: PERSONA_KEY_TO_GUIDANCE must be removed after full migration",
+            )
+            # Verify structured metadata is populated for a known persona token.
+            meta_map = pc.persona_token_metadata_map("presets")
+            self.assertIn(
+                "peer_engineer_explanation",
+                meta_map,
+                "ADR-0156 T-10: persona_token_metadata_map must return data for known preset",
+            )
+
 else:
 
     class PersonaCatalogTests(unittest.TestCase):  # pragma: no cover

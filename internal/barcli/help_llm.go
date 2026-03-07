@@ -745,12 +745,7 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 		hasGuidance := false
 		var guidedTokens []string
 		for _, token := range tokenList {
-			// Prefer structured metadata heuristics (ADR-0156 T-8); fall back to
-			// legacy PersonaGuidance for any tokens not yet migrated.
 			hint := personaTokenHeuristics(grammar, axisName, token)
-			if hint == "" {
-				hint = grammar.PersonaGuidance(axisName, token)
-			}
 			if hint != "" {
 				hasGuidance = true
 				slug := grammar.slugForToken(token)
@@ -930,8 +925,7 @@ func axisTokenDistinctions(grammar *Grammar, axis, token string) string {
 }
 
 // personaTokenHeuristics returns the heuristic trigger phrases for a persona token as a
-// semicolon-joined string, falling back to the legacy PersonaUseWhen string if no
-// structured metadata is available. ADR-0156 T-8.
+// semicolon-joined string. ADR-0156.
 func personaTokenHeuristics(grammar *Grammar, axis, token string) string {
 	meta := grammar.PersonaMetadataFor(axis, token)
 	if meta != nil && len(meta.Heuristics) > 0 {
@@ -941,25 +935,21 @@ func personaTokenHeuristics(grammar *Grammar, axis, token string) string {
 		}
 		return strings.Join(h, "; ")
 	}
-	return grammar.PersonaUseWhen(axis, token)
+	return ""
 }
 
 // personaTokenDistinctions returns the distinction tokens for a persona token as a
-// "vs token; vs token" string, falling back to the legacy PersonaGuidance string if no
-// structured metadata is available. ADR-0156 T-8.
+// "vs token; vs token" string. ADR-0156.
 func personaTokenDistinctions(grammar *Grammar, axis, token string) string {
 	meta := grammar.PersonaMetadataFor(axis, token)
-	if meta != nil {
-		if len(meta.Distinctions) == 0 {
-			return ""
-		}
-		parts := make([]string, 0, len(meta.Distinctions))
-		for _, d := range meta.Distinctions {
-			parts = append(parts, "vs "+d.Token)
-		}
-		return strings.Join(parts, "; ")
+	if meta == nil || len(meta.Distinctions) == 0 {
+		return ""
 	}
-	return grammar.PersonaGuidance(axis, token)
+	parts := make([]string, 0, len(meta.Distinctions))
+	for _, d := range meta.Distinctions {
+		parts = append(parts, "vs "+d.Token)
+	}
+	return strings.Join(parts, "; ")
 }
 
 // renderUsagePatterns generates hardcoded usage pattern examples.

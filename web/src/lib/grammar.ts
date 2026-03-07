@@ -75,8 +75,6 @@ export interface Grammar {
 			tone: string[];
 		};
 		docs?: Record<string, Record<string, string>>;
-		use_when?: Record<string, Record<string, string>>;
-		guidance?: Record<string, Record<string, string>>;
 		kanji?: Record<string, Record<string, string>>;              // ADR-0143
 		routing_concept?: Record<string, Record<string, string>>;    // ADR-0146
 		metadata?: Record<string, Record<string, TaskMetadata>>;     // ADR-0156
@@ -209,8 +207,6 @@ export function getPersonaAxisTokens(grammar: Grammar, axis: 'voice' | 'audience
 export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audience' | 'tone'): TokenMeta[] {
 	const tokens = getPersonaAxisTokens(grammar, axis);
 	const docs = grammar.persona?.docs?.[axis] ?? {};
-	const use_when = grammar.persona?.use_when?.[axis] ?? {};
-	const guidance = grammar.persona?.guidance?.[axis] ?? {};
 	const kanji = grammar.persona?.kanji?.[axis] ?? {};
 	const routing_concepts = grammar.persona?.routing_concept?.[axis] ?? {};
 	const personaMetadata = grammar.persona?.metadata?.[axis] ?? {};
@@ -218,8 +214,8 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 		token,
 		label: token,
 		description: docs[token] ?? '',
-		guidance: guidance[token] ?? '',
-		use_when: use_when[token] ?? '',
+		guidance: '',
+		use_when: '',
 		kanji: kanji[token] ?? '',
 		category: '',
 		routing_concept: routing_concepts[token] ?? '',

@@ -149,9 +149,6 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 				parts = append(parts, d.Token+": "+d.Note)
 			}
 			presetGuidance = strings.Join(parts, "; ")
-		} else {
-			presetGuidance = grammar.PersonaGuidance("presets", value)
-			presetUseWhen = grammar.PersonaUseWhen("presets", value)
 		}
 		options = append(options, bartui.TokenOption{
 			Value:          value,
@@ -342,9 +339,6 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 				parts = append(parts, d.Token+": "+d.Note)
 			}
 			personaGuidance = strings.Join(parts, "; ")
-		} else {
-			personaGuidance = grammar.PersonaGuidance(axis, value)
-			personaUseWhen = grammar.PersonaUseWhen(axis, value)
 		}
 		options = append(options, bartui.TokenOption{
 			Value:          value,

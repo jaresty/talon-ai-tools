@@ -92,8 +92,6 @@ type PersonaSection struct {
 	Axes     map[string][]string
 	Docs     map[string]map[string]string
 	Labels   map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
-	Guidance map[string]map[string]string // ADR-0112: selection-oriented prose hints
-	UseWhen  map[string]map[string]string // ADR-0133: discoverability hints for help llm
 	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
 	RoutingConcept map[string]map[string]string // ADR-0146: distilled routing concept phrases
 	Metadata       map[string]map[string]TaskMetadata // ADR-0156: structured metadata per persona token
@@ -202,8 +200,6 @@ type rawPersona struct {
 	Axes     map[string][]string          `json:"axes"`
 	Docs     map[string]map[string]string `json:"docs"`
 	Labels   map[string]map[string]string `json:"labels"`   // ADR-0111
-	Guidance map[string]map[string]string `json:"guidance"` // ADR-0112
-	UseWhen        map[string]map[string]string `json:"use_when"`        // ADR-0133
 	Kanji          map[string]map[string]string `json:"kanji"`           // ADR-0143
 	RoutingConcept map[string]map[string]string `json:"routing_concept"` // ADR-0146
 	Metadata       map[string]map[string]TaskMetadata `json:"metadata"` // ADR-0156
@@ -299,8 +295,6 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Axes:           raw.Persona.Axes,
 			Docs:           raw.Persona.Docs,
 			Labels:         raw.Persona.Labels,
-			Guidance:       raw.Persona.Guidance,
-			UseWhen:        raw.Persona.UseWhen,
 			Kanji:          raw.Persona.Kanji,
 			RoutingConcept: raw.Persona.RoutingConcept,
 			Metadata:       raw.Persona.Metadata,
@@ -1188,30 +1182,6 @@ func (g *Grammar) PersonaLabel(axis, token string) string {
 	return ""
 }
 
-// PersonaGuidance returns the optional selection-guidance text for the given persona axis token (ADR-0112).
-// Returns empty string if no guidance is defined.
-func (g *Grammar) PersonaGuidance(axis, token string) string {
-	if g.Persona.Guidance == nil {
-		return ""
-	}
-	axisKey := strings.ToLower(strings.TrimSpace(axis))
-	if axisKey == "" {
-		return ""
-	}
-	guidance, ok := g.Persona.Guidance[axisKey]
-	if !ok {
-		return ""
-	}
-	tokenKey := strings.TrimSpace(token)
-	if text, ok := guidance[tokenKey]; ok && text != "" {
-		return text
-	}
-	if text, ok := guidance[strings.ToLower(tokenKey)]; ok && text != "" {
-		return text
-	}
-	return ""
-}
-
 // PersonaMetadataFor returns the structured metadata for a persona token (ADR-0156).
 // Returns nil if no structured metadata is defined for the given axis/token.
 func (g *Grammar) PersonaMetadataFor(axis, token string) *TaskMetadata {
@@ -1234,30 +1204,6 @@ func (g *Grammar) PersonaMetadataFor(axis, token string) *TaskMetadata {
 		return &m
 	}
 	return nil
-}
-
-// PersonaUseWhen returns the use_when discoverability hint for the given persona axis token (ADR-0133).
-// Returns empty string if no hint is defined.
-func (g *Grammar) PersonaUseWhen(axis, token string) string {
-	if g.Persona.UseWhen == nil {
-		return ""
-	}
-	axisKey := strings.ToLower(strings.TrimSpace(axis))
-	if axisKey == "" {
-		return ""
-	}
-	hints, ok := g.Persona.UseWhen[axisKey]
-	if !ok {
-		return ""
-	}
-	tokenKey := strings.TrimSpace(token)
-	if text, ok := hints[tokenKey]; ok && text != "" {
-		return text
-	}
-	if text, ok := hints[strings.ToLower(tokenKey)]; ok && text != "" {
-		return text
-	}
-	return ""
 }
 
 // PersonaKanji returns the kanji icon for the given persona axis token (ADR-0143).

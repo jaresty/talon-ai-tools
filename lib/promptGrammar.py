@@ -13,11 +13,9 @@ from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
     persona_token_metadata_map,
     PERSONA_KEY_TO_VALUE,
-    persona_key_to_guidance_map,
     persona_key_to_kanji_map,
     persona_key_to_label_map,
     persona_key_to_routing_concept_map,
-    persona_key_to_use_when_map,
 )
 from .staticPromptConfig import STATIC_PROMPT_CONFIG
 from .talonSettings import axis_incompatibilities, axis_priority, axis_soft_caps
@@ -376,20 +374,6 @@ def _build_persona_section(
         if label_map:
             persona_labels[axis] = dict(sorted(label_map.items()))
 
-    # Persona axis guidance (ADR-0112): selection hints displayed in TUI, not prompt body.
-    persona_guidance: dict[str, dict[str, str]] = {}
-    for axis in ("voice", "audience", "tone", "intent", "presets"):
-        guidance_map = persona_key_to_guidance_map(axis)
-        if guidance_map:
-            persona_guidance[axis] = dict(sorted(guidance_map.items()))
-
-    # Persona axis use_when (ADR-0133): discoverability hints for help llm "When to use" column.
-    persona_use_when: dict[str, dict[str, str]] = {}
-    for axis in ("voice", "audience", "tone", "intent", "presets"):
-        use_when_map = persona_key_to_use_when_map(axis)
-        if use_when_map:
-            persona_use_when[axis] = dict(sorted(use_when_map.items()))
-
     # Persona axis kanji (ADR-0143): kanji icons for visual display.
     persona_kanji: dict[str, dict[str, str]] = {}
     for axis in ("voice", "audience", "tone", "intent"):
@@ -420,10 +404,6 @@ def _build_persona_section(
     }
     if persona_labels:
         section["labels"] = persona_labels
-    if persona_guidance:
-        section["guidance"] = persona_guidance
-    if persona_use_when:
-        section["use_when"] = persona_use_when
     if persona_kanji:
         section["kanji"] = persona_kanji
     if persona_routing_concept:

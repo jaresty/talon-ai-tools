@@ -75,3 +75,32 @@ Expected value: M×H×L = 6
 - Behaviour T-3: audience axis migration (15 tokens).
 
 ---
+## Loop 3: 2026-03-07
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-3 — audience axis metadata (15 tokens). Key distinctions: speaker/reader pairs (to programmer ↔ as programmer, to designer ↔ as designer); seniority spectrum (to junior engineer ↔ to principal engineer); scope distinctions (to team ↔ to stakeholders; to managers ↔ to CEO).
+
+**active_constraint:** `TestPersonaMetadataForAudienceContent` fails — audience metadata empty.
+
+**Expected value:** M×H×L = 6
+
+**validation_targets:**
+- `go test ./internal/barcli/... -run TestPersonaMetadataForAudienceContent`
+
+**evidence:**
+- red | 2026-03-07T01:40:00Z | exit 1 | audience metadata nil | inline
+- green | 2026-03-07T01:45:00Z | exit 0 | PASS; all Go ok; 1330 Python | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/personaConfig.py internal/barcli/grammar_loader_test.go`
+
+**delta_summary:** helper:diff-snapshot=6 files changed, 1294 insertions(+), 4 deletions(−). Commit: 5db84d68.
+
+**loops_remaining_forecast:** 7 loops remaining (T-4–T-6 content, T-7 SPA, T-8–T-9 consumers, T-10 cleanup). Confidence high.
+
+**residual_constraints:**
+- Legacy `PERSONA_KEY_TO_USE_WHEN["audience"]` still present. Severity: Low.
+
+**next_work:** Behaviour T-4: tone axis migration (5 tokens).
+
+---

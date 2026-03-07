@@ -188,9 +188,9 @@ def render_axis_config() -> str:
           fog (↑ abstract/general) ←→ dig (↓ concrete/specific)  — vertical axis
           rog (← reflect/structure) ←→ ong (→ act/extend)         — horizontal axis
         Simple tokens push in one direction. Compound tokens span the full axis
-        simultaneously — fig = fog+dig means abstract AND concrete at once
-        (figure-ground reversal), not alternating. Three-part compounds (fly rog,
-        dip ong, fip bog, etc.) add a third directional phase in sequence.
+        simultaneously — fig = fog+dig means abstract AND concrete at once, not
+        alternating. Three-part compounds (fly rog, dip ong, fip bog, etc.) orient
+        along three directions at once: they are still orientations, not sequences.
         \"\"\"
 
         from __future__ import annotations

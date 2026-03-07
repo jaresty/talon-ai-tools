@@ -32,9 +32,9 @@ Tokens form a 2D compass — they push responses in a direction, not a sequence:
   fog (↑ abstract/general) ←→ dig (↓ concrete/specific)  — vertical axis
   rog (← reflect/structure) ←→ ong (→ act/extend)         — horizontal axis
 Simple tokens push in one direction. Compound tokens span the full axis
-simultaneously — fig = fog+dig means abstract AND concrete at once
-(figure-ground reversal), not alternating. Three-part compounds (fly rog,
-dip ong, fip bog, etc.) add a third directional phase in sequence.
+simultaneously — fig = fog+dig means abstract AND concrete at once, not
+alternating. Three-part compounds (fly rog, dip ong, fip bog, etc.) orient
+along three directions at once: they are still orientations, not sequences.
 """
 
 from __future__ import annotations
@@ -105,25 +105,24 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
         "covering structure, implications, actions, and extensions together.",
         "dig": "The response additionally orients toward the concrete and specific — examining grounded details and examples rather than abstractions.",
-        "dip bog": "The response additionally follows a concrete-first sequence: starting with grounded examples and details, examining their structure and reflecting on patterns, then "
-        "identifying actions and extensions.",
-        "dip ong": "The response additionally follows a concrete-first sequence: starting with grounded examples and details, then identifying actions to take and extending them to related "
-        "situations.",
-        "dip rog": "The response additionally follows a concrete-first sequence: starting with grounded examples and details, then examining their structural patterns and what they reveal.",
+        "dip bog": "The response additionally orients toward the concrete across the full horizontal span — grounded in specific examples and details, shaped by structural examination and "
+        "action together.",
+        "dip ong": "The response additionally orients toward the concrete and acting — grounded in specific examples and details, shaped toward identifying what to do and extending those "
+        "actions.",
+        "dip rog": "The response additionally orients toward the concrete and structural — grounded in specific examples and details, shaped by how they are organized and what that reveals.",
         "fig": "The response additionally orients across the full vertical axis — spanning both the abstract/general dimension (fog) and the concrete/specific dimension (dig), using each to "
         "illuminate the other.",
-        "fip bog": "The response additionally follows a vertical-span sequence: moving between abstract principles and concrete examples, examining their structural patterns and reflecting "
-        "on them, then identifying actions and extending them to related contexts.",
-        "fip ong": "The response additionally follows a vertical-span sequence: moving between abstract principles and concrete examples, then identifying actions and extending them to "
-        "related situations.",
-        "fip rog": "The response additionally follows a vertical-span sequence: moving between abstract principles and concrete examples while examining structural patterns and reflecting "
-        "on what they reveal.",
-        "fly bog": "The response additionally follows an abstract-first sequence: identifying abstract patterns and general principles, examining their structure and reflecting on what it "
-        "reveals, then identifying actions and extending them to related contexts.",
-        "fly ong": "The response additionally follows an abstract-first sequence: identifying abstract patterns and general principles, then identifying actions and extending them to "
-        "related contexts.",
-        "fly rog": "The response additionally follows an abstract-first sequence: identifying abstract patterns and general principles, then examining how they are organized and what that "
-        "organization reveals.",
+        "fip bog": "The response additionally orients across all four compass dimensions — spanning abstract and concrete while shaped by structural examination and action together.",
+        "fip ong": "The response additionally orients across the full vertical axis toward action — spanning abstract and concrete, shaped toward identifying what to do and extending those "
+        "actions.",
+        "fip rog": "The response additionally orients across the full vertical axis toward the structural — spanning abstract and concrete, shaped by how the subject is organized and what "
+        "that reveals.",
+        "fly bog": "The response additionally orients toward the abstract across the full horizontal span — anchored in general patterns and principles, shaped by structural examination and "
+        "action together.",
+        "fly ong": "The response additionally orients toward the abstract and acting — anchored in general patterns and principles, shaped toward identifying what to do and extending those "
+        "actions.",
+        "fly rog": "The response additionally orients toward the abstract and structural — anchored in general patterns and principles, shaped by how they are organized and what that "
+        "reveals.",
         "fog": "The response additionally orients toward the abstract and general — identifying patterns and principles from the specifics, moving from particular cases to broader insights.",
         "jog": "The response applies no directional orientation. Use when a directional token is required by the grammar but no compass push is desired.",
         "ong": "The response additionally orients toward action and extension — identifying what to do and extending those actions to related situations or next steps.",
@@ -2402,33 +2401,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dip bog": {
-            "definition": "Start with concrete examples and grounded details, examine their structure and reflect on patterns, then identify actions and extensions.",
+            "definition": "Orient toward the concrete across the full horizontal span — grounded in specific examples and details, shaped by structural examination and action "
+            "together.",
             "distinctions": [
                 {
-                    "note": "dip bog = concrete → reflective → acting sequence; dig = concrete pole only",
+                    "note": "dip bog = concrete + full horizontal orientation together; dig = concrete pole only",
                     "token": "dig",
                 },
                 {
-                    "note": "dip bog = starts concrete (dig) before spanning horizontal; bog = horizontal span without initial concrete anchoring",
+                    "note": "dip bog = concrete anchoring with full horizontal orientation; bog = horizontal span without concrete anchoring",
                     "token": "bog",
                 },
             ],
             "heuristics": [
-                "concrete first then structure and actions",
-                "ground it then reflect and act",
-                "examples first then what they reveal and what to do",
-                "walk through examples, reflect on structure, then give me actions",
+                "concrete grounding with structural and action orientation",
+                "ground it in examples and orient toward both structure and action",
+                "real examples shaping both what it reveals and what to do",
+                "grounded in specifics, oriented toward structure and action",
             ],
         },
         "dip ong": {
-            "definition": "Start with concrete examples, then identify actions to take from them and extend those actions to related situations.",
+            "definition": "Orient toward the concrete and acting — grounded in specific examples and details, shaped toward identifying what to do and extending those actions.",
             "distinctions": [
                 {
-                    "note": "dip ong = concrete → acting sequence; dig = concrete pole only",
+                    "note": "dip ong = concrete + acting orientation together; dig = concrete pole only",
                     "token": "dig",
                 },
                 {
-                    "note": "dip ong = starts concrete (dig) before acting; ong = acting pole without initial concrete anchoring",
+                    "note": "dip ong = concrete anchoring with acting orientation; ong = acting pole without concrete anchoring",
                     "token": "ong",
                 },
             ],
@@ -2440,14 +2440,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dip rog": {
-            "definition": "Examine concrete details and grounded examples, then reflect on their structural patterns and what they reveal.",
+            "definition": "Orient toward the concrete and structural — grounded in specific examples and details, shaped by how they are organized and what that reveals.",
             "distinctions": [
                 {
-                    "note": "dip rog = concrete → reflective sequence; dig = concrete pole only",
+                    "note": "dip rog = concrete + structural orientation together; dig = concrete pole only",
                     "token": "dig",
                 },
                 {
-                    "note": "dip rog = starts concrete (dig) before reflecting; rog = structural reflection without initial concrete anchoring",
+                    "note": "dip rog = concrete anchoring with structural orientation; rog = structural pole without concrete anchoring",
                     "token": "rog",
                 },
             ],
@@ -2480,119 +2480,118 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fip bog": {
-            "definition": "Move between abstract principles and concrete examples, examine their structural patterns and reflect on them, then identify actions and extend them to "
-            "related contexts.",
+            "definition": "Orient across all four compass dimensions — spanning abstract and concrete while shaped by structural examination and action together.",
             "distinctions": [
                 {
-                    "note": "fip bog = vertical span then full horizontal (all 4 directions); fig = vertical span only",
+                    "note": "fip bog = full vertical + full horizontal orientation (all 4 directions); fig = vertical span only",
                     "token": "fig",
                 },
                 {
-                    "note": "fip bog = includes vertical span before horizontal; bog = horizontal span only",
+                    "note": "fip bog = vertical span combined with full horizontal orientation; bog = horizontal span without vertical span",
                     "token": "bog",
                 },
             ],
             "heuristics": [
-                "full vertical and horizontal coverage",
-                "abstract and concrete, reflective and acting",
-                "cover all four compass directions",
-                "cover the full spectrum: abstract and concrete, then reflect and act",
+                "full vertical and horizontal orientation",
+                "abstract and concrete, structural and acting",
+                "all four compass directions at once",
+                "span abstract to concrete while orienting toward structure and action",
             ],
         },
         "fip ong": {
-            "definition": "Alternate between abstract principles and concrete examples, then identify actions to take and extend them to related situations.",
+            "definition": "Orient across the full vertical axis toward action — spanning abstract and concrete, shaped toward identifying what to do and extending those actions.",
             "distinctions": [
                 {
-                    "note": "fip ong = vertical span then acting; fig = vertical span only",
+                    "note": "fip ong = vertical span + acting orientation together; fig = vertical span only",
                     "token": "fig",
                 },
                 {
-                    "note": "fip ong = vertical span precedes acting; ong = acting pole only",
+                    "note": "fip ong = vertical span with acting orientation; ong = acting pole without vertical span",
                     "token": "ong",
                 },
             ],
             "heuristics": [
-                "principles and examples then actions",
-                "vertical span then act",
-                "abstract and concrete then what to do",
-                "span abstract to concrete, then what should I do",
+                "abstract and concrete with action orientation",
+                "span abstract to concrete and orient toward action",
+                "both levels of abstraction, shaped toward what to do",
+                "span abstract to concrete, orienting toward actions",
             ],
         },
         "fip rog": {
-            "definition": "Move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
+            "definition": "Orient across the full vertical axis toward the structural — spanning abstract and concrete, shaped by how the subject is organized and what that reveals.",
             "distinctions": [
                 {
-                    "note": "fip rog = vertical span then structural reflection; fig = vertical span only",
+                    "note": "fip rog = vertical span + structural orientation together; fig = vertical span only",
                     "token": "fig",
                 },
                 {
-                    "note": "fip rog = vertical span precedes reflection; rog = structural reflection only",
+                    "note": "fip rog = vertical span with structural orientation; rog = structural pole without vertical span",
                     "token": "rog",
                 },
             ],
             "heuristics": [
-                "principles and examples then structural examination",
-                "vertical span then structural examination",
-                "abstract and concrete then structural meaning",
-                "span abstract to concrete, then what does the structure tell us",
+                "abstract and concrete with structural orientation",
+                "span abstract to concrete and orient toward structure",
+                "both levels of abstraction, shaped by what the structure reveals",
+                "span abstract to concrete, orienting toward structural meaning",
             ],
         },
         "fly bog": {
-            "definition": "Identify abstract patterns and general principles, examine their structure and reflect on it, then identify actions and extend them to related contexts.",
+            "definition": "Orient toward the abstract across the full horizontal span — anchored in general patterns and principles, shaped by structural examination and action "
+            "together.",
             "distinctions": [
                 {
-                    "note": "fly bog = abstract → horizontal span; fog = abstract pole only",
+                    "note": "fly bog = abstract + full horizontal orientation together; fog = abstract pole only",
                     "token": "fog",
                 },
                 {
-                    "note": "fly bog = starts abstract (fog) before spanning horizontal; bog = horizontal span without abstract anchoring",
+                    "note": "fly bog = abstract anchoring with full horizontal orientation; bog = horizontal span without abstract anchoring",
                     "token": "bog",
                 },
             ],
             "heuristics": [
-                "abstract first then structure and actions",
-                "big picture then reflect and act",
-                "principles first then what they mean and what to do",
-                "start with the principle, then reflect on structure, then give me actions",
+                "abstract grounding with structural and action orientation",
+                "big picture anchoring, orienting toward both structure and action",
+                "principles shaping both what they reveal and what to do",
+                "abstract anchoring, oriented toward structure and action",
             ],
         },
         "fly ong": {
-            "definition": "Follow an abstract-first sequence: identify abstract patterns and general principles, then identify actions and extend them to related contexts.",
+            "definition": "Orient toward the abstract and acting — anchored in general patterns and principles, shaped toward identifying what to do and extending those actions.",
             "distinctions": [
                 {
-                    "note": "fly ong = abstract → acting sequence; fog = abstract pole only",
+                    "note": "fly ong = abstract + acting orientation together; fog = abstract pole only",
                     "token": "fog",
                 },
                 {
-                    "note": "fly ong = starts abstract (fog) before acting; ong = acting pole without abstract anchoring",
+                    "note": "fly ong = abstract anchoring with acting orientation; ong = acting pole without abstract anchoring",
                     "token": "ong",
                 },
             ],
             "heuristics": [
-                "abstract first then actions",
-                "big picture then what to do",
-                "principles first then what to do",
-                "start with the big picture then tell me what to do",
+                "abstract grounding with action orientation",
+                "big picture anchoring, oriented toward action",
+                "principles shaping what to do",
+                "start from the big picture and orient toward actions",
             ],
         },
         "fly rog": {
-            "definition": "Follow an abstract-first sequence: identify abstract patterns and general principles, then examine how they are organised and what that organisation "
-            "reveals.",
+            "definition": "Orient toward the abstract and structural — anchored in general patterns and principles, shaped by how they are organized and what that reveals.",
             "distinctions": [
                 {
-                    "note": "fly rog = abstract → structural reflection sequence; fog = abstract pole only",
+                    "note": "fly rog = abstract + structural orientation together; fog = abstract pole only",
                     "token": "fog",
                 },
                 {
-                    "note": "fly rog = starts abstract (fog) before reflecting; rog = structural reflection without abstract anchoring",
+                    "note": "fly rog = abstract anchoring with structural orientation; rog = structural pole without abstract anchoring",
                     "token": "rog",
                 },
             ],
             "heuristics": [
-                "abstract first then structural examination",
-                "big picture then what it reveals structurally",
-                "principles first then structural meaning",
-                "start with the principle then examine how it is organized",
+                "abstract grounding with structural orientation",
+                "big picture anchoring, oriented toward structure",
+                "principles shaping what the structure reveals",
+                "start from the big picture and orient toward structural meaning",
             ],
         },
         "fog": {

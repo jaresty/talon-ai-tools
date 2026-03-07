@@ -2510,14 +2510,15 @@ class AxisTokenMetadata(TypedDict, total=False):
 AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     "channel": {
         "adr": {
-            "definition": "Architecture Decision Record format: structures output as an ADR document with Context, Decision, and Consequences sections.",
+            "definition": "Architecture Decision Record format: structures output as an ADR document with Context, Decision, and Consequences sections. Best for decision-making tasks and "
+            "architectural tradeoffs.",
             "distinctions": [],
             "heuristics": [
                 "write an ADR",
                 "architecture decision record",
-                "document this decision as an ADR",
                 "ADR format",
                 "decision record",
+                "decision-making tasks",
             ],
         },
         "code": {
@@ -3577,8 +3578,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "scaffold": {
-            "definition": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key "
-            "points so a learner can follow and retain them.",
+            "definition": "Learning-oriented explanation: starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a "
+            "learner can follow and retain them.",
             "distinctions": [
                 {
                     "note": "walkthrough = guided sequential steps through a known process; scaffold = pedagogical first-principles introduction that builds understanding",
@@ -3586,13 +3587,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 }
             ],
             "heuristics": [
+                "learning-oriented explanation",
                 "explain from scratch",
                 "teach me this",
                 "start from first principles",
                 "build up my understanding",
-                "I'm a beginner",
-                "explain step by step as if I'm new to this",
-                "scaffold my learning",
             ],
         },
         "socratic": {

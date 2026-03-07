@@ -90,9 +90,11 @@ func TestAxisUseWhenAccessorReturnsNonEmpty(t *testing.T) {
 	}
 }
 
-// TestHelpLLMIncludesUseWhenColumn specifies that bar help llm renders a
-// "When to use" column in the Form token catalog table (ADR-0132).
-func TestHelpLLMIncludesUseWhenColumn(t *testing.T) {
+// TestHelpLLMIncludesHeuristicsColumn specifies that bar help llm renders a
+// "Heuristics" column in the axis token catalog tables (ADR-0155 T-10).
+// Previously checked for "When to use" column (ADR-0132); updated after T-10
+// swapped the column to structured heuristics.
+func TestHelpLLMIncludesHeuristicsColumn(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
@@ -100,15 +102,15 @@ func TestHelpLLMIncludesUseWhenColumn(t *testing.T) {
 		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
 	}
 	output := stdout.String()
-	if !strings.Contains(output, "When to use") {
-		t.Error("bar help llm must include 'When to use' column header (ADR-0132)")
+	if !strings.Contains(output, "Heuristics") {
+		t.Error("bar help llm must include 'Heuristics' column header (ADR-0155 T-10)")
 	}
-	// Spot-check: wardley and wasinawa must have non-empty use_when text in output.
+	// Spot-check: wardley and wasinawa must have heuristic trigger phrases in output.
 	if !strings.Contains(output, "genesis to commodity") {
-		t.Error("bar help llm must include wardley use_when text (ADR-0132)")
+		t.Error("bar help llm must include wardley heuristic text (ADR-0155 T-10)")
 	}
-	if !strings.Contains(output, "Post-incident reflection") {
-		t.Error("bar help llm must include wasinawa use_when text (ADR-0132)")
+	if !strings.Contains(output, "reflect on incident") {
+		t.Error("bar help llm must include wasinawa heuristic text (ADR-0155 T-10)")
 	}
 }
 
@@ -209,12 +211,12 @@ func TestHelpLLMTokenCatalogHasLabelColumn(t *testing.T) {
 		t.Fatal("bar help llm must include Token Catalog section (ADR-0109 D5)")
 	}
 
-	// Tables must have Label and Notes columns
+	// Tables must have Label and Heuristics columns (ADR-0155 T-10 renamed Notes→Heuristics)
 	if !strings.Contains(output, "| Label |") {
 		t.Error("Token Catalog tables must include a Label column (ADR-0109 D5)")
 	}
-	if !strings.Contains(output, "| Notes |") {
-		t.Error("Token Catalog tables must include a Notes column (ADR-0110 D4)")
+	if !strings.Contains(output, "| Heuristics |") {
+		t.Error("Token Catalog tables must include a Heuristics column (ADR-0155 T-10)")
 	}
 
 	// scope:act label must appear in the output

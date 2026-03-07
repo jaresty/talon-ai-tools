@@ -1183,14 +1183,14 @@
     "metadata": {
       "channel": {
         "adr": {
-          "definition": "Architecture Decision Record format: structures output as an ADR document with Context, Decision, and Consequences sections.",
+          "definition": "Architecture Decision Record format: structures output as an ADR document with Context, Decision, and Consequences sections. Best for decision-making tasks and architectural tradeoffs.",
           "distinctions": [],
           "heuristics": [
             "write an ADR",
             "architecture decision record",
-            "document this decision as an ADR",
             "ADR format",
-            "decision record"
+            "decision record",
+            "decision-making tasks"
           ]
         },
         "code": {
@@ -2241,7 +2241,7 @@
           ]
         },
         "scaffold": {
-          "definition": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain them.",
+          "definition": "Learning-oriented explanation: starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain them.",
           "distinctions": [
             {
               "note": "walkthrough = guided sequential steps through a known process; scaffold = pedagogical first-principles introduction that builds understanding",
@@ -2249,13 +2249,11 @@
             }
           ],
           "heuristics": [
+            "learning-oriented explanation",
             "explain from scratch",
             "teach me this",
             "start from first principles",
-            "build up my understanding",
-            "I'm a beginner",
-            "explain step by step as if I'm new to this",
-            "scaffold my learning"
+            "build up my understanding"
           ]
         },
         "socratic": {
@@ -7201,7 +7199,7 @@
     }
   ],
   "checksums": {
-    "axes": "b6f1b98f3d4f2f33e0684c8871e72f0ba8a5995e101a4765c766cbfec596c0c8",
+    "axes": "7b87d1dd95648fbe94dea7a593b9a2007293a7f35b0f2edebebf7d7ede88413b",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

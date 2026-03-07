@@ -540,6 +540,32 @@ func TestEmbeddedSkillsUseTaskTerminology(t *testing.T) {
 	}
 }
 
+// TestAxisTokenCatalogHasHeuristicsAndDistinctions specifies ADR-0155 T-10:
+// the axis token catalog tables use Heuristics + Distinctions columns (not
+// the legacy Notes + When to use columns). Spot-checks gist completeness token
+// (has distinctions) and wardley form token (heuristics present).
+func TestAxisTokenCatalogHasHeuristicsAndDistinctions(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "tokens", false)
+	output := buf.String()
+
+	if !strings.Contains(output, "| Heuristics |") {
+		t.Error("axis token catalog tables must have Heuristics column (ADR-0155 T-10)")
+	}
+	if !strings.Contains(output, "| Distinctions |") {
+		t.Error("axis token catalog tables must have Distinctions column (ADR-0155 T-10)")
+	}
+	// gist completeness token: has distinctions -> 'vs skim' must appear
+	if !strings.Contains(output, "vs skim") {
+		t.Error("completeness/gist must reference skim in Distinctions column (ADR-0155 T-10)")
+	}
+	// wardley form token: has heuristic 'genesis to commodity'
+	if !strings.Contains(output, "genesis to commodity") {
+		t.Error("form/wardley must have 'genesis to commodity' heuristic (ADR-0155 T-10)")
+	}
+}
+
 // TestHelpLLMAutomationFlags verifies that bar help llm documents --no-input and
 // --command so LLMs and automation scripts can discover non-interactive usage.
 func TestHelpLLMAutomationFlags(t *testing.T) {

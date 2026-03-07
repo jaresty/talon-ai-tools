@@ -515,8 +515,8 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 
 		fmt.Fprintf(w, "### %s (%s token)\n\n", strings.Title(axisName), capacity)
 
-		fmt.Fprintf(w, "| Token | Kanji | Label | Description | Notes | When to use |\n")
-		fmt.Fprintf(w, "|------|-------|-------|-------------|-------|-------------|\n")
+		fmt.Fprintf(w, "| Token | Kanji | Label | Description | Heuristics | Distinctions |\n")
+		fmt.Fprintf(w, "|------|-------|-------|-------------|------------|---------------|\n")
 
 		tokenNames := make([]string, 0, len(tokens))
 		for token := range tokens {
@@ -555,9 +555,9 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 					}
 					label := grammar.AxisLabel(axisName, token)
 					kanji := grammar.AxisKanji(axisName, token)
-					guidance := grammar.AxisGuidance(axisName, token)
-					useWhen := grammar.AxisUseWhen(axisName, token)
-					fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
+					heuristics := axisTokenHeuristics(grammar, axisName, token)
+					distinctions := axisTokenDistinctions(grammar, axisName, token)
+					fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, heuristics, distinctions)
 				}
 			}
 			for _, token := range uncategorized {
@@ -571,9 +571,9 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 				}
 				label := grammar.AxisLabel(axisName, token)
 				kanji := grammar.AxisKanji(axisName, token)
-				guidance := grammar.AxisGuidance(axisName, token)
-				useWhen := grammar.AxisUseWhen(axisName, token)
-				fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
+				heuristics := axisTokenHeuristics(grammar, axisName, token)
+				distinctions := axisTokenDistinctions(grammar, axisName, token)
+				fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, heuristics, distinctions)
 			}
 		} else {
 			for _, token := range tokenNames {
@@ -587,9 +587,9 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 				}
 				label := grammar.AxisLabel(axisName, token)
 				kanji := grammar.AxisKanji(axisName, token)
-				guidance := grammar.AxisGuidance(axisName, token)
-				useWhen := grammar.AxisUseWhen(axisName, token)
-				fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, guidance, useWhen)
+				heuristics := axisTokenHeuristics(grammar, axisName, token)
+				distinctions := axisTokenDistinctions(grammar, axisName, token)
+				fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", slug, kanji, label, desc, heuristics, distinctions)
 			}
 		}
 		fmt.Fprintf(w, "\n")
@@ -824,19 +824,35 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "  Form-as-lens rule: when a form token cannot literally compose with a channel token, the form becomes a content lens that shapes the conceptual organization within the channel's format. The channel defines output format; the form describes what to emphasize and how to structure ideas within it.\n\n")
 
 	fmt.Fprintf(w, "**Token Guidance:**\n")
-	fmt.Fprintf(w, "Guidance for specific tokens (from axis configuration):\n\n")
+	fmt.Fprintf(w, "Key distinctions for commonly confused tokens (from structured metadata):\n\n")
 
-	// Render guidance from AXIS_KEY_TO_GUIDANCE
-	axesWithGuidance := []string{"form", "method", "channel", "directional", "completeness", "scope"}
-	for _, axisName := range axesWithGuidance {
-		axisGuidance := grammar.AxisGuidanceMap(axisName)
-		if len(axisGuidance) > 0 {
-			fmt.Fprintf(w, "*%s:*\n", strings.Title(axisName))
-			for token, guidance := range axisGuidance {
-				if guidance != "" {
-					fmt.Fprintf(w, "- `%s`: %s\n", token, guidance)
-				}
+	// Render key distinctions from structured axis token metadata (ADR-0155 T-10)
+	axesWithMetadata := []string{"form", "method", "channel", "directional", "completeness", "scope"}
+	for _, axisName := range axesWithMetadata {
+		tokens, exists := grammar.Axes.Definitions[axisName]
+		if !exists {
+			continue
+		}
+		tokenNames := make([]string, 0, len(tokens))
+		for token := range tokens {
+			tokenNames = append(tokenNames, token)
+		}
+		sort.Strings(tokenNames)
+		headerPrinted := false
+		for _, token := range tokenNames {
+			meta := grammar.AxisMetadataFor(axisName, token)
+			if meta == nil || len(meta.Distinctions) == 0 {
+				continue
 			}
+			if !headerPrinted {
+				fmt.Fprintf(w, "*%s:*\n", strings.Title(axisName))
+				headerPrinted = true
+			}
+			for _, d := range meta.Distinctions {
+				fmt.Fprintf(w, "- `%s` vs `%s`: %s\n", token, d.Token, d.Note)
+			}
+		}
+		if headerPrinted {
 			fmt.Fprintf(w, "\n")
 		}
 	}
@@ -871,6 +887,40 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 			"capacity limits (one channel, one directional, etc.).\n")
 	}
 	fmt.Fprintf(w, "\n")
+}
+
+// axisTokenHeuristics returns the heuristic trigger phrases for an axis token as a
+// semicolon-joined string, falling back to the legacy use_when string if no structured
+// metadata is available. ADR-0155 T-10.
+func axisTokenHeuristics(grammar *Grammar, axis, token string) string {
+	meta := grammar.AxisMetadataFor(axis, token)
+	if meta != nil && len(meta.Heuristics) > 0 {
+		// Use up to 5 heuristics to keep table cells manageable.
+		h := meta.Heuristics
+		if len(h) > 5 {
+			h = h[:5]
+		}
+		return strings.Join(h, "; ")
+	}
+	return grammar.AxisUseWhen(axis, token)
+}
+
+// axisTokenDistinctions returns the distinction tokens for an axis token as a
+// "vs token; vs token" string, falling back to the legacy guidance string if no
+// structured metadata is available. ADR-0155 T-10.
+func axisTokenDistinctions(grammar *Grammar, axis, token string) string {
+	meta := grammar.AxisMetadataFor(axis, token)
+	if meta != nil {
+		if len(meta.Distinctions) == 0 {
+			return ""
+		}
+		parts := make([]string, 0, len(meta.Distinctions))
+		for _, d := range meta.Distinctions {
+			parts = append(parts, "vs "+d.Token)
+		}
+		return strings.Join(parts, "; ")
+	}
+	return grammar.AxisGuidance(axis, token)
 }
 
 // renderUsagePatterns generates hardcoded usage pattern examples.

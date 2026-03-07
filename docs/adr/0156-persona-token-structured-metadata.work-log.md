@@ -104,3 +104,73 @@ Expected value: M×H×L = 6
 **next_work:** Behaviour T-4: tone axis migration (5 tokens).
 
 ---
+## Loop 4: 2026-03-07
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-4 — tone axis metadata (5 tokens: casually, formally, directly, gently, kindly). Key distinctions: casually ↔ formally (register); directly ↔ gently (hedging vs softening); gently ↔ kindly (protective vs warmth).
+
+**active_constraint:** `TestPersonaMetadataForToneContent` fails — tone metadata empty. Expected value: M×H×L = 6.
+
+**validation_targets:** `go test ./internal/barcli/... -run TestPersonaMetadataForToneContent`
+
+**evidence:**
+- red | 2026-03-07T01:50:00Z | exit 1 | tone metadata nil | inline
+- green | 2026-03-07T01:55:00Z | exit 0 | PASS; all tests pass | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/personaConfig.py internal/barcli/grammar_loader_test.go`
+
+**delta_summary:** helper:diff-snapshot=6 files changed, 525 insertions(+). Commit: 3e381c5e.
+
+**loops_remaining_forecast:** 6 loops remaining. **next_work:** T-5: intent axis.
+
+---
+
+## Loop 5: 2026-03-07
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-5 — intent axis metadata (6 tokens: inform, persuade, appreciate, announce, coach, teach). Key distinctions: inform ↔ teach; coach ↔ teach; persuade ↔ inform; announce ↔ inform.
+
+**active_constraint:** `TestPersonaMetadataForIntentContent` fails — intent metadata empty. Expected value: M×H×L = 6.
+
+**validation_targets:** `go test ./internal/barcli/... -run TestPersonaMetadataForIntentContent`
+
+**evidence:**
+- red | 2026-03-07T01:55:00Z | exit 1 | intent metadata nil | inline
+- green | 2026-03-07T02:00:00Z | exit 0 | PASS; all tests pass | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/personaConfig.py internal/barcli/grammar_loader_test.go`
+
+**delta_summary:** helper:diff-snapshot=6 files changed, 585 insertions(+). Commit: c7cfbff9.
+
+**loops_remaining_forecast:** 5 loops remaining. **next_work:** T-6: presets axis.
+
+---
+
+## Loop 6: 2026-03-07
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-6 — presets axis metadata (8 tokens). Key distinctions: executive_brief ↔ stakeholder_facilitator; designer_to_pm ↔ product_manager_to_team; peer_engineer_explanation ↔ teach_junior_dev. All 45 persona tokens now have structured metadata.
+
+**active_constraint:** `TestPersonaMetadataForPresetsContent` fails — presets metadata empty. Expected value: M×H×L = 6.
+
+**validation_targets:** `go test ./internal/barcli/... -run TestPersonaMetadataForPresetsContent`
+
+**evidence:**
+- red | 2026-03-07T02:00:00Z | exit 1 | presets metadata nil | inline
+- green | 2026-03-07T02:05:00Z | exit 0 | PASS; all tests pass | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/personaConfig.py internal/barcli/grammar_loader_test.go`
+
+**delta_summary:** helper:diff-snapshot=6 files changed, 655 insertions(+). Commit: fd48e5b2.
+
+**loops_remaining_forecast:** 4 loops remaining (T-7 SPA, T-8 help_llm, T-9 tui_tokens, T-10 cleanup). Confidence high.
+
+**residual_constraints:**
+- Legacy `PERSONA_KEY_TO_USE_WHEN`/`PERSONA_KEY_TO_GUIDANCE` still present for co-existence. Severity: Low.
+
+**next_work:** Behaviour T-7: SPA specifying tests for persona token metadata panel.
+
+---

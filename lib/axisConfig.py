@@ -7,6 +7,23 @@ SYNC_WARNING: Changes to token names/descriptions affect:
 - .opencode/skills/bar-workflow/skill.md (method categorization)
 - internal/barcli/help_llm_test.go (validation tests)
 
+When adding a new axis token (edit this file directly — it is the SSOT):
+Required for all axes:
+1. AXIS_KEY_TO_VALUE        — description (prompt injection text)
+2. AXIS_KEY_TO_LABEL        — short CLI-facing label (3-8 words, ADR-0109)
+3. AXIS_KEY_TO_USE_WHEN     — task-type heuristics for when to apply the token (ADR-0132)
+4. AXIS_KEY_TO_KANJI        — 1-2 character kanji icon (ADR-0143)
+5. AXIS_KEY_TO_ROUTING_CONCEPT — shortest phrase mapping user framing to the token (ADR-0146)
+6. AXIS_TOKEN_METADATA      — definition, heuristics list, distinctions list (ADR-0155)
+
+Conditional:
+- AXIS_KEY_TO_GUIDANCE      — only for tokens with naming traps or ambiguous descriptions (ADR-0110)
+- AXIS_KEY_TO_CATEGORY      — method axis only: semantic family (ADR-0144)
+- CROSS_AXIS_COMPOSITION    — only if the token has notable cross-axis interactions (ADR-0147)
+- FORM_DEFAULT_COMPLETENESS — form axis only, if the format structurally constrains depth (ADR-0153)
+
+After editing, run `make axis-regenerate-apply` to normalize formatting and update downstream files.
+
 When renaming/removing tokens:
 1. Update help_llm.go hardcoded references
 2. Update skill.md if method categories change

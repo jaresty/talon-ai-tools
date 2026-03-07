@@ -997,7 +997,7 @@
             "architecture decision record",
             "ADR format",
             "decision record",
-            "decision-making tasks"
+            "record this decision formally for version control"
           ]
         },
         "code": {
@@ -1143,7 +1143,7 @@
           ]
         },
         "remote": {
-          "definition": "Optimizing output for remote or distributed delivery contexts (video calls, screen sharing, async participants).",
+          "definition": "Optimizing output for remote or distributed delivery contexts (video calls, voice, or screen sharing).",
           "distinctions": [],
           "heuristics": [
             "remote delivery",
@@ -1624,7 +1624,7 @@
           ]
         },
         "jog": {
-          "definition": "Execute directly without hedging or clarification: immediate answer, no questions back.",
+          "definition": "Execute directly without hedging or clarification: immediate answer, no questions back. Note: unlike other directional tokens, jog modifies interaction style rather than response orientation on the fog/dig/rog/ong compass axes.",
           "distinctions": [],
           "heuristics": [
             "just answer",
@@ -1804,7 +1804,7 @@
           ]
         },
         "cocreate": {
-          "definition": "The response structures itself as a collaborative process—small moves, explicit decision points, and alignment checks rather than a one-shot answer.",
+          "definition": "The response structures itself as a collaborative process—small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without a channel: interactive, proposing and iterating with explicit pauses for feedback. With an output-exclusive channel: formats the artifact to expose decision points and invite response.",
           "distinctions": [
             {
               "note": "variants = present a choice of distinct designs; cocreate = iterative process with decision points and alignment checks",
@@ -1874,7 +1874,7 @@
           ]
         },
         "facilitate": {
-          "definition": "The response structures itself as a facilitation plan—framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo.",
+          "definition": "The response structures itself as a facilitation plan—framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without a channel: acts as a live facilitator, asking questions and managing participation interactively. With an output-exclusive channel: produces a static facilitation guide.",
           "distinctions": [
             {
               "note": "walkthrough = linear narrated steps through a process; facilitate = session structure with participation cues and facilitation agenda",
@@ -2020,7 +2020,7 @@
           ]
         },
         "quiz": {
-          "definition": "The response organizes content as a quiz structure—questions posed before explanations, testing understanding through active recall before providing answers.",
+          "definition": "The response organizes content as a quiz structure—questions posed before explanations, testing understanding through active recall before providing answers. Without a channel: interactive exchange, posing questions and waiting for responses. With an output-exclusive channel: structures the output as a static quiz document.",
           "distinctions": [
             {
               "note": "socratic = question-led dialogue to surface user reasoning; quiz = test recall via question-then-answer structure",
@@ -2048,7 +2048,10 @@
           ],
           "heuristics": [
             "document as recipe",
-            "structured setup guide with repeating patterns"
+            "structured setup guide with repeating patterns",
+            "using a custom notation",
+            "with a symbolic key",
+            "repeating pattern I can express as a formula"
           ]
         },
         "scaffold": {
@@ -2183,11 +2186,11 @@
           "heuristics": [
             "tight prose",
             "concise and dense",
-            "no bullets or tables",
             "compact freeform",
             "dense prose",
             "brevity without structure",
-            "just prose, no formatting"
+            "no padding or filler",
+            "maximum signal per word"
           ]
         },
         "variants": {
@@ -2210,7 +2213,7 @@
           ]
         },
         "visual": {
-          "definition": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend, emphasising big-picture structure over diagrammatic precision.",
+          "definition": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend, emphasising big-picture structure over diagrammatic precision. Adapts to channel: with a code channel, visual structure is expressed through code organization, comments, or inline ASCII; without a channel, through prose metaphors and spatial layout.",
           "distinctions": [
             {
               "note": "diagram = precise Mermaid code with exact nodes and edges; visual = abstract/metaphorical prose layout with a short legend when conceptual overview is more useful than diagrammatic precision",
@@ -2258,7 +2261,7 @@
           "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
           "distinctions": [
             {
-              "note": "inversion method = pre-mortem that assumes future failure; wasinawa = reflection on past events",
+              "note": "inversion = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa = structured reflection on past events using what/so-what/now-what",
               "token": "inversion"
             }
           ],
@@ -2492,7 +2495,7 @@
           "definition": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
           "distinctions": [
             {
-              "note": "normal stress range",
+              "note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; resilience = behavior under normal stress range",
               "token": "resilience"
             }
           ],
@@ -7814,7 +7817,7 @@
     }
   ],
   "checksums": {
-    "axes": "626006baac5a16cd23dd69d98d825483b6a343d083bcfa604d70cfdf14605c78",
+    "axes": "16cc3930601fc3f1ffe1024268f64d828b066b4f02f3f7f04a45d80c5ec9bb72",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

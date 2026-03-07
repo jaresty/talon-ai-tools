@@ -3,7 +3,18 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Dict, Iterable, List, Mapping
+from typing import Dict, Iterable, List, Mapping, TypedDict
+
+
+class PersonaTokenDistinction(TypedDict):
+    token: str
+    note: str
+
+
+class PersonaTokenMetadata(TypedDict):
+    definition: str
+    heuristics: List[str]
+    distinctions: List[PersonaTokenDistinction]
 
 # Persona and intent axis docs (token -> description), parallel to AXIS_KEY_TO_VALUE
 # but kept separate from the core contract axes.
@@ -454,6 +465,18 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "teach": "教",
     },
 }
+
+
+# Structured metadata for persona tokens (ADR-0156).
+# Schema: definition (str) + heuristics (list[str]) + distinctions (list[{token, note}])
+# SSOT for persona discoverability — replaces PERSONA_KEY_TO_USE_WHEN + PERSONA_KEY_TO_GUIDANCE
+# for migrated axes after T-10 cutover.
+PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {}
+
+
+def persona_token_metadata_map(axis: str) -> dict[str, PersonaTokenMetadata]:
+    """Return the token->metadata map for a persona/intent axis (ADR-0156)."""
+    return PERSONA_TOKEN_METADATA.get(axis, {})
 
 
 def persona_key_to_kanji_map(axis: str) -> dict[str, str]:

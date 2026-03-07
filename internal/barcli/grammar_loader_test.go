@@ -163,6 +163,26 @@ func TestAxisMetadataForAccessorContract(t *testing.T) {
 	}
 }
 
+// TestPersonaMetadataForNilSafety specifies T-1 pipeline wiring —
+// PersonaMetadataFor is accessible and returns nil safely for unknown axis/token (ADR-0156 T-1).
+func TestPersonaMetadataForNilSafety(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+
+	// Unknown axis/token must return nil safely (not panic).
+	if grammar.PersonaMetadataFor("nonexistent", "nonexistent") != nil {
+		t.Error("PersonaMetadataFor must return nil for unknown axis/token")
+	}
+	// Empty axis must return nil safely.
+	if grammar.PersonaMetadataFor("", "token") != nil {
+		t.Error("PersonaMetadataFor must return nil for empty axis")
+	}
+}
+
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

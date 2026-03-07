@@ -11,6 +11,7 @@ from .axisMappings import DEFAULT_COMPLETENESS_TOKEN
 from .metaPromptConfig import PROMPT_REFERENCE_KEY
 from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
+    persona_token_metadata_map,
     PERSONA_KEY_TO_VALUE,
     persona_key_to_guidance_map,
     persona_key_to_kanji_map,
@@ -403,6 +404,13 @@ def _build_persona_section(
         if rc_map:
             persona_routing_concept[axis] = dict(sorted(rc_map.items()))
 
+    # Persona axis structured metadata (ADR-0156): definition/heuristics/distinctions.
+    persona_metadata: dict[str, dict] = {}
+    for axis in ("voice", "audience", "tone", "intent", "presets"):
+        meta_map = persona_token_metadata_map(axis)
+        if meta_map:
+            persona_metadata[axis] = dict(sorted(meta_map.items()))
+
     section = {
         "axes": persona_axes,
         "docs": persona_docs,
@@ -420,6 +428,8 @@ def _build_persona_section(
         section["kanji"] = persona_kanji
     if persona_routing_concept:
         section["routing_concept"] = persona_routing_concept
+    if persona_metadata:
+        section["metadata"] = persona_metadata
     return section, persona_slug_map
 
 

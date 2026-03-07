@@ -96,6 +96,7 @@ type PersonaSection struct {
 	UseWhen  map[string]map[string]string // ADR-0133: discoverability hints for help llm
 	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
 	RoutingConcept map[string]map[string]string // ADR-0146: distilled routing concept phrases
+	Metadata       map[string]map[string]TaskMetadata // ADR-0156: structured metadata per persona token
 	Presets        map[string]PersonaPreset
 	Spoken         map[string]string
 	Intent         IntentSection
@@ -205,6 +206,7 @@ type rawPersona struct {
 	UseWhen        map[string]map[string]string `json:"use_when"`        // ADR-0133
 	Kanji          map[string]map[string]string `json:"kanji"`           // ADR-0143
 	RoutingConcept map[string]map[string]string `json:"routing_concept"` // ADR-0146
+	Metadata       map[string]map[string]TaskMetadata `json:"metadata"` // ADR-0156
 	Presets        map[string]PersonaPreset     `json:"presets"`
 	Spoken   map[string]string            `json:"spoken_map"`
 	Intent   struct {
@@ -301,6 +303,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			UseWhen:        raw.Persona.UseWhen,
 			Kanji:          raw.Persona.Kanji,
 			RoutingConcept: raw.Persona.RoutingConcept,
+			Metadata:       raw.Persona.Metadata,
 			Presets:        raw.Persona.Presets,
 			Spoken:   personaSpoken,
 			Intent: IntentSection{
@@ -1207,6 +1210,30 @@ func (g *Grammar) PersonaGuidance(axis, token string) string {
 		return text
 	}
 	return ""
+}
+
+// PersonaMetadataFor returns the structured metadata for a persona token (ADR-0156).
+// Returns nil if no structured metadata is defined for the given axis/token.
+func (g *Grammar) PersonaMetadataFor(axis, token string) *TaskMetadata {
+	if g.Persona.Metadata == nil {
+		return nil
+	}
+	axisKey := strings.ToLower(strings.TrimSpace(axis))
+	if axisKey == "" {
+		return nil
+	}
+	tokens, ok := g.Persona.Metadata[axisKey]
+	if !ok {
+		return nil
+	}
+	tokenKey := strings.TrimSpace(token)
+	if m, ok := tokens[tokenKey]; ok {
+		return &m
+	}
+	if m, ok := tokens[strings.ToLower(tokenKey)]; ok {
+		return &m
+	}
+	return nil
 }
 
 // PersonaUseWhen returns the use_when discoverability hint for the given persona axis token (ADR-0133).

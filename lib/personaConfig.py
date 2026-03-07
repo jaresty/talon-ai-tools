@@ -472,6 +472,116 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
 # SSOT for persona discoverability — replaces PERSONA_KEY_TO_USE_WHEN + PERSONA_KEY_TO_GUIDANCE
 # for migrated axes after T-10 cutover.
 PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
+    "intent": {
+        "inform": {
+            "definition": "Communicate to transfer knowledge or update understanding: the goal is to give the audience the information they need.",
+            "heuristics": [
+                "inform the audience",
+                "share findings",
+                "update them on",
+                "let them know",
+                "communicate the status",
+            ],
+            "distinctions": [
+                {
+                    "token": "teach",
+                    "note": "inform = transfer facts or status; teach = build internalized understanding of concepts",
+                },
+                {
+                    "token": "persuade",
+                    "note": "inform = neutral knowledge transfer; persuade = move the audience toward a view or decision",
+                },
+            ],
+        },
+        "persuade": {
+            "definition": "Communicate to influence belief or action: the goal is to move the audience toward a view or decision.",
+            "heuristics": [
+                "convince them",
+                "make the case",
+                "persuade the team",
+                "get buy-in",
+                "advocate for",
+            ],
+            "distinctions": [
+                {
+                    "token": "inform",
+                    "note": "persuade = move toward a view or decision; inform = neutral knowledge transfer",
+                },
+                {
+                    "token": "coach",
+                    "note": "persuade = advocate for a position; coach = develop capability and guide through challenges",
+                },
+            ],
+        },
+        "appreciate": {
+            "definition": "Communicate gratitude or recognition: the goal is to acknowledge contribution, celebrate work, or express thanks.",
+            "heuristics": [
+                "thank them",
+                "recognize the work",
+                "show appreciation",
+                "express gratitude",
+            ],
+            "distinctions": [
+                {
+                    "token": "coach",
+                    "note": "appreciate = pure recognition and gratitude; coach = developmental, growth-oriented",
+                },
+            ],
+        },
+        "announce": {
+            "definition": "Communicate news or a change: the goal is to share a decision, launch, or update with an audience.",
+            "heuristics": [
+                "announce the launch",
+                "share the news",
+                "communicate the change",
+                "release announcement",
+            ],
+            "distinctions": [
+                {
+                    "token": "inform",
+                    "note": "announce = news or change event, often one-time; inform = general knowledge transfer or status update",
+                },
+            ],
+        },
+        "coach": {
+            "definition": "Communicate to develop the audience: the goal is growth, capability building, or guiding someone through a challenge.",
+            "heuristics": [
+                "coach them",
+                "help them grow",
+                "give developmental feedback",
+                "guide them through",
+            ],
+            "distinctions": [
+                {
+                    "token": "teach",
+                    "note": "coach = growth, capability building, challenge navigation; teach = build conceptual understanding",
+                },
+                {
+                    "token": "persuade",
+                    "note": "coach = develop capability; persuade = move toward a position",
+                },
+            ],
+        },
+        "teach": {
+            "definition": "Communicate to build understanding: the goal is learning and the audience needs to internalize concepts, not just receive information.",
+            "heuristics": [
+                "teach this concept",
+                "help them understand",
+                "learning goal",
+                "make it stick",
+            ],
+            "distinctions": [
+                {
+                    "token": "inform",
+                    "note": "teach = internalization of concepts; inform = transfer facts or status",
+                },
+                {
+                    "token": "coach",
+                    "note": "teach = build conceptual understanding; coach = develop capability and guide through challenges",
+                },
+            ],
+        },
+    },
     "tone": {
         "casually": {
             "definition": "Casual, conversational register: use when formality would feel stiff or the subject benefits from a relaxed tone.",

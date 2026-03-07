@@ -5849,6 +5849,116 @@
             }
           ]
         }
+      },
+      "intent": {
+        "announce": {
+          "definition": "Communicate news or a change: the goal is to share a decision, launch, or update with an audience.",
+          "heuristics": [
+            "announce the launch",
+            "share the news",
+            "communicate the change",
+            "release announcement"
+          ],
+          "distinctions": [
+            {
+              "token": "inform",
+              "note": "announce = news or change event, often one-time; inform = general knowledge transfer or status update"
+            }
+          ]
+        },
+        "appreciate": {
+          "definition": "Communicate gratitude or recognition: the goal is to acknowledge contribution, celebrate work, or express thanks.",
+          "heuristics": [
+            "thank them",
+            "recognize the work",
+            "show appreciation",
+            "express gratitude"
+          ],
+          "distinctions": [
+            {
+              "token": "coach",
+              "note": "appreciate = pure recognition and gratitude; coach = developmental, growth-oriented"
+            }
+          ]
+        },
+        "coach": {
+          "definition": "Communicate to develop the audience: the goal is growth, capability building, or guiding someone through a challenge.",
+          "heuristics": [
+            "coach them",
+            "help them grow",
+            "give developmental feedback",
+            "guide them through"
+          ],
+          "distinctions": [
+            {
+              "token": "teach",
+              "note": "coach = growth, capability building, challenge navigation; teach = build conceptual understanding"
+            },
+            {
+              "token": "persuade",
+              "note": "coach = develop capability; persuade = move toward a position"
+            }
+          ]
+        },
+        "inform": {
+          "definition": "Communicate to transfer knowledge or update understanding: the goal is to give the audience the information they need.",
+          "heuristics": [
+            "inform the audience",
+            "share findings",
+            "update them on",
+            "let them know",
+            "communicate the status"
+          ],
+          "distinctions": [
+            {
+              "token": "teach",
+              "note": "inform = transfer facts or status; teach = build internalized understanding of concepts"
+            },
+            {
+              "token": "persuade",
+              "note": "inform = neutral knowledge transfer; persuade = move the audience toward a view or decision"
+            }
+          ]
+        },
+        "persuade": {
+          "definition": "Communicate to influence belief or action: the goal is to move the audience toward a view or decision.",
+          "heuristics": [
+            "convince them",
+            "make the case",
+            "persuade the team",
+            "get buy-in",
+            "advocate for"
+          ],
+          "distinctions": [
+            {
+              "token": "inform",
+              "note": "persuade = move toward a view or decision; inform = neutral knowledge transfer"
+            },
+            {
+              "token": "coach",
+              "note": "persuade = advocate for a position; coach = develop capability and guide through challenges"
+            }
+          ]
+        },
+        "teach": {
+          "definition": "Communicate to build understanding: the goal is learning and the audience needs to internalize concepts, not just receive information.",
+          "heuristics": [
+            "teach this concept",
+            "help them understand",
+            "learning goal",
+            "make it stick"
+          ],
+          "distinctions": [
+            {
+              "token": "inform",
+              "note": "teach = internalization of concepts; inform = transfer facts or status"
+            },
+            {
+              "token": "coach",
+              "note": "teach = build conceptual understanding; coach = develop capability and guide through challenges"
+            }
+          ]
+        }
       }
     }
   },
@@ -7547,7 +7657,7 @@
   "checksums": {
     "axes": "c266f08a7a66a87d5e515e64fb922d72850a08ccbdc37e984098a48e9bcf8ac5",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
-    "persona": "400b3b3d14206ebdcda7b7503f9b0c00b70d1503fd7c841352cbfdbabff9f285",
+    "persona": "03e8afc91b71d01f6fa3635ea07b82f858a608a2096e40f1bf91753748b05af6",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "dd08e01edc9a161f0668cdd7bc86ff8fb1c10d63f4a0c290a3c613c299b90d4a",
     "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1",

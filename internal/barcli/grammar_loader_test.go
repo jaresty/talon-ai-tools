@@ -287,6 +287,37 @@ func TestPersonaMetadataForToneContent(t *testing.T) {
 	}
 }
 
+// TestPersonaMetadataForIntentContent specifies T-5 — intent axis populated (ADR-0156 T-5).
+func TestPersonaMetadataForIntentContent(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	informMeta := grammar.PersonaMetadataFor("intent", "inform")
+	if informMeta == nil {
+		t.Fatal("PersonaMetadataFor(intent, inform) must not return nil after T-5")
+	}
+	if len(informMeta.Heuristics) == 0 {
+		t.Error("intent/inform heuristics must not be empty")
+	}
+	// coach must distinguish from teach
+	coachMeta := grammar.PersonaMetadataFor("intent", "coach")
+	if coachMeta == nil {
+		t.Fatal("PersonaMetadataFor(intent, coach) must not return nil after T-5")
+	}
+	found := false
+	for _, d := range coachMeta.Distinctions {
+		if d.Token == "teach" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("intent/coach must distinguish from teach")
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

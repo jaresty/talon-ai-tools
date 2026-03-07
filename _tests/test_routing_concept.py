@@ -54,16 +54,15 @@ if bootstrap is not None:
             )
 
         def test_RC3_form_multi_token_groups_share_phrase(self) -> None:
-            """actions+checklist and walkthrough+recipe each share a concept phrase."""
+            """actions+checklist share a concept phrase (both map to actionable next steps)."""
             form = AXIS_KEY_TO_ROUTING_CONCEPT.get("form", {})
             self.assertEqual(
                 form.get("actions"), form.get("checklist"),
                 "actions and checklist must share the same routing concept phrase",
             )
-            self.assertEqual(
-                form.get("walkthrough"), form.get("recipe"),
-                "walkthrough and recipe must share the same routing concept phrase",
-            )
+            # walkthrough and recipe were intentionally de-grouped: walkthrough is a linear
+            # narrative through existing material; recipe is a template with custom notation.
+            # They are distinct tokens and should NOT share a routing concept phrase.
 
         def test_RC4_all_hardcoded_scope_tokens_have_concept(self) -> None:
             """All scope tokens from the hardcoded Choosing Scope section are covered."""

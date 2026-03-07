@@ -1672,7 +1672,7 @@
               "token": "ong"
             },
             {
-              "note": "rog = push toward structural reflection; fog = push toward abstract",
+              "note": "rog = push toward the structural and reflective dimension; fog = push toward the abstract",
               "token": "fog"
             },
             {
@@ -7836,7 +7836,7 @@
     }
   ],
   "checksums": {
-    "axes": "2f07f8200e4dc4b472bd49d0ca482346f7f300255095c119a3285bcb6baebe69",
+    "axes": "0323fa893b81f9d942f3c5c842d0ae9a5628eba1d9cba52ad313d2a715bce93e",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

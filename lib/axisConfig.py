@@ -2655,7 +2655,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "ong",
                 },
                 {
-                    "note": "rog = push toward structural reflection; fog = push toward abstract",
+                    "note": "rog = push toward the structural and reflective dimension; fog = push toward the abstract",
                     "token": "fog",
                 },
                 {

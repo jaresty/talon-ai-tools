@@ -863,7 +863,7 @@
         "merge": "Combine sources",
         "questions": "Probing questions",
         "quiz": "Quiz structure",
-        "recipe": "Step-by-step guidance",
+        "recipe": "Step-by-step with custom notation",
         "scaffold": "Building understanding",
         "socratic": "Question-led inquiry",
         "spike": "Research spike",
@@ -874,7 +874,7 @@
         "tight": "Concise prose",
         "variants": "Multiple alternatives",
         "visual": "Visual/spatial layout",
-        "walkthrough": "Step-by-step guidance",
+        "walkthrough": "Linear step-by-step narration",
         "wardley": "Wardley map",
         "wasinawa": "What/So What/Now What"
       },
@@ -7117,8 +7117,8 @@
     },
     {
       "title": "Architecture Documentation",
-      "command": "bar build make struct full explore case --subject \"...\"",
-      "example": "bar build make struct full explore case --subject \"Document the microservices architecture\"",
+      "command": "bar build make struct full analysis case --subject \"...\"",
+      "example": "bar build make struct full analysis case --subject \"Document the microservices architecture\"",
       "desc": "Use for creating ADRs or documenting architectural decisions",
       "tokens": {
         "completeness": [
@@ -7128,7 +7128,7 @@
           "case"
         ],
         "method": [
-          "explore"
+          "analysis"
         ],
         "scope": [
           "struct"
@@ -7427,15 +7427,15 @@
     },
     {
       "title": "Success Criteria Definition",
-      "command": "bar build make good full analysis checklist --subject \"...\"",
-      "example": "bar build make good full analysis checklist --subject \"Define success criteria for the dashboard redesign\"",
+      "command": "bar build make good full analysis table --subject \"...\"",
+      "example": "bar build make good full analysis table --subject \"Define success criteria for the dashboard redesign\"",
       "desc": "Use when establishing measurable quality or success standards",
       "tokens": {
         "completeness": [
           "full"
         ],
         "form": [
-          "checklist"
+          "table"
         ],
         "method": [
           "analysis"
@@ -7519,8 +7519,8 @@
     },
     {
       "title": "Evidence Building",
-      "command": "bar build make thing full cite case --subject \"...\"",
-      "example": "bar build make thing full cite case --subject \"Build the case for adopting TypeScript\"",
+      "command": "bar build make good full cite case --subject \"...\"",
+      "example": "bar build make good full cite case --subject \"Build the case for adopting TypeScript\"",
       "desc": "Use when making a persuasive argument with supporting evidence",
       "tokens": {
         "completeness": [
@@ -7533,7 +7533,7 @@
           "cite"
         ],
         "scope": [
-          "thing"
+          "good"
         ],
         "task": [
           "make"
@@ -7631,15 +7631,15 @@
     },
     {
       "title": "Summarisation / Extraction",
-      "command": "bar build pull gist mean --subject \"...\"",
-      "example": "bar build pull gist mean --subject \"[long RFC or design document]\"",
+      "command": "bar build pull gist struct --subject \"...\"",
+      "example": "bar build pull gist struct --subject \"[long RFC or design document]\"",
       "desc": "Use when compressing a long source document into a shorter summary. Prefer pull over show when a SUBJECT document is being compressed: pull extracts a subset, show explains a concept. Heuristic: long SUBJECT to compress → pull; concept to explain without a source → show.",
       "tokens": {
         "completeness": [
           "gist"
         ],
         "scope": [
-          "mean"
+          "struct"
         ],
         "task": [
           "pull"
@@ -7836,12 +7836,12 @@
     }
   ],
   "checksums": {
-    "axes": "f2e0bac880a3a192e8b86152d0a9fc9162f7fc4179bae88540796ea7efb07c0c",
+    "axes": "e683f7cbb020e977e7d1e1c0a32a8159d2a6db4f47056a529b06308e58980cdd",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "e84f2212318755ddb20a4edb179a4acddf807aa55a9a899487bfb3ef8e614dc8",
-    "patterns": "2aeacdc6311685706fb894ef3480d27fd4cd7d69aec5083cee54b5c221066dc1",
+    "patterns": "e219303cafd7d90cec9332450df0357518044ed06e8d0142196d1f4f50c91f25",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }
 }

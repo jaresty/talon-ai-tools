@@ -1065,9 +1065,13 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	fmt.Fprintf(w, "- Deepening analysis → `dimension`, `domains`\n\n")
 
 	fmt.Fprintf(w, "**Diagnostic Methods:**\n")
-	fmt.Fprintf(w, "- Root cause analysis → `diagnose`, `inversion`, `adversarial`\n")
-	fmt.Fprintf(w, "- Risk/resilience → `risks`, `resilience`, `robust`\n")
-	fmt.Fprintf(w, "- Risk-gradient triage (allocate depth by consequence×uncertainty) → `triage`\n\n")
+	fmt.Fprintf(w, "- Root cause analysis → `diagnose`, `inversion`\n")
+	fmt.Fprintf(w, "- Prospective stress-testing (find weaknesses before failure) → `adversarial`\n")
+	fmt.Fprintf(w, "- Risk/failure modes → `risks`, `resilience`\n\n")
+	fmt.Fprintf(w, "**Decision Methods:**\n")
+	fmt.Fprintf(w, "- Selecting options under uncertainty → `robust` (favor options that perform across many plausible futures)\n\n")
+	fmt.Fprintf(w, "**Prioritization:**\n")
+	fmt.Fprintf(w, "- Allocate analytical depth by consequence×uncertainty → `triage`\n\n")
 	fmt.Fprintf(w, "See **Completeness × Method compatibility** note for `max`/`grow` in \"Guidance for specific tokens\" below.\n\n")
 	fmt.Fprintf(w, "**For detailed differentiation guidance** on similar methods (e.g., `explore` vs `branch`, `abduce` vs `deduce`, `robust` vs `resilience`, `grow` vs `grove`), see \"Guidance for specific tokens\" section below.\n\n")
 
@@ -1076,7 +1080,7 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 
 	fmt.Fprintf(w, "### Choosing Directional\n\n")
 	fmt.Fprintf(w, "- **Compound directionals** (fig, bog, fly ong, fly bog, fip bog, dip bog, etc.) span multiple dimensions simultaneously and require space to resolve. Avoid pairing them with `gist` or `skim` completeness — the multi-directional coverage cannot be expressed in a brief summary. Use `full` or `deep` completeness when selecting compound directionals.\n")
-	fmt.Fprintf(w, "- **Primitive directionals** (fog, dig, rog, ong, jog) work at any completeness level.\n\n")
+	fmt.Fprintf(w, "- **Primitive directionals** (dig, rog, ong, jog) work at any completeness level. Exception: `fog` requires sufficient breadth — avoid pairing with `skim` or `gist`.\n\n")
 
 	renderCrossAxisComposition(w, grammar)
 }

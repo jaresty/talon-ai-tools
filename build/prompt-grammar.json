@@ -2460,6 +2460,1461 @@
           ]
         }
       },
+      "method": {
+        "abduce": {
+          "definition": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations.",
+          "distinctions": [
+            {
+              "note": "diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing explanations explicitly",
+              "token": "diagnose"
+            },
+            {
+              "note": "induce = generalize a rule from examples; abduce = hypothesize from evidence",
+              "token": "induce"
+            }
+          ],
+          "heuristics": [
+            "what's the best explanation for",
+            "generate hypotheses for why",
+            "what are the most likely causes ranked",
+            "compare possible explanations",
+            "ranked hypotheses from evidence",
+            "what could explain this"
+          ]
+        },
+        "actors": {
+          "definition": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
+          "distinctions": [
+            {
+              "note": "agent = who has decision authority; actors method = enrich the response with actor-centered analysis regardless of scope",
+              "token": "agent"
+            }
+          ],
+          "heuristics": [
+            "who is involved",
+            "what are the stakeholders doing",
+            "who are the actors",
+            "center the people",
+            "model the roles",
+            "who does what",
+            "what motivates each party",
+            "threat actors",
+            "roles and responsibilities"
+          ]
+        },
+        "adversarial": {
+          "definition": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions.",
+          "distinctions": [
+            {
+              "note": "risks = enumerate failure modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples",
+              "token": "risks"
+            }
+          ],
+          "heuristics": [
+            "what could go wrong",
+            "find the weaknesses",
+            "stress-test this",
+            "what's the worst-case attack",
+            "where does this argument break",
+            "challenge this plan",
+            "red-team this",
+            "what are the counterexamples",
+            "play devil's advocate"
+          ]
+        },
+        "afford": {
+          "definition": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be attributed solely to preferences or incentives without modeling how affordances influenced selection.",
+          "distinctions": [
+            {
+              "note": "actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices",
+              "token": "field"
+            },
+            {
+              "note": "feedback loops and emergent dynamics; afford = structural availability shapes what actors perceive as actionable",
+              "token": "systemic"
+            }
+          ],
+          "heuristics": [
+            "why do users do X",
+            "the design encourages Y",
+            "affordances",
+            "what the API makes easy",
+            "shaped by the structure",
+            "how the design foregrounds this option",
+            "structural constraints on behavior",
+            "design defaults bias toward",
+            "interface suppresses this action"
+          ]
+        },
+        "align": {
+          "definition": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring global coherence across the system.",
+          "distinctions": [
+            {
+              "note": "balance = model opposing forces that offset each other; align = restructure explicit elements to achieve mutual reinforcement",
+              "token": "balance"
+            },
+            {
+              "note": "clash = diagnose conflicts; align = resolve them by restructuring",
+              "token": "clash"
+            }
+          ],
+          "heuristics": [
+            "align these structures",
+            "make them globally coherent",
+            "restore consistency",
+            "reconcile conflicting commitments",
+            "restructure so parts reinforce each other",
+            "everything needs to be consistent globally"
+          ]
+        },
+        "amorph": {
+          "definition": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit organization, indicating lack of crystallized system form.",
+          "distinctions": [
+            {
+              "note": "gap = specific implicit/explicit mismatch in rules or roles; amorph = broader regions lacking stable explicit organization",
+              "token": "gap"
+            },
+            {
+              "note": "crystal = shape system toward explicit structure; amorph = identify where that structure is absent",
+              "token": "crystal"
+            }
+          ],
+          "heuristics": [
+            "where is this undefined",
+            "find the unstructured regions",
+            "where is behavior emergent rather than explicit",
+            "identify the ambiguous areas",
+            "where does implicit understanding substitute for structure",
+            "fluid or changing structure"
+          ]
+        },
+        "analog": {
+          "definition": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
+          "distinctions": [
+            {
+              "note": "models = apply named mental models explicitly; analog = reason through a structural mapping from a specific known case",
+              "token": "models"
+            }
+          ],
+          "heuristics": [
+            "what is this like",
+            "what does this remind you of",
+            "explain using an analogy",
+            "what's the analogous structure",
+            "reason by analogy",
+            "find a parallel case",
+            "what known situation does this resemble"
+          ]
+        },
+        "analysis": {
+          "definition": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
+          "distinctions": [
+            {
+              "note": "diagnose = root cause via falsification; analysis = structural decomposition without fault-finding",
+              "token": "diagnose"
+            }
+          ],
+          "heuristics": [
+            "analyze this",
+            "describe the situation",
+            "help me understand what's happening",
+            "structure my understanding",
+            "what is going on here",
+            "break this down for me",
+            "understand before acting"
+          ]
+        },
+        "argue": {
+          "definition": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
+          "distinctions": [
+            {
+              "note": "case = narrative that builds to a recommendation; argue = expose the logical structure of claims and their supports",
+              "token": "case"
+            }
+          ],
+          "heuristics": [
+            "make the argument",
+            "structure this as an argument",
+            "what are the premises",
+            "what supports this claim",
+            "build the logical case",
+            "argument and rebuttal",
+            "explicit reasoning structure"
+          ]
+        },
+        "balance": {
+          "definition": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how they offset one another.",
+          "distinctions": [
+            {
+              "note": "resilience = behavior under stress; balance = how opposing forces produce equilibrium or instability",
+              "token": "resilience"
+            }
+          ],
+          "heuristics": [
+            "how do forces balance",
+            "what opposing pressures exist",
+            "what keeps this in equilibrium",
+            "what countervailing forces",
+            "how do trade-offs play out",
+            "what tensions exist",
+            "balance of forces"
+          ]
+        },
+        "bias": {
+          "definition": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
+          "distinctions": [
+            {
+              "note": "verify = falsify specific claims; bias = identify cognitive mechanisms producing distortion",
+              "token": "verify"
+            }
+          ],
+          "heuristics": [
+            "what biases might affect this",
+            "cognitive biases",
+            "where might we be wrong due to bias",
+            "what systematic errors",
+            "heuristics distorting judgment",
+            "where are we susceptible to bias",
+            "confirmation bias",
+            "availability heuristic"
+          ]
+        },
+        "boom": {
+          "definition": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
+          "distinctions": [
+            {
+              "note": "normal stress range",
+              "token": "resilience"
+            }
+          ],
+          "heuristics": [
+            "at 10x",
+            "at extreme load",
+            "what breaks at scale",
+            "pushed to the limit",
+            "at maximum load",
+            "what dominates at scale",
+            "scale to the extreme",
+            "at the limit"
+          ]
+        },
+        "bound": {
+          "definition": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring effects remain within intended conceptual or operational regions.",
+          "distinctions": [
+            {
+              "note": "depends = trace all dependencies; bound = limit how far they spread",
+              "token": "depends"
+            },
+            {
+              "note": "spec = define correctness; bound = limit reach of influence",
+              "token": "spec"
+            }
+          ],
+          "heuristics": [
+            "limit the scope of changes",
+            "constrain how far effects spread",
+            "bound the blast radius",
+            "contain the impact",
+            "what happens locally vs globally",
+            "limit responsibility propagation",
+            "scope the change impact"
+          ]
+        },
+        "branch": {
+          "definition": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
+          "distinctions": [
+            {
+              "note": "explore = survey option space without premature commitment; branch = fork on a key assumption and pursue each path before evaluating",
+              "token": "explore"
+            }
+          ],
+          "heuristics": [
+            "explore multiple paths",
+            "consider different approaches in parallel",
+            "branch the reasoning",
+            "multiple lines of reasoning",
+            "explore alternatives before choosing",
+            "parallel hypotheses"
+          ]
+        },
+        "calc": {
+          "definition": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
+          "distinctions": [
+            {
+              "note": "probability = statistical and probabilistic reasoning; calc = general quantitative or quasi-executable procedures",
+              "token": "probability"
+            }
+          ],
+          "heuristics": [
+            "calculate",
+            "what does the math say",
+            "run the numbers",
+            "quantify this",
+            "estimate the cost",
+            "work out the probability",
+            "formal calculation",
+            "compute",
+            "what are the numbers"
+          ]
+        },
+        "canon": {
+          "definition": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as independent causal or justificatory elements without specifying their dependency relationship.",
+          "distinctions": [
+            {
+              "note": "depends = trace what relies on what; canon = reduce multiple representations to a single authoritative locus",
+              "token": "depends"
+            },
+            {
+              "note": "mapping = surface elements and relationships; canon = identify or enforce the single canonical source among them",
+              "token": "mapping"
+            }
+          ],
+          "heuristics": [
+            "where is the single source of truth",
+            "we have duplicate definitions",
+            "which config is authoritative",
+            "DRY violation",
+            "multiple representations of the same thing",
+            "who owns this data",
+            "derive X from Y instead of duplicating",
+            "canonical source for",
+            "reduce duplication to derivation"
+          ]
+        },
+        "cite": {
+          "definition": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
+          "distinctions": [
+            {
+              "note": "verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check",
+              "token": "verify"
+            }
+          ],
+          "heuristics": [
+            "cite your sources",
+            "include references",
+            "back this up with evidence",
+            "link to sources",
+            "where does this come from",
+            "support with citations",
+            "show your evidence"
+          ]
+        },
+        "clash": {
+          "definition": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global inconsistency or breakdown.",
+          "distinctions": [
+            {
+              "note": "gap = implicit treated as explicit producing coordination failures; clash = conflict between explicitly stated structures",
+              "token": "gap"
+            },
+            {
+              "note": "adversarial = construct attacks to stress-test; clash = identify existing structural conflicts",
+              "token": "adversarial"
+            }
+          ],
+          "heuristics": [
+            "where do these conflict",
+            "rule conflicts",
+            "inconsistent constraints",
+            "local validity but global failure",
+            "what commitments contradict each other",
+            "misaligned rules",
+            "structural conflict",
+            "find the incompatibilities"
+          ]
+        },
+        "cluster": {
+          "definition": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
+          "distinctions": [
+            {
+              "note": "compare = evaluate alternatives against criteria; cluster = group without evaluating",
+              "token": "compare"
+            }
+          ],
+          "heuristics": [
+            "group these",
+            "cluster by",
+            "categorize",
+            "organize into groups",
+            "what themes emerge",
+            "sort into buckets",
+            "group by similarity",
+            "classify these items"
+          ]
+        },
+        "compare": {
+          "definition": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision factors. Use when the user presents options and asks which to choose or how they differ.",
+          "distinctions": [
+            {
+              "note": "converge = narrow from exploration to recommendation; compare = explicit criteria-based evaluation of specified alternatives",
+              "token": "converge"
+            }
+          ],
+          "heuristics": [
+            "compare X and Y",
+            "which is better",
+            "how do these differ",
+            "tradeoffs between",
+            "evaluate these options",
+            "side by side comparison",
+            "which should I choose",
+            "pros and cons"
+          ]
+        },
+        "control": {
+          "definition": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
+          "distinctions": [
+            {
+              "note": "agent = identify who has decision-making authority in a system; control = direct evaluation exclusively toward factors within agency, excluding those outside it",
+              "token": "agent"
+            }
+          ],
+          "heuristics": [
+            "focus on what I can control",
+            "s within my control\",",
+            ",",
+            ",",
+            ",",
+            ",",
+            ",",
+            ","
+          ]
+        },
+        "converge": {
+          "definition": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
+          "distinctions": [
+            {
+              "note": "compare = evaluate alternatives side by side; converge = narrow exploration toward a single recommendation",
+              "token": "compare"
+            }
+          ],
+          "heuristics": [
+            "narrow it down",
+            "which one should I go with",
+            "help me pick",
+            "synthesize into a recommendation",
+            "from all options, which is best",
+            "converge on an answer",
+            "filter and recommend"
+          ]
+        },
+        "crystal": {
+          "definition": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
+          "distinctions": [
+            {
+              "note": "spec = define correctness criteria first; crystal = broadly shape system toward explicit structural determination",
+              "token": "spec"
+            },
+            {
+              "note": "reify = surface one implicit pattern as an explicit rule; crystal = systemic shift toward structural explicitness",
+              "token": "reify"
+            },
+            {
+              "note": "amorph = diagnose lack of crystallized structure; crystal = restructure toward it",
+              "token": "amorph"
+            }
+          ],
+          "heuristics": [
+            "make this explicit",
+            "crystallize the structure",
+            "replace implicit reasoning with structural enforcement",
+            "explicit organization over interpretation",
+            "reduce reliance on tacit knowledge",
+            "formalize the implicit into structure",
+            "behavior should follow from structure directly"
+          ]
+        },
+        "deduce": {
+          "definition": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit.",
+          "distinctions": [
+            {
+              "note": "evidence → hypothesis",
+              "token": "abduce"
+            }
+          ],
+          "heuristics": [
+            "what follows from",
+            "given these premises",
+            "logical conclusion",
+            "deduce from",
+            "what must be true if",
+            "derive the consequence",
+            "if X then what",
+            "logically entails"
+          ]
+        },
+        "depends": {
+          "definition": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
+          "distinctions": [
+            {
+              "note": "struct = internal arrangement; depends = propagation and reliance relationships specifically",
+              "token": "struct"
+            }
+          ],
+          "heuristics": [
+            "what depends on X",
+            "dependency map",
+            "what breaks if I change Y",
+            "what does this rely on",
+            "upstream and downstream",
+            "dependency chain",
+            "what would be affected",
+            "what does Z need to work"
+          ]
+        },
+        "derive": {
+          "definition": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than inferred intuitively.",
+          "distinctions": [
+            {
+              "note": "deduce = apply deductive logic to stated premises; derive = represent the generative structure itself so conclusions are structurally readable",
+              "token": "deduce"
+            },
+            {
+              "note": "spec = define governing criteria; derive = make the generating assumptions structurally explicit for derivability",
+              "token": "spec"
+            }
+          ],
+          "heuristics": [
+            "make the logic derivable",
+            "explicit generative structure",
+            "conclusions must follow from the representation",
+            "no implicit inference",
+            "formally derive",
+            "represent the assumptions structurally",
+            "conclusions should be readable from structure alone"
+          ]
+        },
+        "diagnose": {
+          "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
+          "distinctions": [
+            {
+              "note": "abduce = generate and compare competing hypotheses; diagnose = narrow to single most likely cause via falsification",
+              "token": "abduce"
+            }
+          ],
+          "heuristics": [
+            "what is causing this",
+            "root cause",
+            "why is this happening",
+            "diagnose this problem",
+            "narrow down the cause",
+            "what's the bug source",
+            "investigate why",
+            "find the root cause"
+          ]
+        },
+        "dimension": {
+          "definition": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
+          "distinctions": [
+            {
+              "note": "split = decompose into parts; dimension = surface analytical axes that the parts exist along",
+              "token": "split"
+            }
+          ],
+          "heuristics": [
+            "what are the dimensions",
+            "what factors are at play",
+            "multiple axes of analysis",
+            "what hidden factors",
+            "what are we not considering",
+            "analyze across dimensions",
+            "surface the implicit factors"
+          ]
+        },
+        "domains": {
+          "definition": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
+          "distinctions": [
+            {
+              "note": "struct = internal arrangement; domains = identify bounded context separations and capabilities",
+              "token": "struct"
+            }
+          ],
+          "heuristics": [
+            "what are the domains",
+            "where are the bounded contexts",
+            "domain-driven design",
+            "what are the distinct capabilities",
+            "domain boundaries",
+            "how to carve up the system into domains",
+            "which team owns which"
+          ]
+        },
+        "drift": {
+          "definition": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
+          "distinctions": [
+            {
+              "note": "gap = implicit assumptions in rules or roles produce coordination failures; drift = structural looseness allows interpretive inference to substitute for derivability",
+              "token": "gap"
+            },
+            {
+              "note": "derive = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
+              "token": "derive"
+            }
+          ],
+          "heuristics": [
+            "conclusions that depend on interpretation",
+            "hidden assumptions substituting for structure",
+            "where reasoning could diverge",
+            "identify underenforced conclusions",
+            "conclusions that are implicit not derivable",
+            "where does the representation allow inconsistency"
+          ]
+        },
+        "effects": {
+          "definition": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+          "distinctions": [
+            {
+              "note": "grove = how effects accumulate and compound; effects = trace the chain of consequences",
+              "token": "grove"
+            }
+          ],
+          "heuristics": [
+            "what are the downstream effects",
+            "second order effects",
+            "ripple effects",
+            "what happens next after that",
+            "unintended consequences",
+            "how does this propagate",
+            "what follows downstream"
+          ]
+        },
+        "entangle": {
+          "definition": "The response enhances the task by identifying where domains, responsibilities, or meanings are intermixed or mutually dependent in ways that prevent clear separation of influence, suggesting structural coupling or boundary ambiguity.",
+          "distinctions": [
+            {
+              "note": "spill = one concern overreaches into another unidirectionally; entangle = bidirectional mutual dependency preventing clean separation",
+              "token": "spill"
+            },
+            {
+              "note": "sever = restructure to introduce separations; entangle = diagnose structural coupling that prevents them",
+              "token": "sever"
+            }
+          ],
+          "heuristics": [
+            "where are these coupled",
+            "find the entanglement",
+            "mutual dependency analysis",
+            "t these be separated\",",
+            ",",
+            ",",
+            ",",
+            ","
+          ]
+        },
+        "experimental": {
+          "definition": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
+          "distinctions": [
+            {
+              "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
+              "token": "verify"
+            }
+          ],
+          "heuristics": [
+            "design an experiment",
+            "how would we test this",
+            "what experiment would prove this",
+            "propose tests",
+            "how do we validate",
+            "what would we measure",
+            "design a study",
+            "run a test to find out"
+          ]
+        },
+        "explore": {
+          "definition": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing to a single answer.",
+          "distinctions": [
+            {
+              "note": "branch = fork on a key assumption and pursue paths; explore = broad survey without forking on a specific choice",
+              "token": "branch"
+            }
+          ],
+          "heuristics": [
+            "what are the options",
+            "explore the solution space",
+            "what approaches exist",
+            "brainstorm possibilities",
+            "what could we do",
+            "survey the landscape",
+            "open-ended exploration",
+            "what's possible here"
+          ]
+        },
+        "field": {
+          "definition": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
+          "distinctions": [
+            {
+              "note": "surface elements; field = model the medium and why compatibility produces observed routing",
+              "token": "mapping"
+            }
+          ],
+          "heuristics": [
+            "shared infrastructure",
+            "shared medium",
+            "protocol mediation",
+            "service mesh routing",
+            "why things route through",
+            "broadcast patterns",
+            "effects propagate through a shared layer"
+          ]
+        },
+        "flow": {
+          "definition": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
+          "distinctions": [
+            {
+              "note": "time = temporal emphasis as scope lens; flow = step-by-step progression as a reasoning method",
+              "token": "time"
+            }
+          ],
+          "heuristics": [
+            "walk me through the flow",
+            "how does data move",
+            "trace the execution path",
+            "step by step sequence",
+            "control flow",
+            "how does it progress",
+            "follow the data through the system",
+            "trace the path"
+          ]
+        },
+        "gap": {
+          "definition": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
+          "distinctions": [
+            {
+              "note": "assume = explicit premises; gap = implicit treated as explicit",
+              "token": "assume"
+            }
+          ],
+          "heuristics": [
+            "what",
+            ",",
+            ",",
+            ",",
+            ",",
+            "s assumed but not stated",
+            "implicit vs explicit mismatch"
+          ]
+        },
+        "grove": {
+          "definition": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
+          "distinctions": [
+            {
+              "note": "interacting whole; grove = rate of accumulation through mechanisms",
+              "token": "systemic"
+            }
+          ],
+          "heuristics": [
+            "compound",
+            "accumulates over time",
+            "feedback loop",
+            "technical debt grows",
+            "network effect",
+            "how things build up",
+            "rate of change over time",
+            "snowball"
+          ]
+        },
+        "grow": {
+          "definition": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction and every exception arises from necessity rather than anticipation.",
+          "distinctions": [
+            {
+              "note": "brevity of output",
+              "token": "minimal"
+            }
+          ],
+          "heuristics": [
+            "start simple and expand",
+            "minimum viable",
+            "YAGNI",
+            "add only what you need",
+            "simplest thing that works",
+            "evolve as needed",
+            "don",
+            ",",
+            ","
+          ]
+        },
+        "induce": {
+          "definition": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
+          "distinctions": [
+            {
+              "note": "abduce = generate competing hypotheses to explain evidence; induce = generalize a rule or pattern from a set of examples",
+              "token": "abduce"
+            }
+          ],
+          "heuristics": [
+            "what general principle can I draw from these",
+            "what pattern do these examples suggest",
+            "what does this tell us more broadly",
+            "generalize from these observations",
+            "what can I conclude from these cases",
+            "what rule emerges from these instances",
+            "extrapolate from these examples"
+          ]
+        },
+        "inversion": {
+          "definition": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
+          "distinctions": [
+            {
+              "note": "risks = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
+              "token": "risks"
+            }
+          ],
+          "heuristics": [
+            "what would cause this to fail completely",
+            "pre-mortem",
+            "how would we destroy this",
+            "what would guarantee failure",
+            "invert the goal",
+            "work backwards from disaster",
+            "what produces the worst outcome"
+          ]
+        },
+        "jobs": {
+          "definition": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
+          "distinctions": [
+            {
+              "note": "product = features, user needs, value propositions broadly; jobs = specifically the outcome/progress users seek and the forces blocking or enabling it",
+              "token": "product"
+            }
+          ],
+          "heuristics": [
+            "what is the user actually trying to accomplish",
+            "what job does this feature do",
+            "what need does this solve",
+            "why would someone use this",
+            "what outcome does the user want",
+            "what drives adoption",
+            "user motivation behind",
+            "JTBD",
+            "jobs to be done"
+          ]
+        },
+        "mapping": {
+          "definition": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
+          "distinctions": [
+            {
+              "note": "struct = internal topology of one unit; mapping = surface and organize across the whole landscape",
+              "token": "struct"
+            }
+          ],
+          "heuristics": [
+            "map out",
+            "surface the relationships",
+            "landscape map",
+            "draw the connections",
+            "build a map of",
+            "what's the structure of the landscape",
+            "map the territory",
+            "visualize the relationships"
+          ]
+        },
+        "meld": {
+          "definition": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
+          "distinctions": [
+            {
+              "note": "evaluate alternatives; meld = balance constraints between elements that must coexist",
+              "token": "compare"
+            }
+          ],
+          "heuristics": [
+            "balance between",
+            "overlap between",
+            "constraints between",
+            "combining X and Y",
+            "where X and Y interact",
+            "navigate tensions between",
+            "find the combination that satisfies"
+          ]
+        },
+        "melody": {
+          "definition": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
+          "distinctions": [
+            {
+              "note": "what relies on what",
+              "token": "depends"
+            }
+          ],
+          "heuristics": [
+            "coordinate across teams",
+            "synchronize changes",
+            "change alignment",
+            "coupling between components",
+            "parallel work streams",
+            "avoid conflicts between teams",
+            "migration coordination",
+            "who needs to change when"
+          ]
+        },
+        "mod": {
+          "definition": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
+          "distinctions": [
+            {
+              "note": "recurring patterns across codebase; mod = cyclic/periodic reasoning about behavior that repeats with a defined period",
+              "token": "motifs"
+            }
+          ],
+          "heuristics": [
+            "repeats across cycles",
+            "cyclic behavior",
+            "periodic pattern",
+            "repeating structure",
+            "what wraps around",
+            "recurs periodically",
+            "equivalent states"
+          ]
+        },
+        "models": {
+          "definition": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
+          "distinctions": [
+            {
+              "note": "analog = reason from a specific analogous case; models = apply named, established mental models explicitly",
+              "token": "analog"
+            }
+          ],
+          "heuristics": [
+            "what mental models apply here",
+            "apply a framework",
+            "use first principles",
+            "which frameworks are relevant",
+            "what lenses should I use",
+            "apply systems thinking",
+            "what models explain this",
+            "name the applicable mental models"
+          ]
+        },
+        "objectivity": {
+          "definition": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
+          "distinctions": [
+            {
+              "note": "rigor = disciplined logical reasoning; objectivity = separate what is factual from what is evaluative",
+              "token": "rigor"
+            }
+          ],
+          "heuristics": [
+            "what's objective vs subjective",
+            "separate fact from opinion",
+            "what is actually true vs what is a judgment",
+            "stick to facts",
+            "evidence-based only",
+            "distinguish observation from interpretation",
+            "is this a fact or an opinion"
+          ]
+        },
+        "operations": {
+          "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+          "distinctions": [
+            {
+              "note": "systemic = feedback loops and emergent behavior; operations = OR/management science frameworks for resource and flow optimization",
+              "token": "systemic"
+            }
+          ],
+          "heuristics": [
+            "throughput",
+            "bottleneck analysis",
+            "resource allocation",
+            "scheduling problem",
+            "queuing",
+            "capacity planning",
+            "utilization",
+            "operations research",
+            "minimize wait time",
+            "optimization problem"
+          ]
+        },
+        "order": {
+          "definition": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
+          "distinctions": [
+            {
+              "note": "prioritize = rank by importance with rationale; order = abstract structural reasoning about ordering schemes",
+              "token": "prioritize"
+            }
+          ],
+          "heuristics": [
+            "what is the ordering principle",
+            "hierarchical ordering",
+            "ranking criteria",
+            "what determines the order",
+            "dominance structure",
+            "what makes one thing rank above another",
+            "ordering and precedence"
+          ]
+        },
+        "origin": {
+          "definition": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
+          "distinctions": [
+            {
+              "note": "time = sequential/temporal emphasis; origin = specifically causal history and why the present state is as it is",
+              "token": "time"
+            }
+          ],
+          "heuristics": [
+            "how did we get here",
+            "what is the history of",
+            "why does it look this way",
+            "what past decisions led to this",
+            "origin story",
+            "historical context",
+            "how did this evolve",
+            "archaeology of the codebase",
+            "why is this the way it is"
+          ]
+        },
+        "perturb": {
+          "definition": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, or detection mechanisms.",
+          "distinctions": [
+            {
+              "note": "adversarial = construct attacks to find weaknesses; perturb = introduce controlled variations to observe response",
+              "token": "adversarial"
+            },
+            {
+              "note": "experimental = design experiments to test hypotheses; perturb = actively vary the system to see effects",
+              "token": "experimental"
+            }
+          ],
+          "heuristics": [
+            "what if we break this",
+            "test the failure modes",
+            "introduce faults",
+            "perturb the system",
+            "stress test by changing inputs",
+            "what happens when we modify",
+            "test the assumptions",
+            "check detection mechanisms",
+            "probe resilience"
+          ]
+        },
+        "polar": {
+          "definition": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states). Explanations must distinguish pursuit from avoidance, account for how negative boundaries constrain trajectories, and specify whether outcomes arise from optimization toward a goal or evasion of an undesirable state. Outcomes may not be attributed solely to positive objectives without modeling active avoidance pressures.",
+          "distinctions": [
+            {
+              "note": "balance = forces offsetting each other; polar = attraction toward some states and aversion from others",
+              "token": "balance"
+            }
+          ],
+          "heuristics": [
+            "what attracts and repels",
+            "pull toward and push away from",
+            "what are the incentives and disincentives",
+            "what",
+            ",",
+            ","
+          ]
+        },
+        "prioritize": {
+          "definition": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
+          "distinctions": [
+            {
+              "note": "order = abstract structural reasoning about ordering schemes; prioritize = rank by importance or impact with explicit rationale",
+              "token": "order"
+            }
+          ],
+          "heuristics": [
+            "prioritize",
+            "what should we do first",
+            "rank by impact",
+            "most important first",
+            "order by priority",
+            "what matters most",
+            "high-priority items",
+            "rank and explain the ranking"
+          ]
+        },
+        "probability": {
+          "definition": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
+          "distinctions": [
+            {
+              "note": "calc = general quantitative computation; probability = specifically statistical and probabilistic reasoning under uncertainty",
+              "token": "calc"
+            }
+          ],
+          "heuristics": [
+            "how likely is",
+            "what's the probability",
+            "expected value",
+            "confidence interval",
+            "statistical significance",
+            "base rate",
+            "probability of failure",
+            "how certain are we",
+            "Bayesian reasoning",
+            "likelihood"
+          ]
+        },
+        "product": {
+          "definition": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
+          "distinctions": [
+            {
+              "note": "jobs = outcomes users seek and forces shaping adoption; product = broader product lens including features and value propositions",
+              "token": "jobs"
+            }
+          ],
+          "heuristics": [
+            "product perspective",
+            "through a product lens",
+            "feature vs user need",
+            "value proposition",
+            "product strategy",
+            "what does the product offer",
+            "user needs analysis",
+            "product thinking"
+          ]
+        },
+        "reify": {
+          "definition": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that constrain reasoning.",
+          "distinctions": [
+            {
+              "note": "analysis = describe and structure; reify = convert implicit patterns into explicit formal rules",
+              "token": "analysis"
+            }
+          ],
+          "heuristics": [
+            "what",
+            ",",
+            ",",
+            ",",
+            "s unstated but assumed",
+            "formalize the informal",
+            "what rules actually apply here"
+          ]
+        },
+        "release": {
+          "definition": "The response reduces distortion or disturbance by loosening attachment or identification with transient states, roles, or outcomes.",
+          "distinctions": [
+            {
+              "note": "shift = rotate through multiple cognitive perspectives; release = reduce distortion by loosening identification with transient states or roles rather than rotating perspective",
+              "token": "shift"
+            }
+          ],
+          "heuristics": [
+            "let go of the outcome",
+            "detach from the result",
+            "stop over-identifying with the role",
+            "reduce attachment",
+            "clarity through non-attachment",
+            "separate the outcome from the person",
+            "non-attached analysis",
+            "release the assumption",
+            "stop holding onto X"
+          ]
+        },
+        "resilience": {
+          "definition": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
+          "distinctions": [
+            {
+              "note": "robust = choose options that perform across uncertain futures; resilience = analyze system behavior under stress specifically",
+              "token": "robust"
+            }
+          ],
+          "heuristics": [
+            "how resilient is this",
+            "what happens under load",
+            "failure recovery",
+            "margin of safety",
+            "fragility vs robustness",
+            "how does it behave under stress",
+            "graceful degradation",
+            "fault tolerance"
+          ]
+        },
+        "rigor": {
+          "definition": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
+          "distinctions": [
+            {
+              "note": "verify = apply falsification pressure to claims; rigor = discipline the reasoning process throughout",
+              "token": "verify"
+            }
+          ],
+          "heuristics": [
+            "be rigorous",
+            "make the reasoning explicit",
+            "disciplined analysis",
+            "careful reasoning",
+            "justify each step",
+            "logical rigor",
+            "no handwaving",
+            "substantiate your claims"
+          ]
+        },
+        "risks": {
+          "definition": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
+          "distinctions": [
+            {
+              "note": "adversarial = construct attacks to stress-test; risks = enumerate and assess failure modes and their likelihood",
+              "token": "adversarial"
+            }
+          ],
+          "heuristics": [
+            "what are the risks",
+            "what could go wrong",
+            "risk assessment",
+            "failure modes",
+            "identify the hazards",
+            "risk analysis",
+            "what might fail",
+            "enumerate the risks",
+            "likelihood and severity"
+          ]
+        },
+        "robust": {
+          "definition": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
+          "distinctions": [
+            {
+              "note": "resilience = system behavior under stress; robust = select options that perform across uncertain futures",
+              "token": "resilience"
+            }
+          ],
+          "heuristics": [
+            "robust to uncertainty",
+            "works across scenarios",
+            "hedge against uncertainty",
+            "perform across many futures",
+            "uncertainty-aware decision",
+            "which option survives the most scenarios",
+            "resilient to unknowns",
+            "option value under uncertainty"
+          ]
+        },
+        "sever": {
+          "definition": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only through explicit, controlled interfaces.",
+          "distinctions": [
+            {
+              "note": "bound = limit how far effects propagate; sever = introduce a structural separation that routes all interaction through explicit interfaces",
+              "token": "bound"
+            },
+            {
+              "note": "domains = identify bounded contexts; sever = introduce or reinforce separations between them",
+              "token": "domains"
+            },
+            {
+              "note": "entangle = diagnose intermixing; sever = address it by structural separation",
+              "token": "entangle"
+            }
+          ],
+          "heuristics": [
+            "separate these concerns",
+            "introduce a boundary here",
+            "enforce domain separation",
+            "make these modules independent",
+            "controlled interfaces only",
+            "decouple these",
+            "introduce an abstraction boundary",
+            "route interactions through explicit interfaces"
+          ]
+        },
+        "shift": {
+          "definition": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
+          "distinctions": [
+            {
+              "note": "models = apply named mental models; shift = rotate through distinct cognitive modes or stakeholder perspectives",
+              "token": "models"
+            }
+          ],
+          "heuristics": [
+            "look at this from multiple angles",
+            "different perspectives",
+            "rotate through lenses",
+            "six thinking hats",
+            "shift perspectives",
+            "what would X think about this",
+            "see it through different frames",
+            "consider multiple viewpoints"
+          ]
+        },
+        "simulation": {
+          "definition": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
+          "distinctions": [
+            {
+              "note": "sim = standalone scenario narrative of what unfolds; simulation method = enriches probe/plan with thought-experiment reasoning about feedback loops, tipping points, and emergent system behaviour",
+              "token": "sim"
+            },
+            {
+              "note": "boom = scale extremes; simulation = systemic feedback dynamics",
+              "token": "boom"
+            }
+          ],
+          "heuristics": [
+            "run a thought experiment",
+            "trace feedback loops",
+            "where would bottlenecks emerge",
+            "tipping point analysis",
+            "what emergent effects would arise",
+            "project systemic dynamics",
+            "model how effects compound over time"
+          ]
+        },
+        "spec": {
+          "definition": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions must be justified against this governing layer and may not redefine it during execution.",
+          "distinctions": [
+            {
+              "note": "grow = evolve incrementally from minimal; spec = define the target criteria first and measure compliance against them",
+              "token": "grow"
+            }
+          ],
+          "heuristics": [
+            "define the spec first",
+            "test-driven design",
+            "what should it do before how",
+            "specification before implementation",
+            "write the tests first",
+            "define success criteria",
+            "TDD",
+            "correctness criteria"
+          ]
+        },
+        "spill": {
+          "definition": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases coupling, ambiguity, or fragility.",
+          "distinctions": [
+            {
+              "note": "bound = introduce or reinforce propagation limits proactively; spill = identify where those limits have been violated or never existed",
+              "token": "bound"
+            },
+            {
+              "note": "cross = concerns spanning modules by design; spill = concerns overreaching their intended scope unintentionally",
+              "token": "cross"
+            }
+          ],
+          "heuristics": [
+            "where does this leak",
+            "scope creep",
+            "responsibility overreach",
+            "bleeding concerns",
+            "what crosses boundary lines uninvited",
+            "where is influence extending too far",
+            "coupling from overreach",
+            "what is reaching outside its scope"
+          ]
+        },
+        "split": {
+          "definition": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
+          "distinctions": [
+            {
+              "note": "dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis",
+              "token": "dimension"
+            }
+          ],
+          "heuristics": [
+            "break this into parts",
+            "decompose",
+            "analyze each component separately",
+            "isolate the pieces",
+            "divide and analyze",
+            "separate concerns",
+            "split into sub-problems",
+            "analyze in isolation"
+          ]
+        },
+        "systemic": {
+          "definition": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
+          "distinctions": [
+            {
+              "note": "analysis = describe and structure; systemic = reason about interactions and emergence",
+              "token": "analysis"
+            }
+          ],
+          "heuristics": [
+            "systems thinking",
+            "feedback loops",
+            "emergent behavior",
+            "system as a whole",
+            "how do the parts interact",
+            "unintended consequences",
+            "second order effects across the system",
+            "interconnections"
+          ]
+        },
+        "trade": {
+          "definition": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those dimensions before committing to a configuration.",
+          "distinctions": [
+            {
+              "note": "balance = how opposing forces offset to produce equilibrium; trade = explicitly identify and evaluate trade-offs across competing dimensions",
+              "token": "balance"
+            }
+          ],
+          "heuristics": [
+            "what are the trade-offs",
+            "weigh the options",
+            "competing forces",
+            "design trade-offs",
+            "pros and cons of each approach",
+            "alternative configurations",
+            "what are we trading off",
+            "evaluate alternatives across dimensions"
+          ]
+        },
+        "trans": {
+          "definition": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
+          "distinctions": [
+            {
+              "note": "flow = narrate step-by-step sequence; trans = model noise, distortion, and fidelity across stages",
+              "token": "flow"
+            }
+          ],
+          "heuristics": [
+            "where does signal get lost",
+            "where does data degrade",
+            "signal fidelity",
+            "where is information lost in transmission",
+            "where does the message get distorted",
+            "trace signal path through the system",
+            "where does noise enter",
+            "signal-to-noise",
+            "observability pipeline fidelity"
+          ]
+        },
+        "triage": {
+          "definition": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
+          "distinctions": [],
+          "heuristics": [
+            "focus on the high-risk areas",
+            "triage by impact and uncertainty",
+            "risk-proportionate depth",
+            "where are the stakes highest",
+            "most dangerous parts first",
+            "consequence-weighted review",
+            "allocate attention by risk",
+            "what deserves the most scrutiny",
+            "protect the high-stakes areas"
+          ]
+        },
+        "unknowns": {
+          "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
+          "distinctions": [
+            {
+              "note": "assume = make explicit premises already held; unknowns = surface what has not yet been considered or named",
+              "token": "assume"
+            }
+          ],
+          "heuristics": [
+            "what are we missing",
+            "what don't we know that we don't know",
+            "unknown unknowns",
+            "what questions haven't we asked",
+            "critical blind spots",
+            "what's not on our radar",
+            "gaps in our knowledge",
+            "what could surprise us"
+          ]
+        },
+        "verify": {
+          "definition": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative space.",
+          "distinctions": [
+            {
+              "note": "rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs",
+              "token": "rigor"
+            }
+          ],
+          "heuristics": [
+            "verify this",
+            "check your reasoning",
+            "apply falsification",
+            "is this actually true",
+            "challenge the claims",
+            "what would falsify this",
+            "pressure-test the conclusions",
+            "don't just assert — verify",
+            "what evidence would disprove this"
+          ]
+        }
+      },
       "scope": {
         "act": {
           "definition": "Actions and intended operations focus: what is being done or needs to be done, not why or how it is structured.",
@@ -5746,7 +7201,7 @@
     }
   ],
   "checksums": {
-    "axes": "0b4ac11c46118ad48efc535fa14719be0d4123e37c08b59b149af371be362b49",
+    "axes": "b6f1b98f3d4f2f33e0684c8871e72f0ba8a5995e101a4765c766cbfec596c0c8",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ab7847bc882c223c9ebdb72d0ff33aec730e2bd3714fc8e6615f8f5c1c11f22f",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

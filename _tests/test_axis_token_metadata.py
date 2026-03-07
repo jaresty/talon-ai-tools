@@ -253,5 +253,65 @@ class FormAxisMetadataTests(unittest.TestCase):
         self.assertIn("questions", distinction_tokens, "socratic must distinguish from questions")
 
 
+class MethodAxisMetadataTests(unittest.TestCase):
+    """ADR-0155 T-8: method axis has structured metadata for all 74 tokens."""
+
+    AXIS = "method"
+    EXPECTED_TOKENS = {
+        "abduce", "actors", "adversarial", "afford", "align", "amorph", "analog",
+        "analysis", "argue", "balance", "bias", "boom", "bound", "branch", "calc",
+        "canon", "cite", "clash", "cluster", "compare", "control", "converge",
+        "crystal", "deduce", "depends", "derive", "diagnose", "dimension", "domains",
+        "drift", "effects", "entangle", "experimental", "explore", "field", "flow",
+        "gap", "grove", "grow", "induce", "inversion", "jobs", "mapping", "meld",
+        "melody", "mod", "models", "objectivity", "operations", "order", "origin",
+        "perturb", "polar", "prioritize", "probability", "product", "reify",
+        "release", "resilience", "rigor", "risks", "robust", "sever", "shift",
+        "simulation", "spec", "spill", "split", "systemic", "trade", "trans",
+        "triage", "unknowns", "verify",
+    }
+
+    def setUp(self):
+        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+
+    def test_method_metadata_covers_all_tokens(self):
+        """All 74 method tokens must have metadata entries."""
+        self.assertEqual(
+            set(self.meta.keys()),
+            self.EXPECTED_TOKENS,
+            f"method metadata keys mismatch — "
+            f"missing: {self.EXPECTED_TOKENS - set(self.meta.keys())}, "
+            f"extra: {set(self.meta.keys()) - self.EXPECTED_TOKENS}",
+        )
+
+    def test_method_metadata_schema_conformance(self):
+        """Each method token must have definition + heuristics + distinctions."""
+        for token, data in self.meta.items():
+            with self.subTest(token=token):
+                self.assertIn("definition", data)
+                self.assertIn("heuristics", data)
+                self.assertIn("distinctions", data)
+                self.assertTrue(data["definition"].strip())
+                self.assertGreater(len(data["heuristics"]), 0)
+
+    def test_abduce_distinguishes_from_diagnose(self):
+        """abduce must distinguish from diagnose (abduce=compare hypotheses; diagnose=narrow to one)."""
+        abduce = self.meta.get("abduce", {})
+        distinction_tokens = [d["token"] for d in abduce.get("distinctions", [])]
+        self.assertIn("diagnose", distinction_tokens, "abduce must distinguish from diagnose")
+
+    def test_diagnose_distinguishes_from_abduce(self):
+        """diagnose must distinguish from abduce."""
+        diagnose = self.meta.get("diagnose", {})
+        distinction_tokens = [d["token"] for d in diagnose.get("distinctions", [])]
+        self.assertIn("abduce", distinction_tokens, "diagnose must distinguish from abduce")
+
+    def test_compare_distinguishes_from_converge(self):
+        """compare must distinguish from converge."""
+        compare = self.meta.get("compare", {})
+        distinction_tokens = [d["token"] for d in compare.get("distinctions", [])]
+        self.assertIn("converge", distinction_tokens, "compare must distinguish from converge")
+
+
 if __name__ == "__main__":
     unittest.main()

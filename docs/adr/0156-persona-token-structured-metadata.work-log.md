@@ -174,3 +174,42 @@ Expected value: M×H×L = 6
 **next_work:** Behaviour T-7: SPA specifying tests for persona token metadata panel.
 
 ---
+
+## Loop 8: 2026-03-07
+
+**helper_version:** helper:v20260227.1
+
+**focus:** T-8 — wire `help_llm.go` persona tables to use `PersonaMetadataFor()`. Presets table and persona axes tables: `Guidance`/`When to use` columns → `Heuristics`/`Distinctions` columns. Key design decision: `formally` tone × channel register conflict migrated to `CROSS_AXIS_COMPOSITION` (correct structured home for cross-axis cautionary notes) rather than persona distinctions, preserving discoverability in `### Choosing Channel` output.
+
+**active_constraint:** `TestHelpLLMPersonaTablesUseStructuredMetadata` fails — Distinctions column absent. Falsifiable: test exits 1 before implementation.
+
+**Expected value:**
+| Factor | Value | Rationale |
+|--------|-------|-----------|
+| Impact | Med | Persona tables now discoverable via structured metadata in bar help llm |
+| Probability | High | Deterministic rendering swap — same pattern as ADR-0155 axisTokenHeuristics |
+| Time Sensitivity | Low | No deadline |
+Expected value: M×H×L = 6
+
+**validation_targets:**
+- `go test ./internal/barcli/... -run TestHelpLLMPersonaTablesUseStructuredMetadata`
+- `go test ./internal/barcli/... -run TestLLMHelpPersonaUseWhen`
+- `go test ./internal/barcli/... -run TestLLMHelpADR0112D3`
+
+**evidence:**
+- red | 2026-03-07T17:45:00Z | exit 1 | `TestHelpLLMPersonaTablesUseStructuredMetadata` fails — Distinctions column absent | inline
+- green | 2026-03-07T17:57:00Z | exit 0 | all tests pass; 1330 Python; 310 SPA | inline
+
+**rollback_plan:** `git restore --source=HEAD lib/axisConfig.py internal/barcli/help_llm.go internal/barcli/help_llm_test.go`
+
+**delta_summary:** helper:diff-snapshot=6 files changed, 179 insertions(+), 51 deletions(−). Commit: 5f0323ee.
+
+**loops_remaining_forecast:** 2 loops remaining (T-9 tui_tokens, T-10 cleanup). Confidence high.
+
+**residual_constraints:**
+- Legacy `PERSONA_KEY_TO_USE_WHEN`/`PERSONA_KEY_TO_GUIDANCE` still present for co-existence. Severity: Low.
+- Persona Guidance section falls back to `PersonaGuidance()` for tokens where heuristics are empty — effectively all migrated tokens use heuristics, legacy fallback active only for edge cases. Severity: Low.
+
+**next_work:** Behaviour T-9: wire `tui_tokens.go` `buildPersonaOptions()` + `buildPersonaPresetOptions()` to use `PersonaMetadataFor()` adapter (heuristics → UseWhen, distinctions → Guidance).
+
+---

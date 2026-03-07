@@ -122,7 +122,7 @@ describe('Persona use_when visibility', () => {
 
 		const panel = container.querySelector('.persona-use-when');
 		expect(panel).not.toBeNull();
-		expect(panel?.textContent).toContain('When to use');
+		expect(panel?.textContent).toContain('Heuristics');
 		expect(panel?.textContent).toContain('developer');
 	});
 

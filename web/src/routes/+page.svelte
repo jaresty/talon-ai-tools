@@ -312,8 +312,8 @@
 	let activeTab = $state('task');
 	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
 	let fabOpen = $state(false); // FAB menu state
-	let activePresetUseWhen = $state('');
-	let activePresetGuidance = $state('');
+	let hoveredDistinctionPreset = $state<string | null>(null);
+
 
 	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
@@ -467,30 +467,49 @@
 								<button
 									class="persona-chip"
 									class:active={persona.preset === preset.key}
+									class:chip--distinction-ref={hoveredDistinctionPreset === preset.key}
 									onclick={() => {
 										if (persona.preset === preset.key) {
 											persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent };
-											activePresetUseWhen = '';
-											activePresetGuidance = '';
 										} else {
 											persona = { preset: preset.key, voice: '', audience: '', tone: '', intent: persona.intent };
-											activePresetUseWhen = personaTokenHint(grammar!, 'presets', preset.key);
-											activePresetGuidance = personaTokenDistinctionText(grammar!, 'presets', preset.key);
 										}
 									}}
 								>{preset.label}</button>
 							{/each}
 						</div>
-						{#if persona.preset && activePresetUseWhen}
-							<div class="persona-use-when">
-								<span class="persona-use-when-label">When to use</span>
-								<p class="persona-use-when-text">{activePresetUseWhen}</p>
-							</div>
-						{/if}
-						{#if persona.preset && activePresetGuidance}
-							<div class="persona-use-when persona-guidance">
-								<span class="persona-use-when-label">Notes</span>
-								<p class="persona-use-when-text">{activePresetGuidance}</p>
+						{#if persona.preset}
+							{@const presetMeta = getPersonaPresets(grammar).find(p => p.key === persona.preset)}
+						{@const presetData = grammar?.persona?.metadata?.['presets']?.[persona.preset]}
+							<div class="persona-use-when preset-detail-card">
+								<div class="preset-detail-header">
+									<span class="preset-detail-name">{presetMeta?.label ?? persona.preset}</span>
+									{#if presetMeta?.voice || presetMeta?.audience || presetMeta?.tone}
+										<div class="preset-detail-axes">
+											{#if presetMeta?.voice}<code class="preset-axis-tag">voice={presetMeta.voice}</code>{/if}
+											{#if presetMeta?.audience}<code class="preset-axis-tag">audience={presetMeta.audience}</code>{/if}
+											{#if presetMeta?.tone}<code class="preset-axis-tag">tone={presetMeta.tone}</code>{/if}
+										</div>
+									{/if}
+								</div>
+								{#if presetData?.heuristics?.length}
+									<div class="preset-detail-section">
+										<span class="persona-use-when-label">Heuristics</span>
+										<div class="preset-heuristics">
+											{#each presetData.heuristics as h}
+												<span class="preset-heuristic-chip">{h}</span>
+											{/each}
+										</div>
+									</div>
+								{/if}
+								{#if presetData?.distinctions?.length}
+									<div class="preset-detail-section preset-detail-notes">
+										<span class="persona-use-when-label">Distinctions</span>
+										{#each presetData.distinctions as d}
+											<p class="preset-distinction-entry" onmouseenter={() => hoveredDistinctionPreset = d.token} onmouseleave={() => hoveredDistinctionPreset = null}><code>{d.token}</code> — {d.note}</p>
+										{/each}
+									</div>
+								{/if}
 							</div>
 						{/if}
 					</div>
@@ -1064,11 +1083,11 @@
 
 	.persona-use-when {
 		margin-top: 0.5rem;
-		padding: 0.5rem 0.6rem;
 		background: var(--color-surface);
 		border: 1px solid var(--color-accent-muted);
 		border-radius: var(--radius);
 		font-size: 0.78rem;
+		overflow: hidden;
 	}
 
 	.persona-use-when-label {
@@ -1087,6 +1106,85 @@
 		line-height: 1.5;
 	}
 
+	/* Preset detail card */
+	.preset-detail-card { padding: 0; }
+
+	.preset-detail-header {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		padding: 0.5rem 0.6rem 0.45rem;
+	}
+
+	.preset-detail-name {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--color-accent);
+	}
+
+	.preset-detail-axes {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.preset-axis-tag {
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		padding: 0.1rem 0.35rem;
+		background: color-mix(in srgb, var(--color-accent-muted) 50%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+		border-radius: 3px;
+		color: var(--color-text-muted);
+	}
+
+	.preset-detail-section {
+		padding: 0.4rem 0.6rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.preset-detail-notes {
+		background: color-mix(in srgb, var(--color-surface) 80%, var(--color-accent-muted));
+	}
+
+	.preset-detail-notes .persona-use-when-label {
+		color: var(--color-text-muted);
+	}
+
+	.preset-heuristics {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+		margin-top: 0.35rem;
+	}
+
+	.preset-heuristic-chip {
+		font-size: 0.72rem;
+		padding: 0.15rem 0.5rem;
+		background: var(--color-accent-muted);
+		border: 1px solid var(--color-accent);
+		border-radius: 9999px;
+		color: var(--color-text);
+		font-family: monospace;
+	}
+
+	.preset-distinction-entry {
+		margin: 0.25rem 0 0 0;
+		color: var(--color-text);
+		font-size: 0.78rem;
+		line-height: 1.4;
+	}
+
+	.preset-distinction-entry:first-of-type { margin-top: 0.1rem; }
+
+	.preset-distinction-entry code {
+		font-size: 0.72rem;
+		padding: 0.05rem 0.3rem;
+		background: color-mix(in srgb, var(--color-accent-muted) 60%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+		border-radius: 3px;
+	}
+
 	.persona-hint {
 		font-size: 0.68rem;
 		color: var(--color-text-muted);
@@ -1097,15 +1195,6 @@
 	.persona-hint-note {
 		color: var(--color-accent);
 		font-style: normal;
-	}
-
-	.persona-guidance {
-		border-color: color-mix(in srgb, var(--color-accent-muted) 60%, transparent);
-		background: color-mix(in srgb, var(--color-surface) 80%, var(--color-accent-muted));
-	}
-
-	.persona-guidance .persona-use-when-label {
-		color: var(--color-text-muted);
 	}
 
 	.persona-selects { display: flex; gap: 0.5rem; flex-wrap: wrap; }

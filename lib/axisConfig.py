@@ -952,6 +952,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "balance": "Equilibrium forces",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
+        "bound": "Contain side effects",
         "branch": "Multiple paths",
         "calc": "Formal calculation",
         "canon": "Single source of truth",

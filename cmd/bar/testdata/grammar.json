@@ -891,6 +891,7 @@
         "balance": "Equilibrium forces",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
+        "bound": "Contain side effects",
         "branch": "Multiple paths",
         "calc": "Formal calculation",
         "canon": "Single source of truth",
@@ -7836,7 +7837,7 @@
     }
   ],
   "checksums": {
-    "axes": "6e029cdc47f13abbf7d0e6f31ff60c80415a9cd3f16f83d153ed69174e4bebc0",
+    "axes": "e49a337a72dbe7de7284fdcf29bdf7408feb16afb97810cbfe38e607da57b386",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

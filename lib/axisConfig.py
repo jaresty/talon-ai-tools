@@ -2363,8 +2363,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     },
     "directional": {
         "bog": {
-            "definition": "Span the full horizontal spectrum — reflective AND acting: covers both the reflective/structural dimension (rog) AND the acting/extending dimension (ong). bog "
-            "= rog + ong.",
+            "definition": "Orient across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, "
+            "implications, actions, and extensions together.",
             "distinctions": [
                 {
                     "note": "bog = full horizontal span (reflective + acting); rog = reflective pole only",
@@ -2378,7 +2378,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "heuristics": [
                 "examine what it means AND tell me what to do about it",
                 "both the structural reflection and the next steps",
-                "understand it structurally and then act on that understanding",
+                "understand it structurally while also acting on that understanding",
                 "analysis and actions both",
             ],
         },
@@ -2459,8 +2459,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fig": {
-            "definition": "Span the full vertical spectrum — abstract AND concrete: covers both the abstract/general dimension (fog) AND the concrete/specific dimension (dig). fig = fog "
-            "+ dig.",
+            "definition": "Orient across the full vertical axis — spanning both the abstract/general dimension (fog) and the concrete/specific dimension (dig), using each to illuminate "
+            "the other.",
             "distinctions": [
                 {
                     "note": "fig = full vertical span (abstract + concrete); fog = abstract pole only",
@@ -2557,7 +2557,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fly ong": {
-            "definition": "Identify abstract patterns and general principles, then propose concrete actions and extend them to related contexts.",
+            "definition": "Follow an abstract-first sequence: identify abstract patterns and general principles, then identify actions and extend them to related contexts.",
             "distinctions": [
                 {
                     "note": "fly ong = abstract → acting sequence; fog = abstract pole only",
@@ -2571,12 +2571,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "heuristics": [
                 "abstract first then actions",
                 "big picture then what to do",
-                "principles first then concrete next steps",
+                "principles first then what to do",
                 "start with the big picture then tell me what to do",
             ],
         },
         "fly rog": {
-            "definition": "Identify abstract patterns and general principles, then examine their structural relationships and reflect on their implications.",
+            "definition": "Follow an abstract-first sequence: identify abstract patterns and general principles, then examine how they are organised and what that organisation "
+            "reveals.",
             "distinctions": [
                 {
                     "note": "fly rog = abstract → structural reflection sequence; fog = abstract pole only",
@@ -2644,7 +2645,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what actions should I take and what comes next after each",
                 "give me the actions with follow-on steps",
                 "what do I do and what's the next step after that",
-                "concrete next steps and their extensions",
+                "next steps and their extensions",
             ],
         },
         "rog": {
@@ -2668,7 +2669,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "describe the structure then tell me what it means",
+                "describe the structure and what it reveals",
                 "how is it organised and what does that reveal",
                 "walk me through the structure and reflect on the implications",
                 "what does the organisation tell us",

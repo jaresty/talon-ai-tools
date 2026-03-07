@@ -1386,7 +1386,7 @@
       },
       "directional": {
         "bog": {
-          "definition": "Span the full horizontal spectrum — reflective AND acting: covers both the reflective/structural dimension (rog) AND the acting/extending dimension (ong). bog = rog + ong.",
+          "definition": "Orient across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together.",
           "distinctions": [
             {
               "note": "bog = full horizontal span (reflective + acting); rog = reflective pole only",
@@ -1400,7 +1400,7 @@
           "heuristics": [
             "examine what it means AND tell me what to do about it",
             "both the structural reflection and the next steps",
-            "understand it structurally and then act on that understanding",
+            "understand it structurally while also acting on that understanding",
             "analysis and actions both"
           ]
         },
@@ -1481,7 +1481,7 @@
           ]
         },
         "fig": {
-          "definition": "Span the full vertical spectrum — abstract AND concrete: covers both the abstract/general dimension (fog) AND the concrete/specific dimension (dig). fig = fog + dig.",
+          "definition": "Orient across the full vertical axis — spanning both the abstract/general dimension (fog) and the concrete/specific dimension (dig), using each to illuminate the other.",
           "distinctions": [
             {
               "note": "fig = full vertical span (abstract + concrete); fog = abstract pole only",
@@ -1577,7 +1577,7 @@
           ]
         },
         "fly ong": {
-          "definition": "Identify abstract patterns and general principles, then propose concrete actions and extend them to related contexts.",
+          "definition": "Follow an abstract-first sequence: identify abstract patterns and general principles, then identify actions and extend them to related contexts.",
           "distinctions": [
             {
               "note": "fly ong = abstract → acting sequence; fog = abstract pole only",
@@ -1591,12 +1591,12 @@
           "heuristics": [
             "abstract first then actions",
             "big picture then what to do",
-            "principles first then concrete next steps",
+            "principles first then what to do",
             "start with the big picture then tell me what to do"
           ]
         },
         "fly rog": {
-          "definition": "Identify abstract patterns and general principles, then examine their structural relationships and reflect on their implications.",
+          "definition": "Follow an abstract-first sequence: identify abstract patterns and general principles, then examine how they are organised and what that organisation reveals.",
           "distinctions": [
             {
               "note": "fly rog = abstract → structural reflection sequence; fog = abstract pole only",
@@ -1661,7 +1661,7 @@
             "what actions should I take and what comes next after each",
             "give me the actions with follow-on steps",
             "what do I do and what's the next step after that",
-            "concrete next steps and their extensions"
+            "next steps and their extensions"
           ]
         },
         "rog": {
@@ -1685,7 +1685,7 @@
             }
           ],
           "heuristics": [
-            "describe the structure then tell me what it means",
+            "describe the structure and what it reveals",
             "how is it organised and what does that reveal",
             "walk me through the structure and reflect on the implications",
             "what does the organisation tell us"
@@ -7836,7 +7836,7 @@
     }
   ],
   "checksums": {
-    "axes": "d03d8631fca668e898839c223a80d2a386ea21e142b19317cdcb004c3bbadf5f",
+    "axes": "2524c61d46fdc480f0ae02a2c229ee8c0b406475c5708116a94a81ecaddcb3ff",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

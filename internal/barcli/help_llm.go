@@ -595,8 +595,7 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "\n")
 
 		if axisName == "directional" && !compact {
-			fmt.Fprintf(w, "**Directional compass model:** Directionals push the response in a direction on a 2D plane — ")
-			fmt.Fprintf(w, "they are not sequencing instructions. The four primitive poles are:\n\n")
+			fmt.Fprintf(w, "**Directional compass model:** The four primitive poles are:\n\n")
 			fmt.Fprintf(w, "```\n")
 			fmt.Fprintf(w, "         fog  (abstract / general)\n")
 			fmt.Fprintf(w, "              ↑\n")
@@ -604,11 +603,9 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 			fmt.Fprintf(w, "              ↓\n")
 			fmt.Fprintf(w, "         dig  (concrete / specific)\n")
 			fmt.Fprintf(w, "```\n\n")
-			fmt.Fprintf(w, "Compound tokens span the spectrum in their combined directions simultaneously — ")
-			fmt.Fprintf(w, "not alternating or sequential. `fig` (fog + dig) spans the full vertical range; ")
-			fmt.Fprintf(w, "`bog` (rog + ong) spans the full horizontal range. ")
-			fmt.Fprintf(w, "Three prefix families encode vertical orientation: `fly` prefix = fog (abstract); `dip` prefix = dig (concrete); `fip` prefix = fig (full vertical span, abstract + concrete). ")
-		fmt.Fprintf(w, "The second component (rog, ong, bog) adds horizontal orientation independently — so `fly-rog` = abstract + structural/reflective; `dip-ong` = concrete + acting; `fip-bog` = all four directions.\n\n")
+			if desc := grammar.Axes.AxisDescriptions["directional"]; desc != "" {
+				fmt.Fprintf(w, "%s\n\n", desc)
+			}
 			fmt.Fprintf(w, "**Compound directionals:** Primitive directional tokens can be combined ")
 			fmt.Fprintf(w, "into compound tokens (e.g., `fly rog`, `fip rog`, `dip ong`, `dip bog`, `fip ong`). ")
 			fmt.Fprintf(w, "A compound token merges the two directional pressures into a single constraint — ")

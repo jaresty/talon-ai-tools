@@ -976,7 +976,7 @@
       "audience": "Who this is for — shapes vocabulary, depth, and framing.",
       "channel": "Delivery format — the artifact type or platform the response targets (diagram, script, slides, HTML, image/video, etc.).",
       "completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
-      "directional": "Compass modifier shaping how the response is oriented, applied on top of task, scope, and method. Distinct from scope (which selects what dimension of the topic to focus on) and method (which selects the reasoning approach). Use to push the response angle: abstract↑ concrete↓ reflect← act→. jog is the null directional (no push).",
+      "directional": "Compass modifier shaping how the response is oriented, applied on top of task, scope, and method. Distinct from scope (which selects what dimension of the topic to focus on) and method (which selects the reasoning approach). Use to push the response angle: abstract↑ concrete↓ reflect← act→. jog is the null directional (no push). Compound tokens span the spectrum in their combined directions simultaneously — not alternating or sequential. fig (fog + dig) spans the full vertical range; bog (rog + ong) spans the full horizontal range. Three prefix families encode vertical orientation: fly prefix = fog (abstract); dip prefix = dig (concrete); fip prefix = fig (full vertical span, abstract + concrete). The second component (rog, ong, bog) adds horizontal orientation independently — so fly-rog = abstract + structural/reflective; dip-ong = concrete + acting; fip-bog = all four directions.",
       "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.).",
       "intent": "The purpose of the response — the motivation the speaker has.",
       "method": "Reasoning approach — how to think through the problem. Up to three can be combined.",
@@ -7836,7 +7836,7 @@
     }
   ],
   "checksums": {
-    "axes": "f6a2dbf276f798f3888a0c53655937ab8bc27d2064643b9ddbcee61fb05603e7",
+    "axes": "f2e0bac880a3a192e8b86152d0a9fc9162f7fc4179bae88540796ea7efb07c0c",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

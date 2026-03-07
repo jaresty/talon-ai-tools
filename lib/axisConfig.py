@@ -1068,7 +1068,10 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "channel": "Delivery format — the artifact type or platform the response targets (diagram, script, slides, HTML, image/video, etc.).",
     "completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
     "directional": "Compass modifier shaping how the response is oriented, applied on top of task, scope, and method. Distinct from scope (which selects what dimension of the topic to focus on) and "
-    "method (which selects the reasoning approach). Use to push the response angle: abstract↑ concrete↓ reflect← act→. jog is the null directional (no push).",
+    "method (which selects the reasoning approach). Use to push the response angle: abstract↑ concrete↓ reflect← act→. jog is the null directional (no push). Compound tokens span the "
+    "spectrum in their combined directions simultaneously — not alternating or sequential. fig (fog + dig) spans the full vertical range; bog (rog + ong) spans the full horizontal range. "
+    "Three prefix families encode vertical orientation: fly prefix = fog (abstract); dip prefix = dig (concrete); fip prefix = fig (full vertical span, abstract + concrete). The second "
+    "component (rog, ong, bog) adds horizontal orientation independently — so fly-rog = abstract + structural/reflective; dip-ong = concrete + acting; fip-bog = all four directions.",
     "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.).",
     "intent": "The purpose of the response — the motivation the speaker has.",
     "method": "Reasoning approach — how to think through the problem. Up to three can be combined.",

@@ -2598,7 +2598,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "jog": {
-            "definition": "Execute directly without hedging or clarification: immediate answer, no questions back. Note: unlike other directional tokens, jog modifies interaction style rather than response orientation on the fog/dig/rog/ong compass axes.",
+            "definition": "Execute directly without hedging or clarification: immediate answer, no questions back. Note: unlike other directional tokens, jog modifies interaction style "
+            "rather than response orientation on the fog/dig/rog/ong compass axes.",
             "distinctions": [],
             "heuristics": [
                 "just answer",
@@ -2782,7 +2783,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "cocreate": {
-            "definition": "The response structures itself as a collaborative process—small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without a channel: interactive, proposing and iterating with explicit pauses for feedback. With an output-exclusive channel: formats the artifact to expose decision points and invite response.",
+            "definition": "The response structures itself as a collaborative process—small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without a "
+            "channel: interactive, proposing and iterating with explicit pauses for feedback. With an output-exclusive channel: formats the artifact to expose decision "
+            "points and invite response.",
             "distinctions": [
                 {
                     "note": "variants = present a choice of distinct designs; cocreate = iterative process with decision points and alignment checks",
@@ -2856,7 +2859,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "facilitate": {
             "definition": "The response structures itself as a facilitation plan—framing the goal, proposing session structure, managing participation and turn-taking rather than doing "
-            "the work solo. Without a channel: acts as a live facilitator, asking questions and managing participation interactively. With an output-exclusive channel: produces a static facilitation guide.",
+            "the work solo. Without a channel: acts as a live facilitator, asking questions and managing participation interactively. With an output-exclusive channel: "
+            "produces a static facilitation guide.",
             "distinctions": [
                 {
                     "note": "walkthrough = linear narrated steps through a process; facilitate = session structure with participation cues and facilitation agenda",
@@ -3006,7 +3010,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "quiz": {
-            "definition": "The response organizes content as a quiz structure—questions posed before explanations, testing understanding through active recall before providing answers. Without a channel: interactive exchange, posing questions and waiting for responses. With an output-exclusive channel: structures the output as a static quiz document.",
+            "definition": "The response organizes content as a quiz structure—questions posed before explanations, testing understanding through active recall before providing answers. "
+            "Without a channel: interactive exchange, posing questions and waiting for responses. With an output-exclusive channel: structures the output as a static quiz "
+            "document.",
             "distinctions": [
                 {
                     "note": "socratic = question-led dialogue to surface user reasoning; quiz = test recall via question-then-answer structure",
@@ -3206,7 +3212,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "visual": {
             "definition": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend, emphasising big-picture structure over diagrammatic "
-            "precision. Adapts to channel: with a code channel, visual structure is expressed through code organization, comments, or inline ASCII; without a channel, through prose metaphors and spatial layout.",
+            "precision. Adapts to channel: with a code channel, visual structure is expressed through code organization, comments, or inline ASCII; without a channel, through "
+            "prose metaphors and spatial layout.",
             "distinctions": [
                 {
                     "note": "diagram = precise Mermaid code with exact nodes and edges; visual = abstract/metaphorical prose layout with a short legend when conceptual overview is "
@@ -3255,7 +3262,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
             "distinctions": [
                 {
-                    "note": "inversion = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa = structured reflection on past events using what/so-what/now-what",
+                    "note": "inversion = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa = structured reflection "
+                    "on past events using what/so-what/now-what",
                     "token": "inversion",
                 }
             ],
@@ -3498,7 +3506,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "boom": {
             "definition": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
-            "distinctions": [{"note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; resilience = behavior under normal stress range", "token": "resilience"}],
+            "distinctions": [
+                {
+                    "note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; resilience = behavior under normal stress range",
+                    "token": "resilience",
+                }
+            ],
             "heuristics": [
                 "at 10x",
                 "at extreme load",

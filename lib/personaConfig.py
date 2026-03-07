@@ -471,7 +471,210 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
 # Schema: definition (str) + heuristics (list[str]) + distinctions (list[{token, note}])
 # SSOT for persona discoverability — replaces PERSONA_KEY_TO_USE_WHEN + PERSONA_KEY_TO_GUIDANCE
 # for migrated axes after T-10 cutover.
-PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {}
+PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
+    "voice": {
+        "as programmer": {
+            "definition": "Adopt a programmer's technical stance: the response reasons and explains like an engineer — precise, implementation-minded, direct.",
+            "heuristics": [
+                "from a developer perspective",
+                "as a programmer would",
+                "engineer's take on this",
+                "implementation-minded",
+                "explain like an engineer",
+            ],
+            "distinctions": [
+                {
+                    "token": "to programmer",
+                    "note": "voice:as programmer = output speaks FROM a programmer stance; audience:to programmer = output is addressed TO a programmer reader",
+                },
+                {
+                    "token": "as principal engineer",
+                    "note": "as programmer = general engineering voice; as principal engineer = systems-thinking, trade-off, architectural breadth",
+                },
+            ],
+        },
+        "as prompt engineer": {
+            "definition": "Adopt a prompt-engineering stance: the response involves designing, critiquing, or refining prompts explicitly.",
+            "heuristics": [
+                "from a prompt engineer angle",
+                "as a prompt engineer would",
+                "prompt design perspective",
+                "critique this prompt",
+                "refine the prompt",
+            ],
+            "distinctions": [
+                {
+                    "token": "as programmer",
+                    "note": "as prompt engineer = stance is about prompt design and LLM interaction; as programmer = stance is about code and implementation",
+                },
+            ],
+        },
+        "as scientist": {
+            "definition": "Adopt a scientific, evidence-first stance: the response foregrounds hypotheses, evidence, and rigor.",
+            "heuristics": [
+                "from a scientific perspective",
+                "as a scientist would",
+                "scientific framing",
+                "evidence-based",
+                "hypothesis and evidence",
+            ],
+            "distinctions": [
+                {
+                    "token": "as programmer",
+                    "note": "as scientist = evidence-first, hypothesis-driven rigor; as programmer = implementation-minded, engineering precision",
+                },
+            ],
+        },
+        "as writer": {
+            "definition": "Adopt a writer's stance focused on narrative clarity: the response involves prose craftsmanship, storytelling, and communication flow.",
+            "heuristics": [
+                "from a writer's perspective",
+                "as a writer would",
+                "writing perspective",
+                "narrative clarity",
+                "prose focused",
+            ],
+            "distinctions": [
+                {
+                    "token": "as teacher",
+                    "note": "as writer = craft of prose and narrative; as teacher = scaffolded explanation and pedagogy",
+                },
+            ],
+        },
+        "as designer": {
+            "definition": "Adopt a designer's stance focused on usability and interaction: the response involves UX decisions, flows, or visual clarity.",
+            "heuristics": [
+                "from a designer's perspective",
+                "as a designer would",
+                "give feedback as a designer",
+                "UX perspective",
+                "design thinking",
+            ],
+            "distinctions": [
+                {
+                    "token": "to designer",
+                    "note": "voice:as designer = output speaks FROM a designer stance; audience:to designer = output is addressed TO a designer reader",
+                },
+                {
+                    "token": "as PM",
+                    "note": "as designer = UX, interaction, visual clarity; as PM = outcomes, scope, stakeholder alignment",
+                },
+            ],
+        },
+        "as teacher": {
+            "definition": "Adopt a teacher's stance that scaffolds understanding: the response breaks concepts down gradually for a learner.",
+            "heuristics": [
+                "teach me",
+                "as a teacher would explain",
+                "from a teaching perspective",
+                "pedagogical approach",
+                "scaffold the explanation",
+            ],
+            "distinctions": [
+                {
+                    "token": "as facilitator",
+                    "note": "as teacher = builds understanding through instruction; as facilitator = guides process and participation without teaching",
+                },
+                {
+                    "token": "as writer",
+                    "note": "as teacher = pedagogy and scaffolding; as writer = prose craft and narrative flow",
+                },
+            ],
+        },
+        "as facilitator": {
+            "definition": "Adopt a facilitator's stance that guides process: the response balances voices, structures participation, and maintains momentum.",
+            "heuristics": [
+                "run this as a facilitator",
+                "facilitate this",
+                "as a facilitator would",
+                "guide the discussion",
+                "balance the voices",
+            ],
+            "distinctions": [
+                {
+                    "token": "as teacher",
+                    "note": "as facilitator = guides process and participation; as teacher = transmits content and builds understanding",
+                },
+            ],
+        },
+        "as PM": {
+            "definition": "Adopt a product manager's stance focused on outcomes and scope: the response foregrounds user value, trade-offs, and stakeholder alignment.",
+            "heuristics": [
+                "write as a PM",
+                "from a product manager's perspective",
+                "PM take on this",
+                "product thinking",
+                "outcome focused",
+            ],
+            "distinctions": [
+                {
+                    "token": "to product manager",
+                    "note": "voice:as PM = output speaks FROM a PM stance; audience:to product manager = output is addressed TO a PM reader",
+                },
+                {
+                    "token": "as designer",
+                    "note": "as PM = outcomes, scope, stakeholder value; as designer = UX, interaction, visual clarity",
+                },
+            ],
+        },
+        "as junior engineer": {
+            "definition": "Adopt a junior engineer's curious, candid stance: the response surfaces questions, acknowledges uncertainty, and shows its work.",
+            "heuristics": [
+                "from a junior engineer's perspective",
+                "junior engineer take",
+                "curious and candid",
+                "show uncertainty",
+                "think aloud as a junior dev",
+            ],
+            "distinctions": [
+                {
+                    "token": "as programmer",
+                    "note": "as junior engineer = curiosity, candor, surfacing uncertainty; as programmer = confident technical precision",
+                },
+                {
+                    "token": "as principal engineer",
+                    "note": "as junior engineer = candid, learning-oriented; as principal engineer = broad systems thinking, trade-off authority",
+                },
+            ],
+        },
+        "as principal engineer": {
+            "definition": "Adopt a principal engineer's systems-thinking stance: the response brings architectural breadth, trade-off reasoning, and pragmatic guidance.",
+            "heuristics": [
+                "from a senior engineer's perspective",
+                "as a principal engineer would",
+                "principal engineer take",
+                "systems thinking",
+                "architectural trade-offs",
+            ],
+            "distinctions": [
+                {
+                    "token": "as programmer",
+                    "note": "as principal engineer = systems thinking, architectural breadth, trade-offs; as programmer = implementation-focused engineering precision",
+                },
+                {
+                    "token": "as junior engineer",
+                    "note": "as principal engineer = authoritative breadth; as junior engineer = candid, questioning, learning-oriented",
+                },
+            ],
+        },
+        "as Kent Beck": {
+            "definition": "Adopt Kent Beck's pragmatic, test-first, iterative stance: the response favors simplicity, working code, and small steps over elaboration.",
+            "heuristics": [
+                "Kent Beck style",
+                "from Kent Beck's perspective",
+                "TDD mindset",
+                "simplicity and small steps",
+                "XP approach",
+            ],
+            "distinctions": [
+                {
+                    "token": "as programmer",
+                    "note": "as Kent Beck = specifically XP/TDD simplicity philosophy; as programmer = general engineering voice without that specific philosophy",
+                },
+            ],
+        },
+    },
+}
 
 
 def persona_token_metadata_map(axis: str) -> dict[str, PersonaTokenMetadata]:

@@ -183,6 +183,44 @@ func TestPersonaMetadataForNilSafety(t *testing.T) {
 }
 
 
+// TestPersonaMetadataForVoiceContent specifies T-2 — voice axis metadata populated (ADR-0156 T-2).
+func TestPersonaMetadataForVoiceContent(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	voiceMeta := grammar.PersonaMetadataFor("voice", "as programmer")
+	if voiceMeta == nil {
+		t.Fatal("PersonaMetadataFor(voice, as programmer) must not return nil after T-2")
+	}
+	if voiceMeta.Definition == "" {
+		t.Error("voice/as programmer definition must not be empty")
+	}
+	if len(voiceMeta.Heuristics) == 0 {
+		t.Error("voice/as programmer heuristics must not be empty")
+	}
+	// as designer must distinguish from audience:to designer
+	designerMeta := grammar.PersonaMetadataFor("voice", "as designer")
+	if designerMeta == nil {
+		t.Fatal("PersonaMetadataFor(voice, as designer) must not return nil after T-2")
+	}
+	designerDistinctions := make([]string, 0, len(designerMeta.Distinctions))
+	for _, d := range designerMeta.Distinctions {
+		designerDistinctions = append(designerDistinctions, d.Token)
+	}
+	found := false
+	for _, tok := range designerDistinctions {
+		if tok == "to designer" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("voice/as designer must distinguish from audience:to designer; got distinctions: %v", designerDistinctions)
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

@@ -4423,6 +4423,17 @@
             }
           }
         }
+      },
+      "tone": {
+        "formally": {
+          "channel": {
+            "cautionary": {
+              "slack": "tends to feel bureaucratic — slack assumes informal conversational register; use casually or omit tone instead",
+              "sync": "tends to feel over-formal — sync assumes spoken, conversational rhythm; use directly or omit tone instead",
+              "remote": "tends to feel stiff — remote channels assume natural conversational flow; use directly or omit tone instead"
+            }
+          }
+        }
       }
     },
     "form_default_completeness": {
@@ -7779,7 +7790,7 @@
     }
   ],
   "checksums": {
-    "axes": "c266f08a7a66a87d5e515e64fb922d72850a08ccbdc37e984098a48e9bcf8ac5",
+    "axes": "7a99782e4f8ca718712b19a6513153fb4e2bd483c6fc15b3e762330fe8b15d32",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "ec158b5c6a9cb51e342c6e08e81eb2cb13ed5baf64947d29174bb83dee991fb3",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

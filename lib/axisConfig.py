@@ -1418,6 +1418,17 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             }
         }
     },
+    "tone": {
+        "formally": {
+            "channel": {
+                "cautionary": {
+                    "slack": "tends to feel bureaucratic — slack assumes informal conversational register; use casually or omit tone instead",
+                    "sync": "tends to feel over-formal — sync assumes spoken, conversational rhythm; use directly or omit tone instead",
+                    "remote": "tends to feel stiff — remote channels assume natural conversational flow; use directly or omit tone instead",
+                }
+            }
+        }
+    },
 }
 
 # Default completeness token for format-constrained form tokens (ADR-0153).

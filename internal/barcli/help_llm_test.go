@@ -123,6 +123,21 @@ func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
 	for token := range grammar.Static.Descriptions {
 		knownTokens[token] = true
 	}
+	// Include persona tokens (tone, voice, audience, intent, presets) so that
+	// CROSS_AXIS_COMPOSITION entries referencing persona tokens (e.g. formally) pass.
+	for _, tokenList := range grammar.Persona.Axes {
+		for _, token := range tokenList {
+			knownTokens[token] = true
+		}
+	}
+	for tokenName := range grammar.Persona.Presets {
+		knownTokens[tokenName] = true
+	}
+	for _, tokenList := range grammar.Persona.Intent.AxisTokens {
+		for _, token := range tokenList {
+			knownTokens[token] = true
+		}
+	}
 
 	var buf bytes.Buffer
 	renderLLMHelp(&buf, grammar, "", false)
@@ -268,15 +283,16 @@ func TestChoosingChannelFormEntriesRendered(t *testing.T) {
 	}
 }
 
-// TestLLMHelpADR0112D3 verifies ADR-0112 D3: tone/channel register conflict note present
-// in § Persona Guidance (from PERSONA_KEY_TO_GUIDANCE).
+// TestLLMHelpADR0112D3 verifies ADR-0112 D3: tone/channel register conflict note is
+// discoverable in bar help llm. Updated by ADR-0156 T-8: the formally+channel conflict
+// now lives in CROSS_AXIS_COMPOSITION (§ Choosing Channel) rather than Persona Guidance.
 func TestLLMHelpADR0112D3(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
 	renderLLMHelp(&buf, grammar, "", false)
 	output := buf.String()
 
-	// Check Persona Guidance section for tone guidance
+	// Persona Guidance section must still reference tone axis tokens (via structured metadata heuristics)
 	personaGuidanceStart := strings.Index(output, "**Persona Guidance:**")
 	if personaGuidanceStart == -1 {
 		t.Fatal("could not locate **Persona Guidance:** section")
@@ -289,27 +305,28 @@ func TestLLMHelpADR0112D3(t *testing.T) {
 	} else {
 		personaGuidance = output[sectionStart : sectionStart+sectionEnd]
 	}
-
-	checks := []struct {
-		description string
-		contains    string
-	}{
-		{"tone guidance present", "Tone"},
-		{"formally tone guidance present", "formally"},
-		{"slack mentioned in register conflict", "slack"},
+	if !strings.Contains(personaGuidance, "Tone") {
+		t.Error("ADR-0112 D3: § Persona Guidance must reference Tone axis")
 	}
-	for _, c := range checks {
-		if !strings.Contains(personaGuidance, c.contains) {
-			t.Errorf("ADR-0112 D3: § Persona Guidance missing %s (expected to contain %q)", c.description, c.contains)
-		}
+	if !strings.Contains(personaGuidance, "formally") {
+		t.Error("ADR-0112 D3: § Persona Guidance must reference formally tone token")
+	}
+
+	// formally+channel register conflict (slack/sync/remote) now lives in § Choosing Channel
+	// via CROSS_AXIS_COMPOSITION (ADR-0156 T-8 migration from PERSONA_KEY_TO_GUIDANCE).
+	choosingChannelStart := strings.Index(output, "### Choosing Channel")
+	if choosingChannelStart == -1 {
+		t.Fatal("could not locate ### Choosing Channel section")
+	}
+	choosingChannel := output[choosingChannelStart:]
+	if !strings.Contains(choosingChannel, "slack") {
+		t.Error("ADR-0112 D3: § Choosing Channel must mention slack in formally tone cautionary entry")
 	}
 }
 
-// TestLLMHelpPersonaUseWhen verifies ADR-0133: persona use_when discoverability hints
-// are rendered in bar help llm:
-//   - Preset table has a "When to use" column
-//   - Key presets (peer_engineer_explanation, executive_brief) have use_when content
-//   - Audience token table has "When to use" column with content for to-managers
+// TestLLMHelpPersonaUseWhen verifies ADR-0133 persona discoverability hints are rendered
+// in bar help llm. Updated by ADR-0156 T-8: columns are now Heuristics+Distinctions
+// (sourced from PersonaMetadataFor) rather than the legacy "When to use" column.
 func TestLLMHelpPersonaUseWhen(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
@@ -323,20 +340,20 @@ func TestLLMHelpPersonaUseWhen(t *testing.T) {
 	}
 	personaSection := output[personaStart:]
 
-	// Preset table must have "When to use" column header
-	if !strings.Contains(personaSection, "When to use") {
-		t.Error("ADR-0133: Persona System section missing 'When to use' column header in preset table")
+	// Preset table must have "Heuristics" column header (ADR-0156 T-8 replaces "When to use")
+	if !strings.Contains(personaSection, "Heuristics") {
+		t.Error("ADR-0133/ADR-0156: Persona System section missing 'Heuristics' column header in preset table")
 	}
 
-	// Key presets must have use_when content
+	// Key presets must have heuristic content (ADR-0133 content preserved in structured metadata)
 	checks := []struct {
 		preset   string
 		contains string
 	}{
-		{"peer_engineer_explanation use_when present", "engineer-to-engineer"},
-		{"executive_brief use_when present", "executive summary"},
-		{"teach_junior_dev use_when present", "junior"},
-		{"stakeholder_facilitator use_when present", "stakeholder"},
+		{"peer_engineer_explanation heuristics present", "engineer to engineer"},
+		{"executive_brief heuristics present", "executive summary"},
+		{"teach_junior_dev heuristics present", "junior"},
+		{"stakeholder_facilitator heuristics present", "stakeholder"},
 	}
 	for _, c := range checks {
 		if !strings.Contains(personaSection, c.contains) {
@@ -344,9 +361,35 @@ func TestLLMHelpPersonaUseWhen(t *testing.T) {
 		}
 	}
 
-	// Audience token table must have use_when for to-managers
+	// Audience token table must have heuristic content for to-managers
 	if !strings.Contains(personaSection, "outcome-focused for leadership") {
-		t.Error("ADR-0133: Persona System section missing to-managers use_when hint")
+		t.Error("ADR-0133: Persona System section missing to-managers heuristic hint")
+	}
+}
+
+// TestHelpLLMPersonaTablesUseStructuredMetadata specifies T-8: persona token tables in
+// bar help llm must render Heuristics and Distinctions columns sourced from
+// PersonaMetadataFor() rather than the legacy PersonaUseWhen()/PersonaGuidance() flat
+// columns (ADR-0156 T-8).
+func TestHelpLLMPersonaTablesUseStructuredMetadata(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	personaStart := strings.Index(output, "## Persona System")
+	if personaStart == -1 {
+		t.Fatal("could not locate ## Persona System section in bar help llm output")
+	}
+	personaSection := output[personaStart:]
+
+	// Persona axis tables must use Heuristics column (from structured metadata)
+	if !strings.Contains(personaSection, "Heuristics") {
+		t.Error("ADR-0156 T-8: Persona System section must have Heuristics column in token tables")
+	}
+	// Persona axis tables must use Distinctions column (from structured metadata)
+	if !strings.Contains(personaSection, "Distinctions") {
+		t.Error("ADR-0156 T-8: Persona System section must have Distinctions column in token tables")
 	}
 }
 

@@ -627,8 +627,8 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 		if !compact {
 			fmt.Fprintf(w, "Pre-configured combinations of voice, audience, and tone:\n\n")
 		}
-		fmt.Fprintf(w, "| Preset | Voice | Audience | Tone | Guidance | When to use |\n")
-		fmt.Fprintf(w, "|--------|-------|----------|------|----------|-------------|\n")
+		fmt.Fprintf(w, "| Preset | Voice | Audience | Tone | Heuristics | Distinctions |\n")
+		fmt.Fprintf(w, "|--------|-------|----------|------|------------|---------------|\n")
 
 		presetNames := make([]string, 0, len(grammar.Persona.Presets))
 		for name := range grammar.Persona.Presets {
@@ -654,17 +654,17 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 				tone = *preset.Tone
 			}
 
-			guidance := grammar.PersonaGuidance("presets", name)
-			if guidance == "" {
-				guidance = "-"
+			heuristics := personaTokenHeuristics(grammar, "presets", name)
+			if heuristics == "" {
+				heuristics = "-"
 			}
 
-			useWhen := grammar.PersonaUseWhen("presets", name)
-			if useWhen == "" {
-				useWhen = "-"
+			distinctions := personaTokenDistinctions(grammar, "presets", name)
+			if distinctions == "" {
+				distinctions = "-"
 			}
 
-			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", name, voice, audience, tone, guidance, useWhen)
+			fmt.Fprintf(w, "| `%s` | %s | %s | %s | %s | %s |\n", name, voice, audience, tone, heuristics, distinctions)
 		}
 		fmt.Fprintf(w, "\n")
 	}
@@ -708,8 +708,8 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 
 		// Show descriptions if available (skip in compact mode)
 		if len(axisDocs) > 0 && !compact {
-			fmt.Fprintf(w, "| Token | Description | When to use |\n")
-			fmt.Fprintf(w, "|-------|-------------|-------------|\n")
+			fmt.Fprintf(w, "| Token | Description | Heuristics | Distinctions |\n")
+			fmt.Fprintf(w, "|-------|-------------|------------|---------------|\n")
 			for _, token := range tokenNames {
 				slug := grammar.slugForToken(token)
 				if slug == "" {
@@ -719,14 +719,15 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 				if desc == "" {
 					desc = "(no description)"
 				}
-				useWhen := grammar.PersonaUseWhen(axisName, token)
-				fmt.Fprintf(w, "| `%s` | %s | %s |\n", slug, desc, useWhen)
+				heuristics := personaTokenHeuristics(grammar, axisName, token)
+				distinctions := personaTokenDistinctions(grammar, axisName, token)
+				fmt.Fprintf(w, "| `%s` | %s | %s | %s |\n", slug, desc, heuristics, distinctions)
 			}
 			fmt.Fprintf(w, "\n")
 		}
 	}
 
-	// Persona guidance for individual axes (ADR-0112)
+	// Persona guidance for individual axes (ADR-0112, updated ADR-0156 T-8)
 	fmt.Fprintf(w, "**Persona Guidance:**\n")
 	fmt.Fprintf(w, "Guidance for specific persona tokens:\n\n")
 
@@ -744,14 +745,19 @@ func renderPersonaSystem(w io.Writer, grammar *Grammar, compact bool) {
 		hasGuidance := false
 		var guidedTokens []string
 		for _, token := range tokenList {
-			guidance := grammar.PersonaGuidance(axisName, token)
-			if guidance != "" {
+			// Prefer structured metadata heuristics (ADR-0156 T-8); fall back to
+			// legacy PersonaGuidance for any tokens not yet migrated.
+			hint := personaTokenHeuristics(grammar, axisName, token)
+			if hint == "" {
+				hint = grammar.PersonaGuidance(axisName, token)
+			}
+			if hint != "" {
 				hasGuidance = true
 				slug := grammar.slugForToken(token)
 				if slug == "" {
 					slug = token
 				}
-				guidedTokens = append(guidedTokens, slug, guidance)
+				guidedTokens = append(guidedTokens, slug, hint)
 			}
 		}
 		if hasGuidance {
@@ -923,6 +929,39 @@ func axisTokenDistinctions(grammar *Grammar, axis, token string) string {
 	return grammar.AxisGuidance(axis, token)
 }
 
+// personaTokenHeuristics returns the heuristic trigger phrases for a persona token as a
+// semicolon-joined string, falling back to the legacy PersonaUseWhen string if no
+// structured metadata is available. ADR-0156 T-8.
+func personaTokenHeuristics(grammar *Grammar, axis, token string) string {
+	meta := grammar.PersonaMetadataFor(axis, token)
+	if meta != nil && len(meta.Heuristics) > 0 {
+		h := meta.Heuristics
+		if len(h) > 5 {
+			h = h[:5]
+		}
+		return strings.Join(h, "; ")
+	}
+	return grammar.PersonaUseWhen(axis, token)
+}
+
+// personaTokenDistinctions returns the distinction tokens for a persona token as a
+// "vs token; vs token" string, falling back to the legacy PersonaGuidance string if no
+// structured metadata is available. ADR-0156 T-8.
+func personaTokenDistinctions(grammar *Grammar, axis, token string) string {
+	meta := grammar.PersonaMetadataFor(axis, token)
+	if meta != nil {
+		if len(meta.Distinctions) == 0 {
+			return ""
+		}
+		parts := make([]string, 0, len(meta.Distinctions))
+		for _, d := range meta.Distinctions {
+			parts = append(parts, "vs "+d.Token)
+		}
+		return strings.Join(parts, "; ")
+	}
+	return grammar.PersonaGuidance(axis, token)
+}
+
 // renderUsagePatterns generates hardcoded usage pattern examples.
 // SYNC_CHECK: When adding patterns, ensure all tokens exist in axisConfig.py.
 // VALIDATION: TestLLMHelpUsagePatternsTokensExist validates these tokens.
@@ -1071,9 +1110,9 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 
 	fmt.Fprintf(w, "### Choosing Channel\n\n")
 
-	partnerAxes := []string{"task", "completeness", "audience", "channel", "form", "directional", "method"}
+	partnerAxes := []string{"task", "completeness", "audience", "channel", "form", "directional", "method", "tone"}
 
-	for _, axisA := range []string{"channel", "form", "completeness", "method"} {
+	for _, axisA := range []string{"channel", "form", "completeness", "method", "tone"} {
 		byToken, ok := cac[axisA]
 		if !ok {
 			continue
@@ -1137,6 +1176,8 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 				qualifier = " (completeness)"
 			case "method":
 				qualifier = " (method)"
+			case "tone":
+				qualifier = " (tone)"
 			}
 			if len(naturalParts) > 0 {
 				fmt.Fprintf(w, "**`%s`**%s: natural: %s\n", tokenA, qualifier, strings.Join(naturalParts, "; "))

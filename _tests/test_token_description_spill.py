@@ -58,16 +58,18 @@ class VerifyDescriptionSpillTests(unittest.TestCase):
 
 
 try:
-    from talon_user.lib.axisConfig import AXIS_KEY_TO_USE_WHEN
+    from talon_user.lib.axisConfig import AXIS_KEY_TO_USE_WHEN, AXIS_TOKEN_METADATA
 except ImportError:
     AXIS_KEY_TO_USE_WHEN = None  # type: ignore[assignment]
+    AXIS_TOKEN_METADATA = None  # type: ignore[assignment]
 
 
 @unittest.skipIf(AXIS_KEY_TO_VALUE is None, "axisConfig not importable in this environment")
 class ContextualiseDescriptionSpillTests(unittest.TestCase):
     def setUp(self):
         self.desc = AXIS_KEY_TO_VALUE["form"]["contextualise"]
-        self.use_when = (AXIS_KEY_TO_USE_WHEN or {}).get("form", {}).get("contextualise", "")
+        meta = (AXIS_TOKEN_METADATA or {}).get("form", {}).get("contextualise", {})
+        self.meta_distinction_tokens = [d["token"] for d in meta.get("distinctions", [])]
 
     def test_no_with_pull_task_coupling_in_description(self):
         """contextualise description must not contain task-pairing conditional."""
@@ -86,11 +88,11 @@ class ContextualiseDescriptionSpillTests(unittest.TestCase):
         )
 
     def test_pull_task_pairing_migrated_to_use_when(self):
-        """contextualise use_when must contain the pull task-pairing guidance."""
+        """contextualise distinctions must reference pull task-pairing (ADR-0152 T-5 / ADR-0155 T-12)."""
         self.assertIn(
             "pull",
-            self.use_when,
-            "pull task-pairing not found in contextualise use_when (ADR-0152 T-5)",
+            self.meta_distinction_tokens,
+            "pull task-pairing not found in contextualise distinctions (ADR-0152 T-5 / ADR-0155 T-12)",
         )
 
     def test_downstream_model_core_preserved(self):
@@ -102,7 +104,8 @@ class ContextualiseDescriptionSpillTests(unittest.TestCase):
 class SocraticDescriptionSpillTests(unittest.TestCase):
     def setUp(self):
         self.desc = AXIS_KEY_TO_VALUE["form"]["socratic"]
-        self.use_when = (AXIS_KEY_TO_USE_WHEN or {}).get("form", {}).get("socratic", "")
+        meta = (AXIS_TOKEN_METADATA or {}).get("form", {}).get("socratic", {})
+        self.meta_heuristics = meta.get("heuristics", [])
 
     def test_no_with_sort_plan_task_coupling_in_description(self):
         """socratic description must not contain sort/plan task-pairing conditional."""
@@ -121,11 +124,12 @@ class SocraticDescriptionSpillTests(unittest.TestCase):
         )
 
     def test_probe_task_pairing_migrated_to_use_when(self):
-        """socratic use_when must contain the probe task-pairing guidance."""
+        """socratic metadata heuristics must reference probe task-pairing (ADR-0152 T-5 / ADR-0155 T-12)."""
+        all_heuristics = " ".join(self.meta_heuristics)
         self.assertIn(
             "probe",
-            self.use_when,
-            "probe task-pairing not found in socratic use_when (ADR-0152 T-5)",
+            all_heuristics,
+            "probe task-pairing not found in socratic heuristics (ADR-0152 T-5 / ADR-0155 T-12)",
         )
 
     def test_socratic_core_preserved(self):

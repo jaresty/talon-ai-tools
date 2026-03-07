@@ -313,5 +313,33 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.assertIn("converge", distinction_tokens, "compare must distinguish from converge")
 
 
+class LegacyDictsCleanupTests(unittest.TestCase):
+    """ADR-0155 T-12: migrated axes must be removed from legacy dicts after consumer cutover."""
+
+    MIGRATED_AXES = {"channel", "directional", "form", "method", "scope"}
+
+    def test_migrated_axes_removed_from_axis_key_to_use_when(self):
+        """AXIS_KEY_TO_USE_WHEN must not contain entries for migrated axes (T-12)."""
+        from lib.axisConfig import AXIS_KEY_TO_USE_WHEN
+        for axis in self.MIGRATED_AXES:
+            with self.subTest(axis=axis):
+                self.assertNotIn(
+                    axis,
+                    AXIS_KEY_TO_USE_WHEN,
+                    f"AXIS_KEY_TO_USE_WHEN must not contain '{axis}' after T-12 migration",
+                )
+
+    def test_migrated_axes_removed_from_axis_key_to_guidance(self):
+        """AXIS_KEY_TO_GUIDANCE must not contain entries for migrated axes (T-12)."""
+        from lib.axisConfig import AXIS_KEY_TO_GUIDANCE
+        for axis in self.MIGRATED_AXES:
+            with self.subTest(axis=axis):
+                self.assertNotIn(
+                    axis,
+                    AXIS_KEY_TO_GUIDANCE,
+                    f"AXIS_KEY_TO_GUIDANCE must not contain '{axis}' after T-12 migration",
+                )
+
+
 if __name__ == "__main__":
     unittest.main()

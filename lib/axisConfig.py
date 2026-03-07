@@ -11,16 +11,18 @@ When adding a new axis token (edit this file directly — it is the SSOT):
 Required for all axes:
 1. AXIS_KEY_TO_VALUE        — description (prompt injection text)
 2. AXIS_KEY_TO_LABEL        — short CLI-facing label (3-8 words, ADR-0109)
-3. AXIS_KEY_TO_USE_WHEN     — task-type heuristics for when to apply the token (ADR-0132)
-4. AXIS_KEY_TO_KANJI        — 1-2 character kanji icon (ADR-0143)
-5. AXIS_KEY_TO_ROUTING_CONCEPT — shortest phrase mapping user framing to the token (ADR-0146)
-6. AXIS_TOKEN_METADATA      — definition, heuristics list, distinctions list (ADR-0155)
+3. AXIS_KEY_TO_KANJI        — 1-2 character kanji icon (ADR-0143)
+4. AXIS_KEY_TO_ROUTING_CONCEPT — shortest phrase mapping user framing to the token (ADR-0146)
+5. AXIS_TOKEN_METADATA      — definition, heuristics list, distinctions list (ADR-0155)
 
 Conditional:
-- AXIS_KEY_TO_GUIDANCE      — only for tokens with naming traps or ambiguous descriptions (ADR-0110)
 - AXIS_KEY_TO_CATEGORY      — method axis only: semantic family (ADR-0144)
 - CROSS_AXIS_COMPOSITION    — only if the token has notable cross-axis interactions (ADR-0147)
 - FORM_DEFAULT_COMPLETENESS — form axis only, if the format structurally constrains depth (ADR-0153)
+
+Superseded (do not populate for new tokens):
+- AXIS_KEY_TO_GUIDANCE (ADR-0110) — superseded by AXIS_TOKEN_METADATA distinctions (ADR-0155)
+- AXIS_KEY_TO_USE_WHEN (ADR-0132) — superseded by AXIS_TOKEN_METADATA heuristics (ADR-0155)
 
 After editing, run `make axis-regenerate-apply` to normalize formatting and update downstream files.
 
@@ -248,6 +250,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
         "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
+        "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
+        "shift.",
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
@@ -261,12 +265,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states). Explanations must "
         "distinguish pursuit from avoidance, account for how negative boundaries constrain trajectories, and specify whether outcomes arise from optimization toward a goal or evasion of "
         "an undesirable state. Outcomes may not be attributed solely to positive objectives without modeling active avoidance pressures.",
+        "preserve": "The response modifies the task by maintaining compatibility with existing structures, interfaces, or assumptions, constraining changes so previously valid components "
+        "continue to function without modification.",
         "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "product": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
         "reify": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that "
         "constrain reasoning.",
         "release": "The response reduces distortion or disturbance by loosening attachment or identification with transient states, roles, or outcomes.",
+        "reset": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed.",
         "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
@@ -454,6 +461,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mapping": "Surface elements and relationships",
         "meld": "Explore combinations and overlaps",
         "melody": "Coordination across components or time",
+        "migrate": "Introduce a transition path between structures",
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
         "objectivity": "Separate facts from opinions",
@@ -461,11 +469,13 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
         "polar": "Attractor-repeller dynamics analysis",
+        "preserve": "Maintain compatibility with existing structures",
         "prioritize": "Rank items by importance or impact",
         "probability": "Probabilistic and statistical reasoning",
         "product": "Product lens — features, users, value",
         "reify": "Make implicit patterns explicit as rules",
         "release": "Loosen attachment to transient states",
+        "reset": "Reconstruct without prior compatibility constraints",
         "resilience": "Behavior under stress and recovery",
         "rigor": "Disciplined, well-justified reasoning",
         "risks": "Potential problems and failure modes",
@@ -643,6 +653,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "mapping": "写",
         "meld": "融",
         "melody": "旋",
+        "migrate": "移",
         "mod": "周",
         "models": "型",
         "objectivity": "客",
@@ -651,11 +662,13 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "origin": "起",
         "perturb": "擾",
         "polar": "磁",
+        "preserve": "守",
         "prioritize": "優",
         "probability": "確",
         "product": "商",
         "reify": "形",
         "release": "放",
+        "reset": "初",
         "resilience": "耐",
         "rigor": "厳",
         "risks": "危",
@@ -801,6 +814,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "mapping": "Structural",
         "meld": "Comparative",
         "melody": "Generative",
+        "migrate": "Structural",
         "mod": "Generative",
         "models": "Generative",
         "objectivity": "Reasoning",
@@ -809,11 +823,13 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "origin": "Structural",
         "perturb": "Diagnostic",
         "polar": "Comparative",
+        "preserve": "Structural",
         "prioritize": "Comparative",
         "probability": "Reasoning",
         "product": "Generative",
         "reify": "Generative",
         "release": "Reasoning",
+        "reset": "Structural",
         "resilience": "Diagnostic",
         "rigor": "Reasoning",
         "risks": "Diagnostic",
@@ -968,6 +984,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "mapping": "Spatial map",
         "meld": "Combinations/overlaps",
         "melody": "Coordination across parts",
+        "migrate": "Compatibility transition path",
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
         "objectivity": "Facts vs opinions",
@@ -976,11 +993,13 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "origin": "Historical causation",
         "perturb": "Introduce controlled variations",
         "polar": "Attractors/repellers",
+        "preserve": "Backward compatibility",
         "prioritize": "Rank by importance",
         "probability": "Statistical reasoning",
         "product": "Product lens",
         "reify": "Make implicit explicit",
         "release": "Let go of attachment",
+        "reset": "Clean slate/greenfield",
         "resilience": "Stress and fragility",
         "rigor": "Disciplined reasoning",
         "risks": "Potential problems",
@@ -4156,6 +4175,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "who needs to change when",
             ],
         },
+        "migrate": {
+            "definition": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility "
+            "during the shift.",
+            "distinctions": [
+                {
+                    "note": "preserve = keep existing behavior unchanged; migrate = introduce a transition path that moves toward a new structure",
+                    "token": "preserve",
+                },
+                {
+                    "note": "reset = discard prior commitments entirely; migrate = change while maintaining temporary compatibility",
+                    "token": "reset",
+                },
+            ],
+            "heuristics": [
+                "migrate from X to Y",
+                "transition path",
+                "upgrade while keeping compatibility",
+                "bridge old and new",
+                "deprecation path",
+                "phased transition",
+                "backward compatible change",
+                "coexist old and new",
+            ],
+        },
         "mod": {
             "definition": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with "
             "a defined period or wraps around boundaries.",
@@ -4319,6 +4362,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "positive and negative forces",
             ],
         },
+        "preserve": {
+            "definition": "The response modifies the task by maintaining compatibility with existing structures, interfaces, or assumptions, constraining changes so previously valid "
+            "components continue to function without modification.",
+            "distinctions": [
+                {
+                    "note": "migrate = introduce a transition path toward a new structure; preserve = constrain changes to keep existing components working unchanged",
+                    "token": "migrate",
+                },
+                {
+                    "note": "reset = discard compatibility constraints; preserve = explicitly maintain them",
+                    "token": "reset",
+                },
+            ],
+            "heuristics": [
+                "don't break existing behavior",
+                "maintain backward compatibility",
+                "keep existing interfaces working",
+                "non-breaking change",
+                "preserve the contract",
+                "existing clients must still work",
+                "no breaking changes",
+                "stay compatible with",
+            ],
+        },
         "prioritize": {
             "definition": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
             "distinctions": [
@@ -4415,6 +4482,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "non-attached analysis",
                 "release the assumption",
                 "stop holding onto X",
+            ],
+        },
+        "reset": {
+            "definition": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed.",
+            "distinctions": [
+                {
+                    "note": "preserve = maintain existing compatibility; reset = discard it entirely",
+                    "token": "preserve",
+                },
+                {
+                    "note": "migrate = change while keeping temporary compatibility; reset = break from prior commitments without a transition path",
+                    "token": "migrate",
+                },
+            ],
+            "heuristics": [
+                "start fresh",
+                "ignore existing constraints",
+                "greenfield design",
+                "rebuild from scratch",
+                "no legacy assumptions",
+                "pretend it doesn't exist yet",
+                "clean slate",
+                "break from the current design",
             ],
         },
         "resilience": {

@@ -472,6 +472,130 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
 # SSOT for persona discoverability — replaces PERSONA_KEY_TO_USE_WHEN + PERSONA_KEY_TO_GUIDANCE
 # for migrated axes after T-10 cutover.
 PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
+    "presets": {
+        "peer_engineer_explanation": {
+            "definition": "Technical explanation to a fellow engineer: engineer-to-engineer framing for a programmer or peer engineer.",
+            "heuristics": [
+                "explain this to a developer",
+                "peer review context",
+                "engineer to engineer",
+                "technical walkthrough for my team",
+            ],
+            "distinctions": [
+                {
+                    "token": "teach_junior_dev",
+                    "note": "peer_engineer_explanation = peer-level, assumes competence; teach_junior_dev = scaffolded, encouraging for a learner",
+                },
+            ],
+        },
+        "teach_junior_dev": {
+            "definition": "Mentoring or onboarding a junior developer: patient, scaffolded explanation with encouragement.",
+            "heuristics": [
+                "explain for a junior",
+                "onboarding doc",
+                "new developer",
+                "junior team member",
+                "kind clear explanation for someone new",
+            ],
+            "distinctions": [
+                {
+                    "token": "peer_engineer_explanation",
+                    "note": "teach_junior_dev = scaffolded, encouraging, patient; peer_engineer_explanation = peer-level, assumes competence",
+                },
+            ],
+        },
+        "stakeholder_facilitator": {
+            "definition": "Driving alignment with mixed stakeholders: helps a facilitator guide a group toward a decision.",
+            "heuristics": [
+                "stakeholder meeting",
+                "cross-functional group",
+                "alignment session",
+                "facilitating a decision",
+                "stakeholder presentation",
+            ],
+            "distinctions": [
+                {
+                    "token": "executive_brief",
+                    "note": "stakeholder_facilitator = mixed group, process-oriented alignment; executive_brief = single C-suite recipient, crisp business asks",
+                },
+            ],
+        },
+        "designer_to_pm": {
+            "definition": "Design decisions communicated to a product manager: explains trade-offs and UX rationale to a PM audience.",
+            "heuristics": [
+                "explain design to PM",
+                "design rationale for product",
+                "UX decision for a product manager",
+            ],
+            "distinctions": [
+                {
+                    "token": "product_manager_to_team",
+                    "note": "designer_to_pm = design explaining to PM; product_manager_to_team = PM explaining to engineering/design team",
+                },
+            ],
+        },
+        "product_manager_to_team": {
+            "definition": "Product direction communicated to the team: a PM frames product goals or retrospective insights for the engineering or design team.",
+            "heuristics": [
+                "PM to team update",
+                "product direction for engineers",
+                "team retrospective framing",
+            ],
+            "distinctions": [
+                {
+                    "token": "designer_to_pm",
+                    "note": "product_manager_to_team = PM explaining to team; designer_to_pm = designer explaining to PM",
+                },
+            ],
+        },
+        "executive_brief": {
+            "definition": "Concise high-stakes summary for a CEO or executive: surfaces business impact, risk, and crisp asks in direct language.",
+            "heuristics": [
+                "executive summary",
+                "board presentation",
+                "brief for the CEO",
+                "business impact",
+                "crisp ask for leadership",
+            ],
+            "distinctions": [
+                {
+                    "token": "stakeholder_facilitator",
+                    "note": "executive_brief = single C-suite recipient, crisp and decisive; stakeholder_facilitator = mixed group, facilitating alignment",
+                },
+            ],
+        },
+        "scientist_to_analyst": {
+            "definition": "Evidence-based analysis presented formally to an analyst: rigorous structure, data framing, and formal tone.",
+            "heuristics": [
+                "data analysis for an analyst",
+                "evidence-based findings",
+                "formal analytical report",
+                "scientific framing",
+            ],
+            "distinctions": [
+                {
+                    "token": "peer_engineer_explanation",
+                    "note": "scientist_to_analyst = evidence-based, data-structured, formal; peer_engineer_explanation = implementation-oriented, engineering voice",
+                },
+            ],
+        },
+        "fun_mode": {
+            "definition": "Casual, playful tone across the board: the subject calls for levity and an entertaining register.",
+            "heuristics": [
+                "keep it light",
+                "be funny",
+                "playful tone",
+                "casual",
+                "have fun with it",
+            ],
+            "distinctions": [
+                {
+                    "token": "peer_engineer_explanation",
+                    "note": "fun_mode = levity and playfulness as the primary register; peer_engineer_explanation = technical substance with peer framing",
+                },
+            ],
+        },
+    },
     "intent": {
         "inform": {
             "definition": "Communicate to transfer knowledge or update understanding: the goal is to give the audience the information they need.",

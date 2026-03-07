@@ -318,6 +318,37 @@ func TestPersonaMetadataForIntentContent(t *testing.T) {
 	}
 }
 
+// TestPersonaMetadataForPresetsContent specifies T-6 — presets axis populated (ADR-0156 T-6).
+func TestPersonaMetadataForPresetsContent(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	peerMeta := grammar.PersonaMetadataFor("presets", "peer_engineer_explanation")
+	if peerMeta == nil {
+		t.Fatal("PersonaMetadataFor(presets, peer_engineer_explanation) must not return nil after T-6")
+	}
+	if len(peerMeta.Heuristics) == 0 {
+		t.Error("presets/peer_engineer_explanation heuristics must not be empty")
+	}
+	// executive_brief must distinguish from stakeholder_facilitator
+	execMeta := grammar.PersonaMetadataFor("presets", "executive_brief")
+	if execMeta == nil {
+		t.Fatal("PersonaMetadataFor(presets, executive_brief) must not return nil after T-6")
+	}
+	found := false
+	for _, d := range execMeta.Distinctions {
+		if d.Token == "stakeholder_facilitator" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("presets/executive_brief must distinguish from stakeholder_facilitator")
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

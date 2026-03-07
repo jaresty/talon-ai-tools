@@ -891,8 +891,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 }
 
 // axisTokenHeuristics returns the heuristic trigger phrases for an axis token as a
-// semicolon-joined string, falling back to the legacy use_when string if no structured
-// metadata is available. ADR-0155 T-10.
+// semicolon-joined string. ADR-0155 T-10.
 func axisTokenHeuristics(grammar *Grammar, axis, token string) string {
 	meta := grammar.AxisMetadataFor(axis, token)
 	if meta != nil && len(meta.Heuristics) > 0 {
@@ -903,25 +902,21 @@ func axisTokenHeuristics(grammar *Grammar, axis, token string) string {
 		}
 		return strings.Join(h, "; ")
 	}
-	return grammar.AxisUseWhen(axis, token)
+	return ""
 }
 
 // axisTokenDistinctions returns the distinction tokens for an axis token as a
-// "vs token; vs token" string, falling back to the legacy guidance string if no
-// structured metadata is available. ADR-0155 T-10.
+// "vs token; vs token" string. ADR-0155 T-10.
 func axisTokenDistinctions(grammar *Grammar, axis, token string) string {
 	meta := grammar.AxisMetadataFor(axis, token)
-	if meta != nil {
-		if len(meta.Distinctions) == 0 {
-			return ""
-		}
-		parts := make([]string, 0, len(meta.Distinctions))
-		for _, d := range meta.Distinctions {
-			parts = append(parts, "vs "+d.Token)
-		}
-		return strings.Join(parts, "; ")
+	if meta == nil || len(meta.Distinctions) == 0 {
+		return ""
 	}
-	return grammar.AxisGuidance(axis, token)
+	parts := make([]string, 0, len(meta.Distinctions))
+	for _, d := range meta.Distinctions {
+		parts = append(parts, "vs "+d.Token)
+	}
+	return strings.Join(parts, "; ")
 }
 
 // personaTokenHeuristics returns the heuristic trigger phrases for a persona token as a

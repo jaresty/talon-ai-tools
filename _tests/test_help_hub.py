@@ -1351,106 +1351,10 @@ def test_help_hub_search_results_for_is_pure_and_label_based():
     assert [item.label for item in results] == ["Patterns"]
 
 
-def test_cheat_sheet_includes_guidance_when_present(monkeypatch):
-    """Test that cheat sheet includes guidance section when axis_guidance is defined (ADR-0114)."""
-    from lib import axisConfig, axisCatalog
-
-    captured_guidance = {}
-
-    def mock_axis_guidance_map(axis):
-        return captured_guidance.get(axis, {})
-
-    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
-    # ADR-0154: task guidance now comes from task_metadata.definition, not static_prompt_guidance
-    monkeypatch.setattr(
-        axisCatalog,
-        "_task_metadata",
-        lambda: {
-            "fix": {
-                "definition": "In bar's grammar, fix means reformat - not debug.",
-                "heuristics": [],
-                "distinctions": [],
-            }
-        },
-    )
-
-    captured_guidance["channel"] = {
-        "codetour": "Best for code-navigation: fix, make, show. Avoid with sim, probe.",
-    }
-
-    lines = helpHub._axis_guidance_lines()
-
-    assert len(lines) > 0, "Guidance lines should be returned when guidance is defined"
-    assert any("codetour" in line for line in lines), (
-        "codetour guidance should be in output"
-    )
-    assert any("fix" in line for line in lines), "fix guidance should be in output"
-
-
-def test_cheat_sheet_guidance_truncation(monkeypatch):
-    """Test that long guidance text is truncated to ~60 chars (ADR-0114)."""
-    from lib import axisConfig, axisCatalog
-
-    captured_guidance = {}
-
-    def mock_axis_guidance_map(axis):
-        return captured_guidance.get(axis, {})
-
-    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
-    # ADR-0154: suppress real task_metadata to isolate axis truncation test
-    monkeypatch.setattr(axisCatalog, "_task_metadata", lambda: {})
-
-    long_guidance = "This is a very long guidance text that definitely exceeds sixty characters and should be truncated appropriately."
-
-    captured_guidance["scope"] = {
-        "cross": long_guidance,
-    }
-
-    lines = helpHub._axis_guidance_lines()
-
-    assert any("cross" in line for line in lines), "cross guidance should be in output"
-    for line in lines:
-        if "cross" in line:
-            assert len(line) < 80, f"Line should be truncated: {line}"
-
-
-def test_cheat_sheet_guidance_empty_and_special_chars(monkeypatch):
-    """Test guidance handling with empty strings and special characters (ADR-0114)."""
-    from lib import axisConfig, axisCatalog
-
-    captured_guidance = {}
-
-    def mock_axis_guidance_map(axis):
-        return captured_guidance.get(axis, {})
-
-    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
-    # ADR-0154: suppress real task_metadata to isolate axis test
-    monkeypatch.setattr(axisCatalog, "_task_metadata", lambda: {})
-
-    captured_guidance["method"] = {
-        "actors": "",  # Empty string - should be filtered
-        "inversion": "Well-suited for architecture evaluation.",
-    }
-
-    lines = helpHub._axis_guidance_lines()
-
-    assert any("inversion" in line for line in lines), (
-        "inversion guidance should be in output"
-    )
-    for line in lines:
-        assert "actors" not in line or "guidance" not in line, (
-            "Empty guidance should not appear"
-        )
-
-
 def test_cheat_sheet_task_guidance_uses_metadata_definition(monkeypatch):
-    """T-9 (ADR-0154): _axis_guidance_lines reads task_metadata.definition, not static_prompt_guidance."""
-    from lib import axisConfig, axisCatalog
+    """ADR-0154: _axis_guidance_lines reads task_metadata.definition for task tokens."""
+    from lib import axisCatalog
 
-    def mock_axis_guidance_map(axis):
-        return {}
-
-    monkeypatch.setattr(axisConfig, "axis_key_to_guidance_map", mock_axis_guidance_map)
     monkeypatch.setattr(
         axisCatalog,
         "_task_metadata",

@@ -43,8 +43,6 @@ type AxisSection struct {
 	Definitions    map[string]map[string]string
 	ListTokens     map[string][]string
 	Labels         map[string]map[string]string // ADR-0109: short CLI-facing selection labels
-	Guidance       map[string]map[string]string // ADR-0110: selection-oriented prose hints
-	UseWhen        map[string]map[string]string // ADR-0132: task-type discoverability hints
 	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
 	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
 	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
@@ -168,8 +166,6 @@ type rawAxisSection struct {
 	Definitions    map[string]map[string]string `json:"definitions"`
 	ListTokens     map[string][]string          `json:"list_tokens"`
 	Labels         map[string]map[string]string `json:"labels"`           // ADR-0109
-	Guidance       map[string]map[string]string `json:"guidance"`         // ADR-0110
-	UseWhen        map[string]map[string]string `json:"use_when"`         // ADR-0132
 	Kanji          map[string]map[string]string `json:"kanji"`            // ADR-0143
 	Categories     map[string]map[string]string `json:"categories"`       // ADR-0144
 	RoutingConcept       map[string]map[string]string                `json:"routing_concept"`        // ADR-0146
@@ -273,8 +269,6 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Definitions:    raw.Axes.Definitions,
 			ListTokens:     raw.Axes.ListTokens,
 			Labels:         raw.Axes.Labels,
-			Guidance:       raw.Axes.Guidance,
-			UseWhen:        raw.Axes.UseWhen,
 			Kanji:          raw.Axes.Kanji,
 			Categories:     raw.Axes.Categories,
 			RoutingConcept:       raw.Axes.RoutingConcept,
@@ -983,38 +977,6 @@ func (g *Grammar) TaskLabel(name string) string {
 	return ""
 }
 
-// AxisGuidance returns the optional selection-guidance text for the given axis token (ADR-0110).
-// Returns empty string if no guidance is defined.
-func (g *Grammar) AxisGuidance(axis, token string) string {
-	axisKey := normalizeAxis(axis)
-	tokenKey := normalizeToken(token)
-	if axisKey == "" || tokenKey == "" {
-		return ""
-	}
-	if guidance, ok := g.Axes.Guidance[axisKey]; ok {
-		if text, ok := guidance[tokenKey]; ok {
-			return text
-		}
-		if text, ok := guidance[strings.ToLower(tokenKey)]; ok {
-			return text
-		}
-	}
-	return ""
-}
-
-// AxisGuidanceMap returns all guidance text for a given axis as a map.
-// Used to render guidance section dynamically from axis configuration.
-func (g *Grammar) AxisGuidanceMap(axis string) map[string]string {
-	axisKey := normalizeAxis(axis)
-	if axisKey == "" {
-		return nil
-	}
-	if guidance, ok := g.Axes.Guidance[axisKey]; ok {
-		return guidance
-	}
-	return nil
-}
-
 // AxisLevelDescription returns the axis-level empty-state description for a given axis.
 // Used by SPA and TUI2 to explain the axis when no token is selected.
 func (g *Grammar) AxisLevelDescription(axis string) string {
@@ -1073,28 +1035,6 @@ func (g *Grammar) FormDefaultCompletenessFor(formToken string) string {
 		return ""
 	}
 	return g.Axes.FormDefaultCompleteness[normalizeToken(formToken)]
-}
-
-// AxisUseWhen returns the use_when discoverability hint for a token (ADR-0132).
-// Returns empty string if no hint is defined.
-func (g *Grammar) AxisUseWhen(axis, token string) string {
-	if g.Axes.UseWhen == nil {
-		return ""
-	}
-	axisKey := normalizeAxis(axis)
-	tokenKey := normalizeToken(token)
-	if axisKey == "" || tokenKey == "" {
-		return ""
-	}
-	if hints, ok := g.Axes.UseWhen[axisKey]; ok {
-		if text, ok := hints[tokenKey]; ok {
-			return text
-		}
-		if text, ok := hints[strings.ToLower(tokenKey)]; ok {
-			return text
-		}
-	}
-	return ""
 }
 
 // TaskKanji returns the kanji icon for the given task token (ADR-0143).

@@ -201,12 +201,6 @@ def axis_catalog(
         "axis_labels": {
             axis: axisConfig.axis_key_to_label_map(axis) for axis in axis_map
         },
-        "axis_guidance": {
-            axis: axisConfig.axis_key_to_guidance_map(axis) for axis in axis_map
-        },
-        "axis_use_when": {
-            axis: axisConfig.axis_key_to_use_when_map(axis) for axis in axis_map
-        },
         "axis_kanji": {
             axis: axisConfig.axis_key_to_kanji_map(axis) for axis in axis_map
         },
@@ -251,8 +245,6 @@ def serialize_axis_config(
     payload: dict[str, object] = {
         "axes": catalog["axes"],
         "axis_labels": catalog["axis_labels"],
-        "axis_guidance": catalog["axis_guidance"],
-        "axis_use_when": catalog["axis_use_when"],
         "axis_kanji": catalog["axis_kanji"],
         "axis_category": catalog["axis_category"],
         "axis_routing_concept": catalog["axis_routing_concept"],

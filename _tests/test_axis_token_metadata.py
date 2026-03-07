@@ -254,7 +254,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 74 tokens."""
+    """ADR-0155 T-8: method axis has structured metadata for all 77 tokens."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -264,9 +264,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "crystal", "deduce", "depends", "derive", "diagnose", "dimension", "domains",
         "drift", "effects", "entangle", "experimental", "explore", "field", "flow",
         "gap", "grove", "grow", "induce", "inversion", "jobs", "mapping", "meld",
-        "melody", "mod", "models", "objectivity", "operations", "order", "origin",
-        "perturb", "polar", "prioritize", "probability", "product", "reify",
-        "release", "resilience", "rigor", "risks", "robust", "sever", "shift",
+        "melody", "migrate", "mod", "models", "objectivity", "operations", "order", "origin",
+        "perturb", "polar", "preserve", "prioritize", "probability", "product", "reify",
+        "release", "resilience", "reset", "rigor", "risks", "robust", "sever", "shift",
         "simulation", "spec", "spill", "split", "systemic", "trade", "trans",
         "triage", "unknowns", "verify",
     }
@@ -275,7 +275,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 74 method tokens must have metadata entries."""
+        """All 77 method tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -311,34 +311,6 @@ class MethodAxisMetadataTests(unittest.TestCase):
         compare = self.meta.get("compare", {})
         distinction_tokens = [d["token"] for d in compare.get("distinctions", [])]
         self.assertIn("converge", distinction_tokens, "compare must distinguish from converge")
-
-
-class LegacyDictsCleanupTests(unittest.TestCase):
-    """ADR-0155 T-12: migrated axes must be removed from legacy dicts after consumer cutover."""
-
-    MIGRATED_AXES = {"channel", "directional", "form", "method", "scope"}
-
-    def test_migrated_axes_removed_from_axis_key_to_use_when(self):
-        """AXIS_KEY_TO_USE_WHEN must not contain entries for migrated axes (T-12)."""
-        from lib.axisConfig import AXIS_KEY_TO_USE_WHEN
-        for axis in self.MIGRATED_AXES:
-            with self.subTest(axis=axis):
-                self.assertNotIn(
-                    axis,
-                    AXIS_KEY_TO_USE_WHEN,
-                    f"AXIS_KEY_TO_USE_WHEN must not contain '{axis}' after T-12 migration",
-                )
-
-    def test_migrated_axes_removed_from_axis_key_to_guidance(self):
-        """AXIS_KEY_TO_GUIDANCE must not contain entries for migrated axes (T-12)."""
-        from lib.axisConfig import AXIS_KEY_TO_GUIDANCE
-        for axis in self.MIGRATED_AXES:
-            with self.subTest(axis=axis):
-                self.assertNotIn(
-                    axis,
-                    AXIS_KEY_TO_GUIDANCE,
-                    f"AXIS_KEY_TO_GUIDANCE must not contain '{axis}' after T-12 migration",
-                )
 
 
 if __name__ == "__main__":

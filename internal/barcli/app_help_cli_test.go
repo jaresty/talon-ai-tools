@@ -38,10 +38,10 @@ func TestAxisLabelAccessorReturnsNonEmpty(t *testing.T) {
 	}
 }
 
-// TestAxisGuidanceAndTaskMetadataPopulated specifies that Grammar.AxisGuidance returns
-// non-empty hints for axis tokens (ADR-0110 D2) and Grammar.TaskMetadataFor returns
-// non-empty structured metadata for task tokens (ADR-0154, supersedes TaskGuidance check).
-func TestAxisGuidanceAndTaskMetadataPopulated(t *testing.T) {
+// TestTaskMetadataAndCrossAxisCompositionPopulated specifies that Grammar.TaskMetadataFor returns
+// non-empty structured metadata for task tokens (ADR-0154) and cross-axis composition is defined
+// for key channel tokens (ADR-0148 Part C).
+func TestTaskMetadataAndCrossAxisCompositionPopulated(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
@@ -72,10 +72,9 @@ func TestAxisGuidanceAndTaskMetadataPopulated(t *testing.T) {
 	}
 }
 
-// TestAxisUseWhenAccessorReturnsNonEmpty specifies that every specialist form token
-// identified in ADR-0132 has at least one discoverability signal — either structured
-// metadata heuristics (ADR-0155, preferred) or a legacy use_when string (ADR-0132).
-func TestAxisUseWhenAccessorReturnsNonEmpty(t *testing.T) {
+// TestFormTokensHaveStructuredMetadataHeuristics specifies that every specialist form token
+// has structured metadata heuristics (ADR-0155, supersedes ADR-0132 use_when).
+func TestFormTokensHaveStructuredMetadataHeuristics(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
@@ -85,12 +84,9 @@ func TestAxisUseWhenAccessorReturnsNonEmpty(t *testing.T) {
 		"taxonomy", "facilitate", "recipe", "visual",
 	}
 	for _, token := range specialistForms {
-		// ADR-0155: structured metadata heuristics supersede use_when for migrated axes.
-		if meta := grammar.AxisMetadataFor("form", token); meta != nil && len(meta.Heuristics) > 0 {
-			continue
-		}
-		if hint := grammar.AxisUseWhen("form", token); hint == "" {
-			t.Errorf("form:%s must have use_when or structured metadata heuristics (ADR-0132 / ADR-0155)", token)
+		meta := grammar.AxisMetadataFor("form", token)
+		if meta == nil || len(meta.Heuristics) == 0 {
+			t.Errorf("form:%s must have structured metadata heuristics (ADR-0155)", token)
 		}
 	}
 }

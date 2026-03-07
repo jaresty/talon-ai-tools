@@ -1188,10 +1188,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					} else {
 						fmt.Fprintf(w, "    • %s: %s\n", display, desc)
 					}
-					if guidance := grammar.AxisGuidance(axis, token); guidance != "" {
-						fmt.Fprintf(w, "      ↳ %s\n", guidance)
 					}
-				}
 			}
 		}
 	}

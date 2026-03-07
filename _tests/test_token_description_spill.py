@@ -58,9 +58,8 @@ class VerifyDescriptionSpillTests(unittest.TestCase):
 
 
 try:
-    from talon_user.lib.axisConfig import AXIS_KEY_TO_USE_WHEN, AXIS_TOKEN_METADATA
+    from talon_user.lib.axisConfig import AXIS_TOKEN_METADATA
 except ImportError:
-    AXIS_KEY_TO_USE_WHEN = None  # type: ignore[assignment]
     AXIS_TOKEN_METADATA = None  # type: ignore[assignment]
 
 

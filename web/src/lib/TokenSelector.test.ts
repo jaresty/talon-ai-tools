@@ -1942,3 +1942,87 @@ describe('TokenSelector — ADR-0155 distinction chip highlight', () => {
 		expect(pullChip.classList.contains('chip--distinction-ref')).toBe(false);
 	});
 });
+
+// ── ADR-0155 T-9: axis token metadata panel renders structured heuristics + distinctions ──
+// Axis tokens now carry metadata (populated in T-3 through T-8).
+// The panel must render heuristics + distinctions and suppress the legacy "When to use" section.
+
+const axisTokenWithMetadata = {
+	token: 'gist',
+	label: '',
+	description: 'Brief but complete summary covering key points without detail.',
+	guidance: '',
+	use_when: 'Use when a brief but complete summary is needed.',
+	kanji: '',
+	category: '',
+	routing_concept: '',
+	metadata: {
+		definition: 'Brief but complete summary covering key points without detail.',
+		heuristics: ['brief summary', 'high-level overview', 'gist of this'],
+		distinctions: [{ token: 'skim', note: 'gist = brief but complete; skim = light pass without full coverage' }]
+	}
+};
+
+describe('TokenSelector — ADR-0155 T-9: axis token structured metadata panel', () => {
+	it('axis token with metadata shows Heuristics section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'completeness',
+				tokens: [axisTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="gist"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Heuristics')).toBeTruthy();
+		expect(screen.getByText('brief summary')).toBeTruthy();
+		expect(screen.getByText('high-level overview')).toBeTruthy();
+	});
+
+	it('axis token with metadata shows Distinctions section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'completeness',
+				tokens: [axisTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="gist"]')!;
+		await fireEvent.click(chip);
+		expect(screen.getByText('Distinctions')).toBeTruthy();
+		expect(screen.getByText(/gist = brief but complete; skim = light pass/)).toBeTruthy();
+	});
+
+	it('axis token with metadata does NOT show legacy "When to use" section', async () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'completeness',
+				tokens: [axisTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const chip = document.querySelector('[data-token="gist"]')!;
+		await fireEvent.click(chip);
+		expect(screen.queryByText('When to use')).toBeNull();
+	});
+
+	it('axis token with metadata shows use-when-dot chip indicator', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'completeness',
+				tokens: [axisTokenWithMetadata],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn()
+			}
+		});
+		const dots = document.querySelectorAll('.use-when-dot');
+		expect(dots.length).toBe(1);
+	});
+});

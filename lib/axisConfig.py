@@ -102,27 +102,32 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
     },
     "directional": {
-        "bog": "The response modifies the task to span both the reflective/structural dimension (rog) and the acting/extending dimension (ong) — examining the structure and its implications "
-        "while also identifying concrete actions and extensions that follow.",
-        "dig": "The response modifies the task to examine concrete details and grounding examples, focusing on specifics rather than abstractions.",
-        "dip bog": "The response modifies the task to start with concrete examples and grounded details, examines their structure and reflects on patterns, then identify actions and "
-        "extensions.",
-        "dip ong": "The response modifies the task to start with concrete examples, identify actions to take from them, then extends those actions to related situations.",
-        "dip rog": "The response modifies the task to examine concrete details and grounded examples, then reflects on their structural patterns and what they reveal.",
-        "fig": "The response modifies the task to span both the abstract/general dimension (fog) and the concrete/specific dimension (dig) — addressing the underlying principles and the "
-        "grounded specifics, using each to illuminate the other (figure-ground reversal).",
-        "fip bog": "The response modifies the task to move between abstract principles and concrete examples, examines their structural patterns and reflects on them, then identifies "
-        "actions and extends them to related contexts.",
-        "fip ong": "The response modifies the task to alternate between abstract principles and concrete examples, then identifies actions to take and extends them to related situations.",
-        "fip rog": "The response modifies the task to move between abstract principles and concrete examples while examining structural patterns and reflecting on what they reveal.",
-        "fly bog": "The response modifies the task to identify abstract patterns and general principles, examine their structure and reflects on it, then identifies actions and extends them "
-        "to related contexts.",
-        "fly ong": "The response modifies the task to identify abstract patterns and general principles, then propose concrete actions and extends them to related contexts.",
-        "fly rog": "The response modifies the task to identify abstract patterns and general principles, then examines their structural relationships and reflect on their implications.",
-        "fog": "The response modifies the task to identify general patterns and abstract principles from the specifics, moving from particular cases to broader insights.",
-        "jog": "The response modifies the task to interpret the intent and carry it out directly without asking follow-up questions.",
-        "ong": "The response modifies the task to identify concrete actions to take, then extends those actions to related situations or next steps.",
-        "rog": "The response modifies the task to examine the structure of the subject (how it is organized), then reflects on why that structure exists and what it reveals.",
+        "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
+        "covering structure, implications, actions, and extensions together.",
+        "dig": "The response additionally orients toward the concrete and specific — examining grounded details and examples rather than abstractions.",
+        "dip bog": "The response additionally follows a concrete-first sequence: starting with grounded examples and details, examining their structure and reflecting on patterns, then "
+        "identifying actions and extensions.",
+        "dip ong": "The response additionally follows a concrete-first sequence: starting with grounded examples and details, then identifying actions to take and extending them to related "
+        "situations.",
+        "dip rog": "The response additionally follows a concrete-first sequence: starting with grounded examples and details, then examining their structural patterns and what they reveal.",
+        "fig": "The response additionally orients across the full vertical axis — spanning both the abstract/general dimension (fog) and the concrete/specific dimension (dig), using each to "
+        "illuminate the other.",
+        "fip bog": "The response additionally follows a vertical-span sequence: moving between abstract principles and concrete examples, examining their structural patterns and reflecting "
+        "on them, then identifying actions and extending them to related contexts.",
+        "fip ong": "The response additionally follows a vertical-span sequence: moving between abstract principles and concrete examples, then identifying actions and extending them to "
+        "related situations.",
+        "fip rog": "The response additionally follows a vertical-span sequence: moving between abstract principles and concrete examples while examining structural patterns and reflecting "
+        "on what they reveal.",
+        "fly bog": "The response additionally follows an abstract-first sequence: identifying abstract patterns and general principles, examining their structure and reflecting on what it "
+        "reveals, then identifying actions and extending them to related contexts.",
+        "fly ong": "The response additionally follows an abstract-first sequence: identifying abstract patterns and general principles, then identifying actions and extending them to "
+        "related contexts.",
+        "fly rog": "The response additionally follows an abstract-first sequence: identifying abstract patterns and general principles, then examining how they are organized and what that "
+        "organization reveals.",
+        "fog": "The response additionally orients toward the abstract and general — identifying patterns and principles from the specifics, moving from particular cases to broader insights.",
+        "jog": "The response applies no directional orientation. Use when a directional token is required by the grammar but no compass push is desired.",
+        "ong": "The response additionally orients toward action and extension — identifying what to do and extending those actions to related situations or next steps.",
+        "rog": "The response additionally orients toward the structural and reflective dimension — how the subject is organized and what that organization reveals.",
     },
     "form": {
         "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
@@ -1063,7 +1068,8 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "audience": "Who this is for — shapes vocabulary, depth, and framing.",
     "channel": "Delivery format — the artifact type or platform the response targets (diagram, script, slides, HTML, image/video, etc.).",
     "completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
-    "directional": "Compass modifier shaping the response angle: abstract↑ concrete↓ reflect← act→.",
+    "directional": "Compass modifier shaping how the response is oriented, applied on top of task, scope, and method. Distinct from scope (which selects what dimension of the topic to focus on) and "
+    "method (which selects the reasoning approach). Use to push the response angle: abstract↑ concrete↓ reflect← act→. jog is the null directional (no push).",
     "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.).",
     "intent": "The purpose of the response — the motivation the speaker has.",
     "method": "Reasoning approach — how to think through the problem. Up to three can be combined.",
@@ -2411,6 +2417,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "concrete first then structure and actions",
                 "ground it then reflect and act",
                 "examples first then what they reveal and what to do",
+                "walk through examples, reflect on structure, then give me actions",
             ],
         },
         "dip ong": {
@@ -2429,6 +2436,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "concrete examples then next steps",
                 "ground it then tell me what to do",
                 "practical first then actions",
+                "show me a real case then tell me what to do about it",
             ],
         },
         "dip rog": {
@@ -2447,6 +2455,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "concrete examples then structural reflection",
                 "ground it then reflect on its structure",
                 "specifics first then what the pattern reveals",
+                "give me a specific example then analyze its structural pattern",
             ],
         },
         "fig": {
@@ -2487,6 +2496,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "full vertical and horizontal coverage",
                 "abstract and concrete, reflective and acting",
                 "cover all four compass directions",
+                "cover the full spectrum: abstract and concrete, then reflect and act",
             ],
         },
         "fip ong": {
@@ -2505,6 +2515,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "principles and examples then actions",
                 "vertical span then act",
                 "abstract and concrete then what to do",
+                "span abstract to concrete, then what should I do",
             ],
         },
         "fip rog": {
@@ -2523,6 +2534,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "principles and examples then structural reflection",
                 "vertical span then reflect on structure",
                 "abstract and concrete then structural meaning",
+                "span abstract to concrete, then what does the structure tell us",
             ],
         },
         "fly bog": {
@@ -2541,6 +2553,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "abstract first then structure and actions",
                 "big picture then reflect and act",
                 "principles first then what they mean and what to do",
+                "start with the principle, then reflect on structure, then give me actions",
             ],
         },
         "fly ong": {
@@ -2559,6 +2572,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "abstract first then actions",
                 "big picture then what to do",
                 "principles first then concrete next steps",
+                "start with the big picture then tell me what to do",
             ],
         },
         "fly rog": {
@@ -2577,6 +2591,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "abstract first then structural reflection",
                 "big picture then what it reveals structurally",
                 "principles first then structural meaning",
+                "start with the principle then examine how it is organized",
             ],
         },
         "fog": {
@@ -2585,7 +2600,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "fog = abstract upward from specifics; dig = stay concrete and grounded",
                     "token": "dig",
-                }
+                },
+                {
+                    "note": "fog = push an existing response toward the abstract/general; scope:mean = focus the entire response on conceptual framing before evaluation or "
+                    "action",
+                    "token": "mean",
+                },
             ],
             "heuristics": [
                 "step back and tell me the general principle",
@@ -2598,28 +2618,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "jog": {
-            "definition": "Execute directly without hedging or clarification: immediate answer, no questions back. Note: unlike other directional tokens, jog modifies interaction style "
-            "rather than response orientation on the fog/dig/rog/ong compass axes.",
+            "definition": "The null directional: applies no compass orientation. Use when a directional token is required by the grammar (e.g. as a Talon phrase-ender) but no "
+            "directional push is desired. Has no effect on response angle.",
             "distinctions": [],
             "heuristics": [
-                "just answer",
-                "don't ask me questions",
-                "make a call",
-                "just do it",
-                "don't hedge",
-                "go ahead",
-                "I don't need options, just pick one",
-                "stop asking and decide",
-                "just tell me",
+                "no directional preference",
+                "null direction",
+                "no compass push",
             ],
         },
         "ong": {
-            "definition": "Push toward concrete action and extension: identify what to do and extend those actions to related contexts.",
+            "definition": "Orient toward action and extension: identify what to do and extend those actions to related contexts.",
             "distinctions": [
                 {
                     "note": "ong = acting/extending pole (right); rog = reflective/structural pole (left)",
                     "token": "rog",
-                }
+                },
+                {
+                    "note": "ong = directional push toward action and extension; form:actions = structure the output as a list of concrete tasks without directional "
+                    "orientation",
+                    "token": "actions",
+                },
             ],
             "heuristics": [
                 "what actions should I take and what comes next after each",
@@ -2629,7 +2648,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "rog": {
-            "definition": "Push toward structural reflection: examine how the subject is organised and reflect on what that structure reveals.",
+            "definition": "Orient toward the structural and reflective dimension: how the subject is organised and what that organisation reveals.",
             "distinctions": [
                 {
                     "note": "rog = reflective/structural pole (left); ong = acting/extending pole (right)",
@@ -2638,6 +2657,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "rog = push toward structural reflection; fog = push toward abstract",
                     "token": "fog",
+                },
+                {
+                    "note": "rog = directional push toward structural examination and what it reveals; scope:struct = focus the topic on internal arrangement and dependencies",
+                    "token": "struct",
+                },
+                {
+                    "note": "rog = directional orientation toward structure and reflection; method:analysis = decompose into components as a reasoning procedure",
+                    "token": "analysis",
                 },
             ],
             "heuristics": [

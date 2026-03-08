@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
 func modelViewContent(m model) string {
@@ -131,13 +130,13 @@ func TestParseTokensFromCommandEmpty(t *testing.T) {
 	}
 }
 
-func testCategories() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategories() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Return a todo list"},
 				{Value: "infer", Slug: "infer", Label: "Infer", Description: "Infer the task"},
 			},
@@ -146,7 +145,7 @@ func testCategories() []bartui.TokenCategory {
 			Key:           "scope",
 			Label:         "Scope",
 			MaxSelections: 2,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "focus", Slug: "focus", Label: "Focus", Description: "Concentrate on single topic"},
 				{Value: "system", Slug: "system", Label: "System", Description: "Examine connected system"},
 			},
@@ -155,7 +154,7 @@ func testCategories() []bartui.TokenCategory {
 			Key:           "completeness",
 			Label:         "Completeness",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer"},
 				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Concise summary"},
 			},
@@ -163,15 +162,15 @@ func testCategories() []bartui.TokenCategory {
 	}
 }
 
-// testCategoriesWithGuidance returns test categories that include guidance for testing ADR-0114.
-func testCategoriesWithGuidance() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+// testCategoriesWithDistinctions returns test categories that include distinctions for testing ADR-0114.
+func testCategoriesWithDistinctions() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
-				{Value: "fix", Slug: "fix", Label: "Fix", Description: "Reformat content", Guidance: "In bar's grammar, fix means reformat — not debug."},
+			Options: []TokenOption{
+				{Value: "fix", Slug: "fix", Label: "Fix", Description: "Reformat content", Distinctions: "In bar's grammar, fix means reformat — not debug."},
 				{Value: "make", Slug: "make", Label: "Make", Description: "Create new content"},
 			},
 		},
@@ -179,32 +178,32 @@ func testCategoriesWithGuidance() []bartui.TokenCategory {
 			Key:           "channel",
 			Label:         "Channel",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
-				{Value: "codetour", Slug: "codetour", Label: "CodeTour", Description: "Code tour format", Guidance: "Best for code-navigation: fix, make, show. Avoid with sim, probe."},
+			Options: []TokenOption{
+				{Value: "codetour", Slug: "codetour", Label: "CodeTour", Description: "Code tour format", Distinctions: "Best for code-navigation: fix, make, show. Avoid with sim, probe."},
 				{Value: "slack", Slug: "slack", Label: "Slack", Description: "Slack format"},
 			},
 		},
 	}
 }
 
-// testCategoriesWithUseWhen returns test categories that include use_when for testing ADR-0142.
-func testCategoriesWithUseWhen() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+// testCategoriesWithHeuristics returns test categories that include heuristics for testing token detail pane.
+func testCategoriesWithHeuristics() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
-				{Value: "show", Slug: "show", Label: "Show", Description: "Explain or describe", UseWhen: "Use when explaining concepts to an audience."},
-				{Value: "make", Slug: "make", Label: "Make", Description: "Create new content", UseWhen: "Use when creating new artifacts."},
+			Options: []TokenOption{
+				{Value: "show", Slug: "show", Label: "Show", Description: "Explain or describe", Heuristics: "Use when explaining concepts to an audience."},
+				{Value: "make", Slug: "make", Label: "Make", Description: "Create new content", Heuristics: "Use when creating new artifacts."},
 			},
 		},
 		{
 			Key:           "completeness",
 			Label:         "Completeness",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
-				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer", UseWhen: "Use when you need comprehensive coverage."},
+			Options: []TokenOption{
+				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer", Heuristics: "Use when you need comprehensive coverage."},
 				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Concise summary"},
 			},
 		},
@@ -233,11 +232,11 @@ func TestCompletionDisplayUsesLabel(t *testing.T) {
 	}
 }
 
-// TestCompletionGuidanceRenderedInDetailPane specifies that when a completion has Guidance,
+// TestCompletionDistinctionsRenderedInDetailPane specifies that when a completion has Distinctions,
 // it appears in the detail pane when selected (ADR-0114).
-func TestCompletionGuidanceRenderedInDetailPane(t *testing.T) {
+func TestCompletionDistinctionsRenderedInDetailPane(t *testing.T) {
 	opts := Options{
-		TokenCategories: testCategoriesWithGuidance(),
+		TokenCategories: testCategoriesWithDistinctions(),
 		InitialWidth:    80,
 		InitialHeight:   24,
 	}
@@ -254,10 +253,10 @@ func TestCompletionGuidanceRenderedInDetailPane(t *testing.T) {
 	// Render the view
 	view := modelViewContent(m)
 
-	// Guidance should appear in the detail pane with the arrow indicator
-	// (The guidance shown is for the next stage's completions after selecting task)
+	// Distinctions should appear in the detail pane with the arrow indicator
+	// (The distinctions shown are for the next stage's completions after selecting task)
 	if !strings.Contains(view, "→ Best for code-navigation") {
-		t.Errorf("expected guidance to appear in detail pane, got: %s", view)
+		t.Errorf("expected distinctions to appear in detail pane, got: %s", view)
 	}
 
 	// Verify the task completion was added
@@ -267,11 +266,11 @@ func TestCompletionGuidanceRenderedInDetailPane(t *testing.T) {
 	}
 }
 
-// TestCompletionUseWhenRenderedInDetailPane specifies that when a completion has UseWhen,
-// it appears in the detail pane when selected (ADR-0142).
-func TestCompletionUseWhenRenderedInDetailPane(t *testing.T) {
+// TestCompletionHeuristicsRenderedInDetailPane specifies that when a completion has Heuristics,
+// it appears in the detail pane when selected.
+func TestCompletionHeuristicsRenderedInDetailPane(t *testing.T) {
 	m := newModel(Options{
-		TokenCategories: testCategoriesWithUseWhen(),
+		TokenCategories: testCategoriesWithHeuristics(),
 		InitialTokens:   []string{"show"}, // Select task first
 		InitialWidth:    80,
 		InitialHeight:   24,
@@ -279,7 +278,7 @@ func TestCompletionUseWhenRenderedInDetailPane(t *testing.T) {
 	m.updateCompletions()
 
 	// After selecting "show" task, should be at completeness stage
-	// Find the "full" completion which has UseWhen
+	// Find the "full" completion which has Heuristics
 	var fullCompletion *completion
 	for i := range m.completions {
 		if m.completions[i].Value == "full" {
@@ -303,20 +302,20 @@ func TestCompletionUseWhenRenderedInDetailPane(t *testing.T) {
 	// Render the view
 	view := modelViewContent(m)
 
-	// UseWhen should appear in the detail pane
+	// Heuristics should appear in the detail pane
 	if !strings.Contains(view, "Use when you need comprehensive coverage") {
 		t.Errorf("expected use_when to appear in detail pane, got: %s", view)
 	}
 }
 
 // testCategoriesWithKanji returns test categories that include kanji for testing ADR-0143.
-func testCategoriesWithKanji() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategoriesWithKanji() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "completeness",
 			Label:         "Completeness",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer", Kanji: "全"},
 				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Concise summary", Kanji: "略"},
 			},
@@ -325,7 +324,7 @@ func testCategoriesWithKanji() []bartui.TokenCategory {
 			Key:           "scope",
 			Label:         "Scope",
 			MaxSelections: 2,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "act", Slug: "act", Label: "Act", Description: "Actions focus", Kanji: "為"},
 				{Value: "thing", Slug: "thing", Label: "Thing", Description: "Entities focus", Kanji: "物"},
 			},
@@ -833,12 +832,12 @@ func TestClipboardCopyWithTokens(t *testing.T) {
 }
 
 func TestPersonaPresetUsesSpokenSlugInCommand(t *testing.T) {
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "coach_junior", Slug: "coach", Label: "Coach junior", Description: "Coach junior"},
 			},
 		},
@@ -875,12 +874,12 @@ func TestPersonaPresetUsesSpokenSlugInCommand(t *testing.T) {
 }
 
 func TestDirectionalTokenUsesSlugInCommand(t *testing.T) {
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Todo"},
 			},
 		},
@@ -888,7 +887,7 @@ func TestDirectionalTokenUsesSlugInCommand(t *testing.T) {
 			Key:           "directional",
 			Label:         "Directional",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "fly rog", Slug: "fly-rog", Label: "Fly rog", Description: "Fly rog"},
 			},
 		},
@@ -1566,12 +1565,12 @@ func TestCtrlKClearsAllTokens(t *testing.T) {
 
 func TestPresetAutoFillsOtherCategories(t *testing.T) {
 	// Create categories with a preset that has Fills
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{
 					Value:       "coach",
 					Label:       "Coach",
@@ -1588,7 +1587,7 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 			Key:           "voice",
 			Label:         "Voice",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "supportive", Label: "Supportive"},
 			},
 		},
@@ -1596,7 +1595,7 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 			Key:           "audience",
 			Label:         "Audience",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "beginner", Label: "Beginner"},
 			},
 		},
@@ -1604,7 +1603,7 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 			Key:           "tone",
 			Label:         "Tone",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "encouraging", Label: "Encouraging"},
 			},
 		},
@@ -1612,7 +1611,7 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Label: "Todo"},
 			},
 		},
@@ -1651,12 +1650,12 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 
 func TestSelectedItemDescriptionArea(t *testing.T) {
 	// Create categories with detailed descriptions
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{
 					Value:       "todo",
 					Label:       "Todo",
@@ -1848,16 +1847,16 @@ func TestHotkeyBarShowsPipelineShortcut(t *testing.T) {
 
 func TestCompletionListScrolling(t *testing.T) {
 	// Create categories with many options to test scrolling
-	var options []bartui.TokenOption
+	var options []TokenOption
 	for i := 1; i <= 20; i++ {
-		options = append(options, bartui.TokenOption{
+		options = append(options, TokenOption{
 			Value:       fmt.Sprintf("option%d", i),
 			Label:       fmt.Sprintf("Option %d", i),
 			Description: fmt.Sprintf("Description for option %d", i),
 		})
 	}
 
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "task",
 			Label:         "Task",
@@ -1927,12 +1926,12 @@ func TestCompletionListScrolling(t *testing.T) {
 
 func TestAutoFilledTokensTracked(t *testing.T) {
 	// Create categories with a preset that has Fills
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{
 					Value:       "coach",
 					Label:       "Coach",
@@ -1949,7 +1948,7 @@ func TestAutoFilledTokensTracked(t *testing.T) {
 			Key:           "voice",
 			Label:         "Voice",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "supportive", Label: "Supportive"},
 			},
 		},
@@ -1957,7 +1956,7 @@ func TestAutoFilledTokensTracked(t *testing.T) {
 			Key:           "audience",
 			Label:         "Audience",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "beginner", Label: "Beginner"},
 			},
 		},
@@ -1965,7 +1964,7 @@ func TestAutoFilledTokensTracked(t *testing.T) {
 			Key:           "tone",
 			Label:         "Tone",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "encouraging", Label: "Encouraging"},
 			},
 		},
@@ -1973,7 +1972,7 @@ func TestAutoFilledTokensTracked(t *testing.T) {
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Label: "Todo"},
 			},
 		},
@@ -2015,12 +2014,12 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 	}
 
 	// Create categories with a preset that has Fills
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{
 					Value:       "coach",
 					Label:       "Coach",
@@ -2036,7 +2035,7 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 			Key:           "voice",
 			Label:         "Voice",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "supportive", Label: "Supportive"},
 			},
 		},
@@ -2044,7 +2043,7 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 			Key:           "audience",
 			Label:         "Audience",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "beginner", Label: "Beginner"},
 			},
 		},
@@ -2052,7 +2051,7 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Label: "Todo"},
 			},
 		},
@@ -2108,12 +2107,12 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 
 func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 	// Create categories with a preset that has Fills
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{
 					Value:       "coach",
 					Label:       "Coach",
@@ -2128,7 +2127,7 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 			Key:           "voice",
 			Label:         "Voice",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "supportive", Label: "Supportive"},
 			},
 		},
@@ -2136,7 +2135,7 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Label: "Todo"},
 			},
 		},
@@ -2167,12 +2166,12 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 
 func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 	// Create categories with a preset that has Fills
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{
 					Value: "coach",
 					Label: "Coach",
@@ -2197,7 +2196,7 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 			Key:           "voice",
 			Label:         "Voice",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "supportive", Label: "Supportive"},
 				{Value: "authoritative", Label: "Authoritative"},
 			},
@@ -2206,7 +2205,7 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 			Key:           "audience",
 			Label:         "Audience",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "beginner", Label: "Beginner"},
 				{Value: "professional", Label: "Professional"},
 			},
@@ -2215,7 +2214,7 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 			Key:           "tone",
 			Label:         "Tone",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "encouraging", Label: "Encouraging"},
 				{Value: "confident", Label: "Confident"},
 			},
@@ -2224,7 +2223,7 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Label: "Todo"},
 			},
 		},
@@ -2279,12 +2278,12 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 
 func TestClearAllTokensClearsAutoFillTracking(t *testing.T) {
 	// Create categories with a preset that has Fills
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{
 					Value: "coach",
 					Label: "Coach",
@@ -2298,7 +2297,7 @@ func TestClearAllTokensClearsAutoFillTracking(t *testing.T) {
 			Key:           "voice",
 			Label:         "Voice",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "supportive", Label: "Supportive"},
 			},
 		},
@@ -2469,12 +2468,12 @@ func TestUndoNothingToUndo(t *testing.T) {
 
 func TestPersonaPresetTokenPrefixed(t *testing.T) {
 	// Create categories with a persona_preset category
-	categories := []bartui.TokenCategory{
+	categories := []TokenCategory{
 		{
 			Key:           "persona_preset",
 			Label:         "Preset",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "coach_junior", Label: "Coach Junior"},
 			},
 		},
@@ -2482,7 +2481,7 @@ func TestPersonaPresetTokenPrefixed(t *testing.T) {
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "todo", Label: "Todo"},
 			},
 		},
@@ -2595,13 +2594,13 @@ func TestPreviewReceivesSelectedTokens(t *testing.T) {
 
 // testCategoriesWithComposition returns test categories for ADR-0148 cross-axis composition tests.
 // Categories are channel-only so the TUI starts at the channel stage immediately.
-func testCategoriesChannelOnly() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategoriesChannelOnly() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "channel",
 			Label:         "Channel",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "shellscript", Slug: "shellscript", Label: "ShellScript", Description: "Shell script output for executable code."},
 				{Value: "slack", Slug: "slack", Label: "Slack", Description: "Slack message format."},
 			},
@@ -2611,13 +2610,13 @@ func testCategoriesChannelOnly() []bartui.TokenCategory {
 
 // testCategoriesTaskChannel returns test categories for direction-B tests: task+channel.
 // Initializing with "shellscript" advances past channel to the task stage.
-func testCategoriesTaskChannel() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategoriesTaskChannel() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "task",
 			Label:         "Task",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "sim", Slug: "sim", Label: "Sim", Description: "Simulate a scenario."},
 				{Value: "make", Slug: "make", Label: "Make", Description: "Create new content."},
 			},
@@ -2626,7 +2625,7 @@ func testCategoriesTaskChannel() []bartui.TokenCategory {
 			Key:           "channel",
 			Label:         "Channel",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "shellscript", Slug: "shellscript", Label: "ShellScript", Description: "Shell script output."},
 			},
 		},
@@ -2813,13 +2812,13 @@ func TestAddendumPassedToPreviewAndCommand(t *testing.T) {
 }
 
 // testCategoriesFormChannel returns test categories for form/channel cross-axis traffic light tests.
-func testCategoriesFormChannel() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategoriesFormChannel() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "form",
 			Label:         "Form",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "faq", Slug: "faq", Label: "FAQ", Description: "Q&A format."},
 				{Value: "scaffold", Slug: "scaffold", Label: "Scaffold", Description: "Outline format."},
 			},
@@ -2828,7 +2827,7 @@ func testCategoriesFormChannel() []bartui.TokenCategory {
 			Key:           "channel",
 			Label:         "Channel",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "shellscript", Slug: "shellscript", Label: "ShellScript", Description: "Shell script output."},
 				{Value: "plain", Slug: "plain", Label: "Plain", Description: "Plain prose output."},
 			},
@@ -2970,13 +2969,13 @@ func TestCrossAxisChipPrefixColumnReverse(t *testing.T) {
 }
 
 // testCategoriesCompletenessDirectional returns categories for completeness→directional tests.
-func testCategoriesCompletenessDirectional() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategoriesCompletenessDirectional() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "completeness",
 			Label:         "Completeness",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Core insight only."},
 				{Value: "max", Slug: "max", Label: "Max", Description: "Exhaustive depth."},
 			},
@@ -2985,7 +2984,7 @@ func testCategoriesCompletenessDirectional() []bartui.TokenCategory {
 			Key:           "directional",
 			Label:         "Directional",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "fig", Slug: "fig", Label: "Fig", Description: "Full vertical span."},
 				{Value: "fog", Slug: "fog", Label: "Fog", Description: "Abstract / general."},
 			},
@@ -2994,13 +2993,13 @@ func testCategoriesCompletenessDirectional() []bartui.TokenCategory {
 }
 
 // testCategoriesCompletenessMethod returns categories for completeness→method tests.
-func testCategoriesCompletenessMethod() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategoriesCompletenessMethod() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "completeness",
 			Label:         "Completeness",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "gist", Slug: "gist", Label: "Gist", Description: "Core insight only."},
 				{Value: "max", Slug: "max", Label: "Max", Description: "Exhaustive depth."},
 			},
@@ -3009,7 +3008,7 @@ func testCategoriesCompletenessMethod() []bartui.TokenCategory {
 			Key:           "method",
 			Label:         "Method",
 			MaxSelections: 3,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "grow", Slug: "grow", Label: "Grow", Description: "Progressive build-up."},
 				{Value: "rigor", Slug: "rigor", Label: "Rigor", Description: "Principled analysis."},
 			},
@@ -3138,13 +3137,13 @@ func TestCrossAxisChipPrefixColumnCompletenessWithMethod(t *testing.T) {
 }
 
 // testCategoriesFormDirectional returns categories for form→directional tests.
-func testCategoriesFormDirectional() []bartui.TokenCategory {
-	return []bartui.TokenCategory{
+func testCategoriesFormDirectional() []TokenCategory {
+	return []TokenCategory{
 		{
 			Key:           "form",
 			Label:         "Form",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "commit", Slug: "commit", Label: "Commit", Description: "Git commit message."},
 				{Value: "faq", Slug: "faq", Label: "FAQ", Description: "Q&A format."},
 			},
@@ -3153,7 +3152,7 @@ func testCategoriesFormDirectional() []bartui.TokenCategory {
 			Key:           "directional",
 			Label:         "Directional",
 			MaxSelections: 1,
-			Options: []bartui.TokenOption{
+			Options: []TokenOption{
 				{Value: "fig", Slug: "fig", Label: "Fig", Description: "Full vertical span."},
 				{Value: "fog", Slug: "fog", Label: "Fog", Description: "Abstract / general."},
 			},

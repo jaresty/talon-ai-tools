@@ -19,7 +19,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|tui|tui2|install-skills]"
+	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|tui|install-skills]"
 )
 
 // barVersion holds the current version of bar, set by main package
@@ -76,8 +76,8 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-  bar tui2 [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen]
-  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen] [--no-clipboard] [--env NAME]...
+  bar tui [tokens...] [--grammar PATH] [--no-alt-screen]
+  bar tui2 [tokens...]  (deprecated alias for bar tui)
 
    bar completion <shell> [--grammar PATH] [--output FILE]
       (shell = bash | zsh | fish)
@@ -148,15 +148,10 @@ var generalHelpText = strings.TrimSpace(`USAGE
     help         Show this message.
     help tokens  List available tasks, contract axes, persona presets, and multi-word tokens
                  using the exported prompt grammar.
-    tui2         Launch the redesigned command-centric prompt editor (recommended for new users).
-                 Stage-based token selection teaches the bar build grammar through direct interaction.
-                 Use --fixture PATH to emit a deterministic transcript for smoke testing and
-                 --no-alt-screen to keep the TUI in the primary terminal buffer.
-    tui          Launch the original Bubble Tea prompt editor to capture subject text and preview recipes.
-                 Use --fixture PATH to emit a deterministic transcript for smoke testing and
-                 --no-alt-screen to keep the TUI in the primary terminal buffer.
-                 --no-clipboard to disable system clipboard calls (useful for headless testing).
-                  --env NAME (repeatable) to pass specific environment variables to subprocesses.
+    tui          Launch the command-centric prompt editor. Stage-based token selection teaches
+                 the bar build grammar through direct interaction.
+                 Use --no-alt-screen to keep the TUI in the primary terminal buffer.
+    tui2         Deprecated alias for tui.
     completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
     preset       Manage cached build presets (save/list/show/use/delete) derived from the last
 
@@ -195,12 +190,12 @@ var generalHelpText = strings.TrimSpace(`USAGE
       bar help tokens scope method       # focus on specific axes
       bar build make full focus          # assemble a prompt with shorthand
 
-    Open bar tui2 to explore interactively:
-      bar tui2                           # stage-based token selection, live preview
-      bar tui2 make full focus           # pre-seed tokens at launch
-      bar tui2 --command "pbcopy"        # pre-fill the Run Command field
+    Open bar tui to explore interactively:
+      bar tui                            # stage-based token selection, live preview
+      bar tui make full focus            # pre-seed tokens at launch
+      bar tui --command "pbcopy"         # pre-fill the Run Command field
 
-    Copy the equivalent bar build command from inside tui2 (Ctrl+Y or
+    Copy the equivalent bar build command from inside tui (Ctrl+Y or
     the copy keybinding), then paste back into the terminal to run
     non-interactively or save as a preset:
       bar preset save my-recipe --force
@@ -243,11 +238,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runPreset(options, stdin, stdout, stderr)
 	}
 
-	if options.Command == "tui" {
-		return runTUI(options, stdin, stdout, stderr)
-	}
-
-	if options.Command == "tui2" {
+	if options.Command == "tui" || options.Command == "tui2" {
+		if options.Command == "tui2" {
+			fmt.Fprintln(stderr, "bar tui2 is deprecated; use bar tui")
+		}
 		return runTUI2(options, stdin, stdout, stderr)
 	}
 

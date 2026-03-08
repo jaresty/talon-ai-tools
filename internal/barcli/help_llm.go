@@ -1036,8 +1036,7 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	}
 	fmt.Fprintf(w, "## Token Selection Heuristics\n\n")
 
-	// "Choosing Task" routing is now carried by the Token Catalog's "When to use"
-	// column — see tasks.use_when in the grammar (ADR-0142). No separate section needed.
+	// "Choosing Task" routing is carried by the Token Catalog's heuristics[] metadata.
 
 	fmt.Fprintf(w, "### Choosing Persona\n\n")
 	fmt.Fprintf(w, "- **Known audience**: prefer explicit `audience=` token over presets when the task specifies who you are talking to (e.g., 'explain to an engineering manager' → `voice=as-programmer audience=to-managers`, not `persona=peer_engineer_explanation`)\n")

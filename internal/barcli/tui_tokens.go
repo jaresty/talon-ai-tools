@@ -4,15 +4,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/talonvoice/talon-ai-tools/internal/bartui"
+	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
 )
 
-func BuildTokenCategories(grammar *Grammar) []bartui.TokenCategory {
+func BuildTokenCategories(grammar *Grammar) []bartui2.TokenCategory {
 	if grammar == nil {
 		return nil
 	}
 
-	categories := make([]bartui.TokenCategory, 0, 12)
+	categories := make([]bartui2.TokenCategory, 0, 12)
 	seen := map[string]bool{}
 
 	if staticCategory, ok := buildStaticCategory(grammar); ok {
@@ -30,10 +30,10 @@ func BuildTokenCategories(grammar *Grammar) []bartui.TokenCategory {
 		if len(options) == 0 {
 			continue
 		}
-		categories = append(categories, bartui.TokenCategory{
+		categories = append(categories, bartui2.TokenCategory{
 			Key:           axisKey,
 			Label:         axisDisplayLabel(axisKey),
-			Kind:          bartui.TokenCategoryKindAxis,
+			Kind:          bartui2.TokenCategoryKindAxis,
 			MaxSelections: normalizeAxisCap(grammar.AxisSoftCap(axisKey)),
 			Options:       options,
 		})
@@ -49,10 +49,10 @@ func BuildTokenCategories(grammar *Grammar) []bartui.TokenCategory {
 		if len(options) == 0 {
 			continue
 		}
-		categories = append(categories, bartui.TokenCategory{
+		categories = append(categories, bartui2.TokenCategory{
 			Key:           axisKey,
 			Label:         axisDisplayLabel(axisKey),
-			Kind:          bartui.TokenCategoryKindAxis,
+			Kind:          bartui2.TokenCategoryKindAxis,
 			MaxSelections: normalizeAxisCap(grammar.AxisSoftCap(axisKey)),
 			Options:       options,
 		})
@@ -73,10 +73,10 @@ func BuildTokenCategories(grammar *Grammar) []bartui.TokenCategory {
 		if len(options) == 0 {
 			continue
 		}
-		categories = append(categories, bartui.TokenCategory{
+		categories = append(categories, bartui2.TokenCategory{
 			Key:           persona.key,
 			Label:         persona.label,
-			Kind:          bartui.TokenCategoryKindPersona,
+			Kind:          bartui2.TokenCategoryKindPersona,
 			MaxSelections: 1,
 			Options:       options,
 		})
@@ -84,10 +84,10 @@ func BuildTokenCategories(grammar *Grammar) []bartui.TokenCategory {
 
 	// Add persona presets category
 	if presetOptions := buildPersonaPresetOptions(grammar); len(presetOptions) > 0 {
-		categories = append(categories, bartui.TokenCategory{
+		categories = append(categories, bartui2.TokenCategory{
 			Key:           "persona_preset",
 			Label:         "Preset",
-			Kind:          bartui.TokenCategoryKindPersona,
+			Kind:          bartui2.TokenCategoryKindPersona,
 			MaxSelections: 1,
 			Options:       presetOptions,
 		})
@@ -97,7 +97,7 @@ func BuildTokenCategories(grammar *Grammar) []bartui.TokenCategory {
 }
 
 // buildPersonaPresetOptions builds options for persona presets.
-func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
+func buildPersonaPresetOptions(grammar *Grammar) []bartui2.TokenOption {
 	if grammar.Persona.Presets == nil || len(grammar.Persona.Presets) == 0 {
 		return nil
 	}
@@ -111,7 +111,7 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 	}
 	sort.Strings(values)
 
-	options := make([]bartui.TokenOption, 0, len(values))
+	options := make([]bartui2.TokenOption, 0, len(values))
 	for _, value := range values {
 		preset := grammar.Persona.Presets[value]
 		label := preset.Label
@@ -139,24 +139,22 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 			personaSlug = strings.TrimSpace(grammar.slugForToken(value))
 		}
 
-		// ADR-0156 T-9: use structured metadata for Guidance/UseWhen, same adapter
-		// pattern as axis tokens (ADR-0155 T-11).
-		var presetGuidance, presetUseWhen string
+		var presetDistinctions, presetHeuristics string
 		if meta := grammar.PersonaMetadataFor("presets", value); meta != nil {
-			presetUseWhen = strings.Join(meta.Heuristics, ", ")
+			presetHeuristics = strings.Join(meta.Heuristics, ", ")
 			parts := make([]string, 0, len(meta.Distinctions))
 			for _, d := range meta.Distinctions {
 				parts = append(parts, d.Token+": "+d.Note)
 			}
-			presetGuidance = strings.Join(parts, "; ")
+			presetDistinctions = strings.Join(parts, "; ")
 		}
-		options = append(options, bartui.TokenOption{
+		options = append(options, bartui2.TokenOption{
 			Value:          value,
 			Slug:           personaSlug,
 			Label:          label,
 			Description:    label,
-			Guidance:       presetGuidance,
-			UseWhen:        presetUseWhen,
+			Distinctions:   presetDistinctions,
+			Heuristics:        presetHeuristics,
 			RoutingConcept: grammar.PersonaRoutingConcept("presets", value),
 			Fills:          fills,
 		})
@@ -164,7 +162,7 @@ func buildPersonaPresetOptions(grammar *Grammar) []bartui.TokenOption {
 	return options
 }
 
-func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
+func buildStaticCategory(grammar *Grammar) (bartui2.TokenCategory, bool) {
 	tokens := make(map[string]struct{})
 
 	defaultStatic := strings.TrimSpace(grammar.Hierarchy.Defaults.Task)
@@ -184,7 +182,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 		values = append(values, token)
 	}
 	if len(values) == 0 {
-		return bartui.TokenCategory{}, false
+		return bartui2.TokenCategory{}, false
 	}
 	sort.Slice(values, func(i, j int) bool {
 		slugI := grammar.slugForToken(values[i])
@@ -195,7 +193,7 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 		return slugI < slugJ
 	})
 
-	options := make([]bartui.TokenOption, 0, len(values))
+	options := make([]bartui2.TokenOption, 0, len(values))
 	for _, value := range values {
 		description := strings.TrimSpace(grammar.TaskDescription(value))
 		shortLabel := grammar.TaskLabel(value)
@@ -203,32 +201,31 @@ func buildStaticCategory(grammar *Grammar) (bartui.TokenCategory, bool) {
 		if label == "" {
 			label = displayLabel(value, description)
 		}
-		// ADR-0154: format structured metadata into TUI string fields
-		var taskGuidance, taskUseWhen string
+		var taskDistinctions, taskHeuristics string
 		if meta := grammar.TaskMetadataFor(value); meta != nil {
-			taskUseWhen = strings.Join(meta.Heuristics, ", ")
+			taskHeuristics = strings.Join(meta.Heuristics, ", ")
 			parts := make([]string, 0, len(meta.Distinctions))
 			for _, d := range meta.Distinctions {
 				parts = append(parts, d.Token+": "+d.Note)
 			}
-			taskGuidance = strings.Join(parts, "; ")
+			taskDistinctions = strings.Join(parts, "; ")
 		}
-		options = append(options, bartui.TokenOption{
+		options = append(options, bartui2.TokenOption{
 			Value:          value,
 			Slug:           grammar.slugForToken(value),
 			Label:          label,
 			Description:    description,
-			Guidance:       taskGuidance,
-			UseWhen:        taskUseWhen,
+			Distinctions:   taskDistinctions,
+			Heuristics:        taskHeuristics,
 			Kanji:          grammar.TaskKanji(value),
 			RoutingConcept: grammar.TaskRoutingConcept(value),
 		})
 	}
 
-	return bartui.TokenCategory{
+	return bartui2.TokenCategory{
 		Key:           "task",
 		Label:         "Task",
-		Kind:          bartui.TokenCategoryKindTask,
+		Kind:          bartui2.TokenCategoryKindTask,
 		MaxSelections: 1,
 		Options:       options,
 	}, true
@@ -240,7 +237,7 @@ var methodCategoryOrder = []string{
 	"Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
 }
 
-func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
+func buildAxisOptions(grammar *Grammar, axis string) []bartui2.TokenOption {
 	set := grammar.AxisTokenSet(axis)
 	if len(set) == 0 {
 		return nil
@@ -251,7 +248,7 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 	}
 	sortTokens(grammar, values)
 
-	options := make([]bartui.TokenOption, 0, len(values))
+	options := make([]bartui2.TokenOption, 0, len(values))
 	for _, value := range values {
 		description := strings.TrimSpace(grammar.AxisDescription(axis, value))
 		shortLabel := grammar.AxisLabel(axis, value)
@@ -259,23 +256,22 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 		if label == "" {
 			label = displayLabel(value, description)
 		}
-		// ADR-0155 T-11: use structured metadata for Guidance/UseWhen.
-		var axisGuidance, axisUseWhen string
+		var axisDistinctions, axisHeuristics string
 		if meta := grammar.AxisMetadataFor(axis, value); meta != nil {
-			axisUseWhen = strings.Join(meta.Heuristics, ", ")
+			axisHeuristics = strings.Join(meta.Heuristics, ", ")
 			parts := make([]string, 0, len(meta.Distinctions))
 			for _, d := range meta.Distinctions {
 				parts = append(parts, d.Token+": "+d.Note)
 			}
-			axisGuidance = strings.Join(parts, "; ")
+			axisDistinctions = strings.Join(parts, "; ")
 		}
-		options = append(options, bartui.TokenOption{
+		options = append(options, bartui2.TokenOption{
 			Value:          value,
 			Slug:           grammar.slugForToken(value),
 			Label:          label,
 			Description:    description,
-			Guidance:       axisGuidance,
-			UseWhen:        axisUseWhen,
+			Distinctions:   axisDistinctions,
+			Heuristics:        axisHeuristics,
 			Kanji:          grammar.AxisKanji(axis, value),
 			SemanticGroup:  grammar.AxisCategory(axis, value),
 			RoutingConcept: grammar.AxisRoutingConcept(axis, value),
@@ -307,7 +303,7 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 	return options
 }
 
-func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
+func buildPersonaOptions(grammar *Grammar, axis string) []bartui2.TokenOption {
 	set := grammar.PersonaTokenSet(axis)
 	if len(set) == 0 {
 		return nil
@@ -318,7 +314,7 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 	}
 	sortTokens(grammar, values)
 
-	options := make([]bartui.TokenOption, 0, len(values))
+	options := make([]bartui2.TokenOption, 0, len(values))
 	for _, value := range values {
 		description := strings.TrimSpace(grammar.PersonaDescription(axis, value))
 		shortLabel := grammar.PersonaLabel(axis, value)
@@ -326,24 +322,22 @@ func buildPersonaOptions(grammar *Grammar, axis string) []bartui.TokenOption {
 		if label == "" {
 			label = displayLabel(value, description)
 		}
-		// ADR-0156 T-9: use structured metadata for Guidance/UseWhen, same adapter
-		// pattern as axis tokens (ADR-0155 T-11).
-		var personaGuidance, personaUseWhen string
+		var personaDistinctions, personaHeuristics string
 		if meta := grammar.PersonaMetadataFor(axis, value); meta != nil {
-			personaUseWhen = strings.Join(meta.Heuristics, ", ")
+			personaHeuristics = strings.Join(meta.Heuristics, ", ")
 			parts := make([]string, 0, len(meta.Distinctions))
 			for _, d := range meta.Distinctions {
 				parts = append(parts, d.Token+": "+d.Note)
 			}
-			personaGuidance = strings.Join(parts, "; ")
+			personaDistinctions = strings.Join(parts, "; ")
 		}
-		options = append(options, bartui.TokenOption{
+		options = append(options, bartui2.TokenOption{
 			Value:          value,
 			Slug:           grammar.slugForToken(value),
 			Label:          label,
 			Description:    description,
-			Guidance:       personaGuidance,
-			UseWhen:        personaUseWhen,
+			Distinctions:   personaDistinctions,
+			Heuristics:        personaHeuristics,
 			Kanji:          grammar.PersonaKanji(axis, value),
 			RoutingConcept: grammar.PersonaRoutingConcept(axis, value),
 		})

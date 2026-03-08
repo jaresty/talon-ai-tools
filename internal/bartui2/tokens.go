@@ -1,4 +1,4 @@
-package bartui
+package bartui2
 
 // TokenCategoryKind identifies the class of prompt tokens represented by a category.
 type TokenCategoryKind string
@@ -15,8 +15,8 @@ type TokenOption struct {
 	Slug        string
 	Label       string
 	Description string
-	Guidance    string
-	UseWhen        string // ADR-0142: routing trigger phrases for nav surfaces
+	Distinctions string // formatted from distinctions[] metadata
+	Heuristics     string // trigger phrases from heuristics[] metadata
 	Kanji          string // ADR-0143: kanji icons for visual display
 	SemanticGroup  string // ADR-0144: semantic family for method tokens; empty for other axes
 	RoutingConcept string // ADR-0146: distilled routing concept phrase; populated for scope/form only

@@ -16,7 +16,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"charm.land/lipgloss/v2/tree"
-	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
 // Options configures the TUI behavior.
@@ -25,7 +24,7 @@ type Options struct {
 	InitialTokens []string
 
 	// TokenCategories defines available tokens grouped by category.
-	TokenCategories []bartui.TokenCategory
+	TokenCategories []TokenCategory
 
 	// Preview generates prompt text from subject, addendum, and tokens.
 	Preview func(subject string, addendum string, tokens []string) (string, error)
@@ -67,8 +66,8 @@ type completion struct {
 	Display     string
 	Category    string
 	Description string
-	Guidance    string
-	UseWhen        string // ADR-0142: routing trigger phrases
+	Distinctions string // formatted from distinctions[] metadata
+	Heuristics     string // trigger phrases from heuristics[] metadata
 	Kanji          string // ADR-0143: kanji icons for visual display
 	SemanticGroup  string // ADR-0144: semantic family for method tokens; empty for other axes
 	RoutingConcept string // ADR-0146: distilled routing concept phrase; populated for scope/form only
@@ -146,7 +145,7 @@ type model struct {
 	autoFillSource map[string]string // key: "category:value" of filled token, value: "category:value" of source
 
 	// Token categories (for completion)
-	tokenCategories []bartui.TokenCategory
+	tokenCategories []TokenCategory
 
 	// Cross-axis composition lookup (ADR-0148); nil when not configured.
 	crossAxisCompositionFor func(axis, token string) (natural map[string][]string, cautionary map[string]map[string]string)
@@ -874,8 +873,8 @@ func (m *model) updateCompletions() {
 				Display:       display,
 				Category:      category.Label,
 				Description:   opt.Description,
-				Guidance:      opt.Guidance,
-				UseWhen:        opt.UseWhen,
+				Distinctions:      opt.Distinctions,
+				Heuristics:     opt.Heuristics,
 				Kanji:          opt.Kanji,
 				SemanticGroup:  opt.SemanticGroup,
 				RoutingConcept: opt.RoutingConcept,
@@ -1444,7 +1443,7 @@ func (m model) getCurrentStage() string {
 }
 
 // getCategoryByKey returns the category with the given key.
-func (m model) getCategoryByKey(key string) *bartui.TokenCategory {
+func (m model) getCategoryByKey(key string) *TokenCategory {
 	for i := range m.tokenCategories {
 		if m.tokenCategories[i].Key == key {
 			return &m.tokenCategories[i]
@@ -1703,13 +1702,13 @@ var (
 	warningStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("220"))
 
-	// useWhenStyle for routing trigger phrases - cyan/blue for discoverability (ADR-0142)
+	// useWhenStyle for heuristic trigger phrases - cyan/blue for discoverability
 	useWhenStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("45"))
 
 	// routingConceptStyle for chip subtitles - same visual weight as chip label (ADR-0146).
 	// Color 248 (medium-light gray): clearly readable, not artificially dimmed (240),
-	// not louder than guidance (220) or use_when (45). Navigation label tier, not content tier.
+	// not louder than guidance (220) or heuristics (45). Navigation label tier, not content tier.
 	routingConceptStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("248"))
 
@@ -1835,8 +1834,8 @@ func (m model) renderTokensPane() string {
 	}
 
 	var selectedDesc string     // Store full description of selected item
-	var selectedGuidance string // Store guidance of selected item
-	var selectedUseWhen string  // Store routing trigger phrase (ADR-0142)
+	var selectedDistinctions string // Store guidance of selected item
+	var selectedHeuristics string
 	var selectedValue string    // Store token value for cross-axis lookup (ADR-0148)
 
 	// Chip traffic light: show prefix column whenever any other axis has active tokens
@@ -1894,8 +1893,8 @@ func (m model) renderTokensPane() string {
 				selectionMark = "▸ "
 				style = completionSelectedStyle
 				selectedDesc = c.Description  // Capture full description
-				selectedGuidance = c.Guidance // Capture guidance if present
-				selectedUseWhen = c.UseWhen   // Capture routing phrase if present
+				selectedDistinctions = c.Distinctions // Capture guidance if present
+				selectedHeuristics = c.Heuristics
 				selectedValue = c.Value       // Capture token value for cross-axis lookup (ADR-0148)
 			}
 			// Chip traffic light prefix column (ADR-0148 Phase 1c).
@@ -2006,23 +2005,23 @@ func (m model) renderTokensPane() string {
 	if len(crossNatLines) > 0 || len(crossCauLines) > 0 {
 		descMaxLines = 2 // tighten when composition sections are non-empty (ADR-0148 R1)
 	}
-	if selectedDesc != "" || selectedGuidance != "" || selectedUseWhen != "" || len(crossNatLines) > 0 || len(crossCauLines) > 0 {
+	if selectedDesc != "" || selectedDistinctions != "" || selectedHeuristics != "" || len(crossNatLines) > 0 || len(crossCauLines) > 0 {
 		right.WriteString("\n")
 		right.WriteString(dimStyle.Render("─"))
 		right.WriteString("\n")
-		// Show use_when first if present — routing trigger phrase (ADR-0142)
-		if selectedUseWhen != "" {
+		// Show heuristics if present
+		if selectedHeuristics != "" {
 			// Show just the first sentence for brevity in the TUI
-			line := selectedUseWhen
-			if idx := strings.Index(selectedUseWhen, "."); idx > 0 {
-				line = selectedUseWhen[:idx]
+			line := selectedHeuristics
+			if idx := strings.Index(selectedHeuristics, "."); idx > 0 {
+				line = selectedHeuristics[:idx]
 			}
 			right.WriteString(useWhenStyle.Render("When: " + line))
 			right.WriteString("\n")
 		}
 		// Show guidance if present (higher priority disambiguation notes)
-		if selectedGuidance != "" {
-			right.WriteString(warningStyle.Render("→ " + selectedGuidance))
+		if selectedDistinctions != "" {
+			right.WriteString(warningStyle.Render("→ " + selectedDistinctions))
 			right.WriteString("\n")
 		}
 		if selectedDesc != "" {

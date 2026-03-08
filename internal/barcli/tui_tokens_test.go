@@ -4,26 +4,24 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/bartui"
+	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
 )
 
-// TestBuildAxisOptionsPopulatesUseWhen specifies that buildAxisOptions includes
-// use_when for axis tokens from the embedded grammar (ADR-0132).
-func TestBuildAxisOptionsPopulatesUseWhen(t *testing.T) {
+// TestBuildAxisOptionsPopulatesHeuristics specifies that buildAxisOptions includes
+// heuristics for axis tokens from the embedded grammar.
+func TestBuildAxisOptionsPopulatesHeuristics(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
 
-	// Test that scope:act has use_when populated
 	options := buildAxisOptions(grammar, "scope")
 
 	if len(options) == 0 {
 		t.Fatal("expected scope options, got none")
 	}
 
-	// Find act token and verify it has use_when
-	var actOption *bartui.TokenOption
+	var actOption *bartui2.TokenOption
 	for i := range options {
 		if options[i].Value == "act" {
 			actOption = &options[i]
@@ -35,28 +33,26 @@ func TestBuildAxisOptionsPopulatesUseWhen(t *testing.T) {
 		t.Fatal("expected to find 'act' token in scope options")
 	}
 
-	if actOption.UseWhen == "" {
-		t.Errorf("expected UseWhen to be populated for scope:act (ADR-0132), got empty string")
+	if actOption.Heuristics == "" {
+		t.Errorf("expected Heuristics to be populated for scope:act, got empty string")
 	}
 }
 
-// TestBuildPersonaOptionsPopulatesUseWhen specifies that buildPersonaOptions includes
-// use_when for persona axis tokens from the embedded grammar (ADR-0133).
-func TestBuildPersonaOptionsPopulatesUseWhen(t *testing.T) {
+// TestBuildPersonaOptionsPopulatesHeuristics specifies that buildPersonaOptions includes
+// heuristics for persona axis tokens from the embedded grammar.
+func TestBuildPersonaOptionsPopulatesHeuristics(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
 
-	// Test that voice:as designer has use_when populated
 	options := buildPersonaOptions(grammar, "voice")
 
 	if len(options) == 0 {
 		t.Fatal("expected voice options, got none")
 	}
 
-	// Find "as designer" token and verify it has use_when
-	var designerOption *bartui.TokenOption
+	var designerOption *bartui2.TokenOption
 	for i := range options {
 		if options[i].Value == "as designer" {
 			designerOption = &options[i]
@@ -68,8 +64,8 @@ func TestBuildPersonaOptionsPopulatesUseWhen(t *testing.T) {
 		t.Fatalf("expected to find 'as designer' token in voice options, got: %v", options)
 	}
 
-	if designerOption.UseWhen == "" {
-		t.Errorf("expected UseWhen to be populated for voice:as designer (ADR-0133), got empty string")
+	if designerOption.Heuristics == "" {
+		t.Errorf("expected Heuristics to be populated for voice:as designer, got empty string")
 	}
 }
 
@@ -86,8 +82,7 @@ func TestBuildStaticCategoryPopulatesKanji(t *testing.T) {
 		t.Fatal("expected static category, got none")
 	}
 
-	// Find "make" task and verify it has kanji
-	var makeOption *bartui.TokenOption
+	var makeOption *bartui2.TokenOption
 	for i := range category.Options {
 		if category.Options[i].Value == "make" {
 			makeOption = &category.Options[i]
@@ -112,11 +107,9 @@ func TestBuildPersonaOptionsPopulatesKanji(t *testing.T) {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
 
-	// Test that voice:as designer has kanji populated
 	options := buildPersonaOptions(grammar, "voice")
 
-	// Find "as designer" token and verify it has kanji
-	var designerOption *bartui.TokenOption
+	var designerOption *bartui2.TokenOption
 	for i := range options {
 		if options[i].Value == "as designer" {
 			designerOption = &options[i]
@@ -133,20 +126,17 @@ func TestBuildPersonaOptionsPopulatesKanji(t *testing.T) {
 	}
 }
 
-// TestBuildPersonaOptionsUsesStructuredMetadata specifies T-9: buildPersonaOptions must
-// populate UseWhen from PersonaMetadataFor heuristics and Guidance from distinctions
-// when structured metadata is available (ADR-0156 T-9).
+// TestBuildPersonaOptionsUsesStructuredMetadata specifies that buildPersonaOptions
+// populates Heuristics from PersonaMetadataFor heuristics and Distinctions from distinctions.
 func TestBuildPersonaOptionsUsesStructuredMetadata(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
 
-	// voice:as designer has structured metadata with heuristics and a distinction
-	// (vs to designer) — verify these are wired into UseWhen and Guidance.
 	options := buildPersonaOptions(grammar, "voice")
 
-	var designerOption *bartui.TokenOption
+	var designerOption *bartui2.TokenOption
 	for i := range options {
 		if options[i].Value == "as designer" {
 			designerOption = &options[i]
@@ -157,19 +147,16 @@ func TestBuildPersonaOptionsUsesStructuredMetadata(t *testing.T) {
 		t.Fatal("expected to find 'as designer' token in voice options")
 	}
 
-	// UseWhen must come from structured metadata heuristics (not legacy PersonaUseWhen)
-	if !strings.Contains(designerOption.UseWhen, "designer") {
-		t.Errorf("ADR-0156 T-9: voice/as designer UseWhen must contain heuristic content; got: %q", designerOption.UseWhen)
+	if !strings.Contains(designerOption.Heuristics, "designer") {
+		t.Errorf("voice/as designer Heuristics must contain heuristic content; got: %q", designerOption.Heuristics)
 	}
-	// Guidance must come from structured metadata distinctions (vs to designer)
-	if !strings.Contains(designerOption.Guidance, "to designer") {
-		t.Errorf("ADR-0156 T-9: voice/as designer Guidance must contain distinction 'to designer'; got: %q", designerOption.Guidance)
+	if !strings.Contains(designerOption.Distinctions, "to designer") {
+		t.Errorf("voice/as designer Distinctions must contain distinction 'to designer'; got: %q", designerOption.Distinctions)
 	}
 }
 
 // TestMethodAxisGroupedBySemanticCategory specifies that buildAxisOptions for the
-// method axis returns tokens grouped by SemanticGroup (all tokens of the same group
-// are adjacent), not interleaved alphabetically (ADR-0144).
+// method axis returns tokens grouped by SemanticGroup (ADR-0144).
 func TestMethodAxisGroupedBySemanticCategory(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -186,7 +173,7 @@ func TestMethodAxisGroupedBySemanticCategory(t *testing.T) {
 	for _, opt := range options {
 		g := opt.SemanticGroup
 		if g == "" {
-			continue // uncategorised tokens may trail at end
+			continue
 		}
 		if g != lastGroup {
 			if seen[g] {
@@ -198,9 +185,7 @@ func TestMethodAxisGroupedBySemanticCategory(t *testing.T) {
 	}
 }
 
-// TestMethodAxisCanonicalCategoryOrder specifies that the canonical category order
-// (Reasoning → Exploration → Structural → Diagnostic → Actor-centered →
-// Temporal/Dynamic → Comparative → Generative) is preserved (ADR-0144).
+// TestMethodAxisCanonicalCategoryOrder specifies that the canonical category order is preserved (ADR-0144).
 func TestMethodAxisCanonicalCategoryOrder(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -241,7 +226,7 @@ func TestMethodAxisCanonicalCategoryOrder(t *testing.T) {
 }
 
 // TestBuildAxisOptionsPopulatesRoutingConceptForScopeToken specifies that buildAxisOptions
-// includes RoutingConcept for scope tokens that have one (ADR-0146).
+// includes RoutingConcept for scope tokens (ADR-0146).
 func TestBuildAxisOptionsPopulatesRoutingConceptForScopeToken(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -253,7 +238,7 @@ func TestBuildAxisOptionsPopulatesRoutingConceptForScopeToken(t *testing.T) {
 		t.Fatal("expected scope options, got none")
 	}
 
-	var failOption *bartui.TokenOption
+	var failOption *bartui2.TokenOption
 	for i := range options {
 		if options[i].Value == "fail" {
 			failOption = &options[i]
@@ -273,7 +258,7 @@ func TestBuildAxisOptionsPopulatesRoutingConceptForScopeToken(t *testing.T) {
 }
 
 // TestBuildAxisOptionsRoutingConceptForMethodToken specifies that buildAxisOptions
-// populates RoutingConcept for method tokens — method axis coverage added in ADR-0146 Phase 3.
+// populates RoutingConcept for method tokens (ADR-0146 Phase 3).
 func TestBuildAxisOptionsRoutingConceptForMethodToken(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -285,7 +270,7 @@ func TestBuildAxisOptionsRoutingConceptForMethodToken(t *testing.T) {
 		t.Fatal("expected method options, got none")
 	}
 
-	var triageOption *bartui.TokenOption
+	var triageOption *bartui2.TokenOption
 	for i := range options {
 		if options[i].Value == "triage" {
 			triageOption = &options[i]
@@ -302,8 +287,7 @@ func TestBuildAxisOptionsRoutingConceptForMethodToken(t *testing.T) {
 }
 
 // TestBuildAxisOptionsSharedRoutingConceptPhrase specifies that tokens with the same
-// routing concept (e.g. thing and struct both map to "Entities/boundaries") are
-// assigned identical phrases so the render layer can group them (ADR-0146).
+// routing concept are assigned identical phrases (ADR-0146).
 func TestBuildAxisOptionsSharedRoutingConceptPhrase(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -315,7 +299,7 @@ func TestBuildAxisOptionsSharedRoutingConceptPhrase(t *testing.T) {
 		t.Fatal("expected scope options, got none")
 	}
 
-	concepts := make(map[string]string) // token → RoutingConcept
+	concepts := make(map[string]string)
 	for _, opt := range options {
 		if opt.Value == "thing" || opt.Value == "struct" {
 			concepts[opt.Value] = opt.RoutingConcept
@@ -327,23 +311,21 @@ func TestBuildAxisOptionsSharedRoutingConceptPhrase(t *testing.T) {
 		}
 	}
 	if concepts["thing"] != concepts["struct"] {
-		t.Errorf("expected scope:thing and scope:struct to share RoutingConcept phrase for grouped rendering, got thing=%q struct=%q",
+		t.Errorf("expected scope:thing and scope:struct to share RoutingConcept phrase, got thing=%q struct=%q",
 			concepts["thing"], concepts["struct"])
 	}
 }
 
-// TestBuildAxisOptionsUsesStructuredMetadata specifies ADR-0155 T-11:
-// buildAxisOptions derives UseWhen from heuristics and Guidance from distinctions
-// when AxisMetadataFor returns non-nil structured metadata.
+// TestBuildAxisOptionsUsesStructuredMetadata specifies that buildAxisOptions derives
+// Heuristics from heuristics[] and Distinctions from distinctions (ADR-0155 T-11).
 func TestBuildAxisOptionsUsesStructuredMetadata(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
 
-	// completeness/gist has structured metadata with heuristics and distinctions
 	options := buildAxisOptions(grammar, "completeness")
-	var gistOpt *bartui.TokenOption
+	var gistOpt *bartui2.TokenOption
 	for i := range options {
 		if options[i].Value == "gist" {
 			gistOpt = &options[i]
@@ -353,18 +335,16 @@ func TestBuildAxisOptionsUsesStructuredMetadata(t *testing.T) {
 	if gistOpt == nil {
 		t.Fatal("expected to find 'gist' token in completeness options")
 	}
-	if gistOpt.UseWhen == "" {
-		t.Error("completeness/gist UseWhen must be populated from heuristics (ADR-0155 T-11)")
+	if gistOpt.Heuristics == "" {
+		t.Error("completeness/gist Heuristics must be populated from heuristics[] (ADR-0155 T-11)")
 	}
-	if gistOpt.Guidance == "" {
-		t.Error("completeness/gist Guidance must be populated from distinctions (ADR-0155 T-11)")
+	if gistOpt.Distinctions == "" {
+		t.Error("completeness/gist Distinctions must be populated from distinctions (ADR-0155 T-11)")
 	}
-	// Heuristics are comma-joined; must contain at least one trigger phrase
-	if !strings.Contains(gistOpt.UseWhen, "brief") && !strings.Contains(gistOpt.UseWhen, "gist") && !strings.Contains(gistOpt.UseWhen, "summary") {
-		t.Errorf("completeness/gist UseWhen must contain a heuristic trigger phrase, got %q", gistOpt.UseWhen)
+	if !strings.Contains(gistOpt.Heuristics, "brief") && !strings.Contains(gistOpt.Heuristics, "gist") && !strings.Contains(gistOpt.Heuristics, "summary") {
+		t.Errorf("completeness/gist Heuristics must contain a trigger phrase, got %q", gistOpt.Heuristics)
 	}
-	// Distinctions reference 'skim'
-	if !strings.Contains(gistOpt.Guidance, "skim") {
-		t.Errorf("completeness/gist Guidance must reference 'skim' distinction, got %q", gistOpt.Guidance)
+	if !strings.Contains(gistOpt.Distinctions, "skim") {
+		t.Errorf("completeness/gist Distinctions must reference 'skim' distinction, got %q", gistOpt.Distinctions)
 	}
 }

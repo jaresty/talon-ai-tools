@@ -6,6 +6,132 @@ VCS_REVERT: `git restore --source=HEAD` (file-targeted) or `git stash` (full).
 
 ---
 
+## loop-25 | 2026-03-08 | Post-apply validation — voice/tone/team heuristics
+
+```
+focus: Validate that loop-24 fixes lift T01–T05 (voice axis), T10–T13 (tone/team), T13
+  adversarial carve-out from mean 3.60 to ≥4.5.
+
+mean_score: 5.0/5 ✅ (9/9 tasks at 5)
+gaps_found: 0
+
+active_constraint: Persona routing guidance in "Choosing Persona" was incomplete before
+  loop-24. The constraint is: `bar help llm | grep -A20 "Choosing Persona"` correctly
+  routes voice/tone/team tasks (green evidence below).
+
+validation_targets:
+  - go test ./internal/barcli/... (structural tests pass — no autopilot API)
+  - Manual eval: 9 tasks from loop-24 gap set re-scored against current help llm
+
+evidence:
+  - red | reconstructed | 2026-02-24T17:00:00Z | exit 0 (structural) / eval mean 3.60
+      pre-loop-24 commit: e8a7d9b (parent of d3b4fa91)
+      T01–T05 all scored 3 (voice= axis: zero heuristic guidance in Choosing Persona)
+      T10–T13 all scored 2–3 (tone= axis: zero guidance; to-team: missing from list)
+      inline | docs/adr/evidence/0113/loop-24/evaluations.md
+  - green | 2026-03-08T13:29:20Z | exit 0 | go test ./internal/barcli/...
+      helper:diff-snapshot=0 files changed (eval only — no code changed this loop)
+      T01 voice=as-pm: 3→5 (Persona System heuristic: "write as a PM; from PM perspective")
+      T02 voice=as-designer: 3→5 (heuristic: "give feedback as a designer; as a designer would")
+      T03 voice=as-teacher: 3→5 (heuristic: "from a teaching perspective; scaffold the explanation")
+      T04 voice=as-facilitator: 4→5 (heuristic: "run this as a facilitator; facilitate this")
+      T05 voice=as-principal-engineer: 3→5 (heuristic: "from a senior engineer's perspective")
+      T10 audience=to-team: 3→5 (Choosing Persona: "team" in non-technical list; heuristic: "share with my team")
+      T11 tone=formally: 3→5 (heuristic: "formal tone; compliance context; external audience")
+      T12 tone=casually+audience=to-team: 3→5 (heuristic: "keep it casual; don't be stiff")
+      T13 tone=gently (NOT adversarial): 2→5 (heuristic: "sensitive feedback; interpersonal difficulty"; adversarial carve-out in metadata)
+      Mean: 3.60→5.0/5 ✅
+
+rollback_plan: git restore --source=HEAD (no executable artefacts changed this loop)
+
+delta_summary: Eval-only loop. No artefact changes. Loop-24 fixes (commit d3b4fa91)
+  confirmed fully effective. All 9 gap tasks route correctly under current guidance.
+
+loops_remaining_forecast: 0 additional loops needed for loop-25 objective.
+  Program status: active — loop-25 complete. No new gaps found. Recommend next trigger
+  per RC-L15-01: new token additions, published skill guidance changes, or user-reported
+  routing failures.
+
+residual_constraints:
+  - id: RC-L25-01
+    constraint: 841eb5a6 (help-llm fix) moved adversarial to "Prospective stress-testing"
+      grouping — confirms T13 carve-out is in method metadata, not help_llm prose. If
+      metadata is regenerated without the carve-out text, T13 could regress.
+    severity: Low — grammar regen would catch missing use_when at test time.
+    mitigation: Carve-out is in axisConfig.py SSOT; grammar regen preserves it.
+    monitoring_trigger: Any grammar regen touching adversarial token.
+
+next_work: No active gaps. Reopen on: new catalog additions, user routing failures,
+  or next ADR-0113 cross-axis health check.
+```
+
+---
+
+## loop-24 | 2026-02-24 | Voice/persona axis discoverability — voice/tone axes had zero heuristics
+
+```
+focus: Discover whether voice= and tone= persona axes are discoverable via bar help llm.
+  15-task sample with 5 voice tasks, 5 tone/team tasks, 5 controls.
+
+mean_score: 3.60/5 (pre-fix) → expected 5.0 (post-apply, confirmed in loop-25)
+gaps_found: 3 structural + 1 code
+  G-L24-01: voice= axis: zero heuristic guidance in "Choosing Persona" (5 tasks: T01–T05, all ≤3)
+  G-L24-02: tone= axis: zero heuristic guidance in "Choosing Persona" (3 tasks: T11–T13, all 2–3)
+  G-L24-03: audience=to-team: missing from non-technical audience list (T10, T12)
+  G-L24-04: T13 adversarial method incorrectly selected for sensitive colleague feedback
+
+active_constraint: bar help llm "Choosing Persona" contained no routing signal for voice=
+  or tone= axes, causing autopilot to skip them entirely. Falsifiable: eval T01 with pre-fix
+  help llm → voice=as-pm not selected (score 3).
+
+fixes_applied:
+  - personaConfig.py: all 11 voice= tokens: added "Voice= = speaker identity (output FROM
+    this role)" prefix + "from [role]'s perspective / as [role] would" trigger phrases
+  - personaConfig.py: all 5 tone= tokens: added "Tone= = emotional register (HOW delivered)"
+    prefix + contextual triggers (compliance→formally, sensitive feedback→gently)
+  - axisConfig.py: adversarial method: added interpersonal feedback carve-out
+    ("prefer analysis + tone=gently for sensitive reviews, not adversarial")
+  - help_llm.go: replaced two long static bullets with single axis-routing pointer line +
+    added audience=to-team to non-technical audience list
+
+validation_targets:
+  - go test ./internal/barcli/... (grammar tests)
+  - eval: 15-task sample scored pre- and post-fix
+
+evidence:
+  - red | reconstructed | 2026-03-08T13:20:00Z | eval mean 3.60 (pre-fix, commit parent of d3b4fa91)
+      docs/adr/evidence/0113/loop-24/evaluations.md (committed with d3b4fa91)
+      T01 score 3, T02 score 3, T03 score 3, T04 score 4, T05 score 3
+      T10 score 3, T11 score 3, T12 score 3, T13 score 2
+  - green | 2026-02-24T17:22:30Z | exit 0 | go test ./internal/barcli/...
+      commit d3b4fa91 "feat(bar/persona): embed voice/tone discoverability guidance in token metadata"
+      helper:diff-snapshot=10 files changed, 761 insertions(+), 124 deletions(-)
+      post-apply scores confirmed in loop-25 (2026-03-08): all 9 gap tasks score 5
+
+rollback_plan: git restore --source=HEAD d3b4fa91 personaConfig.py axisConfig.py help_llm.go
+
+delta_summary: 10 files changed (d3b4fa91). Primary: personaConfig.py (+116 lines of
+  voice/tone heuristics), help_llm.go (−2 static bullets, +1 routing pointer + to-team).
+  evidence committed: docs/adr/evidence/0113/loop-24/ (evaluations, recommendations, taxonomy).
+
+loops_remaining_forecast: 1 — loop-25 post-apply validation.
+
+residual_constraints:
+  - id: RC-L24-01
+    constraint: 15-task sample skewed toward persona tasks — general token routing health
+      not re-checked since loop-23 (4.9/5). No regressions expected but not verified.
+    severity: Low — loop-23 results remain the last known general health check.
+    mitigation: Run fresh health check if new regressions are reported.
+    monitoring_trigger: User-reported routing failures outside persona axis.
+
+next_work:
+  - Behaviour: Loop-25 post-apply validation (T01–T05, T10–T13)
+    validation_command: eval 9 tasks against current bar help llm
+    expected: all scores ≥5 → mean 5.0/5
+```
+
+---
+
 ## loop-23 | 2026-02-19 | Task token routing validation + proper-noun slug bug fix
 
 ```
@@ -668,4 +794,3 @@ next_trigger: >
 - G-L18-01: questions form use_when — 'what questions should I ask', 'diagnostic questions for' (distinct from socratic)
 
 **Post-apply:** T01→4. form coverage 15/~32. Form axis now systematically covered.
-

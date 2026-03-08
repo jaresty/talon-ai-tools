@@ -100,7 +100,7 @@ of ADR-0142. Update stale ADR-0142 comments in `help_llm.go` and `tui_tokens.go`
 to use and which to maintain. Tests reference `bartui` directly.
 **Complexity**: Medium — needs test migration and help-string update, but no behavior change.
 
-### ADR-0113 Loop-25 (validation)
+### ✅ ADR-0113 Loop-25 (validation)
 **What**: Post-apply validation of the loop-24 persona voice/tone heuristics added to `help_llm.go`.
 **Why it's Tier 1**: Active in-flight work — loop-24 edits landed but haven't been validated against
 the eval rubric. Re-test T01–T05 (voice axis), T10–T13 (tone/team), T13 (adversarial carve-out).

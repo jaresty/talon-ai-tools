@@ -39,10 +39,8 @@ jobs:
               OUTPUT_DIR="dist/${GOOS}_${GOARCH}"
               mkdir -p "${OUTPUT_DIR}"
               GOOS="${GOOS}" GOARCH="${GOARCH}" go build -trimpath -ldflags="-s -w -X main.barVersion=${VERSION}" -o "${OUTPUT_DIR}/bar" ./cmd/bar
-              mkdir -p "${OUTPUT_DIR}/fixtures"
-              cp cmd/bar/testdata/tui_smoke.json "${OUTPUT_DIR}/fixtures/tui_smoke.json"
               ARCHIVE="dist/bar_${VERSION}_${GOOS}_${GOARCH}.tar.gz"
-              tar -czf "${ARCHIVE}" -C "${OUTPUT_DIR}" bar fixtures
+              tar -czf "${ARCHIVE}" -C "${OUTPUT_DIR}" bar
               rm -rf "${OUTPUT_DIR}"
             done
           done

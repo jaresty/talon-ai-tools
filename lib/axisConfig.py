@@ -202,7 +202,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
-        "arrow": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
         "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how "
         "they offset one another.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
@@ -248,6 +247,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
+        "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or "
+        "conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their originating rationale.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every "
@@ -294,8 +295,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions "
-        "must be justified against this governing layer and may not redefine it during execution.",
         "spill": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases "
         "coupling, ambiguity, or fragility.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
@@ -435,7 +434,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
-        "arrow": "Intent-constrained meaning governance",
         "balance": "Balance analysis: forces and trade-offs",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
@@ -464,6 +462,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "field": "Model interaction as a shared structured medium",
         "flow": "Step-by-step sequential progression",
         "gap": "Implicit-to-explicit gap analysis",
+        "ground": "Declared governing layer authority",
         "grove": "Accumulation and rate-of-change effects",
         "grow": "Build up from simplest valid base",
         "induce": "Generalize patterns from examples",
@@ -494,7 +493,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "sever": "Enforce domain separations",
         "shift": "Rotate through distinct perspectives",
         "simulation": "Thought experiments and scenario walkthroughs",
-        "spec": "Define correctness criteria first",
         "spill": "Identify scope overreach",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
@@ -619,7 +617,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "analog": "類",
         "analysis": "析",
         "argue": "論",
-        "arrow": "矢",
         "balance": "均",
         "bias": "偏",
         "boom": "極",
@@ -648,6 +645,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "field": "場",
         "flow": "流",
         "gap": "隙",
+        "ground": "地",
         "grove": "蓄",
         "grow": "増",
         "induce": "帰",
@@ -679,7 +677,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "sever": "断",
         "shift": "転",
         "simulation": "象",
-        "spec": "規",
         "spill": "溢",
         "split": "分",
         "systemic": "系",
@@ -781,7 +778,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "analog": "Generative",
         "analysis": "Structural",
         "argue": "Reasoning",
-        "arrow": "Structural",
         "balance": "Comparative",
         "bias": "Reasoning",
         "boom": "Exploration",
@@ -810,6 +806,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
         "gap": "Structural",
+        "ground": "Structural",
         "grove": "Generative",
         "grow": "Generative",
         "induce": "Reasoning",
@@ -841,7 +838,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "sever": "Structural",
         "shift": "Generative",
         "simulation": "Temporal/Dynamic",
-        "spec": "Structural",
         "spill": "Diagnostic",
         "split": "Exploration",
         "systemic": "Temporal/Dynamic",
@@ -953,7 +949,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
-        "arrow": "Align intent to downstream",
         "balance": "Equilibrium forces",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
@@ -982,6 +977,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "gap": "Implicit gaps",
+        "ground": "Declared governing layer",
         "grove": "Compounding effects",
         "grow": "Expand only when needed",
         "induce": "Generalise from examples",
@@ -1013,7 +1009,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "sever": "Enforce domain separation",
         "shift": "Rotate perspectives",
         "simulation": "Scenario walkthrough",
-        "spec": "Governing constraints",
         "spill": "Scope overreach",
         "split": "Decompose in isolation",
         "systemic": "System as whole",
@@ -3501,28 +3496,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "explicit reasoning structure",
             ],
         },
-        "arrow": {
-            "definition": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
-            "distinctions": [
-                {
-                    "note": "bound = restrict propagation of effects to a region; arrow = constrain downstream meaning to align with explicit intent",
-                    "token": "bound",
-                },
-                {
-                    "note": "control = focus on what is within your control; arrow = enforce intent constraints on how meaning propagates through representations",
-                    "token": "control",
-                },
-            ],
-            "heuristics": [
-                "ensure intent governs downstream",
-                "align meaning to intent",
-                "intent constraints on representations",
-                "constrain downstream meaning",
-                "explicit intent alignment",
-                "meaning governed by intent",
-                "keep downstream aligned with intent",
-            ],
-        },
         "balance": {
             "definition": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures "
             "and show how they offset one another.",
@@ -3590,8 +3563,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "depends",
                 },
                 {
-                    "note": "spec = define correctness; bound = limit reach of influence",
-                    "token": "spec",
+                    "note": "ground = treat declared governing layer as fixed authority; bound = limit reach of influence",
+                    "token": "ground",
                 },
             ],
             "heuristics": [
@@ -3794,8 +3767,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
             "distinctions": [
                 {
-                    "note": "spec = define correctness criteria first; crystal = broadly shape system toward explicit structural determination",
-                    "token": "spec",
+                    "note": "ground = treat declared governing layer as fixed authority; crystal = broadly shape system toward explicit structural determination",
+                    "token": "ground",
                 },
                 {
                     "note": "reify = surface one implicit pattern as an explicit rule; crystal = systemic shift toward structural explicitness",
@@ -3859,8 +3832,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "deduce",
                 },
                 {
-                    "note": "spec = define governing criteria; derive = make the generating assumptions structurally explicit for derivability",
-                    "token": "spec",
+                    "note": "ground = treat declared governing layer as fixed authority; derive = make the generating assumptions structurally explicit for derivability",
+                    "token": "ground",
                 },
             ],
             "heuristics": [
@@ -4087,6 +4060,42 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where are the hidden assumptions",
                 "what's taken for granted",
                 "gap between stated and actual",
+            ],
+        },
+        "ground": {
+            "definition": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, "
+            "behaviors, or conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their "
+            "originating rationale.",
+            "distinctions": [
+                {
+                    "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "
+                    "justify against",
+                    "token": "bound",
+                },
+                {
+                    "note": "crystal = shape system toward explicit structure; ground = treat a declared layer as fixed authority requiring justification, not crystallization",
+                    "token": "crystal",
+                },
+                {
+                    "note": "derive = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that "
+                    "conclusions must justify against",
+                    "token": "derive",
+                },
+            ],
+            "heuristics": [
+                "define the spec first",
+                "test-driven design",
+                "what should it do before how",
+                "specification before implementation",
+                "write the tests first",
+                "define success criteria",
+                "TDD",
+                "correctness criteria",
+                "ensure intent governs downstream",
+                "justify against declared constraints",
+                "explicit intent alignment",
+                "meaning governed by intent",
+                "what is the governing layer",
             ],
         },
         "grove": {
@@ -4715,26 +4724,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what emergent effects would arise",
                 "project systemic dynamics",
                 "model how effects compound over time",
-            ],
-        },
-        "spec": {
-            "definition": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or "
-            "constructions must be justified against this governing layer and may not redefine it during execution.",
-            "distinctions": [
-                {
-                    "note": "grow = evolve incrementally from minimal; spec = define the target criteria first and measure compliance against them",
-                    "token": "grow",
-                }
-            ],
-            "heuristics": [
-                "define the spec first",
-                "test-driven design",
-                "what should it do before how",
-                "specification before implementation",
-                "write the tests first",
-                "define success criteria",
-                "TDD",
-                "correctness criteria",
             ],
         },
         "spill": {

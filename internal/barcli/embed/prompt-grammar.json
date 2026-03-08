@@ -96,7 +96,6 @@
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
-        "arrow": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
         "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how they offset one another.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
@@ -125,6 +124,7 @@
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
+        "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their originating rationale.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction and every exception arises from necessity rather than anticipation.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
@@ -156,7 +156,6 @@
         "sever": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only through explicit, controlled interfaces.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
-        "spec": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions must be justified against this governing layer and may not redefine it during execution.",
         "spill": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases coupling, ambiguity, or fragility.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
@@ -276,7 +275,6 @@
         "analog",
         "analysis",
         "argue",
-        "arrow",
         "balance",
         "bias",
         "boom",
@@ -305,6 +303,7 @@
         "field",
         "flow",
         "gap",
+        "ground",
         "grove",
         "grow",
         "induce",
@@ -336,7 +335,6 @@
         "sever",
         "shift",
         "simulation",
-        "spec",
         "spill",
         "split",
         "systemic",
@@ -453,7 +451,6 @@
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
-        "arrow": "Intent-constrained meaning governance",
         "balance": "Balance analysis: forces and trade-offs",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
@@ -482,6 +479,7 @@
         "field": "Model interaction as a shared structured medium",
         "flow": "Step-by-step sequential progression",
         "gap": "Implicit-to-explicit gap analysis",
+        "ground": "Declared governing layer authority",
         "grove": "Accumulation and rate-of-change effects",
         "grow": "Build up from simplest valid base",
         "induce": "Generalize patterns from examples",
@@ -512,7 +510,6 @@
         "sever": "Enforce domain separations",
         "shift": "Rotate through distinct perspectives",
         "simulation": "Thought experiments and scenario walkthroughs",
-        "spec": "Define correctness criteria first",
         "spill": "Identify scope overreach",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
@@ -631,7 +628,6 @@
         "analog": "類",
         "analysis": "析",
         "argue": "論",
-        "arrow": "矢",
         "balance": "均",
         "bias": "偏",
         "boom": "極",
@@ -660,6 +656,7 @@
         "field": "場",
         "flow": "流",
         "gap": "隙",
+        "ground": "地",
         "grove": "蓄",
         "grow": "増",
         "induce": "帰",
@@ -691,7 +688,6 @@
         "sever": "断",
         "shift": "転",
         "simulation": "象",
-        "spec": "規",
         "spill": "溢",
         "split": "分",
         "systemic": "系",
@@ -728,7 +724,6 @@
         "analog": "Generative",
         "analysis": "Structural",
         "argue": "Reasoning",
-        "arrow": "Structural",
         "balance": "Comparative",
         "bias": "Reasoning",
         "boom": "Exploration",
@@ -757,6 +752,7 @@
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
         "gap": "Structural",
+        "ground": "Structural",
         "grove": "Generative",
         "grow": "Generative",
         "induce": "Reasoning",
@@ -788,7 +784,6 @@
         "sever": "Structural",
         "shift": "Generative",
         "simulation": "Temporal/Dynamic",
-        "spec": "Structural",
         "spill": "Diagnostic",
         "split": "Exploration",
         "systemic": "Temporal/Dynamic",
@@ -893,7 +888,6 @@
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
-        "arrow": "Align intent to downstream",
         "balance": "Equilibrium forces",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
@@ -922,6 +916,7 @@
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "gap": "Implicit gaps",
+        "ground": "Declared governing layer",
         "grove": "Compounding effects",
         "grow": "Expand only when needed",
         "induce": "Generalise from examples",
@@ -953,7 +948,6 @@
         "sever": "Enforce domain separation",
         "shift": "Rotate perspectives",
         "simulation": "Scenario walkthrough",
-        "spec": "Governing constraints",
         "spill": "Scope overreach",
         "split": "Decompose in isolation",
         "systemic": "System as whole",
@@ -2480,28 +2474,6 @@
             "explicit reasoning structure"
           ]
         },
-        "arrow": {
-          "definition": "The response ensures system meaning is governed by explicit intent constraints, maintaining alignment between intent and downstream representations.",
-          "distinctions": [
-            {
-              "note": "bound = restrict propagation of effects to a region; arrow = constrain downstream meaning to align with explicit intent",
-              "token": "bound"
-            },
-            {
-              "note": "control = focus on what is within your control; arrow = enforce intent constraints on how meaning propagates through representations",
-              "token": "control"
-            }
-          ],
-          "heuristics": [
-            "ensure intent governs downstream",
-            "align meaning to intent",
-            "intent constraints on representations",
-            "constrain downstream meaning",
-            "explicit intent alignment",
-            "meaning governed by intent",
-            "keep downstream aligned with intent"
-          ]
-        },
         "balance": {
           "definition": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how they offset one another.",
           "distinctions": [
@@ -2566,8 +2538,8 @@
               "token": "depends"
             },
             {
-              "note": "spec = define correctness; bound = limit reach of influence",
-              "token": "spec"
+              "note": "ground = treat declared governing layer as fixed authority; bound = limit reach of influence",
+              "token": "ground"
             }
           ],
           "heuristics": [
@@ -2760,8 +2732,8 @@
           "definition": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
           "distinctions": [
             {
-              "note": "spec = define correctness criteria first; crystal = broadly shape system toward explicit structural determination",
-              "token": "spec"
+              "note": "ground = treat declared governing layer as fixed authority; crystal = broadly shape system toward explicit structural determination",
+              "token": "ground"
             },
             {
               "note": "reify = surface one implicit pattern as an explicit rule; crystal = systemic shift toward structural explicitness",
@@ -2828,8 +2800,8 @@
               "token": "deduce"
             },
             {
-              "note": "spec = define governing criteria; derive = make the generating assumptions structurally explicit for derivability",
-              "token": "spec"
+              "note": "ground = treat declared governing layer as fixed authority; derive = make the generating assumptions structurally explicit for derivability",
+              "token": "ground"
             }
           ],
           "heuristics": [
@@ -3048,6 +3020,38 @@
             "where are the hidden assumptions",
             "what's taken for granted",
             "gap between stated and actual"
+          ]
+        },
+        "ground": {
+          "definition": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their originating rationale.",
+          "distinctions": [
+            {
+              "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must justify against",
+              "token": "bound"
+            },
+            {
+              "note": "crystal = shape system toward explicit structure; ground = treat a declared layer as fixed authority requiring justification, not crystallization",
+              "token": "crystal"
+            },
+            {
+              "note": "derive = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that conclusions must justify against",
+              "token": "derive"
+            }
+          ],
+          "heuristics": [
+            "define the spec first",
+            "test-driven design",
+            "what should it do before how",
+            "specification before implementation",
+            "write the tests first",
+            "define success criteria",
+            "TDD",
+            "correctness criteria",
+            "ensure intent governs downstream",
+            "justify against declared constraints",
+            "explicit intent alignment",
+            "meaning governed by intent",
+            "what is the governing layer"
           ]
         },
         "grove": {
@@ -3665,25 +3669,6 @@
             "what emergent effects would arise",
             "project systemic dynamics",
             "model how effects compound over time"
-          ]
-        },
-        "spec": {
-          "definition": "The response maintains an explicit and independent layer of governing criteria, constraints, or rules that remain authoritative over implementation. Actions or constructions must be justified against this governing layer and may not redefine it during execution.",
-          "distinctions": [
-            {
-              "note": "grow = evolve incrementally from minimal; spec = define the target criteria first and measure compliance against them",
-              "token": "grow"
-            }
-          ],
-          "heuristics": [
-            "define the spec first",
-            "test-driven design",
-            "what should it do before how",
-            "specification before implementation",
-            "write the tests first",
-            "define success criteria",
-            "TDD",
-            "correctness criteria"
           ]
         },
         "spill": {
@@ -6281,7 +6266,6 @@
         "analog": "analog",
         "analysis": "analysis",
         "argue": "argue",
-        "arrow": "arrow",
         "balance": "balance",
         "bias": "bias",
         "boom": "boom",
@@ -6310,6 +6294,7 @@
         "field": "field",
         "flow": "flow",
         "gap": "gap",
+        "ground": "ground",
         "grove": "grove",
         "grow": "grow",
         "induce": "induce",
@@ -6341,7 +6326,6 @@
         "sever": "sever",
         "shift": "shift",
         "simulation": "simulation",
-        "spec": "spec",
         "spill": "spill",
         "split": "split",
         "systemic": "systemic",
@@ -6492,7 +6476,6 @@
         "method=analog": "method-analog",
         "method=analysis": "method-analysis",
         "method=argue": "method-argue",
-        "method=arrow": "method-arrow",
         "method=balance": "method-balance",
         "method=bias": "method-bias",
         "method=boom": "method-boom",
@@ -6521,6 +6504,7 @@
         "method=field": "method-field",
         "method=flow": "method-flow",
         "method=gap": "method-gap",
+        "method=ground": "method-ground",
         "method=grove": "method-grove",
         "method=grow": "method-grow",
         "method=induce": "method-induce",
@@ -6552,7 +6536,6 @@
         "method=sever": "method-sever",
         "method=shift": "method-shift",
         "method=simulation": "method-simulation",
-        "method=spec": "method-spec",
         "method=spill": "method-spill",
         "method=split": "method-split",
         "method=systemic": "method-systemic",
@@ -6699,7 +6682,6 @@
       "announce": "announce",
       "appreciate": "appreciate",
       "argue": "argue",
-      "arrow": "arrow",
       "as Kent Beck": "as-kent-beck",
       "as PM": "as-pm",
       "as designer": "as-designer",
@@ -6875,6 +6857,7 @@
       "gherkin": "gherkin",
       "gist": "gist",
       "good": "good",
+      "ground": "ground",
       "grove": "grove",
       "grow": "grow",
       "help": "help",
@@ -6912,7 +6895,6 @@
       "method=analog": "method-analog",
       "method=analysis": "method-analysis",
       "method=argue": "method-argue",
-      "method=arrow": "method-arrow",
       "method=balance": "method-balance",
       "method=bias": "method-bias",
       "method=boom": "method-boom",
@@ -6941,6 +6923,7 @@
       "method=field": "method-field",
       "method=flow": "method-flow",
       "method=gap": "method-gap",
+      "method=ground": "method-ground",
       "method=grove": "method-grove",
       "method=grow": "method-grow",
       "method=induce": "method-induce",
@@ -6972,7 +6955,6 @@
       "method=sever": "method-sever",
       "method=shift": "method-shift",
       "method=simulation": "method-simulation",
-      "method=spec": "method-spec",
       "method=spill": "method-spill",
       "method=split": "method-split",
       "method=systemic": "method-systemic",
@@ -7051,7 +7033,6 @@
       "slack": "slack",
       "socratic": "socratic",
       "sort": "sort",
-      "spec": "spec",
       "spike": "spike",
       "spill": "spill",
       "split": "split",
@@ -7869,11 +7850,11 @@
     }
   ],
   "checksums": {
-    "axes": "d0473669cc343fb2921088a2c1332c694f24e05d1ce1282294fd8f9730f5915c",
+    "axes": "c4a73d07c63c5e3956b9c8d9b1f12e0e24a51fce607f8850d8361f1fd3f30f56",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "924c6bdbf915d7dca0c094b51874cb915b922ebfe2c327794df9a1e1c80c99b8",
+    "slugs": "e5a2982ec928c6bdc342ce2b731e07c4bc774783020b861dd6d01b63fe332db8",
     "patterns": "e219303cafd7d90cec9332450df0357518044ed06e8d0142196d1f4f50c91f25",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

@@ -86,7 +86,10 @@
 						t.description.toLowerCase().includes(q) ||
 						(t.routing_concept?.toLowerCase().includes(q) ?? false) ||
 						(t.metadata?.definition?.toLowerCase().includes(q) ?? false) ||
-						(t.metadata?.heuristics?.some((h) => h.toLowerCase().includes(q)) ?? false)
+						(t.metadata?.heuristics?.some((h) => h.toLowerCase().includes(q)) ?? false) ||
+					(t.metadata?.distinctions?.some(
+						(d) => d.token.toLowerCase().includes(q) || d.note.toLowerCase().includes(q)
+					) ?? false)
 					);
 				})
 			: hasCategoryGroups

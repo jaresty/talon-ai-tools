@@ -77,17 +77,18 @@ Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-24 complete,
 
 ### ✅ SPA: Token search / filter across metadata
 **What**: The per-axis filter input in each TokenSelector panel matches against token name, label,
-description, `metadata.definition`, and `metadata.heuristics[]` trigger words. Excludes
-`distinctions[]` from the search index — distinctions are contrast text (e.g., "fix = reformat;
-make = create new") and would surface the wrong token if searched (user types "reformat" → lands on `make`).
+description, `metadata.definition`, `metadata.heuristics[]` trigger words, and
+`metadata.distinctions[]` (both the `token` name and the `note` text). Searching distinctions
+enables cross-token discoverability: typing "sim" surfaces tokens whose distinctions mention "sim",
+letting users find adjacent and contrasting tokens by similarity.
 **Why it's Tier 1**: Same discoverability gap as `bar suggest`, on the SPA surface. Searching across
 `heuristics[]` is especially high-value: trigger words like "analyze", "debug", "step by step" are
 the natural vocabulary users bring.
 **Shape**: Per-axis filter input above each token grid (existing input extended, not a new global
 search box). Filters in real-time; non-matching tokens hidden. F7 test suite pins all inclusion/
 exclusion rules and case-insensitivity.
-**Implemented**: `web/src/lib/TokenSelector.svelte` `filtered` derived — 6-field match predicate.
-Tests: `TokenSelector.test.ts` F7-1 through F7-6.
+**Implemented**: `web/src/lib/TokenSelector.svelte` `filtered` derived — 7-field match predicate.
+Tests: `TokenSelector.test.ts` F7-1 through F7-7.
 
 ### ✅ CLI/TUI: Remove old `internal/bartui`, complete TUI2 migration (ADR-0157)
 **What**: Delete `internal/bartui/` entirely and remove all remaining references. TUI2 is already
@@ -127,6 +128,10 @@ skill can match "debug" → `probe` directly. Distinctions are deliberately excl
 text and would produce false positives if matched as discovery vocabulary.
 ADR-0155 axis migration progressively populates `heuristics[]` across all tokens, so coverage
 deepens automatically as that work lands.
+**Open question**: The SPA filter now also searches `distinctions[]` (both `token` names and `note`
+text) to enable cross-token discoverability — typing "sim" surfaces tokens whose distinctions mention
+"sim". Decide whether the same applies here: including distinction `token` names as a fourth
+tab-separated field would let skills grep "sim" and find contrasting/adjacent tokens too.
 **Complexity**: Low — `renderTokensHelp()` in `app.go` already reads grammar metadata; needs
 `grammar.TaskHeuristics(name)` / `grammar.AxisTokenHeuristics(axis, token)` accessors + a
 tab-separated append to the plain format line.

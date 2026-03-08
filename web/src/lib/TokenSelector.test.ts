@@ -2144,7 +2144,7 @@ const filterMetaTokens = [
 	{ token: 'f', label: 'F', description: '', guidance: '', use_when: '', kanji: '', category: '', routing_concept: '', metadata: null }
 ];
 
-describe('TokenSelector — F7 filter searches description, definition, heuristics; excludes distinctions', () => {
+describe('TokenSelector — F7 filter searches description, definition, heuristics, and distinctions', () => {
 	function renderMetadataSelector() {
 		return render(TokenSelector, {
 			props: {
@@ -2185,15 +2185,24 @@ describe('TokenSelector — F7 filter searches description, definition, heuristi
 		expect(screen.queryByText('alpha')).toBeNull();
 	});
 
-	it('F7-4: filter does NOT match metadata.distinctions text (contrast text excluded from search)', async () => {
+	it('F7-4: filter matches metadata.distinctions note text (cross-token discoverability)', async () => {
 		renderMetadataSelector();
 		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
 		await fireEvent.input(filterInput, { target: { value: 'unique_distinction_phrase' } });
 		flushSync();
-		// beta has this in distinctions only; must not surface
+		// beta has this in distinctions.note; should surface for cross-token discoverability
+		expect(screen.getByText('beta')).toBeTruthy();
 		expect(screen.queryByText('alpha')).toBeNull();
-		expect(screen.queryByText('beta')).toBeNull();
-		expect(document.querySelector('.filter-empty')).not.toBeNull();
+	});
+
+	it('F7-7: filter matches metadata.distinctions token name (find tokens similar to X)', async () => {
+		renderMetadataSelector();
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'gamma' } });
+		flushSync();
+		// beta has distinctions:[{token:'gamma',...}]; searching 'gamma' surfaces beta
+		expect(screen.getByText('beta')).toBeTruthy();
+		expect(screen.queryByText('alpha')).toBeNull();
 	});
 
 	it('F7-5: filter is case-insensitive for metadata.heuristics', async () => {

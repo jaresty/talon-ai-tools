@@ -248,8 +248,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or "
-        "conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their originating intent; "
-        "in code contexts the governing layer is expressed as a specification that must exist before implementation.",
+        "conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their originating intent; in code "
+        "contexts the governing layer is expressed as a specification that must exist before implementation.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every "
@@ -268,6 +268,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
+        "observe": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — and incorporating their actual outcomes into "
+        "reasoning rather than assuming them.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
@@ -478,6 +480,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
         "objectivity": "Separate facts from opinions",
+        "observe": "Run executable artifacts and incorporate outcomes",
         "operations": "Operations research frameworks",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
@@ -662,6 +665,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "mod": "周",
         "models": "型",
         "objectivity": "客",
+        "observe": "観",
         "operations": "営",
         "order": "順",
         "origin": "起",
@@ -824,6 +828,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "mod": "Generative",
         "models": "Generative",
         "objectivity": "Reasoning",
+        "observe": "Diagnostic",
         "operations": "Temporal/Dynamic",
         "order": "Structural",
         "origin": "Structural",
@@ -996,6 +1001,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
         "objectivity": "Facts vs opinions",
+        "observe": "Empirical execution",
         "operations": "Operations research",
         "order": "Abstract ordering",
         "origin": "Historical causation",
@@ -3980,7 +3986,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
                     "token": "verify",
-                }
+                },
+                {
+                    "note": "experimental = design experiments to test hypotheses; observe = run available artifacts and incorporate actual outcomes",
+                    "token": "observe",
+                },
             ],
             "heuristics": [
                 "design an experiment",
@@ -4332,6 +4342,35 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "is this a fact or an opinion",
             ],
         },
+        "observe": {
+            "definition": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — and incorporating their actual "
+            "outcomes into reasoning rather than assuming them.",
+            "distinctions": [
+                {
+                    "note": "experimental = design experiments to test hypotheses; observe = run available artifacts and incorporate actual outcomes",
+                    "token": "experimental",
+                },
+                {
+                    "note": "verify = apply falsification pressure analytically; observe = require empirical execution of available artifacts",
+                    "token": "verify",
+                },
+                {
+                    "note": "perturb = actively vary the system to see effects; observe = run existing artifacts without introducing controlled variations",
+                    "token": "perturb",
+                },
+            ],
+            "heuristics": [
+                "run the tests",
+                "actually execute this",
+                "see what happens when you run it",
+                "don't assume — run it",
+                "show me the test results",
+                "red before green",
+                "run the experiment",
+                "what does the output actually say",
+                "incorporate the actual result",
+            ],
+        },
         "operations": {
             "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
             "distinctions": [
@@ -4403,6 +4442,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "experimental = design experiments to test hypotheses; perturb = actively vary the system to see effects",
                     "token": "experimental",
+                },
+                {
+                    "note": "perturb = actively vary the system to see effects; observe = run existing artifacts without introducing controlled variations",
+                    "token": "observe",
                 },
             ],
             "heuristics": [

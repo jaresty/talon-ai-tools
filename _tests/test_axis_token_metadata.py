@@ -265,7 +265,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "drift", "effects", "entangle", "experimental", "explore", "field", "flow",
         "gap", "ground", "grove", "grow", "induce", "inversion", "jobs", "mapping", "meld",
         "melody", "migrate", "mod", "models", "objectivity", "operations", "order", "origin",
-        "perturb", "polar", "preserve", "prioritize", "probability", "product", "reify",
+        "observe", "perturb", "polar", "preserve", "prioritize", "probability", "product", "reify",
         "release", "resilience", "reset", "rigor", "risks", "robust", "sever", "shift",
         "simulation", "spill", "split", "systemic", "trace", "trade", "trans",
         "triage", "unknowns", "verify",

@@ -137,6 +137,7 @@
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
+        "observe": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — and incorporating their actual outcomes into reasoning rather than assuming them.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
@@ -317,6 +318,7 @@
         "mod",
         "models",
         "objectivity",
+        "observe",
         "operations",
         "order",
         "origin",
@@ -494,6 +496,7 @@
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
         "objectivity": "Separate facts from opinions",
+        "observe": "Run executable artifacts and incorporate outcomes",
         "operations": "Operations research frameworks",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
@@ -672,6 +675,7 @@
         "mod": "周",
         "models": "型",
         "objectivity": "客",
+        "observe": "観",
         "operations": "営",
         "order": "順",
         "origin": "起",
@@ -769,6 +773,7 @@
         "mod": "Generative",
         "models": "Generative",
         "objectivity": "Reasoning",
+        "observe": "Diagnostic",
         "operations": "Temporal/Dynamic",
         "order": "Structural",
         "origin": "Structural",
@@ -934,6 +939,7 @@
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
         "objectivity": "Facts vs opinions",
+        "observe": "Empirical execution",
         "operations": "Operations research",
         "order": "Abstract ordering",
         "origin": "Historical causation",
@@ -2942,6 +2948,10 @@
             {
               "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
               "token": "verify"
+            },
+            {
+              "note": "experimental = design experiments to test hypotheses; observe = run available artifacts and incorporate actual outcomes",
+              "token": "observe"
             }
           ],
           "heuristics": [
@@ -3289,6 +3299,34 @@
             "is this a fact or an opinion"
           ]
         },
+        "observe": {
+          "definition": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — and incorporating their actual outcomes into reasoning rather than assuming them.",
+          "distinctions": [
+            {
+              "note": "experimental = design experiments to test hypotheses; observe = run available artifacts and incorporate actual outcomes",
+              "token": "experimental"
+            },
+            {
+              "note": "verify = apply falsification pressure analytically; observe = require empirical execution of available artifacts",
+              "token": "verify"
+            },
+            {
+              "note": "perturb = actively vary the system to see effects; observe = run existing artifacts without introducing controlled variations",
+              "token": "perturb"
+            }
+          ],
+          "heuristics": [
+            "run the tests",
+            "actually execute this",
+            "see what happens when you run it",
+            "don't assume — run it",
+            "show me the test results",
+            "red before green",
+            "run the experiment",
+            "what does the output actually say",
+            "incorporate the actual result"
+          ]
+        },
         "operations": {
           "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
           "distinctions": [
@@ -3358,6 +3396,10 @@
             {
               "note": "experimental = design experiments to test hypotheses; perturb = actively vary the system to see effects",
               "token": "experimental"
+            },
+            {
+              "note": "perturb = actively vary the system to see effects; observe = run existing artifacts without introducing controlled variations",
+              "token": "observe"
             }
           ],
           "heuristics": [
@@ -6337,6 +6379,7 @@
         "mod": "mod",
         "models": "models",
         "objectivity": "objectivity",
+        "observe": "observe",
         "operations": "operations",
         "order": "order",
         "origin": "origin",
@@ -6548,6 +6591,7 @@
         "method=mod": "method-mod",
         "method=models": "method-models",
         "method=objectivity": "method-objectivity",
+        "method=observe": "method-observe",
         "method=operations": "method-operations",
         "method=order": "method-order",
         "method=origin": "method-origin",
@@ -6968,6 +7012,7 @@
       "method=mod": "method-mod",
       "method=models": "method-models",
       "method=objectivity": "method-objectivity",
+      "method=observe": "method-observe",
       "method=operations": "method-operations",
       "method=order": "method-order",
       "method=origin": "method-origin",
@@ -7004,6 +7049,7 @@
       "narrow": "narrow",
       "notebook": "notebook",
       "objectivity": "objectivity",
+      "observe": "observe",
       "ong": "ong",
       "operations": "operations",
       "order": "order",
@@ -7884,11 +7930,11 @@
     }
   ],
   "checksums": {
-    "axes": "54fad72f21503d53b53824176d5d87a1d0627a154efa15870816e6f9a42cb80e",
+    "axes": "7961e4f04ec7bf684250e8c8fb174a6d2bc8d97fe1259fe88752d6ccb1c97d61",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "abdd6b572d1a2be61ac192e621d4273934657763f6844cf8cb7e22bc78cc9465",
+    "slugs": "a2579d6805a822e0a34d9e8824e6ecb3ccf9596be91433b5a98482a75ca30f67",
     "patterns": "e219303cafd7d90cec9332450df0357518044ed06e8d0142196d1f4f50c91f25",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

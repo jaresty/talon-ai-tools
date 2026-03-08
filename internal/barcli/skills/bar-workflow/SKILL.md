@@ -69,6 +69,12 @@ Each step is a required gate. Do not advance to the next step until the current 
 - **Decision Methods** → For evaluation/selection steps
 - **Diagnostic Methods** → For problem identification steps
 
+**Targeted lookup with `bar help tokens --plain`:** When planning a workflow step and you need to find a token matching a specific intent, use `--plain` with an axis filter rather than re-reading the full reference. Each line has four tab-separated fields: `category:slug`, label, comma-joined heuristics, pipe-joined `token:note` distinction pairs. Grep field 3 to match intent; read field 4 to find related tokens worth comparing across steps.
+```bash
+bar help tokens --plain method | grep 'root cause'  # find diagnostic method tokens
+bar help tokens --plain form                         # all form tokens with cross-references
+```
+
 ### Fallback (legacy `bar help tokens`)
 
 **For older bar versions without `bar help llm`:**

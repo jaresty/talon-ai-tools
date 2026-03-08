@@ -73,7 +73,13 @@ Each step is a required gate. Do not advance to the next step until the current 
 - Composition Rules (constraints)
 - Usage Patterns by Task Type (8 examples: decision-making, architecture, diagnosis, etc.)
 - Token Selection Heuristics (categorized by thinking style)
-- Advanced Features (shuffle, skip sentinels)
+- Advanced Features (shuffle, skip sentinels, `--plain` format)
+
+**Targeted lookup with `bar help tokens --plain`:** When you need to find a token matching a specific intent phrase without re-reading the full reference, use `--plain` with an axis filter. Each line has four tab-separated fields: `category:slug`, label, comma-joined heuristics, pipe-joined `token:note` distinction pairs. Grep field 3 (heuristics) to match intent; read field 4 (distinctions) to find related tokens worth comparing.
+```bash
+bar help tokens --plain method | grep 'debug'   # find method tokens for a debugging intent
+bar help tokens --plain task                     # all task tokens with heuristics and cross-references
+```
 
 ### Fallback (legacy `bar help tokens`)
 

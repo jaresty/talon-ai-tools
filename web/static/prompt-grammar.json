@@ -159,6 +159,7 @@
         "spill": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases coupling, ambiguity, or fragility.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
+        "trace": "The response enhances the task by making the transformation process explicit, revealing intermediate steps, decisions, and structural changes so the path from input to outcome remains observable.",
         "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those dimensions before committing to a configuration.",
         "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
         "triage": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
@@ -338,6 +339,7 @@
         "spill",
         "split",
         "systemic",
+        "trace",
         "trade",
         "trans",
         "triage",
@@ -513,6 +515,7 @@
         "spill": "Identify scope overreach",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
+        "trace": "Observable intermediate steps and decisions",
         "trade": "Trade-off analysis across competing forces",
         "trans": "Information transfer model with noise and feedback",
         "triage": "Triage by consequence×uncertainty gradient",
@@ -691,6 +694,7 @@
         "spill": "溢",
         "split": "分",
         "systemic": "系",
+        "trace": "跡",
         "trade": "衡",
         "trans": "伝",
         "triage": "険",
@@ -787,6 +791,7 @@
         "spill": "Diagnostic",
         "split": "Exploration",
         "systemic": "Temporal/Dynamic",
+        "trace": "Temporal/Dynamic",
         "trade": "Comparative",
         "trans": "Temporal/Dynamic",
         "triage": "Diagnostic",
@@ -951,6 +956,7 @@
         "spill": "Scope overreach",
         "split": "Decompose in isolation",
         "systemic": "System as whole",
+        "trace": "Observable execution path",
         "trade": "Structural tradeoffs",
         "trans": "Communication transmission",
         "triage": "Risk-gradient depth",
@@ -3732,6 +3738,30 @@
             "interconnections"
           ]
         },
+        "trace": {
+          "definition": "The response enhances the task by making the transformation process explicit, revealing intermediate steps, decisions, and structural changes so the path from input to outcome remains observable.",
+          "distinctions": [
+            {
+              "note": "flow = follow sequential progression through an existing system; trace = surface intermediate decisions and structural changes during execution so the process is auditable",
+              "token": "flow"
+            },
+            {
+              "note": "derive = make generative assumptions explicit for derivability; trace = surface each intermediate state and decision during transformation for observability",
+              "token": "derive"
+            }
+          ],
+          "heuristics": [
+            "show your work",
+            "make intermediate steps visible",
+            "how did we get here",
+            "make the process traceable",
+            "show each decision",
+            "observable execution",
+            "audit the steps",
+            "I want to follow along",
+            "surface intermediate state"
+          ]
+        },
         "trade": {
           "definition": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those dimensions before committing to a configuration.",
           "distinctions": [
@@ -6329,6 +6359,7 @@
         "spill": "spill",
         "split": "split",
         "systemic": "systemic",
+        "trace": "trace",
         "trade": "trade",
         "trans": "trans",
         "triage": "triage",
@@ -6539,6 +6570,7 @@
         "method=spill": "method-spill",
         "method=split": "method-split",
         "method=systemic": "method-systemic",
+        "method=trace": "method-trace",
         "method=trade": "method-trade",
         "method=trans": "method-trans",
         "method=triage": "method-triage",
@@ -6958,6 +6990,7 @@
       "method=spill": "method-spill",
       "method=split": "method-split",
       "method=systemic": "method-systemic",
+      "method=trace": "method-trace",
       "method=trade": "method-trade",
       "method=trans": "method-trans",
       "method=triage": "method-triage",
@@ -7080,6 +7113,7 @@
       "tone=formally": "tone-formally",
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
+      "trace": "trace",
       "trade": "trade",
       "trans": "trans",
       "triage": "triage",
@@ -7850,11 +7884,11 @@
     }
   ],
   "checksums": {
-    "axes": "c4a73d07c63c5e3956b9c8d9b1f12e0e24a51fce607f8850d8361f1fd3f30f56",
+    "axes": "4fd0cd6589d35939669ad55bac610c8a73ba998114c9abbc150d8d44b04dae66",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "e5a2982ec928c6bdc342ce2b731e07c4bc774783020b861dd6d01b63fe332db8",
+    "slugs": "abdd6b572d1a2be61ac192e621d4273934657763f6844cf8cb7e22bc78cc9465",
     "patterns": "e219303cafd7d90cec9332450df0357518044ed06e8d0142196d1f4f50c91f25",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

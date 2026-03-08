@@ -301,6 +301,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "treating the decomposition as provisional and preparatory rather than final.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
+        "trace": "The response enhances the task by making the transformation process explicit, revealing intermediate steps, decisions, and structural changes so the path from input to outcome "
+        "remains observable.",
         "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those "
         "dimensions before committing to a configuration.",
         "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message "
@@ -496,6 +498,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "spill": "Identify scope overreach",
         "split": "Decompose into parts or components",
         "systemic": "Interacting whole and feedback loops",
+        "trace": "Observable intermediate steps and decisions",
         "trade": "Trade-off analysis across competing forces",
         "trans": "Information transfer model with noise and feedback",
         "triage": "Triage by consequence×uncertainty gradient",
@@ -680,6 +683,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "spill": "溢",
         "split": "分",
         "systemic": "系",
+        "trace": "跡",
         "trade": "衡",
         "trans": "伝",
         "triage": "険",
@@ -841,6 +845,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "spill": "Diagnostic",
         "split": "Exploration",
         "systemic": "Temporal/Dynamic",
+        "trace": "Temporal/Dynamic",
         "trade": "Comparative",
         "trans": "Temporal/Dynamic",
         "triage": "Diagnostic",
@@ -1012,6 +1017,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "spill": "Scope overreach",
         "split": "Decompose in isolation",
         "systemic": "System as whole",
+        "trace": "Observable execution path",
         "trade": "Structural tradeoffs",
         "trans": "Communication transmission",
         "triage": "Risk-gradient depth",
@@ -4788,6 +4794,33 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "unintended consequences",
                 "second order effects across the system",
                 "interconnections",
+            ],
+        },
+        "trace": {
+            "definition": "The response enhances the task by making the transformation process explicit, revealing intermediate steps, decisions, and structural changes so the path from "
+            "input to outcome remains observable.",
+            "distinctions": [
+                {
+                    "note": "flow = follow sequential progression through an existing system; trace = surface intermediate decisions and structural changes during execution so "
+                    "the process is auditable",
+                    "token": "flow",
+                },
+                {
+                    "note": "derive = make generative assumptions explicit for derivability; trace = surface each intermediate state and decision during transformation for "
+                    "observability",
+                    "token": "derive",
+                },
+            ],
+            "heuristics": [
+                "show your work",
+                "make intermediate steps visible",
+                "how did we get here",
+                "make the process traceable",
+                "show each decision",
+                "observable execution",
+                "audit the steps",
+                "I want to follow along",
+                "surface intermediate state",
             ],
         },
         "trade": {

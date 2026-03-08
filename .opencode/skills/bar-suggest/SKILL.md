@@ -7,33 +7,66 @@ description: Present users with bar-based approach options when multiple valid a
 
 ## Purpose and Preconditions
 
-This skill enables Claude to **present users with bar-based choices** for how to approach their request when multiple valid approaches exist.
+This skill enables the LLM to **present users with bar-based choices** for how to approach their request when multiple valid approaches exist.
 
 Assumes:
 - **REQUIRED:** `bar` CLI is installed and accessible — this skill cannot function without it
 - The LLM can run `bar help llm` (or `bar help tokens` for older versions) to discover available tokens
-- The LLM has access to the Bash tool for executing bar commands
-- The LLM can use AskUserQuestion tool for presenting choices
+- The LLM has access to a tool for executing bar commands (Bash or equivalent)
+
+## Presenting Options to the User
+
+**Two modes are available; use whichever is supported by the current agent:**
+
+### Mode A — Interactive (preferred when AskUserQuestion tool is available)
+
+Use `AskUserQuestion` to present 2-4 choices as a structured question. This provides the best user experience with a native selection UI.
+
+### Mode B — Inline (fallback for agents without AskUserQuestion)
+
+Present options as a numbered list directly in the response, then pause and ask the user to reply with their choice number. Example:
+
+```
+I can approach this several ways. Which would you prefer?
+
+1. **Exploratory** — map out the space broadly before going deep
+   `bar build probe full explore mapping variants`
+
+2. **Analytical** — break down structure and dependencies
+   `bar build probe full struct depends effects`
+
+3. **Risk-focused** — surface failure modes and fragilities
+   `bar build probe fail adversarial risks checklist`
+
+4. **Surprise me** — `bar shuffle` generates an unexpected angle
+
+Reply with a number (or describe what you want) and I'll proceed.
+```
+
+**In both modes the core rules are the same:**
+- Do not answer the original request directly before the user has chosen an approach.
+- Present options first, then execute the user's choice.
+- Keep options distinct (different method categories, scope, or form).
 
 ## High-level Workflow
 
 1. **Detect open-ended or ambiguous request**
 2. **Load comprehensive reference** via `bar help llm` once per conversation
 3. **Generate 2-4 distinct bar command options** using method categorization and patterns from reference
-4. **Present options** to user with plain-language descriptions
+4. **Present options** using Mode A (AskUserQuestion) if available, otherwise Mode B (inline numbered list)
 5. **Execute user's choice** and return structured response
 
 ## Skill Behavior Rules
 
-- **CRITICAL: Do not answer directly.** You MUST use AskUserQuestion to present options BEFORE providing any answer. Never skip presenting options and jump straight to answering.
-- **REQUIRED: Use AskUserQuestion tool.** Present 2-4 distinct choices using Claude's question interface. This is mandatory—there is no fallback mode where you answer directly.
-- **Present options, don't choose.** Let user decide the approach after seeing the options.
+- **Do not answer directly before presenting options.** Always present 2-4 choices first.
+- **Use AskUserQuestion when available** (Claude agents); otherwise fall back to an inline numbered list (Mode B).
+- **Present options, don't choose.** Let the user decide the approach after seeing the options.
 - **Never hardcode tokens.** Discover via `bar help llm` (preferred) or `bar help tokens` (fallback).
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "as-kent-beck").
-- **Keep options distinct.** Each option should represent meaningfully different approach.
-- **Explain trade-offs.** Help user understand what each option emphasizes in the option descriptions.
+- **Keep options distinct.** Each option should represent a meaningfully different approach.
+- **Explain trade-offs.** Help the user understand what each option emphasizes.
 - **Be transparent about usage.** After executing the user's choice, explain the bar command used.
-- **Execute chosen option.** After user selects, run the bar command and structure response.
+- **Execute chosen option.** After user selects, run the bar command and structure the response.
 
 ## Discovery Workflow
 
@@ -46,7 +79,7 @@ Assumes:
 3. **Option generation strategy:**
    - Consult **"Usage Patterns by Task Type"** section for diverse examples
    - Reference **"Choosing Method"** section to understand method categorization
-   - Use **"Token Catalog"** to discover tokens across all axes; for form tokens, check the **"When to use"** column for task-type selection heuristics
+   - Use **"Token Catalog"** to discover tokens across all axes
    - Check **"Composition Rules"** for valid combinations
 
 **Performance benefit:** Single reference load enables generating multiple diverse options
@@ -99,7 +132,6 @@ Use bar-suggest when the request is:
 4. **Vary scope and form** - Read reference § "Choosing Scope" and § "Choosing Form" to:
    - Discover available scope tokens for different focus areas
    - Discover available form tokens for different output structures
-   - For specialist forms (wardley, wasinawa, spike, cocreate, ladder, taxonomy, facilitate, recipe, visual): read the **"When to use"** column in the Token Catalog § "Form" — these can make options distinctively structured rather than defaulting to walkthrough/table/checklist
    - Combine with method variation for truly distinct options
 
 5. **Check patterns** - Reference § "Usage Patterns by Task Type" to:
@@ -143,14 +175,18 @@ Always include as one option:
 
 ### Present and Execute
 
-1. Use AskUserQuestion to present options with:
-   - **Header**: Brief label for each option
-   - **Description**: What the approach emphasizes, expected output characteristics
-   - Optional: Reference to similar pattern from § "Usage Patterns" if using bar help llm
+**If AskUserQuestion is available (Mode A):**
+Use AskUserQuestion with:
+- **Header**: Brief label for each option
+- **Description**: What the approach emphasizes, expected output characteristics
+- Optional: Reference to similar pattern from § "Usage Patterns" if using bar help llm
 
-2. When user selects, build and execute the corresponding bar command with discovered tokens
+**If AskUserQuestion is unavailable (Mode B):**
+Write a numbered list in your response with the same information — option name, trade-off description, and the bar command that would be used. End with an explicit prompt asking the user to reply with their choice.
 
-3. Explain: "You chose [option], so I used `bar build [tokens]` to [reason]"
+When user selects, build and execute the corresponding bar command with discovered tokens.
+
+Explain: "You chose [option], so I used `bar build [tokens]` to [reason]"
 
 ## Example Option Generation
 
@@ -214,12 +250,12 @@ bar build <discovered-tokens-for-choice> --subject "topic"
 - **Tool calls:** 1-2 discovery queries per suggestion request
 - Still fully functional with embedded heuristics
 
-## Cross-Agent Compatibility Notes
+## Cross-Agent Compatibility
 
-- Works with all Claude agent types that have AskUserQuestion tool
-- **AskUserQuestion tool is REQUIRED** - this skill cannot function without it
-- Token discovery ensures bar version compatibility
-- If you cannot present options, the skill has failed—do not answer directly as a fallback
+- Works with any LLM agent that can execute shell commands
+- **AskUserQuestion preferred** when available (Claude agents) — use Mode A
+- **Inline numbered list fallback** when AskUserQuestion is unavailable — use Mode B
+- Both modes achieve the same goal: user chooses an approach before any answer is given
 
 ## Understanding Bar Output
 
@@ -276,8 +312,6 @@ When `bar build` fails (either during option generation or execution), follow th
 **Additional error handling:**
 - If bar unavailable: This skill cannot function without the bar CLI — inform the user that bar is required
 - If token discovery fails: Check bar installation and try again; do not proceed without valid tokens
-- If AskUserQuestion is unavailable: This skill cannot function—do not attempt to answer directly
-- Always prefer showing options over guessing user's intent
 
 ## Version Detection
 

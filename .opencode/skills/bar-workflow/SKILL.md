@@ -33,7 +33,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load comprehensive reference** via `bar help llm` once per conversation
 3. **Plan the full command sequence** — token choices for each step — before executing any
-4. **Execute bar commands in sequence** via Bash tool — run command 1, write a **complete response** following its TASK/CONSTRAINTS/PERSONA, then run command 2, write a complete response to it, and so on
+4. **Execute bar commands in sequence** via Bash tool — for each command: run it, then read each method token description in the CONSTRAINTS section for ordering requirements before writing the response. Some method tokens specify that something must exist or be run before implementation begins — satisfy those preconditions first. Then write a **complete response** following its TASK/CONSTRAINTS/PERSONA, and proceed to the next command.
 5. **Synthesize results** into a comprehensive response that reflects all steps
 
 ## Skill Behavior Rules
@@ -58,7 +58,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 3. **Workflow planning strategy:**
    - Consult **"Choosing Method"** section to understand method categorization
    - Reference **"Usage Patterns by Task Type"** for multi-step examples
-   - Use **"Token Catalog"** to discover available tokens for each step; for form tokens, check the **"When to use"** column for task-type selection heuristics
+   - Use **"Token Catalog"** to discover available tokens for each step
    - Check **"Composition Rules"** for constraints
 
 **Performance benefit:** Single reference load enables planning multiple workflow steps
@@ -68,6 +68,12 @@ Each step is a required gate. Do not advance to the next step until the current 
 - **Understanding Methods** → For analysis/mapping steps
 - **Decision Methods** → For evaluation/selection steps
 - **Diagnostic Methods** → For problem identification steps
+
+**Targeted lookup with `bar help tokens --plain`:** When planning a workflow step and you need to find a token matching a specific intent, use `--plain` with an axis filter rather than re-reading the full reference. Each line has four tab-separated fields: `category:slug`, label, comma-joined heuristics, pipe-joined `token:note` distinction pairs. Grep field 3 to match intent; read field 4 to find related tokens worth comparing across steps.
+```bash
+bar help tokens --plain method | grep 'root cause'  # find diagnostic method tokens
+bar help tokens --plain form                         # all form tokens with cross-references
+```
 
 ### Fallback (legacy `bar help tokens`)
 
@@ -101,7 +107,6 @@ Each step is a required gate. Do not advance to the next step until the current 
 5. **Select forms for each step** - Read reference § "Choosing Form" to discover:
    - Appropriate output structures for intermediate steps
    - Final form for synthesized result
-   - For specialist forms (wardley, wasinawa, spike, cocreate, ladder, taxonomy, facilitate, recipe, visual): read the **"When to use"** column in the Token Catalog § "Form" for task-type heuristics
 
 6. **Verify composition** - Read reference § "Composition Rules" to check:
    - Token ordering requirements for each step

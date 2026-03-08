@@ -34,7 +34,8 @@ Each step is a required gate. Do not advance to the next step until the current 
 3. **Select tokens** by consulting reference sections (Usage Patterns, Token Selection Heuristics, Token Catalog)
 4. **Build and execute bar command** — run `bar build <tokens> [--subject ...] [--addendum ...]` via Bash tool
 5. **Read bar output** — the printed text is now your instruction for this response
-6. **Return well-structured response** following the bar output exactly
+6. **Pre-flight: check method constraints for ordering requirements** — before taking any action, read each method token description in the CONSTRAINTS section. Some method tokens impose ordering requirements: they specify that something must exist or be run *before* implementation begins. These are not style guidelines — they gate what you do first. If a description says a structure must exist before code, or artifacts must be run before reasoning about their outcomes, satisfy that precondition before proceeding. A pre-formed plan does not exempt you from these gates.
+7. **Return well-structured response** following the bar output exactly
 
 ## Skill Behavior Rules
 
@@ -59,7 +60,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 3. **Token selection strategy:**
    - Consult **"Usage Patterns by Task Type"** section for similar use case examples
    - Reference **"Token Selection Heuristics"** section for scope/method/form guidance
-   - Use **"Token Catalog"** section to discover available tokens across all 7 axes; for form tokens, check the **"When to use"** column for task-type selection heuristics
+   - Use **"Token Catalog"** section to discover available tokens across all 7 axes
    - Check **"Composition Rules"** section for ordering, caps, and incompatibilities
 
 **Performance benefit:** 1 reference load per conversation (vs 3-5 queries per request with legacy approach)
@@ -67,12 +68,18 @@ Each step is a required gate. Do not advance to the next step until the current 
 **Reference structure includes:**
 - Quick Start with example commands
 - Grammar Architecture (ordering rules)
-- Token Catalog (all 7 axes: static, completeness, scope, method, form, channel, directional) — form tokens include a "When to use" column with task-type selection heuristics
+- Token Catalog (all 7 axes: static, completeness, scope, method, form, channel, directional)
 - Persona System (presets + custom axes)
 - Composition Rules (constraints)
 - Usage Patterns by Task Type (8 examples: decision-making, architecture, diagnosis, etc.)
 - Token Selection Heuristics (categorized by thinking style)
-- Advanced Features (shuffle, skip sentinels)
+- Advanced Features (shuffle, skip sentinels, `--plain` format)
+
+**Targeted lookup with `bar help tokens --plain`:** When you need to find a token matching a specific intent phrase without re-reading the full reference, use `--plain` with an axis filter. Each line has four tab-separated fields: `category:slug`, label, comma-joined heuristics, pipe-joined `token:note` distinction pairs. Grep field 3 (heuristics) to match intent; read field 4 (distinctions) to find related tokens worth comparing.
+```bash
+bar help tokens --plain method | grep 'debug'   # find method tokens for a debugging intent
+bar help tokens --plain task                     # all task tokens with heuristics and cross-references
+```
 
 ### Fallback (legacy `bar help tokens`)
 
@@ -110,7 +117,6 @@ Each step is a required gate. Do not advance to the next step until the current 
    - What form tokens are available
    - How forms map to different output structures
    - Which form best matches the desired response format
-   - For specialist forms (wardley, wasinawa, spike, cocreate, ladder, taxonomy, facilitate, recipe, visual): read the **"When to use"** column in the Token Catalog § "Form" — it contains task-type heuristics for when to reach for each form instead of defaulting to walkthrough/table/checklist
 
 6. **Discover available tokens** - Read reference § "Token Catalog" to see:
    - All tokens available for each axis

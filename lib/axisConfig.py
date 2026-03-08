@@ -248,7 +248,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or "
-        "conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their originating rationale.",
+        "conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their originating rationale. "
+        "In code contexts, the authoritative expression of a governing layer is an executable specification (e.g. a failing test) that exists before implementation — "
+        "implementing without one means the governing layer is not load-bearing.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every "

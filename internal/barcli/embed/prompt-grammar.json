@@ -124,7 +124,7 @@
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
-        "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their originating rationale.",
+        "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or conclusions to be justified against it rather than allowed to redefine it, and maintaining traceable grounding between representations and their originating rationale. In code contexts, the authoritative expression of a governing layer is an executable specification (e.g. a failing test) that exists before implementation — implementing without one means the governing layer is not load-bearing.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every abstraction and every exception arises from necessity rather than anticipation.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
@@ -7884,7 +7884,7 @@
     }
   ],
   "checksums": {
-    "axes": "4fd0cd6589d35939669ad55bac610c8a73ba998114c9abbc150d8d44b04dae66",
+    "axes": "4b200ed13fc26292fc7d4a7ca1427af0b0cc31dbcdb17adfafa52bfb80ec0419",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -1097,6 +1097,24 @@ func (g *Grammar) AxisMetadataFor(axis, token string) *TaskMetadata {
 	return nil
 }
 
+// TaskHeuristics returns the heuristic trigger words for a task token (ADR-0154).
+// Returns nil if no heuristics are defined for the given token.
+func (g *Grammar) TaskHeuristics(name string) []string {
+	if meta := g.TaskMetadataFor(name); meta != nil {
+		return meta.Heuristics
+	}
+	return nil
+}
+
+// AxisTokenHeuristics returns the heuristic trigger words for an axis token (ADR-0155).
+// Returns nil if no heuristics are defined for the given axis/token pair.
+func (g *Grammar) AxisTokenHeuristics(axis, token string) []string {
+	if meta := g.AxisMetadataFor(axis, token); meta != nil {
+		return meta.Heuristics
+	}
+	return nil
+}
+
 // PersonaLabel returns the short CLI-facing label for the given persona axis token (ADR-0111).
 // Returns empty string if no label is defined.
 func (g *Grammar) PersonaLabel(axis, token string) string {

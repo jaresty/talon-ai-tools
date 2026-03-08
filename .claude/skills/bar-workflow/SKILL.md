@@ -33,7 +33,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load comprehensive reference** via `bar help llm` once per conversation
 3. **Plan the full command sequence** — token choices for each step — before executing any
-4. **Execute bar commands in sequence** via Bash tool — run command 1, write a **complete response** following its TASK/CONSTRAINTS/PERSONA, then run command 2, write a complete response to it, and so on
+4. **Execute bar commands in sequence** via Bash tool — for each command: run it, then read each method token description in the CONSTRAINTS section for ordering requirements before writing the response. Some method tokens specify that something must exist or be run before implementation begins — satisfy those preconditions first. Then write a **complete response** following its TASK/CONSTRAINTS/PERSONA, and proceed to the next command.
 5. **Synthesize results** into a comprehensive response that reflects all steps
 
 ## Skill Behavior Rules

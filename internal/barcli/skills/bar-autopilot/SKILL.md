@@ -34,7 +34,8 @@ Each step is a required gate. Do not advance to the next step until the current 
 3. **Select tokens** by consulting reference sections (Usage Patterns, Token Selection Heuristics, Token Catalog)
 4. **Build and execute bar command** — run `bar build <tokens> [--subject ...] [--addendum ...]` via Bash tool
 5. **Read bar output** — the printed text is now your instruction for this response
-6. **Return well-structured response** following the bar output exactly
+6. **Pre-flight: check method constraints for ordering requirements** — before taking any action, read each method token description in the CONSTRAINTS section. Some method tokens impose ordering requirements: they specify that something must exist or be run *before* implementation begins. These are not style guidelines — they gate what you do first. If a description says a structure must exist before code, or artifacts must be run before reasoning about their outcomes, satisfy that precondition before proceeding. A pre-formed plan does not exempt you from these gates.
+7. **Return well-structured response** following the bar output exactly
 
 ## Skill Behavior Rules
 

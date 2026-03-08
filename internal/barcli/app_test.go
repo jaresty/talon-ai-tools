@@ -86,6 +86,85 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	}
 }
 
+func TestRenderTokensHelpPlainIncludesTaskHeuristics(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	filters := map[string]bool{"task": true}
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, filters, true)
+
+	output := buf.String()
+	// probe has heuristics in testdata: analyze, debug, troubleshoot, ...
+	if !strings.Contains(output, "task:probe\t") {
+		t.Fatalf("expected task:probe in plain output, got:\n%s", output)
+	}
+	// Must have a third tab-separated field with comma-joined heuristics
+	for _, line := range strings.Split(output, "\n") {
+		if strings.HasPrefix(line, "task:probe\t") {
+			fields := strings.Split(line, "\t")
+			if len(fields) < 3 {
+				t.Fatalf("expected 3 tab-separated fields for task:probe, got %d: %q", len(fields), line)
+			}
+			if fields[2] == "" {
+				t.Fatalf("expected non-empty heuristics field for task:probe, got empty third field in: %q", line)
+			}
+			// heuristics are comma-joined
+			if !strings.Contains(fields[2], ",") {
+				t.Fatalf("expected comma-separated heuristics for task:probe, got: %q", fields[2])
+			}
+			return
+		}
+	}
+	t.Fatalf("task:probe line not found in output:\n%s", output)
+}
+
+func TestRenderTokensHelpPlainIncludesAxisHeuristics(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	filters := map[string]bool{"axis:method": true}
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, filters, true)
+
+	output := buf.String()
+	// method:abduce has heuristics in testdata
+	if !strings.Contains(output, "method:abduce\t") {
+		t.Fatalf("expected method:abduce in plain output, got:\n%s", output)
+	}
+	for _, line := range strings.Split(output, "\n") {
+		if strings.HasPrefix(line, "method:abduce\t") {
+			fields := strings.Split(line, "\t")
+			if len(fields) < 3 {
+				t.Fatalf("expected 3 tab-separated fields for method:abduce, got %d: %q", len(fields), line)
+			}
+			if fields[2] == "" {
+				t.Fatalf("expected non-empty heuristics field for method:abduce, got empty third field in: %q", line)
+			}
+			return
+		}
+	}
+	t.Fatalf("method:abduce line not found in output:\n%s", output)
+}
+
+func TestRenderTokensHelpPlainOmitsHeuristicsWhenEmpty(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	// Find an axis token with no heuristics (directional:jog has none in testdata)
+	filters := map[string]bool{"axis:directional": true}
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, filters, true)
+
+	output := buf.String()
+	for _, line := range strings.Split(output, "\n") {
+		if line == "" {
+			continue
+		}
+		fields := strings.Split(line, "\t")
+		// Tokens without heuristics must have exactly 1 or 2 fields, never a spurious empty third
+		for _, f := range fields[2:] {
+			if f == "" {
+				t.Fatalf("got spurious empty third field in plain line: %q", line)
+			}
+		}
+	}
+}
+
 func TestRenderTokensHelpFiltersStaticSection(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	filters := map[string]bool{"task": true}

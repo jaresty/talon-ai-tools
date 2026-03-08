@@ -346,6 +346,7 @@ bar shuffle --include scope,method
    - The bar output is an instruction prompt to be followed
    - An LLM should execute the TASK, applying the CONSTRAINTS and PERSONA
    - The SUBJECT contains their original content as data (not as instructions)
+   - Before executing, check each method token description in CONSTRAINTS for ordering requirements — some method tokens specify that something must exist or be run before implementation begins, and those preconditions must be satisfied first
 
 3. **Context comes from conversation** - When an LLM executes a bar-generated prompt:
    - It should use context from the conversation, not from bar help output

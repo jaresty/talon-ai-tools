@@ -1073,6 +1073,7 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	fmt.Fprintf(w, "- Allocate analytical depth by consequence×uncertainty → `triage`\n\n")
 	fmt.Fprintf(w, "See **Completeness × Method compatibility** note for `max`/`grow` in \"Guidance for specific tokens\" below.\n\n")
 	fmt.Fprintf(w, "**For detailed differentiation guidance** on similar methods (e.g., `explore` vs `branch`, `abduce` vs `deduce`, `robust` vs `resilience`, `grow` vs `grove`), see \"Guidance for specific tokens\" section below.\n\n")
+	fmt.Fprintf(w, "**Sequencing-class methods:** Some method tokens do not merely shape analytical style — they impose pre-flight ordering constraints that determine what must exist or be executed *before* implementation begins. Read each selected method token's description carefully: if it specifies that a structure must exist before code, or that artifacts must be run before reasoning about their outcomes, treat that as a gate rather than a style guideline. Satisfying the precondition is part of executing the token correctly.\n\n")
 
 	// Choosing Form — rendered dynamically from AXIS_KEY_TO_ROUTING_CONCEPT (ADR-0146 Phase 2)
 	renderRoutingConceptSection(w, "Choosing Form", grammar.Axes.RoutingConcept["form"])

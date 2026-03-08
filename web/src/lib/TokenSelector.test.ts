@@ -2109,3 +2109,107 @@ describe('TokenSelector — ADR-0156 T-7: persona token structured metadata pane
 		expect(dots.length).toBe(1);
 	});
 });
+
+// Fixture for filter metadata search tests (≥6 tokens so filter input appears)
+const filterMetaTokens = [
+	{
+		token: 'alpha',
+		label: 'Alpha Token',
+		description: 'unique_description_phrase',
+		guidance: '',
+		use_when: '',
+		kanji: '',
+		category: '',
+		routing_concept: '',
+		metadata: null
+	},
+	{
+		token: 'beta',
+		label: 'Beta Token',
+		description: 'plain description',
+		guidance: '',
+		use_when: '',
+		kanji: '',
+		category: '',
+		routing_concept: '',
+		metadata: {
+			definition: 'unique_definition_phrase',
+			heuristics: ['unique_heuristic_phrase', 'secondary trigger'],
+			distinctions: [{ token: 'gamma', note: 'unique_distinction_phrase' }]
+		}
+	},
+	{ token: 'c', label: 'C', description: '', guidance: '', use_when: '', kanji: '', category: '', routing_concept: '', metadata: null },
+	{ token: 'd', label: 'D', description: '', guidance: '', use_when: '', kanji: '', category: '', routing_concept: '', metadata: null },
+	{ token: 'e', label: 'E', description: '', guidance: '', use_when: '', kanji: '', category: '', routing_concept: '', metadata: null },
+	{ token: 'f', label: 'F', description: '', guidance: '', use_when: '', kanji: '', category: '', routing_concept: '', metadata: null }
+];
+
+describe('TokenSelector — F7 filter searches description, definition, heuristics; excludes distinctions', () => {
+	function renderMetadataSelector() {
+		return render(TokenSelector, {
+			props: {
+				axis: 'method',
+				tokens: filterMetaTokens,
+				selected: [],
+				maxSelect: 3,
+				onToggle: vi.fn()
+			}
+		});
+	}
+
+	it('F7-1: filter matches token description text', async () => {
+		renderMetadataSelector();
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		expect(filterInput).toBeTruthy();
+		await fireEvent.input(filterInput, { target: { value: 'unique_description_phrase' } });
+		flushSync();
+		expect(screen.getByText('alpha')).toBeTruthy();
+		expect(screen.queryByText('beta')).toBeNull();
+	});
+
+	it('F7-2: filter matches metadata.definition text', async () => {
+		renderMetadataSelector();
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'unique_definition_phrase' } });
+		flushSync();
+		expect(screen.getByText('beta')).toBeTruthy();
+		expect(screen.queryByText('alpha')).toBeNull();
+	});
+
+	it('F7-3: filter matches metadata.heuristics trigger words', async () => {
+		renderMetadataSelector();
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'unique_heuristic_phrase' } });
+		flushSync();
+		expect(screen.getByText('beta')).toBeTruthy();
+		expect(screen.queryByText('alpha')).toBeNull();
+	});
+
+	it('F7-4: filter does NOT match metadata.distinctions text (contrast text excluded from search)', async () => {
+		renderMetadataSelector();
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'unique_distinction_phrase' } });
+		flushSync();
+		// beta has this in distinctions only; must not surface
+		expect(screen.queryByText('alpha')).toBeNull();
+		expect(screen.queryByText('beta')).toBeNull();
+		expect(document.querySelector('.filter-empty')).not.toBeNull();
+	});
+
+	it('F7-5: filter is case-insensitive for metadata.heuristics', async () => {
+		renderMetadataSelector();
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'UNIQUE_HEURISTIC_PHRASE' } });
+		flushSync();
+		expect(screen.getByText('beta')).toBeTruthy();
+	});
+
+	it('F7-6: filter with null metadata does not crash', async () => {
+		renderMetadataSelector();
+		const filterInput = document.querySelector('.filter-input') as HTMLInputElement;
+		await fireEvent.input(filterInput, { target: { value: 'alpha' } });
+		flushSync();
+		// alpha has null metadata — matching on token name, no crash
+		expect(screen.getByText('alpha')).toBeTruthy();
+	});
+});

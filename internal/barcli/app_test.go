@@ -86,6 +86,23 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	}
 }
 
+func TestRenderTokensHelpPlainAlwaysFourFields(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, nil, true)
+
+	output := buf.String()
+	for _, line := range strings.Split(output, "\n") {
+		if line == "" {
+			continue
+		}
+		fields := strings.Split(line, "\t")
+		if len(fields) != 4 {
+			t.Fatalf("expected exactly 4 tab-separated fields in plain line, got %d: %q", len(fields), line)
+		}
+	}
+}
+
 func TestRenderTokensHelpPlainIncludesTaskHeuristics(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	filters := map[string]bool{"task": true}
@@ -94,20 +111,12 @@ func TestRenderTokensHelpPlainIncludesTaskHeuristics(t *testing.T) {
 
 	output := buf.String()
 	// probe has heuristics in testdata: analyze, debug, troubleshoot, ...
-	if !strings.Contains(output, "task:probe\t") {
-		t.Fatalf("expected task:probe in plain output, got:\n%s", output)
-	}
-	// Must have a third tab-separated field with comma-joined heuristics
 	for _, line := range strings.Split(output, "\n") {
 		if strings.HasPrefix(line, "task:probe\t") {
 			fields := strings.Split(line, "\t")
-			if len(fields) < 3 {
-				t.Fatalf("expected 3 tab-separated fields for task:probe, got %d: %q", len(fields), line)
-			}
 			if fields[2] == "" {
-				t.Fatalf("expected non-empty heuristics field for task:probe, got empty third field in: %q", line)
+				t.Fatalf("expected non-empty heuristics field for task:probe, got: %q", line)
 			}
-			// heuristics are comma-joined
 			if !strings.Contains(fields[2], ",") {
 				t.Fatalf("expected comma-separated heuristics for task:probe, got: %q", fields[2])
 			}
@@ -125,44 +134,16 @@ func TestRenderTokensHelpPlainIncludesAxisHeuristics(t *testing.T) {
 
 	output := buf.String()
 	// method:abduce has heuristics in testdata
-	if !strings.Contains(output, "method:abduce\t") {
-		t.Fatalf("expected method:abduce in plain output, got:\n%s", output)
-	}
 	for _, line := range strings.Split(output, "\n") {
 		if strings.HasPrefix(line, "method:abduce\t") {
 			fields := strings.Split(line, "\t")
-			if len(fields) < 3 {
-				t.Fatalf("expected 3 tab-separated fields for method:abduce, got %d: %q", len(fields), line)
-			}
 			if fields[2] == "" {
-				t.Fatalf("expected non-empty heuristics field for method:abduce, got empty third field in: %q", line)
+				t.Fatalf("expected non-empty heuristics field for method:abduce, got: %q", line)
 			}
 			return
 		}
 	}
 	t.Fatalf("method:abduce line not found in output:\n%s", output)
-}
-
-func TestRenderTokensHelpPlainOmitsHeuristicsWhenEmpty(t *testing.T) {
-	grammar := loadCompletionGrammar(t)
-	// Find an axis token with no heuristics (directional:jog has none in testdata)
-	filters := map[string]bool{"axis:directional": true}
-	var buf bytes.Buffer
-	renderTokensHelp(&buf, grammar, filters, true)
-
-	output := buf.String()
-	for _, line := range strings.Split(output, "\n") {
-		if line == "" {
-			continue
-		}
-		fields := strings.Split(line, "\t")
-		// Tokens without heuristics must have exactly 1 or 2 fields, never a spurious empty third
-		for _, f := range fields[2:] {
-			if f == "" {
-				t.Fatalf("got spurious empty third field in plain line: %q", line)
-			}
-		}
-	}
 }
 
 func TestRenderTokensHelpPlainIncludesTaskDistinctions(t *testing.T) {
@@ -172,15 +153,16 @@ func TestRenderTokensHelpPlainIncludesTaskDistinctions(t *testing.T) {
 	renderTokensHelp(&buf, grammar, filters, true)
 
 	output := buf.String()
-	// probe has distinctions in testdata: [pull]
+	// probe has distinctions in testdata: [{token: pull, note: "..."}]
 	for _, line := range strings.Split(output, "\n") {
 		if strings.HasPrefix(line, "task:probe\t") {
 			fields := strings.Split(line, "\t")
-			if len(fields) < 4 {
-				t.Fatalf("expected 4 tab-separated fields for task:probe, got %d: %q", len(fields), line)
-			}
 			if fields[3] == "" {
-				t.Fatalf("expected non-empty distinctions field for task:probe, got empty fourth field in: %q", line)
+				t.Fatalf("expected non-empty distinctions field for task:probe, got: %q", line)
+			}
+			// format is token:note pairs separated by |
+			if !strings.Contains(fields[3], "pull:") {
+				t.Fatalf("expected distinctions field to contain 'pull:note' pair for task:probe, got: %q", fields[3])
 			}
 			return
 		}
@@ -195,15 +177,19 @@ func TestRenderTokensHelpPlainIncludesAxisDistinctions(t *testing.T) {
 	renderTokensHelp(&buf, grammar, filters, true)
 
 	output := buf.String()
-	// method:abduce has distinctions in testdata: [diagnose, induce]
+	// method:abduce has distinctions: [{token: diagnose, note: "..."}, {token: induce, note: "..."}]
 	for _, line := range strings.Split(output, "\n") {
 		if strings.HasPrefix(line, "method:abduce\t") {
 			fields := strings.Split(line, "\t")
-			if len(fields) < 4 {
-				t.Fatalf("expected 4 tab-separated fields for method:abduce, got %d: %q", len(fields), line)
-			}
 			if fields[3] == "" {
-				t.Fatalf("expected non-empty distinctions field for method:abduce, got empty fourth field in: %q", line)
+				t.Fatalf("expected non-empty distinctions field for method:abduce, got: %q", line)
+			}
+			// format: token:note|token:note
+			if !strings.Contains(fields[3], "diagnose:") {
+				t.Fatalf("expected distinctions field to contain 'diagnose:note' pair, got: %q", fields[3])
+			}
+			if !strings.Contains(fields[3], "|") {
+				t.Fatalf("expected multiple distinctions separated by '|' for method:abduce, got: %q", fields[3])
 			}
 			return
 		}

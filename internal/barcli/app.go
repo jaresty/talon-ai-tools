@@ -1056,16 +1056,14 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 				if plain {
 					label := grammar.TaskLabel(name)
 					heuristics := strings.Join(grammar.TaskHeuristics(name), ",")
-					distinctions := strings.Join(grammar.TaskDistinctionTokens(name), ",")
-					if label != "" && heuristics != "" && distinctions != "" {
-						fmt.Fprintf(w, "task:%s\t%s\t%s\t%s\n", slug, label, heuristics, distinctions)
-					} else if label != "" && heuristics != "" {
-						fmt.Fprintf(w, "task:%s\t%s\t%s\n", slug, label, heuristics)
-					} else if label != "" {
-						fmt.Fprintf(w, "task:%s\t%s\n", slug, label)
-					} else {
-						fmt.Fprintf(w, "task:%s\n", slug)
+					var distParts []string
+					if meta := grammar.TaskMetadataFor(name); meta != nil {
+						for _, d := range meta.Distinctions {
+							distParts = append(distParts, d.Token+":"+d.Note)
+						}
 					}
+					distinctions := strings.Join(distParts, "|")
+					fmt.Fprintf(w, "task:%s\t%s\t%s\t%s\n", slug, label, heuristics, distinctions)
 					continue
 				}
 				label := grammar.TaskLabel(name)
@@ -1166,16 +1164,14 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					if plain {
 						label := grammar.AxisLabel(axis, token)
 						heuristics := strings.Join(grammar.AxisTokenHeuristics(axis, token), ",")
-						distinctions := strings.Join(grammar.AxisTokenDistinctionTokens(axis, token), ",")
-						if label != "" && heuristics != "" && distinctions != "" {
-							fmt.Fprintf(w, "%s:%s\t%s\t%s\t%s\n", axis, slug, label, heuristics, distinctions)
-						} else if label != "" && heuristics != "" {
-							fmt.Fprintf(w, "%s:%s\t%s\t%s\n", axis, slug, label, heuristics)
-						} else if label != "" {
-							fmt.Fprintf(w, "%s:%s\t%s\n", axis, slug, label)
-						} else {
-							fmt.Fprintf(w, "%s:%s\n", axis, slug)
+						var distParts []string
+						if meta := grammar.AxisMetadataFor(axis, token); meta != nil {
+							for _, d := range meta.Distinctions {
+								distParts = append(distParts, d.Token+":"+d.Note)
+							}
 						}
+						distinctions := strings.Join(distParts, "|")
+						fmt.Fprintf(w, "%s:%s\t%s\t%s\t%s\n", axis, slug, label, heuristics, distinctions)
 						continue
 					}
 					display := token
@@ -1225,11 +1221,14 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					}
 					preset := grammar.Persona.Presets[name]
 					presetLabel := strings.TrimSpace(preset.Label)
-					if presetLabel != "" {
-						fmt.Fprintf(w, "persona:%s\t%s\n", slug, presetLabel)
-					} else {
-						fmt.Fprintf(w, "persona:%s\n", slug)
+					var hParts, dParts []string
+					if meta := grammar.PersonaMetadataFor("presets", name); meta != nil {
+						hParts = meta.Heuristics
+						for _, d := range meta.Distinctions {
+							dParts = append(dParts, d.Token+":"+d.Note)
+						}
 					}
+					fmt.Fprintf(w, "persona:%s\t%s\t%s\t%s\n", slug, presetLabel, strings.Join(hParts, ","), strings.Join(dParts, "|"))
 					continue
 				}
 				preset := grammar.Persona.Presets[name]
@@ -1298,11 +1297,14 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 							slug = display
 						}
 						axisLabel := grammar.PersonaLabel(axis, token)
-						if axisLabel != "" {
-							fmt.Fprintf(w, "%s:%s\t%s\n", axis, slug, axisLabel)
-						} else {
-							fmt.Fprintf(w, "%s:%s\n", axis, slug)
+						var hParts, dParts []string
+						if meta := grammar.PersonaMetadataFor(axis, token); meta != nil {
+							hParts = meta.Heuristics
+							for _, d := range meta.Distinctions {
+								dParts = append(dParts, d.Token+":"+d.Note)
+							}
 						}
+						fmt.Fprintf(w, "%s:%s\t%s\t%s\t%s\n", axis, slug, axisLabel, strings.Join(hParts, ","), strings.Join(dParts, "|"))
 						continue
 					}
 					displayParts := []string{display}
@@ -1342,11 +1344,14 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 						slug = display
 					}
 					intentLabel := grammar.PersonaLabel("intent", token)
-					if intentLabel != "" {
-						fmt.Fprintf(w, "intent:%s\t%s\n", slug, intentLabel)
-					} else {
-						fmt.Fprintf(w, "intent:%s\n", slug)
+					var hParts, dParts []string
+					if meta := grammar.PersonaMetadataFor("intent", token); meta != nil {
+						hParts = meta.Heuristics
+						for _, d := range meta.Distinctions {
+							dParts = append(dParts, d.Token+":"+d.Note)
+						}
 					}
+					fmt.Fprintf(w, "intent:%s\t%s\t%s\t%s\n", slug, intentLabel, strings.Join(hParts, ","), strings.Join(dParts, "|"))
 					continue
 				}
 				displayParts := []string{display}

@@ -1115,6 +1115,34 @@ func (g *Grammar) AxisTokenHeuristics(axis, token string) []string {
 	return nil
 }
 
+// TaskDistinctionTokens returns the token names from distinctions for a task token.
+// Returns nil if no distinctions are defined.
+func (g *Grammar) TaskDistinctionTokens(name string) []string {
+	meta := g.TaskMetadataFor(name)
+	if meta == nil || len(meta.Distinctions) == 0 {
+		return nil
+	}
+	tokens := make([]string, len(meta.Distinctions))
+	for i, d := range meta.Distinctions {
+		tokens[i] = d.Token
+	}
+	return tokens
+}
+
+// AxisTokenDistinctionTokens returns the token names from distinctions for an axis token.
+// Returns nil if no distinctions are defined.
+func (g *Grammar) AxisTokenDistinctionTokens(axis, token string) []string {
+	meta := g.AxisMetadataFor(axis, token)
+	if meta == nil || len(meta.Distinctions) == 0 {
+		return nil
+	}
+	tokens := make([]string, len(meta.Distinctions))
+	for i, d := range meta.Distinctions {
+		tokens[i] = d.Token
+	}
+	return tokens
+}
+
 // PersonaLabel returns the short CLI-facing label for the given persona axis token (ADR-0111).
 // Returns empty string if no label is defined.
 func (g *Grammar) PersonaLabel(axis, token string) string {

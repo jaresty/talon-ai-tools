@@ -165,6 +165,52 @@ func TestRenderTokensHelpPlainOmitsHeuristicsWhenEmpty(t *testing.T) {
 	}
 }
 
+func TestRenderTokensHelpPlainIncludesTaskDistinctions(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	filters := map[string]bool{"task": true}
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, filters, true)
+
+	output := buf.String()
+	// probe has distinctions in testdata: [pull]
+	for _, line := range strings.Split(output, "\n") {
+		if strings.HasPrefix(line, "task:probe\t") {
+			fields := strings.Split(line, "\t")
+			if len(fields) < 4 {
+				t.Fatalf("expected 4 tab-separated fields for task:probe, got %d: %q", len(fields), line)
+			}
+			if fields[3] == "" {
+				t.Fatalf("expected non-empty distinctions field for task:probe, got empty fourth field in: %q", line)
+			}
+			return
+		}
+	}
+	t.Fatalf("task:probe line not found in output:\n%s", output)
+}
+
+func TestRenderTokensHelpPlainIncludesAxisDistinctions(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	filters := map[string]bool{"axis:method": true}
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, filters, true)
+
+	output := buf.String()
+	// method:abduce has distinctions in testdata: [diagnose, induce]
+	for _, line := range strings.Split(output, "\n") {
+		if strings.HasPrefix(line, "method:abduce\t") {
+			fields := strings.Split(line, "\t")
+			if len(fields) < 4 {
+				t.Fatalf("expected 4 tab-separated fields for method:abduce, got %d: %q", len(fields), line)
+			}
+			if fields[3] == "" {
+				t.Fatalf("expected non-empty distinctions field for method:abduce, got empty fourth field in: %q", line)
+			}
+			return
+		}
+	}
+	t.Fatalf("method:abduce line not found in output:\n%s", output)
+}
+
 func TestRenderTokensHelpFiltersStaticSection(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	filters := map[string]bool{"task": true}

@@ -117,24 +117,20 @@ the eval rubric. Re-test T01–T05 (voice axis), T10–T13 (tone/team), T13 (adv
 shell completion is a known pattern in Go CLIs (cobra, etc.).
 **Shape**: `bar completion bash` / `bar completion zsh` subcommand outputs completion script.
 
-### CLI: `bar help tokens --plain` with heuristics
-**What**: Extend the one-token-per-line plain output to include `heuristics[]` trigger words as a
-tab-separated field.
-**Current format**: `task:probe\tInvestigate`
-**Proposed format**: `task:probe\tInvestigate\tanalyze,debug,troubleshoot,why,root cause`
-**Why Tier 2**: Skills that match user intent to tokens currently work with just the token label.
-Adding `heuristics[]` trigger words makes intent-matching greppable without LLM involvement — a
-skill can match "debug" → `probe` directly. Distinctions are deliberately excluded: they're contrast
-text and would produce false positives if matched as discovery vocabulary.
-ADR-0155 axis migration progressively populates `heuristics[]` across all tokens, so coverage
-deepens automatically as that work lands.
-**Open question**: The SPA filter now also searches `distinctions[]` (both `token` names and `note`
-text) to enable cross-token discoverability — typing "sim" surfaces tokens whose distinctions mention
-"sim". Decide whether the same applies here: including distinction `token` names as a fourth
-tab-separated field would let skills grep "sim" and find contrasting/adjacent tokens too.
-**Complexity**: Low — `renderTokensHelp()` in `app.go` already reads grammar metadata; needs
-`grammar.TaskHeuristics(name)` / `grammar.AxisTokenHeuristics(axis, token)` accessors + a
-tab-separated append to the plain format line.
+### ✅ CLI: `bar help tokens --plain` with heuristics and distinctions
+**What**: Extended the one-token-per-line plain output to four tab-separated fields.
+**Final format**: `task:probe\tSurface assumptions and implications\tanalyze,debug,...\tpull,fix`
+- Field 1: `axis:slug`
+- Field 2: label
+- Field 3: comma-joined `heuristics[]` trigger words (intent-matching vocabulary)
+- Field 4: comma-joined distinction token names (cross-reference "see also" list)
+**Open question resolved**: Distinction token names (not note text) are included as field 4.
+They act as a "see also" pointer for LLMs — finding `probe` via heuristics surfaces `pull,fix` as
+related tokens to consider. Token names are precise canonical identifiers, not freeform text, so
+false-positive risk is low. Note text remains excluded.
+**Implemented**: `grammar.TaskHeuristics`, `grammar.AxisTokenHeuristics`,
+`grammar.TaskDistinctionTokens`, `grammar.AxisTokenDistinctionTokens` accessors in `grammar.go`;
+`renderTokensHelp` plain format in `app.go`; 5 tests in `app_test.go`.
 
 ### SPA: "Build a command" output panel
 **What**: As the user selects tokens, show the resulting `bar` command in a copyable panel.

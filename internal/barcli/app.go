@@ -1056,7 +1056,10 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 				if plain {
 					label := grammar.TaskLabel(name)
 					heuristics := strings.Join(grammar.TaskHeuristics(name), ",")
-					if label != "" && heuristics != "" {
+					distinctions := strings.Join(grammar.TaskDistinctionTokens(name), ",")
+					if label != "" && heuristics != "" && distinctions != "" {
+						fmt.Fprintf(w, "task:%s\t%s\t%s\t%s\n", slug, label, heuristics, distinctions)
+					} else if label != "" && heuristics != "" {
 						fmt.Fprintf(w, "task:%s\t%s\t%s\n", slug, label, heuristics)
 					} else if label != "" {
 						fmt.Fprintf(w, "task:%s\t%s\n", slug, label)
@@ -1163,7 +1166,10 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 					if plain {
 						label := grammar.AxisLabel(axis, token)
 						heuristics := strings.Join(grammar.AxisTokenHeuristics(axis, token), ",")
-						if label != "" && heuristics != "" {
+						distinctions := strings.Join(grammar.AxisTokenDistinctionTokens(axis, token), ",")
+						if label != "" && heuristics != "" && distinctions != "" {
+							fmt.Fprintf(w, "%s:%s\t%s\t%s\t%s\n", axis, slug, label, heuristics, distinctions)
+						} else if label != "" && heuristics != "" {
 							fmt.Fprintf(w, "%s:%s\t%s\t%s\n", axis, slug, label, heuristics)
 						} else if label != "" {
 							fmt.Fprintf(w, "%s:%s\t%s\n", axis, slug, label)

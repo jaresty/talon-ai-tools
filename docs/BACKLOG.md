@@ -75,19 +75,19 @@ Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-24 complete,
 
 ## Tier 1 — Highest impact, most foregrounded by current affordances
 
-### SPA: Token search / filter across metadata
-**What**: A text input that filters tokens across all axes, matching against name, description,
-`heuristics[]` trigger words, and `definition` text. Excludes `distinctions[]` from search index —
-distinctions are contrast text (e.g., "fix = reformat; make = create new") and would surface the
-wrong token if searched (user types "reformat" → lands on `make`).
-**Why it's Tier 1**: Same discoverability gap as `bar suggest`, on the SPA surface. Currently the SPA
-shows all tokens at once — users scroll or already know what they want. Searching across `heuristics[]`
-is especially high-value: trigger words like "analyze", "debug", "step by step" are the natural
-vocabulary users bring.
-**Shape**: Search box above the token grid; filters in real-time; highlights matching tokens.
-All 166 axis tokens already have `heuristics[]` populated in `axes.metadata` — full coverage on day one.
-**Complexity**: Low — `grammar.ts` already has all token data (including `axes.metadata`); it's a
-filter over existing state.
+### ✅ SPA: Token search / filter across metadata
+**What**: The per-axis filter input in each TokenSelector panel matches against token name, label,
+description, `metadata.definition`, and `metadata.heuristics[]` trigger words. Excludes
+`distinctions[]` from the search index — distinctions are contrast text (e.g., "fix = reformat;
+make = create new") and would surface the wrong token if searched (user types "reformat" → lands on `make`).
+**Why it's Tier 1**: Same discoverability gap as `bar suggest`, on the SPA surface. Searching across
+`heuristics[]` is especially high-value: trigger words like "analyze", "debug", "step by step" are
+the natural vocabulary users bring.
+**Shape**: Per-axis filter input above each token grid (existing input extended, not a new global
+search box). Filters in real-time; non-matching tokens hidden. F7 test suite pins all inclusion/
+exclusion rules and case-insensitivity.
+**Implemented**: `web/src/lib/TokenSelector.svelte` `filtered` derived — 6-field match predicate.
+Tests: `TokenSelector.test.ts` F7-1 through F7-6.
 
 ### ✅ CLI/TUI: Remove old `internal/bartui`, complete TUI2 migration (ADR-0157)
 **What**: Delete `internal/bartui/` entirely and remove all remaining references. TUI2 is already

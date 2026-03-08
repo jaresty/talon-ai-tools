@@ -78,12 +78,17 @@
 	// In grouped mode (no filter), tokens appear in category order; in flat/filter mode, unchanged.
 	let filtered = $derived(
 		filter.trim()
-			? tokens.filter(
-					(t) =>
-						t.token.includes(filter.toLowerCase()) ||
-						t.label.toLowerCase().includes(filter.toLowerCase()) ||
-						(t.routing_concept?.toLowerCase().includes(filter.toLowerCase()) ?? false)
-				)
+			? tokens.filter((t) => {
+					const q = filter.toLowerCase();
+					return (
+						t.token.includes(q) ||
+						t.label.toLowerCase().includes(q) ||
+						t.description.toLowerCase().includes(q) ||
+						(t.routing_concept?.toLowerCase().includes(q) ?? false) ||
+						(t.metadata?.definition?.toLowerCase().includes(q) ?? false) ||
+						(t.metadata?.heuristics?.some((h) => h.toLowerCase().includes(q)) ?? false)
+					);
+				})
 			: hasCategoryGroups
 				? categoryGroups().flatMap((g) => g.tokens)
 				: tokens

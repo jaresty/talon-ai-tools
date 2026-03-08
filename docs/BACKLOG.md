@@ -27,7 +27,7 @@ The prompt grammar lives in Python (`lib/axisConfig.py`, `lib/staticPromptConfig
   `lib/personaConfig.py` (persona tokens)
 - **Token metadata schema**: `definition / heuristics[] / distinctions[]` — replaces old free-form
   `use_when` / `guidance` strings. ADR-0154 (task tokens) and ADR-0155 (axis tokens) complete in
-  the Python SSOT and grammar JSON. Stale `UseWhen` field name remains in Go TUI structs (cleanup pending).
+  the Python SSOT and grammar JSON. Go TUI structs use `Heuristics` / `Distinctions` (ADR-0157).
 - **Exported grammar**: `build/prompt-grammar.json` (canonical) and
   `internal/barcli/embed/prompt-grammar.json` (embedded in CLI binary)
 - **SPA grammar**: `web/static/prompt-grammar.json` — must be kept in sync with `build/`
@@ -59,7 +59,7 @@ make guardrails
 
 ## ADR pattern
 
-New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0156).
+New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0157).
 Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-24 complete, loop-25 pending).
 
 ## How to help with this backlog
@@ -89,7 +89,7 @@ All 166 axis tokens already have `heuristics[]` populated in `axes.metadata` —
 **Complexity**: Low — `grammar.ts` already has all token data (including `axes.metadata`); it's a
 filter over existing state.
 
-### CLI/TUI: Remove old `internal/bartui`, complete TUI2 migration (ADR-0157)
+### ✅ CLI/TUI: Remove old `internal/bartui`, complete TUI2 migration (ADR-0157)
 **What**: Delete `internal/bartui/` entirely and remove all remaining references. TUI2 is already
 the recommended path (`bar tui2`); the old TUI is dead weight in the help string, test scaffolding,
 and binary surface area.

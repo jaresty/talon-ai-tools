@@ -3260,8 +3260,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "prose metaphors and spatial layout.",
             "distinctions": [
                 {
-                    "note": "diagram = precise Mermaid code with exact nodes and edges; visual = abstract/metaphorical prose layout with a short legend when conceptual overview is "
-                    "more useful than diagrammatic precision",
+                    "note": "diagram (channel) = precise Mermaid code with exact nodes and edges; visual (form) = abstract/metaphorical prose layout with a short legend when "
+                    "conceptual overview is more useful than diagrammatic precision",
                     "token": "diagram",
                 }
             ],
@@ -3306,8 +3306,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
             "distinctions": [
                 {
-                    "note": "inversion = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa = structured reflection "
-                    "on past events using what/so-what/now-what",
+                    "note": "inversion (method) = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa (form) = "
+                    "structured reflection on past events using what/so-what/now-what",
                     "token": "inversion",
                 }
             ],
@@ -3344,7 +3344,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
             "distinctions": [
                 {
-                    "note": "agent = who has decision authority; actors method = enrich the response with actor-centered analysis regardless of scope",
+                    "note": "agent (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
                     "token": "agent",
                 }
             ],
@@ -3495,7 +3495,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "support.",
             "distinctions": [
                 {
-                    "note": "case = narrative that builds to a recommendation; argue = expose the logical structure of claims and their supports",
+                    "note": "case (form) = narrative that builds to a recommendation; argue (method) = expose the logical structure of claims and their supports",
                     "token": "case",
                 }
             ],
@@ -3741,8 +3741,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
             "distinctions": [
                 {
-                    "note": "agent = identify who has decision-making authority in a system; control = direct evaluation exclusively toward factors within agency, excluding "
-                    "those outside it",
+                    "note": "agent (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within "
+                    "agency, excluding those outside it",
                     "token": "agent",
                 }
             ],
@@ -3821,7 +3821,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
             "distinctions": [
                 {
-                    "note": "struct = internal arrangement; depends = propagation and reliance relationships specifically",
+                    "note": "struct (scope) = internal arrangement; depends (method) = propagation and reliance relationships specifically",
                     "token": "struct",
                 }
             ],
@@ -3901,7 +3901,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
             "distinctions": [
                 {
-                    "note": "struct = internal arrangement; domains = identify bounded context separations and capabilities",
+                    "note": "struct (scope) = internal arrangement; domains (method) = identify bounded context separations and capabilities",
                     "token": "struct",
                 }
             ],
@@ -4066,7 +4066,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "mismatch produces ambiguity, coordination failure, or error.",
             "distinctions": [
                 {
-                    "note": "assume = explicit premises; gap = implicit treated as explicit",
+                    "note": "assume (scope) = restrict analysis to the premises domain; gap (method) = identify where implicit is treated as explicit",
                     "token": "assume",
                 }
             ],
@@ -4138,7 +4138,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "grow": {
             "definition": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so "
             "that every abstraction and every exception arises from necessity rather than anticipation.",
-            "distinctions": [{"note": "brevity of output", "token": "minimal"}],
+            "distinctions": [
+                {
+                    "note": "minimal (completeness) = keep output brief; grow (method) = keep abstractions minimal and expand only under demonstrable complexity pressure",
+                    "token": "minimal",
+                }
+            ],
             "heuristics": [
                 "start simple and expand",
                 "minimum viable",
@@ -4214,7 +4219,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "narrative.",
             "distinctions": [
                 {
-                    "note": "struct = internal topology of one unit; mapping = surface and organize across the whole landscape",
+                    "note": "struct (scope) = internal topology of one unit; mapping (method) = surface and organize across the whole landscape",
                     "token": "struct",
                 }
             ],
@@ -4290,7 +4295,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "a defined period or wraps around boundaries.",
             "distinctions": [
                 {
-                    "note": "recurring patterns across codebase; mod = cyclic/periodic reasoning about behavior that repeats with a defined period",
+                    "note": "motifs (scope) = recurring patterns across codebase; mod (method) = cyclic/periodic reasoning about behavior that repeats with a defined period",
                     "token": "motifs",
                 }
             ],
@@ -4415,7 +4420,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
             "distinctions": [
                 {
-                    "note": "time = sequential/temporal emphasis; origin = specifically causal history and why the present state is as it is",
+                    "note": "time (scope) = sequential/temporal emphasis; origin (method) = specifically causal history and why the present state is as it is",
                     "token": "time",
                 }
             ],
@@ -4785,7 +4790,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "bound",
                 },
                 {
-                    "note": "cross = concerns spanning modules by design; spill = concerns overreaching their intended scope unintentionally",
+                    "note": "cross (scope) = concerns spanning modules by design; spill (method) = concerns overreaching their intended scope unintentionally",
                     "token": "cross",
                 },
             ],
@@ -4930,7 +4935,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
             "distinctions": [
                 {
-                    "note": "assume = make explicit premises already held; unknowns = surface what has not yet been considered or named",
+                    "note": "assume (scope) = restrict analysis to the premises domain; unknowns (method) = surface what has not yet been considered or named",
                     "token": "assume",
                 }
             ],

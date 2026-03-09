@@ -776,27 +776,9 @@ def modelPrompt(m) -> str:
             hints.append(
                 "say form visual to set the container and keep a reasoning method such as mapping"
             )
-        if "samples" in legacy_method_tokens:
-            hints.append(
-                "pair form variants with method explore to request multiple options"
-            )
         hint_text = "; ".join(hints) if hints else "use the updated axis tokens"
         message = (
             f"GPT: method tokens visual/samples moved off the method axis; {hint_text}."
-        )
-        notify(message)
-        raise ValueError(message)
-
-    legacy_channel_tokens = [
-        token
-        for token in channel_tokens_raw
-        if token in {"diagram", "html", "codetour", "svg"}
-    ]
-    if legacy_channel_tokens:
-        suggestions = " / ".join(legacy_channel_tokens)
-        message = (
-            "GPT: channel tokens diagram/html/codetour/svg moved to the form axis; "
-            f"say {suggestions} as form tokens instead."
         )
         notify(message)
         raise ValueError(message)

@@ -31,7 +31,9 @@ vi.mock('$lib/grammar.js', () => ({
 		hierarchy: { axis_soft_caps: {} },
 		tokens: {},
 		persona_presets: [],
-		persona: { use_when: {} }
+		persona: { use_when: {} },
+		reference_key: '',
+		execution_reminder: ''
 	}),
 	getAxisTokens: vi.fn().mockReturnValue([]),
 	getTaskTokens: vi.fn().mockReturnValue([{ token: 'show', label: 'Explain' }]),

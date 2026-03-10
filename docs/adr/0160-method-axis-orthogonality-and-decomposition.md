@@ -1,142 +1,119 @@
-# ADR-0160: Method Axis Orthogonality and Decomposition
+# ADR-0160: Method Axis Orthogonality Direction
 
 ## Status
-Proposed — capturing orthogonality intent, motif clustering, and decomposition options
+Proposed — codifying the single-concept intent and concrete refactors
 
 ## Context
-- ADR-0159 documented that many method tokens bundle multiple structural responsibilities (staging, governance, boundary, propagation, divergence, proof), leading to implicit bundles and cross-axis entanglement.
-- The current taxonomy aspires to "single concept per token" so users can compose orthogonal prompts, but several tokens enforce multiple operation types simultaneously.
-- Patterns already observed:
-  - **Operation families** (staging/transmission, governance/canonicalization, boundary/influence, propagation/force, divergence/exploration, transformative reasoning) recur across `axisConfig.py` descriptions.
-  - **Reasoning motifs** (complementary operations, guardrail-driven co-selection, shared intermediate artifacts) explain why certain tokens travel together.
-  - **Orthogonality intent** now explicit: each token should encode one structural responsibility; overlapping tokens likely require decomposition.
+- ADR-0159 surfaced that many method tokens bundle multiple “prompt parts” (staging, governance, boundary, propagation, divergence, proof) which forces users into implicit bundles.
+- The catalog goal is orthogonality: each token should contribute one structural responsibility so users can compose richer answers by mixing axes.
+- New observations since ADR-0159:
+  1. **Artifact vs operation** — many tokens combine “produce an artifact” (timeline, coupling sketch) with “reason about it.”
+  2. **Governing layer vs execution** — governance declarations (canonical loci, dependency rules) and the actions that satisfy them are often tied together.
+  3. **Control vs monitoring loops** — sequential controls and their audit/feedback paths frequently live inside a single token.
 
-## Problem
-- Tokens such as `trace`, `entangle`, `trade`, `branch`, `experimental`, and `derive` currently combine multiple operation types (e.g., sequential staging + audit, seam detection + mitigation, force mapping + adjudication, divergence + evaluation).
-- This coupling leads to multi-token recipes that feel unavoidable, reducing flexibility and making new combinations harder to reason about.
-- Without a decomposition strategy, future additions risk worsening this implicit bundling, defeating the orthogonality goal.
+This ADR captures the updated plan: split where needed, reassign some responsibilities to other axes, and prune low-value behavior rather than add unnecessary tokens.
 
-## Motifs Driving Bundling
-1. **Complementary operations** — e.g., branch → variants → scope, where each step supplies missing parts of a reasoning workflow.
-2. **Guardrail co-selection** — cross-axis cautions force certain tokens to be paired when their structural needs collide (staging depth vs channel/form constraints).
-3. **Shared intermediate artifacts** — multiple tokens require the same dependency graph, option matrix, or force diagram, making the set behave like a pre-defined bundle.
+## Problem Statement
+1. Bundled method tokens (e.g., `trace`, `entangle`, `trade`, `branch`, `derive`) combine multiple operation families, making them hard to reuse orthogonally.
+2. Some bundled behavior is accidental: a token might name a reasoning move *and* impose layout or governance details better handled by other axes.
+3. Without explicit decomposition, guardrails (completeness, channel) have to reason about hidden requirements, increasing cross-axis churn.
 
-## Cluster A Focus — Decomposition of Multi-Operation Tokens (Overview)
-- Goal: identify tokens that encode more than one operation type and split them into atomic replacements.
-- High-priority candidates:
-  - `trace` (staging narrative + audit logging)
-  - `entangle`/`spill` (boundary leak detection + mitigation prescription)
-  - `trade`/`balance`/`polar` (force enumeration + decision adjudication)
-  - `branch`/`explore` (option generation + evaluation scaffolds)
-  - `derive`/`canon` (proof generation + canonical locus enforcement)
-- Decomposition should align each new token with exactly one operation family, so combinations remain orthogonal.
+## Orthogonality Strategy
 
-The remaining sections adopt single-syllable, pronounceable token names for each atomic concept. Mapping reference:
+### A. Reassign or Drop Non-Method Responsibilities
+- **Form axis candidates**
+  - `twin` (side-by-side comparison) → treat as a comparison form option rather than a method.
+  - `prep`/`vet` (experiment write-ups) → extend `spike` or create a dedicated experiment form so that structure lives outside methods.
+- **Scope axis candidate**
+  - `dam` (containment boundary) → reframe as a “contain” scope modifier describing what remains in-bounds; method tokens (`snag`, `mesh`, `shear`) stay focused on detection/analysis.
+- **Optional pruning**
+  - If a secondary operation is rarely useful (e.g., dependency handoffs in `flow`), drop it instead of creating another token. Orthogonality is enforced by refusing multi-purpose descriptions, not by proliferating tokens.
 
-| New Token | Role | Former Working Name |
+### B. Artifact vs Operation Split
+- **Artifact → form/channel**
+  - Timeline or sequence diagrams referenced by `trace`/`flow` become form/channel presets (e.g., “timeline” layout). Methods keep only the reasoning verbs (`stow`, `lane`).
+  - Coupling sketches and containment maps move to form/channel names, leaving `snag`/`mesh` to analyze those artifacts.
+- **Operation → method**
+  - Method tokens become short, single-syllable verbs representing the reasoning move: `stow`, `merk`, `snag`, `mesh`, `shear`, `thrust`, `sift`, `spur`, `cull`, `root`, `forge`, `bind`, `try`.
+
+### C. Governing Layer vs Execution Split
+- **Scope/persona metadata** retains declarations such as “this domain is authoritative,” so tokens like `root`/`bind` can either move into metadata or stay as ultra-focused methods that assume the artifact already exists.
+- **Execution methods** (`forge`, `try`) operate against the declared governance layer but no longer describe the declaration itself.
+
+### D. Control vs Monitoring Split
+- Forward control (`stow`, `lane`, `pulse`, `thrust`, `spur`) and monitoring/audit (`merk`, `slot`, `toll`, `cull`, `try`) become separate tokens. Channels/completeness can now gate them independently.
+
+## Updated Token Outcomes
+
+| Outcome | Tokens | Axis |
 | --- | --- | --- |
-| `stow` | stage narration | stage-trace |
-| `merk` | audit checkpoints | audit-trace |
-| `lane` | linear sequencing | sequence-flow |
-| `slot` | dependency handoff | handoff-flow |
-| `pulse` | channel encoding/decoding | channel-trans |
-| `snag` | boundary coupling detection | detect-entangle |
-| `mesh` | coupling analysis detail | analyze-entangle |
-| `shear` | boundary mitigation | mitigate-entangle |
-| `seep` | scope-creep detection | spill-detect |
-| `toll` | spill impact scoring | spill-impact |
-| `dam` | containment planning | spill-contain |
-| `thrust` | force mapping | force-map |
-| `sift` | trade-off evaluation | trade-evaluate |
-| `stead` | decision equilibrium | decision-balance |
-| `mag` | attractor/repeller modeling | polarize |
-| `spur` | branch generation | diverge-branch |
-| `cull` | branch pruning | prune-branch |
-| `sweep` | option enumeration | option-explore |
-| `twin` | compare decomposed parts | split-compare |
-| `prep` | experiment design | design-experiment |
-| `vet` | experiment evaluation | evaluate-experiment |
-| `root` | canonical locus declaration | declare-canon |
-| `forge` | constructive derivation | prove-derive |
-| `bind` | dependency enforcement | enforce-depends |
-| `try` | falsification evidence | verify-evidence |
+| **Remain method tokens (single concept)** | `stow`, `merk`, `lane`, `slot`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `toll`, `thrust`, `sift`, `stead`, `mag`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`, `try` | Method |
+| **Move to form** | `twin` (comparison layout), `prep` / `vet` (experiment write-up structure) | Form |
+| **Move to scope** | `dam` (contain boundaries) | Scope |
+| **Drop** | Any secondary behavior deemed low value during implementation (e.g., dependency handoff if `slot` proves unnecessary) | — |
 
-## Concrete Decomposition (Cluster A)
+## Method Token Definitions (single-syllable)
 
-### 1. Staging vs Audit (`trace`, `flow`, `trans`)
-
-| Current Token | Embedded Responsibilities | Proposed Split | Resulting Behavior |
-| --- | --- | --- | --- |
-| `trace` | (a) Step-by-step transformation narration, (b) audit trail / verification checkpoints | `stow` (narrate control/data progression), `merk` (capture evidence + checkpoints) | Users can narrate process without implying audit artifacts, or attach audits to other methods without forcing stage narration.
-| `flow` | (a) Control/data sequencing, (b) dependency transfer semantics | `lane` (linear stage articulation), `slot` (emphasize dependency transfer rules) | Sequencing orthogonal to governance of handoffs.
-| `trans` | (a) Shannon-style channel modeling, (b) multi-stage staging | `pulse` (encode/decoding/noise modeling), reuse `stow` if stage narrative needed | Communication semantics separated from stage depth.
-
-Artifacts: staging tokens require “sequence diagram / timeline” slots; audit tokens require “evidence table / checkpoints”. Channels/forms/completeness can now reason about each independently.
-
-### 2. Boundary Detection vs Mitigation (`entangle`, `spill`, `bound`, `sever`)
-
-| Current Token | Responsibilities | Proposed Split |
+| Token | Operation Family | Description |
 | --- | --- | --- |
-| `entangle` | (a) Identify mixed domains, (b) describe coupling effects, (c) prescribe separation strategies | `snag` (surface coupled domains), `mesh` (detail interaction effects), `shear` (suggest boundary adjustments) |
-| `spill` | (a) Describe scope creep, (b) evaluate risk, (c) propose containment | `seep`, `toll`, `dam` |
-| `bound` / `sever` | Already emphasize enforcement; keep as “boundary enforcement” tokens once detection/analysis split off |
+| `stow` | Staging | Narrate sequential control/data progression. |
+| `merk` | Audit | Capture checkpoints/evidence as the process runs. |
+| `lane` | Staging | Describe linear stage ordering without extra semantics. |
+| `slot` | Boundary (control) | Specify how ownership transfers between stages. |
+| `pulse` | Transmission | Model encode/decode/noise for information channels. |
+| `snag` | Boundary detection | Surface coupled domains or seams. |
+| `mesh` | Boundary analysis | Describe how coupling propagates and what it affects. |
+| `shear` | Boundary mitigation | Outline separation or realignment steps. |
+| `seep` | Spill detection | Identify scope creep or influence bleed. |
+| `toll` | Spill impact | Score the consequence of that spill. |
+| `thrust` | Force mapping | Catalog opposing pressures/forces. |
+| `sift` | Trade evaluation | Compare alternatives across explicit criteria. |
+| `stead` | Equilibrium | Describe acceptable balance points/tolerances. |
+| `mag` | Attractor/repeller | Model how forces pull or push states. |
+| `spur` | Divergence | Generate structured parallel hypotheses. |
+| `cull` | Convergence | Evaluate/prune branches or experiments. |
+| `sweep` | Exploration | Enumerate option space without evaluation. |
+| `root` | Governance | Declare or reference the canonical locus (if not in metadata). |
+| `forge` | Proof | Produce explicit constructive derivations. |
+| `bind` | Dependency | Describe dependencies without executing proofs. |
+| `try` | Verification | Attach falsification pressure/tests only. |
 
-Result: user combines `detect-entangle` + `spill-impact` when they only need analysis, adding `mitigate-entangle` or `bound` when separation is desired. Each token now maps to a single operation family (detection vs governance enforcement vs mitigation planning).
-
-### 3. Force Enumeration vs Adjudication (`trade`, `balance`, `polar`, `effects`, `grove`)
-
-- **New tokens:**
-  - `thrust` – catalog competing pressures / actors (propagation & force family).
-  - `sift` – compare alternatives across explicit criteria without modeling forces.
-  - `mag` becomes pure attractor/repeller modeling; adjudication handled by `stead`.
-
-| Current | New Atomic Tokens | Notes |
-| --- | --- | --- |
-| `trade` | `thrust` + `sift` | `thrust` describes axes/pressures; `sift` handles scorecards/choices.
-| `balance` | `thrust` + `stead` | Distinguish between visualizing equilibrium vs deciding tolerance.
-| `polar` | `mag` (pure attractor/repeller description) + optional `thrust` | Removes comparison step from `polar`.
-| `effects`/`grove` | remain propagation tokens but can optionally reference `thrust` when higher-order analysis needed |
-
-### 4. Divergence vs Evaluation (`branch`, `explore`, `split`, `experimental`)
-
-| Current | Responsibilities | Proposed Tokens |
-| --- | --- | --- |
-| `branch` | (a) generate parallel reasoning paths, (b) compare/prune | `spur` (generate structured hypotheses), `cull` (evaluate/prune branches) |
-| `explore` | (a) enumerate option space, (b) highlight criteria | `sweep` (breadth-first listing), reuse `cull` or `sift` for comparison |
-| `split` | (a) decomposition, (b) isolated analysis | Keep `split` as pure decomposition token; create `twin` if cross-analysis needed |
-| `experimental` | (a) design experiments, (b) specify evaluation rubrics | `prep` (setups only), `vet` (criteria + next steps) |
-
-This separation allows users to call only the generation half (diverge) or only the evaluation half (compare/prune), enabling orthogonal assembly with other method tokens.
-
-### 5. Governance vs Proof Mechanics (`derive`, `canon`, `depends`, `verify`)
-
-- Introduce tokens:
-  - `root` – specify single authoritative locus.
-  - `forge` – force explicit constructive derivation steps.
-  - `bind` – describe dependency relationships without proofs.
-  - `try` – attach falsification/tests only.
-
-| Current | Embedded Ops | Resulting Split |
-| --- | --- | --- |
-| `derive` | (a) express generative assumptions, (b) link to canonical rule store | `forge` (derivation steps) + `root` or `bind` as needed |
-| `canon` | (a) canonical store description, (b) dedup mapping, (c) dependency enforcement | `root` + `bind` |
-| `verify` | (a) design falsification tests, (b) enforce governance layer | `try` (tests only), governance stays with `ground` |
-
-### Resulting Structure
-
-1. **Operation alignment:** each new token maps to exactly one operation family (staging, governance, boundary, propagation, divergence, proof). This enables a metadata table where every token sets a single flag.  
-2. **Recipe clarity:** former bundle recipes (Decision-Making, Architecture Documentation) now reference atomic tokens (e.g., `diverge-branch` + `prune-branch` + `trade-evaluate`) making the composition explicit.
-3. **Cross-axis constraints:** completeness/channel rules can target the new atomic tokens directly (e.g., `stage-trace` requires expandable channel; `audit-trace` requires completeness ≥ full), simplifying guardrails.
-4. **Migration path:** existing tokens become aliases pointing to combinations of the new tokens during transition (e.g., selecting legacy `trace` inserts `stage-trace + audit-trace`).
-5. **Optional pruning:** when a bundled token’s secondary responsibility offers low marginal value, drop that behavior instead of introducing a new token (e.g., keep `line` but retire `pass` if dependency handoffs rarely matter). This prevents token explosion while still enforcing single-concept semantics.
+## Simplification Benefits
+1. **Reduced implicit bundles:** forms/scope capture artifacts and containment, leaving methods to express how to think.
+2. **Cleaner guardrails:** channels/completeness reference artifact tokens directly; methods no longer smuggle structural requirements.
+3. **Extensible metadata:** governance declarations can live in persona/scope metadata; methods merely reference them.
+4. **Pruning path:** when secondary operations add little value, we drop them instead of creating redundant tokens.
 
 ## Next Steps
-1. Annotate each current token with operation-family flags to confirm decomposition targets.
-2. Prototype the new atomic tokens in `axisConfig.py` with temporary aliases for backward compatibility.
-3. Update ADR-0159 references once decomposition is finalized, documenting which bundles are now formal recipes instead of implicit behavior.
+1. Update `axisConfig.py` with operation-family flags for all existing method tokens to identify actual overlaps.
+2. Prototype the new method tokens listed above; simultaneously add form (`twin`, `prep`, `vet`) and scope (`dam`) entries if they prove valuable.
+3. Replace each legacy token in `axisConfig.py` with its new definition (rename or split) rather than keeping long-term aliases; this minimizes churn once users relearn the updated semantics.
+4. Refresh ADR-0159 after implementation to note which bundles became explicit forms/scope items and which behaviors were pruned.
 
-## Summary of Orthogonality Options
-- **Cluster A (decomposition):** split multi-operation tokens into atomic staging, detection, propagation, divergence, or proof tokens (detailed above).
-- **Cluster B (metadata):** record operation-type flags and artifact requirements per token so overlaps become explicit even before decomposition.
-- **Cluster C (micro-axes/knobs):** introduce selectors for staging depth, boundary treatment, or force modeling to externalize multi-part responsibilities without adding tokens.
-- **Cluster D (procedural severance):** define formal recipes/patterns so legacy multi-step behaviors are represented as compositions of atomic tokens rather than encoded inside a single token.
+### Legacy Replacement Guidance
+
+| Original Token | Replacement Strategy |
+| --- | --- |
+| `trace` | Rename to `stow`; add new `merk` token for audits. |
+| `flow` | Rename sequencing behavior to `lane`; introduce `slot` only if dependency handoffs remain necessary (otherwise retire). |
+| `trans` | Rename to `pulse`; depend on `stow` when narration required. |
+| `entangle` | Replace with `snag`+`mesh`; add `shear` for mitigation where needed. |
+| `spill` | Replace with `seep` (detection) + `toll` (impact) and add scope token `dam`. |
+| `bound` / `sever` | Keep names but update descriptions to assume input from `snag`/`mesh`. |
+| `trade` | Rename to `thrust`; add `sift` for evaluation. |
+| `balance` | Rename to `stead` (or `thrust`+`stead`). |
+| `polar` | Rename to `mag`. |
+| `effects` / `grove` | No change; optionally reference `thrust`. |
+| `branch` | Rename to `spur`; introduce `cull` for pruning. |
+| `explore` | Rename to `sweep`; rely on `cull`/`sift` for evaluation. |
+| `split` | Keep `split`; pair with form token `twin` for comparisons. |
+| `experimental` | Shift structure to form tokens `prep` / `vet`; keep method only for reasoning aspects if required. |
+| `derive` | Rename to `forge`; keep `root`/`bind` for canonical/dependency responsibilities. |
+| `canon` | Rename to `root` (canonical) with `bind` handling dependency wiring. |
+| `verify` | Rename to `try`; governance enforcement remains with `ground`. |
+
+## Summary
+- **Decompose** bundled methods into artifact+operation, governance+execution, control+monitor building blocks.
+- **Reassign** artifact or containment behaviors to form/scope axes instead of cloning methods.
+- **Prune** low-value secondary responsibilities rather than multiplying the token set.
+- **Maintain orthogonality** by insisting every surviving token names exactly one reasoning move.

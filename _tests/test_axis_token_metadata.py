@@ -13,13 +13,13 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-3: completeness axis has structured metadata for all 7 tokens."""
 
     AXIS = "completeness"
-    EXPECTED_TOKENS = {"deep", "full", "gist", "max", "minimal", "narrow", "skim"}
+    EXPECTED_TOKENS = {"deep", "full", "gist", "grow", "max", "minimal", "narrow", "skim"}
 
     def setUp(self):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_completeness_metadata_covers_all_tokens(self):
-        """All 7 completeness tokens must have metadata entries — no silent omissions."""
+        """All 8 completeness tokens must have metadata entries — no silent omissions."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -254,28 +254,29 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 78 tokens."""
+    """ADR-0155 T-8: method axis has structured metadata for all 80 tokens."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
         "abduce", "actors", "adversarial", "afford", "align", "amorph", "analog",
-        "analysis", "argue", "balance", "bias", "boom", "bound", "branch", "calc",
-        "canon", "cite", "clash", "cluster", "compare", "control", "converge",
-        "crystal", "deduce", "depends", "derive", "diagnose", "dimension", "domains",
-        "drift", "effects", "entangle", "experimental", "explore", "field", "flow",
-        "gap", "ground", "grove", "grow", "induce", "inversion", "jobs", "mapping", "meld",
-        "melody", "migrate", "mod", "models", "objectivity", "operations", "order", "origin",
-        "observe", "perturb", "polar", "preserve", "prioritize", "probability", "product", "reify",
-        "release", "resilience", "reset", "rigor", "risks", "robust", "sever", "shift",
-        "simulation", "spill", "split", "systemic", "trace", "trade", "trans",
-        "triage", "unknowns", "verify",
+        "analysis", "argue", "balance", "bias", "boom", "bound", "calc",
+        "cite", "clash", "cluster", "compare", "control", "converge",
+        "crystal", "deduce", "depends", "diagnose", "dimension", "domains",
+        "drift", "effects", "experimental", "field", "flow",
+        "forge", "gap", "ground", "grove", "induce", "inversion", "jobs", "mapping", "meld",
+        "melody", "mesh", "merk", "migrate", "mod", "models", "objectivity", "operations",
+        "order", "origin", "observe", "perturb", "polar", "preserve", "prioritize",
+        "probability", "product", "pulse", "reify",
+        "release", "resilience", "reset", "rigor", "risks", "robust", "root",
+        "seep", "sever", "shear", "shift", "simulation", "snag", "split", "spur",
+        "sweep", "systemic", "thrust", "trace", "triage", "unknowns", "verify",
     }
 
     def setUp(self):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 78 method tokens must have metadata entries."""
+        """All 80 method tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

@@ -423,7 +423,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Diverge options",
         description="Open up the option space with multiple angles and possibilities.",
-        recipe="show · gist · struct · explore · bullets · fog",
+        recipe="show · gist · struct · sweep · bullets · fog",
         domain="writing",
     ),
     PromptPattern(
@@ -489,7 +489,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Multi-angle view",
         description="Lay out several distinct perspectives or stakeholders side by side.",
-        recipe="show · full · struct · explore · cards · rog",
+        recipe="show · full · struct · sweep · cards · rog",
         domain="writing",
     ),
     PromptPattern(

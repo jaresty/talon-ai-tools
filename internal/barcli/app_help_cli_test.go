@@ -606,47 +606,6 @@ func TestHelpLLMChannelAudienceGuidanceInSSoT(t *testing.T) {
 	}
 }
 
-// TestHelpLLMMaxGrowGuidanceInSSoT specifies that the max/grow cross-axis tension
-// must be present in the grammar as structured CROSS_AXIS_COMPOSITION data
-// (ADR-0146 Change 1 → ADR-0147/0148 migration: moved from AXIS_KEY_TO_GUIDANCE prose to
-// CROSS_AXIS_COMPOSITION structured data so TUI2/SPA chip traffic light can surface it).
-// The hardcoded block in help_llm.go must be absent from the heuristics section;
-// the guidance renders via Choosing Channel (CROSS_AXIS_COMPOSITION).
-func TestHelpLLMMaxGrowGuidanceInSSoT(t *testing.T) {
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("failed to load grammar: %v", err)
-	}
-	// max/grow tension now in CROSS_AXIS_COMPOSITION, not AXIS_KEY_TO_GUIDANCE
-	maxComposition := grammar.CrossAxisCompositionFor("completeness", "max")
-	if maxComposition == nil {
-		t.Fatal("ADR-0146 Change 1: completeness:max has no CROSS_AXIS_COMPOSITION entry")
-	}
-	methodPair, ok := maxComposition["method"]
-	if !ok || methodPair.Cautionary["grow"] == "" {
-		t.Errorf("ADR-0146 Change 1: completeness:max CROSS_AXIS_COMPOSITION must have method.cautionary.grow, got: %v", maxComposition)
-	}
-	growComposition := grammar.CrossAxisCompositionFor("method", "grow")
-	if growComposition == nil {
-		t.Fatal("ADR-0146 Change 1: method:grow has no CROSS_AXIS_COMPOSITION entry")
-	}
-	completenessPair, ok := growComposition["completeness"]
-	if !ok || completenessPair.Cautionary["max"] == "" {
-		t.Errorf("ADR-0146 Change 1: method:grow CROSS_AXIS_COMPOSITION must have completeness.cautionary.max, got: %v", growComposition)
-	}
-
-	// Hardcoded block must be gone from heuristics
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
-	if exit != 0 {
-		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
-	}
-	if strings.Contains(stdout.String(), "**Completeness × Method compatibility:**") {
-		t.Error("ADR-0146 Change 1: hardcoded 'Completeness × Method compatibility' block must be removed from heuristics")
-	}
-}
-
 // TestHelpLLMNoHardcodedIntentLine specifies that bar help llm must NOT contain
 // the hardcoded "Choosing intent=" summary line in the Token Selection Heuristics
 // section (ADR-0146 Change 3). The complete per-token guidance is already rendered

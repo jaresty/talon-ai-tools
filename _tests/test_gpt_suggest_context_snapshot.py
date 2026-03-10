@@ -174,7 +174,7 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
     ), content
     assert _contains_any(
         [
-            "Method: The response enhances the task by explaining step-by-step progression",
+            "Method: The response enhances the task by describing the linear ordering",
         ]
     ), content
     assert _contains_any(

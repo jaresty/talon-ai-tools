@@ -96,6 +96,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
         "full": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
+        "grow": "The response begins at minimal depth and expands only where the analysis explicitly demands it, so every elaboration is justified rather than anticipated.",
         "max": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
@@ -202,17 +203,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
-        "balance": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures and show how "
-        "they offset one another.",
+        "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
+        "is maintained.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
         "effects remain within intended conceptual or operational regions.",
-        "branch": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
-        "canon": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to "
-        "derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as "
-        "independent causal or justificatory elements without specifying their dependency relationship.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",
@@ -227,8 +224,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment "
         "explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
-        "derive": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than "
-        "inferred intuitively.",
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
         "proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
@@ -236,15 +231,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
-        "entangle": "The response enhances the task by identifying where domains, responsibilities, or meanings are intermixed or mutually dependent in ways that prevent clear separation of "
-        "influence, suggesting structural coupling or boundary ambiguity.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "explore": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing to a single "
-        "answer.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
-        "flow": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
+        "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
+        "forge": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than "
+        "inferred intuitively.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or "
@@ -252,8 +245,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
-        "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every "
-        "abstraction and every exception arises from necessity rather than anticipation.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
@@ -262,6 +253,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
         "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
+        "merk": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
+        "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
@@ -276,14 +269,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
         "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "
         "or detection mechanisms.",
-        "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states). Explanations must "
-        "distinguish pursuit from avoidance, account for how negative boundaries constrain trajectories, and specify whether outcomes arise from optimization toward a goal or evasion of "
-        "an undesirable state. Outcomes may not be attributed solely to positive objectives without modeling active avoidance pressures.",
+        "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
+        "from avoidance.",
         "preserve": "The response modifies the task by maintaining compatibility with existing structures, interfaces, or assumptions, constraining changes so previously valid components "
         "continue to function without modification.",
         "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "product": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
+        "pulse": "The response models information transfer as a staged encode/decode process, distinguishing message from signal, accounting for noise and channel distortion, and specifying how "
+        "transmission errors are detected and repaired.",
         "reify": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that "
         "constrain reasoning.",
         "release": "The response reduces distortion or disturbance by loosening attachment or identification with transient states, roles, or outcomes.",
@@ -293,28 +287,31 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
         "forecast.",
+        "root": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to "
+        "derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as "
+        "independent causal or justificatory elements without specifying their dependency relationship.",
+        "seep": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases "
+        "coupling, ambiguity, or fragility.",
         "sever": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only "
         "through explicit, controlled interfaces.",
+        "shear": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
-        "spill": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases "
-        "coupling, ambiguity, or fragility.",
+        "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
+        "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
+        "sweep": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
-        "trace": "The response enhances the task by making the transformation process explicit, revealing intermediate steps, decisions, and structural changes so the path from input to outcome "
-        "remains observable.",
-        "trade": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives across those "
-        "dimensions before committing to a configuration.",
-        "trans": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must distinguish message "
-        "from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and repairing transmission errors. Outcomes "
-        "may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during transmission.",
+        "thrust": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
+        "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural "
+        "changes.",
         "triage": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
-        "verify": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly defined negative "
-        "space.",
+        "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
+        "the layer those tests must satisfy.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "
@@ -370,6 +367,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "deep": "Substantial depth within scope",
         "full": "Thorough, all major aspects",
         "gist": "Brief but complete summary",
+        "grow": "Expand only when demanded",
         "max": "Exhaustive, treat omissions as errors",
         "minimal": "Smallest satisfying answer only",
         "narrow": "Restricted to a very small slice",
@@ -439,13 +437,11 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
-        "balance": "Balance analysis: forces and trade-offs",
+        "balance": "Equilibrium description",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
         "bound": "Constrain propagation",
-        "branch": "Parallel reasoning paths",
         "calc": "Quantitative or executable reasoning",
-        "canon": "Reduce multiple representations to a single authoritative source",
         "cite": "Include sources and references",
         "clash": "Identify conflicting structures or rules",
         "cluster": "Group items by shared characteristics",
@@ -455,27 +451,26 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "crystal": "Shape toward explicit structure",
         "deduce": "Deductive logical reasoning",
         "depends": "Trace dependency relationships",
-        "derive": "Derive from explicit generative structure",
         "diagnose": "Identify likely root causes",
         "dimension": "Explore multiple analytical axes",
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
-        "entangle": "Identify coupling and intermixing",
         "experimental": "Propose concrete experiments",
-        "explore": "Survey option space broadly",
         "field": "Model interaction as a shared structured medium",
-        "flow": "Step-by-step sequential progression",
+        "flow": "Linear stage sequencing",
+        "forge": "Derive from explicit generative structure",
         "gap": "Implicit-to-explicit gap analysis",
         "ground": "Declared governing layer authority",
         "grove": "Accumulation and rate-of-change effects",
-        "grow": "Build up from simplest valid base",
         "induce": "Generalize patterns from examples",
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
         "mapping": "Surface elements and relationships",
         "meld": "Explore combinations and overlaps",
         "melody": "Coordination across components or time",
+        "merk": "Capture audit checkpoints",
+        "mesh": "Describe coupling propagation",
         "migrate": "Introduce a transition path between structures",
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
@@ -484,11 +479,12 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "operations": "Operations research frameworks",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
-        "polar": "Attractor-repeller dynamics analysis",
+        "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
         "prioritize": "Rank items by importance or impact",
         "probability": "Probabilistic and statistical reasoning",
         "product": "Product lens — features, users, value",
+        "pulse": "Information transfer staged encode/decode model",
         "reify": "Make implicit patterns explicit as rules",
         "release": "Loosen attachment to transient states",
         "reset": "Reconstruct without prior compatibility constraints",
@@ -496,18 +492,22 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "rigor": "Disciplined, well-justified reasoning",
         "risks": "Potential problems and failure modes",
         "robust": "Reason under deep uncertainty",
+        "root": "Reduce multiple representations to a single authoritative source",
+        "seep": "Identify scope overreach",
         "sever": "Enforce domain separations",
+        "shear": "Separate coupled domains",
         "shift": "Rotate through distinct perspectives",
         "simulation": "Thought experiments and scenario walkthroughs",
-        "spill": "Identify scope overreach",
+        "snag": "Surface coupling seams",
         "split": "Decompose into parts or components",
+        "spur": "Parallel reasoning paths",
+        "sweep": "Enumerate option space without evaluating",
         "systemic": "Interacting whole and feedback loops",
-        "trace": "Observable intermediate steps and decisions",
-        "trade": "Trade-off analysis across competing forces",
-        "trans": "Information transfer model with noise and feedback",
+        "thrust": "Catalog competing structural forces",
+        "trace": "Narrate sequential progression",
         "triage": "Triage by consequence×uncertainty gradient",
         "unknowns": "Surface critical unknown unknowns",
-        "verify": "Apply falsification pressure to claims",
+        "verify": "Falsification pressure",
     },
     "scope": {
         "act": "Tasks and intended actions",
@@ -551,15 +551,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "sync": "期",
         "video": "映",
     },
-    "completeness": {
-        "deep": "深",
-        "full": "全",
-        "gist": "略",
-        "max": "尽",
-        "minimal": "小",
-        "narrow": "狭",
-        "skim": "掠",
-    },
+    "completeness": {"grow": "増"},
     "directional": {
         "bog": "反",
         "dig": "具",
@@ -628,9 +620,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "bias": "偏",
         "boom": "極",
         "bound": "限",
-        "branch": "枝",
         "calc": "計",
-        "canon": "準",
         "cite": "引",
         "clash": "衝",
         "cluster": "集",
@@ -640,27 +630,26 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "crystal": "晶",
         "deduce": "演",
         "depends": "依",
-        "derive": "推",
         "diagnose": "診",
         "dimension": "次",
         "domains": "領",
         "drift": "漂",
         "effects": "効",
-        "entangle": "絡",
         "experimental": "実",
-        "explore": "探",
         "field": "場",
         "flow": "流",
+        "forge": "推",
         "gap": "隙",
         "ground": "地",
         "grove": "蓄",
-        "grow": "増",
         "induce": "帰",
         "inversion": "逆",
         "jobs": "需",
         "mapping": "写",
         "meld": "融",
         "melody": "旋",
+        "merk": "印",
+        "mesh": "網",
         "migrate": "移",
         "mod": "周",
         "models": "型",
@@ -675,6 +664,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "prioritize": "優",
         "probability": "確",
         "product": "商",
+        "pulse": "伝",
         "reify": "形",
         "release": "放",
         "reset": "初",
@@ -682,15 +672,19 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "rigor": "厳",
         "risks": "危",
         "robust": "堅",
+        "root": "準",
+        "seep": "溢",
         "sever": "断",
+        "shear": "剪",
         "shift": "転",
         "simulation": "象",
-        "spill": "溢",
+        "snag": "絡",
         "split": "分",
+        "spur": "枝",
+        "sweep": "探",
         "systemic": "系",
+        "thrust": "衡",
         "trace": "跡",
-        "trade": "衡",
-        "trans": "伝",
         "triage": "険",
         "unknowns": "未",
         "verify": "証",
@@ -791,9 +785,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "bias": "Reasoning",
         "boom": "Exploration",
         "bound": "Structural",
-        "branch": "Exploration",
         "calc": "Reasoning",
-        "canon": "Structural",
         "cite": "Reasoning",
         "clash": "Diagnostic",
         "cluster": "Structural",
@@ -803,27 +795,26 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "crystal": "Structural",
         "deduce": "Reasoning",
         "depends": "Structural",
-        "derive": "Structural",
         "diagnose": "Diagnostic",
         "dimension": "Comparative",
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
-        "entangle": "Diagnostic",
         "experimental": "Exploration",
-        "explore": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
+        "forge": "Structural",
         "gap": "Structural",
         "ground": "Structural",
         "grove": "Generative",
-        "grow": "Generative",
         "induce": "Reasoning",
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
         "mapping": "Structural",
         "meld": "Comparative",
         "melody": "Generative",
+        "merk": "Temporal/Dynamic",
+        "mesh": "Diagnostic",
         "migrate": "Structural",
         "mod": "Generative",
         "models": "Generative",
@@ -838,6 +829,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "prioritize": "Comparative",
         "probability": "Reasoning",
         "product": "Generative",
+        "pulse": "Temporal/Dynamic",
         "reify": "Generative",
         "release": "Reasoning",
         "reset": "Structural",
@@ -845,15 +837,19 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "rigor": "Reasoning",
         "risks": "Diagnostic",
         "robust": "Diagnostic",
+        "root": "Structural",
+        "seep": "Diagnostic",
         "sever": "Structural",
+        "shear": "Structural",
         "shift": "Generative",
         "simulation": "Temporal/Dynamic",
-        "spill": "Diagnostic",
+        "snag": "Diagnostic",
         "split": "Exploration",
+        "spur": "Exploration",
+        "sweep": "Exploration",
         "systemic": "Temporal/Dynamic",
+        "thrust": "Comparative",
         "trace": "Temporal/Dynamic",
-        "trade": "Comparative",
-        "trans": "Temporal/Dynamic",
         "triage": "Diagnostic",
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
@@ -887,15 +883,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "sync": "Session plan",
         "video": "Video output",
     },
-    "completeness": {
-        "deep": "Deep dive",
-        "full": "Complete coverage",
-        "gist": "Summary",
-        "max": "Exhaustive treatment",
-        "minimal": "Minimal answer",
-        "narrow": "Narrow focus",
-        "skim": "Quick pass",
-    },
+    "completeness": {"grow": "Expand on demand"},
     "directional": {
         "bog": "Reflect + act",
         "dig": "Concrete/specific",
@@ -960,13 +948,11 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
-        "balance": "Equilibrium forces",
+        "balance": "Equilibrium description",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
         "bound": "Contain side effects",
-        "branch": "Multiple paths",
         "calc": "Formal calculation",
-        "canon": "Single source of truth",
         "cite": "Evidence/sources",
         "clash": "Structural conflicts",
         "cluster": "Group/categorize",
@@ -976,27 +962,26 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "crystal": "Crystallize into explicit structure",
         "deduce": "Logical deduction",
         "depends": "Dependency tracing",
-        "derive": "Explicit derivation structure",
         "diagnose": "Root cause",
         "dimension": "Multiple dimensions",
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
-        "entangle": "Coupling/intermixing",
         "experimental": "Design experiments",
-        "explore": "Open option space",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
+        "forge": "Explicit derivation structure",
         "gap": "Implicit gaps",
         "ground": "Declared governing layer",
         "grove": "Compounding effects",
-        "grow": "Expand only when needed",
         "induce": "Generalise from examples",
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
         "mapping": "Spatial map",
         "meld": "Combinations/overlaps",
         "melody": "Coordination across parts",
+        "merk": "Audit trail",
+        "mesh": "Coupling analysis",
         "migrate": "Compatibility transition path",
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
@@ -1011,6 +996,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank by importance",
         "probability": "Statistical reasoning",
         "product": "Product lens",
+        "pulse": "Information encode/decode transmission",
         "reify": "Make implicit explicit",
         "release": "Let go of attachment",
         "reset": "Clean slate/greenfield",
@@ -1018,15 +1004,19 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "rigor": "Disciplined reasoning",
         "risks": "Potential problems",
         "robust": "Works across futures",
+        "root": "Single source of truth",
+        "seep": "Scope overreach",
         "sever": "Enforce domain separation",
+        "shear": "Coupling mitigation",
         "shift": "Rotate perspectives",
         "simulation": "Scenario walkthrough",
-        "spill": "Scope overreach",
+        "snag": "Coupling detection",
         "split": "Decompose in isolation",
+        "spur": "Multiple paths",
+        "sweep": "Enumerate option space",
         "systemic": "System as whole",
-        "trace": "Observable execution path",
-        "trade": "Structural tradeoffs",
-        "trans": "Communication transmission",
+        "thrust": "Catalog structural forces",
+        "trace": "Sequential narration",
         "triage": "Risk-gradient depth",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
@@ -1101,7 +1091,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
     "channel": {
         "shellscript": {
             "task": {
-                "natural": ["make", "fix", "show", "trans", "pull"],
+                "natural": ["make", "fix", "show", "pulse", "pull"],
                 "cautionary": {
                     "sim": "tends to produce thin output — simulation is inherently narrative, not executable; consider remote or no channel instead",
                     "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow system-probe scripts",
@@ -1125,7 +1115,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
         "code": {
             "task": {
-                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "natural": ["make", "fix", "show", "pulse", "pull", "check"],
                 "cautionary": {
                     "sim": "tends to produce thin placeholder code — simulation is narrative, not executable; consider remote or no channel instead",
                     "probe": "tends to miss analytical depth — a prose channel provides richer analysis; valid only for narrow introspection scripts",
@@ -1233,7 +1223,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
         "html": {
             "task": {
-                "natural": ["make", "fix", "show", "trans", "pull", "check"],
+                "natural": ["make", "fix", "show", "pulse", "pull", "check"],
                 "cautionary": {
                     "sim": "tends to produce placeholder markup — simulation is narrative, not executable; consider remote or no channel instead",
                     "probe": "tends to miss analytical depth — valid only for narrow introspection scripts; a prose channel provides richer analysis",
@@ -1453,24 +1443,6 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 }
             },
         },
-        "max": {
-            "method": {
-                "cautionary": {
-                    "grow": "max = exhaust all coverage; grow = expand only under demonstrated necessity — directly contradictory; prefer max for exhaustive "
-                    "treatment, grow for disciplined minimalism"
-                }
-            }
-        },
-    },
-    "method": {
-        "grow": {
-            "completeness": {
-                "cautionary": {
-                    "max": "grow = expand only under demonstrated necessity; max = exhaust all coverage — directly contradictory; prefer grow for disciplined "
-                    "minimalism, max for exhaustive treatment"
-                }
-            }
-        }
     },
     "tone": {
         "formally": {
@@ -1576,13 +1548,13 @@ def axis_docs_index() -> dict[str, list[AxisDoc]]:
 USAGE_PATTERNS: list[dict] = [
     {
         "title": "Decision-Making",
-        "command": 'bar build diff thing full branch variants --subject "..."',
-        "example": 'bar build diff thing full branch variants --subject "Choose between Redis and Postgres for caching"',
+        "command": 'bar build diff thing full spur variants --subject "..."',
+        "example": 'bar build diff thing full spur variants --subject "Choose between Redis and Postgres for caching"',
         "desc": "Use when choosing between options or evaluating alternatives",
         "tokens": {
             "completeness": ["full"],
             "form": ["variants"],
-            "method": ["branch"],
+            "method": ["spur"],
             "scope": ["thing"],
             "task": ["diff"],
         },
@@ -1665,13 +1637,13 @@ USAGE_PATTERNS: list[dict] = [
     },
     {
         "title": "Exploratory Analysis",
-        "command": 'bar build probe thing full explore variants --subject "..."',
-        "example": 'bar build probe thing full explore variants --subject "What are different approaches to state management?"',
+        "command": 'bar build probe thing full sweep variants --subject "..."',
+        "example": 'bar build probe thing full sweep variants --subject "What are different approaches to state management?"',
         "desc": "Use when surveying possibilities or generating alternatives",
         "tokens": {
             "completeness": ["full"],
             "form": ["variants"],
-            "method": ["explore"],
+            "method": ["sweep"],
             "scope": ["thing"],
             "task": ["probe"],
         },
@@ -1729,13 +1701,13 @@ USAGE_PATTERNS: list[dict] = [
     },
     {
         "title": "Progressive Refinement Workflow",
-        "command": 'bar build probe thing gist explore variants --subject "..." && bar build probe struct full mapping table --subject "..."',
-        "example": 'bar build probe thing gist explore variants --subject "API design approaches" && bar build probe struct full mapping table --subject "Selected REST API structure"',
+        "command": 'bar build probe thing gist sweep variants --subject "..." && bar build probe struct full mapping table --subject "..."',
+        "example": 'bar build probe thing gist sweep variants --subject "API design approaches" && bar build probe struct full mapping table --subject "Selected REST API structure"',
         "desc": "Use for multi-step workflows: explore broadly, then analyze deeply",
         "tokens": {
             "completeness": ["gist"],
             "form": ["variants"],
-            "method": ["explore"],
+            "method": ["sweep"],
             "scope": ["thing"],
             "task": ["probe"],
         },
@@ -1780,13 +1752,13 @@ USAGE_PATTERNS: list[dict] = [
     },
     {
         "title": "Perspective Analysis",
-        "command": 'bar build probe view full explore variants --subject "..."',
-        "example": 'bar build probe view full explore variants --subject "How do different stakeholders view the monolith migration?"',
+        "command": 'bar build probe view full sweep variants --subject "..."',
+        "example": 'bar build probe view full sweep variants --subject "How do different stakeholders view the monolith migration?"',
         "desc": "Use for understanding multiple viewpoints or stakeholder perspectives",
         "tokens": {
             "completeness": ["full"],
             "form": ["variants"],
-            "method": ["explore"],
+            "method": ["sweep"],
             "scope": ["view"],
             "task": ["probe"],
         },
@@ -1832,13 +1804,13 @@ USAGE_PATTERNS: list[dict] = [
     },
     {
         "title": "Option Generation with Reasoning",
-        "command": 'bar build probe thing full branch variants --subject "..."',
-        "example": 'bar build probe thing full branch variants --subject "Generate database sharding approaches with pros/cons"',
+        "command": 'bar build probe thing full spur variants --subject "..."',
+        "example": 'bar build probe thing full spur variants --subject "Generate database sharding approaches with pros/cons"',
         "desc": "Use for generating alternatives with detailed reasoning for each",
         "tokens": {
             "completeness": ["full"],
             "form": ["variants"],
-            "method": ["branch"],
+            "method": ["spur"],
             "scope": ["thing"],
             "task": ["probe"],
         },
@@ -2296,6 +2268,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "high-level",
                 "standup update",
                 "just the gist",
+            ],
+        },
+        "grow": {
+            "definition": "Dynamic depth constraint: start minimal, expand only where the analysis explicitly demands it. Each elaboration must be justified by demonstrated need "
+            "rather than anticipated complexity.",
+            "distinctions": [
+                {
+                    "note": "grow = start minimal and expand on demand; minimal = keep output minimal throughout",
+                    "token": "minimal",
+                },
+                {
+                    "note": "grow = dynamic — justifies each expansion; max = static — exhaust all coverage from the start",
+                    "token": "max",
+                },
+            ],
+            "heuristics": [
+                "expand only when needed",
+                "grow as needed",
+                "start simple and elaborate",
+                "disciplined expansion",
+                "justify each elaboration",
+                "minimal unless warranted",
+                "add depth only where analysis demands",
             ],
         },
         "max": {
@@ -3510,8 +3505,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "balance": {
-            "definition": "The response models outcomes as the result of balancing forces within a system. Claims of stability, persistence, or dominance must identify opposing pressures "
-            "and show how they offset one another.",
+            "definition": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under "
+            "which balance is maintained.",
             "distinctions": [
                 {
                     "note": "resilience = behavior under stress; balance = how opposing forces produce equilibrium or instability",
@@ -3590,24 +3585,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "scope the change impact",
             ],
         },
-        "branch": {
-            "definition": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning "
-            "alternatives.",
-            "distinctions": [
-                {
-                    "note": "explore = survey option space without premature commitment; branch = fork on a key assumption and pursue each path before evaluating",
-                    "token": "explore",
-                }
-            ],
-            "heuristics": [
-                "explore multiple paths",
-                "consider different approaches in parallel",
-                "branch the reasoning",
-                "multiple lines of reasoning",
-                "explore alternatives before choosing",
-                "parallel hypotheses",
-            ],
-        },
         "calc": {
             "definition": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain "
             "conclusions.",
@@ -3627,32 +3604,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "formal calculation",
                 "compute",
                 "what are the numbers",
-            ],
-        },
-        "canon": {
-            "definition": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be "
-            "reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of "
-            "the same knowledge as independent causal or justificatory elements without specifying their dependency relationship.",
-            "distinctions": [
-                {
-                    "note": "depends = trace what relies on what; canon = reduce multiple representations to a single authoritative locus",
-                    "token": "depends",
-                },
-                {
-                    "note": "mapping = surface elements and relationships; canon = identify or enforce the single canonical source among them",
-                    "token": "mapping",
-                },
-            ],
-            "heuristics": [
-                "where is the single source of truth",
-                "we have duplicate definitions",
-                "which config is authoritative",
-                "DRY violation",
-                "multiple representations of the same thing",
-                "who owns this data",
-                "derive X from Y instead of duplicating",
-                "canonical source for",
-                "reduce duplication to derivation",
             ],
         },
         "cite": {
@@ -3836,29 +3787,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what does Z need to work",
             ],
         },
-        "derive": {
-            "definition": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure "
-            "rather than inferred intuitively.",
-            "distinctions": [
-                {
-                    "note": "deduce = apply deductive logic to stated premises; derive = represent the generative structure itself so conclusions are structurally readable",
-                    "token": "deduce",
-                },
-                {
-                    "note": "ground = treat declared governing layer as fixed authority; derive = make the generating assumptions structurally explicit for derivability",
-                    "token": "ground",
-                },
-            ],
-            "heuristics": [
-                "make the logic derivable",
-                "explicit generative structure",
-                "conclusions must follow from the representation",
-                "no implicit inference",
-                "formally derive",
-                "represent the assumptions structurally",
-                "conclusions should be readable from structure alone",
-            ],
-        },
         "diagnose": {
             "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks "
             "before proposing fixes or changes.",
@@ -3925,8 +3853,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "gap",
                 },
                 {
-                    "note": "derive = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
-                    "token": "derive",
+                    "note": "forge = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
+                    "token": "forge",
                 },
             ],
             "heuristics": [
@@ -3956,29 +3884,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what follows downstream",
             ],
         },
-        "entangle": {
-            "definition": "The response enhances the task by identifying where domains, responsibilities, or meanings are intermixed or mutually dependent in ways that prevent clear "
-            "separation of influence, suggesting structural coupling or boundary ambiguity.",
-            "distinctions": [
-                {
-                    "note": "spill = one concern overreaches into another unidirectionally; entangle = bidirectional mutual dependency preventing clean separation",
-                    "token": "spill",
-                },
-                {
-                    "note": "sever = restructure to introduce separations; entangle = diagnose structural coupling that prevents them",
-                    "token": "sever",
-                },
-            ],
-            "heuristics": [
-                "where are these coupled",
-                "find the entanglement",
-                "mutual dependency analysis",
-                "can these be separated",
-                "where is ownership unclear",
-                "what's intermixed",
-                "identify coupling",
-            ],
-        },
         "experimental": {
             "definition": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how "
             "results would update the hypotheses.",
@@ -4003,26 +3908,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "run a test to find out",
             ],
         },
-        "explore": {
-            "definition": "The response enhances the task by opening and surveying the option space, generating and comparing multiple plausible approaches without prematurely committing "
-            "to a single answer.",
-            "distinctions": [
-                {
-                    "note": "branch = fork on a key assumption and pursue paths; explore = broad survey without forking on a specific choice",
-                    "token": "branch",
-                }
-            ],
-            "heuristics": [
-                "what are the options",
-                "explore the solution space",
-                "what approaches exist",
-                "brainstorm possibilities",
-                "what could we do",
-                "survey the landscape",
-                "open-ended exploration",
-                "what's possible here",
-            ],
-        },
         "field": {
             "definition": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference "
             "between actors. Explanations must make the medium and its selection rules explicit.",
@@ -4043,7 +3928,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "flow": {
-            "definition": "The response enhances the task by explaining step-by-step progression over time or sequence, showing how control, data, or narrative moves through the system.",
+            "definition": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
             "distinctions": [
                 {
                     "note": "time = temporal emphasis as scope lens; flow = step-by-step progression as a reasoning method",
@@ -4059,6 +3944,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how does it progress",
                 "follow the data through the system",
                 "trace the path",
+            ],
+        },
+        "forge": {
+            "definition": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure "
+            "rather than inferred intuitively.",
+            "distinctions": [
+                {
+                    "note": "deduce = apply deductive logic to stated premises; forge = represent the generative structure itself so conclusions are structurally readable",
+                    "token": "deduce",
+                },
+                {
+                    "note": "ground = treat declared governing layer as fixed authority; forge = make the generating assumptions structurally explicit for derivability",
+                    "token": "ground",
+                },
+            ],
+            "heuristics": [
+                "make the logic derivable",
+                "explicit generative structure",
+                "conclusions must follow from the representation",
+                "no implicit inference",
+                "formally derive",
+                "represent the assumptions structurally",
+                "conclusions should be readable from structure alone",
             ],
         },
         "gap": {
@@ -4082,7 +3990,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "ground": {
             "definition": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, "
             "behaviors, or conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their "
-            "originating intent; in code contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code.",
+            "originating intent; in code contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any "
+            "implementation code.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "
@@ -4094,9 +4003,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "crystal",
                 },
                 {
-                    "note": "derive = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that "
+                    "note": "forge = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that "
                     "conclusions must justify against",
-                    "token": "derive",
+                    "token": "forge",
                 },
             ],
             "heuristics": [
@@ -4133,27 +4042,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how things build up",
                 "rate of change over time",
                 "snowball",
-            ],
-        },
-        "grow": {
-            "definition": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so "
-            "that every abstraction and every exception arises from necessity rather than anticipation.",
-            "distinctions": [
-                {
-                    "note": "minimal (completeness) = keep output brief; grow (method) = keep abstractions minimal and expand only under demonstrable complexity pressure",
-                    "token": "minimal",
-                }
-            ],
-            "heuristics": [
-                "start simple and expand",
-                "minimum viable",
-                "YAGNI",
-                "add only what you need",
-                "simplest thing that works",
-                "evolve as needed",
-                "don't over-engineer",
-                "grow when needed",
-                "build incrementally",
             ],
         },
         "induce": {
@@ -4264,6 +4152,46 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "avoid conflicts between teams",
                 "migration coordination",
                 "who needs to change when",
+            ],
+        },
+        "merk": {
+            "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the "
+            "progression.",
+            "distinctions": [
+                {
+                    "note": "trace = narrate the sequential control/data progression; merk = record checkpoint observations without narrating",
+                    "token": "trace",
+                }
+            ],
+            "heuristics": [
+                "record what happened at each stage",
+                "audit log",
+                "checkpoint evidence",
+                "what was observed at each step",
+                "capture intermediate state",
+                "audit trail",
+                "what was the system state at X",
+            ],
+        },
+        "mesh": {
+            "definition": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
+            "distinctions": [
+                {
+                    "note": "snag = surface where coupling seams exist; mesh = describe how coupling propagates across them",
+                    "token": "snag",
+                },
+                {
+                    "note": "shear = outline steps to separate coupled domains; mesh = describe the propagation structure before separating",
+                    "token": "shear",
+                },
+            ],
+            "heuristics": [
+                "how does coupling propagate",
+                "what does each coupled domain affect",
+                "trace influence across the seam",
+                "how does change in X affect Y",
+                "describe the coupling structure",
+                "what travels across the boundary",
             ],
         },
         "migrate": {
@@ -4466,10 +4394,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "polar": {
-            "definition": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states). "
-            "Explanations must distinguish pursuit from avoidance, account for how negative boundaries constrain trajectories, and specify whether outcomes arise from "
-            "optimization toward a goal or evasion of an undesirable state. Outcomes may not be attributed solely to positive objectives without modeling active avoidance "
-            "pressures.",
+            "definition": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), "
+            "distinguishing pursuit from avoidance.",
             "distinctions": [
                 {
                     "note": "balance = forces offsetting each other; polar = attraction toward some states and aversion from others",
@@ -4567,6 +4493,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what does the product offer",
                 "user needs analysis",
                 "product thinking",
+            ],
+        },
+        "pulse": {
+            "definition": "The response models information transfer as a staged encode/decode process, distinguishing message from signal, accounting for noise and channel distortion, and "
+            "specifying how transmission errors are detected and repaired.",
+            "distinctions": [
+                {
+                    "note": "flow = narrate step-by-step sequence; pulse = model noise, distortion, and fidelity across encode/decode stages",
+                    "token": "flow",
+                }
+            ],
+            "heuristics": [
+                "where does signal get lost",
+                "where does data degrade",
+                "signal fidelity",
+                "where is information lost in transmission",
+                "where does the message get distorted",
+                "trace signal path through the system",
+                "where does noise enter",
+                "signal-to-noise",
+                "observability pipeline fidelity",
             ],
         },
         "reify": {
@@ -4710,6 +4657,56 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "option value under uncertainty",
             ],
         },
+        "root": {
+            "definition": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be "
+            "reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of "
+            "the same knowledge as independent causal or justificatory elements without specifying their dependency relationship.",
+            "distinctions": [
+                {
+                    "note": "depends = trace what relies on what; root = reduce multiple representations to a single authoritative locus",
+                    "token": "depends",
+                },
+                {
+                    "note": "mapping = surface elements and relationships; root = identify or enforce the single canonical source among them",
+                    "token": "mapping",
+                },
+            ],
+            "heuristics": [
+                "where is the single source of truth",
+                "we have duplicate definitions",
+                "which config is authoritative",
+                "DRY violation",
+                "multiple representations of the same thing",
+                "who owns this data",
+                "derive X from Y instead of duplicating",
+                "canonical source for",
+                "reduce duplication to derivation",
+            ],
+        },
+        "seep": {
+            "definition": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this "
+            "overreach increases coupling, ambiguity, or fragility.",
+            "distinctions": [
+                {
+                    "note": "bound = introduce or reinforce propagation limits proactively; seep = identify where those limits have been violated or never existed",
+                    "token": "bound",
+                },
+                {
+                    "note": "cross (scope) = concerns spanning modules by design; seep (method) = concerns overreaching their intended scope unintentionally",
+                    "token": "cross",
+                },
+            ],
+            "heuristics": [
+                "where does this leak",
+                "scope creep",
+                "responsibility overreach",
+                "bleeding concerns",
+                "what crosses boundary lines uninvited",
+                "where is influence extending too far",
+                "coupling from overreach",
+                "what is reaching outside its scope",
+            ],
+        },
         "sever": {
             "definition": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that "
             "interactions occur only through explicit, controlled interfaces.",
@@ -4723,8 +4720,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "domains",
                 },
                 {
-                    "note": "entangle = diagnose intermixing; sever = address it by structural separation",
-                    "token": "entangle",
+                    "note": "snag/mesh = diagnose coupling seams; sever = address it by structural separation",
+                    "token": "snag",
                 },
             ],
             "heuristics": [
@@ -4736,6 +4733,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "decouple these",
                 "introduce an abstraction boundary",
                 "route interactions through explicit interfaces",
+            ],
+        },
+        "shear": {
+            "definition": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
+            "distinctions": [
+                {
+                    "note": "snag = identify the coupling seams; shear = outline steps to separate them",
+                    "token": "snag",
+                },
+                {
+                    "note": "sever = restructure to introduce separations broadly; shear = targeted steps to separate or realign specific coupled domains",
+                    "token": "sever",
+                },
+            ],
+            "heuristics": [
+                "how to separate these",
+                "steps to decouple",
+                "realign these domains",
+                "reduce to a controlled interface",
+                "outline the separation",
+                "how to untangle",
+                "introduce a boundary",
             ],
         },
         "shift": {
@@ -4781,28 +4800,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "model how effects compound over time",
             ],
         },
-        "spill": {
-            "definition": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this "
-            "overreach increases coupling, ambiguity, or fragility.",
+        "snag": {
+            "definition": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean "
+            "separation.",
             "distinctions": [
                 {
-                    "note": "bound = introduce or reinforce propagation limits proactively; spill = identify where those limits have been violated or never existed",
-                    "token": "bound",
+                    "note": "mesh = describe how coupling propagates; snag = surface where the coupling seams are",
+                    "token": "mesh",
                 },
                 {
-                    "note": "cross (scope) = concerns spanning modules by design; spill (method) = concerns overreaching their intended scope unintentionally",
-                    "token": "cross",
+                    "note": "shear = outline separation steps; snag = identify the coupling seams that need separating",
+                    "token": "shear",
                 },
             ],
             "heuristics": [
-                "where does this leak",
-                "scope creep",
-                "responsibility overreach",
-                "bleeding concerns",
-                "what crosses boundary lines uninvited",
-                "where is influence extending too far",
-                "coupling from overreach",
-                "what is reaching outside its scope",
+                "where are these coupled",
+                "find the coupling seams",
+                "identify coupling",
+                "where is ownership unclear",
+                "where are responsibilities intermixed",
+                "surface the seams",
+                "what can't be cleanly separated",
             ],
         },
         "split": {
@@ -4825,6 +4843,44 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "analyze in isolation",
             ],
         },
+        "spur": {
+            "definition": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning "
+            "alternatives.",
+            "distinctions": [
+                {
+                    "note": "sweep = enumerate option space without forking; spur = fork on a key assumption and pursue each path before evaluating",
+                    "token": "sweep",
+                }
+            ],
+            "heuristics": [
+                "explore multiple paths",
+                "consider different approaches in parallel",
+                "branch the reasoning",
+                "multiple lines of reasoning",
+                "explore alternatives before choosing",
+                "parallel hypotheses",
+            ],
+        },
+        "sweep": {
+            "definition": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of "
+            "them.",
+            "distinctions": [
+                {
+                    "note": "spur = fork on a key assumption and pursue paths; sweep = broad enumeration without forking on a specific choice",
+                    "token": "spur",
+                }
+            ],
+            "heuristics": [
+                "what are the options",
+                "explore the solution space",
+                "what approaches exist",
+                "brainstorm possibilities",
+                "what could we do",
+                "survey the landscape",
+                "open-ended exploration",
+                "what's possible here",
+            ],
+        },
         "systemic": {
             "definition": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent "
             "behaviour that arise from their interactions rather than from parts in isolation.",
@@ -4845,39 +4901,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "interconnections",
             ],
         },
-        "trace": {
-            "definition": "The response enhances the task by making the transformation process explicit, revealing intermediate steps, decisions, and structural changes so the path from "
-            "input to outcome remains observable.",
+        "thrust": {
+            "definition": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
             "distinctions": [
                 {
-                    "note": "flow = follow sequential progression through an existing system; trace = surface intermediate decisions and structural changes during execution so "
-                    "the process is auditable",
-                    "token": "flow",
-                },
-                {
-                    "note": "derive = make generative assumptions explicit for derivability; trace = surface each intermediate state and decision during transformation for "
-                    "observability",
-                    "token": "derive",
-                },
-            ],
-            "heuristics": [
-                "show your work",
-                "make intermediate steps visible",
-                "how did we get here",
-                "make the process traceable",
-                "show each decision",
-                "observable execution",
-                "audit the steps",
-                "I want to follow along",
-                "surface intermediate state",
-            ],
-        },
-        "trade": {
-            "definition": "The response enhances the task by identifying competing structural forces or design pressures, making their tradeoffs explicit, and evaluating alternatives "
-            "across those dimensions before committing to a configuration.",
-            "distinctions": [
-                {
-                    "note": "balance = how opposing forces offset to produce equilibrium; trade = explicitly identify and evaluate trade-offs across competing dimensions",
+                    "note": "balance = acceptable equilibrium state between opposing forces; thrust = identify and catalog the competing forces themselves",
                     "token": "balance",
                 }
             ],
@@ -4892,27 +4920,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "evaluate alternatives across dimensions",
             ],
         },
-        "trans": {
-            "definition": "The response models information transfer as a staged process involving a source, encoding, channel, decoding, destination, and feedback. Explanations must "
-            "distinguish message from signal, account for transformation across stages, model noise or distortion explicitly, and specify mechanisms for detecting and "
-            "repairing transmission errors. Outcomes may not be attributed to communication without specifying how the signal survived, degraded, or was corrected during "
-            "transmission.",
+        "trace": {
+            "definition": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps "
+            "and structural changes.",
             "distinctions": [
                 {
-                    "note": "flow = narrate step-by-step sequence; trans = model noise, distortion, and fidelity across stages",
+                    "note": "flow = describe linear ordering of stages; trace = narrate the sequential control/data progression with intermediate steps",
                     "token": "flow",
-                }
+                },
+                {
+                    "note": "forge = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
+                    "token": "forge",
+                },
             ],
             "heuristics": [
-                "where does signal get lost",
-                "where does data degrade",
-                "signal fidelity",
-                "where is information lost in transmission",
-                "where does the message get distorted",
-                "trace signal path through the system",
-                "where does noise enter",
-                "signal-to-noise",
-                "observability pipeline fidelity",
+                "show your work",
+                "make intermediate steps visible",
+                "how did we get here",
+                "make the process traceable",
+                "show each decision",
+                "observable execution",
+                "audit the steps",
+                "I want to follow along",
+                "surface intermediate state",
             ],
         },
         "triage": {
@@ -4951,8 +4981,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "verify": {
-            "definition": "The response enhances the task by applying falsification pressure to claims, requiring causal chain integrity, externally imposed constraints, and explicitly "
-            "defined negative space.",
+            "definition": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, "
+            "without governing the layer those tests must satisfy.",
             "distinctions": [
                 {
                     "note": "rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs",

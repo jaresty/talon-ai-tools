@@ -51,9 +51,9 @@ class VerifyDescriptionSpillTests(unittest.TestCase):
             "Core falsification language missing from verify description",
         )
         self.assertIn(
-            "causal chain integrity",
+            "negative space",
             self.desc,
-            "Core causal chain language missing from verify description",
+            "Core negative-space language missing from verify description",
         )
 
 
@@ -159,9 +159,9 @@ class BalanceDescriptionSpillTests(unittest.TestCase):
         )
 
     def test_balancing_forces_core_preserved(self):
-        """The balancing-forces core of balance must be retained after trim."""
+        """The equilibrium-description core of balance must be retained after trim."""
         self.assertIn(
-            "balancing forces",
+            "equilibrium",
             self.desc,
-            "Core 'balancing forces' language missing from balance description",
+            "Core equilibrium language missing from balance description",
         )

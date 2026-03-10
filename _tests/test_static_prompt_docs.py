@@ -205,9 +205,9 @@ if bootstrap is not None:
                 "Expected 'analysis' method token from ADR 017 to be present",
             )
             self.assertIn(
-                "explore",
+                "sweep",
                 method_keys,
-                "Expected 'explore' method token from ADR 076 to be present",
+                "Expected 'sweep' method token (renamed from 'explore' per ADR-0160) to be present",
             )
             self.assertNotIn(
                 "samples",

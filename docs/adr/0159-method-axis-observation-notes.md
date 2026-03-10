@@ -42,9 +42,9 @@ Under observation — documenting signals only
    - Direct contradiction with `max` is phrased as a completeness conflict (@axisConfig.py#1456-1474), not a method incompatibility, reinforcing that user expectations revolve around coverage depth.  
    - Other method tokens do not encode depth constraints; `grow` is the only one whose success criteria hinge on avoiding over-elaboration.
 
-6. **Opportunities for Structured Bundles**  
-   - Introducing named bundles (e.g., ForceBalance, Structural Cartography, Temporal Diagnostics) could let individual tokens serve as parameters while the bundle encodes shared scaffolds.  
-   - Bundles would map well to routing concepts and UI hints, simplifying discoverability without deleting legacy tokens.
+6. **Latent Bundle-Like Patterns**  
+   - `USAGE_PATTERNS` in `axisConfig.py` (@axisConfig.py#1576-1599) already promotes multi-token packages (e.g., "Decision-Making" = branch + variants + thing, "Architecture Documentation" = analysis + case + struct) because those tokens each supply a different required prompt part (divergence logic, output comparison frame, scope lens). The combination reconstructs a complete reasoning workflow, so the catalog naturally presents them as a single unit.  
+   - Cross-axis guidance such as the commit-form caution table (@axisConfig.py#1260-1343) and completeness vs directional warnings (@axisConfig.py#1387-1446) talks about token sets together precisely when their structural demands collide (e.g., multi-stage methods needing formats that can express intermediate steps). That interdependence between required prompt parts is why they appear bundle-like even without formal grouping.
 
 7. **Cross-Axis Propagation Concerns**  
    - Methods that demand explicit staging (trans, migrate, trace) inherit requirements on form/channel axes (need surfaces that can show intermediate checkpoints or dual-state tables).  
@@ -65,12 +65,10 @@ Under observation — documenting signals only
    - *Transformative Reasoning:* `abduce`, `deduce`, `induce`, `calc`, `argue`, `probability`, `rigor` focus on premise sets, inference rules, calculations, and rebuttals; their prompts embed proof-like structures.  
    These families exist as observational groupings — they highlight operation types already present without proposing new taxonomy changes yet.
 
-## Options Under Consideration (No Decisions Yet)
-1. **Rehome `grow` to completeness:** treat it as a depth modifier ("expand only as needed"), optionally adding a caution that conflicts with `max` remain explicit.  
-2. **Layer method bundles/metatypes:** define reusable structures (ForceBalance, Structural Cartography, Temporal Diagnostic) so existing tokens reference them, improving derivability and reducing overlap without renaming tokens.  
-3. **Encode derivation metadata:** allow axis config to specify when a method is equivalent to a composition of others (e.g., canon = derive + depends + sever) so tooling can suggest or auto-compose prompts.  
-4. **Add method → channel/form/complete capability requirements:** declare minimum surface area (e.g., derive requires channels that can show intermediate structure; calc requires executable or pseudo-coded sections).  
-5. **Introduce divergence budget controls:** unify branch/explore/split/migrate/grow signals into a shared parameter indicating how much structural commitment is allowed, keeping token names but clarifying their comparative roles.
+10. **Reasoning Motifs That Produce Bundle Behavior**  
+    - Complementary operations: each promoted package covers a minimum set of reasoning moves (e.g., divergence → comparison → scoping) that together satisfy both the task intent and the cross-axis constraints; omitting one would leave part of the workflow unsupported.  
+    - Guardrail-driven co-selection: cross-axis cautions (channel/form/completeness) force certain tokens to travel with others so structural requirements (multi-stage space, canonical proof slots, branch counts) are simultaneously satisfied.  
+    - Shared intermediate artifacts: many methods demand the same intermediate artifacts (e.g., dependency graphs, option matrices, force diagrams); when multiple tokens reference the same artifact, the prompt effectively reuses that structure across them, making the set act like a pre-defined bundle even though it is built ad hoc.
 
 ## Open Questions
 - What numbering or naming scheme should new completeness or bundle entries follow to maintain ADR consistency?  

@@ -16,25 +16,54 @@ Under observation — documenting signals only
    - Exploration tokens (branch/explore/split/migrate/grow/boom/domains/experimental) largely differ by how much structural commitment is allowed, suggesting a shared “divergence budget” control.  
    - Temporal propagation tokens (flow/effects/grove/operations/systemic/trace/trans) stack naturally: once a temporal scaffold exists, multiple tokens collapse into metadata about sequence depth or observation checkpoints.
 
-2. **Cross-Axis Entanglement is Under-Specified**  
+2. **Prompt “Parts” and Uses Are Encoded Inside Many Methods**  
+   - `trans` forces explicit staging (source → encoding → channel → decoding → destination → feedback) and requires analysts to separate message vs signal and noise handling steps (@axisConfig.py#311-314).  
+   - `trace` and `flow` insist on observable intermediate steps and control/data movement, effectively decomposing responses into step logs rather than final summaries (@axisConfig.py#247-309).  
+   - `ground` defines a governing layer (tests/acceptance criteria) that every structure must satisfy, introducing a persistent “intent vs verification artifact” split (@axisConfig.py#250-253).  
+   - `canon` names a single authoritative locus for each proposition, so responses must map duplicates back to a parent representation—shaping how evidence, rules, and dependencies are referenced (@axisConfig.py#213-218).  
+   - `afford` distinguishes logical possibility, perceived action salience, and structural constraints, meaning prompts must discuss both environment design and actor-perceived options (@axisConfig.py#194-199).  
+   - `entangle`, `spill`, and `bound` define how influence crosses or stays within boundaries, steering answers toward interface descriptions vs leakage analysis (@axisConfig.py#239-304).  
+   - `migrate` mandates a staged transition path with dual compatibility periods, separating “current state,” “bridge,” and “target” sections within a single response (@axisConfig.py#265-268).  
+   Together these tokens already specify internal response parts (stages, loci, governing layers, boundary treatments) independent of bundling proposals.
+
+3. **Cross-Axis Entanglement is Under-Specified**  
    - Completeness brevity limits (gist/skim) already block multi-directional tokens but the guidance lives outside the method axis; similar enforcement is absent for method tokens that demand intermediate artifacts (e.g., `derive` needs explicit generative assumptions, `calc` needs executable steps).  
    - Channel/form overrides (commit+directional, recipe+channel, etc.) show the existing rule set treats format as dominant, yet the method catalog doesn’t encode which methods require expandable surfaces or embedded notation.  
    - `grow` vs `max` is the only method/completeness contradiction documented, implying other method tokens may also want completeness semantics but currently lack guardrails.
 
-3. **Derivation Relationships Appear Reusable**  
+4. **Derivation Relationships Appear Reusable**  
    - `canon` ≈ `derive + depends + sever` (single source, explicit derivation, enforce edges).  
    - `gap + drift + ground` form a feedback loop: ground defines authoritative criteria, gap surfaces implicit declarations, drift tracks under-enforced conclusions.  
    - `trade + balance + polar` can be described as force-balancing with explicit attractor/repeller modeling.  
    - Temporal trio (`trace + flow + effects`) already resembles a template for observable propagation.
 
-4. **"grow" Acts Like Completeness, Not Method**  
+5. **"grow" Acts Like Completeness, Not Method**  
    - Instruction emphasizes *when to expand depth* rather than *how to reason*, matching completeness semantics (“disciplined minimalism”) more than procedural stance.  
    - Direct contradiction with `max` is phrased as a completeness conflict (@axisConfig.py#1456-1474), not a method incompatibility, reinforcing that user expectations revolve around coverage depth.  
    - Other method tokens do not encode depth constraints; `grow` is the only one whose success criteria hinge on avoiding over-elaboration.
 
-5. **Opportunities for Structured Bundles**  
+6. **Opportunities for Structured Bundles**  
    - Introducing named bundles (e.g., ForceBalance, Structural Cartography, Temporal Diagnostics) could let individual tokens serve as parameters while the bundle encodes shared scaffolds.  
    - Bundles would map well to routing concepts and UI hints, simplifying discoverability without deleting legacy tokens.
+
+7. **Cross-Axis Propagation Concerns**  
+   - Methods that demand explicit staging (trans, migrate, trace) inherit requirements on form/channel axes (need surfaces that can show intermediate checkpoints or dual-state tables).  
+   - Completeness tokens implicitly set the maximum number of prompt parts; e.g., gist cannot support the six-stage `trans` breakdown without losing fidelity, suggesting completeness should gate which methods are selectable.  
+   - Directional compounds (fig/bog/dip*) expect both abstract and concrete parts; when paired with methods that already enforce multi-stage outputs, the prompt risks exploding into contradictory instructions without tool support.
+
+8. **Implications of Updated Observations**  
+   - The catalog already encodes micro-structures (governing layers, canonical loci, staged migrations); bundling or reclassification work should respect these intrinsic “prompt parts” instead of flattening them into high-level themes.  
+   - If `grow` moves to completeness, method-axis guidance would rely more heavily on these part-defining tokens to keep responses organized—strengthening the case for derivation metadata and capability flags.  
+   - Future ADRs that introduce decisions should call out how each change affects the mapping between methods and their expected internal sections so downstream tooling remains coherent.
+
+9. **Operation Families Emerging from Current Tokens**  
+   - *Staging & Transmission:* `trans`, `trace`, `flow`, `migrate`, `simulation` all impose multi-stage narratives (source→encoding→channel, current→bridge→target, scenario playback). Their prompts already expect discrete sections for checkpoints and evolution.  
+   - *Governance & Canonicalization:* `ground`, `canon`, `derive`, `verify`, `depends` insist on governing layers, canonical loci, and explicitly traced derivations; analyses naturally split into “rules/tests vs structures vs proofs”.  
+   - *Boundary & Influence:* `entangle`, `spill`, `bound`, `sever`, `align`, `afford` emphasize how responsibilities or affordances cross seams, so answers describe interior models, boundaries, leakage, and mitigation as separate parts.  
+   - *Propagation & Force:* `effects`, `grove`, `operations`, `systemic`, `trade`, `balance`, `polar` frame systems through feedback loops or opposing pressures, calling for sections on forces, interactions, and equilibria.  
+   - *Divergence & Exploration:* `branch`, `explore`, `split`, `grow`, `boom`, `domains`, `experimental` revolve around option-space expansion and experiment design, creating natural parts for hypotheses, branches, and evaluation criteria.  
+   - *Transformative Reasoning:* `abduce`, `deduce`, `induce`, `calc`, `argue`, `probability`, `rigor` focus on premise sets, inference rules, calculations, and rebuttals; their prompts embed proof-like structures.  
+   These families exist as observational groupings — they highlight operation types already present without proposing new taxonomy changes yet.
 
 ## Options Under Consideration (No Decisions Yet)
 1. **Rehome `grow` to completeness:** treat it as a depth modifier ("expand only as needed"), optionally adding a caution that conflicts with `max` remain explicit.  

@@ -70,6 +70,11 @@ Under observation — documenting signals only
     - Guardrail-driven co-selection: cross-axis cautions (channel/form/completeness) force certain tokens to travel with others so structural requirements (multi-stage space, canonical proof slots, branch counts) are simultaneously satisfied.  
     - Shared intermediate artifacts: many methods demand the same intermediate artifacts (e.g., dependency graphs, option matrices, force diagrams); when multiple tokens reference the same artifact, the prompt effectively reuses that structure across them, making the set act like a pre-defined bundle even though it is built ad hoc.
 
+11. **Orthogonality Intent (Single Concept per Token)**  
+    - Target intent: each token should encode exactly one structural responsibility so users can compose them orthogonally.  
+    - Misalignment signal: tokens that currently demand multiple operation types (e.g., both staging and boundary leakage analysis) reduce orthogonality and create implicit bundles.  
+    - Observation linkage: the operation families above provide the axes along which to test whether a token needs decomposition—if it simultaneously occupies multiple families, it may warrant splitting into simpler parts.
+
 ## Open Questions
 - What numbering or naming scheme should new completeness or bundle entries follow to maintain ADR consistency?  
 - How should UI surfaces display bundle relationships without overwhelming users already tracking axis tokens?  

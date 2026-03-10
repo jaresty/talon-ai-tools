@@ -981,9 +981,11 @@
 		cursor: pointer;
 	}
 
-	.review-panel-chip:hover {
-		background: #6b3040;
-		border-color: #f7768e;
+	@media (hover: hover) {
+		.review-panel-chip:hover {
+			background: #6b3040;
+			border-color: #f7768e;
+		}
 	}
 
 	.review-panel-chip.conflict {

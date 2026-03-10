@@ -47,10 +47,10 @@ This ADR captures the updated plan: split where needed, reassign some responsibi
 
 | Outcome | Tokens | Axis |
 | --- | --- | --- |
-| **Remain method tokens (single concept)** | `stow`, `merk`, `lane`, `slot`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `toll`, `thrust`, `sift`, `stead`, `mag`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`, `try` | Method |
-| **Move to form** | `twin` (comparison layout), `prep` / `vet` (experiment write-up structure) | Form |
+| **Keep as method tokens (high reuse)** | `stow`, `merk`, `lane`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `thrust`, `sift`, `stead`, `mag`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`, `try` | Method |
+| **Move to form** | `twin` (comparison layout), `prep` / `vet` (experiment write-up structure), timeline/coupling artifacts | Form |
 | **Move to scope** | `dam` (contain boundaries) | Scope |
-| **Drop** | Any secondary behavior deemed low value during implementation (e.g., dependency handoff if `slot` proves unnecessary) | — |
+| **Drop** | Low-reuse controls like `slot` (handoff) or dependent-only tokens like `toll` (impact scoring) if they add little standalone value | — |
 
 ## Method Token Definitions (single-syllable)
 
@@ -59,13 +59,11 @@ This ADR captures the updated plan: split where needed, reassign some responsibi
 | `stow` | Staging | Narrate sequential control/data progression. |
 | `merk` | Audit | Capture checkpoints/evidence as the process runs. |
 | `lane` | Staging | Describe linear stage ordering without extra semantics. |
-| `slot` | Boundary (control) | Specify how ownership transfers between stages. |
 | `pulse` | Transmission | Model encode/decode/noise for information channels. |
 | `snag` | Boundary detection | Surface coupled domains or seams. |
 | `mesh` | Boundary analysis | Describe how coupling propagates and what it affects. |
 | `shear` | Boundary mitigation | Outline separation or realignment steps. |
 | `seep` | Spill detection | Identify scope creep or influence bleed. |
-| `toll` | Spill impact | Score the consequence of that spill. |
 | `thrust` | Force mapping | Catalog opposing pressures/forces. |
 | `sift` | Trade evaluation | Compare alternatives across explicit criteria. |
 | `stead` | Equilibrium | Describe acceptable balance points/tolerances. |
@@ -84,6 +82,17 @@ This ADR captures the updated plan: split where needed, reassign some responsibi
 3. **Extensible metadata:** governance declarations can live in persona/scope metadata; methods merely reference them.
 4. **Pruning path:** when secondary operations add little value, we drop them instead of creating redundant tokens.
 
+### Sample Combinations (for experimentation)
+| Combo | Interpretation |
+| --- | --- |
+| `stow` + `merk` + timeline form | Narrate a process while logging checkpoints; the form renders a sequence diagram with evidence rows. |
+| `snag` + `mesh` + `shear` | Detect coupled domains, explain how influence propagates, then propose mitigation steps. |
+| `thrust` + `sift` + `stead` | Map opposing forces, evaluate options across criteria, and declare the acceptable equilibrium. |
+| `spur` + `cull` + `try` | Generate hypotheses, prune them, then run falsification tests on the survivors. |
+| `sweep` + `twin` (form) + `sift` | Enumerate options, lay them out side-by-side, and score each against explicit criteria. |
+| `pulse` + `cull` | Model channel transmission then audit the checkpoints where losses occur (handoffs handled via form/completeness instead of a token). |
+| `forge` + `root` + `bind` | Produce a constructive derivation anchored to a canonical locus with explicit dependency wiring. |
+
 ## Next Steps
 1. Update `axisConfig.py` with operation-family flags for all existing method tokens to identify actual overlaps.
 2. Prototype the new method tokens listed above; simultaneously add form (`twin`, `prep`, `vet`) and scope (`dam`) entries if they prove valuable.
@@ -95,10 +104,10 @@ This ADR captures the updated plan: split where needed, reassign some responsibi
 | Original Token | Replacement Strategy |
 | --- | --- |
 | `trace` | Rename to `stow`; add new `merk` token for audits. |
-| `flow` | Rename sequencing behavior to `lane`; introduce `slot` only if dependency handoffs remain necessary (otherwise retire). |
+| `flow` | Rename sequencing behavior to `lane`; retire `slot` unless we confirm a compelling reuse case. |
 | `trans` | Rename to `pulse`; depend on `stow` when narration required. |
 | `entangle` | Replace with `snag`+`mesh`; add `shear` for mitigation where needed. |
-| `spill` | Replace with `seep` (detection) + `toll` (impact) and add scope token `dam`. |
+| `spill` | Replace with `seep` (detection) and scope token `dam`. Impact scoring occurs via completeness guidance unless a future need for `toll` arises. |
 | `bound` / `sever` | Keep names but update descriptions to assume input from `snag`/`mesh`. |
 | `trade` | Rename to `thrust`; add `sift` for evaluation. |
 | `balance` | Rename to `stead` (or `thrust`+`stead`). |

@@ -59,7 +59,7 @@ make guardrails
 
 ## ADR pattern
 
-New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0157).
+New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0158).
 Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-24 complete, loop-25 pending).
 
 ## How to help with this backlog
@@ -138,7 +138,7 @@ false-positive risk is low. Note text remains excluded.
 bar command string. Closing this loop lets SPA users take their composition back to the CLI or Talon.
 **Complexity**: Low — `renderPrompt.ts` already has the state; needs a `renderCommand()` formatter.
 
-### SPA: Selected token review panel
+### ✅ SPA: Selected token review panel (ADR-0158)
 **What**: A persistent summary strip or collapsible panel showing all currently selected tokens
 across all axes, with one-click deselect for each.
 **Why Tier 2**: With 9 axes and chips scattered across the page, it's easy to lose track of what's

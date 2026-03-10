@@ -249,7 +249,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or "
         "conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their originating intent; in code "
-        "contexts the governing layer is expressed as a specification that must exist before implementation.",
+        "contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "grow": "The response enhances the task by preserving the simplest form adequate to the current purpose and expanding only when new demands demonstrably outgrow it, so that every "
@@ -4082,7 +4082,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "ground": {
             "definition": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, "
             "behaviors, or conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their "
-            "originating intent; in code contexts the governing layer is expressed as a specification that must exist before implementation.",
+            "originating intent; in code contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "

@@ -22,6 +22,7 @@ const (
 type BuildResult struct {
 	SchemaVersion       string              `json:"schema_version"`
 	ReferenceKey        string              `json:"reference_key,omitempty"`
+	ExecutionReminder   string              `json:"execution_reminder,omitempty"`
 	Subject             string              `json:"subject"`
 	Addendum            string              `json:"addendum,omitempty"`
 	Task                string              `json:"task"`
@@ -926,8 +927,9 @@ func (s *buildState) toResult() *BuildResult {
 	}
 
 	result := &BuildResult{
-		SchemaVersion: s.grammar.SchemaVersion,
-		ReferenceKey:  s.grammar.ReferenceKey,
+		SchemaVersion:     s.grammar.SchemaVersion,
+		ReferenceKey:      s.grammar.ReferenceKey,
+		ExecutionReminder: s.grammar.ExecutionReminder,
 		Task:          task,
 		Constraints:   constraints,
 		Axes: AxesResult{

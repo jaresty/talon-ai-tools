@@ -8,7 +8,7 @@ from typing import Any, Iterable, Mapping
 
 from .axisCatalog import axis_catalog
 from .axisMappings import DEFAULT_COMPLETENESS_TOKEN
-from .metaPromptConfig import PROMPT_REFERENCE_KEY
+from .metaPromptConfig import EXECUTION_REMINDER, PROMPT_REFERENCE_KEY
 from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
     persona_token_metadata_map,
@@ -518,6 +518,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "reference_key": PROMPT_REFERENCE_KEY,
+        "execution_reminder": EXECUTION_REMINDER,
         **sections,
         "checksums": checksums,
     }

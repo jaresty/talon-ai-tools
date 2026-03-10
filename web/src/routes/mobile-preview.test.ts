@@ -18,7 +18,9 @@ vi.mock('$lib/grammar.js', () => ({
 	loadGrammar: vi.fn().mockResolvedValue({
 		hierarchy: { axis_soft_caps: {} },
 		tokens: {},
-		persona_presets: []
+		persona_presets: [],
+		reference_key: '',
+		execution_reminder: ''
 	}),
 	getAxisTokens: vi.fn().mockReturnValue([]),
 	getTaskTokens: vi.fn().mockReturnValue([{ token: 'show', label: 'Explain' }]),

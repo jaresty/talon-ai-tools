@@ -47,7 +47,9 @@ const grammar: Grammar = {
 			}
 		},
 		axes: { voice: [], audience: [], tone: [] }
-	}
+	},
+	reference_key: 'REFERENCE KEY TEXT',
+	execution_reminder: 'EXECUTION REMINDER TEXT'
 };
 
 describe('renderPrompt', () => {
@@ -163,7 +165,7 @@ describe('renderPrompt', () => {
 	it('includes REFERENCE KEY section', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
 		expect(result).toContain('=== REFERENCE KEY ===');
-		expect(result).toContain('TASK 任務 (user prompt): The primary action to perform');
+		expect(result).toContain('REFERENCE KEY TEXT');
 	});
 
 	it('includes EXECUTION REMINDER section', () => {

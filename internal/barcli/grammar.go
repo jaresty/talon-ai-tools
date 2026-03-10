@@ -20,9 +20,10 @@ var (
 
 // Grammar represents the portable prompt grammar payload exported from Python.
 type Grammar struct {
-	SchemaVersion string
-	ReferenceKey  string
-	Axes          AxisSection
+	SchemaVersion     string
+	ReferenceKey      string
+	ExecutionReminder string
+	Axes              AxisSection
 	Static        StaticSection
 	Persona       PersonaSection
 	Hierarchy     HierarchySection
@@ -151,9 +152,10 @@ type GrammarPattern struct {
 }
 
 type rawGrammar struct {
-	SchemaVersion string           `json:"schema_version"`
-	ReferenceKey  string           `json:"reference_key"`
-	Axes          rawAxisSection   `json:"axes"`
+	SchemaVersion     string           `json:"schema_version"`
+	ReferenceKey      string           `json:"reference_key"`
+	ExecutionReminder string           `json:"execution_reminder"`
+	Axes              rawAxisSection   `json:"axes"`
 	Static        rawStatic        `json:"tasks"`
 	Persona       rawPersona       `json:"persona"`
 	Hierarchy     rawHierarchy     `json:"hierarchy"`
@@ -261,9 +263,10 @@ func LoadGrammar(path string) (*Grammar, error) {
 	}
 
 	grammar := &Grammar{
-		SchemaVersion: raw.SchemaVersion,
-		ReferenceKey:  raw.ReferenceKey,
-		Patterns:      raw.Patterns,
+		SchemaVersion:     raw.SchemaVersion,
+		ReferenceKey:      raw.ReferenceKey,
+		ExecutionReminder: raw.ExecutionReminder,
+		Patterns:          raw.Patterns,
 		StarterPacks:  raw.StarterPacks,
 		Axes: AxisSection{
 			Definitions:    raw.Axes.Definitions,

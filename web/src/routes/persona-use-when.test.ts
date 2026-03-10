@@ -51,7 +51,9 @@ vi.mock('$lib/grammar.js', () => ({
 				}
 			}
 		},
-		patterns: []
+		patterns: [],
+		reference_key: '',
+		execution_reminder: ''
 	}),
 	getAxisTokens: vi.fn().mockReturnValue([]),
 	getTaskTokens: vi.fn().mockReturnValue([]),

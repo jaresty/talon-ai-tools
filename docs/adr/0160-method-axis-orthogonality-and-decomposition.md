@@ -35,27 +35,27 @@ The remaining sections adopt single-syllable, pronounceable token names for each
 
 | New Token | Role | Former Working Name |
 | --- | --- | --- |
-| `step` | stage narration | stage-trace |
-| `trail` | audit checkpoints | audit-trace |
-| `line` | linear sequencing | sequence-flow |
-| `pass` | dependency handoff | handoff-flow |
-| `wave` | channel encoding/decoding | channel-trans |
+| `stow` | stage narration | stage-trace |
+| `merk` | audit checkpoints | audit-trace |
+| `lane` | linear sequencing | sequence-flow |
+| `slot` | dependency handoff | handoff-flow |
+| `pulse` | channel encoding/decoding | channel-trans |
 | `snag` | boundary coupling detection | detect-entangle |
 | `mesh` | coupling analysis detail | analyze-entangle |
 | `shear` | boundary mitigation | mitigate-entangle |
-| `leak` | scope-creep detection | spill-detect |
-| `gauge` | spill impact scoring | spill-impact |
+| `seep` | scope-creep detection | spill-detect |
+| `toll` | spill impact scoring | spill-impact |
 | `dam` | containment planning | spill-contain |
-| `push` | force mapping | force-map |
-| `weigh` | trade-off evaluation | trade-evaluate |
-| `poise` | decision equilibrium | decision-balance |
-| `pull` | attractor/repeller modeling | polarize |
-| `fork` | branch generation | diverge-branch |
+| `thrust` | force mapping | force-map |
+| `sift` | trade-off evaluation | trade-evaluate |
+| `stead` | decision equilibrium | decision-balance |
+| `mag` | attractor/repeller modeling | polarize |
+| `spur` | branch generation | diverge-branch |
 | `cull` | branch pruning | prune-branch |
-| `scan` | option enumeration | option-explore |
-| `pair` | compare decomposed parts | split-compare |
+| `sweep` | option enumeration | option-explore |
+| `twin` | compare decomposed parts | split-compare |
 | `prep` | experiment design | design-experiment |
-| `test` | experiment evaluation | evaluate-experiment |
+| `vet` | experiment evaluation | evaluate-experiment |
 | `root` | canonical locus declaration | declare-canon |
 | `forge` | constructive derivation | prove-derive |
 | `bind` | dependency enforcement | enforce-depends |
@@ -67,9 +67,9 @@ The remaining sections adopt single-syllable, pronounceable token names for each
 
 | Current Token | Embedded Responsibilities | Proposed Split | Resulting Behavior |
 | --- | --- | --- | --- |
-| `trace` | (a) Step-by-step transformation narration, (b) audit trail / verification checkpoints | `step` (narrate control/data progression), `trail` (capture evidence + checkpoints) | Users can narrate process without implying audit artifacts, or attach audits to other methods without forcing stage narration.
-| `flow` | (a) Control/data sequencing, (b) dependency transfer semantics | `line` (linear stage articulation), `pass` (emphasize dependency transfer rules) | Sequencing orthogonal to governance of handoffs.
-| `trans` | (a) Shannon-style channel modeling, (b) multi-stage staging | `wave` (encode/decoding/noise modeling), reuse `step` if stage narrative needed | Communication semantics separated from stage depth.
+| `trace` | (a) Step-by-step transformation narration, (b) audit trail / verification checkpoints | `stow` (narrate control/data progression), `merk` (capture evidence + checkpoints) | Users can narrate process without implying audit artifacts, or attach audits to other methods without forcing stage narration.
+| `flow` | (a) Control/data sequencing, (b) dependency transfer semantics | `lane` (linear stage articulation), `slot` (emphasize dependency transfer rules) | Sequencing orthogonal to governance of handoffs.
+| `trans` | (a) Shannon-style channel modeling, (b) multi-stage staging | `pulse` (encode/decoding/noise modeling), reuse `stow` if stage narrative needed | Communication semantics separated from stage depth.
 
 Artifacts: staging tokens require “sequence diagram / timeline” slots; audit tokens require “evidence table / checkpoints”. Channels/forms/completeness can now reason about each independently.
 
@@ -78,7 +78,7 @@ Artifacts: staging tokens require “sequence diagram / timeline” slots; audit
 | Current Token | Responsibilities | Proposed Split |
 | --- | --- | --- |
 | `entangle` | (a) Identify mixed domains, (b) describe coupling effects, (c) prescribe separation strategies | `snag` (surface coupled domains), `mesh` (detail interaction effects), `shear` (suggest boundary adjustments) |
-| `spill` | (a) Describe scope creep, (b) evaluate risk, (c) propose containment | `leak`, `gauge`, `dam` |
+| `spill` | (a) Describe scope creep, (b) evaluate risk, (c) propose containment | `seep`, `toll`, `dam` |
 | `bound` / `sever` | Already emphasize enforcement; keep as “boundary enforcement” tokens once detection/analysis split off |
 
 Result: user combines `detect-entangle` + `spill-impact` when they only need analysis, adding `mitigate-entangle` or `bound` when separation is desired. Each token now maps to a single operation family (detection vs governance enforcement vs mitigation planning).
@@ -86,25 +86,25 @@ Result: user combines `detect-entangle` + `spill-impact` when they only need ana
 ### 3. Force Enumeration vs Adjudication (`trade`, `balance`, `polar`, `effects`, `grove`)
 
 - **New tokens:**
-  - `push` – catalog competing pressures / actors (propagation & force family).
-  - `weigh` – compare alternatives across explicit criteria without modeling forces.
-  - `pull` becomes pure attractor/repeller modeling; adjudication handled by `poise`.
+  - `thrust` – catalog competing pressures / actors (propagation & force family).
+  - `sift` – compare alternatives across explicit criteria without modeling forces.
+  - `mag` becomes pure attractor/repeller modeling; adjudication handled by `stead`.
 
 | Current | New Atomic Tokens | Notes |
 | --- | --- | --- |
-| `trade` | `push` + `weigh` | `push` describes axes/pressures; `weigh` handles scorecards/choices.
-| `balance` | `push` + `poise` | Distinguish between visualizing equilibrium vs deciding tolerance.
-| `polar` | `pull` (pure attractor/repeller description) + optional `push` | Removes comparison step from `polar`.
-| `effects`/`grove` | remain propagation tokens but can optionally reference `push` when higher-order analysis needed |
+| `trade` | `thrust` + `sift` | `thrust` describes axes/pressures; `sift` handles scorecards/choices.
+| `balance` | `thrust` + `stead` | Distinguish between visualizing equilibrium vs deciding tolerance.
+| `polar` | `mag` (pure attractor/repeller description) + optional `thrust` | Removes comparison step from `polar`.
+| `effects`/`grove` | remain propagation tokens but can optionally reference `thrust` when higher-order analysis needed |
 
 ### 4. Divergence vs Evaluation (`branch`, `explore`, `split`, `experimental`)
 
 | Current | Responsibilities | Proposed Tokens |
 | --- | --- | --- |
-| `branch` | (a) generate parallel reasoning paths, (b) compare/prune | `fork` (generate structured hypotheses), `cull` (evaluate/prune branches) |
-| `explore` | (a) enumerate option space, (b) highlight criteria | `scan` (breadth-first listing), reuse `cull` or `weigh` for comparison |
-| `split` | (a) decomposition, (b) isolated analysis | Keep `split` as pure decomposition token; create `pair` if cross-analysis needed |
-| `experimental` | (a) design experiments, (b) specify evaluation rubrics | `prep` (setups only), `test` (criteria + next steps) |
+| `branch` | (a) generate parallel reasoning paths, (b) compare/prune | `spur` (generate structured hypotheses), `cull` (evaluate/prune branches) |
+| `explore` | (a) enumerate option space, (b) highlight criteria | `sweep` (breadth-first listing), reuse `cull` or `sift` for comparison |
+| `split` | (a) decomposition, (b) isolated analysis | Keep `split` as pure decomposition token; create `twin` if cross-analysis needed |
+| `experimental` | (a) design experiments, (b) specify evaluation rubrics | `prep` (setups only), `vet` (criteria + next steps) |
 
 This separation allows users to call only the generation half (diverge) or only the evaluation half (compare/prune), enabling orthogonal assembly with other method tokens.
 
@@ -128,6 +128,7 @@ This separation allows users to call only the generation half (diverge) or only 
 2. **Recipe clarity:** former bundle recipes (Decision-Making, Architecture Documentation) now reference atomic tokens (e.g., `diverge-branch` + `prune-branch` + `trade-evaluate`) making the composition explicit.
 3. **Cross-axis constraints:** completeness/channel rules can target the new atomic tokens directly (e.g., `stage-trace` requires expandable channel; `audit-trace` requires completeness ≥ full), simplifying guardrails.
 4. **Migration path:** existing tokens become aliases pointing to combinations of the new tokens during transition (e.g., selecting legacy `trace` inserts `stage-trace + audit-trace`).
+5. **Optional pruning:** when a bundled token’s secondary responsibility offers low marginal value, drop that behavior instead of introducing a new token (e.g., keep `line` but retire `pass` if dependency handoffs rarely matter). This prevents token explosion while still enforcing single-concept semantics.
 
 ## Next Steps
 1. Annotate each current token with operation-family flags to confirm decomposition targets.

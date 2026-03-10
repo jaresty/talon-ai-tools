@@ -312,6 +312,21 @@
 	let activeTab = $state('task');
 	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
 	let fabOpen = $state(false); // FAB menu state
+	let reviewPanelHeight = $state(0); // Tracks review panel height for dynamic layout padding
+	let hasSelectedTokens = $derived(Object.values(selected).some((toks) => toks.length > 0));
+	let previewPanelEl = $state<HTMLElement | null>(null);
+
+	$effect(() => {
+		if (!previewPanelEl) return;
+		const update = () => {
+			const rect = previewPanelEl!.getBoundingClientRect();
+			const available = window.innerHeight - Math.max(rect.top, 16) - (reviewPanelHeight + 16);
+			previewPanelEl!.style.maxHeight = available + 'px';
+		};
+		window.addEventListener('scroll', update, { passive: true });
+		update();
+		return () => window.removeEventListener('scroll', update);
+	});
 	let hoveredDistinctionPreset = $state<string | null>(null);
 
 
@@ -408,7 +423,7 @@
 	}
 </script>
 
-<div class="layout" bind:this={layoutEl}>
+<div class="layout" bind:this={layoutEl} style:padding-bottom="{reviewPanelHeight + 16}px" style:--review-h="{reviewPanelHeight + 16}px">
 	<header>
 		<h1>Bar Prompt Builder</h1>
 		<p class="subtitle">Token composition for structured prompts</p>
@@ -686,21 +701,9 @@
 				{showPreview ? 'Hide Output' : 'Show Output'}
 			</button>
 
-			<section class="preview-panel" class:visible={showPreview}>
-				<!-- Conflict warnings -->
-				{#if conflicts.length > 0}
-					<div class="conflicts">
-						<div class="conflicts-header">⚠ Incompatible tokens</div>
-						{#each conflicts as c}
-							<div class="conflict-row">
-								<code>{c.tokenA}</code> conflicts with <code>{c.tokenB}</code>
-							</div>
-						{/each}
-					</div>
-				{/if}
-
+			<section class="preview-panel" class:visible={showPreview} bind:this={previewPanelEl}>
 				<!-- Command preview -->
-				<div class="command-box" class:has-conflicts={conflicts.length > 0}>
+				<div class="command-box">
 					<div class="command-label">Command</div>
 					<code class="command">{command}</code>
 					<!-- Desktop action row (always visible on desktop) -->
@@ -750,34 +753,42 @@
 					</label>
 				</div>
 
-				<!-- Selected token chips -->
-				{#if Object.values(selected).some((toks) => toks.length > 0)}
-					<div class="selected-chips">
-						{#each Object.entries(selected) as [axis, tokens]}
-							{#each tokens as token (token)}
-								<span
-									class="selected-chip"
-									role="button"
-									tabindex="0"
-									onclick={() => toggle(axis, token)}
-									onkeydown={(e) => {
-										if (e.key === 'Enter' || e.key === ' ') {
-											e.preventDefault();
-											toggle(axis, token);
-										}
-									}}
-								>
-									{token} ×
-								</span>
-							{/each}
-						{/each}
-					</div>
-				{/if}
-
 				<LLMPanel {command} {subject} {addendum} />
 			</section>
 		</div>
 	{/if}
+
+	<!-- ADR-0157: Selected Token Review Panel - fixed bottom bar -->
+	<div
+		class="review-panel"
+		class:review-panel-empty={!hasSelectedTokens}
+		bind:clientHeight={reviewPanelHeight}
+	>
+		{#if hasSelectedTokens}
+			{#each Object.entries(selected) as [axis, tokens]}
+				{#each tokens as token (token)}
+					{@const isConflict = conflicts.some(c => c.tokenA === token || c.tokenB === token)}
+					<button
+						class="review-panel-chip"
+						class:conflict={isConflict}
+						tabindex="0"
+						onclick={() => toggle(axis, token)}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								toggle(axis, token);
+							}
+						}}
+					>
+						{axis}={token}
+						{#if isConflict} ⚠{/if}
+					</button>
+				{/each}
+			{/each}
+		{:else}
+			Select tokens from the axes above
+		{/if}
+	</div>
 
 	<!-- FAB and mobile action overlay — always accessible, outside preview panel -->
 	<button class="fab-btn" onclick={() => { if (Date.now() - swipeCompletedAt >= 600) fabOpen = !fabOpen; }} aria-label="Actions">
@@ -836,6 +847,26 @@
 	.preview-panel {
 		position: sticky;
 		top: 1rem;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-border) transparent;
+	}
+
+	.preview-panel::-webkit-scrollbar {
+		width: 4px;
+	}
+
+	.preview-panel::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.preview-panel::-webkit-scrollbar-thumb {
+		background: var(--color-border);
+		border-radius: 2px;
+	}
+
+	.preview-panel::-webkit-scrollbar-thumb:hover {
+		background: var(--color-accent-muted);
 	}
 
 	.preview-toggle {
@@ -851,29 +882,6 @@
 		margin-bottom: 1rem;
 	}
 
-	.preview-panel.hidden {
-		display: none;
-	}
-
-	/* Conflicts */
-	.conflicts {
-		background: #2a1f10;
-		border: 1px solid var(--color-warning);
-		border-radius: var(--radius);
-		padding: 0.75rem;
-		margin-bottom: 0.75rem;
-		font-size: 0.82rem;
-	}
-
-	.conflicts-header {
-		color: var(--color-warning);
-		font-weight: 600;
-		margin-bottom: 0.4rem;
-	}
-
-	.conflict-row { color: var(--color-text-muted); margin-top: 0.25rem; }
-	.conflict-row code { color: var(--color-warning); font-family: var(--font-mono); }
-
 	/* Command box */
 	.command-box {
 		background: var(--color-surface);
@@ -882,8 +890,6 @@
 		padding: 1rem;
 		margin-bottom: 0.75rem;
 	}
-
-	.command-box.has-conflicts { border-color: var(--color-warning); }
 
 	.command-label {
 		font-size: 0.75rem;
@@ -907,6 +913,11 @@
 		display: flex;
 		gap: 0.5rem;
 		flex-wrap: wrap;
+	}
+
+	/* Mobile action overlay hidden on desktop; shown via .mobile-visible in media query */
+	.action-row.action-overlay {
+		display: none;
 	}
 
 	.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .clear-btn {
@@ -935,6 +946,50 @@
 	}
 
 	.clear-btn:hover { border-color: #f7768e; color: #f7768e; }
+
+	/* ADR-0157: Review Panel */
+	.review-panel {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: var(--color-bg);
+		border-top: 1px solid var(--color-border);
+		padding: 0.5rem 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		z-index: 100;
+		max-height: 30vh;
+		overflow-y: auto;
+	}
+
+	.review-panel-empty {
+		color: var(--color-text-muted);
+		font-size: 0.85rem;
+		justify-content: center;
+	}
+
+	.review-panel-chip {
+		background: var(--color-accent);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		padding: 0.25rem 0.5rem;
+		font-size: 0.8rem;
+		font-family: var(--font-mono);
+		color: var(--color-text);
+		cursor: pointer;
+	}
+
+	.review-panel-chip:hover {
+		background: #6b3040;
+		border-color: #f7768e;
+	}
+
+	.review-panel-chip.conflict {
+		opacity: 0.6;
+		text-decoration: line-through;
+	}
 
 	.fab-btn {
 		display: none;
@@ -1013,22 +1068,6 @@
 		outline: none;
 		border-color: var(--color-accent-muted);
 	}
-
-	/* Selected chips */
-	.selected-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-
-	.selected-chip {
-		padding: 0.2rem 0.5rem;
-		background: var(--color-accent-muted);
-		border: 1px solid var(--color-accent);
-		border-radius: var(--radius);
-		font-family: var(--font-mono);
-		font-size: 0.8rem;
-		cursor: pointer;
-		user-select: none;
-	}
-
-	.selected-chip:hover { background: #6b3040; border-color: #f7768e; }
 
 	/* Persona */
 	.persona-section {
@@ -1417,6 +1456,11 @@
 	}
 
 	@media (max-width: 767px) {
+		/* FAB clearance: prevent chips from hiding under the fixed bottom-right FAB */
+		.review-panel {
+			padding-right: 4rem;
+		}
+
 		.preview-toggle {
 			display: block;
 		}
@@ -1514,13 +1558,6 @@
 		.persona-chip {
 			min-height: 44px;
 			padding: 0.5rem 0.75rem;
-		}
-
-		.selected-chip {
-			min-height: 44px;
-			padding: 0.5rem 0.75rem;
-			display: inline-flex;
-			align-items: center;
 		}
 
 		.load-cmd-toggle {

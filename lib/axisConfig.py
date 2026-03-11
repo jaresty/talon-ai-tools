@@ -321,6 +321,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
         "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across "
         "partitions—without primarily analyzing internal arrangement or recurring structural form.",
+        "dam": "The response focuses on containment boundaries — what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between what belongs "
+        "inside versus outside a defined scope.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure "
         "modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting "
@@ -514,6 +516,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "agent": "Actors with agency and decision-making",
         "assume": "Premises and preconditions",
         "cross": "Cross-cutting concerns spanning modules",
+        "dam": "Containment boundaries and limits",
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
@@ -741,6 +744,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "agent": "主",
         "assume": "仮",
         "cross": "横",
+        "dam": "圏",
         "fail": "敗",
         "good": "良",
         "mean": "意",
@@ -1026,6 +1030,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "agent": "Actors with agency",
         "assume": "Premises/preconditions",
         "cross": "Cross-cutting concerns",
+        "dam": "Containment and boundaries",
         "fail": "Failure modes",
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
@@ -5071,6 +5076,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "horizontal concern",
                 "error handling across our codebase",
                 "where does X live across the system",
+            ],
+        },
+        "dam": {
+            "definition": "Containment boundaries focus: what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between inside versus "
+            "outside.",
+            "distinctions": [
+                {
+                    "note": "dam = containment boundaries describing what stays in/out; bound (method) = introducing or reinforcing limits on propagation",
+                    "token": "bound",
+                }
+            ],
+            "heuristics": [
+                "what stays in scope",
+                "what is kept out",
+                "boundaries",
+                "containment",
+                "what's inside vs outside",
+                "scope limits",
+                "what belongs in this domain",
+                "what's excluded",
+                "where do we draw the line",
             ],
         },
         "fail": {

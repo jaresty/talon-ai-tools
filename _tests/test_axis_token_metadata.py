@@ -13,7 +13,16 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-3: completeness axis has structured metadata for all 7 tokens."""
 
     AXIS = "completeness"
-    EXPECTED_TOKENS = {"deep", "full", "gist", "grow", "max", "minimal", "narrow", "skim"}
+    EXPECTED_TOKENS = {
+        "deep",
+        "full",
+        "gist",
+        "grow",
+        "max",
+        "minimal",
+        "narrow",
+        "skim",
+    }
 
     def setUp(self):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
@@ -35,27 +44,45 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
                 self.assertIn("definition", data, f"{token} must have definition")
                 self.assertIn("heuristics", data, f"{token} must have heuristics")
                 self.assertIn("distinctions", data, f"{token} must have distinctions")
-                self.assertIsInstance(data["definition"], str, f"{token} definition must be str")
-                self.assertTrue(data["definition"].strip(), f"{token} definition must not be empty")
-                self.assertIsInstance(data["heuristics"], list, f"{token} heuristics must be list")
-                self.assertGreater(len(data["heuristics"]), 0, f"{token} must have at least one heuristic")
-                self.assertIsInstance(data["distinctions"], list, f"{token} distinctions must be list")
+                self.assertIsInstance(
+                    data["definition"], str, f"{token} definition must be str"
+                )
+                self.assertTrue(
+                    data["definition"].strip(), f"{token} definition must not be empty"
+                )
+                self.assertIsInstance(
+                    data["heuristics"], list, f"{token} heuristics must be list"
+                )
+                self.assertGreater(
+                    len(data["heuristics"]),
+                    0,
+                    f"{token} must have at least one heuristic",
+                )
+                self.assertIsInstance(
+                    data["distinctions"], list, f"{token} distinctions must be list"
+                )
                 for d in data["distinctions"]:
-                    self.assertIn("token", d, f"{token} distinction must have token key")
+                    self.assertIn(
+                        "token", d, f"{token} distinction must have token key"
+                    )
                     self.assertIn("note", d, f"{token} distinction must have note key")
 
     def test_gist_distinguishes_from_skim(self):
         """gist must distinguish itself from skim (gist=brief but complete; skim=light pass)."""
         gist = self.meta.get("gist", {})
         distinction_tokens = [d["token"] for d in gist.get("distinctions", [])]
-        self.assertIn("skim", distinction_tokens, "gist distinctions must reference skim")
+        self.assertIn(
+            "skim", distinction_tokens, "gist distinctions must reference skim"
+        )
 
     def test_full_distinguishes_from_max_and_deep(self):
         """full must distinguish from both max and deep."""
         full = self.meta.get("full", {})
         distinction_tokens = [d["token"] for d in full.get("distinctions", [])]
         self.assertIn("max", distinction_tokens, "full distinctions must reference max")
-        self.assertIn("deep", distinction_tokens, "full distinctions must reference deep")
+        self.assertIn(
+            "deep", distinction_tokens, "full distinctions must reference deep"
+        )
 
 
 class ChannelAxisMetadataTests(unittest.TestCase):
@@ -63,9 +90,24 @@ class ChannelAxisMetadataTests(unittest.TestCase):
 
     AXIS = "channel"
     EXPECTED_TOKENS = {
-        "adr", "code", "codetour", "diagram", "gherkin", "html", "image",
-        "jira", "notebook", "plain", "presenterm", "remote", "shellscript",
-        "sketch", "slack", "svg", "sync", "video",
+        "adr",
+        "code",
+        "codetour",
+        "diagram",
+        "gherkin",
+        "html",
+        "image",
+        "jira",
+        "notebook",
+        "plain",
+        "presenterm",
+        "remote",
+        "shellscript",
+        "sketch",
+        "slack",
+        "svg",
+        "sync",
+        "video",
     }
 
     def setUp(self):
@@ -88,20 +130,30 @@ class ChannelAxisMetadataTests(unittest.TestCase):
                 self.assertIn("definition", data, f"{token} must have definition")
                 self.assertIn("heuristics", data, f"{token} must have heuristics")
                 self.assertIn("distinctions", data, f"{token} must have distinctions")
-                self.assertTrue(data["definition"].strip(), f"{token} definition must not be empty")
-                self.assertGreater(len(data["heuristics"]), 0, f"{token} must have at least one heuristic")
+                self.assertTrue(
+                    data["definition"].strip(), f"{token} definition must not be empty"
+                )
+                self.assertGreater(
+                    len(data["heuristics"]),
+                    0,
+                    f"{token} must have at least one heuristic",
+                )
 
     def test_sketch_distinguishes_from_diagram(self):
         """sketch must distinguish from diagram (sketch=D2; diagram=Mermaid)."""
         sketch = self.meta.get("sketch", {})
         distinction_tokens = [d["token"] for d in sketch.get("distinctions", [])]
-        self.assertIn("diagram", distinction_tokens, "sketch distinctions must reference diagram")
+        self.assertIn(
+            "diagram", distinction_tokens, "sketch distinctions must reference diagram"
+        )
 
     def test_presenterm_distinguishes_from_sync(self):
         """presenterm must distinguish from sync (presenterm=deck artifact; sync=session plan)."""
         presenterm = self.meta.get("presenterm", {})
         distinction_tokens = [d["token"] for d in presenterm.get("distinctions", [])]
-        self.assertIn("sync", distinction_tokens, "presenterm distinctions must reference sync")
+        self.assertIn(
+            "sync", distinction_tokens, "presenterm distinctions must reference sync"
+        )
 
 
 class DirectionalAxisMetadataTests(unittest.TestCase):
@@ -109,10 +161,22 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
 
     AXIS = "directional"
     EXPECTED_TOKENS = {
-        "bog", "dig", "dip bog", "dip ong", "dip rog",
-        "fig", "fip bog", "fip ong", "fip rog",
-        "fly bog", "fly ong", "fly rog",
-        "fog", "jog", "ong", "rog",
+        "bog",
+        "dig",
+        "dip bog",
+        "dip ong",
+        "dip rog",
+        "fig",
+        "fip bog",
+        "fip ong",
+        "fip rog",
+        "fly bog",
+        "fly ong",
+        "fly rog",
+        "fog",
+        "jog",
+        "ong",
+        "rog",
     }
 
     def setUp(self):
@@ -135,8 +199,14 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
                 self.assertIn("definition", data)
                 self.assertIn("heuristics", data)
                 self.assertIn("distinctions", data)
-                self.assertTrue(data["definition"].strip(), f"{token} definition must not be empty")
-                self.assertGreater(len(data["heuristics"]), 0, f"{token} must have at least one heuristic")
+                self.assertTrue(
+                    data["definition"].strip(), f"{token} definition must not be empty"
+                )
+                self.assertGreater(
+                    len(data["heuristics"]),
+                    0,
+                    f"{token} must have at least one heuristic",
+                )
 
     def test_bog_distinguishes_from_rog_and_ong(self):
         """bog must distinguish from both rog and ong (bog = full horizontal span)."""
@@ -154,12 +224,24 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
 
 
 class ScopeAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-6: scope axis has structured metadata for all 13 tokens."""
+    """ADR-0155 T-6: scope axis has structured metadata for all 14 tokens."""
 
     AXIS = "scope"
     EXPECTED_TOKENS = {
-        "act", "agent", "assume", "cross", "fail", "good",
-        "mean", "motifs", "stable", "struct", "thing", "time", "view",
+        "act",
+        "agent",
+        "assume",
+        "cross",
+        "dam",
+        "fail",
+        "good",
+        "mean",
+        "motifs",
+        "stable",
+        "struct",
+        "thing",
+        "time",
+        "view",
     }
 
     def setUp(self):
@@ -195,8 +277,12 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         """cross must distinguish from both struct and motifs."""
         cross = self.meta.get("cross", {})
         distinction_tokens = [d["token"] for d in cross.get("distinctions", [])]
-        self.assertIn("struct", distinction_tokens, "cross must distinguish from struct")
-        self.assertIn("motifs", distinction_tokens, "cross must distinguish from motifs")
+        self.assertIn(
+            "struct", distinction_tokens, "cross must distinguish from struct"
+        )
+        self.assertIn(
+            "motifs", distinction_tokens, "cross must distinguish from motifs"
+        )
 
 
 class FormAxisMetadataTests(unittest.TestCase):
@@ -204,11 +290,40 @@ class FormAxisMetadataTests(unittest.TestCase):
 
     AXIS = "form"
     EXPECTED_TOKENS = {
-        "actions", "activities", "bug", "bullets", "cards", "case", "checklist",
-        "cocreate", "commit", "contextualise", "direct", "facilitate", "faq",
-        "formats", "indirect", "ladder", "log", "merge", "questions", "quiz",
-        "recipe", "scaffold", "socratic", "spike", "story", "table", "taxonomy",
-        "test", "tight", "variants", "visual", "walkthrough", "wardley", "wasinawa",
+        "actions",
+        "activities",
+        "bug",
+        "bullets",
+        "cards",
+        "case",
+        "checklist",
+        "cocreate",
+        "commit",
+        "contextualise",
+        "direct",
+        "facilitate",
+        "faq",
+        "formats",
+        "indirect",
+        "ladder",
+        "log",
+        "merge",
+        "questions",
+        "quiz",
+        "recipe",
+        "scaffold",
+        "socratic",
+        "spike",
+        "story",
+        "table",
+        "taxonomy",
+        "test",
+        "tight",
+        "variants",
+        "visual",
+        "walkthrough",
+        "wardley",
+        "wasinawa",
     }
 
     def setUp(self):
@@ -238,19 +353,25 @@ class FormAxisMetadataTests(unittest.TestCase):
         """direct must distinguish from indirect."""
         direct = self.meta.get("direct", {})
         distinction_tokens = [d["token"] for d in direct.get("distinctions", [])]
-        self.assertIn("indirect", distinction_tokens, "direct must distinguish from indirect")
+        self.assertIn(
+            "indirect", distinction_tokens, "direct must distinguish from indirect"
+        )
 
     def test_visual_distinguishes_from_diagram(self):
         """visual must distinguish from diagram channel."""
         visual = self.meta.get("visual", {})
         distinction_tokens = [d["token"] for d in visual.get("distinctions", [])]
-        self.assertIn("diagram", distinction_tokens, "visual must distinguish from diagram")
+        self.assertIn(
+            "diagram", distinction_tokens, "visual must distinguish from diagram"
+        )
 
     def test_socratic_distinguishes_from_questions(self):
         """socratic must distinguish from questions form."""
         socratic = self.meta.get("socratic", {})
         distinction_tokens = [d["token"] for d in socratic.get("distinctions", [])]
-        self.assertIn("questions", distinction_tokens, "socratic must distinguish from questions")
+        self.assertIn(
+            "questions", distinction_tokens, "socratic must distinguish from questions"
+        )
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
@@ -258,18 +379,87 @@ class MethodAxisMetadataTests(unittest.TestCase):
 
     AXIS = "method"
     EXPECTED_TOKENS = {
-        "abduce", "actors", "adversarial", "afford", "align", "amorph", "analog",
-        "analysis", "argue", "balance", "bias", "boom", "bound", "calc",
-        "cite", "clash", "cluster", "compare", "control", "converge",
-        "crystal", "deduce", "depends", "diagnose", "dimension", "domains",
-        "drift", "effects", "experimental", "field", "flow",
-        "forge", "gap", "ground", "grove", "induce", "inversion", "jobs", "mapping", "meld",
-        "melody", "mesh", "merk", "migrate", "mod", "models", "objectivity", "operations",
-        "order", "origin", "observe", "perturb", "polar", "preserve", "prioritize",
-        "probability", "product", "pulse", "reify",
-        "release", "resilience", "reset", "rigor", "risks", "robust", "root",
-        "seep", "sever", "shear", "shift", "simulation", "snag", "split", "spur",
-        "sweep", "systemic", "thrust", "trace", "triage", "unknowns", "verify",
+        "abduce",
+        "actors",
+        "adversarial",
+        "afford",
+        "align",
+        "amorph",
+        "analog",
+        "analysis",
+        "argue",
+        "balance",
+        "bias",
+        "boom",
+        "bound",
+        "calc",
+        "cite",
+        "clash",
+        "cluster",
+        "compare",
+        "control",
+        "converge",
+        "crystal",
+        "deduce",
+        "depends",
+        "diagnose",
+        "dimension",
+        "domains",
+        "drift",
+        "effects",
+        "experimental",
+        "field",
+        "flow",
+        "forge",
+        "gap",
+        "ground",
+        "grove",
+        "induce",
+        "inversion",
+        "jobs",
+        "mapping",
+        "meld",
+        "melody",
+        "mesh",
+        "merk",
+        "migrate",
+        "mod",
+        "models",
+        "objectivity",
+        "operations",
+        "order",
+        "origin",
+        "observe",
+        "perturb",
+        "polar",
+        "preserve",
+        "prioritize",
+        "probability",
+        "product",
+        "pulse",
+        "reify",
+        "release",
+        "resilience",
+        "reset",
+        "rigor",
+        "risks",
+        "robust",
+        "root",
+        "seep",
+        "sever",
+        "shear",
+        "shift",
+        "simulation",
+        "snag",
+        "split",
+        "spur",
+        "sweep",
+        "systemic",
+        "thrust",
+        "trace",
+        "triage",
+        "unknowns",
+        "verify",
     }
 
     def setUp(self):
@@ -299,19 +489,25 @@ class MethodAxisMetadataTests(unittest.TestCase):
         """abduce must distinguish from diagnose (abduce=compare hypotheses; diagnose=narrow to one)."""
         abduce = self.meta.get("abduce", {})
         distinction_tokens = [d["token"] for d in abduce.get("distinctions", [])]
-        self.assertIn("diagnose", distinction_tokens, "abduce must distinguish from diagnose")
+        self.assertIn(
+            "diagnose", distinction_tokens, "abduce must distinguish from diagnose"
+        )
 
     def test_diagnose_distinguishes_from_abduce(self):
         """diagnose must distinguish from abduce."""
         diagnose = self.meta.get("diagnose", {})
         distinction_tokens = [d["token"] for d in diagnose.get("distinctions", [])]
-        self.assertIn("abduce", distinction_tokens, "diagnose must distinguish from abduce")
+        self.assertIn(
+            "abduce", distinction_tokens, "diagnose must distinguish from abduce"
+        )
 
     def test_compare_distinguishes_from_converge(self):
         """compare must distinguish from converge."""
         compare = self.meta.get("compare", {})
         distinction_tokens = [d["token"] for d in compare.get("distinctions", [])]
-        self.assertIn("converge", distinction_tokens, "compare must distinguish from converge")
+        self.assertIn(
+            "converge", distinction_tokens, "compare must distinguish from converge"
+        )
 
 
 if __name__ == "__main__":

@@ -176,6 +176,7 @@
         "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
         "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
+        "dam": "The response focuses on containment boundaries — what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between what belongs inside versus outside a defined scope.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
         "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
@@ -360,6 +361,7 @@
         "agent",
         "assume",
         "cross",
+        "dam",
         "fail",
         "good",
         "mean",
@@ -540,6 +542,7 @@
         "agent": "Actors with agency and decision-making",
         "assume": "Premises and preconditions",
         "cross": "Cross-cutting concerns spanning modules",
+        "dam": "Containment boundaries and limits",
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
@@ -716,6 +719,7 @@
         "agent": "主",
         "assume": "仮",
         "cross": "横",
+        "dam": "圏",
         "fail": "敗",
         "good": "良",
         "mean": "意",
@@ -978,6 +982,7 @@
         "agent": "Actors with agency",
         "assume": "Premises/preconditions",
         "cross": "Cross-cutting concerns",
+        "dam": "Containment and boundaries",
         "fail": "Failure modes",
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
@@ -4036,6 +4041,26 @@
             "where does X live across the system"
           ]
         },
+        "dam": {
+          "definition": "Containment boundaries focus: what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between inside versus outside.",
+          "distinctions": [
+            {
+              "note": "dam = containment boundaries describing what stays in/out; bound (method) = introducing or reinforcing limits on propagation",
+              "token": "bound"
+            }
+          ],
+          "heuristics": [
+            "what stays in scope",
+            "what is kept out",
+            "boundaries",
+            "containment",
+            "what's inside vs outside",
+            "scope limits",
+            "what belongs in this domain",
+            "what's excluded",
+            "where do we draw the line"
+          ]
+        },
         "fail": {
           "definition": "Failure modes, breakdowns, and limits focus: how and when something stops working, what the edge cases are, or where fragility lives.",
           "distinctions": [
@@ -6468,6 +6493,7 @@
         "agent": "agent",
         "assume": "assume",
         "cross": "cross",
+        "dam": "dam",
         "fail": "fail",
         "good": "good",
         "mean": "mean",
@@ -6585,6 +6611,7 @@
         "scope=agent": "scope-agent",
         "scope=assume": "scope-assume",
         "scope=cross": "scope-cross",
+        "scope=dam": "scope-dam",
         "scope=fail": "scope-fail",
         "scope=good": "scope-good",
         "scope=mean": "scope-mean",
@@ -6897,6 +6924,7 @@
       "converge": "converge",
       "cross": "cross",
       "crystal": "crystal",
+      "dam": "dam",
       "deduce": "deduce",
       "deep": "deep",
       "depends": "depends",
@@ -7152,6 +7180,7 @@
       "scope=agent": "scope-agent",
       "scope=assume": "scope-assume",
       "scope=cross": "scope-cross",
+      "scope=dam": "scope-dam",
       "scope=fail": "scope-fail",
       "scope=good": "scope-good",
       "scope=mean": "scope-mean",
@@ -7993,11 +8022,11 @@
     }
   ],
   "checksums": {
-    "axes": "bf21644fea71acf696f8d8fb07396deb9ac2243efd9daf8b8e8e2152d2e3669c",
+    "axes": "d5ce5687de2a68cf297fab8309e2869b3b9944694b68f59bf05901a65f81a57b",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "c9a05807ae46fa11803babfbe0bc662c30749da72d30d8d6e82c8e2a27f78cfa",
+    "slugs": "7a78932f02ece905b78ba2a95f5d2212ec5e327cab25b161627488d9f4394214",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

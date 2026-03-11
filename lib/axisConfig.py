@@ -285,6 +285,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
+        "ritual": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized procedures.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
         "forecast.",
         "root": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to "
@@ -312,6 +313,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
         "the layer those tests must satisfy.",
+        "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "
@@ -493,6 +495,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "resilience": "Behavior under stress and recovery",
         "rigor": "Disciplined, well-justified reasoning",
         "risks": "Potential problems and failure modes",
+        "ritual": "Structure via established roles and procedures",
         "robust": "Reason under deep uncertainty",
         "root": "Reduce multiple representations to a single authoritative source",
         "seep": "Identify scope overreach",
@@ -510,6 +513,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "triage": "Triage by consequence×uncertainty gradient",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
+        "yield": "Minimal action, allow natural resolution",
     },
     "scope": {
         "act": "Tasks and intended actions",
@@ -674,6 +678,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "resilience": "耐",
         "rigor": "厳",
         "risks": "危",
+        "ritual": "礼",
         "robust": "堅",
         "root": "準",
         "seep": "溢",
@@ -691,6 +696,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "triage": "険",
         "unknowns": "未",
         "verify": "証",
+        "yield": "任",
     },
     "persona": {
         "audience": {
@@ -840,6 +846,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "resilience": "Diagnostic",
         "rigor": "Reasoning",
         "risks": "Diagnostic",
+        "ritual": "Social structure",
         "robust": "Diagnostic",
         "root": "Structural",
         "seep": "Diagnostic",
@@ -857,6 +864,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "triage": "Diagnostic",
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
+        "yield": "Minimal intervention",
     }
 }
 
@@ -4642,6 +4650,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "likelihood and severity",
             ],
         },
+        "ritual": {
+            "definition": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized "
+            "procedures.",
+            "distinctions": [
+                {
+                    "note": "ritual = structured by established roles and procedures; melody = coordination through timing and synchronization",
+                    "token": "melody",
+                }
+            ],
+            "heuristics": [
+                "follow established procedures",
+                "respect the roles",
+                "maintain social order",
+                "proper conduct",
+                "ritualized process",
+                "according to tradition",
+                "roles and responsibilities",
+            ],
+        },
         "robust": {
             "definition": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than "
             "optimizing for a single forecast.",
@@ -5004,6 +5031,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "pressure-test the conclusions",
                 "don't just assert — verify",
                 "what evidence would disprove this",
+            ],
+        },
+        "yield": {
+            "definition": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed "
+            "direction.",
+            "distinctions": [
+                {
+                    "note": "yield = allow natural resolution with minimal guidance; preserve = maintain compatibility with existing structures",
+                    "token": "preserve",
+                }
+            ],
+            "heuristics": [
+                "let it resolve naturally",
+                "minimal intervention",
+                "allow organic resolution",
+                "wu wei",
+                "don't force it",
+                "step back and let it unfold",
+                "guide without imposing",
             ],
         },
     },

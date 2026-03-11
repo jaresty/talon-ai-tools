@@ -551,6 +551,9 @@
 		{@const atCap = !isActiveSel && selected.length >= maxSelect && maxSelect > 1}
 		<div class="meta-panel" style={panelStyle}>
 			<div class="meta-header">
+				{#if activeMeta.kanji}
+					<span class="meta-kanji">{activeMeta.kanji}</span>
+				{/if}
 				<code class="meta-token">{activeMeta.token}</code>
 				{#if activeMeta.label}
 					<span class="meta-label">{activeMeta.label}</span>
@@ -848,6 +851,12 @@
 		font-family: var(--font-mono);
 		font-size: 0.85rem;
 		color: var(--color-accent);
+	}
+
+	.meta-kanji {
+		font-size: 1.5rem;
+		line-height: 1;
+		margin-right: 0.4rem;
 	}
 
 	.meta-label {

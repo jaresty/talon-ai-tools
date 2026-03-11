@@ -153,6 +153,7 @@
         "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
+        "ritual": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized procedures.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
         "root": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as independent causal or justificatory elements without specifying their dependency relationship.",
         "seep": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases coupling, ambiguity, or fragility.",
@@ -169,13 +170,15 @@
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural changes.",
         "triage": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
-        "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing the layer those tests must satisfy."
+        "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing the layer those tests must satisfy.",
+        "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction."
       },
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
         "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
         "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
+        "dam": "The response focuses on containment boundaries — what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between what belongs inside versus outside a defined scope.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
         "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
@@ -337,6 +340,7 @@
         "resilience",
         "rigor",
         "risks",
+        "ritual",
         "robust",
         "root",
         "seep",
@@ -353,13 +357,15 @@
         "trace",
         "triage",
         "unknowns",
-        "verify"
+        "verify",
+        "yield"
       ],
       "scope": [
         "act",
         "agent",
         "assume",
         "cross",
+        "dam",
         "fail",
         "good",
         "mean",
@@ -517,6 +523,7 @@
         "resilience": "Behavior under stress and recovery",
         "rigor": "Disciplined, well-justified reasoning",
         "risks": "Potential problems and failure modes",
+        "ritual": "Structure via established roles and procedures",
         "robust": "Reason under deep uncertainty",
         "root": "Reduce multiple representations to a single authoritative source",
         "seep": "Identify scope overreach",
@@ -533,13 +540,15 @@
         "trace": "Narrate sequential progression",
         "triage": "Triage by consequence×uncertainty gradient",
         "unknowns": "Surface critical unknown unknowns",
-        "verify": "Falsification pressure"
+        "verify": "Falsification pressure",
+        "yield": "Minimal action, allow natural resolution"
       },
       "scope": {
         "act": "Tasks and intended actions",
         "agent": "Actors with agency and decision-making",
         "assume": "Premises and preconditions",
         "cross": "Cross-cutting concerns spanning modules",
+        "dam": "Containment boundaries and limits",
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
@@ -693,6 +702,7 @@
         "resilience": "耐",
         "rigor": "厳",
         "risks": "危",
+        "ritual": "礼",
         "robust": "堅",
         "root": "準",
         "seep": "溢",
@@ -709,13 +719,15 @@
         "trace": "跡",
         "triage": "険",
         "unknowns": "未",
-        "verify": "証"
+        "verify": "証",
+        "yield": "任"
       },
       "scope": {
         "act": "為",
         "agent": "主",
         "assume": "仮",
         "cross": "横",
+        "dam": "圏",
         "fail": "敗",
         "good": "良",
         "mean": "意",
@@ -793,6 +805,7 @@
         "resilience": "Diagnostic",
         "rigor": "Reasoning",
         "risks": "Diagnostic",
+        "ritual": "Social structure",
         "robust": "Diagnostic",
         "root": "Structural",
         "seep": "Diagnostic",
@@ -809,7 +822,8 @@
         "trace": "Temporal/Dynamic",
         "triage": "Diagnostic",
         "unknowns": "Diagnostic",
-        "verify": "Reasoning"
+        "verify": "Reasoning",
+        "yield": "Minimal intervention"
       }
     },
     "routing_concept": {
@@ -978,6 +992,7 @@
         "agent": "Actors with agency",
         "assume": "Premises/preconditions",
         "cross": "Cross-cutting concerns",
+        "dam": "Containment and boundaries",
         "fail": "Failure modes",
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
@@ -3615,6 +3630,24 @@
             "likelihood and severity"
           ]
         },
+        "ritual": {
+          "definition": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized procedures.",
+          "distinctions": [
+            {
+              "note": "ritual = structured by established roles and procedures; melody = coordination through timing and synchronization",
+              "token": "melody"
+            }
+          ],
+          "heuristics": [
+            "follow established procedures",
+            "respect the roles",
+            "maintain social order",
+            "proper conduct",
+            "ritualized process",
+            "according to tradition",
+            "roles and responsibilities"
+          ]
+        },
         "robust": {
           "definition": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
           "distinctions": [
@@ -3963,6 +3996,24 @@
             "don't just assert — verify",
             "what evidence would disprove this"
           ]
+        },
+        "yield": {
+          "definition": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
+          "distinctions": [
+            {
+              "note": "yield = allow natural resolution with minimal guidance; preserve = maintain compatibility with existing structures",
+              "token": "preserve"
+            }
+          ],
+          "heuristics": [
+            "let it resolve naturally",
+            "minimal intervention",
+            "allow organic resolution",
+            "wu wei",
+            "don't force it",
+            "step back and let it unfold",
+            "guide without imposing"
+          ]
         }
       },
       "scope": {
@@ -4034,6 +4085,26 @@
             "horizontal concern",
             "error handling across our codebase",
             "where does X live across the system"
+          ]
+        },
+        "dam": {
+          "definition": "Containment boundaries focus: what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between inside versus outside.",
+          "distinctions": [
+            {
+              "note": "dam = containment boundaries describing what stays in/out; bound (method) = introducing or reinforcing limits on propagation",
+              "token": "bound"
+            }
+          ],
+          "heuristics": [
+            "what stays in scope",
+            "what is kept out",
+            "boundaries",
+            "containment",
+            "what's inside vs outside",
+            "scope limits",
+            "what belongs in this domain",
+            "what's excluded",
+            "where do we draw the line"
           ]
         },
         "fail": {
@@ -6445,6 +6516,7 @@
         "resilience": "resilience",
         "rigor": "rigor",
         "risks": "risks",
+        "ritual": "ritual",
         "robust": "robust",
         "root": "root",
         "seep": "seep",
@@ -6461,13 +6533,15 @@
         "trace": "trace",
         "triage": "triage",
         "unknowns": "unknowns",
-        "verify": "verify"
+        "verify": "verify",
+        "yield": "yield"
       },
       "scope": {
         "act": "act",
         "agent": "agent",
         "assume": "assume",
         "cross": "cross",
+        "dam": "dam",
         "fail": "fail",
         "good": "good",
         "mean": "mean",
@@ -6585,6 +6659,7 @@
         "scope=agent": "scope-agent",
         "scope=assume": "scope-assume",
         "scope=cross": "scope-cross",
+        "scope=dam": "scope-dam",
         "scope=fail": "scope-fail",
         "scope=good": "scope-good",
         "scope=mean": "scope-mean",
@@ -6660,6 +6735,7 @@
         "method=resilience": "method-resilience",
         "method=rigor": "method-rigor",
         "method=risks": "method-risks",
+        "method=ritual": "method-ritual",
         "method=robust": "method-robust",
         "method=root": "method-root",
         "method=seep": "method-seep",
@@ -6676,7 +6752,8 @@
         "method=trace": "method-trace",
         "method=triage": "method-triage",
         "method=unknowns": "method-unknowns",
-        "method=verify": "method-verify"
+        "method=verify": "method-verify",
+        "method=yield": "method-yield"
       },
       "form": {
         "form=actions": "form-actions",
@@ -6897,6 +6974,7 @@
       "converge": "converge",
       "cross": "cross",
       "crystal": "crystal",
+      "dam": "dam",
       "deduce": "deduce",
       "deep": "deep",
       "depends": "depends",
@@ -7082,6 +7160,7 @@
       "method=resilience": "method-resilience",
       "method=rigor": "method-rigor",
       "method=risks": "method-risks",
+      "method=ritual": "method-ritual",
       "method=robust": "method-robust",
       "method=root": "method-root",
       "method=seep": "method-seep",
@@ -7099,6 +7178,7 @@
       "method=triage": "method-triage",
       "method=unknowns": "method-unknowns",
       "method=verify": "method-verify",
+      "method=yield": "method-yield",
       "migrate": "migrate",
       "minimal": "minimal",
       "mod": "mod",
@@ -7144,6 +7224,7 @@
       "resilience": "resilience",
       "rigor": "rigor",
       "risks": "risks",
+      "ritual": "ritual",
       "robust": "robust",
       "rog": "rog",
       "root": "root",
@@ -7152,6 +7233,7 @@
       "scope=agent": "scope-agent",
       "scope=assume": "scope-assume",
       "scope=cross": "scope-cross",
+      "scope=dam": "scope-dam",
       "scope=fail": "scope-fail",
       "scope=good": "scope-good",
       "scope=mean": "scope-mean",
@@ -7245,7 +7327,8 @@
       "voice=as writer": "voice-as-writer",
       "walkthrough": "walkthrough",
       "wardley": "wardley",
-      "wasinawa": "wasinawa"
+      "wasinawa": "wasinawa",
+      "yield": "yield"
     }
   },
   "patterns": [
@@ -7993,11 +8076,11 @@
     }
   ],
   "checksums": {
-    "axes": "bf21644fea71acf696f8d8fb07396deb9ac2243efd9daf8b8e8e2152d2e3669c",
+    "axes": "a10b819bf59ac6ecb440f1c3a61462bd6b7c766f6528e2b8bc48233915d24576",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "c9a05807ae46fa11803babfbe0bc662c30749da72d30d8d6e82c8e2a27f78cfa",
+    "slugs": "a6729506e496a4d56f21657edd2aadcf888c0a6153db1b1ecb0cf11841c25b76",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

@@ -23,7 +23,7 @@ This ADR captures the updated plan: split where needed, reassign some responsibi
 Renaming tokens has a real discoverability cost. Users who learn a name build recall around it; arbitrary renames create churn without orthogonality benefit.
 
 **Rule:** Keep existing token names when a token is being *narrowed* (description tightened, secondary responsibilities removed). Rename only when:
-- One token splits into two, forcing disambiguation (e.g., `trace` narrows to narration; the new audit half needs a new name `merk`)
+- One token splits into two, forcing disambiguation (e.g., `trace` narrows to narration; the new audit half needs a new name `mark`)
 - The existing name actively misleads about the new semantics (e.g., `trans` implies "transition" but the new semantic is encode/decode/noise — `pulse` is clearer)
 - The existing name is already opaque and a better one exists (e.g., `branch` → `spur`, `explore` → `sweep`)
 
@@ -49,7 +49,7 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
   - Timeline or sequence diagrams referenced by `trace`/`flow` become form/channel presets (e.g., "timeline" layout). Methods keep only the reasoning verb.
   - Coupling sketches and containment maps move to form/channel names, leaving `snag`/`mesh` to analyze those artifacts.
 - **Operation → method**
-  - Method tokens narrow to a single reasoning move. Where one token covered both narration and auditing (e.g., `trace`), the narration half retains the name and the audit half becomes a new token (`merk`).
+  - Method tokens narrow to a single reasoning move. Where one token covered both narration and auditing (e.g., `trace`), the narration half retains the name and the audit half becomes a new token (`mark`).
 
 > **Blocking dependency:** The artifact→form/channel reassignment assumes form tokens for "timeline," "coupling sketch," and similar layouts will be defined. This work must be scoped before implementation of the artifact split is complete.
 
@@ -58,13 +58,13 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 - **Execution methods** (`forge`, `verify`) operate against the declared governance layer but no longer describe the declaration itself.
 
 ### D. Control vs Monitoring Split
-- Forward control (`trace`, `flow`, `pulse`, `thrust`, `spur`) and monitoring/audit (`merk`, `cull`, `verify`) become separate tokens. Channels/completeness can now gate them independently.
+- Forward control (`trace`, `flow`, `pulse`, `thrust`, `spur`) and monitoring/audit (`mark`, `cull`, `verify`) become separate tokens. Channels/completeness can now gate them independently.
 
 ## Updated Token Outcomes
 
 | Outcome | Tokens | Axis |
 | --- | --- | --- |
-| **Keep as method tokens (narrowed or new)** | `trace`, `merk` (new), `flow`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `thrust`, `sift`, `balance`, `polar`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`, `verify` | Method |
+| **Keep as method tokens (narrowed or new)** | `trace`, `mark` (new), `flow`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `thrust`, `sift`, `balance`, `polar`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`, `verify` | Method |
 | **Move to form** | `twin` (comparison layout), `prep` / `vet` (experiment write-up structure), timeline/coupling artifacts | Form |
 | **Move to scope** | `dam` (contain boundaries) | Scope |
 | **Move to completeness** | `grow` (dynamic depth constraint) | Completeness |
@@ -75,7 +75,7 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 | Token | Operation Family | Description |
 | --- | --- | --- |
 | `trace` | Staging | Narrate sequential control/data progression. (narrowed: excludes audit checkpoints) |
-| `merk` | Audit | Capture checkpoints/evidence as the process runs. (new token for the audit half of former `trace`) |
+| `mark` | Audit | Capture checkpoints/evidence as the process runs. (new token for the audit half of former `trace`) |
 | `flow` | Staging | Describe linear stage ordering without extra semantics. (narrowed: excludes handoffs) |
 | `pulse` | Transmission | Model encode/decode/noise for information channels. |
 | `snag` | Boundary detection | Surface coupled domains or seams. |
@@ -104,7 +104,7 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 ### Sample Combinations (for experimentation)
 | Combo | Interpretation |
 | --- | --- |
-| `trace` + `merk` + timeline form | Narrate a process while logging checkpoints; the form renders a sequence diagram with evidence rows. |
+| `trace` + `mark` + timeline form | Narrate a process while logging checkpoints; the form renders a sequence diagram with evidence rows. |
 | `snag` + `mesh` + `shear` | Detect coupled domains, explain how influence propagates, then propose mitigation steps. |
 | `thrust` + `sift` + `balance` | Map opposing forces, evaluate options across criteria, and declare the acceptable equilibrium. |
 | `spur` + `cull` + `verify` | Generate hypotheses, prune them, then run falsification tests on the survivors. |
@@ -115,7 +115,7 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 ## Next Steps
 1. Define form tokens for timeline, coupling sketch, and similar artifacts before implementing the artifact→form split.
 2. Update `axisConfig.py` with operation-family flags for all existing method tokens to identify actual overlaps.
-3. Prototype the new tokens listed above (`merk`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `thrust`, `sift`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`); simultaneously add form (`twin`, `prep`, `vet`) and scope (`dam`) entries.
+3. Prototype the new tokens listed above (`mark`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `thrust`, `sift`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`); simultaneously add form (`twin`, `prep`, `vet`) and scope (`dam`) entries.
 4. Narrow existing tokens in place (`trace`, `flow`, `verify`, `balance`, `polar`) rather than replacing them; update descriptions only.
 5. Refresh ADR-0159 after implementation to note which bundles became explicit forms/scope items and which behaviors were pruned.
 
@@ -126,7 +126,7 @@ Tokens not listed below are kept as-is on the method axis; their current descrip
 | Original Token | Replacement Strategy |
 | --- | --- |
 | `grow` | Move to completeness axis. Its success criterion ("expand only when necessity is demonstrated") is a dynamic depth constraint, not a reasoning procedure — matching completeness semantics more than method semantics. The constraint is distinct from static brevity tokens (`gist`, `skim`): it starts minimal and allows justified expansion. Exploration/divergence coverage on the method axis passes to `sweep` and `spur`. |
-| `trace` | Narrow to narration only; add new `merk` token for audit checkpoints. Name retained. |
+| `trace` | Narrow to narration only; add new `mark` token for audit checkpoints. Name retained. |
 | `flow` | Narrow to linear stage sequencing; retire `slot`. Name retained. |
 | `trans` | Rename to `pulse` — semantics shift to encode/decode/noise channel model; "trans" implies transition rather than transmission. |
 | `entangle` | Split into `snag` (detection) + `mesh` (analysis); add `shear` for mitigation where needed. |

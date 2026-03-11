@@ -421,7 +421,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "meld",
         "melody",
         "mesh",
-        "merk",
+        "mark",
         "migrate",
         "mod",
         "models",

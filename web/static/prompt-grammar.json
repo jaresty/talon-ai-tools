@@ -128,9 +128,9 @@
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
+        "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
         "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
-        "merk": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the shift.",
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
@@ -315,9 +315,9 @@
         "inversion",
         "jobs",
         "mapping",
+        "mark",
         "meld",
         "melody",
-        "merk",
         "mesh",
         "migrate",
         "mod",
@@ -499,9 +499,9 @@
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
         "mapping": "Surface elements and relationships",
+        "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
         "melody": "Coordination across components or time",
-        "merk": "Capture audit checkpoints",
         "mesh": "Describe coupling propagation",
         "migrate": "Introduce a transition path between structures",
         "mod": "Equivalence classes and cyclic reasoning",
@@ -677,9 +677,9 @@
         "inversion": "逆",
         "jobs": "需",
         "mapping": "写",
+        "mark": "印",
         "meld": "融",
         "melody": "旋",
-        "merk": "印",
         "mesh": "網",
         "migrate": "移",
         "mod": "周",
@@ -780,9 +780,9 @@
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
         "mapping": "Structural",
+        "mark": "Temporal/Dynamic",
         "meld": "Comparative",
         "melody": "Generative",
-        "merk": "Temporal/Dynamic",
         "mesh": "Diagnostic",
         "migrate": "Structural",
         "mod": "Generative",
@@ -944,9 +944,9 @@
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
         "mapping": "Spatial map",
+        "mark": "Audit trail",
         "meld": "Combinations/overlaps",
         "melody": "Coordination across parts",
-        "merk": "Audit trail",
         "mesh": "Coupling analysis",
         "migrate": "Compatibility transition path",
         "mod": "Cyclic/periodic patterns",
@@ -3123,6 +3123,24 @@
             "visualize the relationships"
           ]
         },
+        "mark": {
+          "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
+          "distinctions": [
+            {
+              "note": "trace = narrate the sequential control/data progression; mark = record checkpoint observations without narrating",
+              "token": "trace"
+            }
+          ],
+          "heuristics": [
+            "record what happened at each stage",
+            "audit log",
+            "checkpoint evidence",
+            "what was observed at each step",
+            "capture intermediate state",
+            "audit trail",
+            "what was the system state at X"
+          ]
+        },
         "meld": {
           "definition": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
           "distinctions": [
@@ -3158,24 +3176,6 @@
             "avoid conflicts between teams",
             "migration coordination",
             "who needs to change when"
-          ]
-        },
-        "merk": {
-          "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
-          "distinctions": [
-            {
-              "note": "trace = narrate the sequential control/data progression; merk = record checkpoint observations without narrating",
-              "token": "trace"
-            }
-          ],
-          "heuristics": [
-            "record what happened at each stage",
-            "audit log",
-            "checkpoint evidence",
-            "what was observed at each step",
-            "capture intermediate state",
-            "audit trail",
-            "what was the system state at X"
           ]
         },
         "mesh": {
@@ -6491,9 +6491,9 @@
         "inversion": "inversion",
         "jobs": "jobs",
         "mapping": "mapping",
+        "mark": "mark",
         "meld": "meld",
         "melody": "melody",
-        "merk": "merk",
         "mesh": "mesh",
         "migrate": "migrate",
         "mod": "mod",
@@ -6710,9 +6710,9 @@
         "method=inversion": "method-inversion",
         "method=jobs": "method-jobs",
         "method=mapping": "method-mapping",
+        "method=mark": "method-mark",
         "method=meld": "method-meld",
         "method=melody": "method-melody",
-        "method=merk": "method-merk",
         "method=mesh": "method-mesh",
         "method=migrate": "method-migrate",
         "method=mod": "method-mod",
@@ -7089,12 +7089,12 @@
       "log": "log",
       "make": "make",
       "mapping": "mapping",
+      "mark": "mark",
       "max": "max",
       "mean": "mean",
       "meld": "meld",
       "melody": "melody",
       "merge": "merge",
-      "merk": "merk",
       "mesh": "mesh",
       "method=abduce": "method-abduce",
       "method=actors": "method-actors",
@@ -7135,9 +7135,9 @@
       "method=inversion": "method-inversion",
       "method=jobs": "method-jobs",
       "method=mapping": "method-mapping",
+      "method=mark": "method-mark",
       "method=meld": "method-meld",
       "method=melody": "method-melody",
-      "method=merk": "method-merk",
       "method=mesh": "method-mesh",
       "method=migrate": "method-migrate",
       "method=mod": "method-mod",
@@ -8076,11 +8076,11 @@
     }
   ],
   "checksums": {
-    "axes": "a10b819bf59ac6ecb440f1c3a61462bd6b7c766f6528e2b8bc48233915d24576",
+    "axes": "710e817245d702520ca6d925306568e616b5162bac20af453c778524717b678d",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "a6729506e496a4d56f21657edd2aadcf888c0a6153db1b1ecb0cf11841c25b76",
+    "slugs": "7d01a2abeeb99f3d1d7739a30f514adca8987e6857edb29562581c2db65e81ed",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

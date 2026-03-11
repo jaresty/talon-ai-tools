@@ -251,9 +251,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "or design around those paths.",
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
+        "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
         "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
-        "merk": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
@@ -471,9 +471,9 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
         "mapping": "Surface elements and relationships",
+        "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
         "melody": "Coordination across components or time",
-        "merk": "Capture audit checkpoints",
         "mesh": "Describe coupling propagation",
         "migrate": "Introduce a transition path between structures",
         "mod": "Equivalence classes and cyclic reasoning",
@@ -653,9 +653,9 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "inversion": "逆",
         "jobs": "需",
         "mapping": "写",
+        "mark": "印",
         "meld": "融",
         "melody": "旋",
-        "merk": "印",
         "mesh": "網",
         "migrate": "移",
         "mod": "周",
@@ -821,9 +821,9 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
         "mapping": "Structural",
+        "mark": "Temporal/Dynamic",
         "meld": "Comparative",
         "melody": "Generative",
-        "merk": "Temporal/Dynamic",
         "mesh": "Diagnostic",
         "migrate": "Structural",
         "mod": "Generative",
@@ -990,9 +990,9 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
         "mapping": "Spatial map",
+        "mark": "Audit trail",
         "meld": "Combinations/overlaps",
         "melody": "Coordination across parts",
-        "merk": "Audit trail",
         "mesh": "Coupling analysis",
         "migrate": "Compatibility transition path",
         "mod": "Cyclic/periodic patterns",
@@ -4135,6 +4135,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "visualize the relationships",
             ],
         },
+        "mark": {
+            "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the "
+            "progression.",
+            "distinctions": [
+                {
+                    "note": "trace = narrate the sequential control/data progression; mark = record checkpoint observations without narrating",
+                    "token": "trace",
+                }
+            ],
+            "heuristics": [
+                "record what happened at each stage",
+                "audit log",
+                "checkpoint evidence",
+                "what was observed at each step",
+                "capture intermediate state",
+                "audit trail",
+                "what was the system state at X",
+            ],
+        },
         "meld": {
             "definition": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
             "distinctions": [
@@ -4165,25 +4184,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "avoid conflicts between teams",
                 "migration coordination",
                 "who needs to change when",
-            ],
-        },
-        "merk": {
-            "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the "
-            "progression.",
-            "distinctions": [
-                {
-                    "note": "trace = narrate the sequential control/data progression; merk = record checkpoint observations without narrating",
-                    "token": "trace",
-                }
-            ],
-            "heuristics": [
-                "record what happened at each stage",
-                "audit log",
-                "checkpoint evidence",
-                "what was observed at each step",
-                "capture intermediate state",
-                "audit trail",
-                "what was the system state at X",
             ],
         },
         "mesh": {

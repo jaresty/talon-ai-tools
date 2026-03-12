@@ -239,8 +239,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
-        "forge": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than "
-        "inferred intuitively.",
+        "forge": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative and must preserve an explicit chain of "
@@ -3995,26 +3994,23 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "forge": {
-            "definition": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure "
-            "rather than inferred intuitively.",
+            "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
             "distinctions": [
                 {
-                    "note": "deduce = apply deductive logic to stated premises; forge = represent the generative structure itself so conclusions are structurally readable",
+                    "note": "deduce = apply deductive logic to stated premises; forge = construct the generative structure so conclusions are built forward",
                     "token": "deduce",
                 },
                 {
-                    "note": "ground = treat declared governing layer as fixed authority; forge = make the generating assumptions structurally explicit for derivability",
+                    "note": "ground = treat declared governing layer as fixed authority; forge = construct generative assumptions into explicit derivations",
                     "token": "ground",
                 },
             ],
             "heuristics": [
-                "make the logic derivable",
-                "explicit generative structure",
-                "conclusions must follow from the representation",
-                "no implicit inference",
-                "formally derive",
-                "represent the assumptions structurally",
-                "conclusions should be readable from structure alone",
+                "build the generative assumptions forward",
+                "construct explicit derivations",
+                "conclusions are products of the model",
+                "derivation structure is the response",
+                "formally construct the proof",
             ],
         },
         "gap": {

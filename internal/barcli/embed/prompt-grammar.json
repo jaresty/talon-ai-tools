@@ -121,7 +121,7 @@
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
-        "forge": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than inferred intuitively.",
+        "forge": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative and must preserve an explicit chain of derivation from intent to outcome. The response must first construct a validation artifact V that expresses the conditions under which I is satisfied. Derived output O may only be produced after V exists and must satisfy it (O ⊨ V), while V must satisfy I (V ⊨ I). The required structure is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). The response may not bypass, collapse, reorder, or retroactively construct this chain.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
@@ -2987,25 +2987,23 @@
           ]
         },
         "forge": {
-          "definition": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than inferred intuitively.",
+          "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
           "distinctions": [
             {
-              "note": "deduce = apply deductive logic to stated premises; forge = represent the generative structure itself so conclusions are structurally readable",
+              "note": "deduce = apply deductive logic to stated premises; forge = construct the generative structure so conclusions are built forward",
               "token": "deduce"
             },
             {
-              "note": "ground = treat declared governing layer as fixed authority; forge = make the generating assumptions structurally explicit for derivability",
+              "note": "ground = treat declared governing layer as fixed authority; forge = construct generative assumptions into explicit derivations",
               "token": "ground"
             }
           ],
           "heuristics": [
-            "make the logic derivable",
-            "explicit generative structure",
-            "conclusions must follow from the representation",
-            "no implicit inference",
-            "formally derive",
-            "represent the assumptions structurally",
-            "conclusions should be readable from structure alone"
+            "build the generative assumptions forward",
+            "construct explicit derivations",
+            "conclusions are products of the model",
+            "derivation structure is the response",
+            "formally construct the proof"
           ]
         },
         "gap": {
@@ -8108,7 +8106,7 @@
     }
   ],
   "checksums": {
-    "axes": "b0d0c36f45a00e5cd1a4d50049960e07586cf36a81ee1b2afb3f3010e8fa5871",
+    "axes": "eb4acc89602fadc2731a1bfb3dfa0f45f13e5a78fa6e05ebf07f00dca16a4f51",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

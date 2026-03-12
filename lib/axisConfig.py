@@ -224,6 +224,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment "
         "explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
+        "derive": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
         "proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
@@ -239,7 +240,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
-        "forge": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative and must preserve an explicit chain of "
@@ -460,6 +460,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "crystal": "Shape toward explicit structure",
         "deduce": "Deductive logical reasoning",
         "depends": "Trace dependency relationships",
+        "derive": "Derive from explicit generative structure",
         "diagnose": "Identify likely root causes",
         "dimension": "Explore multiple analytical axes",
         "domains": "Identify bounded contexts",
@@ -469,7 +470,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
-        "forge": "Derive from explicit generative structure",
         "gap": "Implicit-to-explicit gap analysis",
         "ground": "Declared governing layer authority",
         "grove": "Accumulation and rate-of-change effects",
@@ -643,6 +643,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "crystal": "晶",
         "deduce": "演",
         "depends": "依",
+        "derive": "推",
         "diagnose": "診",
         "dimension": "次",
         "domains": "領",
@@ -652,7 +653,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "experimental": "実",
         "field": "場",
         "flow": "流",
-        "forge": "推",
         "gap": "隙",
         "ground": "地",
         "grove": "蓄",
@@ -812,6 +812,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "crystal": "Structural",
         "deduce": "Reasoning",
         "depends": "Structural",
+        "derive": "Structural",
         "diagnose": "Diagnostic",
         "dimension": "Comparative",
         "domains": "Exploration",
@@ -821,7 +822,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
-        "forge": "Structural",
         "gap": "Structural",
         "ground": "Structural",
         "grove": "Generative",
@@ -982,6 +982,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "crystal": "Crystallize into explicit structure",
         "deduce": "Logical deduction",
         "depends": "Dependency tracing",
+        "derive": "Explicit derivation structure",
         "diagnose": "Root cause",
         "dimension": "Multiple dimensions",
         "domains": "Bounded contexts",
@@ -991,7 +992,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
-        "forge": "Explicit derivation structure",
         "gap": "Implicit gaps",
         "ground": "Declared governing layer",
         "grove": "Compounding effects",
@@ -3809,6 +3809,26 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what does Z need to work",
             ],
         },
+        "derive": {
+            "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
+            "distinctions": [
+                {
+                    "note": "deduce = apply deductive logic to stated premises; derive = construct the generative structure so conclusions are built forward",
+                    "token": "deduce",
+                },
+                {
+                    "note": "ground = treat declared governing layer as fixed authority; derive = construct generative assumptions into explicit derivations",
+                    "token": "ground",
+                },
+            ],
+            "heuristics": [
+                "build the generative assumptions forward",
+                "construct explicit derivations",
+                "conclusions are products of the model",
+                "derivation structure is the response",
+                "formally construct the proof",
+            ],
+        },
         "diagnose": {
             "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks "
             "before proposing fixes or changes.",
@@ -3875,8 +3895,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "gap",
                 },
                 {
-                    "note": "forge = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
-                    "token": "forge",
+                    "note": "derive = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
+                    "token": "derive",
                 },
             ],
             "heuristics": [
@@ -3993,26 +4013,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "trace the path",
             ],
         },
-        "forge": {
-            "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
-            "distinctions": [
-                {
-                    "note": "deduce = apply deductive logic to stated premises; forge = construct the generative structure so conclusions are built forward",
-                    "token": "deduce",
-                },
-                {
-                    "note": "ground = treat declared governing layer as fixed authority; forge = construct generative assumptions into explicit derivations",
-                    "token": "ground",
-                },
-            ],
-            "heuristics": [
-                "build the generative assumptions forward",
-                "construct explicit derivations",
-                "conclusions are products of the model",
-                "derivation structure is the response",
-                "formally construct the proof",
-            ],
-        },
         "gap": {
             "definition": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that "
             "mismatch produces ambiguity, coordination failure, or error.",
@@ -4047,9 +4047,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "crystal",
                 },
                 {
-                    "note": "forge = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that "
+                    "note": "derive = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that "
                     "conclusions must justify against",
-                    "token": "forge",
+                    "token": "derive",
                 },
             ],
             "heuristics": [
@@ -4992,8 +4992,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "flow",
                 },
                 {
-                    "note": "forge = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
-                    "token": "forge",
+                    "note": "derive = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
+                    "token": "derive",
                 },
             ],
             "heuristics": [

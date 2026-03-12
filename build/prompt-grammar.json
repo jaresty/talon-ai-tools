@@ -112,6 +112,7 @@
         "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
+        "derive": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
@@ -121,7 +122,6 @@
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
-        "forge": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative and must preserve an explicit chain of derivation from intent to outcome. The response must first construct a validation artifact V that expresses the conditions under which I is satisfied. Derived output O may only be produced after V exists and must satisfy it (O ⊨ V), while V must satisfy I (V ⊨ I). The required structure is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). The response may not bypass, collapse, reorder, or retroactively construct this chain.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
@@ -300,6 +300,7 @@
         "crystal",
         "deduce",
         "depends",
+        "derive",
         "diagnose",
         "dimension",
         "domains",
@@ -309,7 +310,6 @@
         "experimental",
         "field",
         "flow",
-        "forge",
         "gap",
         "ground",
         "grove",
@@ -485,6 +485,7 @@
         "crystal": "Shape toward explicit structure",
         "deduce": "Deductive logical reasoning",
         "depends": "Trace dependency relationships",
+        "derive": "Derive from explicit generative structure",
         "diagnose": "Identify likely root causes",
         "dimension": "Explore multiple analytical axes",
         "domains": "Identify bounded contexts",
@@ -494,7 +495,6 @@
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
-        "forge": "Derive from explicit generative structure",
         "gap": "Implicit-to-explicit gap analysis",
         "ground": "Declared governing layer authority",
         "grove": "Accumulation and rate-of-change effects",
@@ -664,6 +664,7 @@
         "crystal": "晶",
         "deduce": "演",
         "depends": "依",
+        "derive": "推",
         "diagnose": "診",
         "dimension": "次",
         "domains": "領",
@@ -673,7 +674,6 @@
         "experimental": "実",
         "field": "場",
         "flow": "流",
-        "forge": "推",
         "gap": "隙",
         "ground": "地",
         "grove": "蓄",
@@ -768,6 +768,7 @@
         "crystal": "Structural",
         "deduce": "Reasoning",
         "depends": "Structural",
+        "derive": "Structural",
         "diagnose": "Diagnostic",
         "dimension": "Comparative",
         "domains": "Exploration",
@@ -777,7 +778,6 @@
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
-        "forge": "Structural",
         "gap": "Structural",
         "ground": "Structural",
         "grove": "Generative",
@@ -933,6 +933,7 @@
         "crystal": "Crystallize into explicit structure",
         "deduce": "Logical deduction",
         "depends": "Dependency tracing",
+        "derive": "Explicit derivation structure",
         "diagnose": "Root cause",
         "dimension": "Multiple dimensions",
         "domains": "Bounded contexts",
@@ -942,7 +943,6 @@
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
-        "forge": "Explicit derivation structure",
         "gap": "Implicit gaps",
         "ground": "Declared governing layer",
         "grove": "Compounding effects",
@@ -2873,8 +2873,8 @@
               "token": "gap"
             },
             {
-              "note": "forge = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
-              "token": "forge"
+              "note": "derive = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
+              "token": "derive"
             }
           ],
           "heuristics": [
@@ -2986,15 +2986,15 @@
             "trace the path"
           ]
         },
-        "forge": {
+        "derive": {
           "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
           "distinctions": [
             {
-              "note": "deduce = apply deductive logic to stated premises; forge = construct the generative structure so conclusions are built forward",
+              "note": "deduce = apply deductive logic to stated premises; derive = construct the generative structure so conclusions are built forward",
               "token": "deduce"
             },
             {
-              "note": "ground = treat declared governing layer as fixed authority; forge = construct generative assumptions into explicit derivations",
+              "note": "ground = treat declared governing layer as fixed authority; derive = construct generative assumptions into explicit derivations",
               "token": "ground"
             }
           ],
@@ -3035,8 +3035,8 @@
               "token": "crystal"
             },
             {
-              "note": "forge = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that conclusions must justify against",
-              "token": "forge"
+              "note": "derive = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that conclusions must justify against",
+              "token": "derive"
             }
           ],
           "heuristics": [
@@ -3953,8 +3953,8 @@
               "token": "flow"
             },
             {
-              "note": "forge = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
-              "token": "forge"
+              "note": "derive = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
+              "token": "derive"
             }
           ],
           "heuristics": [
@@ -6501,6 +6501,7 @@
         "crystal": "crystal",
         "deduce": "deduce",
         "depends": "depends",
+        "derive": "derive",
         "diagnose": "diagnose",
         "dimension": "dimension",
         "domains": "domains",
@@ -6510,7 +6511,6 @@
         "experimental": "experimental",
         "field": "field",
         "flow": "flow",
-        "forge": "forge",
         "gap": "gap",
         "ground": "ground",
         "grove": "grove",
@@ -6721,6 +6721,7 @@
         "method=crystal": "method-crystal",
         "method=deduce": "method-deduce",
         "method=depends": "method-depends",
+        "method=derive": "method-derive",
         "method=diagnose": "method-diagnose",
         "method=dimension": "method-dimension",
         "method=domains": "method-domains",
@@ -6730,7 +6731,6 @@
         "method=experimental": "method-experimental",
         "method=field": "method-field",
         "method=flow": "method-flow",
-        "method=forge": "method-forge",
         "method=gap": "method-gap",
         "method=ground": "method-ground",
         "method=grove": "method-grove",
@@ -7006,6 +7006,7 @@
       "deduce": "deduce",
       "deep": "deep",
       "depends": "depends",
+      "derive": "derive",
       "diagnose": "diagnose",
       "diagram": "diagram",
       "diff": "diff",
@@ -7051,7 +7052,6 @@
       "fly ong": "fly-ong",
       "fly rog": "fly-rog",
       "fog": "fog",
-      "forge": "forge",
       "form=actions": "form-actions",
       "form=activities": "form-activities",
       "form=bug": "form-bug",
@@ -7148,6 +7148,7 @@
       "method=crystal": "method-crystal",
       "method=deduce": "method-deduce",
       "method=depends": "method-depends",
+      "method=derive": "method-derive",
       "method=diagnose": "method-diagnose",
       "method=dimension": "method-dimension",
       "method=domains": "method-domains",
@@ -7157,7 +7158,6 @@
       "method=experimental": "method-experimental",
       "method=field": "method-field",
       "method=flow": "method-flow",
-      "method=forge": "method-forge",
       "method=gap": "method-gap",
       "method=ground": "method-ground",
       "method=grove": "method-grove",
@@ -8106,11 +8106,11 @@
     }
   ],
   "checksums": {
-    "axes": "eb4acc89602fadc2731a1bfb3dfa0f45f13e5a78fa6e05ebf07f00dca16a4f51",
+    "axes": "4b3f5f34556197b8252a9712138ff47fc8873af2638e24a43838a99a6cac5d11",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "665a2ccafa5e0643dc4e6a512906496f3472923b3462916e5d43bea6d43f4152",
+    "slugs": "7850bb62a799c55e6d553d10507d9e56839822dc00992b19e23c637262a61023",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

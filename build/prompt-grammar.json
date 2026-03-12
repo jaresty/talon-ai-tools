@@ -2810,6 +2810,26 @@
             "what does Z need to work"
           ]
         },
+        "derive": {
+          "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
+          "distinctions": [
+            {
+              "note": "deduce = apply deductive logic to stated premises; derive = construct the generative structure so conclusions are built forward",
+              "token": "deduce"
+            },
+            {
+              "note": "ground = treat declared governing layer as fixed authority; derive = construct generative assumptions into explicit derivations",
+              "token": "ground"
+            }
+          ],
+          "heuristics": [
+            "build the generative assumptions forward",
+            "construct explicit derivations",
+            "conclusions are products of the model",
+            "derivation structure is the response",
+            "formally construct the proof"
+          ]
+        },
         "diagnose": {
           "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
           "distinctions": [
@@ -2984,26 +3004,6 @@
             "how does it progress",
             "follow the data through the system",
             "trace the path"
-          ]
-        },
-        "derive": {
-          "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
-          "distinctions": [
-            {
-              "note": "deduce = apply deductive logic to stated premises; derive = construct the generative structure so conclusions are built forward",
-              "token": "deduce"
-            },
-            {
-              "note": "ground = treat declared governing layer as fixed authority; derive = construct generative assumptions into explicit derivations",
-              "token": "ground"
-            }
-          ],
-          "heuristics": [
-            "build the generative assumptions forward",
-            "construct explicit derivations",
-            "conclusions are products of the model",
-            "derivation structure is the response",
-            "formally construct the proof"
           ]
         },
         "gap": {

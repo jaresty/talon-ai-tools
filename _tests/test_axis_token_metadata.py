@@ -407,6 +407,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "domains",
         "drift",
         "effects",
+        "enforce",
         "experimental",
         "field",
         "flow",

@@ -240,11 +240,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "inferred intuitively.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "Let I be the governing intent (stated goals, correctness criteria, or explicit constraints). Let M_env be the set of validation mechanisms available in the current medium, "
-        "ordered by enforcement strength ≤. Let m* = max(M_env). The response must first construct a validation artifact V such that V = encode(I, m*), expressing the satisfaction "
-        "conditions of I using the strongest enforceable mechanism available. Derived output O may only be produced after V exists and must satisfy it (O ⊨ V) while V satisfies the "
-        "governing intent (V ⊨ I). The required derivation chain is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). Any output produced without first constructing V "
-        "using m* is non-compliant. The response may not weaken the enforcement mechanism, reinterpret I, reorder the sequence, or retroactively construct V to justify O.",
+        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. Let M_env be the set of validation "
+        "mechanisms available in the current medium ordered by enforcement strength ≤, and let m* = max(M_env). The response must first construct a validation artifact V = encode(I, "
+        "m*) expressing the satisfaction conditions of I using the strongest enforceable mechanism available. Derived output O may only be produced after V exists and must satisfy it "
+        "(O ⊨ V), while V must satisfy I (V ⊨ I). The required derivation chain is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). Producing O without first "
+        "constructing V using m* is non-compliant, and the response may not weaken the enforcement mechanism, reinterpret I, reorder the sequence, or retroactively construct V to "
+        "justify O.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

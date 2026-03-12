@@ -234,8 +234,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
         "enforce": "The response must express validation artifacts (including V from ground constraint) using the strongest enforceable mechanism available in the current medium. Let M_env be "
         "the set of available validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. "
-        "Weaker descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger ones "
-        "exist.",
+        "Strength ordering (strongest to weakest): executable tests/simulations > formal assertions/type signatures > structured acceptance criteria with concrete values > prose "
+        "descriptions of what validation should check. Descriptions of validation criteria (rather than the criteria themselves) may only be used when no stronger mechanism is "
+        "available in the current medium. The response may not substitute weaker representations when stronger ones exist.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
@@ -246,9 +247,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. The required structure is I → V → O: first "
         "construct validation artifact V expressing conditions under which I is satisfied (see enforce constraint for how V must be expressed), then produce output O satisfying V. The "
         "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. When observe "
-        "constraint is also present and V is executable (tests, simulations, verification scripts), the response must execute V and present evidence E before producing O. Any output O "
-        "appearing before this exact checkpoint phrase violates the constraint and must be discarded. Iteration is permitted: the response may construct multiple V→O pairs in sequence "
-        "(V₁→O₁, then V₂→O₂, etc.), with each V preceding its corresponding O.",
+        "constraint is also present and V is executable, the response must execute V and present evidence E before producing O. Any output O appearing before this exact checkpoint "
+        "phrase violates the constraint and must be discarded. Iteration is permitted: the response may construct multiple V→O pairs in sequence (V₁→O₁, then V₂→O₂, etc.), with each V "
+        "preceding its corresponding O.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

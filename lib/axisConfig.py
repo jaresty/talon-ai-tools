@@ -245,7 +245,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ambiguity, coordination failure, or error.",
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. The required structure is I → V → O: first "
         "construct validation artifact V expressing conditions under which I is satisfied (see enforce constraint for how V must be expressed), then produce output O satisfying V. The "
-        "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. Any output O "
+        "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. When observe "
+        "constraint is also present and V is executable (tests, simulations, verification scripts), the response must execute V and present evidence E before producing O. Any output O "
         "appearing before this exact checkpoint phrase violates the constraint and must be discarded. Iteration is permitted: the response may construct multiple V→O pairs in sequence "
         "(V₁→O₁, then V₂→O₂, etc.), with each V preceding its corresponding O.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
@@ -269,7 +270,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "observe": "The response enhances the task by preferring observation over inference: it obtains real, reproducible evidence and grounds conclusions only in outcomes actually observed; it "
         "does not fabricate runs or results, and when observation cannot be performed it explicitly treats results as unobserved. Let E be empirical evidence (test execution, "
         "measurement, verification, source checking) and C be claims derived from it. The response must present E before C. When making claims based on observation, the response must "
-        "include the exact phrase 'Evidence obtained:' immediately before presenting E, followed by the evidence, before stating any dependent claim C.",
+        "include the exact phrase 'Evidence obtained:' immediately before presenting E, followed by the evidence, before stating any dependent claim C. When ground constraint is also "
+        "present, validation artifact V may be executed or applied to obtain evidence E, which then supports claims C about whether output O satisfies V.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",

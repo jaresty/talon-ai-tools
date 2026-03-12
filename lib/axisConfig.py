@@ -261,8 +261,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
-        "observe": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — and incorporating their actual outcomes into "
-        "reasoning rather than assuming them.",
+        "observe": "The response enhances the task by preferring observation over inference: it obtains real, reproducible evidence by executing available tests/experiments/simulations or "
+        "performing concrete verification/measurement, and grounds conclusions only in the outcomes actually observed; it does not fabricate runs or results, and when observation "
+        "cannot be performed in the current context it explicitly treats results as unobserved, constrains itself to evidence-backed claims, and generates whatever is necessary to "
+        "make observation possible.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",

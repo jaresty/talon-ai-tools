@@ -136,7 +136,7 @@
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
-        "observe": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — and incorporating their actual outcomes into reasoning rather than assuming them.",
+        "observe": "The response enhances the task by preferring observation over inference: it obtains real, reproducible evidence by executing available tests/experiments/simulations or performing concrete verification/measurement, and grounds conclusions only in the outcomes actually observed; it does not fabricate runs or results, and when observation cannot be performed in the current context it explicitly treats results as unobserved, constrains itself to evidence-backed claims, and generates whatever is necessary to make observation possible.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
@@ -8076,7 +8076,7 @@
     }
   ],
   "checksums": {
-    "axes": "710e817245d702520ca6d925306568e616b5162bac20af453c778524717b678d",
+    "axes": "08841551ac02de0f504b06926ed4581fb6ac36dc4f0c7ef151b59ceb01ba5ee5",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

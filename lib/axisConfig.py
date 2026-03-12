@@ -242,10 +242,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative and must preserve an explicit chain of "
-        "derivation from intent to outcome. The response must first construct a validation artifact V that expresses the conditions under which I is satisfied. Derived output O may "
-        "only be produced after V exists and must satisfy it (O ⊨ V), while V must satisfy I (V ⊨ I). The required structure is therefore I → V → O with preservation of satisfaction (O "
-        "⊨ V ⊨ I). The response may not bypass, collapse, reorder, or retroactively construct this chain.",
+        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. The required structure is I → V → O: first "
+        "construct validation artifact V expressing conditions under which I is satisfied, then produce output O satisfying V. Let ≺ denote strict temporal precedence. Then V ≺ O is "
+        "necessary: the response must mark V complete before any element of O appears, or halt and resume from V construction.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -264,10 +263,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
-        "observe": "The response enhances the task by preferring observation over inference: it obtains real, reproducible evidence by executing available tests/experiments/simulations or "
-        "performing concrete verification/measurement, and grounds conclusions only in the outcomes actually observed; it does not fabricate runs or results, and when observation "
-        "cannot be performed in the current context it explicitly treats results as unobserved, constrains itself to evidence-backed claims, and generates whatever is necessary to "
-        "make observation possible.",
+        "observe": "The response enhances the task by preferring observation over inference: it obtains real, reproducible evidence and grounds conclusions only in outcomes actually observed; it "
+        "does not fabricate runs or results, and when observation cannot be performed it explicitly treats results as unobserved and generates whatever is necessary to make "
+        "observation possible. Let E be empirical evidence (test execution, measurement, verification, source checking) and C be claims derived from it, with ≺ denoting strict "
+        "temporal precedence. Then E ≺ C is necessary: evidence must precede dependent claims, or the response must halt and mark claims as unobserved speculation.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",

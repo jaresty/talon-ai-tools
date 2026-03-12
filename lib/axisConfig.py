@@ -232,9 +232,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
-        "enforce": "The response must express validation artifacts using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available validation "
-        "mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Weaker descriptive forms may only "
-        "be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger ones exist.",
+        "enforce": "The response must express validation artifacts (including V from ground constraint) using the strongest enforceable mechanism available in the current medium. Let M_env be "
+        "the set of available validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. "
+        "Weaker descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger ones "
+        "exist.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
@@ -243,9 +244,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. The required structure is I → V → O: first "
-        "construct validation artifact V expressing conditions under which I is satisfied, then produce output O satisfying V. The response must include the exact phrase 'Validation "
-        "artifact V complete' on its own line after presenting V and before presenting any element of O. Any output O appearing before this exact checkpoint phrase violates the "
-        "constraint and must be discarded.",
+        "construct validation artifact V expressing conditions under which I is satisfied (see enforce constraint for how V must be expressed), then produce output O satisfying V. The "
+        "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. Any output O "
+        "appearing before this exact checkpoint phrase violates the constraint and must be discarded.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

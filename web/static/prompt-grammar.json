@@ -118,7 +118,7 @@
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
-        "enforce": "The response must express validation artifacts (including V from ground constraint) using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Strength ordering (strongest to weakest): executable tests/simulations > formal assertions/type signatures > structured acceptance criteria with concrete values > prose descriptions of what validation should check. Descriptions of validation criteria (rather than the criteria themselves) may only be used when no stronger mechanism is available in the current medium. The response may not substitute weaker representations when stronger ones exist.",
+        "enforce": "The response must express validation artifacts (including V from ground constraint) using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Strength ordering (strongest to weakest): executable code written to files that can be run > formal notation that encodes constraints > structured criteria with concrete checkable values > prose descriptions of what should be validated. Code displayed in chat without being written to disk is prose description, not executable code. A validation artifact is complete when it can be applied to determine whether the conditions are satisfied without requiring additional interpretation or implementation. Using a weaker mechanism when a stronger one is available violates this constraint.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -8106,7 +8106,7 @@
     }
   ],
   "checksums": {
-    "axes": "8d77553d3c6ce3df6a533fe9c28ed08ac9fd940331c599727081d6f4e4763027",
+    "axes": "33089e5b335475b6c08bd66553717af2ade77845f1fbd4941d526b3882518398",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

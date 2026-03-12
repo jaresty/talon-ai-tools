@@ -6,7 +6,7 @@ Each block verifies coverage, schema conformance, and key distinctions.
 
 import unittest
 
-from lib.axisConfig import AXIS_TOKEN_METADATA, AXIS_KEY_TO_VALUE
+from lib.axisConfig import AXIS_TOKEN_METADATA
 
 
 class CompletenessAxisMetadataTests(unittest.TestCase):
@@ -402,6 +402,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "crystal",
         "deduce",
         "depends",
+        "derive",
         "diagnose",
         "dimension",
         "domains",
@@ -411,7 +412,6 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "experimental",
         "field",
         "flow",
-        "forge",
         "gap",
         "ground",
         "grove",

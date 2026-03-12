@@ -122,7 +122,7 @@
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "forge": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than inferred intuitively.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
-        "ground": "The response treats a declared governing layer—intent, correctness criteria, or explicit constraints—as fixed and authoritative. All outputs must be validated against this layer through explicit artifacts that preserve a traceable chain from intent to outcome. Such artifacts must be expressed in the strongest verifiable form available in the current medium (e.g., executable tests in code contexts, otherwise explicit acceptance criteria or falsifiable statements). Implementation or conclusions may only be produced after these artifacts exist, ensuring the chain intent → validation → implementation remains intact and observable.",
+        "ground": "Let I be the governing intent (stated goals, correctness criteria, or explicit constraints). Let M_env be the set of validation mechanisms available in the current medium, ordered by enforcement strength ≤. Let m* = max(M_env). The response must first construct a validation artifact V such that V = encode(I, m*), expressing the satisfaction conditions of I using the strongest enforceable mechanism available. Derived output O may only be produced after V exists and must satisfy it (O ⊨ V) while V satisfies the governing intent (V ⊨ I). The required derivation chain is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). Any output produced without first constructing V using m* is non-compliant. The response may not weaken the enforcement mechanism, reinterpret I, reorder the sequence, or retroactively construct V to justify O.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
@@ -8076,7 +8076,7 @@
     }
   ],
   "checksums": {
-    "axes": "73953f8abb7979b7ce2f9cb4b40d87ff85bdfb0cc8437bf63ff4fe1c24b55dd6",
+    "axes": "caa3c831540eb67d51b6bef19e19657222d09efb2678f4506c2ae6708b10c472",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

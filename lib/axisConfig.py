@@ -242,7 +242,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or "
         "conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their originating intent; in code "
-        "contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code.",
+        "contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code, and if such artifacts are not "
+        "present in the provided context, the response must create them rather than assuming they exist.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

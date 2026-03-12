@@ -117,12 +117,13 @@
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "enforce": "The response must express validation artifacts using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Weaker descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger ones exist.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "forge": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than inferred intuitively.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
-        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. Let M_env be the set of validation mechanisms available in the current medium ordered by enforcement strength ≤, and let m* = max(M_env). The response must first construct a validation artifact V = encode(I, m*) expressing the satisfaction conditions of I using the strongest enforceable mechanism available. Derived output O may only be produced after V exists and must satisfy it (O ⊨ V), while V must satisfy I (V ⊨ I). The required derivation chain is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). Producing O without first constructing V using m* is non-compliant, and the response may not weaken the enforcement mechanism, reinterpret I, reorder the sequence, or retroactively construct V to justify O.",
+        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative and must preserve an explicit chain of derivation from intent to outcome. The response must first construct a validation artifact V that expresses the conditions under which I is satisfied. Derived output O may only be produced after V exists and must satisfy it (O ⊨ V), while V must satisfy I (V ⊨ I). The required structure is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). The response may not bypass, collapse, reorder, or retroactively construct this chain.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
@@ -304,6 +305,7 @@
         "domains",
         "drift",
         "effects",
+        "enforce",
         "experimental",
         "field",
         "flow",
@@ -488,6 +490,7 @@
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
+        "enforce": "Enforce strongest validation mechanism",
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
@@ -666,6 +669,7 @@
         "domains": "領",
         "drift": "漂",
         "effects": "効",
+        "enforce": "強",
         "experimental": "実",
         "field": "場",
         "flow": "流",
@@ -769,6 +773,7 @@
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
+        "enforce": "Structural",
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
@@ -933,6 +938,7 @@
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
+        "enforce": "Enforce strongest validation mechanism",
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
@@ -2896,6 +2902,28 @@
             "unintended consequences",
             "how does this propagate",
             "what follows downstream"
+          ]
+        },
+        "enforce": {
+          "definition": "The response must express validation artifacts using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Weaker descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger ones exist.",
+          "distinctions": [
+            {
+              "note": "ground = treat governing layer as fixed authority; enforce = select strongest available validation mechanism for the medium",
+              "token": "ground"
+            },
+            {
+              "note": "verify = apply falsification pressure; enforce = express validation using strongest enforceable mechanism",
+              "token": "verify"
+            }
+          ],
+          "heuristics": [
+            "enforce validation",
+            "strongest mechanism available",
+            "validation artifacts",
+            "enforceable mechanism",
+            "select strongest validation",
+            "validation mechanism",
+            "enforce strongest"
           ]
         },
         "experimental": {
@@ -6480,6 +6508,7 @@
         "domains": "domains",
         "drift": "drift",
         "effects": "effects",
+        "enforce": "enforce",
         "experimental": "experimental",
         "field": "field",
         "flow": "flow",
@@ -6699,6 +6728,7 @@
         "method=domains": "method-domains",
         "method=drift": "method-drift",
         "method=effects": "method-effects",
+        "method=enforce": "method-enforce",
         "method=experimental": "method-experimental",
         "method=field": "method-field",
         "method=flow": "method-flow",
@@ -7007,6 +7037,7 @@
       "domains": "domains",
       "drift": "drift",
       "effects": "effects",
+      "enforce": "enforce",
       "experimental": "experimental",
       "facilitate": "facilitate",
       "fail": "fail",
@@ -7124,6 +7155,7 @@
       "method=domains": "method-domains",
       "method=drift": "method-drift",
       "method=effects": "method-effects",
+      "method=enforce": "method-enforce",
       "method=experimental": "method-experimental",
       "method=field": "method-field",
       "method=flow": "method-flow",
@@ -8076,11 +8108,11 @@
     }
   ],
   "checksums": {
-    "axes": "1946455b000b3ce8de3f9c8d7f5bae89c492cade16ffc092609ed4f015df16d4",
+    "axes": "b0d0c36f45a00e5cd1a4d50049960e07586cf36a81ee1b2afb3f3010e8fa5871",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "7d01a2abeeb99f3d1d7739a30f514adca8987e6857edb29562581c2db65e81ed",
+    "slugs": "665a2ccafa5e0643dc4e6a512906496f3472923b3462916e5d43bea6d43f4152",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

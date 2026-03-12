@@ -231,6 +231,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "enforce": "The response must express validation artifacts using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available validation "
+        "mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Weaker descriptive forms may only "
+        "be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger ones exist.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
@@ -240,12 +243,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "inferred intuitively.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. Let M_env be the set of validation "
-        "mechanisms available in the current medium ordered by enforcement strength ≤, and let m* = max(M_env). The response must first construct a validation artifact V = encode(I, "
-        "m*) expressing the satisfaction conditions of I using the strongest enforceable mechanism available. Derived output O may only be produced after V exists and must satisfy it "
-        "(O ⊨ V), while V must satisfy I (V ⊨ I). The required derivation chain is therefore I → V → O with preservation of satisfaction (O ⊨ V ⊨ I). Producing O without first "
-        "constructing V using m* is non-compliant, and the response may not weaken the enforcement mechanism, reinterpret I, reorder the sequence, or retroactively construct V to "
-        "justify O.",
+        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative and must preserve an explicit chain of "
+        "derivation from intent to outcome. The response must first construct a validation artifact V that expresses the conditions under which I is satisfied. Derived output O may "
+        "only be produced after V exists and must satisfy it (O ⊨ V), while V must satisfy I (V ⊨ I). The required structure is therefore I → V → O with preservation of satisfaction (O "
+        "⊨ V ⊨ I). The response may not bypass, collapse, reorder, or retroactively construct this chain.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -465,6 +466,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
+        "enforce": "Enforce strongest validation mechanism",
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
@@ -647,6 +649,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "domains": "領",
         "drift": "漂",
         "effects": "効",
+        "enforce": "強",
         "experimental": "実",
         "field": "場",
         "flow": "流",
@@ -815,6 +818,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
+        "enforce": "Structural",
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
@@ -984,6 +988,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
+        "enforce": "Enforce strongest validation mechanism",
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
@@ -3900,6 +3905,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "unintended consequences",
                 "how does this propagate",
                 "what follows downstream",
+            ],
+        },
+        "enforce": {
+            "definition": "The response must express validation artifacts using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available "
+            "validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Weaker "
+            "descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger "
+            "ones exist.",
+            "distinctions": [
+                {
+                    "note": "ground = treat governing layer as fixed authority; enforce = select strongest available validation mechanism for the medium",
+                    "token": "ground",
+                },
+                {
+                    "note": "verify = apply falsification pressure; enforce = express validation using strongest enforceable mechanism",
+                    "token": "verify",
+                },
+            ],
+            "heuristics": [
+                "enforce validation",
+                "strongest mechanism available",
+                "validation artifacts",
+                "enforceable mechanism",
+                "select strongest validation",
+                "validation mechanism",
+                "enforce strongest",
             ],
         },
         "experimental": {

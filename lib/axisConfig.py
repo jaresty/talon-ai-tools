@@ -240,10 +240,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "inferred intuitively.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or "
-        "conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their originating intent; in code "
-        "contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code, and if such artifacts are not "
-        "present in the provided context, the response must create them rather than assuming they exist.",
+        "ground": "The response treats a declared governing layer—intent, correctness criteria, or explicit constraints—as fixed and authoritative. All outputs must be validated against this "
+        "layer through explicit artifacts that preserve a traceable chain from intent to outcome. Such artifacts must be expressed in the strongest verifiable form available in the "
+        "current medium (e.g., executable tests in code contexts, otherwise explicit acceptance criteria or falsifiable statements). Implementation or conclusions may only be produced "
+        "after these artifacts exist, ensuring the chain intent → validation → implementation remains intact and observable.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

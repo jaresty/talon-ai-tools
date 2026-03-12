@@ -122,7 +122,7 @@
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "forge": "The response represents the underlying generative assumptions explicitly in structured form such that valid conclusions must be derivable from that structure rather than inferred intuitively.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
-        "ground": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, behaviors, or conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their originating intent; in code contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code, and if such artifacts are not present in the provided context, the response must create them rather than assuming they exist.",
+        "ground": "The response treats a declared governing layer—intent, correctness criteria, or explicit constraints—as fixed and authoritative. All outputs must be validated against this layer through explicit artifacts that preserve a traceable chain from intent to outcome. Such artifacts must be expressed in the strongest verifiable form available in the current medium (e.g., executable tests in code contexts, otherwise explicit acceptance criteria or falsifiable statements). Implementation or conclusions may only be produced after these artifacts exist, ensuring the chain intent → validation → implementation remains intact and observable.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
@@ -8076,7 +8076,7 @@
     }
   ],
   "checksums": {
-    "axes": "d6f41c76866998f88af3a9e873085e22a0acc104c6df4110f47ea77825f55428",
+    "axes": "73953f8abb7979b7ce2f9cb4b40d87ff85bdfb0cc8437bf63ff4fe1c24b55dd6",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

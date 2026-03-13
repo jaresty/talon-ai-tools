@@ -160,6 +160,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
+        "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an "
@@ -180,8 +181,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, "
         "boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
+        "twin": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
+        "vet": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. Complements prep.",
         "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising "
         "big-picture structure over dense prose. Adapts to the channel: when combined with a code channel, visual structure is expressed through code organization, comments, or inline "
         "ASCII; without a channel, through prose metaphors and spatial layout.",
@@ -226,7 +229,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment "
         "explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
-        "derive": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
         "proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
@@ -267,6 +269,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
+        "mint": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
@@ -428,6 +431,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "ladder": "Abstraction ladder up and down",
         "log": "Work or research log entry",
         "merge": "Combine multiple sources coherently",
+        "prep": "Experiment design write-up",
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
@@ -439,7 +443,9 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "taxonomy": "Classification or type hierarchy",
         "test": "Structured test cases",
         "tight": "Concise dense prose",
+        "twin": "Side-by-side comparison layout",
         "variants": "Several distinct labeled options",
+        "vet": "Post-experiment review",
         "visual": "Abstract visual or metaphorical layout",
         "walkthrough": "Step-by-step guided walkthrough",
         "wardley": "Wardley map",
@@ -469,7 +475,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "crystal": "Shape toward explicit structure",
         "deduce": "Deductive logical reasoning",
         "depends": "Trace dependency relationships",
-        "derive": "Derive from explicit generative structure",
         "diagnose": "Identify likely root causes",
         "dimension": "Explore multiple analytical axes",
         "domains": "Identify bounded contexts",
@@ -491,6 +496,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "melody": "Coordination across components or time",
         "mesh": "Describe coupling propagation",
         "migrate": "Introduce a transition path between structures",
+        "mint": "Explicit constructive derivation",
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
         "objectivity": "Separate facts from opinions",
@@ -612,6 +618,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "ladder": "階",
         "log": "誌",
         "merge": "合",
+        "prep": "備",
         "questions": "問",
         "quiz": "試",
         "recipe": "法",
@@ -623,7 +630,9 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "taxonomy": "別",
         "test": "験",
         "tight": "簡",
+        "twin": "双",
         "variants": "変",
+        "vet": "検",
         "visual": "絵",
         "walkthrough": "歩",
         "wardley": "鎖",
@@ -653,7 +662,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "crystal": "晶",
         "deduce": "演",
         "depends": "依",
-        "derive": "推",
         "diagnose": "診",
         "dimension": "次",
         "domains": "領",
@@ -675,6 +683,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "melody": "旋",
         "mesh": "網",
         "migrate": "移",
+        "mint": "鋳",
         "mod": "周",
         "models": "型",
         "objectivity": "客",
@@ -822,7 +831,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "crystal": "Structural",
         "deduce": "Reasoning",
         "depends": "Structural",
-        "derive": "Structural",
         "diagnose": "Diagnostic",
         "dimension": "Comparative",
         "domains": "Exploration",
@@ -844,6 +852,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "melody": "Generative",
         "mesh": "Diagnostic",
         "migrate": "Structural",
+        "mint": "Structural",
         "mod": "Generative",
         "models": "Generative",
         "objectivity": "Reasoning",
@@ -952,6 +961,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "ladder": "Abstraction ladder",
         "log": "Work log entry",
         "merge": "Combine sources",
+        "prep": "Experiment design",
         "questions": "Probing questions",
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
@@ -963,7 +973,9 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "taxonomy": "Classification system",
         "test": "Test cases",
         "tight": "Concise prose",
+        "twin": "Side-by-side comparison",
         "variants": "Multiple alternatives",
+        "vet": "Post-experiment review",
         "visual": "Visual/spatial layout",
         "walkthrough": "Linear step-by-step narration",
         "wardley": "Wardley map",
@@ -993,7 +1005,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "crystal": "Crystallize into explicit structure",
         "deduce": "Logical deduction",
         "depends": "Dependency tracing",
-        "derive": "Explicit derivation structure",
         "diagnose": "Root cause",
         "dimension": "Multiple dimensions",
         "domains": "Bounded contexts",
@@ -1015,6 +1026,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "melody": "Coordination across parts",
         "mesh": "Coupling analysis",
         "migrate": "Compatibility transition path",
+        "mint": "Constructive derivation",
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
         "objectivity": "Facts vs opinions",
@@ -3848,26 +3860,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what does Z need to work",
             ],
         },
-        "derive": {
-            "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
-            "distinctions": [
-                {
-                    "note": "deduce = apply deductive logic to stated premises; derive = construct the generative structure so conclusions are built forward",
-                    "token": "deduce",
-                },
-                {
-                    "note": "ground = treat declared governing layer as fixed authority; derive = construct generative assumptions into explicit derivations",
-                    "token": "ground",
-                },
-            ],
-            "heuristics": [
-                "build the generative assumptions forward",
-                "construct explicit derivations",
-                "conclusions are products of the model",
-                "derivation structure is the response",
-                "formally construct the proof",
-            ],
-        },
         "diagnose": {
             "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks "
             "before proposing fixes or changes.",
@@ -3935,7 +3927,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
                 {
                     "note": "derive = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
-                    "token": "derive",
+                    "token": "mint",
                 },
             ],
             "heuristics": [
@@ -4088,7 +4080,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "derive = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that "
                     "conclusions must justify against",
-                    "token": "derive",
+                    "token": "mint",
                 },
             ],
             "heuristics": [
@@ -4299,6 +4291,26 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "phased transition",
                 "backward compatible change",
                 "coexist old and new",
+            ],
+        },
+        "mint": {
+            "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
+            "distinctions": [
+                {
+                    "note": "deduce = apply deductive logic to stated premises; derive = construct the generative structure so conclusions are built forward",
+                    "token": "deduce",
+                },
+                {
+                    "note": "ground = treat declared governing layer as fixed authority; derive = construct generative assumptions into explicit derivations",
+                    "token": "ground",
+                },
+            ],
+            "heuristics": [
+                "build the generative assumptions forward",
+                "construct explicit derivations",
+                "conclusions are products of the model",
+                "derivation structure is the response",
+                "formally construct the proof",
             ],
         },
         "mod": {
@@ -5032,7 +5044,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
                 {
                     "note": "derive = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
-                    "token": "derive",
+                    "token": "mint",
                 },
             ],
             "heuristics": [

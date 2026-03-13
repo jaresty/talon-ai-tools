@@ -98,11 +98,9 @@ Superseded by ADR-0160 (implemented). Retained as observation record.
 - `grow` → completeness axis (dynamic depth constraint)
 - `dam` → scope axis (containment boundary)
 
-**Blocked:**
-- `derive` → `forge` rename: `forge` conflicts with a Talon voice command; `derive` retained.
-
-**Deferred:**
-- Form token additions (`twin`, `prep`/`vet`, timeline/coupling sketch presets) — separate workstream.
+**Also completed:**
+- `derive` → `mint` (renamed; `forge` was rejected due to Talon voice command conflict)
+- Form tokens added: `twin` (side-by-side comparison), `prep` (experiment design), `vet` (post-experiment review)
 
 ## References
 - `axisConfig.py` method/descriptions @axisConfig.py#189-318

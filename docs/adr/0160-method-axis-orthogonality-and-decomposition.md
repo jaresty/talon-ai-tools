@@ -110,7 +110,7 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 | `spur` + `cull` + `verify` | Generate hypotheses, prune them, then run falsification tests on the survivors. |
 | `sweep` + `twin` (form) + `sift` | Enumerate options, lay them out side-by-side, and score each against explicit criteria. |
 | `pulse` + `cull` | Model channel transmission then audit the checkpoints where losses occur. |
-| `derive` + `root` + `bind` | Produce a constructive derivation anchored to a canonical locus with explicit dependency wiring. (`derive` retains its name; see Legacy Replacement Guidance.) |
+| `mint` + `root` + `bind` | Produce a constructive derivation anchored to a canonical locus with explicit dependency wiring. |
 
 ## Implementation Status
 
@@ -122,15 +122,12 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 - Axis moves: `grow` → completeness, `dam` → scope
 - Retirements: `slot`, `toll` removed
 
-**Blocked:**
-- `derive` → `forge`: `forge` conflicts with an existing Talon voice command. `derive` name retained. Open question: find an alternative name.
-
-**Deferred (form token workstream):**
-1. Define form tokens for timeline, coupling sketch, and similar artifacts — prerequisite for the artifact→form split.
-2. Add `twin` (comparison layout), `prep`/`vet` (experiment write-up structure) as form tokens.
+**Also completed:**
+- `derive` → `mint`: `forge` was the original candidate but conflicted with a Talon voice command; `mint` adopted instead.
+- Form tokens added: `twin` (side-by-side comparison layout), `prep` (experiment design write-up), `vet` (post-experiment review).
 
 **Remaining:**
-- Refresh ADR-0159 with implementation outcomes (see below).
+- Timeline/coupling sketch as form/channel presets — lower priority, no blocking issues.
 
 ### Legacy Replacement Guidance
 
@@ -153,7 +150,7 @@ Tokens not listed below are kept as-is on the method axis; their current descrip
 | `explore` | Rename to `sweep` — semantics shift to "enumerate without evaluating"; `cull`/`sift` handle evaluation. |
 | `split` | Keep `split`; pair with form token `twin` for comparisons. |
 | `experimental` | Shift structure to form tokens `prep` / `vet`; keep method only for reasoning aspects if required. |
-| `derive` | Rename to `forge` — constructive derivation is clearer. Keep `root`/`bind` for canonical/dependency responsibilities. **Blocked**: `forge` conflicts with an existing Talon voice command. Name retained as `derive` until an alternative is found or the conflict is resolved. |
+| `derive` | Rename to `mint` — constructive derivation, producing a new artifact from a mold/structure. (`forge` was the original candidate but conflicts with an existing Talon voice command.) Keep `root`/`bind` for canonical/dependency responsibilities. |
 | `canon` | Rename to `root` — canonical locus is the core concept. `bind` handles dependency wiring. |
 | `verify` | Narrow to falsification/testing only; governance enforcement remains with `ground`. Name retained. |
 

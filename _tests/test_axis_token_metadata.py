@@ -403,7 +403,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "crystal",
         "deduce",
         "depends",
-        "derive",
+        "mint",
         "diagnose",
         "dimension",
         "domains",

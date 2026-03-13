@@ -1201,6 +1201,7 @@ func renderAdvancedFeatures(w io.Writer, compact bool) {
 	if compact {
 		fmt.Fprintf(w, "## Advanced Features\n\n")
 		fmt.Fprintf(w, "- `bar shuffle`: Random token generation\n")
+		fmt.Fprintf(w, "- Compare mode: `axis=tok1,tok2` generates N independent prompts side-by-side\n")
 		fmt.Fprintf(w, "- `--json`, `--output`, `--input`: Output options\n")
 		fmt.Fprintf(w, "- `//next`, `//:stage`: Skip sentinels\n\n")
 		return
@@ -1212,6 +1213,20 @@ func renderAdvancedFeatures(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "bar shuffle [--seed N] [--include axes] [--exclude axes] [--fill 0.0-1.0]\n")
 	fmt.Fprintf(w, "```\n\n")
 	fmt.Fprintf(w, "Generate random token combinations for exploring the grammar space.\n\n")
+
+	fmt.Fprintf(w, "### Compare Mode\n\n")
+	fmt.Fprintf(w, "Place comma-separated values on exactly one axis to generate a comparison prompt:\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "bar build probe method=diagnose,mapping --subject \"my system\"\n")
+	fmt.Fprintf(w, "bar build show directional=fog,dig --subject \"this design\"\n")
+	fmt.Fprintf(w, "```\n\n")
+	fmt.Fprintf(w, "The output contains N labeled sections, one per variant. Each section is a full\n")
+	fmt.Fprintf(w, "independent prompt with all base tokens preserved — only the compared axis value\n")
+	fmt.Fprintf(w, "differs. The LLM responds to each section separately without blending.\n\n")
+	fmt.Fprintf(w, "**Rules:**\n")
+	fmt.Fprintf(w, "- Only one axis may carry multiple values; a second multi-value axis is an error\n")
+	fmt.Fprintf(w, "- Slugs are accepted: `directional=fog,fip-bog` resolves to canonical token names\n")
+	fmt.Fprintf(w, "- Use compare mode to empirically see what a token does rather than reading its description\n\n")
 
 	fmt.Fprintf(w, "### Output Formats\n\n")
 	fmt.Fprintf(w, "- `--json`: Machine-readable contract output\n")

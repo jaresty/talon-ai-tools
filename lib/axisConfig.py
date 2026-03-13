@@ -928,7 +928,16 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "sync": "Session plan",
         "video": "Video output",
     },
-    "completeness": {"grow": "Expand on demand"},
+    "completeness": {
+        "deep": "Unpack reasoning layers and fine details",
+        "full": "Thorough coverage without exhausting every edge case",
+        "gist": "Essential points only",
+        "grow": "Expand on demand",
+        "max": "Exhaustive — every case, every edge",
+        "minimal": "Briefest valid response",
+        "narrow": "Focused depth on a specific slice",
+        "skim": "Surface-level coverage",
+    },
     "directional": {
         "bog": "Reflect + act",
         "dig": "Concrete/specific",
@@ -980,6 +989,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "taxonomy": "Classification system",
         "test": "Test cases",
         "tight": "Concise prose",
+        "timeline": "Timeline or sequence layout",
         "twin": "Side-by-side comparison",
         "variants": "Multiple alternatives",
         "vet": "Post-experiment review",
@@ -1054,6 +1064,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "resilience": "Stress and fragility",
         "rigor": "Disciplined reasoning",
         "risks": "Potential problems",
+        "ritual": "Structure via established roles and procedures",
         "robust": "Works across futures",
         "root": "Single source of truth",
         "seep": "Scope overreach",
@@ -1071,6 +1082,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "triage": "Risk-gradient depth",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
+        "yield": "Minimal intervention / natural resolution",
     },
     "scope": {
         "act": "Actions/tasks",
@@ -3390,6 +3402,112 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "reflect on incident",
                 "what went wrong and what to do next",
                 "lessons learned",
+            ],
+        },
+        "coupling": {
+            "definition": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is.",
+            "distinctions": [
+                {
+                    "note": "coupling (form) = output structured as a coupling map; snag/mesh (method) = analytical lens for finding or resolving coupling",
+                    "token": "snag",
+                }
+            ],
+            "heuristics": [
+                "coupling map",
+                "map out the coupling",
+                "show the seams between",
+                "show what crosses the boundary",
+                "coupling diagram",
+                "what is joined at the interface",
+                "where do these components couple",
+            ],
+        },
+        "prep": {
+            "definition": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
+            "distinctions": [
+                {
+                    "note": "prep = design the experiment before running it; vet = review the results after running it",
+                    "token": "vet",
+                },
+                {
+                    "note": "experimental (method) = analytical lens of proposing experiments; prep (form) = output structured as an experiment write-up",
+                    "token": "experimental",
+                },
+            ],
+            "heuristics": [
+                "design an experiment",
+                "write up the experiment plan",
+                "experiment design write-up",
+                "hypothesis and method",
+                "frame this as an experiment",
+                "set up the test structure",
+                "experiment write-up with expected outcomes",
+            ],
+        },
+        "timeline": {
+            "definition": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs.",
+            "distinctions": [
+                {
+                    "note": "timeline (form) = output structured as a temporal sequence layout; walkthrough (form) = guided step-by-step narration",
+                    "token": "walkthrough",
+                },
+                {
+                    "note": "timeline (form) = temporal layout of stages; log (form) = dated work-log entries",
+                    "token": "log",
+                },
+            ],
+            "heuristics": [
+                "as a timeline",
+                "show the history in timeline format",
+                "timeline of events",
+                "chronological sequence",
+                "temporal order with markers",
+                "sequence of stages over time",
+                "show this as a timeline",
+            ],
+        },
+        "twin": {
+            "definition": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
+            "distinctions": [
+                {
+                    "note": "twin = strict side-by-side layout with equal weight per alternative; variants = labeled options with descriptions (may be narrative)",
+                    "token": "variants",
+                },
+                {
+                    "note": "twin = layout form for direct comparison; table = tabular grid for structured multi-attribute comparison",
+                    "token": "table",
+                },
+            ],
+            "heuristics": [
+                "side by side",
+                "compare X and Y side by side",
+                "two alternatives side by side",
+                "equal weight comparison",
+                "show both without interleaving",
+                "parallel comparison layout",
+                "show the two options in parallel",
+            ],
+        },
+        "vet": {
+            "definition": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. Complements prep.",
+            "distinctions": [
+                {
+                    "note": "vet = post-experiment review of outcomes vs expectations; prep = experiment design write-up before running",
+                    "token": "prep",
+                },
+                {
+                    "note": "wasinawa = what/so-what/now-what reflection on past events; vet = structured review of experiment results against predictions",
+                    "token": "wasinawa",
+                },
+            ],
+            "heuristics": [
+                "review the results against what we predicted",
+                "post-experiment review",
+                "compare outcomes to expectations",
+                "what did we actually observe vs what we expected",
+                "debrief on the experiment",
+                "what were the results compared to our hypothesis",
+                "review what happened vs what we planned",
             ],
         },
     },

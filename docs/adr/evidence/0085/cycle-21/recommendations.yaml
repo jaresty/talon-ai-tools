@@ -1,0 +1,185 @@
+# ADR 0085: Cycle 21 Recommendations
+# Generated: 2026-03-13
+# Based on: 40-prompt shuffled corpus evaluation (seeds 656-695)
+# Bar version: 2.102.0
+# Evaluator: Claude (human-assisted)
+
+recommendations:
+
+  # ============================================================
+  # CLOSURES: Long-open items from cycle 1 now resolved
+  # ============================================================
+
+  - action: close
+    priority: P0
+    id: gherkin-edit
+    token: "gherkin"
+    axis: channel
+    reason: "Description now includes cross-channel behavior and format specifics — resolved by catalog evolution"
+    status: Resolved
+    notes: "Verified in bar help llm 2.102.0: 'outputs only Gherkin format...Works with presenterm/diagram channels when wrapped in markdown code blocks'"
+
+  - action: close
+    priority: P0
+    id: plain-edit
+    token: "plain"
+    axis: channel
+    reason: "Description now clear and specific: 'plain prose with natural paragraphs...imposing no additional structural conventions'"
+    status: Resolved
+
+  - action: close
+    priority: P0
+    id: diagram-edit
+    token: "diagram"
+    axis: channel
+    reason: "Description now highly specific with Mermaid safety constraints documented"
+    status: Resolved
+
+  - action: close
+    priority: P1
+    id: socratic-edit
+    token: "socratic"
+    axis: form
+    reason: "Description clearly distinguishes from 'questions' and 'quiz'; behavior well-specified"
+    status: Resolved
+
+  - action: close
+    priority: P1
+    id: announce-edit
+    token: "announce"
+    axis: intent
+    reason: "Description concise and clear: 'Share news or updates with the audience'"
+    status: Resolved
+
+  - action: close
+    priority: P1
+    id: entertain-edit
+    token: "entertain"
+    axis: intent
+    reason: "Token no longer exists in intent catalog — retired in a prior cycle"
+    status: Retired
+
+  # ============================================================
+  # TRACKING: Known recurring issues
+  # ============================================================
+
+  - action: tracking
+    priority: P1
+    id: R36
+    token: "gist, skim"
+    axis: completeness
+    reason: "Compound directionals + gist/skim produce suboptimal output (score 2)"
+    status: "Documented in cycle 11; guidance in place; no R36 hit this cycle"
+    notes: "Statistical floor; 0 hits this cycle (best outcome)"
+
+  - action: tracking
+    priority: P1
+    id: R40
+    token: "shellscript"
+    axis: channel
+    reason: "Cross-axis incompatibility with narrative tasks not grammar-enforced"
+    status: Deferred — R41-grammar-hardening pending
+    notes: "No new shellscript data points this cycle (seed 666 = make+shellscript, valid)"
+
+  # ============================================================
+  # NEW TRACKING: Cycle 21 findings
+  # ============================================================
+
+  - action: tracking
+    priority: P3
+    id: R42
+    token: "slack"
+    axis: channel
+    reason: "slack (brevity channel) + fip-bog (all-compass compound directional) creates structural tension — output cannot fully express the directional sweep within Slack's format constraints"
+    evidence: [seed_671]
+    status: Open — one data point; observe in cycle 22
+    notes: "Analogous to R36 pattern but at channel level. Not cautionary with one data point."
+
+  # ============================================================
+  # EDIT: bar help llm heuristic gap
+  # ============================================================
+
+  - action: edit
+    priority: P2
+    id: probe-sim-brevity-heuristic
+    token: "probe, sim"
+    axis: task
+    ssot_target: guidance_prose
+    target_file: "internal/barcli/help_llm.go"
+    target_section: "Choosing Completeness"
+    current: "No task-specific guidance in completeness heuristics"
+    proposed: |
+      Add note under Choosing Completeness:
+      "For probe and sim tasks, prefer 'deep' or 'full' completeness. 'minimal' and 'gist'
+      reduce analytical value for these tasks — probe's purpose is surfacing structure and
+      implications, which requires depth; sim's narrative arc needs space to develop.
+      Score 3 or below is expected when probe or sim is paired with minimal or gist."
+    reason: "probe+minimal (seed 691) is the third confirmed instance of this pattern (cycles 14, 15, 21). Pattern is robust enough for skill heuristic documentation."
+    evidence: [seed_691, "cycle-14 probe+gist", "cycle-15 probe+gist"]
+    notes: "Not a token retirement signal — both tokens are valid in isolation. This is user-guidance gap."
+
+  # ============================================================
+  # OPEN (not yet addressed): Cycle 1 method retirements
+  # ============================================================
+
+  - action: tracking
+    priority: P2
+    id: dim-retire
+    token: "dimension"
+    axis: method
+    reason: "Potentially overlaps with other methods"
+    status: Open — not evaluated in cycles 2-21
+    notes: "Add to cycle 22 focused method evaluation if needed"
+
+  - action: tracking
+    priority: P2
+    id: conv-retire
+    token: "converge"
+    axis: method
+    reason: "Potentially overlaps with other methods"
+    status: Open — not evaluated in cycles 2-21
+    notes: "Add to cycle 22 focused method evaluation if needed"
+
+  # ============================================================
+  # DISTINCTION CHECK: dim-retire and conv-retire (cycle 1 backlog)
+  # ============================================================
+
+  - action: close
+    priority: P2
+    id: dim-retire
+    token: "dimension"
+    axis: method
+    distinction-check: distinguishable
+    distinction-check-subjects:
+      - "why is this codebase hard to extend"
+      - "how should we decide which microservices to split out next"
+      - "what's wrong with our current API design"
+    reason: |
+      dimension and converge are directional opposites, not overlapping peers.
+      dimension = diverge: surface multiple axes of analysis, make implicit factors explicit,
+      no narrowing or recommendation.
+      converge = narrow: systematically filter from broad options to a focused recommendation,
+      weigh tradeoffs explicitly as options are eliminated.
+      Heuristics confirm: dimension trigger phrases ("what are the dimensions", "what factors
+      are at play") are completely disjoint from converge trigger phrases ("narrow it down",
+      "which one should I go with", "synthesize into a recommendation").
+      Across all 3 subjects, dimension would produce multi-axis exploration without conclusions;
+      converge would produce weighted synthesis ending in a recommendation. Outputs are
+      structurally incompatible, not interchangeable.
+    verdict: "Retain both. Original cycle-1 retire signal was likely name-similarity heuristic
+      with no behavioral evidence. With compare mode evidence: strong retain."
+    status: Closed — no retire action warranted
+
+  - action: close
+    priority: P2
+    id: conv-retire
+    token: "converge"
+    axis: method
+    distinction-check: distinguishable
+    distinction-check-subjects:
+      - "why is this codebase hard to extend"
+      - "how should we decide which microservices to split out next"
+      - "what's wrong with our current API design"
+    reason: "Same as dim-retire above — converge is clearly distinct from dimension."
+    verdict: "Retain both."
+    status: Closed — no retire action warranted

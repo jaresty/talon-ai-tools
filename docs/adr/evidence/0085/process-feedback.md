@@ -147,3 +147,25 @@ They are complementary, not redundant. Step 9 is a pre-review gate for each reco
 | Medium | G5 seed selection | Select meta-analysis seeds by rule (N random score-4, all score-2, N max-recurrence score-3) |
 | Low | G4 score-3 sparse | Track recurring sparse patterns; treat 3+ occurrences same as score-2 threshold |
 | Low | G6 step 9 / Phase 2d overlap | Clarify distinction in ADR; both are kept |
+
+---
+
+## Cycle 21 Process Note (2026-03-13)
+
+### G7 — Compare mode available but no backlog sweep rule for retire candidates
+
+**Observed:** ADR-0161 Stage 1 (compare mode) merged before cycle 21. Phase 2e specifies compare
+triggers from new evaluation scoring only. `dim-retire` and `conv-retire` are 21-cycle-old open
+retire candidates that never triggered compare because the tool didn't exist when they were filed
+and no rule existed to revisit them once it did.
+
+**Root cause:** The process is purely reactive — compare fires from new evidence, not from
+accumulated open candidates. Retire candidates can sit indefinitely once the original signal cycle
+passes.
+
+**Fix applied:** Phase 2e updated to add a retire-candidate backlog sweep rule: if a retire
+candidate token appears in the corpus this cycle, compare mode is required. If a candidate goes
+5+ cycles without appearing, flag it as a low-frequency signal.
+
+**Immediate action:** `dimension` and `converge` are the oldest open retire candidates. Run
+compare mode now rather than waiting for them to appear in a shuffle seed.

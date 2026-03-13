@@ -1,0 +1,135 @@
+# ADR-0113 Loop-26 Recommendations
+# Generated: 2026-03-13
+# Pre-apply mean: 3.25 | Post-apply mean: 4.92
+
+fixes_applied:
+
+  - id: G-L26-01
+    token: vet
+    axis: form
+    action: add-heuristics
+    file: lib/axisConfig.py
+    ssot: AXIS_TOKEN_METADATA["form"]["vet"]
+    heuristics_added:
+      - "review the results against what we predicted"
+      - "post-experiment review"
+      - "compare outcomes to expectations"
+      - "what did we actually observe vs what we expected"
+      - "debrief on the experiment"
+      - "what were the results compared to our hypothesis"
+      - "review what happened vs what we planned"
+    pre_score: 2
+    post_score: 5
+
+  - id: G-L26-02
+    token: ritual
+    axis: method
+    action: add-to-routing-concept-and-help-bullets
+    files:
+      - lib/axisConfig.py  # AXIS_KEY_TO_ROUTING_CONCEPT["method"]["ritual"]
+      - internal/barcli/help_llm.go  # Coordination-class methods section
+    note: Token already had heuristics; was missing from routing concept map and Choosing Method navigation
+    pre_score: 2
+    post_score: 5
+
+  - id: G-L26-03
+    token: yield
+    axis: method
+    action: add-to-routing-concept-and-help-bullets
+    files:
+      - lib/axisConfig.py  # AXIS_KEY_TO_ROUTING_CONCEPT["method"]["yield"]
+      - internal/barcli/help_llm.go  # Coordination-class methods section
+    note: Token already had heuristics; was missing from routing concept map and Choosing Method navigation
+    pre_score: 2
+    post_score: 5
+
+  - id: G-L26-04
+    token: timeline
+    axis: form
+    action: add-routing-concept-and-heuristics
+    file: lib/axisConfig.py
+    ssot_targets:
+      - AXIS_KEY_TO_ROUTING_CONCEPT["form"]["timeline"]
+      - AXIS_TOKEN_METADATA["form"]["timeline"]
+    heuristics_added:
+      - "as a timeline"
+      - "show the history in timeline format"
+      - "timeline of events"
+      - "chronological sequence"
+      - "temporal order with markers"
+      - "sequence of stages over time"
+      - "show this as a timeline"
+    pre_score: 3
+    post_score: 5
+
+  - id: G-L26-05
+    token: twin
+    axis: form
+    action: add-heuristics
+    file: lib/axisConfig.py
+    ssot: AXIS_TOKEN_METADATA["form"]["twin"]
+    heuristics_added:
+      - "side by side"
+      - "compare X and Y side by side"
+      - "two alternatives side by side"
+      - "equal weight comparison"
+      - "show both without interleaving"
+      - "parallel comparison layout"
+      - "show the two options in parallel"
+    pre_score: 3
+    post_score: 5
+
+  - id: G-L26-06
+    token: prep
+    axis: form
+    action: add-heuristics
+    file: lib/axisConfig.py
+    ssot: AXIS_TOKEN_METADATA["form"]["prep"]
+    heuristics_added:
+      - "design an experiment"
+      - "write up the experiment plan"
+      - "experiment design write-up"
+      - "hypothesis and method"
+      - "frame this as an experiment"
+      - "set up the test structure"
+      - "experiment write-up with expected outcomes"
+    pre_score: 3
+    post_score: 5
+
+  - id: G-L26-07
+    token: coupling
+    axis: form
+    action: add-heuristics
+    file: lib/axisConfig.py
+    ssot: AXIS_TOKEN_METADATA["form"]["coupling"]
+    heuristics_added:
+      - "coupling map"
+      - "map out the coupling"
+      - "show the seams between"
+      - "show what crosses the boundary"
+      - "coupling diagram"
+      - "what is joined at the interface"
+      - "where do these components couple"
+    pre_score: 3
+    post_score: 5
+
+  - id: G-L26-08
+    axis: help_llm
+    action: fix-completeness-guidance
+    file: internal/barcli/help_llm.go
+    section: "Choosing Completeness"
+    change: "Added brevity-signal exception: explicit user signals ('quickly', 'brief overview', 'just a sketch') override the probe/sim depth preference"
+    pre_score_t10: 4
+    post_score_t10: 5
+    pre_score_t11: 3
+    post_score_t11: 5
+
+bonus_fix:
+  description: "Completeness routing concept map — all 7 completeness tokens (deep, full, gist, max, minimal, narrow, skim) added to AXIS_KEY_TO_ROUTING_CONCEPT['completeness']; previously only 'grow' was present"
+  file: lib/axisConfig.py
+
+residual:
+  - id: RC-L26-01
+    description: "T06 (ground — spec-first method) scores 4: ground now appears in Choosing Method bullets but was a pre-existing gap not targeted this loop. Token is discoverable via heuristics; the minor gap is that 'ground' + 'enforce' as a paired combination is not explicitly in any usage pattern example."
+    severity: Low
+    action: Watch — if further misrouting observed, add usage pattern example.

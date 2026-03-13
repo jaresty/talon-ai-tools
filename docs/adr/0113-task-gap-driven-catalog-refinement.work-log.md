@@ -794,3 +794,60 @@ next_trigger: >
 - G-L18-01: questions form use_when — 'what questions should I ask', 'diagnostic questions for' (distinct from socratic)
 
 **Post-apply:** T01→4. form coverage 15/~32. Form axis now systematically covered.
+
+---
+
+## loop-26 | 2026-03-13 | ADR-0160 new token discoverability
+
+```
+focus: ADR-0160 added 11 new tokens since loop-25 (enforce, observe, ritual, yield, mark,
+  ground, timeline, coupling, twin, prep, vet). Pre-eval finding: timeline/coupling/twin/prep/vet
+  had zero AXIS_TOKEN_METADATA["form"] entries — confirmed Gap Type 1 before first task.
+
+trigger: New tokens added to catalog (ADR-0160). Binary version: 2.102.0.
+
+mean_score_pre: 3.25/5 (lowest since loop-16; 3 score-2 gaps, 5 score-3 gaps)
+mean_score_post: 4.92/5 ✅ (all 9 gap tasks → 5; T06 remains 4, pre-existing minor gap)
+
+gaps_found:
+  G-L26-01: vet (form) — Type 1, score 2 → 5. No AXIS_TOKEN_METADATA entry. Added heuristics.
+  G-L26-02: ritual (method) — Type 1, score 2 → 5. Had heuristics, missing from routing concept
+    map and Choosing Method bullets. Added routing concept + help_llm.go Coordination-class entry.
+  G-L26-03: yield (method) — Type 1, score 2 → 5. Same as ritual.
+  G-L26-04: timeline (form) — Type 1, score 3 → 5. Missing from AXIS_TOKEN_METADATA AND routing
+    concept map. Added both.
+  G-L26-05: twin (form) — Type 2, score 3 → 5. Routing concept visible; no heuristics. Added.
+  G-L26-06: prep (form) — Type 2, score 3 → 5. Routing concept visible; no heuristics. Added.
+  G-L26-07: coupling (form) — Type 2, score 3 → 5. Routing concept visible; no heuristics. Added.
+  G-L26-08: Choosing Completeness — Type 3, T10 4→5, T11 3→5. Guidance too restrictive for
+    explicit user brevity signals. Added override exception.
+
+bonus_fix: Completeness routing concept map — 7 missing tokens (deep/full/gist/max/minimal/
+  narrow/skim) added to AXIS_KEY_TO_ROUTING_CONCEPT["completeness"]. Only "grow" was present.
+
+fixes_applied:
+  - lib/axisConfig.py: AXIS_TOKEN_METADATA["form"] — added entries for coupling/prep/timeline/twin/vet
+  - lib/axisConfig.py: AXIS_KEY_TO_ROUTING_CONCEPT["method"] — added ritual, yield
+  - lib/axisConfig.py: AXIS_KEY_TO_ROUTING_CONCEPT["form"] — added timeline
+  - lib/axisConfig.py: AXIS_KEY_TO_ROUTING_CONCEPT["completeness"] — added 7 missing tokens
+  - internal/barcli/help_llm.go: Choosing Method — Specification-class and Coordination-class
+    sections (ground/enforce/observe/ritual/yield)
+  - internal/barcli/help_llm.go: Choosing Completeness — brevity-signal exception
+
+validation:
+  - go test ./internal/barcli/... → ok (1.339s)
+  - make bar-grammar-update → grammar regenerated
+  - go test ./internal/barcli/... (post-regen) → ok (1.384s)
+  - post-apply eval: all 9 gap tasks score 5
+
+residual_constraints:
+  - id: RC-L26-01
+    constraint: T06 (ground/enforce paired combination) scores 4; no usage pattern example
+      covers "spec-first + enforce for strongest artifact." Discoverable via heuristics but
+      the combination pattern is not illustrated.
+    severity: Low
+    monitoring_trigger: User feedback on ground+enforce combination being hard to discover.
+
+next_work: No active gaps. Reopen on: new catalog additions, user routing failures, or
+  next ADR-0113 cross-axis health check.
+```

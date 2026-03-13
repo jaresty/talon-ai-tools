@@ -275,6 +275,13 @@ bar build probe full domains gap \
 same-category overlap, near-identical descriptions, or qualitative notes saying "outputs felt
 identical." Run before Phase 3 retire recommendations are drafted.
 
+**Retire-candidate backlog sweep:** At the start of each cycle, check which tokens on the
+retire-candidate list (open `action: retire` or `action: tracking` entries in `fix-closure-tracking.md`)
+appear in the corpus. If any retire candidate appears in a shuffle seed this cycle, compare mode
+is required before the cycle closes. If a retire candidate goes 5+ cycles without appearing in
+the corpus at all, flag it separately — low shuffle frequency is itself a retirement signal
+(low utility or high redundancy causing systematic under-selection).
+
 **Mechanism:** Use ADR-0161 Stage 1 compare mode to generate a side-by-side Approach A prompt
 for the candidate pair, then submit it to an LLM and score whether the two output sections are
 empirically distinguishable.

@@ -755,3 +755,73 @@ No changes — all score-2 seeds covered by existing documentation.
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-19/evaluations.md`
+
+---
+
+## Cycle 20: R36 Recurrence + R40 Fourth Data Point + New Presenterm Finding (Seeds 616–655)
+
+**Date:** 2026-03-03
+**Focus:** General health check; R36/R40 tracking; post-cycle-19 validation; full template evaluation
+**Seeds:** 616–655 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| R36 hits | 2 (seeds 632, 635) | Above-average draw; all covered by cycle-11 fix |
+| shellscript + pick (R40) | Score 2 | 4th consecutive cycle; grammar gap confirmed |
+| presenterm + deep | Score 3 | New finding (seed 626); cautionary in cross-axis but not prominent |
+| Corpus average | 3.70 | Regression from cycle 19 (3.73) due to R36 hits |
+
+### Changes Applied
+
+No changes — all score-2 seeds covered by existing documentation. fix-closure-tracking.md created.
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| R41-grammar-hardening | Cross-axis incompatibility schema: shellscript+task, commit/gist+completeness | Medium |
+| presenterm-P3 | presenterm+deep cautionary not prominent in token description | Low |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-20/evaluations.md`
+
+---
+
+## Cycle 21: Post-2.102 Version Delta + P0 Closure (Seeds 656–695)
+
+**Date:** 2026-03-13
+**Focus:** Version delta check (2.67.0 → 2.102.0), P0/P1 open-item closure, general health
+**Seeds:** 656–695 (40 prompts)
+
+### Results
+
+| Category | Score | Finding |
+|----------|-------|---------|
+| Version delta check | ✅ Clean | No new catalog regressions from 2.67.0 → 2.102.0 |
+| R36 | 0 hits | Best outcome; guidance is holding |
+| probe+minimal (seed 691) | Score 3 | 3rd confirmed instance of probe/sim+brevity pattern |
+| slack+fip-bog (seed 671) | Score 3 | New R42 candidate; 1 data point |
+| P0/P1 open items from cycle 1 | Resolved | gherkin, plain, diagram, socratic, announce all evolved; entertain retired |
+| Corpus average | **3.95** | Highest in program history |
+
+### Changes Applied
+
+- fix-closure-tracking.md: closed 6 long-open items (5 resolved, 1 retired)
+- fix-closure-tracking.md: added R42 (slack+max-compound directional, 1 data point)
+- fix-closure-tracking.md: added probe-sim-brevity heuristic gap (P2)
+
+### Open Items
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| probe-sim-brevity | Add Choosing Completeness note for probe/sim+minimal/gist | P2 |
+| R42 | slack + max-compound directional (fip-bog) produces score 3 | P3 — 1 data point |
+| R41-grammar-hardening | Cross-axis incompatibility schema (unchanged) | Medium |
+| dim-retire, conv-retire | distinction-check: distinguishable — closed | ✅ Resolved via compare mode |
+
+### Evidence
+
+`docs/adr/evidence/0085/cycle-21/evaluations.md`

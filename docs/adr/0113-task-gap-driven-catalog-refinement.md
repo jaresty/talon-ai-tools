@@ -270,6 +270,20 @@ evidence: [task_T07, task_T14]
 A token exists that would serve the task, but the skill failed to surface it. The token's
 description or the skill's heuristics don't connect this task type to that token.
 
+**Compare-mode validation**: Before diagnosing Gap Type 2, confirm the suspected better token
+actually produces a superior result for this task. Run a comparison between what autopilot
+selected and the suspected better token:
+
+```bash
+bar build probe method=autopilot_pick,suspected_better \
+  --subject "task description verbatim"
+# Submit to LLM; confirm the suspected_better section genuinely serves the task better
+```
+
+If the suspected token's output is not meaningfully better, reclassify as Gap Type 3
+(skill-guidance-wrong) or no gap. Only diagnose Gap Type 2 when compare-mode output
+confirms the alternative token serves the task better.
+
 ```yaml
 gap_type: undiscoverable-token
 task: T12 — Evaluate a proposed architecture against known failure patterns
@@ -279,6 +293,8 @@ observation: >
   but bar-autopilot selected 'adversarial' instead. The inversion description doesn't
   mention architecture evaluation as a use case, so the skill's heuristics don't
   surface it for this pattern.
+compare-mode-validation: confirmed  # confirmed | not-confirmed | inconclusive
+compare-mode-command: "bar build probe method=adversarial,inversion --subject 'evaluate this architecture against known failure patterns'"
 recommendation:
   action: edit
   token: inversion
@@ -320,6 +336,18 @@ evidence: [task_T19, task_T23]
 
 A method token was selected from the correct axis, but its semantic category (Decision/Understanding/Exploration/Diagnostic) doesn't match the task's analytical need. The token is discoverable and the skill guidance isn't grossly wrong — the selection fails at category granularity.
 
+**Compare-mode validation**: Confirm the Diagnostic-category token produces a better-fitted
+response before recommending a skill update. Run a direct comparison:
+
+```bash
+bar build probe method=autopilot_understanding_pick,diagnostic_candidate \
+  --subject "task description verbatim"
+# Submit to LLM; confirm the Diagnostic section's framing is more appropriate
+```
+
+If the Diagnostic token is not clearly better, reconsider whether this is genuinely a
+category misrouting or a task type where Understanding methods are legitimately appropriate.
+
 ```yaml
 gap_type: category-misrouting
 task: T31 — Identify the root cause of a recurring production failure
@@ -330,6 +358,8 @@ observation: >
   to the Diagnostic category ('diagnose', 'inversion', 'adversarial').
   'mapping' is discoverable and technically valid, but the wrong analytical
   stance for this task type.
+compare-mode-validation: confirmed  # confirmed | not-confirmed | inconclusive
+compare-mode-command: "bar build probe method=mapping,diagnose --subject 'identify the root cause of a recurring production failure'"
 recommendation:
   action: skill-update
   skill: bar-autopilot
@@ -340,6 +370,39 @@ recommendation:
     Understanding methods (mapping, systemic, flow) describe structure;
     Diagnostic methods find what's broken.
 evidence: [task_T31]
+```
+
+#### Gap Type 4b: Distinguishable but Consistently Weaker
+
+Both tokens exist, are discoverable, and produce distinguishable outputs — but autopilot
+consistently selects a token that produces lower-quality results for this task type. Unlike
+Gap Type 4 (wrong category selected) or Gap Type 2 (token not surfaced), here the selection
+logic is coherent but the relative quality ordering is wrong.
+
+**Detection**: Surfaces via compare mode when the non-selected token's output section is
+clearly stronger, yet the skill's heuristics do not flag it as the preferred choice.
+
+```yaml
+gap_type: distinguishable-weaker
+task: T18 — Summarise the tradeoffs in a design decision for a non-technical audience
+dimension: method
+observation: >
+  bar-autopilot selected 'spur' (Decision category) but the task is primarily about
+  explaining tradeoffs accessibly, not making a decision. Compare mode showed 'sweep'
+  (Exploration) produces a more complete and accessible tradeoff enumeration. Both tokens
+  are distinguishable and discoverable; 'spur' is simply weaker for this task type.
+compare-mode-validation: confirmed
+compare-mode-command: "bar build show method=spur,sweep --subject 'summarise the tradeoffs in moving from REST to GraphQL for the PM'"
+recommendation:
+  action: skill-update
+  skill: bar-autopilot
+  section: "Choosing Method"
+  proposed_addition: >
+    For tradeoff explanation tasks targeting non-technical audiences, prefer Exploration
+    methods (sweep, dimension) over Decision methods (spur, converge). Decision methods
+    presuppose the audience will act on the tradeoffs; Exploration methods surface them
+    more completely.
+evidence: [task_T18, task_T22]
 ```
 
 #### Gap Type 5: Out of Scope
@@ -369,13 +432,14 @@ evidence: [task_T28]
 
 Aggregate gap diagnoses into actionable recommendations following the same taxonomy as ADR-0085:
 
-| Gap type | Recommendation action |
-|----------|-----------------------|
-| `missing-token` | **Add** — propose new token with description |
-| `undiscoverable-token` | **Edit** — clarify token description to surface for this task type; or update skill heuristics |
-| `skill-guidance-wrong` | **Skill-update** — revise skill section (Usage Patterns, Heuristics) |
-| `category-misrouting` | **Skill-update** — revise "Choosing Method" section to clarify category selection for this task type |
-| `out-of-scope` | **Document** — note as known boundary in bar help llm |
+| Gap type | Recommendation action | Compare-mode required? |
+|----------|-----------------------|------------------------|
+| `missing-token` | **Add** — propose new token with description | No |
+| `undiscoverable-token` | **Edit** — clarify token description to surface for this task type; or update skill heuristics | **Yes** — confirm alternative is better |
+| `skill-guidance-wrong` | **Skill-update** — revise skill section (Usage Patterns, Heuristics) | No |
+| `category-misrouting` | **Skill-update** — revise "Choosing Method" section to clarify category selection for this task type | **Yes** — confirm Diagnostic/correct-category token is better |
+| `distinguishable-weaker` | **Skill-update** — clarify relative quality ordering in heuristics for this task class | **Yes** — required for detection |
+| `out-of-scope` | **Document** — note as known boundary in bar help llm | No |
 
 ---
 
@@ -435,8 +499,13 @@ bar build {tokens}
 - Prompt clarity: {1-5}
 - **Overall: {1-5}**
 
-**Gap diagnosis:** {gap type or "none"} — [missing-token / undiscoverable-token / skill-guidance-wrong / category-misrouting / out-of-scope]
+**Gap diagnosis:** {gap type or "none"} — [missing-token / undiscoverable-token / skill-guidance-wrong / category-misrouting / distinguishable-weaker / out-of-scope]
 {Gap YAML block if applicable}
+
+**Compare-mode validation** (required for undiscoverable-token, category-misrouting, distinguishable-weaker):
+- Command run: `bar build {tokens with comma-separated variants} --subject "{task description}"`
+- Result: [confirmed / not-confirmed / inconclusive]
+- Notes: {what the comparison showed}
 
 **Starter pack check (co-primary):**
 - Relevant pack: {pack name or "none"}
@@ -480,7 +549,7 @@ Steps:
 3. **Sample** — draw 20-30 tasks proportional to weight
 4. **Apply skills** — for each task, run bar-autopilot to select tokens and build prompt
 5. **Score** — evaluate coverage on four dimensions, capture LLM execution outcome
-6. **Diagnose** — classify gaps by type for all tasks scoring ≤3
+6. **Diagnose** — classify gaps by type for all tasks scoring ≤3; run compare-mode validation for undiscoverable-token, category-misrouting, and distinguishable-weaker diagnoses before recording them
 7. **Aggregate** — group by gap type, identify recurring patterns
 8. **Recommend** — produce actionable list with evidence
 9. **Cross-Validate** — if ADR-0085 (shuffle-driven) has been run, correlate findings between processes

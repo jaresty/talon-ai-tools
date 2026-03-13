@@ -269,6 +269,43 @@ bar build probe full domains gap \
 **Output artifact:**
 - `docs/adr/evidence/0085/process-feedback.md` - Process health findings and improvement recommendations
 
+#### Phase 2e: Distinction Check (compare mode)
+
+**When to run:** Any time Phase 2 scoring surfaces a suspected redundancy between two tokens —
+same-category overlap, near-identical descriptions, or qualitative notes saying "outputs felt
+identical." Run before Phase 3 retire recommendations are drafted.
+
+**Mechanism:** Use ADR-0161 Stage 1 compare mode to generate a side-by-side Approach A prompt
+for the candidate pair, then submit it to an LLM and score whether the two output sections are
+empirically distinguishable.
+
+```bash
+# Example: testing whether systemic and mapping produce distinguishable outputs
+bar build probe method=systemic,mapping \
+  --subject "why is this codebase hard to extend"
+# Submit the output to an LLM; score whether the two sections differ meaningfully
+```
+
+**Scoring:**
+- **Distinguishable (outputs clearly differ in framing, emphasis, or conclusion)**: retain both;
+  consider editing descriptions to make the distinction explicit if it was not apparent from
+  shuffle scoring alone.
+- **Indistinguishable (outputs are effectively interchangeable)**: strong retire signal —
+  record as `distinction-check: failed` in the retire recommendation YAML.
+- **Distinguishable but one is consistently weaker**: both tokens exist and differ, but one
+  reliably produces lower-quality output for the tested task type. Record as
+  `distinction-check: asymmetric` and flag the weaker token for a description edit before
+  retiring. A token that is distinguishable but weak may be salvageable with a better
+  description.
+
+**Limitation:** Compare mode generates an Approach A prompt — the LLM is asked to embody
+each token and respond. The quality of the distinction check depends on the LLM's ability
+to correctly apply the token framing. A single task subject is not sufficient evidence;
+run at least 3 different subject types before concluding indistinguishability.
+
+**Output artifact:** append distinction check results to the retire candidate entry in
+`docs/adr/evidence/0085/recommendations.yaml`.
+
 ### Phase 3: Recommendation
 
 Based on evaluation, categorize findings into actions:
@@ -280,6 +317,10 @@ Token produces consistently low scores or is indistinguishable from another.
 
 **Priority signal — same-category redundancy**: If the redundant token shares a semantic category (Decision/Understanding/Exploration/Diagnostic) with the token it overlaps, retirement is higher priority than cross-category overlap. Tokens in the same category are explicitly positioned as peers; indistinguishable outputs within a category are unambiguous redundancy, not a framing difference.
 
+**Distinction check required**: Before finalizing any retire recommendation based on redundancy,
+run Phase 2e compare mode on the candidate pair. A retire recommendation without a
+`distinction-check` result is incomplete. Record the result in the YAML as shown below.
+
 ```yaml
 action: retire
 token: "systemic"
@@ -287,6 +328,8 @@ axis: method
 category: "Understanding"  # include when retiring a method token
 reason: "Overlaps significantly with 'mapping' (same Understanding category); outputs indistinguishable"
 evidence: [seed_12, seed_34, seed_45]
+distinction-check: failed  # failed | asymmetric | distinguishable — required before retire is finalized
+distinction-check-subjects: ["why is this codebase hard to extend", "explain the payment system", "what does this module do"]
 ```
 
 #### Edit
@@ -562,6 +605,7 @@ Run this process periodically or when catalog drift is suspected:
 4. **Meta-Evaluate Skills**: Score each against bar skills, identify skill gaps and catalog issues (Phase 2b)
 5. **Meta-Evaluate Reference**: Score `bar help llm` utility for each prompt, identify documentation gaps (Phase 2c)
 5a. **Meta-Evaluate Process**: Run `probe full domains gap` on the process itself — sampling adequacy, release pipeline, fix closure rate, score calibration, cadence, blind spots (Phase 2d); capture in `process-feedback.md`
+5b. **Distinction Check**: For any suspected redundancy pair surfaced in steps 3–5, run compare mode (Phase 2e) to empirically test whether the tokens produce distinguishable outputs; record `distinction-check` result before drafting retire recommendations
 6. **Aggregate**: Group low-scoring tokens, identify patterns, collect feedback for skills/catalog/help/process
 7. **Recommend**: Produce actionable list with evidence for catalog, skills, and help documentation
 8. **Cross-Validate**: If ADR-0113 (task-driven) has been run, correlate findings between processes

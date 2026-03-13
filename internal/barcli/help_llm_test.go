@@ -609,6 +609,39 @@ func TestAxisTokenCatalogHasHeuristicsAndDistinctions(t *testing.T) {
 	}
 }
 
+// TestHelpLLMDocumentsCompareMode specifies that bar help llm includes compare mode
+// documentation so LLM agents can discover and use the comma-separated axis syntax.
+// ADR-0161 Stage 1.
+func TestHelpLLMDocumentsCompareMode(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	if !strings.Contains(output, "Compare Mode") {
+		t.Error("bar help llm must include a Compare Mode section")
+	}
+	if !strings.Contains(output, "method=diagnose,mapping") {
+		t.Error("bar help llm compare mode must show a comma-separated example")
+	}
+	if !strings.Contains(output, "one axis") {
+		t.Error("bar help llm compare mode must state the one-axis constraint")
+	}
+}
+
+// TestHelpLLMCompactMentionsCompareMode specifies that the compact form also surfaces
+// compare mode so agents using --compact still discover it.
+func TestHelpLLMCompactMentionsCompareMode(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", true)
+	output := buf.String()
+
+	if !strings.Contains(output, "Compare") {
+		t.Error("bar help llm --compact must mention compare mode")
+	}
+}
+
 // TestHelpLLMAutomationFlags verifies that bar help llm documents --no-input and
 // --command so LLMs and automation scripts can discover non-interactive usage.
 func TestHelpLLMAutomationFlags(t *testing.T) {

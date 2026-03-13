@@ -67,6 +67,7 @@
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
+        "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
@@ -255,6 +256,7 @@
         "facilitate",
         "faq",
         "formats",
+        "ghost",
         "indirect",
         "ladder",
         "log",
@@ -440,6 +442,7 @@
         "facilitate": "Facilitation plan and session structure",
         "faq": "Question-and-answer format",
         "formats": "Document types and writing formats",
+        "ghost": "Workflow execution trace",
         "indirect": "Background first, conclusion last",
         "ladder": "Abstraction ladder up and down",
         "log": "Work or research log entry",
@@ -619,6 +622,7 @@
         "facilitate": "促",
         "faq": "質",
         "formats": "様",
+        "ghost": "幽",
         "indirect": "間",
         "ladder": "階",
         "log": "誌",
@@ -888,6 +892,7 @@
         "facilitate": "Facilitation plan",
         "faq": "FAQ format",
         "formats": "Format comparison",
+        "ghost": "Workflow execution trace",
         "indirect": "Background then conclusion",
         "ladder": "Abstraction ladder",
         "log": "Work log entry",
@@ -2004,6 +2009,32 @@
             "what structure should this take",
             "what are the format options",
             "format comparison"
+          ]
+        },
+        "ghost": {
+          "definition": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. Presents a workflow execution trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
+          "distinctions": [
+            {
+              "note": "log = dated work log entry for reference; ghost = workflow execution trace showing actions and their results",
+              "token": "log"
+            },
+            {
+              "note": "walkthrough = guided sequential narration of a process; ghost = trace of autonomous actions actually performed",
+              "token": "walkthrough"
+            },
+            {
+              "note": "mark = method for capturing checkpoint evidence during a process; ghost = form for structuring output as workflow execution trace",
+              "token": "mark"
+            }
+          ],
+          "heuristics": [
+            "show me what you did",
+            "execution trace",
+            "workflow trace",
+            "action log with results",
+            "what actions were taken and what happened",
+            "trace of work performed",
+            "autonomous workflow execution"
           ]
         },
         "indirect": {
@@ -6456,6 +6487,7 @@
         "facilitate": "facilitate",
         "faq": "faq",
         "formats": "formats",
+        "ghost": "ghost",
         "indirect": "indirect",
         "ladder": "ladder",
         "log": "log",
@@ -6798,6 +6830,7 @@
         "form=facilitate": "form-facilitate",
         "form=faq": "form-faq",
         "form=formats": "form-formats",
+        "form=ghost": "form-ghost",
         "form=indirect": "form-indirect",
         "form=ladder": "form-ladder",
         "form=log": "form-log",
@@ -7066,6 +7099,7 @@
       "form=facilitate": "form-facilitate",
       "form=faq": "form-faq",
       "form=formats": "form-formats",
+      "form=ghost": "form-ghost",
       "form=indirect": "form-indirect",
       "form=ladder": "form-ladder",
       "form=log": "form-log",
@@ -7092,6 +7126,7 @@
       "gap": "gap",
       "gently": "gently",
       "gherkin": "gherkin",
+      "ghost": "ghost",
       "gist": "gist",
       "good": "good",
       "ground": "ground",
@@ -8106,11 +8141,11 @@
     }
   ],
   "checksums": {
-    "axes": "ec05771fb4734deb3e53b07ad27dccbb66eb9dcd8808634221eda9ed9be13e11",
+    "axes": "d1b000d45c359942e1edaa02b16e24dec71529009edf757dc4e91ae3cc792a2a",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "7850bb62a799c55e6d553d10507d9e56839822dc00992b19e23c637262a61023",
+    "slugs": "892e9f3dcea7a207605735a14ddfc07876ada9c2ee3711b4afd8896bd989ad74",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

@@ -152,6 +152,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
+        "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
+        "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the "
         "audience.",
@@ -421,6 +423,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "facilitate": "Facilitation plan and session structure",
         "faq": "Question-and-answer format",
         "formats": "Document types and writing formats",
+        "ghost": "Workflow execution trace",
         "indirect": "Background first, conclusion last",
         "ladder": "Abstraction ladder up and down",
         "log": "Work or research log entry",
@@ -604,6 +607,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "facilitate": "促",
         "faq": "質",
         "formats": "様",
+        "ghost": "幽",
         "indirect": "間",
         "ladder": "階",
         "log": "誌",
@@ -943,6 +947,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "facilitate": "Facilitation plan",
         "faq": "FAQ format",
         "formats": "Format comparison",
+        "ghost": "Workflow execution trace",
         "indirect": "Background then conclusion",
         "ladder": "Abstraction ladder",
         "log": "Work log entry",
@@ -2978,6 +2983,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what structure should this take",
                 "what are the format options",
                 "format comparison",
+            ],
+        },
+        "ghost": {
+            "definition": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. Presents a workflow "
+            "execution trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format "
+            "constraints.",
+            "distinctions": [
+                {
+                    "note": "log = dated work log entry for reference; ghost = workflow execution trace showing actions and their results",
+                    "token": "log",
+                },
+                {
+                    "note": "walkthrough = guided sequential narration of a process; ghost = trace of autonomous actions actually performed",
+                    "token": "walkthrough",
+                },
+                {
+                    "note": "mark = method for capturing checkpoint evidence during a process; ghost = form for structuring output as workflow execution trace",
+                    "token": "mark",
+                },
+            ],
+            "heuristics": [
+                "show me what you did",
+                "execution trace",
+                "workflow trace",
+                "action log with results",
+                "what actions were taken and what happened",
+                "trace of work performed",
+                "autonomous workflow execution",
             ],
         },
         "indirect": {

@@ -141,7 +141,42 @@ func TestDetectCompareTwoMultiAxesError(t *testing.T) {
 	}
 }
 
-// C9: hyphenated slug for multi-word directional token in compare list is accepted
+// C9: compare output includes full prompt (TASK section) for each variant, not just definition
+func TestCompareIncludesTaskSection(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	result := runBuildCLI(t, []string{"build", "probe", "method=diagnose,mapping", "--subject", "x"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d\nstderr: %s", result.Exit, result.Stderr)
+	}
+	// Each variant must include the TASK section from the full render
+	if strings.Count(result.Stdout, "TASK") < 2 {
+		t.Errorf("expected TASK section in each variant (at least 2), output:\n%s", result.Stdout)
+	}
+}
+
+// C10: compare output preserves non-varied tokens (task constraints appear per variant)
+func TestComparePreservesBaseTokens(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	// probe + full + diagnose,mapping: each variant must show probe task description
+	result := runBuildCLI(t, []string{"build", "probe", "full", "method=diagnose,mapping", "--subject", "arch"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d\nstderr: %s", result.Exit, result.Stderr)
+	}
+	// "probe" task description should appear once per variant (2 times)
+	const probeDesc = "analyzes the subject"
+	if strings.Count(result.Stdout, probeDesc) < 2 {
+		t.Errorf("expected probe task description in each variant section, output:\n%s", result.Stdout)
+	}
+	// Each variant's constraint section must name its specific method token
+	if !strings.Contains(result.Stdout, "diagnose") {
+		t.Errorf("expected diagnose variant in output:\n%s", result.Stdout)
+	}
+	if !strings.Contains(result.Stdout, "mapping") {
+		t.Errorf("expected mapping variant in output:\n%s", result.Stdout)
+	}
+}
+
+// C11: hyphenated slug for multi-word directional token in compare list is accepted
 func TestCompareDirectionalHyphenatedSlug(t *testing.T) {
 	t.Setenv(disableStateEnv, "1")
 	// "fip-bog" is the slug for the multi-word directional token "fip bog"
@@ -160,7 +195,7 @@ func TestCompareDirectionalHyphenatedSlug(t *testing.T) {
 	}
 }
 
-// C10: hyphenated slug for multi-word directional token in key=value override is accepted
+// C12: hyphenated slug for multi-word directional token in key=value override is accepted
 func TestDirectionalHyphenatedSlugOverride(t *testing.T) {
 	t.Setenv(disableStateEnv, "1")
 	result := runBuildCLI(t, []string{"build", "probe", "directional=fip-bog", "--subject", "test"}, nil)

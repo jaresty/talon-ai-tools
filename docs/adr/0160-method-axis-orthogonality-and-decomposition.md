@@ -126,8 +126,7 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 - `derive` → `mint`: `forge` was the original candidate but conflicted with a Talon voice command; `mint` adopted instead.
 - Form tokens added: `twin` (side-by-side comparison layout), `prep` (experiment design write-up), `vet` (post-experiment review).
 
-**Remaining:**
-- Timeline/coupling sketch as form/channel presets — lower priority, no blocking issues.
+**All items complete.**
 
 ### Legacy Replacement Guidance
 

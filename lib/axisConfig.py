@@ -147,6 +147,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it "
         "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
+        "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs "
+        "naturally with snag/mesh methods and diagram/sketch channels.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work "
         "solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
@@ -181,6 +183,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, "
         "boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
+        "timeline": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs. Pairs "
+        "naturally with trace/flow methods and diagram/sketch channels.",
         "twin": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
@@ -422,6 +426,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "cocreate": "Collaborative small-move process",
         "commit": "Conventional commit message",
         "contextualise": "Add or reshape supporting context",
+        "coupling": "Coupling map layout",
         "direct": "Lead with main point first",
         "facilitate": "Facilitation plan and session structure",
         "faq": "Question-and-answer format",
@@ -609,6 +614,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "cocreate": "共",
         "commit": "提",
         "contextualise": "脈",
+        "coupling": "繋",
         "direct": "直",
         "facilitate": "促",
         "faq": "質",
@@ -952,6 +958,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "cocreate": "Collaborative process",
         "commit": "Commit message",
         "contextualise": "LLM context package",
+        "coupling": "Coupling map",
         "direct": "Lead with conclusion",
         "facilitate": "Facilitation plan",
         "faq": "FAQ format",

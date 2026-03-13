@@ -134,13 +134,20 @@ func ApplyOverride(ctx OverrideContext, token string) error {
 		ctx.AddRecognized("channel", tokens[0])
 		return nil
 	case "directional":
-		if !ctx.IsAxisToken("directional", value) {
-			return ctx.UnknownValue(key, value)
+		toks := ctx.SplitList(value)
+		if len(toks) == 0 {
+			return ctx.Errorf("format", "directional override requires a value")
 		}
-		if err := ctx.SetDirectional(value); err != nil {
+		if len(toks) > 1 {
+			return ctx.Errorf("conflict", "directional accepts a single token")
+		}
+		if !ctx.IsAxisToken("directional", toks[0]) {
+			return ctx.UnknownValue(key, toks[0])
+		}
+		if err := ctx.SetDirectional(toks[0]); err != nil {
 			return err
 		}
-		ctx.AddRecognized("directional", value)
+		ctx.AddRecognized("directional", toks[0])
 		return nil
 	case "voice", "audience", "tone", "intent":
 		return ctx.ApplyPersona(key, value, true)

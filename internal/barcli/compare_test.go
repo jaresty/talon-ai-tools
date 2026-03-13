@@ -140,3 +140,31 @@ func TestDetectCompareTwoMultiAxesError(t *testing.T) {
 		t.Fatal("expected error for two multi-value axes")
 	}
 }
+
+// C9: hyphenated slug for multi-word directional token in compare list is accepted
+func TestCompareDirectionalHyphenatedSlug(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	// "fip-bog" is the slug for the multi-word directional token "fip bog"
+	result := runBuildCLI(t, []string{"build", "probe", "directional=fog,fip-bog", "--subject", "test"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0 for directional slug compare, got %d\nstderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "COMPARISON") {
+		t.Errorf("expected comparison output:\n%s", result.Stdout)
+	}
+	if !strings.Contains(result.Stdout, "fog") {
+		t.Errorf("expected fog variant in output:\n%s", result.Stdout)
+	}
+	if !strings.Contains(result.Stdout, "fip bog") {
+		t.Errorf("expected 'fip bog' (canonical form) in output:\n%s", result.Stdout)
+	}
+}
+
+// C10: hyphenated slug for multi-word directional token in key=value override is accepted
+func TestDirectionalHyphenatedSlugOverride(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	result := runBuildCLI(t, []string{"build", "probe", "directional=fip-bog", "--subject", "test"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0 for directional=fip-bog, got %d\nstderr: %s", result.Exit, result.Stderr)
+	}
+}

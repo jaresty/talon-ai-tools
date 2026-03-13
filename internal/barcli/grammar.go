@@ -664,6 +664,13 @@ func (g *Grammar) initialiseSlugs(raw rawSlugSection) {
 	}
 }
 
+// ResolveSlug returns the canonical token form for a slug (e.g. "fip-bog" → "fip bog").
+// If no mapping exists, the input is returned unchanged.
+func (g *Grammar) ResolveSlug(token string) string {
+	canonical, _ := g.canonicalForInput(token)
+	return canonical
+}
+
 func (g *Grammar) canonicalForInput(token string) (string, bool) {
 	trimmed := strings.TrimSpace(token)
 	if trimmed == "" {

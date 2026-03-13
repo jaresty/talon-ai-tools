@@ -83,20 +83,22 @@ func BuildCompare(g *Grammar, baseTokens []string, axis string, variants []strin
 	}
 
 	for _, v := range variants {
-		b.WriteString("\n---\n\n")
-		b.WriteString(fmt.Sprintf("## Variant: %s=%s\n", axis, v))
+		canonical := g.ResolveSlug(v)
 
-		desc := g.AxisDescription(axis, v)
+		b.WriteString("\n---\n\n")
+		b.WriteString(fmt.Sprintf("## Variant: %s=%s\n", axis, canonical))
+
+		desc := g.AxisDescription(axis, canonical)
 		if desc != "" {
 			b.WriteString(fmt.Sprintf("**Definition**: %s\n", desc))
 		}
 
-		heuristics := g.AxisTokenHeuristics(axis, v)
+		heuristics := g.AxisTokenHeuristics(axis, canonical)
 		if len(heuristics) > 0 {
 			b.WriteString(fmt.Sprintf("**Heuristics**: %s\n", strings.Join(heuristics, ", ")))
 		}
 
-		b.WriteString("\n[Respond here using " + axis + "=" + v + " framing]\n")
+		b.WriteString("\n[Respond here using " + axis + "=" + canonical + " framing]\n")
 	}
 
 	return b.String(), nil

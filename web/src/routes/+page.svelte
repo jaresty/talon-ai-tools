@@ -319,13 +319,22 @@
 	$effect(() => {
 		if (!previewPanelEl) return;
 		const update = () => {
+			// On mobile the panel is position:static and flows naturally — no maxHeight constraint needed.
+			if (window.innerWidth <= 767) {
+				previewPanelEl!.style.maxHeight = '';
+				return;
+			}
 			const rect = previewPanelEl!.getBoundingClientRect();
 			const available = window.innerHeight - Math.max(rect.top, 16) - (reviewPanelHeight + 16);
 			previewPanelEl!.style.maxHeight = available + 'px';
 		};
 		window.addEventListener('scroll', update, { passive: true });
+		window.addEventListener('resize', update, { passive: true });
 		update();
-		return () => window.removeEventListener('scroll', update);
+		return () => {
+			window.removeEventListener('scroll', update);
+			window.removeEventListener('resize', update);
+		};
 	});
 	let hoveredDistinctionPreset = $state<string | null>(null);
 

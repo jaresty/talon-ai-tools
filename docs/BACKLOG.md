@@ -111,7 +111,7 @@ the eval rubric. Re-test T01–T05 (voice axis), T10–T13 (tone/team), T13 (adv
 
 ## Tier 2 — High value, moderate implementation effort
 
-### CLI: Shell completion (tab-complete token names)
+### ✅ CLI: Shell completion (tab-complete token names)
 **What**: `bar <TAB>` completes axis keys; `bar scope=<TAB>` completes valid tokens for that axis.
 **Why Tier 2**: Daily friction for power users. The token list is machine-readable from the grammar;
 shell completion is a known pattern in Go CLIs (cobra, etc.).
@@ -132,7 +132,7 @@ false-positive risk is low. Note text remains excluded.
 `grammar.TaskDistinctionTokens`, `grammar.AxisTokenDistinctionTokens` accessors in `grammar.go`;
 `renderTokensHelp` plain format in `app.go`; 5 tests in `app_test.go`.
 
-### SPA: "Build a command" output panel
+### ✅ SPA: "Build a command" output panel
 **What**: As the user selects tokens, show the resulting `bar` command in a copyable panel.
 **Why Tier 2**: The SPA already renders the prompt (LLMPanel), but doesn't surface the equivalent
 bar command string. Closing this loop lets SPA users take their composition back to the CLI or Talon.

@@ -1,7 +1,7 @@
 # ADR-0160: Method Axis Orthogonality Direction
 
 ## Status
-Proposed — codifying the single-concept intent and concrete refactors
+Accepted — method axis restructure implemented; form token workstream deferred
 
 ## Context
 - ADR-0159 surfaced that many method tokens bundle multiple "prompt parts" (staging, governance, boundary, propagation, divergence, proof) which forces users into implicit bundles.
@@ -110,14 +110,27 @@ Renaming tokens has a real discoverability cost. Users who learn a name build re
 | `spur` + `cull` + `verify` | Generate hypotheses, prune them, then run falsification tests on the survivors. |
 | `sweep` + `twin` (form) + `sift` | Enumerate options, lay them out side-by-side, and score each against explicit criteria. |
 | `pulse` + `cull` | Model channel transmission then audit the checkpoints where losses occur. |
-| `forge` + `root` + `bind` | Produce a constructive derivation anchored to a canonical locus with explicit dependency wiring. |
+| `derive` + `root` + `bind` | Produce a constructive derivation anchored to a canonical locus with explicit dependency wiring. (`derive` retains its name; see Legacy Replacement Guidance.) |
 
-## Next Steps
-1. Define form tokens for timeline, coupling sketch, and similar artifacts before implementing the artifact→form split.
-2. Update `axisConfig.py` with operation-family flags for all existing method tokens to identify actual overlaps.
-3. Prototype the new tokens listed above (`mark`, `pulse`, `snag`, `mesh`, `shear`, `seep`, `thrust`, `sift`, `spur`, `cull`, `sweep`, `root`, `forge`, `bind`); simultaneously add form (`twin`, `prep`, `vet`) and scope (`dam`) entries.
-4. Narrow existing tokens in place (`trace`, `flow`, `verify`, `balance`, `polar`) rather than replacing them; update descriptions only.
-5. Refresh ADR-0159 after implementation to note which bundles became explicit forms/scope items and which behaviors were pruned.
+## Implementation Status
+
+**Completed:**
+- All renames implemented: `trans`→`pulse`, `trade`→`thrust`, `canon`→`root`, `branch`→`spur`, `explore`→`sweep`, `spill`→`seep`
+- Narrowed in place: `trace`, `flow`, `verify`, `balance`, `polar`
+- Split: `entangle` → `snag` + `mesh` + `shear`
+- New tokens added: `mark` (audit, renamed from planned `merk` to avoid connotations), `pulse`, `snag`, `mesh`, `shear`, `seep`, `thrust`, `sift`, `spur`, `cull`, `sweep`, `root`, `bind`
+- Axis moves: `grow` → completeness, `dam` → scope
+- Retirements: `slot`, `toll` removed
+
+**Blocked:**
+- `derive` → `forge`: `forge` conflicts with an existing Talon voice command. `derive` name retained. Open question: find an alternative name.
+
+**Deferred (form token workstream):**
+1. Define form tokens for timeline, coupling sketch, and similar artifacts — prerequisite for the artifact→form split.
+2. Add `twin` (comparison layout), `prep`/`vet` (experiment write-up structure) as form tokens.
+
+**Remaining:**
+- Refresh ADR-0159 with implementation outcomes (see below).
 
 ### Legacy Replacement Guidance
 
@@ -140,7 +153,7 @@ Tokens not listed below are kept as-is on the method axis; their current descrip
 | `explore` | Rename to `sweep` — semantics shift to "enumerate without evaluating"; `cull`/`sift` handle evaluation. |
 | `split` | Keep `split`; pair with form token `twin` for comparisons. |
 | `experimental` | Shift structure to form tokens `prep` / `vet`; keep method only for reasoning aspects if required. |
-| `derive` | Rename to `forge` — constructive derivation is clearer. Keep `root`/`bind` for canonical/dependency responsibilities. |
+| `derive` | Rename to `forge` — constructive derivation is clearer. Keep `root`/`bind` for canonical/dependency responsibilities. **Blocked**: `forge` conflicts with an existing Talon voice command. Name retained as `derive` until an alternative is found or the conflict is resolved. |
 | `canon` | Rename to `root` — canonical locus is the core concept. `bind` handles dependency wiring. |
 | `verify` | Narrow to falsification/testing only; governance enforcement remains with `ground`. Name retained. |
 

@@ -1,7 +1,7 @@
 # ADR-0159: Method Axis Observation Notes (No Decisions)
 
 ## Status
-Under observation — documenting signals only
+Superseded by ADR-0160 (implemented). Retained as observation record.
 
 ## Context
 - The method axis in `axisConfig.py` (@axisConfig.py#189-318) currently carries 90+ reasoning modifiers spanning structural, diagnostic, comparative, generative, and temporal semantics.
@@ -81,7 +81,31 @@ Under observation — documenting signals only
 - ~~If `grow` moves to completeness, does the method axis lose necessary guidance for gradual scope expansion, or do other tokens already cover that cognitive stance?~~ **Resolved in ADR-0160**: `grow` moves to completeness; `sweep`+`spur` cover divergent exploration on the method axis.
 - ~~Which existing ADRs (e.g., ADR-0104, ADR-0147) must be amended if these observations evolve into decisions?~~ **Resolved in ADR-0160**: ADR-0104 (taxonomy alignment after renames), ADR-0147 (`grow`/`max` contradiction resolved by axis reassignment).
 
+## Implementation Outcomes (ADR-0160)
+
+**Bundles that became explicit form/scope items:**
+- `entangle` (coupling + analysis + mitigation) → split into `snag` (detection) + `mesh` (analysis) + `shear` (mitigation)
+- `spill` (detection + containment) → `seep` (detection) + `dam` (scope: containment boundary)
+- `trade` (force mapping + evaluation) → `thrust` (force mapping) + `sift` (evaluation)
+- `trace` (narration + audit) → `trace` narrowed to narration + `mark` (audit checkpoints)
+- `trans` (narration + channel model) → `pulse` (channel model only; narration via `trace`)
+
+**Behaviors pruned:**
+- `slot` (handoff routing) — removed; handled by flow/completeness
+- `toll` (impact scoring) — removed; handled by completeness guidance
+
+**Axis reassignments completed:**
+- `grow` → completeness axis (dynamic depth constraint)
+- `dam` → scope axis (containment boundary)
+
+**Blocked:**
+- `derive` → `forge` rename: `forge` conflicts with a Talon voice command; `derive` retained.
+
+**Deferred:**
+- Form token additions (`twin`, `prep`/`vet`, timeline/coupling sketch presets) — separate workstream.
+
 ## References
 - `axisConfig.py` method/descriptions @axisConfig.py#189-318
 - Cross-axis composition + completeness-method conflicts @axisConfig.py#1260-1474
 - ADR-0104 (Reference Key and Method Reclassification) for prior taxonomy shifts @docs/adr/0104-reference-key-and-method-reclassification.md#1-179
+- ADR-0160 (decisions and implementation) @docs/adr/0160-method-axis-orthogonality-and-decomposition.md

@@ -281,6 +281,28 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	// ADR-0161 Stage 1: detect compare mode (one axis with comma-separated variants).
+	compareAxis, compareVariants, cleanedTokens, detectErr := DetectCompare(options.Tokens)
+	if detectErr != nil {
+		cliErr := &CLIError{Type: errorFormat, Message: detectErr.Error()}
+		emitError(cliErr, options.JSON, stdout, stderr)
+		return 1
+	}
+
+	if compareAxis != "" {
+		compareText, compareErr := BuildCompare(grammar, cleanedTokens, compareAxis, compareVariants, promptBody, strings.TrimSpace(options.Addendum))
+		if compareErr != nil {
+			emitError(compareErr, options.JSON, stdout, stderr)
+			return 1
+		}
+		if err := writeOutput(options.OutputPath, []byte(compareText), stdout); err != nil {
+			cliErr := &CLIError{Type: "io", Message: err.Error()}
+			emitError(cliErr, options.JSON, stdout, stderr)
+			return 1
+		}
+		return 0
+	}
+
 	result, buildErr := Build(grammar, options.Tokens)
 	if buildErr != nil {
 		emitError(buildErr, options.JSON, stdout, stderr)

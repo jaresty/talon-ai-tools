@@ -47,19 +47,12 @@ func DetectCompare(tokens []string) (axis string, variants []string, cleaned []s
 }
 
 // BuildCompare generates an Approach A comparison prompt: a single prompt with N labeled
-// sections, one per variant, each prefixed with the token's definition and heuristics.
+// sections, one per variant. Each section contains the full rendered prompt for the base
+// tokens combined with that variant, so all task/scope/method/form tokens are preserved.
 //
 // baseTokens must not contain the multi-value entry (use cleaned from DetectCompare).
 // subject and addendum are the raw user inputs.
 func BuildCompare(g *Grammar, baseTokens []string, axis string, variants []string, subject, addendum string) (string, *CLIError) {
-	// Validate all variants exist in the grammar before generating output
-	for _, v := range variants {
-		testTokens := append(append([]string(nil), baseTokens...), axis+"="+v)
-		if _, err := Build(g, testTokens); err != nil {
-			return "", err
-		}
-	}
-
 	var b strings.Builder
 
 	b.WriteString("=== COMPARISON 比較 ===\n")
@@ -70,35 +63,20 @@ func BuildCompare(g *Grammar, baseTokens []string, axis string, variants []strin
 	b.WriteString("For each variant, apply only that token's framing and label your response clearly.\n")
 	b.WriteString("Do not blend or average across variants — each section is independent.\n")
 
-	if subject != "" {
-		b.WriteString("\n=== SUBJECT 題材 ===\n")
-		b.WriteString(subject)
-		b.WriteString("\n")
-	}
-
-	if addendum != "" {
-		b.WriteString("\n=== ADDENDUM 追加 ===\n")
-		b.WriteString(addendum)
-		b.WriteString("\n")
-	}
-
 	for _, v := range variants {
 		canonical := g.ResolveSlug(v)
+		variantTokens := append(append([]string(nil), baseTokens...), axis+"="+canonical)
+		result, err := Build(g, variantTokens)
+		if err != nil {
+			return "", err
+		}
+		result.Subject = subject
+		result.Addendum = addendum
+		result.PlainText = RenderPlainText(result)
 
 		b.WriteString("\n---\n\n")
-		b.WriteString(fmt.Sprintf("## Variant: %s=%s\n", axis, canonical))
-
-		desc := g.AxisDescription(axis, canonical)
-		if desc != "" {
-			b.WriteString(fmt.Sprintf("**Definition**: %s\n", desc))
-		}
-
-		heuristics := g.AxisTokenHeuristics(axis, canonical)
-		if len(heuristics) > 0 {
-			b.WriteString(fmt.Sprintf("**Heuristics**: %s\n", strings.Join(heuristics, ", ")))
-		}
-
-		b.WriteString("\n[Respond here using " + axis + "=" + canonical + " framing]\n")
+		b.WriteString(fmt.Sprintf("## Variant: %s=%s\n\n", axis, canonical))
+		b.WriteString(result.PlainText)
 	}
 
 	return b.String(), nil

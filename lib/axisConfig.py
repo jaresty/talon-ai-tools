@@ -257,10 +257,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. The required structure is I → V → O: first "
         "construct validation artifact V expressing conditions under which I is satisfied (see enforce constraint for how V must be expressed); V must be falsifiable: there must exist "
         "some O that would fail V — a V satisfied by any O does not constrain I and must be rejected and reconstructed. Then produce output O satisfying V. The "
-        "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. When observe "
-        "constraint is also present and V is executable, the response must execute V and present evidence E before producing O. Any output O appearing before this exact checkpoint "
-        "phrase violates the constraint and must be discarded. Iteration is permitted: the response may construct multiple V→O pairs in sequence (V₁→O₁, then V₂→O₂, etc.), with each V "
-        "preceding its corresponding O.",
+        "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. Any output O "
+        "appearing before this exact checkpoint phrase violates the constraint and must be discarded. Iteration is permitted: the response may construct multiple V→O pairs in sequence "
+        "(V₁→O₁, then V₂→O₂, etc.), with each V preceding its corresponding O.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

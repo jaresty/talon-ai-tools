@@ -4180,6 +4180,14 @@
             {
               "note": "rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs",
               "token": "rigor"
+            },
+            {
+              "note": "ground = define a falsifiable artifact before producing output, imposing I → V → O structure; verify = apply falsification pressure to claims after the fact without imposing a governing structure",
+              "token": "ground"
+            },
+            {
+              "note": "observe = require empirical execution of available artifacts; verify = apply falsification pressure analytically without running anything",
+              "token": "observe"
             }
           ],
           "heuristics": [
@@ -8301,7 +8309,7 @@
     }
   ],
   "checksums": {
-    "axes": "577d8f97346d398350d6592bb030b762cde0fa1f24d275bb636caf6ccb922dd1",
+    "axes": "0346739ac61b0a29913c305edff904b3b1545d0c6db0e5da3db1ae63de2e9758",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

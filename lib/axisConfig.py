@@ -5232,7 +5232,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs",
                     "token": "rigor",
-                }
+                },
+                {
+                    "note": "ground = define a falsifiable artifact before producing output, imposing I → V → O structure; verify = apply falsification pressure to claims after the fact without imposing a governing structure",
+                    "token": "ground",
+                },
+                {
+                    "note": "observe = require empirical execution of available artifacts; verify = apply falsification pressure analytically without running anything",
+                    "token": "observe",
+                },
             ],
             "heuristics": [
                 "verify this",

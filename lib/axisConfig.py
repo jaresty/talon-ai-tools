@@ -245,7 +245,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "Strength ordering (strongest to weakest): executable code written to files that can be run > formal notation that encodes constraints > structured criteria with concrete "
         "checkable values > prose descriptions of what should be validated. Code displayed in chat without being written to disk is prose description, not executable code. Executable "
         "code may be written to new files or added to existing files. A validation artifact is complete when it can be applied to determine whether the conditions are satisfied "
-        "without requiring additional interpretation or implementation. Using a weaker mechanism when a stronger one is available violates this constraint.",
+        "without requiring additional interpretation or implementation. Using a weaker mechanism when a stronger one is available violates this constraint. Before presenting any "
+        "validation artifact, the response must include the exact phrase 'Validation mechanism:' followed by the selected mechanism name.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
@@ -254,7 +255,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. The required structure is I → V → O: first "
-        "construct validation artifact V expressing conditions under which I is satisfied (see enforce constraint for how V must be expressed), then produce output O satisfying V. The "
+        "construct validation artifact V expressing conditions under which I is satisfied (see enforce constraint for how V must be expressed); V must be falsifiable: there must exist "
+        "some O that would fail V — a V satisfied by any O does not constrain I and must be rejected and reconstructed. Then produce output O satisfying V. The "
         "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. When observe "
         "constraint is also present and V is executable, the response must execute V and present evidence E before producing O. Any output O appearing before this exact checkpoint "
         "phrase violates the constraint and must be discarded. Iteration is permitted: the response may construct multiple V→O pairs in sequence (V₁→O₁, then V₂→O₂, etc.), with each V "
@@ -278,10 +280,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
-        "observe": "The response enhances the task by preferring observation over inference: it obtains real, reproducible evidence and grounds conclusions only in outcomes actually observed; it "
-        "does not fabricate runs or results, and when observation cannot be performed it explicitly treats results as unobserved. Let E be empirical evidence (test execution, "
-        "measurement, verification, source checking) and C be claims derived from it. The response must present E before C. When making claims based on observation, the response must "
-        "include the exact phrase 'Evidence obtained:' immediately before presenting E, followed by the evidence, before stating any dependent claim C. When ground constraint is also "
+        "observe": "The response enhances the task by preferring observation over inference: it obtains real evidence, states how it was obtained (e.g., ran X, checked source Y, measured Z), "
+        "and grounds conclusions only in outcomes actually observed; it does not fabricate runs or results, and when observation cannot be performed it explicitly treats results as "
+        "unobserved. Let E be empirical evidence (test execution, measurement, verification, source checking) and C be claims derived from it. The response must present E before C. "
+        "When making claims based on observation, the response must include the exact phrase 'Evidence obtained:' immediately before presenting E; this must state how E was obtained, "
+        "followed by the evidence, before stating any dependent claim C. When ground constraint is also "
         "present, validation artifact V may be executed or applied to obtain evidence E, which then supports claims C about whether output O satisfies V.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
@@ -3942,13 +3945,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "make this explicit",
                 "crystallize the structure",
                 "replace implicit reasoning with structural enforcement",
                 "explicit organization over interpretation",
                 "reduce reliance on tacit knowledge",
-                "formalize the implicit into structure",
                 "behavior should follow from structure directly",
+                "remove implicit coupling",
+                "the whole system should be explicit",
+                "no more convention over configuration",
             ],
         },
         "deduce": {
@@ -4084,9 +4088,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "enforce": {
             "definition": "The response must express validation artifacts using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available "
-            "validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Weaker "
-            "descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations when stronger "
-            "ones exist.",
+            "validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Strength ordering "
+            "(strongest to weakest): executable code written to files > formal notation that encodes constraints > structured criteria with concrete checkable values > prose "
+            "descriptions. Weaker descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations "
+            "when stronger ones exist.",
             "distinctions": [
                 {
                     "note": "ground = treat governing layer as fixed authority; enforce = select strongest available validation mechanism for the medium",
@@ -4190,8 +4195,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "ground": {
             "definition": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, "
             "behaviors, or conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their "
-            "originating intent; in code contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any "
-            "implementation code.",
+            "originating intent; validation artifacts must be falsifiable — there must exist some output that would fail them, otherwise they do not constrain the governing layer; "
+            "in code contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "
@@ -4496,8 +4501,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "observe": {
-            "definition": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — and incorporating their actual "
-            "outcomes into reasoning rather than assuming them.",
+            "definition": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — stating how each was run or "
+            "observation made, and incorporating their actual outcomes into reasoning rather than assuming them.",
             "distinctions": [
                 {
                     "note": "experimental = design experiments to test hypotheses; observe = run available artifacts and incorporate actual outcomes",
@@ -4747,11 +4752,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
             "heuristics": [
                 "what's unstated but assumed",
-                "formalize the informal",
                 "what rules actually apply here",
-                "make implicit patterns explicit",
                 "what constraints are assumed",
                 "what rules constrain this",
+                "name this pattern",
+                "what principle is this following",
+                "give this a name",
             ],
         },
         "release": {

@@ -1201,7 +1201,7 @@ func renderAdvancedFeatures(w io.Writer, compact bool) {
 	if compact {
 		fmt.Fprintf(w, "## Advanced Features\n\n")
 		fmt.Fprintf(w, "- `bar shuffle`: Random token generation\n")
-		fmt.Fprintf(w, "- Compare mode: `axis=tok1,tok2` generates N independent prompts side-by-side\n")
+		fmt.Fprintf(w, "- Compare mode (edge case — grammar exploration only): `axis=tok1,tok2` generates N independent prompts side-by-side; do not use as a substitute for picking a token\n")
 		fmt.Fprintf(w, "- `--json`, `--output`, `--input`: Output options\n")
 		fmt.Fprintf(w, "- `//next`, `//:stage`: Skip sentinels\n\n")
 		return
@@ -1214,7 +1214,10 @@ func renderAdvancedFeatures(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "```\n\n")
 	fmt.Fprintf(w, "Generate random token combinations for exploring the grammar space.\n\n")
 
-	fmt.Fprintf(w, "### Compare Mode\n\n")
+	fmt.Fprintf(w, "### Compare Mode (Edge Case)\n\n")
+	fmt.Fprintf(w, "Compare mode is a grammar exploration tool — use it when you want to learn what a\n")
+	fmt.Fprintf(w, "token does, not as a way to generate better responses. For normal prompts, pick a\n")
+	fmt.Fprintf(w, "single token per axis. Do not use compare mode as a substitute for token selection.\n\n")
 	fmt.Fprintf(w, "Place comma-separated values on exactly one axis to generate a comparison prompt:\n\n")
 	fmt.Fprintf(w, "```bash\n")
 	fmt.Fprintf(w, "bar build probe method=diagnose,mapping --subject \"my system\"\n")
@@ -1226,7 +1229,7 @@ func renderAdvancedFeatures(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "**Rules:**\n")
 	fmt.Fprintf(w, "- Only one axis may carry multiple values; a second multi-value axis is an error\n")
 	fmt.Fprintf(w, "- Slugs are accepted: `directional=fog,fip-bog` resolves to canonical token names\n")
-	fmt.Fprintf(w, "- Use compare mode to empirically see what a token does rather than reading its description\n\n")
+	fmt.Fprintf(w, "- When uncertain between tokens, use `bar suggest` or read distinctions — not compare mode\n\n")
 
 	fmt.Fprintf(w, "### Output Formats\n\n")
 	fmt.Fprintf(w, "- `--json`: Machine-readable contract output\n")

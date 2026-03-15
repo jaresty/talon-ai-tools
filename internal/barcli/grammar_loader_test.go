@@ -386,6 +386,29 @@ func TestADR0162GroundConsolidation(t *testing.T) {
 	}
 }
 
+// TestGroundDefinitionReverseCheck specifies that the ground definition includes the
+// bidirectional obligation: when beginning at any rung, first locate the highest
+// already-instantiated rung and update it before proceeding downward.
+func TestGroundDefinitionReverseCheck(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	for _, phrase := range []string{
+		"highest already-instantiated",
+		"before proceeding downward",
+	} {
+		if !strings.Contains(groundDesc, phrase) {
+			t.Errorf("ground description missing reverse-check phrase %q", phrase)
+		}
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

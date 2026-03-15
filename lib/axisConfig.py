@@ -251,7 +251,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to evaluate, "
         "while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
-        "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. Advance through every feasible step; stopping is only "
+        "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any rung, first locate the highest "
+        "already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only "
         "permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, "
         "then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
@@ -4207,7 +4208,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "ground": {
             "definition": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment "
             "to evaluate, while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable "
-            "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. Advance through every "
+            "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any "
+            "rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every "
             "feasible step; stopping is only permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase "
             "'Validation artifact V complete' on its own line, then O satisfying V.",
             "distinctions": [

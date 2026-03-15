@@ -1,6 +1,6 @@
 # ADR-0163: `bar lookup` — intent-to-token subcommand
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-03-14
 
 ---

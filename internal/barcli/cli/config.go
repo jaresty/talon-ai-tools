@@ -42,6 +42,9 @@ type Config struct {
 	Section string
 	Compact bool
 
+	// lookup specific flags (ADR-0163)
+	Axis string
+
 	// Plain strips decorations (headers, bullets, descriptions) from token
 	// listings, emitting one slug per line for piping to grep/fzf.
 	Plain bool
@@ -291,6 +294,14 @@ func Parse(args []string) (*Config, error) {
 			cfg.InitialCommand = strings.TrimPrefix(arg, "--command=")
 		case strings.HasPrefix(arg, "--cmd="):
 			cfg.InitialCommand = strings.TrimPrefix(arg, "--cmd=")
+		case arg == "--axis":
+			if i+1 >= len(args) {
+				return nil, fmt.Errorf("--axis requires a value")
+			}
+			i++
+			cfg.Axis = args[i]
+		case strings.HasPrefix(arg, "--axis="):
+			cfg.Axis = strings.TrimPrefix(arg, "--axis=")
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
 		default:

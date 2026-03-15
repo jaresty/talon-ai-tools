@@ -74,6 +74,8 @@ var generalHelpText = strings.TrimSpace(`USAGE
   bar shuffle [--subject TEXT|--input FILE] [--output FILE] [--json]
               [--seed N] [--include CATS] [--exclude CATS] [--fill 0.0-1.0]
 
+  bar lookup <query> [--axis AXIS] [--json]
+
   bar help
   bar help tokens [section...] [--grammar PATH]
   bar tui [tokens...] [--grammar PATH] [--no-alt-screen]
@@ -261,6 +263,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runStarter(options, stdout, stderr)
 	}
 
+	if options.Command == "lookup" {
+		return runLookup(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1
@@ -339,6 +345,73 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		cliErr := &CLIError{Type: "io", Message: err.Error()}
 		emitError(cliErr, options.JSON, stdout, stderr)
 		return 1
+	}
+	return 0
+}
+
+// runLookup implements the `bar lookup <query>` subcommand (ADR-0163).
+//
+//	bar lookup <query> [--axis AXIS] [--json]
+func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
+	// Collect query from Tokens (first non-flag positional arg).
+	query := ""
+	if len(opts.Tokens) > 0 {
+		query = opts.Tokens[0]
+	}
+	if query == "" {
+		writeError(stderr, "lookup requires a query argument\nUsage: bar lookup <query> [--axis AXIS] [--json]")
+		return 1
+	}
+
+	axisFilter := opts.Axis
+	if axisFilter != "" && !validLookupAxes[axisFilter] {
+		writeError(stderr, fmt.Sprintf("unknown axis %q; valid axes: task, completeness, scope, method, form, channel, directional, voice, audience, tone, intent, presets", axisFilter))
+		return 1
+	}
+
+	grammar, err := LoadGrammar(opts.GrammarPath)
+	if err != nil {
+		writeError(stderr, fmt.Sprintf("load grammar: %v", err))
+		return 1
+	}
+
+	results := LookupTokens(query, grammar, axisFilter)
+
+	if opts.JSON {
+		type jsonResult struct {
+			Axis         string `json:"axis"`
+			Token        string `json:"token"`
+			Label        string `json:"label"`
+			Tier         int    `json:"tier"`
+			MatchedField string `json:"matched_field"`
+			MatchedText  string `json:"matched_text"`
+		}
+		out := make([]jsonResult, len(results))
+		for i, r := range results {
+			out[i] = jsonResult{
+				Axis:         r.Axis,
+				Token:        r.Token,
+				Label:        r.Label,
+				Tier:         r.Tier,
+				MatchedField: r.MatchedField,
+				MatchedText:  r.MatchedText,
+			}
+		}
+		enc := json.NewEncoder(stdout)
+		enc.SetIndent("", "  ")
+		if err := enc.Encode(out); err != nil {
+			writeError(stderr, fmt.Sprintf("encode json: %v", err))
+			return 1
+		}
+		return 0
+	}
+
+	for _, r := range results {
+		line := r.Axis + ":" + r.Token
+		if r.Label != "" {
+			line += " — " + r.Label
+		}
+		fmt.Fprintln(stdout, line)
 	}
 	return 0
 }

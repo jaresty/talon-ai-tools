@@ -193,19 +193,13 @@ failing on `"debug"` surfaces `task:probe — Surface assumptions and implicatio
 covers task, all 6 constraint axes, and all 5 persona axes. Each suggestion shows
 `axis:token — Label`. 9 tests in `TestHeuristicSuggestions`.
 
-### CLI: `bar lookup` — search tokens by heuristics and distinctions
+### ✅ CLI: `bar lookup` — search tokens by heuristics and distinctions
 **What**: A subcommand that takes a free-text query and returns ranked matching tokens by
 searching `heuristics[]`, `distinctions[]`, and `definition` fields across all axes.
-**Why Tier 2**: Complements `bar help llm` (which gives routing guidance prose) with a direct,
-machine-readable lookup path. Users who know what they want to do but not the token name can find
-it without reading the full help output.
-**Shape**: `bar lookup "debug root cause"` → ranked list of `axis:token — Label` matches.
-`--axis` to filter by axis. `--json` flag for piping (schema: `[{axis, token, label, tier,
-matched_field, matched_text}]`). Ranking: exact heuristic match > substring heuristic > distinction
-token name > definition text. Cap 10. Empty result exits 0.
-**ADR**: docs/adr/0163-bar-lookup-subcommand.md
-**Implementation note**: extract `searchByHeuristics()` into `lookup.go`, extend to cover
-distinctions and definition fields, wire `bar lookup` subcommand in `app.go`.
+**Shape**: `bar lookup "root cause"` → ranked `axis:token — Label` matches. `--axis` filter,
+`--json` output. 4-tier ranking (exact heuristic > substring heuristic > distinction token name >
+definition text), AND logic across words, cap 10. 13 tests in `lookup_test.go`.
+**ADR**: docs/adr/0163-bar-lookup-subcommand.md (Accepted)
 
 ---
 

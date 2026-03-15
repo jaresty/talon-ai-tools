@@ -675,91 +675,27 @@ func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[stri
 	return msg.String()
 }
 
-// heuristicMatch returns true if word matches any element in heuristics (case-insensitive substring).
-func heuristicMatch(word string, heuristics []string) bool {
-	wordLower := strings.ToLower(word)
-	for _, h := range heuristics {
-		if strings.Contains(strings.ToLower(h), wordLower) {
-			return true
-		}
-	}
-	return false
-}
-
-// searchByHeuristics returns up to 5 ranked "axis:token — Label" strings whose
-// heuristics[] contain word as a case-insensitive substring.
+// searchByHeuristics returns up to 5 "axis:token — Label" strings for error
+// suggestions, delegating to LookupTokens (ADR-0163).
 func searchByHeuristics(g *Grammar, word string) []string {
 	if word == "" {
 		return nil
 	}
-
-	type hit struct {
-		key   string // "axis:token — Label"
-		score int    // higher = more specific match
-		sort  string // plain "axis:token" for stable ordering
-	}
-
-	var hits []hit
-
-	// Search task tokens
-	for _, taskName := range g.GetAllTasks() {
-		if heuristicMatch(word, g.TaskHeuristics(taskName)) {
-			key := "task:" + taskName
-			if label := g.TaskLabel(taskName); label != "" {
-				key += " — " + label
-			}
-			hits = append(hits, hit{key: key, score: 1, sort: "task:" + taskName})
-		}
-	}
-
-	// Search axis tokens across all axes
-	for axis, tokenMap := range g.Axes.Metadata {
-		for tokenName := range tokenMap {
-			if heuristicMatch(word, g.AxisTokenHeuristics(axis, tokenName)) {
-				key := axis + ":" + tokenName
-				if label := g.AxisLabel(axis, tokenName); label != "" {
-					key += " — " + label
-				}
-				hits = append(hits, hit{key: key, score: 1, sort: axis + ":" + tokenName})
-			}
-		}
-	}
-
-	// Search persona tokens (voice, audience, tone, intent, presets)
-	for axis, tokenMap := range g.Persona.Metadata {
-		for tokenName, meta := range tokenMap {
-			if heuristicMatch(word, meta.Heuristics) {
-				slug := slugifyToken(tokenName)
-				key := axis + ":" + slug
-				if label := g.PersonaLabel(axis, tokenName); label != "" {
-					key += " — " + label
-				}
-				hits = append(hits, hit{key: key, score: 1, sort: axis + ":" + slug})
-			}
-		}
-	}
-
-	if len(hits) == 0 {
-		return nil
-	}
-
-	// Sort for deterministic output
-	sort.Slice(hits, func(i, j int) bool {
-		if hits[i].score != hits[j].score {
-			return hits[i].score > hits[j].score
-		}
-		return hits[i].sort < hits[j].sort
-	})
-
+	results := LookupTokens(word, g, "")
 	limit := 5
-	if len(hits) < limit {
-		limit = len(hits)
+	if len(results) < limit {
+		limit = len(results)
 	}
-	result := make([]string, limit)
+	out := make([]string, limit)
 	for i := 0; i < limit; i++ {
-		result[i] = hits[i].key
+		r := results[i]
+		entry := r.Axis + ":" + r.Token
+		if r.Label != "" {
+			entry += " — " + r.Label
+		}
+		out[i] = entry
 	}
-	return result
+	return out
 }
 
 func (s *buildState) fail(err *CLIError) *CLIError {

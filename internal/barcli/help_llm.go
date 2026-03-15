@@ -78,7 +78,11 @@ func renderQuickStart(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "# Example: Decision-making prompt\n")
 	fmt.Fprintf(w, "bar build diff thing full branch variants --subject \"Choose between Redis and Postgres\"\n\n")
 	fmt.Fprintf(w, "# Example: Understanding flow\n")
-	fmt.Fprintf(w, "bar build show time full flow walkthrough --subject \"Explain the authentication process\"\n")
+	fmt.Fprintf(w, "bar build show time full flow walkthrough --subject \"Explain the authentication process\"\n\n")
+	fmt.Fprintf(w, "# Intent-to-token lookup: find the right token for your goal\n")
+	fmt.Fprintf(w, "bar lookup \"root cause\"             # → method:diagnose, task:probe, ...\n")
+	fmt.Fprintf(w, "bar lookup debug --axis method       # filter to method axis only\n")
+	fmt.Fprintf(w, "bar lookup \"compare options\" --json  # machine-readable JSON output\n")
 	fmt.Fprintf(w, "```\n\n")
 }
 

@@ -1,6 +1,7 @@
 package bartui2
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -448,5 +449,53 @@ func TestHarnessInitialTokens(t *testing.T) {
 	}
 	if s.Selected["task"] == nil {
 		t.Error("expected pre-selected task=todo in selection")
+	}
+}
+
+// TestHarnessCautionOnlyForActiveTokens specifies that ObserveView shows a caution line
+// only for tokens that are actively selected, not all grammar caution entries (ADR-0148).
+func TestHarnessCautionOnlyForActiveTokens(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "channel" && token == "shellscript" {
+			return map[string][]string{"task": {"make", "fix"}},
+				map[string]map[string]string{
+					"task": {"sim": "tends to produce thin output — simulation is inherently narrative"},
+				}
+		}
+		return nil, nil
+	}
+
+	// Case 1: sim is active — caution must appear when shellscript is focused.
+	h := NewHarness(Options{
+		TokenCategories:         testCategoriesTaskChannel(),
+		InitialTokens:           []string{"sim"},
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	if s := h.Observe(); s.Stage != "channel" {
+		t.Fatalf("expected channel stage after sim pre-selected, got %q", s.Stage)
+	}
+	if err := h.Act(HarnessAction{Type: "focus", Target: "shellscript"}); err != nil {
+		t.Fatalf("focus shellscript: %v", err)
+	}
+	view := h.ObserveView()
+	if !strings.Contains(view, "⚠") {
+		t.Errorf("caution must appear when sim is active and shellscript focused; got:\n%s", view)
+	}
+
+	// Case 2: no active task — caution must NOT appear when shellscript is focused.
+	h2 := NewHarness(Options{
+		TokenCategories:         testCategoriesChannelOnly(),
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	if err := h2.Act(HarnessAction{Type: "focus", Target: "shellscript"}); err != nil {
+		t.Fatalf("focus shellscript (no active task): %v", err)
+	}
+	view2 := h2.ObserveView()
+	if strings.Contains(view2, "⚠") {
+		t.Errorf("caution must NOT appear when no task is active; got:\n%s", view2)
 	}
 }

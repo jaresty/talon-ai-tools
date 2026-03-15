@@ -2645,7 +2645,8 @@ func testCategoriesTaskChannel() []TokenCategory {
 }
 
 // TestCrossAxisCompositionDirectionA specifies that when a channel token is in focus,
-// the detail panel shows "✓ Natural" and "⚠ Caution" lines from CrossAxisCompositionFor (ADR-0148).
+// the detail panel shows "✓ Natural" and "⚠ Caution" lines from CrossAxisCompositionFor (ADR-0148),
+// but caution lines appear ONLY for tokens that are actively selected (not all grammar entries).
 func TestCrossAxisCompositionDirectionA(t *testing.T) {
 	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
 		if axis == "channel" && token == "shellscript" {
@@ -2659,20 +2660,27 @@ func TestCrossAxisCompositionDirectionA(t *testing.T) {
 		return nil, nil
 	}
 
+	// Pre-select sim task so we advance to channel stage with sim active.
 	// Height 50: paneHeight = (50-10)/3 = 13 >= 12, enabling composition sections (ADR-0148 R1).
 	m := newModel(Options{
-		TokenCategories:         testCategoriesChannelOnly(),
+		TokenCategories:         testCategoriesTaskChannel(),
+		InitialTokens:           []string{"sim"},
 		CrossAxisCompositionFor: compositionFor,
 		InitialWidth:            80,
 		InitialHeight:           50,
 	})
 	m.ready = true
 	m.updateCompletions()
-	// Confirm we're at channel stage with shellscript as first completion
 	if m.getCurrentStage() != "channel" {
-		t.Fatalf("expected channel stage, got %q", m.getCurrentStage())
+		t.Fatalf("expected channel stage after sim pre-selected, got %q", m.getCurrentStage())
 	}
-	m.completionIndex = 0 // select shellscript
+	// Focus shellscript
+	for i, c := range m.completions {
+		if c.Value == "shellscript" {
+			m.completionIndex = i
+			break
+		}
+	}
 
 	view := modelViewContent(m)
 
@@ -2682,11 +2690,51 @@ func TestCrossAxisCompositionDirectionA(t *testing.T) {
 	if !strings.Contains(view, "make") {
 		t.Errorf("direction A: expected natural task 'make' in view for shellscript; got:\n%s", view)
 	}
+	// sim IS active — caution must appear.
 	if !strings.Contains(view, "⚠") {
-		t.Errorf("direction A: expected cautionary indicator (⚠) in view for shellscript; got:\n%s", view)
+		t.Errorf("direction A: expected cautionary indicator (⚠) for sim+shellscript; got:\n%s", view)
 	}
 	if !strings.Contains(view, "sim") {
 		t.Errorf("direction A: expected cautionary token 'sim' in view for shellscript; got:\n%s", view)
+	}
+}
+
+// TestCrossAxisCompositionDirectionANoActiveConflict specifies that when a channel token is in
+// focus but no conflicting task is active, no caution line is shown (ADR-0148).
+func TestCrossAxisCompositionDirectionANoActiveConflict(t *testing.T) {
+	compositionFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		if axis == "channel" && token == "shellscript" {
+			return map[string][]string{
+					"task": {"make", "fix"},
+				},
+				map[string]map[string]string{
+					"task": {"sim": "tends to produce thin output — simulation is inherently narrative"},
+				}
+		}
+		return nil, nil
+	}
+
+	// No active task tokens — caution must not appear even though grammar has an entry.
+	m := newModel(Options{
+		TokenCategories:         testCategoriesChannelOnly(),
+		CrossAxisCompositionFor: compositionFor,
+		InitialWidth:            80,
+		InitialHeight:           50,
+	})
+	m.ready = true
+	m.updateCompletions()
+	if m.getCurrentStage() != "channel" {
+		t.Fatalf("expected channel stage, got %q", m.getCurrentStage())
+	}
+	m.completionIndex = 0 // focus shellscript
+
+	view := modelViewContent(m)
+
+	if strings.Contains(view, "⚠") {
+		t.Errorf("direction A: no active task selected — caution must not appear; got:\n%s", view)
+	}
+	if strings.Contains(view, "sim") {
+		t.Errorf("direction A: no active task selected — 'sim' caution must not appear; got:\n%s", view)
 	}
 }
 

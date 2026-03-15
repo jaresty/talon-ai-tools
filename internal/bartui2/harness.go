@@ -140,6 +140,13 @@ func (h *Harness) Observe() HarnessState {
 	}
 }
 
+// ObserveView returns the rendered TUI view content for the current state.
+// Useful for asserting detail-panel content (e.g. caution/natural lines) that is
+// not captured in the structured HarnessState.
+func (h *Harness) ObserveView() string {
+	return h.m.View().Content
+}
+
 // Act applies an action and updates the model state.
 // Returns an error if the action is invalid; the error is also reflected in
 // the next Observe().Error so callers reading JSON output need not inspect
@@ -226,6 +233,23 @@ func (h *Harness) Act(action HarnessAction) error {
 		}
 		if !removed {
 			h.lastErr = fmt.Sprintf("token %q not found in selection", action.Target)
+			return fmt.Errorf("%s", h.lastErr)
+		}
+
+	case "focus":
+		// Move the completion cursor to the named token without selecting it.
+		h.m.updateCompletions()
+		found := false
+		for i, c := range h.m.completions {
+			if strings.EqualFold(c.Value, action.Target) {
+				h.m.completionIndex = i
+				h.m.ensureCompletionVisible()
+				found = true
+				break
+			}
+		}
+		if !found {
+			h.lastErr = fmt.Sprintf("token %q not found for focus in stage %q", action.Target, h.m.getCurrentStage())
 			return fmt.Errorf("%s", h.lastErr)
 		}
 

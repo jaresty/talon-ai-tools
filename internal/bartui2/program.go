@@ -2028,8 +2028,16 @@ func (m model) renderTokensPane() string {
 		switch currentStage {
 		case "channel", "form":
 			// Direction A: show composition profile of the focused channel/form token.
+			// Partner axes: task and completeness always; also check the complementary
+			// axis (form checks active channel tokens; channel checks active form tokens).
 			natural, cautionary := m.crossAxisCompositionFor(currentStage, selectedValue)
-			for _, axisB := range []string{"task", "completeness"} {
+			partnerAxes := []string{"task", "completeness"}
+			if currentStage == "form" {
+				partnerAxes = append(partnerAxes, "channel")
+			} else {
+				partnerAxes = append(partnerAxes, "form")
+			}
+			for _, axisB := range partnerAxes {
 				if nats, ok := natural[axisB]; ok && len(nats) > 0 {
 					crossNatLines = append(crossNatLines,
 						"✓ Natural "+axisB+": "+strings.Join(nats, ", "))
@@ -2037,8 +2045,13 @@ func (m model) renderTokensPane() string {
 				if cauts, ok := cautionary[axisB]; ok && len(cauts) > 0 {
 					keys := sortedStringKeys(cauts)
 					for _, tok := range keys {
-						crossCauLines = append(crossCauLines,
-							"⚠ Caution: "+tok+" — "+firstSentenceOf(cauts[tok]))
+						for _, activeToken := range m.tokensByCategory[axisB] {
+							if activeToken == tok {
+								crossCauLines = append(crossCauLines,
+									"⚠ Caution: "+tok+" — "+firstSentenceOf(cauts[tok]))
+								break
+							}
+						}
 					}
 				}
 			}
@@ -2060,6 +2073,32 @@ func (m model) renderTokensPane() string {
 								break
 							}
 						}
+					}
+				}
+			}
+		case "directional":
+			// Direction C: for active completeness/form tokens, check if the focused
+			// directional token is in their cautionary map.
+			for _, sourceAxis := range []string{"completeness", "form"} {
+				for _, activeToken := range m.tokensByCategory[sourceAxis] {
+					_, cautionary := m.crossAxisCompositionFor(sourceAxis, activeToken)
+					if cauts, ok := cautionary["directional"]; ok {
+						if warning, ok := cauts[selectedValue]; ok {
+							crossCauLines = append(crossCauLines,
+								"⚠ With "+activeToken+": "+firstSentenceOf(warning))
+						}
+					}
+				}
+			}
+		case "method":
+			// Direction D: for active completeness tokens, check if the focused
+			// method token is in their cautionary map.
+			for _, activeToken := range m.tokensByCategory["completeness"] {
+				_, cautionary := m.crossAxisCompositionFor("completeness", activeToken)
+				if cauts, ok := cautionary["method"]; ok {
+					if warning, ok := cauts[selectedValue]; ok {
+						crossCauLines = append(crossCauLines,
+							"⚠ With "+activeToken+": "+firstSentenceOf(warning))
 					}
 				}
 			}

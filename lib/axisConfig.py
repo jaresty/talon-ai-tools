@@ -253,8 +253,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to evaluate, while "
-        "remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
+        "ground": "The response treats the declared intent (I) as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least interpretation to evaluate, while "
+        "remaining achievable in the current medium. For code contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
         "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any rung, first locate the highest "
         "already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only permitted when the "
         "next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
@@ -4259,8 +4259,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ground": {
-            "definition": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to "
-            "evaluate, while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable "
+            "definition": "The response treats the declared intent (I) as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least interpretation to "
+            "evaluate, while remaining achievable in the current medium. For code contexts the rule instantiates as: prose → criteria → formal notation → executable "
             "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning "
             "at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every "
             "feasible step; stopping is only permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase "

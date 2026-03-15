@@ -3,6 +3,7 @@ package barcli
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os/exec"
@@ -108,11 +109,39 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		AxisDescriptions:        grammar.Axes.AxisDescriptions,
 	}
 
+	if opts.Harness {
+		return runTUI2Harness(tuiOpts, stdin, stdout)
+	}
+
 	if err := startTUI2(tuiOpts); err != nil {
 		writeError(stderr, fmt.Sprintf("tui2: %v", err))
 		return 1
 	}
 
+	return 0
+}
+
+// runTUI2Harness runs the TUI in headless mode: reads JSON actions from stdin,
+// writes JSON state snapshots to stdout after each action (ADR-0167).
+func runTUI2Harness(opts bartui2.Options, stdin io.Reader, stdout io.Writer) int {
+	h := bartui2.NewHarness(opts)
+	dec := json.NewDecoder(stdin)
+	enc := json.NewEncoder(stdout)
+
+	for {
+		state := h.Observe()
+		if err := enc.Encode(state); err != nil {
+			return 1
+		}
+		if state.Done {
+			break
+		}
+		var action bartui2.HarnessAction
+		if err := dec.Decode(&action); err != nil {
+			break // EOF or malformed input — exit cleanly
+		}
+		h.Act(action) //nolint:errcheck — error surfaced in next Observe().Error
+	}
 	return 0
 }
 

@@ -54,6 +54,10 @@ type Config struct {
 
 	// InitialCommand seeds the Run Command field in bar tui2 at launch time.
 	InitialCommand string
+
+	// Harness activates headless harness mode: reads JSON actions from stdin,
+	// writes JSON state snapshots to stdout. No PTY required (ADR-0167).
+	Harness bool
 }
 
 // Parse converts argv-like input into a Config.
@@ -284,6 +288,8 @@ func Parse(args []string) (*Config, error) {
 			cfg.Plain = true
 		case arg == "--no-input":
 			cfg.NoInput = true
+		case arg == "--harness":
+			cfg.Harness = true
 		case arg == "--command", arg == "--cmd":
 			i++
 			if i >= len(args) {

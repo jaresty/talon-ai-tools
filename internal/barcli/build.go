@@ -686,34 +686,41 @@ func heuristicMatch(word string, heuristics []string) bool {
 	return false
 }
 
-// searchByHeuristics returns up to 5 ranked "axis:token" strings whose heuristics[]
-// or distinctions[] contain word as a case-insensitive substring.
+// searchByHeuristics returns up to 5 ranked "axis:token — Label" strings whose
+// heuristics[] contain word as a case-insensitive substring.
 func searchByHeuristics(g *Grammar, word string) []string {
 	if word == "" {
 		return nil
 	}
 
 	type hit struct {
-		key   string // "axis:token"
+		key   string // "axis:token — Label"
 		score int    // higher = more specific match
+		sort  string // plain "axis:token" for stable ordering
 	}
 
 	var hits []hit
 
 	// Search task tokens
 	for _, taskName := range g.GetAllTasks() {
-		heuristics := g.TaskHeuristics(taskName)
-		if heuristicMatch(word, heuristics) {
-			hits = append(hits, hit{key: "task:" + taskName, score: 1})
+		if heuristicMatch(word, g.TaskHeuristics(taskName)) {
+			key := "task:" + taskName
+			if label := g.TaskLabel(taskName); label != "" {
+				key += " — " + label
+			}
+			hits = append(hits, hit{key: key, score: 1, sort: "task:" + taskName})
 		}
 	}
 
 	// Search axis tokens across all axes
 	for axis, tokenMap := range g.Axes.Metadata {
 		for tokenName := range tokenMap {
-			heuristics := g.AxisTokenHeuristics(axis, tokenName)
-			if heuristicMatch(word, heuristics) {
-				hits = append(hits, hit{key: axis + ":" + tokenName, score: 1})
+			if heuristicMatch(word, g.AxisTokenHeuristics(axis, tokenName)) {
+				key := axis + ":" + tokenName
+				if label := g.AxisLabel(axis, tokenName); label != "" {
+					key += " — " + label
+				}
+				hits = append(hits, hit{key: key, score: 1, sort: axis + ":" + tokenName})
 			}
 		}
 	}
@@ -723,7 +730,11 @@ func searchByHeuristics(g *Grammar, word string) []string {
 		for tokenName, meta := range tokenMap {
 			if heuristicMatch(word, meta.Heuristics) {
 				slug := slugifyToken(tokenName)
-				hits = append(hits, hit{key: axis + ":" + slug, score: 1})
+				key := axis + ":" + slug
+				if label := g.PersonaLabel(axis, tokenName); label != "" {
+					key += " — " + label
+				}
+				hits = append(hits, hit{key: key, score: 1, sort: axis + ":" + slug})
 			}
 		}
 	}
@@ -737,7 +748,7 @@ func searchByHeuristics(g *Grammar, word string) []string {
 		if hits[i].score != hits[j].score {
 			return hits[i].score > hits[j].score
 		}
-		return hits[i].key < hits[j].key
+		return hits[i].sort < hits[j].sort
 	})
 
 	limit := 5

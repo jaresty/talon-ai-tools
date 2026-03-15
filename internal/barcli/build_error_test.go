@@ -6,7 +6,8 @@ import (
 )
 
 // TestHeuristicSuggestions verifies that unrecognized tokens matching heuristics[]
-// or distinctions[] fields emit a "Suggested by intent:" section in the error output.
+// or distinctions[] fields emit a "Suggested by intent:" section in the error output,
+// with each suggestion showing the token key and its label.
 func TestHeuristicSuggestions(t *testing.T) {
 	tests := []struct {
 		name              string
@@ -15,11 +16,12 @@ func TestHeuristicSuggestions(t *testing.T) {
 		unexpectInMessage []string
 	}{
 		{
-			name: "heuristic match for debug surfaces task:probe",
+			name: "heuristic match for debug surfaces task:probe with label",
 			args: []string{"build", "debug"},
 			expectInMessage: []string{
 				"Suggested by intent:",
 				"task:probe",
+				"Surface assumptions and implications",
 			},
 		},
 		{
@@ -28,6 +30,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			expectInMessage: []string{
 				"Suggested by intent:",
 				"task:probe",
+				"Surface assumptions and implications",
 			},
 		},
 		{
@@ -62,27 +65,39 @@ func TestHeuristicSuggestions(t *testing.T) {
 			},
 		},
 		{
-			name: "heuristic match for persona voice token",
+			name: "heuristic match for persona voice token includes label",
 			args: []string{"build", "TDD mindset"},
 			expectInMessage: []string{
 				"Suggested by intent:",
 				"voice:as-kent-beck",
+				"Kent Beck",
 			},
 		},
 		{
-			name: "heuristic match for persona audience token",
+			name: "heuristic match for persona audience token includes label",
 			args: []string{"build", "executive audience"},
 			expectInMessage: []string{
 				"Suggested by intent:",
 				"audience:to-ceo",
+				"Business impact",
 			},
 		},
 		{
-			name: "heuristic match for persona tone token",
+			name: "heuristic match for persona tone token includes label",
 			args: []string{"build", "conversational tone"},
 			expectInMessage: []string{
 				"Suggested by intent:",
 				"tone:casually",
+				"casual",
+			},
+		},
+		{
+			name: "heuristic match for method token includes label",
+			args: []string{"build", "root cause"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"method:diagnose",
+				"Identify likely root causes",
 			},
 		},
 	}

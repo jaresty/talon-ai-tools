@@ -5,6 +5,111 @@ import (
 	"testing"
 )
 
+// TestHeuristicSuggestions verifies that unrecognized tokens matching heuristics[]
+// or distinctions[] fields emit a "Suggested by intent:" section in the error output.
+func TestHeuristicSuggestions(t *testing.T) {
+	tests := []struct {
+		name              string
+		args              []string
+		expectInMessage   []string
+		unexpectInMessage []string
+	}{
+		{
+			name: "heuristic match for debug surfaces task:probe",
+			args: []string{"build", "debug"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"task:probe",
+			},
+		},
+		{
+			name: "heuristic match for troubleshoot surfaces task:probe",
+			args: []string{"build", "troubleshoot"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"task:probe",
+			},
+		},
+		{
+			name: "heuristic match for root cause surfaces task:probe",
+			args: []string{"build", "root cause"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"task:probe",
+			},
+		},
+		{
+			name: "heuristic match is case-insensitive",
+			args: []string{"build", "DEBUG"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"task:probe",
+			},
+		},
+		{
+			name: "no heuristic section for truly foreign word",
+			args: []string{"build", "xyz123"},
+			unexpectInMessage: []string{
+				"Suggested by intent:",
+			},
+		},
+		{
+			name: "heuristic match for analyze surfaces task:probe",
+			args: []string{"build", "analyze"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"task:probe",
+			},
+		},
+		{
+			name: "heuristic match for persona voice token",
+			args: []string{"build", "TDD mindset"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"voice:as-kent-beck",
+			},
+		},
+		{
+			name: "heuristic match for persona audience token",
+			args: []string{"build", "executive audience"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"audience:to-ceo",
+			},
+		},
+		{
+			name: "heuristic match for persona tone token",
+			args: []string{"build", "conversational tone"},
+			expectInMessage: []string{
+				"Suggested by intent:",
+				"tone:casually",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := runBuildCLI(t, tt.args, nil)
+
+			if result.Exit == 0 {
+				t.Errorf("expected non-zero exit, got 0")
+			}
+
+			for _, expected := range tt.expectInMessage {
+				if !strings.Contains(result.Stderr, expected) {
+					t.Errorf("expected stderr to contain %q\nGot:\n%s", expected, result.Stderr)
+				}
+			}
+
+			for _, unexpected := range tt.unexpectInMessage {
+				if strings.Contains(result.Stderr, unexpected) {
+					t.Errorf("expected stderr NOT to contain %q\nGot:\n%s", unexpected, result.Stderr)
+				}
+			}
+		})
+	}
+}
+
 func TestBuildUnrecognizedToken(t *testing.T) {
 	tests := []struct {
 		name              string

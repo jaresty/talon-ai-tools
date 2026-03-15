@@ -662,7 +662,93 @@ func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[stri
 		}
 	}
 
+	// Add heuristic/distinction suggestions
+	heuristicSuggestions := searchByHeuristics(g, token)
+	if len(heuristicSuggestions) > 0 {
+		msg.WriteString("\n\nSuggested by intent:")
+		for _, s := range heuristicSuggestions {
+			msg.WriteString("\n  • ")
+			msg.WriteString(s)
+		}
+	}
+
 	return msg.String()
+}
+
+// heuristicMatch returns true if word matches any element in heuristics (case-insensitive substring).
+func heuristicMatch(word string, heuristics []string) bool {
+	wordLower := strings.ToLower(word)
+	for _, h := range heuristics {
+		if strings.Contains(strings.ToLower(h), wordLower) {
+			return true
+		}
+	}
+	return false
+}
+
+// searchByHeuristics returns up to 5 ranked "axis:token" strings whose heuristics[]
+// or distinctions[] contain word as a case-insensitive substring.
+func searchByHeuristics(g *Grammar, word string) []string {
+	if word == "" {
+		return nil
+	}
+
+	type hit struct {
+		key   string // "axis:token"
+		score int    // higher = more specific match
+	}
+
+	var hits []hit
+
+	// Search task tokens
+	for _, taskName := range g.GetAllTasks() {
+		heuristics := g.TaskHeuristics(taskName)
+		if heuristicMatch(word, heuristics) {
+			hits = append(hits, hit{key: "task:" + taskName, score: 1})
+		}
+	}
+
+	// Search axis tokens across all axes
+	for axis, tokenMap := range g.Axes.Metadata {
+		for tokenName := range tokenMap {
+			heuristics := g.AxisTokenHeuristics(axis, tokenName)
+			if heuristicMatch(word, heuristics) {
+				hits = append(hits, hit{key: axis + ":" + tokenName, score: 1})
+			}
+		}
+	}
+
+	// Search persona tokens (voice, audience, tone, intent, presets)
+	for axis, tokenMap := range g.Persona.Metadata {
+		for tokenName, meta := range tokenMap {
+			if heuristicMatch(word, meta.Heuristics) {
+				slug := slugifyToken(tokenName)
+				hits = append(hits, hit{key: axis + ":" + slug, score: 1})
+			}
+		}
+	}
+
+	if len(hits) == 0 {
+		return nil
+	}
+
+	// Sort for deterministic output
+	sort.Slice(hits, func(i, j int) bool {
+		if hits[i].score != hits[j].score {
+			return hits[i].score > hits[j].score
+		}
+		return hits[i].key < hits[j].key
+	})
+
+	limit := 5
+	if len(hits) < limit {
+		limit = len(hits)
+	}
+	result := make([]string, limit)
+	for i := 0; i < limit; i++ {
+		result[i] = hits[i].key
+	}
+	return result
 }
 
 func (s *buildState) fail(err *CLIError) *CLIError {

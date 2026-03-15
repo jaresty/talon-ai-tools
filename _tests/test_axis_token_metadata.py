@@ -381,7 +381,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 82 tokens."""
+    """ADR-0155 T-8: method axis has structured metadata for all 80 tokens (enforce/observe retired in ADR-0162)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -414,7 +414,6 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "domains",
         "drift",
         "effects",
-        "enforce",
         "experimental",
         "field",
         "flow",
@@ -436,7 +435,6 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "operations",
         "order",
         "origin",
-        "observe",
         "perturb",
         "polar",
         "preserve",
@@ -475,7 +473,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 82 method tokens must have metadata entries."""
+        """All 80 method tokens must have metadata entries (enforce/observe retired in ADR-0162)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

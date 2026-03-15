@@ -254,11 +254,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats the declared intent (I) as fixed. The governing rule is interpretation-reduction with faithful derivation: at each step, produce V in the form that requires the least "
-        "interpretation to evaluate, derived faithfully from the previous rung — the form changes, the intent does not. No new semantic commitments may be introduced between rungs. Remaining achievable in the "
-        "current medium is the only permitted reason to stop. For code contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
+        "interpretation to evaluate, derived faithfully from the previous rung — the form changes, the intent does not. No new semantic commitments may be introduced when descending from one rung to the next. "
+        "For code contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
         "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any rung, first locate the highest "
         "already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only permitted when the "
-        "next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
+        "next step is not achievable. Present V (the lowest executable validation rung reached), then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -4261,11 +4261,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "ground": {
             "definition": "The response treats the declared intent (I) as fixed. The governing rule is interpretation-reduction with faithful derivation: at each step, produce V in the form that requires the "
-            "least interpretation to evaluate, derived faithfully from the previous rung — the form changes, the intent does not. No new semantic commitments may be introduced between rungs. "
+            "least interpretation to evaluate, derived faithfully from the previous rung — the form changes, the intent does not. No new semantic commitments may be introduced when descending from one rung to the next. "
             "For code contexts the rule instantiates as: prose → criteria → formal notation → executable "
             "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning "
             "at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every "
-            "feasible step; stopping is only permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase "
+            "feasible step; stopping is only permitted when the next step is not achievable. Present V (the lowest executable validation rung reached), then the exact phrase "
             "'Validation artifact V complete' on its own line, then O satisfying V.",
             "distinctions": [
                 {

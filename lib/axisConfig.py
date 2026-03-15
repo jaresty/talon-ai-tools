@@ -3175,6 +3175,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "frame this as an experiment",
                 "set up the test structure",
                 "experiment write-up with expected outcomes",
+                "plan my debugging experiment",
+                "structure my debugging hypothesis and tests",
+                "write up the debugging test plan",
             ],
         },
         "questions": {
@@ -3467,6 +3470,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "debrief on the experiment",
                 "what were the results compared to our hypothesis",
                 "review what happened vs what we planned",
+                "post-debug review",
+                "review what my debugging found vs what I expected",
+                "what did the debugging reveal vs my hypothesis",
             ],
         },
         "visual": {
@@ -3553,6 +3559,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "compare possible explanations",
                 "ranked hypotheses from evidence",
                 "what could explain this",
+                "what are the possible causes of this bug",
+                "generate competing explanations for this error",
             ],
         },
         "actors": {
@@ -4053,6 +4061,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what's the bug source",
                 "investigate why",
                 "find the root cause",
+                "debug this",
+                "help me debug",
             ],
         },
         "dimension": {

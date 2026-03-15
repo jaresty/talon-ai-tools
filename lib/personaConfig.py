@@ -861,6 +861,9 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 "scientific framing",
                 "evidence-based",
                 "hypothesis and evidence",
+                "apply scientific method to debugging",
+                "treat this bug as a scientific investigation",
+                "debug with hypothesis and evidence",
             ],
             "distinctions": [
                 {

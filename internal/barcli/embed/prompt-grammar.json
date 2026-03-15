@@ -2201,7 +2201,10 @@
             "hypothesis and method",
             "frame this as an experiment",
             "set up the test structure",
-            "experiment write-up with expected outcomes"
+            "experiment write-up with expected outcomes",
+            "plan my debugging experiment",
+            "structure my debugging hypothesis and tests",
+            "write up the debugging test plan"
           ]
         },
         "questions": {
@@ -2481,7 +2484,10 @@
             "what did we actually observe vs what we expected",
             "debrief on the experiment",
             "what were the results compared to our hypothesis",
-            "review what happened vs what we planned"
+            "review what happened vs what we planned",
+            "post-debug review",
+            "review what my debugging found vs what I expected",
+            "what did the debugging reveal vs my hypothesis"
           ]
         },
         "visual": {
@@ -2563,7 +2569,9 @@
             "what are the most likely causes ranked",
             "compare possible explanations",
             "ranked hypotheses from evidence",
-            "what could explain this"
+            "what could explain this",
+            "what are the possible causes of this bug",
+            "generate competing explanations for this error"
           ]
         },
         "actors": {
@@ -3046,7 +3054,9 @@
             "narrow down the cause",
             "what's the bug source",
             "investigate why",
-            "find the root cause"
+            "find the root cause",
+            "debug this",
+            "help me debug"
           ]
         },
         "dimension": {
@@ -5920,7 +5930,10 @@
             "as a scientist would",
             "scientific framing",
             "evidence-based",
-            "hypothesis and evidence"
+            "hypothesis and evidence",
+            "apply scientific method to debugging",
+            "treat this bug as a scientific investigation",
+            "debug with hypothesis and evidence"
           ],
           "distinctions": [
             {
@@ -8316,9 +8329,9 @@
     }
   ],
   "checksums": {
-    "axes": "a0d6d12d027bc627dc2588e0827af03a303a0e88ee530d2f0f2bc04e6f2ae158",
+    "axes": "afc8803699c48f0fd0f3b8e2cdf1a10d3fea4d12b10b6f5ee45e8965a28ff8d2",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
-    "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
+    "persona": "8c6551e60703e86fba5a95d52b2a7de68ea2fd36bd96c04bee6e878f11ece84e",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
     "slugs": "0fe846b629c25186c3a7c8bc5c175c39e0296ef20a4135fdedea144b9567d6e1",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",

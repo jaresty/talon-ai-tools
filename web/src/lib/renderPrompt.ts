@@ -186,7 +186,12 @@ export function renderPrompt(
 	const subjectText = subject.trim() || SUBJECT_PLACEHOLDER;
 	parts.push(writeSection('=== SUBJECT 題材 (CONTEXT) ===', subjectText));
 
-	// EXECUTION REMINDER
+	// META INTERPRETATION GUIDANCE (ADR-0166)
+	if (grammar.meta_interpretation_guidance?.trim()) {
+		parts.push(writeSection('=== META INTERPRETATION ===', grammar.meta_interpretation_guidance));
+	}
+
+	// EXECUTION REMINDER — kept last to counteract recency bias
 	parts.push(writeSection('=== EXECUTION REMINDER ===', grammar.execution_reminder));
 
 	return parts.join('').trimEnd() + '\n';

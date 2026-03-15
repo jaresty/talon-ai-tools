@@ -37,6 +37,23 @@ func TestLoadGrammarHasReferenceKey(t *testing.T) {
 	}
 }
 
+// TestLoadGrammarHasMetaInterpretationGuidance specifies that the embedded
+// grammar provides a non-empty MetaInterpretationGuidance field (ADR-0166).
+func TestLoadGrammarHasMetaInterpretationGuidance(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	if strings.TrimSpace(grammar.MetaInterpretationGuidance) == "" {
+		t.Fatal("expected embedded grammar to provide a non-empty MetaInterpretationGuidance (ADR-0166)")
+	}
+	if !strings.Contains(grammar.MetaInterpretationGuidance, "Model interpretation") {
+		t.Fatal("MetaInterpretationGuidance should reference the '## Model interpretation' heading (ADR-0166)")
+	}
+}
+
 func TestEmbeddedGrammarUsesTaskKeys(t *testing.T) {
 	data, err := embeddedGrammarBytes()
 	if err != nil {

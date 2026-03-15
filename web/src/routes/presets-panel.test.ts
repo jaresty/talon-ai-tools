@@ -31,6 +31,7 @@ vi.mock('$lib/grammar.js', () => ({
 		persona: { use_when: {} },
 		reference_key: '',
 		execution_reminder: '',
+		meta_interpretation_guidance: '',
 		axes: { definitions: {}, labels: {} }
 	}),
 	getAxisTokens: vi.fn().mockReturnValue([]),

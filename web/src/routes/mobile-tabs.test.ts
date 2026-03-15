@@ -20,7 +20,8 @@ vi.mock('$lib/grammar.js', () => ({
 		tokens: {},
 		persona_presets: [],
 		reference_key: '',
-		execution_reminder: ''
+		execution_reminder: '',
+		meta_interpretation_guidance: ''
 	}),
 	getAxisTokens: vi.fn().mockReturnValue([]),
 	getTaskTokens: vi.fn().mockReturnValue([

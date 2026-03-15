@@ -36,6 +36,7 @@ vi.mock('$lib/grammar.js', () => ({
 		persona: { use_when: {} },
 		reference_key: '',
 		execution_reminder: '',
+		meta_interpretation_guidance: '',
 		axes: {
 			definitions: {
 				task: { probe: 'Surface assumptions', show: 'Explain' },

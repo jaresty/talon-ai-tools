@@ -15,6 +15,7 @@ const (
 	sectionPersona     = "=== PERSONA 人格 (STANCE) ==="
 	sectionSubject     = "=== SUBJECT 題材 (CONTEXT) ==="
 	sectionExecution   = "=== EXECUTION REMINDER ==="
+	sectionMeta        = "=== META INTERPRETATION ==="
 	sectionPromptlets  = "Promptlets"
 
 )
@@ -70,7 +71,12 @@ func RenderPlainText(result *BuildResult) string {
 	}
 	writeSection(&b, sectionSubject, subject)
 
-	// Add execution reminder as the final section to counteract recency bias
+	// Add meta interpretation guidance when present (ADR-0166)
+	if strings.TrimSpace(result.MetaInterpretationGuidance) != "" {
+		writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
+	}
+
+	// Add execution reminder last to counteract recency bias
 	writeSection(&b, sectionExecution, result.ExecutionReminder)
 
 	return strings.TrimRight(b.String(), "\n") + "\n"

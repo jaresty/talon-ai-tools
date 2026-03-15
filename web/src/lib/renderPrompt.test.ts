@@ -49,7 +49,8 @@ const grammar: Grammar = {
 		axes: { voice: [], audience: [], tone: [] }
 	},
 	reference_key: 'REFERENCE KEY TEXT',
-	execution_reminder: 'EXECUTION REMINDER TEXT'
+	execution_reminder: 'EXECUTION REMINDER TEXT',
+	meta_interpretation_guidance: 'META INTERPRETATION GUIDANCE TEXT'
 };
 
 describe('renderPrompt', () => {
@@ -171,6 +172,18 @@ describe('renderPrompt', () => {
 	it('includes EXECUTION REMINDER section', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
 		expect(result).toContain('=== EXECUTION REMINDER ===');
+	});
+
+	it('includes META INTERPRETATION section (ADR-0166)', () => {
+		const result = renderPrompt(grammar, {}, 'x', '');
+		expect(result).toContain('=== META INTERPRETATION ===');
+		expect(result).toContain('META INTERPRETATION GUIDANCE TEXT');
+	});
+
+	it('omits META INTERPRETATION section when meta_interpretation_guidance is empty (ADR-0166)', () => {
+		const grammarNoMeta: Grammar = { ...grammar, meta_interpretation_guidance: '' };
+		const result = renderPrompt(grammarNoMeta, {}, 'x', '');
+		expect(result).not.toContain('=== META INTERPRETATION ===');
 	});
 
 	it('output ends with a single newline', () => {

@@ -86,6 +86,7 @@ export interface Grammar {
 	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
 	reference_key: string;
 	execution_reminder: string;
+	meta_interpretation_guidance: string;
 }
 
 export interface TokenMeta {

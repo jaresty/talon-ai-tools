@@ -85,6 +85,17 @@ class PromptGrammarCliTests(unittest.TestCase):
         static_kanji = data.get("tasks", {}).get("kanji", {})
         self.assertTrue(static_kanji, "tasks should contain kanji mappings (ADR-0143)")
 
+        meta_guidance = data.get("meta_interpretation_guidance", "")
+        self.assertTrue(
+            meta_guidance,
+            "grammar JSON should contain a non-empty meta_interpretation_guidance field (ADR-0166)",
+        )
+        self.assertIn(
+            "Model interpretation",
+            meta_guidance,
+            "meta_interpretation_guidance should reference the '## Model interpretation' heading",
+        )
+
 
 if bootstrap is None and not TYPE_CHECKING:  # pragma: no cover - Talon runtime
 

@@ -164,8 +164,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
-        "persist": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off "
-        "the work from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
+        "persist": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work "
+        "from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
@@ -346,10 +346,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
         "their internal topology in detail or their boundary-spanning distribution.",
-        "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
-        "guarantees, and the conditions under which it can be lost or corrupted.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
         "perturbations affect their continuity.",
+        "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
+        "guarantees, and the conditions under which it can be lost or corrupted.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal "
         "topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, "
@@ -548,8 +548,8 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
-        "storage": "Durable state and storage layer",
         "stable": "Stability and persistence of states",
+        "storage": "Durable state and storage layer",
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
         "time": "Sequences and temporal change",
@@ -784,8 +784,8 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "good": "良",
         "mean": "意",
         "motifs": "紋",
-        "storage": "庫",
         "stable": "安",
+        "storage": "庫",
         "struct": "造",
         "thing": "物",
         "time": "時",
@@ -1090,8 +1090,8 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
-        "storage": "Durable state and storage layer",
         "stable": "Invariants/stable states",
+        "storage": "Durable state and storage layer",
         "struct": "Entities/boundaries",
         "thing": "Entities/boundaries",
         "time": "Sequences/change",
@@ -5464,32 +5464,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "same pattern in different places",
             ],
         },
-        "storage": {
-            "definition": "Storage and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
-            "guarantees, and the conditions under which it can be lost or corrupted.",
-            "distinctions": [
-                {
-                    "note": "storage = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
-                    "token": "stable",
-                },
-                {
-                    "note": "storage = what survives and in what form; time = temporal sequence and change",
-                    "token": "time",
-                },
-            ],
-            "heuristics": [
-                "where does this get saved",
-                "what persists after the operation",
-                "durability requirements",
-                "what must survive a restart",
-                "storage medium",
-                "data persistence",
-                "recovery guarantees",
-                "what gets written to disk",
-                "durable state",
-                "persistence layer",
-            ],
-        },
         "stable": {
             "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
             "distinctions": [
@@ -5511,6 +5485,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "fixed constraints",
                 "what has remained stable",
                 "backward-compatible",
+            ],
+        },
+        "storage": {
+            "definition": "Storage and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, "
+            "and the conditions under which it can be lost or corrupted.",
+            "distinctions": [
+                {
+                    "note": "storage = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
+                    "token": "stable",
+                },
+                {
+                    "note": "storage = what survives and in what form; time = temporal sequence and change",
+                    "token": "time",
+                },
+            ],
+            "heuristics": [
+                "where does this get saved",
+                "what persists after the operation",
+                "durability requirements",
+                "what must survive a restart",
+                "storage medium",
+                "data persistence",
+                "recovery guarantees",
+                "what gets written to disk",
+                "durable state",
+                "persistence layer",
             ],
         },
         "struct": {

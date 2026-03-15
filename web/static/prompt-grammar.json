@@ -4417,6 +4417,29 @@
             "same pattern in different places"
           ]
         },
+        "stable": {
+          "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
+          "distinctions": [
+            {
+              "note": "stable = what persists; time = how things evolve (often paired)",
+              "token": "time"
+            },
+            {
+              "note": "stable = descriptive (what already persists or is invariant); storage = prescriptive (what must be made durable)",
+              "token": "storage"
+            }
+          ],
+          "heuristics": [
+            "stable",
+            "unlikely to change",
+            "won't change",
+            "what persists",
+            "what is settled",
+            "fixed constraints",
+            "what has remained stable",
+            "backward-compatible"
+          ]
+        },
         "storage": {
           "definition": "Storage and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
           "distinctions": [
@@ -4440,29 +4463,6 @@
             "what gets written to disk",
             "durable state",
             "persistence layer"
-          ]
-        },
-        "stable": {
-          "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
-          "distinctions": [
-            {
-              "note": "stable = what persists; time = how things evolve (often paired)",
-              "token": "time"
-            },
-            {
-              "note": "stable = descriptive (what already persists or is invariant); storage = prescriptive (what must be made durable)",
-              "token": "storage"
-            }
-          ],
-          "heuristics": [
-            "stable",
-            "unlikely to change",
-            "won't change",
-            "what persists",
-            "what is settled",
-            "fixed constraints",
-            "what has remained stable",
-            "backward-compatible"
           ]
         },
         "struct": {

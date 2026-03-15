@@ -482,3 +482,125 @@ func TestHarnessCautionMethodCompleteness(t *testing.T) {
 		t.Errorf("method: caution must NOT appear when full active; got:\n%s", view2)
 	}
 }
+
+// TestHarnessCautionToneChannel specifies that browsing the channel axis with an active
+// tone token shows a detail-panel caution when the focused channel token conflicts with
+// that tone token.
+//
+// tone.formally → channel: caution=[slack, sync, remote]
+func TestHarnessCautionToneChannel(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+	categories := BuildTokenCategories(grammar)
+	crossAxisFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		data := grammar.CrossAxisCompositionFor(axis, token)
+		natural, cautionary := make(map[string][]string), make(map[string]map[string]string)
+		for axisB, pair := range data {
+			if len(pair.Natural) > 0 {
+				natural[axisB] = pair.Natural
+			}
+			if len(pair.Cautionary) > 0 {
+				cautionary[axisB] = pair.Cautionary
+			}
+		}
+		return natural, cautionary
+	}
+	newH := func(initialTokens []string) *bartui2.Harness {
+		return bartui2.NewHarness(bartui2.Options{
+			TokenCategories:         categories,
+			InitialTokens:           initialTokens,
+			CrossAxisCompositionFor: crossAxisFor,
+			InitialWidth:            80,
+			InitialHeight:           50,
+		})
+	}
+
+	// Case 1: formally active + slack focused → caution must appear.
+	h := newH([]string{"make", "formally"})
+	if err := h.Act(bartui2.HarnessAction{Type: "nav", Target: "channel"}); err != nil {
+		t.Fatalf("nav to channel: %v", err)
+	}
+	if err := h.Act(bartui2.HarnessAction{Type: "focus", Target: "slack"}); err != nil {
+		t.Fatalf("focus slack: %v", err)
+	}
+	view := h.ObserveView()
+	if !strings.Contains(view, "With formally") {
+		t.Errorf("tone→channel: detail-panel caution must appear when formally active + slack focused; got:\n%s", view)
+	}
+
+	// Case 2: casually active + slack focused → no caution (casually has no channel cautions).
+	h2 := newH([]string{"make", "casually"})
+	if err := h2.Act(bartui2.HarnessAction{Type: "nav", Target: "channel"}); err != nil {
+		t.Fatalf("nav to channel: %v", err)
+	}
+	if err := h2.Act(bartui2.HarnessAction{Type: "focus", Target: "slack"}); err != nil {
+		t.Fatalf("focus slack (casually active): %v", err)
+	}
+	view2 := h2.ObserveView()
+	if strings.Contains(view2, "With casually") {
+		t.Errorf("tone→channel: caution must NOT appear when casually active; got:\n%s", view2)
+	}
+}
+
+// TestHarnessCautionChannelAudience specifies that browsing the audience axis with an
+// active channel token shows a detail-panel caution when the focused audience token
+// conflicts with that channel token.
+//
+// channel.code → audience: caution=[to-managers, to-stakeholders, to-team, to-ceo]
+func TestHarnessCautionChannelAudience(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+	categories := BuildTokenCategories(grammar)
+	crossAxisFor := func(axis, token string) (map[string][]string, map[string]map[string]string) {
+		data := grammar.CrossAxisCompositionFor(axis, token)
+		natural, cautionary := make(map[string][]string), make(map[string]map[string]string)
+		for axisB, pair := range data {
+			if len(pair.Natural) > 0 {
+				natural[axisB] = pair.Natural
+			}
+			if len(pair.Cautionary) > 0 {
+				cautionary[axisB] = pair.Cautionary
+			}
+		}
+		return natural, cautionary
+	}
+	newH := func(initialTokens []string) *bartui2.Harness {
+		return bartui2.NewHarness(bartui2.Options{
+			TokenCategories:         categories,
+			InitialTokens:           initialTokens,
+			CrossAxisCompositionFor: crossAxisFor,
+			InitialWidth:            80,
+			InitialHeight:           50,
+		})
+	}
+
+	// Case 1: code active + to-managers focused → caution must appear.
+	h := newH([]string{"make", "code"})
+	if err := h.Act(bartui2.HarnessAction{Type: "nav", Target: "audience"}); err != nil {
+		t.Fatalf("nav to audience: %v", err)
+	}
+	if err := h.Act(bartui2.HarnessAction{Type: "focus", Target: "to-managers"}); err != nil {
+		t.Fatalf("focus to-managers: %v", err)
+	}
+	view := h.ObserveView()
+	if !strings.Contains(view, "With code") {
+		t.Errorf("channel→audience: detail-panel caution must appear when code active + to-managers focused; got:\n%s", view)
+	}
+
+	// Case 2: plain active + to-managers focused → no caution (plain has no audience cautions).
+	h2 := newH([]string{"make", "plain"})
+	if err := h2.Act(bartui2.HarnessAction{Type: "nav", Target: "audience"}); err != nil {
+		t.Fatalf("nav to audience: %v", err)
+	}
+	if err := h2.Act(bartui2.HarnessAction{Type: "focus", Target: "to-managers"}); err != nil {
+		t.Fatalf("focus to-managers (plain active): %v", err)
+	}
+	view2 := h2.ObserveView()
+	if strings.Contains(view2, "With plain") {
+		t.Errorf("channel→audience: caution must NOT appear when plain active; got:\n%s", view2)
+	}
+}

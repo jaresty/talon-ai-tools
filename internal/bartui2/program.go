@@ -63,6 +63,7 @@ type Options struct {
 // completion represents a single completion option with metadata.
 type completion struct {
 	Value       string
+	Slug        string // canonical slug for cross-axis map lookups (may differ from Value for persona tokens)
 	Display     string
 	Category    string
 	Description string
@@ -887,8 +888,13 @@ func (m *model) updateCompletions() {
 			if opt.Label != "" {
 				display = slugDisplay + " \u2014 " + opt.Label
 			}
+			slug := opt.Slug
+			if slug == "" {
+				slug = opt.Value
+			}
 			results = append(results, completion{
 				Value:         opt.Value,
+				Slug:          slug,
 				Display:       display,
 				Category:      category.Label,
 				Description:   opt.Description,
@@ -1903,20 +1909,57 @@ func (m model) renderTokensPane() string {
 	var selectedDistinctions string // Store guidance of selected item
 	var selectedHeuristics string
 	var selectedValue string    // Store token value for cross-axis lookup (ADR-0148)
+	var selectedSlug string     // Store token slug for caution map key lookup (may differ for persona tokens)
 
-	// Chip traffic light: show prefix column whenever any other axis has active tokens
-	// that have cross-axis composition data with the current stage (ADR-0148 + extensions).
-	// Covers: task/completeness↔channel/form, form↔channel, completeness↔directional/method.
-	hasActiveChannel := len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["form"]) > 0
-	hasActiveTask := len(m.tokensByCategory["task"]) > 0 || len(m.tokensByCategory["completeness"]) > 0
-	hasActiveCompleteness := len(m.tokensByCategory["completeness"]) > 0
-	showPrefixColumn := m.crossAxisCompositionFor != nil && paneHeight >= 12 &&
-		(((currentStage == "task" || currentStage == "completeness") && hasActiveChannel) ||
-			(currentStage == "channel" && (hasActiveTask || len(m.tokensByCategory["form"]) > 0)) ||
-			(currentStage == "form" && (hasActiveTask || len(m.tokensByCategory["channel"]) > 0 || len(m.tokensByCategory["directional"]) > 0)) ||
-			(currentStage == "directional" && (hasActiveCompleteness || len(m.tokensByCategory["form"]) > 0)) ||
-			(currentStage == "method" && hasActiveCompleteness) ||
-			(currentStage == "completeness" && (len(m.tokensByCategory["method"]) > 0 || len(m.tokensByCategory["directional"]) > 0)))
+	// Chip traffic light: show prefix column when any active token on another axis has
+	// cross-axis composition data referencing the current stage (generic, ADR-0148).
+	showPrefixColumn := false
+	if m.crossAxisCompositionFor != nil && paneHeight >= 12 {
+		for _, axisY := range stageOrder {
+			if axisY == currentStage {
+				continue
+			}
+			for _, activeToken := range m.tokensByCategory[axisY] {
+				inNat, inCaut := m.crossAxisCompositionFor(axisY, activeToken)
+				if _, ok := inCaut[currentStage]; ok {
+					showPrefixColumn = true
+					break
+				}
+				if _, ok := inNat[currentStage]; ok {
+					showPrefixColumn = true
+					break
+				}
+			}
+			if showPrefixColumn {
+				break
+			}
+		}
+		// Also check outbound: any chip on the current stage references an axis with active tokens.
+		if !showPrefixColumn {
+			if cat := m.getCategoryByKey(currentStage); cat != nil {
+				for _, opt := range cat.Options {
+					outNat, outCaut := m.crossAxisCompositionFor(currentStage, opt.Value)
+					for axisB := range outCaut {
+						if len(m.tokensByCategory[axisB]) > 0 {
+							showPrefixColumn = true
+							break
+						}
+					}
+					if !showPrefixColumn {
+						for axisB := range outNat {
+							if len(m.tokensByCategory[axisB]) > 0 {
+								showPrefixColumn = true
+								break
+							}
+						}
+					}
+					if showPrefixColumn {
+						break
+					}
+				}
+			}
+		}
+	}
 
 	if currentStage == "" {
 		right.WriteString(dimStyle.Render("All stages complete!"))
@@ -1962,12 +2005,13 @@ func (m model) renderTokensPane() string {
 				selectedDistinctions = c.Distinctions // Capture guidance if present
 				selectedHeuristics = c.Heuristics
 				selectedValue = c.Value       // Capture token value for cross-axis lookup (ADR-0148)
+				selectedSlug = c.Slug         // Slug form for caution map key lookup
 			}
 			// Chip traffic light prefix column (ADR-0148 Phase 1c).
 			// Column is always present when showPrefixColumn to avoid layout shift.
 			var prefix string
 			if showPrefixColumn {
-				prefix = m.chipState(currentStage, c.Value) + selectionMark
+				prefix = m.chipState(currentStage, c.Value, c.Slug) + selectionMark
 			} else {
 				prefix = selectionMark
 			}
@@ -2022,83 +2066,59 @@ func (m model) renderTokensPane() string {
 	}
 
 	// Compute cross-axis composition lines (ADR-0148). Skip when pane is too small.
+	// Generic outbound+inbound approach covers all axis pairs without per-case code.
 	var crossNatLines []string
 	var crossCauLines []string
 	if m.crossAxisCompositionFor != nil && selectedValue != "" && paneHeight >= 12 {
-		switch currentStage {
-		case "channel", "form":
-			// Direction A: show composition profile of the focused channel/form token.
-			// Partner axes: task and completeness always; also check the complementary
-			// axis (form checks active channel tokens; channel checks active form tokens).
-			natural, cautionary := m.crossAxisCompositionFor(currentStage, selectedValue)
-			partnerAxes := []string{"task", "completeness"}
-			if currentStage == "form" {
-				partnerAxes = append(partnerAxes, "channel")
-			} else {
-				partnerAxes = append(partnerAxes, "form")
+		// Outbound: what does the focused token caution/naturalize about partner axes?
+		outNatural, outCautionary := m.crossAxisCompositionFor(currentStage, selectedValue)
+		for _, axisB := range stageOrder {
+			if axisB == currentStage {
+				continue
 			}
-			for _, axisB := range partnerAxes {
-				if nats, ok := natural[axisB]; ok && len(nats) > 0 {
-					crossNatLines = append(crossNatLines,
-						"✓ Natural "+axisB+": "+strings.Join(nats, ", "))
-				}
-				if cauts, ok := cautionary[axisB]; ok && len(cauts) > 0 {
-					keys := sortedStringKeys(cauts)
-					for _, tok := range keys {
-						for _, activeToken := range m.tokensByCategory[axisB] {
-							if activeToken == tok {
-								crossCauLines = append(crossCauLines,
-									"⚠ Caution: "+tok+" — "+firstSentenceOf(cauts[tok]))
-								break
-							}
-						}
-					}
-				}
+			if nats, ok := outNatural[axisB]; ok && len(nats) > 0 {
+				// Show all naturals as pairing guidance (informative; not filtered to active tokens).
+				crossNatLines = append(crossNatLines,
+					"✓ Natural "+axisB+": "+strings.Join(nats, ", "))
 			}
-		case "task", "completeness":
-			// Direction B: show natural and cautionary signals from active channel/form tokens.
-			for _, channelAxis := range []string{"channel", "form"} {
-				for _, activeToken := range m.tokensByCategory[channelAxis] {
-					natural, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
-					if axisB, ok := cautionary[currentStage]; ok {
-						if warning, ok := axisB[selectedValue]; ok {
+			if cauts, ok := outCautionary[axisB]; ok && len(cauts) > 0 {
+				keys := sortedStringKeys(cauts)
+				for _, tok := range keys {
+					for _, activeToken := range m.tokensByCategory[axisB] {
+						if activeToken == tok {
 							crossCauLines = append(crossCauLines,
-								"⚠ With "+activeToken+": "+firstSentenceOf(warning))
-						}
-					}
-					if nats, ok := natural[currentStage]; ok {
-						for _, nat := range nats {
-							if nat == selectedValue {
-								crossNatLines = append(crossNatLines, "✓ With "+activeToken)
-								break
-							}
+								"⚠ Caution: "+tok+" — "+firstSentenceOf(cauts[tok]))
+							break
 						}
 					}
 				}
 			}
-		case "directional":
-			// Direction C: for active completeness/form tokens, check if the focused
-			// directional token is in their cautionary map.
-			for _, sourceAxis := range []string{"completeness", "form"} {
-				for _, activeToken := range m.tokensByCategory[sourceAxis] {
-					_, cautionary := m.crossAxisCompositionFor(sourceAxis, activeToken)
-					if cauts, ok := cautionary["directional"]; ok {
-						if warning, ok := cauts[selectedValue]; ok {
-							crossCauLines = append(crossCauLines,
-								"⚠ With "+activeToken+": "+firstSentenceOf(warning))
-						}
-					}
-				}
+		}
+		// Inbound: what do active tokens on other axes caution/naturalize about the focused token?
+		// Use selectedSlug for caution map key lookup (persona token values use spaces but
+		// caution map keys use slugs, e.g. "to managers" vs "to-managers").
+		for _, axisY := range stageOrder {
+			if axisY == currentStage {
+				continue
 			}
-		case "method":
-			// Direction D: for active completeness tokens, check if the focused
-			// method token is in their cautionary map.
-			for _, activeToken := range m.tokensByCategory["completeness"] {
-				_, cautionary := m.crossAxisCompositionFor("completeness", activeToken)
-				if cauts, ok := cautionary["method"]; ok {
-					if warning, ok := cauts[selectedValue]; ok {
+			for _, activeToken := range m.tokensByCategory[axisY] {
+				inNatural, inCautionary := m.crossAxisCompositionFor(axisY, activeToken)
+				if cauts, ok := inCautionary[currentStage]; ok {
+					warning, found := cauts[selectedValue]
+					if !found {
+						warning, found = cauts[selectedSlug]
+					}
+					if found {
 						crossCauLines = append(crossCauLines,
 							"⚠ With "+activeToken+": "+firstSentenceOf(warning))
+					}
+				}
+				if nats, ok := inNatural[currentStage]; ok {
+					for _, nat := range nats {
+						if nat == selectedValue || nat == selectedSlug {
+							crossNatLines = append(crossNatLines, "✓ With "+activeToken)
+							break
+						}
 					}
 				}
 			}
@@ -2323,74 +2343,55 @@ func (m model) renderResultPane() string {
 }
 
 // chipState returns the traffic-light prefix character for a token when the chip prefix column
-// is active (ADR-0148). Forward direction: task/completeness chips with active channel/form.
-// Reverse direction: channel/form chips with active task/completeness/form/channel selections.
-// Forward check uses the chip's own composition data; reverse check walks other active tokens'
-// composition data to find entries pointing back to this chip. Cautionary takes precedence.
-func (m model) chipState(axis, token string) string {
+// is active (ADR-0148). Generic forward+reverse approach covers all axis pairs without
+// per-axis case code: forward uses the chip's own cross-axis data; reverse walks all active
+// tokens on other axes whose data points back to this chip. Cautionary takes precedence.
+func (m model) chipState(axis, token, slug string) string {
 	if m.crossAxisCompositionFor == nil {
 		return " "
 	}
 	hasCautionary := false
 	hasNatural := false
-	switch axis {
-	case "task":
-		// Forward: iterate active channel/form tokens and find entries pointing to this chip.
-		for _, channelAxis := range []string{"channel", "form"} {
-			for _, activeToken := range m.tokensByCategory[channelAxis] {
-				natural, cautionary := m.crossAxisCompositionFor(channelAxis, activeToken)
-				if cauts, ok := cautionary[axis]; ok {
-					if _, ok := cauts[token]; ok {
-						hasCautionary = true
-					}
-				}
-				if nats, ok := natural[axis]; ok {
-					for _, n := range nats {
-						if n == token {
-							hasNatural = true
-						}
-					}
-				}
+	// Forward: look up this chip's own composition data against all active axis selections.
+	natural, cautionary := m.crossAxisCompositionFor(axis, token)
+	for targetAxis, cauts := range cautionary {
+		for _, activeToken := range m.tokensByCategory[targetAxis] {
+			if _, ok := cauts[activeToken]; ok {
+				hasCautionary = true
 			}
 		}
-	case "channel", "form", "directional", "method", "completeness":
-		// Forward: look up this chip's own composition data against all active axis selections.
-		natural, cautionary := m.crossAxisCompositionFor(axis, token)
-		for targetAxis, cauts := range cautionary {
-			for _, activeToken := range m.tokensByCategory[targetAxis] {
-				if _, ok := cauts[activeToken]; ok {
+	}
+	for targetAxis, nats := range natural {
+		natsSet := make(map[string]bool, len(nats))
+		for _, n := range nats {
+			natsSet[n] = true
+		}
+		for _, activeToken := range m.tokensByCategory[targetAxis] {
+			if natsSet[activeToken] {
+				hasNatural = true
+			}
+		}
+	}
+	// Reverse: check active tokens on other axes whose composition data points to this chip.
+	for _, otherAxis := range stageOrder {
+		if otherAxis == axis {
+			continue
+		}
+		for _, activeToken := range m.tokensByCategory[otherAxis] {
+			otherNatural, otherCautionary := m.crossAxisCompositionFor(otherAxis, activeToken)
+			if cauts, ok := otherCautionary[axis]; ok {
+				if _, ok := cauts[token]; ok {
 					hasCautionary = true
-				}
-			}
-		}
-		for targetAxis, nats := range natural {
-			natsSet := make(map[string]bool, len(nats))
-			for _, n := range nats {
-				natsSet[n] = true
-			}
-			for _, activeToken := range m.tokensByCategory[targetAxis] {
-				if natsSet[activeToken] {
-					hasNatural = true
-				}
-			}
-		}
-		// Reverse: check active tokens on other axes whose composition data points to this chip.
-		for otherAxis, activeTokens := range m.tokensByCategory {
-			if otherAxis == axis {
-				continue
-			}
-			for _, activeToken := range activeTokens {
-				otherNatural, otherCautionary := m.crossAxisCompositionFor(otherAxis, activeToken)
-				if cauts, ok := otherCautionary[axis]; ok {
-					if _, ok := cauts[token]; ok {
+				} else if slug != token {
+					if _, ok := cauts[slug]; ok {
 						hasCautionary = true
 					}
 				}
-				if nats, ok := otherNatural[axis]; ok {
-					for _, n := range nats {
-						if n == token {
-							hasNatural = true
-						}
+			}
+			if nats, ok := otherNatural[axis]; ok {
+				for _, n := range nats {
+					if n == token || (slug != token && n == slug) {
+						hasNatural = true
 					}
 				}
 			}

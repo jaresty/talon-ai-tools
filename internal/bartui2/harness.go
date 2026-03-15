@@ -241,7 +241,7 @@ func (h *Harness) Act(action HarnessAction) error {
 		h.m.updateCompletions()
 		found := false
 		for i, c := range h.m.completions {
-			if strings.EqualFold(c.Value, action.Target) {
+			if strings.EqualFold(c.Value, action.Target) || strings.EqualFold(c.Slug, action.Target) {
 				h.m.completionIndex = i
 				h.m.ensureCompletionVisible()
 				found = true

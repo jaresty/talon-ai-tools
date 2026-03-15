@@ -147,24 +147,20 @@ Use bar-suggest when the request is:
 
 ### Legacy Option Generation (without bar help llm)
 
-If `bar help llm` is unavailable, use these heuristics after discovering tokens:
+If `bar help llm` is unavailable, use `bar lookup` to find tokens by intent:
 
-1. **Discover tokens** - Run `bar help tokens scope method form`
+```bash
+bar lookup "<your intent>"               # find matching tokens across all axes
+bar lookup "<your intent>" --axis method # restrict to method tokens only
+```
 
-2. **Vary by scope** - Different aspects to focus on:
-   - Look for scope tokens related to "what it means"
-   - Look for scope tokens related to "how it's structured"
-   - Look for scope tokens related to "how it evolves over time"
+For generating distinct options, run several lookups with different intent framings
+(e.g., "explore broadly", "diagnose root cause", "evaluate tradeoffs") to surface
+tokens from different method categories.
 
-3. **Vary by method** - Different ways of thinking:
-   - Look for exploratory/discovery method tokens
-   - Look for analytical/diagnostic method tokens
-   - Look for flow/sequential method tokens
+Or invoke `bar-dictionary` for a guided lookup session.
 
-4. **Vary by form** - Different output structures:
-   - Look for form tokens about bullets/lists
-   - Look for form tokens about walkthroughs/flows
-   - Look for form tokens about variants/options
+Fall back to `bar help tokens scope method form` only if `bar lookup` is also unavailable.
 
 ### Include Freeform Option
 

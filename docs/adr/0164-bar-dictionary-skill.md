@@ -1,6 +1,6 @@
 # ADR-0164: `bar-dictionary` — shared token-lookup skill for bar skills
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-03-15
 
 ---

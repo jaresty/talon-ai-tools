@@ -265,7 +265,7 @@ by ~2.5× — and may have structural issues worth addressing before it grows fu
 **Shape**: Start with a written analysis (can be an ADR context section); then decide: prune,
 subcategorize, or leave as-is with better `distinctions[]` between similar tokens.
 
-### Skills: `bar-dictionary` shared skill for token lookup
+### ✅ Skills: `bar-dictionary` shared skill for token lookup
 **What**: A standalone Claude skill that exposes token lookup by heuristics/distinctions, used
 as a shared dependency by other bar skills (`bar-workflow`, `bar-autopilot`, etc.) instead of
 each skill carrying its own inline explanation of what tokens mean.

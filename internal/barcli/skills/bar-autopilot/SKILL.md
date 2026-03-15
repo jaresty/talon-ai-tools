@@ -130,40 +130,17 @@ bar help tokens --plain task                     # all task tokens with heuristi
 
 ### Legacy Token Selection (without bar help llm)
 
-If `bar help llm` is unavailable, use these general heuristics after discovering tokens via `bar help tokens`:
+If `bar help llm` is unavailable, use `bar lookup` to find tokens by intent:
 
-1. **Analyze request focus** - What aspect does the request center on?
-2. **Analyze thinking mode** - How should you approach the problem?
-3. **Analyze output structure** - What format best serves the user?
-4. **Discover available tokens** - Run `bar help tokens` with relevant section filters
-5. **Select discovered tokens** - Choose from the discovered set based on request characteristics
+```bash
+bar lookup "<your intent>"               # find matching tokens across all axes
+bar lookup "<your intent>" --axis method # restrict to method tokens only
+bar lookup "<your intent>" --axis scope  # restrict to scope tokens only
+```
 
-**Legacy heuristics for scope:**
-- Entities and boundaries → Look for scope tokens related to "what exists"
-- Relationships and organization → Look for scope tokens related to "how things connect"
-- Sequence and change → Look for scope tokens related to "when things happen"
-- Understanding and framing → Look for scope tokens related to "what it means"
-- Tasks and intentions → Look for scope tokens related to "what to do"
-- Perspectives and viewpoints → Look for scope tokens related to "from whose view"
-- Quality and success criteria → Look for scope tokens related to "what makes it good"
-- Failure modes and limits → Look for scope tokens related to "where it breaks"
+Or invoke `bar-dictionary` for a guided lookup session.
 
-**Legacy heuristics for method:**
-- Deciding between options → Look for method tokens about branching, comparing, evaluating
-- Understanding architecture → Look for method tokens about mapping, structure, relationships
-- Explaining processes → Look for method tokens about flow, sequence, progression
-- Finding problems → Look for method tokens about diagnosis, failure, stress-testing
-- Exploring possibilities → Look for method tokens about generation, survey, divergence
-- Building cases → Look for method tokens about argumentation, evidence, reasoning
-- Learning concepts → Look for method tokens about scaffolding, building understanding
-
-**Legacy heuristics for form:**
-- Actionable next steps → Look for form tokens about actions, checklists, tasks
-- Multiple alternatives → Look for form tokens about variants, options, comparison
-- Step-by-step guidance → Look for form tokens about walkthroughs, recipes, flows
-- Structured comparison → Look for form tokens about tables or side-by-side layout
-- Building understanding → Look for form tokens about scaffolding, gradual explanation
-- Decision documentation → Look for form tokens about cases, arguments, rationale
+Fall back to `bar help tokens scope method form` only if `bar lookup` is also unavailable.
 
 ### Freeform Discovery
 

@@ -133,20 +133,16 @@ After discovering tokens from the reference, common patterns include:
 
 ### Legacy Workflow Construction (without bar help llm)
 
-If `bar help llm` is unavailable, use these heuristics after discovering tokens:
+If `bar help llm` is unavailable, use `bar lookup` to find tokens by intent:
 
-1. **Discover tokens** - Run `bar help tokens scope method form`
-2. **Identify request complexity** - Determine which aspects need multiple passes
-3. **Plan progression** - Choose sequence based on request characteristics:
-   - Broad to narrow
-   - Understanding to action
-   - Problem to solution
-4. **Select tokens per step** - Choose from discovered tokens based on progression
+```bash
+bar lookup "<your intent>"               # find matching tokens across all axes
+bar lookup "<your intent>" --axis method # restrict to method tokens only
+```
 
-**Legacy heuristics for progressions:**
-- Start with discovery/exploration method tokens
-- Move to analysis/mapping method tokens
-- End with planning/action-oriented tokens
+Or invoke `bar-dictionary` for a guided lookup session.
+
+Fall back to `bar help tokens scope method form` only if `bar lookup` is also unavailable.
 
 ### Freeform Discovery
 

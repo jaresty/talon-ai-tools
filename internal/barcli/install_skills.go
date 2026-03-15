@@ -22,14 +22,16 @@ func runInstallSkills(options *cli.Config, stdout, stderr io.Writer) int {
 
 Install bar skills to .claude/skills directory.
 
-The install-skills command installs four embedded bar skills:
+The install-skills command installs five embedded bar skills:
   - bar-autopilot: Automatically detect and apply bar structuring to responses
   - bar-workflow: Chain multi-step bar commands for complex tasks
   - bar-suggest: Present users with bar-based approach options
   - bar-manual: Guide users on how to manually build bar commands
+  - bar-dictionary: Shared token-lookup skill (used by other bar skills)
 
-These skills enable LLMs to use bar as a thinking tool (autopilot, workflow, suggest)
-and help users learn bar manually (bar-manual), working across all agent types.
+These skills enable LLMs to use bar as a thinking tool (autopilot, workflow, suggest),
+help users learn bar manually (bar-manual), and provide shared token lookup
+(bar-dictionary), working across all agent types.
 
 FLAGS
   --location PATH   Target directory for skills (default: .claude/skills)
@@ -66,6 +68,7 @@ EXAMPLES
 		fmt.Fprintln(stdout, "  - bar-workflow")
 		fmt.Fprintln(stdout, "  - bar-suggest")
 		fmt.Fprintln(stdout, "  - bar-manual")
+		fmt.Fprintln(stdout, "  - bar-dictionary")
 		return 0
 	}
 

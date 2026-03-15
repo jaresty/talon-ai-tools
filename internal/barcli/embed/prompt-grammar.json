@@ -531,6 +531,7 @@
         "operations": "Operations research frameworks",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
+        "perturb": "Introduce controlled faults to observe system response",
         "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
         "prioritize": "Rank items by importance or impact",
@@ -8309,7 +8310,7 @@
     }
   ],
   "checksums": {
-    "axes": "0eb8052492966ae22e67ef741c5b1f37f1bd48f8f9a3d8f0b9d198562ed903a0",
+    "axes": "777f0752841a64273ae290e52ac149dacbf95452c62f23c263794461882c2c4b",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

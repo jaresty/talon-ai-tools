@@ -502,6 +502,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "operations": "Operations research frameworks",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
+        "perturb": "Introduce controlled faults to observe system response",
         "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
         "prioritize": "Rank items by importance or impact",

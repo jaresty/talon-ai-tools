@@ -101,6 +101,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+        "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. "
+        "The coverage allocation is stakes-proportionate rather than uniform.",
     },
     "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
@@ -317,8 +319,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "thrust": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural "
         "changes.",
-        "triage": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
-        "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
+        "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — "
+        "identifying where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
+        "unknowns":"The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
         "the layer those tests must satisfy.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
@@ -341,6 +344,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
         "their internal topology in detail or their boundary-spanning distribution.",
+        "persist": "The response focuses on the persistence dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and "
+        "recovery guarantees, and the conditions under which it can be lost or corrupted.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
         "perturbations affect their continuity.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal "
@@ -384,6 +389,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "minimal": "Smallest satisfying answer only",
         "narrow": "Restricted to a very small slice",
         "skim": "Light pass, obvious issues only",
+        "triage": "Stakes-weighted coverage depth",
     },
     "directional": {
         "bog": "Span reflection and action (rog + ong)",
@@ -447,6 +453,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "method": {
         "abduce": "Generate explanatory hypotheses",
         "actors": "Center people, roles, and agents",
+        "automate": "Prefer automated over manual steps",
         "adversarial": "Constructive stress-testing",
         "afford": "Affordance-driven behavior analysis",
         "align": "Restructure for global coherence",
@@ -522,7 +529,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "systemic": "Interacting whole and feedback loops",
         "thrust": "Catalog competing structural forces",
         "trace": "Narrate sequential progression",
-        "triage": "Triage by consequence×uncertainty gradient",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
         "yield": "Minimal action, allow natural resolution",
@@ -537,6 +543,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
+        "persist": "Durable state and persistence layer",
         "stable": "Stability and persistence of states",
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
@@ -570,7 +577,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "sync": "期",
         "video": "映",
     },
-    "completeness": {"grow": "増"},
+    "completeness": {"grow": "増", "triage": "険"},
     "directional": {
         "bog": "反",
         "dig": "具",
@@ -633,6 +640,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "method": {
         "abduce": "因",
         "actors": "者",
+        "automate": "自",
         "adversarial": "攻",
         "afford": "構",
         "align": "調",
@@ -709,7 +717,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "systemic": "系",
         "thrust": "衡",
         "trace": "跡",
-        "triage": "険",
         "unknowns": "未",
         "verify": "証",
         "yield": "任",
@@ -771,6 +778,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "good": "良",
         "mean": "意",
         "motifs": "紋",
+        "persist": "保",
         "stable": "安",
         "struct": "造",
         "thing": "物",
@@ -807,6 +815,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "analog": "Generative",
         "analysis": "Structural",
         "argue": "Reasoning",
+        "automate": "Structural",
         "balance": "Comparative",
         "bias": "Reasoning",
         "boom": "Exploration",
@@ -876,7 +885,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "systemic": "Temporal/Dynamic",
         "thrust": "Comparative",
         "trace": "Temporal/Dynamic",
-        "triage": "Diagnostic",
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
         "yield": "Minimal intervention",
@@ -919,6 +927,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "minimal": "Briefest valid response",
         "narrow": "Focused depth on a specific slice",
         "skim": "Surface-level coverage",
+        "triage": "Stakes-proportionate coverage depth",
     },
     "directional": {
         "bog": "Reflect + act",
@@ -990,6 +999,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
+        "automate": "Automate repeatable steps",
         "balance": "Equilibrium description",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
@@ -1059,7 +1069,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "systemic": "System as whole",
         "thrust": "Catalog structural forces",
         "trace": "Sequential narration",
-        "triage": "Risk-gradient depth",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
         "yield": "Minimal intervention / natural resolution",
@@ -1074,6 +1083,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
+        "persist": "Durable state and persistence",
         "stable": "Invariants/stable states",
         "struct": "Entities/boundaries",
         "thing": "Entities/boundaries",
@@ -2415,6 +2425,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "quick skim",
             ],
         },
+        "triage": {
+            "definition": "Stakes-proportionate coverage depth: allocates analytical depth by consequence × uncertainty. Areas where both are high receive full coverage; areas where both are low receive minimal or no coverage.",
+            "distinctions": [
+                {
+                    "note": "triage = allocate depth by consequence × uncertainty stakes; grow = expand only where analysis explicitly demands it",
+                    "token": "grow",
+                },
+                {
+                    "note": "triage = stakes-proportionate, leaving low-stakes areas at minimal depth; full = uniform thorough coverage across all aspects",
+                    "token": "full",
+                },
+            ],
+            "heuristics": [
+                "focus on the high-risk areas",
+                "triage by impact and uncertainty",
+                "risk-proportionate depth",
+                "where are the stakes highest",
+                "most dangerous parts first",
+                "consequence-weighted review",
+                "allocate attention by risk",
+                "what deserves the most scrutiny",
+                "protect the high-stakes areas",
+            ],
+        },
     },
     "directional": {
         "bog": {
@@ -3685,6 +3719,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "build the logical case",
                 "argument and rebuttal",
                 "explicit reasoning structure",
+            ],
+        },
+        "automate": {
+            "definition": "Automation-first reasoning: models what can be expressed as automatic, repeatable operations, preferring those over manual, human-dependent steps. Identifies where human intervention can be eliminated and expresses solutions in terms of what the system can do without human involvement.",
+            "distinctions": [
+                {
+                    "note": "automate = prefer automated operations over manual ones; ground = enforce falsifiability and advance through validation rungs",
+                    "token": "ground",
+                },
+                {
+                    "note": "automate = remove human dependency from repeatable operations; control = focus on factors within agency",
+                    "token": "control",
+                },
+            ],
+            "heuristics": [
+                "automate this",
+                "make it automatic",
+                "remove manual steps",
+                "don't require human intervention",
+                "repeatable without human involvement",
+                "script this",
+                "set it and forget it",
+                "CI/CD",
+                "automated pipeline",
+                "reduce toil",
+                "eliminate manual work",
             ],
         },
         "balance": {
@@ -5110,22 +5170,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "surface intermediate state",
             ],
         },
-        "triage": {
-            "definition": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those "
-            "gradients.",
-            "distinctions": [],
-            "heuristics": [
-                "focus on the high-risk areas",
-                "triage by impact and uncertainty",
-                "risk-proportionate depth",
-                "where are the stakes highest",
-                "most dangerous parts first",
-                "consequence-weighted review",
-                "allocate attention by risk",
-                "what deserves the most scrutiny",
-                "protect the high-stakes areas",
-            ],
-        },
         "unknowns": {
             "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
             "distinctions": [
@@ -5365,13 +5409,42 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "same pattern in different places",
             ],
         },
+        "persist": {
+            "definition": "Persistence and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
+            "distinctions": [
+                {
+                    "note": "persist = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
+                    "token": "stable",
+                },
+                {
+                    "note": "persist = what survives and in what form; time = temporal sequence and change",
+                    "token": "time",
+                },
+            ],
+            "heuristics": [
+                "where does this get saved",
+                "what persists after the operation",
+                "durability requirements",
+                "what must survive a restart",
+                "storage medium",
+                "data persistence",
+                "recovery guarantees",
+                "what gets written to disk",
+                "durable state",
+                "persistence layer",
+            ],
+        },
         "stable": {
             "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
             "distinctions": [
                 {
                     "note": "stable = what persists; time = how things evolve (often paired)",
                     "token": "time",
-                }
+                },
+                {
+                    "note": "stable = descriptive (what already persists or is invariant); persist = prescriptive (what must be made durable)",
+                    "token": "persist",
+                },
             ],
             "heuristics": [
                 "stable",

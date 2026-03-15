@@ -270,19 +270,19 @@ func TestBuildAxisOptionsRoutingConceptForMethodToken(t *testing.T) {
 		t.Fatal("expected method options, got none")
 	}
 
-	var triageOption *bartui2.TokenOption
+	var automateOption *bartui2.TokenOption
 	for i := range options {
-		if options[i].Value == "triage" {
-			triageOption = &options[i]
+		if options[i].Value == "automate" {
+			automateOption = &options[i]
 			break
 		}
 	}
-	if triageOption == nil {
-		t.Fatal("expected to find 'triage' token in method options")
+	if automateOption == nil {
+		t.Fatal("expected to find 'automate' token in method options")
 	}
-	const want = "Risk-gradient depth"
-	if triageOption.RoutingConcept != want {
-		t.Errorf("expected RoutingConcept %q for method:triage (ADR-0146 Phase 3), got %q", want, triageOption.RoutingConcept)
+	const want = "Automate repeatable steps"
+	if automateOption.RoutingConcept != want {
+		t.Errorf("expected RoutingConcept %q for method:automate (ADR-0146 Phase 3), got %q", want, automateOption.RoutingConcept)
 	}
 }
 

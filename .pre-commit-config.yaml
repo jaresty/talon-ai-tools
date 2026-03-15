@@ -27,3 +27,9 @@ repos:
         entry: make bar-grammar-check
         pass_filenames: false
         files: ^(lib/|prompts/|internal/barcli/embed/).*$
+      - id: axis-token-metadata
+        name: Axis token metadata coverage
+        language: system
+        entry: python3 -m pytest _tests/test_axis_token_metadata.py -q --tb=short
+        pass_filenames: false
+        files: ^lib/.*$

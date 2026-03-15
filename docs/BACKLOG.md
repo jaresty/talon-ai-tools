@@ -75,6 +75,41 @@ Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-24 complete,
 
 ## Tier 1 — Highest impact, most foregrounded by current affordances
 
+### ✅ TUI2: Extend token filter to search heuristics[] trigger words
+**What**: In `bartui2/program.go`, extend the completion-matching predicate to include each token's
+`heuristics[]` array alongside the existing slug/value/label checks. Currently users typing natural
+intent vocabulary ("debug", "root cause", "assumptions", "compare") get zero results on task and
+method stages. The data exists in the grammar; the filter just doesn't use it.
+**Why Tier 1**: Highest-leverage single fix — root cause of token undiscoverability across all stages,
+especially method (82 tokens) and task (11 tokens). The same fix is already shipped for the SPA
+(`TokenSelector.svelte` 7-field match predicate). This is a missing wire to existing data.
+**Shape**: Extend the fuzzy-match predicate in `program.go` to loop over `opt.Heuristics[]` alongside
+slug/label. Add harness regression tests: filter "debug" on task → `probe` visible; filter "root cause"
+on method → `diagnose` visible.
+
+### ✅ TUI2: Move persona stages to end — task-first stage order
+**What**: Reorder the TUI stage sequence to start at `task` rather than `persona_preset`. Move the
+five persona stages (`persona_preset`, `intent`, `voice`, `audience`, `tone`) to after `directional`.
+Currently a new user must skip 5 stages to reach the first decision they actually care about.
+**Why Tier 1**: Task is used in 100% of bar commands; persona in a small minority. Traversal order
+has no effect on prompt output order — bar assembles tokens in grammar order regardless of the order
+stages are visited.
+**Shape**: Reorder `stageOrder` slice in `bartui2/program.go`. Verify `advanceToNextIncompleteStage`
+still works. Update snapshot tests. Consider a keyboard shortcut to jump directly to persona stages
+for users who want them.
+
+### ✅ TUI2: Fix back + re-select — replace semantics for single-capacity axes
+**What**: When a user presses Back to a completed single-capacity stage (task, completeness, form,
+channel) and selects a new token, the new selection should replace the existing one. Currently
+`selectCompletion()` appends, silently failing — no error, no state change, stage doesn't re-advance.
+The user must explicitly deselect before selecting, which is non-obvious.
+**Why Tier 1**: Silent failure on correction is the most likely cause of user abandonment after a
+misclick. The fix is small but the UX impact is high — users trust that Back means "undo this choice."
+**Shape**: In `selectCompletion()`, check if the target category is already at single-token capacity;
+if so, remove the old token before appending the new one, then re-trigger stage advance. Add harness
+regression test: `select:fix` → `back` → `select:probe` → assert `selected.task == ["probe"]` and
+stage advanced.
+
 ### ✅ SPA: Token search / filter across metadata
 **What**: The per-axis filter input in each TokenSelector panel matches against token name, label,
 description, `metadata.definition`, `metadata.heuristics[]` trigger words, and
@@ -180,6 +215,69 @@ regression tests against the TUI's state machine.
 Actions: nav, select, deselect, filter, skip, back, quit. 17 tests.
 **ADR**: docs/adr/0167-tui-harness-mode.md (Accepted)
 
+### TUI2/Harness: Improvements to enable more accurate LLM-driven UX analysis
+The following harness items are NOT direct user improvements — they improve the harness as an
+analysis tool, making future LLM-driven UX exploration sessions more reliable. They are only worth
+doing if they would lead to discovering human UX gaps that aren't already visible.
+
+### TUI2/Harness: Token metadata in HarnessToken
+**What**: Add `heuristics []string`, `description string`, and `routing_concept string` to
+`HarnessToken` in `HarnessState.visible_tokens`, populated from the same `TokenOption` fields
+already available in `tui_tokens.go`.
+**Why Tier 2**: Without heuristics/description/routing_concept, an LLM choosing between semantically
+similar tokens (e.g., `analysis` vs `diagnose` vs `probe`) has only the short label to go on —
+the same information asymmetry this harness was built to eliminate for humans. This is the highest-
+leverage single fix: it makes every subsequent exploration session more accurate.
+**Shape**: Extend `HarnessToken` struct; populate in `Harness.Observe()` from `cat.Options[i]` fields.
+
+### TUI2/Harness: `commit` action + `outcome` field (must-fix)
+**What**: Replace `done bool` in `HarnessState` with `outcome string` (`""` | `"committed"` |
+`"quit"`), and add a `"commit"` action type to `HarnessAction` that sets `outcome="committed"`.
+**Why Tier 2**: Currently `done: true` is emitted only on `quit`, making it impossible to distinguish
+successful command construction from abandonment. Exploration session results are uninterpretable
+without this distinction.
+**Shape**: Change `HarnessState.Done bool` → `HarnessState.Outcome string`; add `"commit"` case
+in `Harness.Act()`. Update 17 existing tests. Breaking change to the JSON schema.
+
+### TUI2/Harness: Stage state vocabulary in HarnessState (must-fix)
+**What**: Add `stage_statuses map[string]string` (`"empty"` | `"completed"` | `"skipped"`) and
+`stages_remaining int` to `HarnessState`.
+**Why Tier 2**: An LLM driver can't tell which stages are optional, which are complete, or how many
+remain. It may spend effort on optional persona stages or fail to notice it's already on the last
+meaningful stage. Combined with A1 (metadata), this closes the two primary orientation gaps.
+**Shape**: Compute from `h.m.tokensByCategory` and `stageOrder` in `Harness.Observe()`; mark
+stages with at least one non-auto-filled token as "completed", explicitly-skipped stages as
+"skipped", others as "empty".
+
+### TUI2/Harness: Auto-fill tracking in HarnessState
+**What**: Add `auto_fills_applied map[string]string` (stage → token key) to `HarnessState`,
+populated whenever a selection triggers auto-fills on other axes.
+**Why Tier 2**: When selecting a token triggers auto-fills, the LLM observes unexplained state
+changes — the command_preview changes but the LLM can't attribute the cause. It may attempt to
+select already-filled tokens and receive confusing errors.
+**Shape**: Capture fills in `Harness.Act()` during the `"select"` case by comparing
+`tokensByCategory` before and after `selectCompletion`; store in harness struct; clear on next action.
+
+### TUI2/Harness: Persona path indicator in HarnessState
+**What**: Add `persona_path string` (`""` | `"preset"` | `"custom"`) to `HarnessState`, set to
+`"preset"` after a `persona_preset` selection, `"custom"` after any `intent/voice/audience/tone`
+selection.
+**Why Tier 2**: The stage order lists both paths sequentially but in the real TUI they are mutually
+exclusive forks. An LLM that picks a preset then attempts to set individual voice/tone produces
+conflicting state with no diagnostic signal.
+**Shape**: Track in `Harness` struct; set on `select` action for the relevant stage categories.
+
+### TUI2: Group method tokens by SemanticGroup in stage display
+**What**: Use the existing `SemanticGroup` field (ADR-0144) to sort and visually group the 82 method
+tokens in the TUI stage, rather than presenting them as a flat alphabetical list. First visible tokens
+today are `abduce, argue, bias, calc` — none of the common-use methods.
+**Why Tier 2**: Complementary to heuristics filtering (Tier 1 above). Filtering helps users who know
+their intent; grouping helps users who are exploring. Even a sort-by-group (without visual headers)
+would move `analysis, compare, diagnose` above `abduce`.
+**Shape**: In `tui_tokens.go`, sort method options by `SemanticGroup` before alphabetical within group.
+Optionally render a dim group-header separator line when the group changes. First: verify `SemanticGroup`
+is populated in `prompt-grammar.json` for all method tokens.
+
 ### TUI2: Clipboard shortcut for text fields
 **What**: A keyboard shortcut (e.g., Ctrl+V or a dedicated key) that reads the system clipboard
 and inserts it into the currently focused text field (Run Command, Subject).
@@ -216,6 +314,57 @@ definition text), AND logic across words, cap 10. 13 tests in `lookup_test.go`.
 ---
 
 ## Tier 3 — Good ideas, not yet time-sensitive
+
+### TUI2/Harness: Cross-axis composition hints in HarnessState
+**What**: Add `cross_axis_hints` per selected token to `HarnessState` — a serialized version of
+what `CrossAxisCompositionFor` returns: natural partner tokens and cautionary token pairs, keyed
+by axis.
+**Why Tier 3**: The real TUI's most valuable guidance is "this token pairs naturally with X, clashes
+with Y." Removing it from the harness means LLM exploration misses the TUI's composition guidance
+system entirely. Lower priority than token metadata (A1) because fixing A1 lets the LLM reason
+from descriptions; hints amplify accuracy further.
+**Shape**: Add `CrossAxisHints map[string]CrossAxisEntry` to `HarnessState`; populate in `Observe()`
+by calling `opts.CrossAxisCompositionFor` for each selected token.
+
+### TUI2/Harness: Command validity signal in HarnessState
+**What**: Add `command_valid bool` and `validation_error string` to `HarnessState`, computed by
+attempting `barcli.Build()` against the current token selection after each action.
+**Why Tier 3**: An LLM that builds an invalid command (capacity exceeded, incompatible tokens)
+receives no warning in `command_preview`. The harness silently reports a preview that would fail
+on execution.
+**Shape**: Call `Build(grammar, currentTokens)` in `Observe()`; set `CommandValid` and
+`ValidationError` from the result. Requires passing `grammar` into `Harness`.
+
+### TUI2/Harness: Cursor fidelity — track actual focused token
+**What**: Track the cursor index in the `Harness` struct; fix `HarnessState.focused_token` to
+report the actually-focused token rather than always `visible[0]`; add a `"focus"` action to move
+the cursor to a named token.
+**Why Tier 3**: Exploration tests meant to detect "user can't find a token via keyboard navigation"
+are invalid if `focused_token` always reports the first visible token. The harness overstates
+discoverability for tokens that appear late in the list.
+**Shape**: Add `cursorIndex int` to `Harness`; update `focused_token` in `Observe()`; add `"focus"`
+case in `Act()` that finds a token by key and sets the cursor index.
+
+### TUI2/Harness: `inspect` action for non-destructive token metadata lookup
+**What**: Add an `"inspect"` action that returns token metadata (heuristics, description,
+distinctions) without modifying selection state.
+**Why Tier 3**: Mitigated by the token-metadata-in-HarnessToken fix (A1), which makes metadata
+visible on every `Observe()`. Remaining value is for tokens not currently visible in the stage.
+**Shape**: Add `"inspect"` case in `Act()`; add `InspectResult *HarnessToken` to `HarnessState`.
+
+### TUI2/Harness: Transition metadata in HarnessState
+**What**: Add `transition_from string` to `HarnessState` to record which stage was just exited
+(set after `select`, `skip`, `back`, and `nav` actions; cleared after `Observe()`).
+**Why Tier 3**: Useful for debugging multi-step LLM sessions and understanding auto-advance behavior
+("TUI moved from task to completeness because task was just completed").
+**Shape**: Set in `Act()` before model mutation; read and clear in `Observe()`.
+
+### TUI2/Harness: Bulk-clear action for a stage
+**What**: Add a `"clear"` action that deselects all tokens in the current stage (or a named stage
+via `target`).
+**Why Tier 3**: Workaround (multiple `deselect` actions) exists. Convenience for test scripts that
+want to reset an axis without iterating token-by-token.
+**Shape**: Add `"clear"` case in `Act()`; remove all non-auto-filled tokens for the target stage.
 
 ### Cross-surface: Token variation comparison ("compare mode")
 **What**: Given a base command and a set of token variants on one axis, generate output that shows

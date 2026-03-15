@@ -256,6 +256,167 @@ func TestHarnessUnknownAction(t *testing.T) {
 	}
 }
 
+// testCategoriesWithPersona returns categories that include a persona_preset stage before task,
+// used to test that stageTraversalOrder places task first regardless of persona presence.
+func testCategoriesWithPersona() []TokenCategory {
+	return []TokenCategory{
+		{
+			Key:           "persona_preset",
+			Label:         "Persona Preset",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "peer", Slug: "peer", Label: "Peer Engineer"},
+			},
+		},
+		{
+			Key:           "task",
+			Label:         "Task",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "todo", Slug: "todo", Label: "Todo", Description: "Return a todo list"},
+				{Value: "infer", Slug: "infer", Label: "Infer", Description: "Infer the task"},
+			},
+		},
+		{
+			Key:           "completeness",
+			Label:         "Completeness",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer"},
+			},
+		},
+	}
+}
+
+// ADR-0168 Fix 1: TestFilterSearchesHeuristics verifies that the filter matches tokens
+// by heuristics[] trigger words, not only slug/label.
+func TestFilterSearchesHeuristics(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategoriesWithHeuristics(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+	h := NewHarness(opts)
+
+	// "explaining" appears in show's Heuristics but not in its slug ("show") or label ("Show").
+	h.Act(HarnessAction{Type: "filter", Text: "explaining"})
+	s := h.Observe()
+
+	found := false
+	for _, t := range s.VisibleTokens {
+		if t.Key == "show" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected 'show' to be visible when filtering by heuristic 'explaining', got: %v", s.VisibleTokens)
+	}
+}
+
+// ADR-0168 Fix 1: TestFilterHeuristicsDistinctFromLabel verifies that a token is found
+// by a heuristic trigger word that does not appear in its label or slug.
+func TestFilterHeuristicsDistinctFromLabel(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategoriesWithHeuristics(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+	h := NewHarness(opts)
+
+	// "creating" appears in make's Heuristics; "make" is the slug/label.
+	// Filtering by "creating" should surface make even though "creating" != "make".
+	h.Act(HarnessAction{Type: "filter", Text: "creating"})
+	s := h.Observe()
+
+	found := false
+	for _, tok := range s.VisibleTokens {
+		if tok.Key == "make" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected 'make' to be visible when filtering by heuristic 'creating', got: %v", s.VisibleTokens)
+	}
+}
+
+// ADR-0168 Fix 2: TestInitialStageIsTaskWhenPersonaCategoriesPresent verifies that the
+// harness starts at "task" even when persona_preset is present in the token categories.
+// Before Fix 2, the initial stage was "persona_preset".
+func TestInitialStageIsTaskWhenPersonaCategoriesPresent(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategoriesWithPersona(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+	h := NewHarness(opts)
+	s := h.Observe()
+
+	if s.Stage != "task" {
+		t.Errorf("expected initial stage %q, got %q (persona stages should be deferred)", "task", s.Stage)
+	}
+}
+
+// ADR-0168 Fix 2: TestPersonaStageReachableAfterTask verifies that persona_preset is
+// reachable via skip after completing the core stages.
+func TestPersonaStageReachableAfterTask(t *testing.T) {
+	opts := Options{
+		TokenCategories: testCategoriesWithPersona(),
+		InitialWidth:    80,
+		InitialHeight:   24,
+	}
+	h := NewHarness(opts)
+
+	// Skip through task and completeness, then persona_preset should be reachable.
+	h.Act(HarnessAction{Type: "skip"}) // skip task
+	h.Act(HarnessAction{Type: "skip"}) // skip completeness
+
+	// At this point all core stages are done; persona_preset should be next.
+	if err := h.Act(HarnessAction{Type: "nav", Target: "persona_preset"}); err != nil {
+		t.Fatalf("expected persona_preset to be navigable, got: %v", err)
+	}
+	s := h.Observe()
+	if s.Stage != "persona_preset" {
+		t.Errorf("expected stage %q after nav, got %q", "persona_preset", s.Stage)
+	}
+}
+
+// ADR-0168 Fix 3: TestBackReSelectReplaces verifies that going back to a completed
+// single-capacity stage and selecting a new token replaces the old one.
+// Before Fix 3, the new selection was silently dropped.
+func TestBackReSelectReplaces(t *testing.T) {
+	h := NewHarness(harnessOpts())
+
+	h.Act(HarnessAction{Type: "select", Target: "todo"})   // select task; auto-advances to completeness
+	h.Act(HarnessAction{Type: "back"})                     // return to task
+	if err := h.Act(HarnessAction{Type: "select", Target: "infer"}); err != nil {
+		t.Fatalf("select infer after back failed: %v", err)
+	}
+
+	s := h.Observe()
+	if len(s.Selected["task"]) != 1 || s.Selected["task"][0] != "infer" {
+		t.Errorf("expected task=[infer] after back+re-select, got %v", s.Selected["task"])
+	}
+	if s.Stage == "task" {
+		t.Error("expected stage to advance past task after re-select")
+	}
+}
+
+// ADR-0168 Fix 3: TestBackReSelectOnMultiCapacityStageAppends verifies that replace
+// semantics only apply to MaxSelections==1 stages; a MaxSelections==2 stage that is
+// full (both slots taken) still blocks a third selection.
+func TestBackReSelectOnMultiCapacityStageAppends(t *testing.T) {
+	h := NewHarness(harnessOpts())
+
+	h.Act(HarnessAction{Type: "nav", Target: "scope"})
+	h.Act(HarnessAction{Type: "select", Target: "focus"})  // scope=[focus], not full
+	h.Act(HarnessAction{Type: "select", Target: "system"}) // scope=[focus,system], now full
+
+	s := h.Observe()
+	if len(s.Selected["scope"]) != 2 {
+		t.Errorf("expected scope=[focus system] after two selects, got %v", s.Selected["scope"])
+	}
+}
+
 // TestHarnessObserveIdempotent verifies that multiple Observe calls return the same state.
 func TestHarnessObserveIdempotent(t *testing.T) {
 	h := NewHarness(harnessOpts())

@@ -13,6 +13,18 @@ func modelViewContent(m model) string {
 	return m.View().Content
 }
 
+// navigateModelToStage sets currentStageIndex to the traversal position of stage.
+// Used in tests that need to exercise persona stages, which are deferred to the end
+// of stageTraversalOrder (ADR-0168).
+func navigateModelToStage(m *model, stage string) {
+	for i, s := range stageTraversalOrder {
+		if s == stage {
+			m.currentStageIndex = i
+			return
+		}
+	}
+}
+
 func TestSnapshotBasicLayout(t *testing.T) {
 	preview := func(subject string, addendum string, tokens []string) (string, error) {
 		return "=== TASK ===\nTest preview", nil
@@ -1623,11 +1635,7 @@ func TestPresetAutoFillsOtherCategories(t *testing.T) {
 		InitialHeight:   24,
 	})
 	m.ready = true
-
-	// Should be at persona_preset stage
-	if m.getCurrentStage() != "persona_preset" {
-		t.Fatalf("expected to start at persona_preset stage, got %s", m.getCurrentStage())
-	}
+	navigateModelToStage(&m, "persona_preset") // persona deferred to end in ADR-0168
 
 	// Select the preset
 	m.updateCompletions()
@@ -1985,6 +1993,7 @@ func TestAutoFilledTokensTracked(t *testing.T) {
 	})
 	m.ready = true
 
+	navigateModelToStage(&m, "persona_preset") // persona deferred to end in ADR-0168
 	// Select the preset (which auto-fills voice/audience/tone)
 	m.updateCompletions()
 	m.selectCompletion(m.completions[0])
@@ -2065,6 +2074,7 @@ func TestCopiedCommandExcludesAutoFilledTokens(t *testing.T) {
 	})
 	m.ready = true
 
+	navigateModelToStage(&m, "persona_preset") // persona deferred to end in ADR-0168
 	// Select the preset (auto-fills voice and audience)
 	m.updateCompletions()
 	m.selectCompletion(m.completions[0]) // coach preset
@@ -2148,6 +2158,7 @@ func TestDisplayCommandIncludesAllTokens(t *testing.T) {
 	})
 	m.ready = true
 
+	navigateModelToStage(&m, "persona_preset") // persona deferred to end in ADR-0168
 	// Select the preset (auto-fills voice)
 	m.updateCompletions()
 	m.selectCompletion(m.completions[0])
@@ -2236,6 +2247,7 @@ func TestRemovingPresetRemovesAutoFilledTokens(t *testing.T) {
 	})
 	m.ready = true
 
+	navigateModelToStage(&m, "persona_preset") // persona deferred to end in ADR-0168
 	// Select the coach preset (auto-fills voice/audience/tone)
 	m.updateCompletions()
 	m.selectCompletion(m.completions[0]) // coach

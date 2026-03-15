@@ -86,7 +86,8 @@ func (h *Harness) Observe() HarnessState {
 				if filterLower != "" {
 					if !fuzzyMatch(strings.ToLower(opt.Value), filterLower) &&
 						!fuzzyMatch(strings.ToLower(opt.Slug), filterLower) &&
-						!(opt.Label != "" && fuzzyMatch(strings.ToLower(opt.Label), filterLower)) {
+						!(opt.Label != "" && fuzzyMatch(strings.ToLower(opt.Label), filterLower)) &&
+						!(opt.Heuristics != "" && fuzzyMatch(strings.ToLower(opt.Heuristics), filterLower)) {
 						continue
 					}
 				}
@@ -148,7 +149,7 @@ func (h *Harness) Act(action HarnessAction) error {
 	switch action.Type {
 	case "nav":
 		idx := -1
-		for i, s := range stageOrder {
+		for i, s := range stageTraversalOrder {
 			if s == action.Target {
 				idx = i
 				break

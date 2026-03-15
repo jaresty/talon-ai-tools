@@ -75,9 +75,8 @@ type completion struct {
 	Fills map[string]string
 }
 
-// Stage order for grammar progression (matches CLI completion order).
-// Each stage corresponds to a token category key.
-// Persona stages come first (optional), then static and modifiers.
+// stageOrder defines grammar output order — persona tokens must precede task tokens in the
+// bar build command. Used by getAllTokensInOrder() and getCommandTokens() only.
 // Per ADR 0086: preset before intent (bundled vs unbundled decision fork).
 var stageOrder = []string{
 	"persona_preset", // Bundled persona configuration (optional) - Path 1: takes precedence
@@ -92,6 +91,25 @@ var stageOrder = []string{
 	"form",           // Output format
 	"channel",        // Communication style
 	"directional",    // Emphasis direction
+}
+
+// stageTraversalOrder defines the TUI navigation order — task first, persona deferred.
+// Used by currentStageIndex and all navigation functions (ADR-0168).
+// Task is used in 100% of bar commands; persona in a small fraction.
+// Traversal order does not affect prompt output order (stageOrder governs that).
+var stageTraversalOrder = []string{
+	"task",           // Task - the main task type (start here)
+	"completeness",   // How thorough
+	"scope",          // How focused
+	"method",         // How to approach
+	"form",           // Output format
+	"channel",        // Communication style
+	"directional",    // Emphasis direction
+	"persona_preset", // Bundled persona configuration (optional)
+	"intent",         // What the user wants to accomplish (optional)
+	"voice",          // Speaking style (optional)
+	"audience",       // Target audience (optional)
+	"tone",           // Emotional tone (optional)
 }
 
 // stageDisplayName returns the display name for a stage.
@@ -858,10 +876,11 @@ func (m *model) updateCompletions() {
 			continue
 		}
 
-		// Fuzzy match against partial (also match against label when set — ADR-0111 D4)
+		// Fuzzy match against partial (also match against label and heuristics — ADR-0111 D4, ADR-0168)
 		if partial == "" || fuzzyMatch(strings.ToLower(opt.Value), partial) ||
 			fuzzyMatch(strings.ToLower(opt.Slug), partial) ||
-			(opt.Label != "" && fuzzyMatch(strings.ToLower(opt.Label), partial)) {
+			(opt.Label != "" && fuzzyMatch(strings.ToLower(opt.Label), partial)) ||
+			(opt.Heuristics != "" && fuzzyMatch(strings.ToLower(opt.Heuristics), partial)) {
 			// Use "slug — label" format when label available (ADR-0111 D4)
 			slugDisplay := m.formatCompletionDisplay(category.Key, opt.Value, opt.Slug)
 			display := slugDisplay
@@ -900,9 +919,32 @@ func (m *model) selectCompletion(c completion) {
 		return // No stage to add to
 	}
 
-	// Prevent adding when stage is already at MaxSelections (e.g., after shift-tab back)
+	// If this is a single-capacity stage that's already complete, replace the existing token
+	// rather than silently dropping the new selection (ADR-0168 Fix 3).
+	// For multi-capacity stages, the existing guard is preserved: at-max means no more additions.
+	cat := m.getCategoryByKey(currentStage)
 	if m.isStageComplete(currentStage) {
-		return
+		if cat != nil && cat.MaxSelections == 1 {
+			// Remove the existing token and its auto-fills so the new selection replaces it.
+			existing := m.tokensByCategory[currentStage]
+			if len(existing) > 0 {
+				tokenKey := currentStage + ":" + existing[0]
+				m.removeAutoFilledBy(tokenKey)
+				delete(m.autoFilledTokens, tokenKey)
+				delete(m.autoFillSource, tokenKey)
+				m.tokensByCategory[currentStage] = nil
+			}
+			// Reset currentStageIndex to this stage so advanceToNextIncompleteStage()
+			// fires correctly after appending the new token below.
+			for ti, ts := range stageTraversalOrder {
+				if ts == currentStage {
+					m.currentStageIndex = ti
+					break
+				}
+			}
+		} else {
+			return // Multi-capacity stage is full; no more additions.
+		}
 	}
 
 	// Save state for undo before modifying
@@ -970,7 +1012,8 @@ func (m *model) rebuildCommandLine() {
 // removeLastToken removes the last manually-selected token (skipping auto-filled tokens).
 // If the removed token caused any auto-fills, those are also removed.
 func (m *model) removeLastToken() {
-	// Find the last stage that has a manually-selected token (not auto-filled)
+	// Find the last stage that has a manually-selected token (not auto-filled).
+	// Iterate stageOrder (grammar order) in reverse to find the most-recently-added token.
 	for i := len(stageOrder) - 1; i >= 0; i-- {
 		stage := stageOrder[i]
 		tokens, ok := m.tokensByCategory[stage]
@@ -992,8 +1035,14 @@ func (m *model) removeLastToken() {
 		// Cascade-remove any tokens that this token auto-filled
 		m.removeAutoFilledBy(tokenKey)
 
-		// Update current stage index to this stage (since it now has room)
-		m.currentStageIndex = i
+		// Update current stage index to this stage (since it now has room).
+		// Convert from grammar-order index to traversal-order index.
+		for ti, ts := range stageTraversalOrder {
+			if ts == stage {
+				m.currentStageIndex = ti
+				break
+			}
+		}
 		m.rebuildCommandLine()
 		return
 	}
@@ -1436,10 +1485,10 @@ func (m model) formatTokenForDisplay(stage, token string) string {
 
 // getCurrentStage returns the current stage key based on what's been selected.
 func (m model) getCurrentStage() string {
-	if m.currentStageIndex >= len(stageOrder) {
+	if m.currentStageIndex >= len(stageTraversalOrder) {
 		return "" // All stages complete
 	}
-	return stageOrder[m.currentStageIndex]
+	return stageTraversalOrder[m.currentStageIndex]
 }
 
 // getCategoryByKey returns the category with the given key.
@@ -1463,19 +1512,36 @@ func (m model) isStageComplete(stage string) bool {
 }
 
 // advanceToNextIncompleteStage moves to the next stage that needs selection.
+// If the scan reaches the end of stageTraversalOrder without finding an incomplete
+// stage, it wraps back to index 0 and scans up to the original start position.
+// This handles the case where navigateModelToStage jumps forward (e.g. to
+// persona_preset at index 7), leaving earlier stages (e.g. task at index 0)
+// unselected; after the persona stages are exhausted the model correctly
+// returns to those skipped stages rather than reporting "all done".
 func (m *model) advanceToNextIncompleteStage() {
-	for m.currentStageIndex < len(stageOrder) {
-		stage := stageOrder[m.currentStageIndex]
+	startIndex := m.currentStageIndex
+	// Forward scan from current position to end.
+	for m.currentStageIndex < len(stageTraversalOrder) {
+		stage := stageTraversalOrder[m.currentStageIndex]
 		if !m.isStageComplete(stage) {
 			return // Stay at this stage
 		}
 		m.currentStageIndex++
 	}
+	// Wrap: scan from the beginning up to (but not including) startIndex.
+	for i := 0; i < startIndex; i++ {
+		stage := stageTraversalOrder[i]
+		if !m.isStageComplete(stage) {
+			m.currentStageIndex = i
+			return
+		}
+	}
+	// All stages complete; leave currentStageIndex at len(stageTraversalOrder).
 }
 
 // skipCurrentStage moves to the next stage without selecting anything.
 func (m *model) skipCurrentStage() {
-	if m.currentStageIndex < len(stageOrder) {
+	if m.currentStageIndex < len(stageTraversalOrder) {
 		m.currentStageIndex++
 		m.advanceToNextIncompleteStage()
 	}
@@ -1487,7 +1553,7 @@ func (m *model) goToPreviousStage() {
 		m.currentStageIndex--
 		// Skip back over stages that don't have categories
 		for m.currentStageIndex > 0 {
-			stage := stageOrder[m.currentStageIndex]
+			stage := stageTraversalOrder[m.currentStageIndex]
 			if m.getCategoryByKey(stage) != nil {
 				break
 			}
@@ -1610,8 +1676,8 @@ func copyStringMap(m map[string]string) map[string]string {
 // getRemainingStages returns the names of stages after the current one.
 func (m model) getRemainingStages() []string {
 	var remaining []string
-	for i := m.currentStageIndex + 1; i < len(stageOrder); i++ {
-		remaining = append(remaining, stageDisplayName(stageOrder[i]))
+	for i := m.currentStageIndex + 1; i < len(stageTraversalOrder); i++ {
+		remaining = append(remaining, stageDisplayName(stageTraversalOrder[i]))
 	}
 	return remaining
 }

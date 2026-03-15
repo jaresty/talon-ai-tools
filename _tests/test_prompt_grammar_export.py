@@ -110,6 +110,38 @@ class PromptGrammarCliTests(unittest.TestCase):
             meta_guidance,
             "meta_interpretation_guidance must include a conditional guard requiring access to the bar token catalog before suggesting tokens",
         )
+        # Issue 3: "non-pasteable" is undefined jargon — must be replaced with behavioural instruction
+        self.assertNotIn(
+            "non-pasteable",
+            meta_guidance,
+            "meta_interpretation_guidance must not use undefined jargon 'non-pasteable'",
+        )
+        # Issue 2: directional carve-out — meta must acknowledge the directional naming prohibition
+        self.assertIn(
+            "directional",
+            meta_guidance,
+            "meta_interpretation_guidance must include a carve-out for the directional 'do not name' rule",
+        )
+        # Issue 5: retrospective reasoning — avoid claiming to explain live reasoning
+        self.assertNotIn(
+            "how you interpreted the request and chose your approach",
+            meta_guidance,
+            "meta_interpretation_guidance must not imply live reasoning is being reported retrospectively",
+        )
+        # Issue 6: Suggestion is for future prompts, not a critique of current constraints
+        self.assertIn(
+            "future",
+            meta_guidance,
+            "meta_interpretation_guidance must clarify the Suggestion line is for future prompts",
+        )
+
+        reference_key = data.get("reference_key", "")
+        # Issue 1: TASK bullet must not claim unqualified precedence over channels
+        self.assertNotIn(
+            "Takes precedence over all other categories if conflicts arise",
+            reference_key,
+            "PROMPT_REFERENCE_KEY TASK bullet must qualify its precedence claim to acknowledge channel override",
+        )
 
 
 if bootstrap is None and not TYPE_CHECKING:  # pragma: no cover - Talon runtime

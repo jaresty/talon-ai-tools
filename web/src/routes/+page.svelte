@@ -7,6 +7,7 @@
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 	import { parseCommand } from '$lib/parseCommand.js';
+	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -32,6 +33,9 @@
 	let copied = $state(false);
 	let shared = $state(false);
 	let copiedPrompt = $state(false);
+	let savedPresets = $state<SpaPreset[]>([]);
+	let presetNameInput = $state('');
+	let presetSaved = $state(false);
 
 	// Serialize/deserialize prompt state
 	function serialize(): string {
@@ -63,6 +67,7 @@
 			const saved = localStorage.getItem(STORAGE_KEY);
 			if (saved) deserialize(saved);
 		}
+		refreshPresets();
 
 		try {
 			grammar = await loadGrammar();
@@ -153,8 +158,7 @@
 	let conflicts = $derived(grammar ? findConflicts(grammar, selected) : []);
 	let promptText = $derived(grammar ? renderPrompt(grammar, selected, subject, addendum, persona) : '');
 
-	let command = $derived.by(() => {
-		if (!grammar) return '';
+	let tokens = $derived.by(() => {
 		const personaTokens: string[] = [];
 		if (persona.preset) {
 			personaTokens.push(`persona=${persona.preset}`);
@@ -165,12 +169,54 @@
 			if (persona.intent) personaTokens.push(persona.intent);
 		}
 		const order = ['task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
-		const tokens = [...personaTokens, ...order.flatMap((axis) => selected[axis] ?? [])];
+		return [...personaTokens, ...order.flatMap((axis) => selected[axis] ?? [])];
+	});
+
+	let command = $derived.by(() => {
 		let cmd = tokens.length === 0 ? 'bar build' : `bar build ${tokens.join(' ')}`;
 		if (subject.trim()) cmd += ` --subject "${subject.trim().replace(/"/g, '\\"')}"`;
 		if (addendum.trim()) cmd += ` --addendum "${addendum.trim().replace(/"/g, '\\"')}"`;
 		return cmd;
 	});
+
+	function refreshPresets() {
+		savedPresets = listPresets(localStorage);
+	}
+
+	function handleSavePreset() {
+		const name = presetNameInput.trim();
+		if (!name) return;
+		const axes: Record<string, string[]> = {};
+		for (const [axis, toks] of Object.entries(selected)) axes[axis] = [...toks];
+		savePreset(localStorage, name, tokens, axes, {
+			preset: persona.preset || undefined,
+			voice: persona.voice || undefined,
+			audience: persona.audience || undefined,
+			tone: persona.tone || undefined,
+			intent: persona.intent || undefined
+		});
+		presetNameInput = '';
+		refreshPresets();
+		presetSaved = true;
+		setTimeout(() => (presetSaved = false), 1500);
+	}
+
+	function handleLoadPreset(preset: SpaPreset) {
+		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...preset.result.axes };
+		persona = {
+			preset: preset.result.persona.preset ?? '',
+			voice: preset.result.persona.voice ?? '',
+			audience: preset.result.persona.audience ?? '',
+			tone: preset.result.persona.tone ?? '',
+			intent: preset.result.persona.intent ?? ''
+		};
+		// subject/addendum intentionally left unchanged
+	}
+
+	function handleDeletePreset(name: string) {
+		deletePreset(localStorage, name);
+		refreshPresets();
+	}
 
 	function copyCommand() {
 		navigator.clipboard.writeText(command);
@@ -733,6 +779,41 @@
 					</div>
 				</div>
 
+				<!-- Named preset panel (ADR-0165) -->
+				<details class="presets-panel">
+					<summary class="presets-summary">Presets</summary>
+					<div class="presets-save-row">
+						<input
+							class="presets-name-input"
+							type="text"
+							placeholder="Preset name…"
+							bind:value={presetNameInput}
+							onkeydown={(e) => { if (e.key === 'Enter') handleSavePreset(); }}
+						/>
+						<button class="presets-save-btn" onclick={handleSavePreset} disabled={!presetNameInput.trim()}>
+							{presetSaved ? '✓ Saved' : 'Save'}
+						</button>
+					</div>
+					{#if savedPresets.length === 0}
+						<p class="presets-empty">No presets saved.</p>
+					{:else}
+						<ul class="presets-list">
+							{#each savedPresets as preset (preset.name)}
+								<li class="preset-item">
+									<div class="preset-item-top">
+										<span class="preset-item-name">{preset.name}</span>
+										<div class="preset-item-actions">
+											<button class="preset-load-btn" onclick={() => handleLoadPreset(preset)}>Load</button>
+											<button class="preset-delete-btn" onclick={() => handleDeletePreset(preset.name)}>✕</button>
+										</div>
+									</div>
+									<code class="preset-item-tokens">{preset.tokens.join(' ')}</code>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</details>
+
 				<!-- Rendered prompt -->
 				<details class="prompt-preview-section">
 					<summary class="prompt-preview-label">Rendered Prompt</summary>
@@ -1009,6 +1090,98 @@
 	.fab-backdrop {
 		display: none;
 	}
+
+	/* Named preset panel (ADR-0165) */
+	.presets-panel {
+		margin-bottom: 0.75rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		overflow: hidden;
+	}
+	.presets-summary {
+		padding: 0.4rem 0.75rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		cursor: pointer;
+		user-select: none;
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+	}
+	.presets-save-row {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem 0.75rem 0.25rem;
+	}
+	.presets-name-input {
+		flex: 1;
+		padding: 0.3rem 0.5rem;
+		font-size: 0.8rem;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
+	}
+	.presets-save-btn {
+		padding: 0.3rem 0.75rem;
+		font-size: 0.8rem;
+		background: var(--color-accent);
+		color: #1a1b26;
+		border: none;
+		border-radius: var(--radius);
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	.presets-save-btn:disabled { opacity: 0.4; cursor: default; }
+	.presets-empty {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		padding: 0.5rem 0.75rem 0.75rem;
+		margin: 0;
+	}
+	.presets-list { list-style: none; margin: 0; padding: 0.25rem 0 0.5rem; }
+	.preset-item {
+		padding: 0.35rem 0.75rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.preset-item:last-child { border-bottom: none; }
+	.preset-item-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+	.preset-item-name { font-size: 0.85rem; font-weight: 500; color: var(--color-text); }
+	.preset-item-tokens {
+		display: block;
+		font-size: 0.7rem;
+		color: var(--color-text-muted);
+		margin-top: 0.15rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.preset-item-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
+	.preset-load-btn {
+		padding: 0.15rem 0.5rem;
+		font-size: 0.75rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		cursor: pointer;
+	}
+	.preset-load-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+	.preset-delete-btn {
+		padding: 0.15rem 0.4rem;
+		font-size: 0.75rem;
+		background: transparent;
+		border: 1px solid transparent;
+		border-radius: var(--radius);
+		color: var(--color-text-muted);
+		cursor: pointer;
+	}
+	.preset-delete-btn:hover { border-color: #f7768e; color: #f7768e; }
 
 	/* Rendered prompt preview */
 	.prompt-preview-section {

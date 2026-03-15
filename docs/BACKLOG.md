@@ -276,6 +276,7 @@ duplication.
 **Shape**: Skill that accepts a user intent phrase and returns matching tokens with definitions;
 other skills call it via tool use or pipe rather than hardcoding token descriptions. Depends on
 `bar lookup` landing first.
+**ADR**: docs/adr/0164-bar-dictionary-skill.md (Proposed)
 
 ### SPA: History and undo/redo
 **What**: Track token selection changes in a history stack; Ctrl+Z / Ctrl+Shift+Z to step through.

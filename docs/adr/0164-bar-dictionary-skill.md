@@ -93,6 +93,7 @@ grammar SSOT (axisConfig.py, staticPromptConfig.py, personaConfig.py)
 |-------|---------------|-----------------|
 | `bar-autopilot` | "Legacy Token Selection" heuristics section; embedded fallback axis heuristics | Reference `bar-dictionary` for any targeted lookup; `bar help llm` already covers the primary discovery path |
 | `bar-workflow` | Same embedded heuristics sections as autopilot | Same replacement |
+| `bar-suggest` | "Legacy Option Generation" fallback heuristics (scope/method/form lookup phrases) | Same replacement as autopilot/workflow |
 | `bar-manual` | Any static enumeration of specific token names/descriptions | Instruct user to run `bar lookup` or invoke `bar-dictionary` |
 
 The dynamic discovery sections (`bar help llm`, `bar help tokens --plain`) in existing skills
@@ -107,8 +108,9 @@ The skill can be created first; migration of each calling skill is a separate, l
 Priority order:
 1. Create `bar-dictionary` skill (this ADR)
 2. Migrate `bar-manual` (most static token descriptions; highest drift risk)
-3. Migrate `bar-autopilot` and `bar-workflow` "Legacy Token Selection" fallback sections
-   (lowest urgency — these are fallback paths only, invoked when `bar help llm` is unavailable)
+3. Migrate `bar-autopilot`, `bar-workflow`, and `bar-suggest` "Legacy Token Selection" / "Legacy
+   Option Generation" fallback sections (lowest urgency — fallback paths only, invoked when
+   `bar help llm` is unavailable)
 
 ---
 
@@ -152,6 +154,7 @@ The skill is correct when:
 - `bar-autopilot` SKILL.md: "Legacy Token Selection" fallback heuristics section removed or
   reduced to a pointer to `bar-dictionary`
 - `bar-workflow` SKILL.md: same
+- `bar-suggest` SKILL.md: "Legacy Option Generation" fallback heuristics section same treatment
 - `bar-manual` SKILL.md: static token enumerations replaced with `bar lookup` invocation
 - Backlog item "Skills: `bar-dictionary` shared skill for token lookup" marked complete
 

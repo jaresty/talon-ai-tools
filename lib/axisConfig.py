@@ -442,6 +442,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "taxonomy": "Classification or type hierarchy",
         "test": "Structured test cases",
         "tight": "Concise dense prose",
+        "timeline": "Timeline or sequence layout",
         "twin": "Side-by-side comparison layout",
         "variants": "Several distinct labeled options",
         "vet": "Post-experiment review",

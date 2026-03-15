@@ -471,6 +471,7 @@
         "taxonomy": "Classification or type hierarchy",
         "test": "Structured test cases",
         "tight": "Concise dense prose",
+        "timeline": "Timeline or sequence layout",
         "twin": "Side-by-side comparison layout",
         "variants": "Several distinct labeled options",
         "vet": "Post-experiment review",
@@ -8310,7 +8311,7 @@
     }
   ],
   "checksums": {
-    "axes": "777f0752841a64273ae290e52ac149dacbf95452c62f23c263794461882c2c4b",
+    "axes": "4cf6ba5b94c67c1a71144e14f946bace9f68e75bcd3449f800db15ce620d2e70",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

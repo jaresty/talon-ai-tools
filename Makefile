@@ -83,6 +83,7 @@ axis-regenerate-apply: axis-regenerate
 	@if ! cmp -s tmp/axisConfig.generated.py lib/axisConfig.py; then \
 		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
 	fi
+	@PYTHONPATH=. $(PYTHON) scripts/tools/refresh_readme_axis_section.py
 
 axis-regenerate-all:
 	mkdir -p tmp

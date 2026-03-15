@@ -247,7 +247,7 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
 
 
 class ScopeAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-6: scope axis has structured metadata for all 15 tokens (persist added)."""
+    """ADR-0155 T-6: scope axis has structured metadata for all 15 tokens (storage added)."""
 
     AXIS = "scope"
     EXPECTED_TOKENS = {
@@ -260,7 +260,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         "good",
         "mean",
         "motifs",
-        "persist",
+        "storage",
         "stable",
         "struct",
         "thing",
@@ -308,9 +308,9 @@ class ScopeAxisMetadataTests(unittest.TestCase):
             "motifs", distinction_tokens, "cross must distinguish from motifs"
         )
 
-    def test_persist_distinguishes_from_stable(self):
-        """persist must distinguish from stable (persist=what must be made durable; stable=what IS currently stable)."""
-        persist = self.meta.get("persist", {})
+    def test_storage_distinguishes_from_stable(self):
+        """storage must distinguish from stable (storage=what must be made durable; stable=what IS currently stable)."""
+        persist = self.meta.get("storage", {})
         distinction_tokens = [d["token"] for d in persist.get("distinctions", [])]
         self.assertIn(
             "stable", distinction_tokens, "persist must distinguish from stable"
@@ -318,7 +318,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
 
 
 class FormAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-7: form axis has structured metadata for all 39 tokens."""
+    """ADR-0155 T-7: form axis has structured metadata for all 40 tokens."""
 
     AXIS = "form"
     EXPECTED_TOKENS = {
@@ -342,6 +342,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "ladder",
         "log",
         "merge",
+        "persist",
         "prep",
         "questions",
         "quiz",

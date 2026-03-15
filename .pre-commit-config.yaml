@@ -18,3 +18,12 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
         description: 'Normalize line endings to LF'
+
+  - repo: local
+    hooks:
+      - id: bar-grammar-check
+        name: Grammar drift check
+        language: system
+        entry: make bar-grammar-check
+        pass_filenames: false
+        files: ^(lib/|prompts/|internal/barcli/embed/).*$

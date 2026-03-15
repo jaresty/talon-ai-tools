@@ -240,13 +240,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
-        "enforce": "The response must express validation artifacts (including V from ground constraint) using the strongest enforceable mechanism available in the current medium. Let M_env be "
-        "the set of available validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. "
-        "Strength ordering (strongest to weakest): executable code written to files that can be run > formal notation that encodes constraints > structured criteria with concrete "
-        "checkable values > prose descriptions of what should be validated. Code displayed in chat without being written to disk is prose description, not executable code. Executable "
-        "code may be written to new files or added to existing files. A validation artifact is complete when it can be applied to determine whether the conditions are satisfied "
-        "without requiring additional interpretation or implementation. Using a weaker mechanism when a stronger one is available violates this constraint. Before presenting any "
-        "validation artifact, the response must include the exact phrase 'Validation mechanism:' followed by the selected mechanism name.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
@@ -254,12 +247,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response must treat governing intent I (stated goals, correctness criteria, or explicit constraints) as fixed and authoritative. The required structure is I → V → O: first "
-        "construct validation artifact V expressing conditions under which I is satisfied (see enforce constraint for how V must be expressed); V must be falsifiable: there must exist "
-        "some O that would fail V — a V satisfied by any O does not constrain I and must be rejected and reconstructed. Then produce output O satisfying V. The "
-        "response must present the complete V artifact, then include the exact phrase 'Validation artifact V complete' on its own line, before presenting any element of O. Any output O "
-        "appearing before this exact checkpoint phrase violates the constraint and must be discarded. Iteration is permitted: the response may construct multiple V→O pairs in sequence "
-        "(V₁→O₁, then V₂→O₂, etc.), with each V preceding its corresponding O.",
+        "ground": "The response treats I (stated goals, correctness criteria, or explicit constraints) as fixed. Express V at exactly the next feasible layer above I's current expression, "
+        "advancing one step at a time: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → "
+        "executable implementation → observed running behavior. V must be falsifiable and repeatable. If V is executable, run it and present evidence before O. Present V, then the "
+        "exact phrase 'Validation artifact V complete' on its own line, then O satisfying V. You must advance through every feasible layer; stopping is only permitted when the next "
+        "layer is not achievable in the current medium.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -279,12 +271,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
-        "observe": "The response enhances the task by preferring observation over inference: it obtains real evidence, states how it was obtained (e.g., ran X, checked source Y, measured Z), "
-        "and grounds conclusions only in outcomes actually observed; it does not fabricate runs or results, and when observation cannot be performed it explicitly treats results as "
-        "unobserved. Let E be empirical evidence (test execution, measurement, verification, source checking) and C be claims derived from it. The response must present E before C. "
-        "When making claims based on observation, the response must include the exact phrase 'Evidence obtained:' immediately before presenting E; this must state how E was obtained, "
-        "followed by the evidence, before stating any dependent claim C. When ground constraint is also "
-        "present, validation artifact V may be executed or applied to obtain evidence E, which then supports claims C about whether output O satisfies V.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
@@ -487,12 +473,11 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
-        "enforce": "Enforce strongest validation mechanism",
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
         "gap": "Implicit-to-explicit gap analysis",
-        "ground": "Declared governing layer authority",
+        "ground": "Intent-governed validation pipeline",
         "grove": "Accumulation and rate-of-change effects",
         "induce": "Generalize patterns from examples",
         "inversion": "Reason from catastrophic outcomes back",
@@ -507,7 +492,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
         "objectivity": "Separate facts from opinions",
-        "observe": "Run executable artifacts and incorporate outcomes",
         "operations": "Operations research frameworks",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
@@ -675,7 +659,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "domains": "領",
         "drift": "漂",
         "effects": "効",
-        "enforce": "強",
         "experimental": "実",
         "field": "場",
         "flow": "流",
@@ -695,7 +678,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "mod": "周",
         "models": "型",
         "objectivity": "客",
-        "observe": "観",
         "operations": "営",
         "order": "順",
         "origin": "起",
@@ -844,7 +826,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
-        "enforce": "Structural",
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
@@ -864,7 +845,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "mod": "Generative",
         "models": "Generative",
         "objectivity": "Reasoning",
-        "observe": "Diagnostic",
         "operations": "Temporal/Dynamic",
         "order": "Structural",
         "origin": "Structural",
@@ -1029,12 +1009,11 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
-        "enforce": "Enforce strongest validation mechanism",
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "gap": "Implicit gaps",
-        "ground": "Declared governing layer",
+        "ground": "Intent-governed validation pipeline",
         "grove": "Compounding effects",
         "induce": "Generalise from examples",
         "inversion": "Start from failure",
@@ -1049,7 +1028,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
         "objectivity": "Facts vs opinions",
-        "observe": "Empirical execution",
         "operations": "Operations research",
         "order": "Abstract ordering",
         "origin": "Historical causation",
@@ -2944,6 +2922,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "so I can feed this to",
             ],
         },
+        "coupling": {
+            "definition": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the "
+            "interface is.",
+            "distinctions": [
+                {
+                    "note": "coupling (form) = output structured as a coupling map; snag/mesh (method) = analytical lens for finding or resolving coupling",
+                    "token": "snag",
+                }
+            ],
+            "heuristics": [
+                "coupling map",
+                "map out the coupling",
+                "show the seams between",
+                "show what crosses the boundary",
+                "coupling diagram",
+                "what is joined at the interface",
+                "where do these components couple",
+            ],
+        },
         "direct": {
             "definition": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
             "distinctions": [
@@ -3118,6 +3115,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "bring these together",
                 "unify these documents",
                 "integrate these into a single output",
+            ],
+        },
+        "prep": {
+            "definition": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before "
+            "running it.",
+            "distinctions": [
+                {
+                    "note": "prep = design the experiment before running it; vet = review the results after running it",
+                    "token": "vet",
+                },
+                {
+                    "note": "experimental (method) = analytical lens of proposing experiments; prep (form) = output structured as an experiment write-up",
+                    "token": "experimental",
+                },
+            ],
+            "heuristics": [
+                "design an experiment",
+                "write up the experiment plan",
+                "experiment design write-up",
+                "hypothesis and method",
+                "frame this as an experiment",
+                "set up the test structure",
+                "experiment write-up with expected outcomes",
             ],
         },
         "questions": {
@@ -3323,6 +3343,52 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "maximum signal per word",
             ],
         },
+        "timeline": {
+            "definition": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each "
+            "occurs.",
+            "distinctions": [
+                {
+                    "note": "timeline (form) = output structured as a temporal sequence layout; walkthrough (form) = guided step-by-step narration",
+                    "token": "walkthrough",
+                },
+                {
+                    "note": "timeline (form) = temporal layout of stages; log (form) = dated work-log entries",
+                    "token": "log",
+                },
+            ],
+            "heuristics": [
+                "as a timeline",
+                "show the history in timeline format",
+                "timeline of events",
+                "chronological sequence",
+                "temporal order with markers",
+                "sequence of stages over time",
+                "show this as a timeline",
+            ],
+        },
+        "twin": {
+            "definition": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative "
+            "interleaving.",
+            "distinctions": [
+                {
+                    "note": "twin = strict side-by-side layout with equal weight per alternative; variants = labeled options with descriptions (may be narrative)",
+                    "token": "variants",
+                },
+                {
+                    "note": "twin = layout form for direct comparison; table = tabular grid for structured multi-attribute comparison",
+                    "token": "table",
+                },
+            ],
+            "heuristics": [
+                "side by side",
+                "compare X and Y side by side",
+                "two alternatives side by side",
+                "equal weight comparison",
+                "show both without interleaving",
+                "parallel comparison layout",
+                "show the two options in parallel",
+            ],
+        },
         "variants": {
             "definition": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description.",
             "distinctions": [
@@ -3341,6 +3407,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what are the options with labels",
                 "present 3 options",
                 "decision-ready alternatives",
+            ],
+        },
+        "vet": {
+            "definition": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. "
+            "Complements prep.",
+            "distinctions": [
+                {
+                    "note": "vet = post-experiment review of outcomes vs expectations; prep = experiment design write-up before running",
+                    "token": "prep",
+                },
+                {
+                    "note": "wasinawa = what/so-what/now-what reflection on past events; vet = structured review of experiment results against predictions",
+                    "token": "wasinawa",
+                },
+            ],
+            "heuristics": [
+                "review the results against what we predicted",
+                "post-experiment review",
+                "compare outcomes to expectations",
+                "what did we actually observe vs what we expected",
+                "debrief on the experiment",
+                "what were the results compared to our hypothesis",
+                "review what happened vs what we planned",
             ],
         },
         "visual": {
@@ -3404,112 +3493,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "reflect on incident",
                 "what went wrong and what to do next",
                 "lessons learned",
-            ],
-        },
-        "coupling": {
-            "definition": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is.",
-            "distinctions": [
-                {
-                    "note": "coupling (form) = output structured as a coupling map; snag/mesh (method) = analytical lens for finding or resolving coupling",
-                    "token": "snag",
-                }
-            ],
-            "heuristics": [
-                "coupling map",
-                "map out the coupling",
-                "show the seams between",
-                "show what crosses the boundary",
-                "coupling diagram",
-                "what is joined at the interface",
-                "where do these components couple",
-            ],
-        },
-        "prep": {
-            "definition": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
-            "distinctions": [
-                {
-                    "note": "prep = design the experiment before running it; vet = review the results after running it",
-                    "token": "vet",
-                },
-                {
-                    "note": "experimental (method) = analytical lens of proposing experiments; prep (form) = output structured as an experiment write-up",
-                    "token": "experimental",
-                },
-            ],
-            "heuristics": [
-                "design an experiment",
-                "write up the experiment plan",
-                "experiment design write-up",
-                "hypothesis and method",
-                "frame this as an experiment",
-                "set up the test structure",
-                "experiment write-up with expected outcomes",
-            ],
-        },
-        "timeline": {
-            "definition": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs.",
-            "distinctions": [
-                {
-                    "note": "timeline (form) = output structured as a temporal sequence layout; walkthrough (form) = guided step-by-step narration",
-                    "token": "walkthrough",
-                },
-                {
-                    "note": "timeline (form) = temporal layout of stages; log (form) = dated work-log entries",
-                    "token": "log",
-                },
-            ],
-            "heuristics": [
-                "as a timeline",
-                "show the history in timeline format",
-                "timeline of events",
-                "chronological sequence",
-                "temporal order with markers",
-                "sequence of stages over time",
-                "show this as a timeline",
-            ],
-        },
-        "twin": {
-            "definition": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
-            "distinctions": [
-                {
-                    "note": "twin = strict side-by-side layout with equal weight per alternative; variants = labeled options with descriptions (may be narrative)",
-                    "token": "variants",
-                },
-                {
-                    "note": "twin = layout form for direct comparison; table = tabular grid for structured multi-attribute comparison",
-                    "token": "table",
-                },
-            ],
-            "heuristics": [
-                "side by side",
-                "compare X and Y side by side",
-                "two alternatives side by side",
-                "equal weight comparison",
-                "show both without interleaving",
-                "parallel comparison layout",
-                "show the two options in parallel",
-            ],
-        },
-        "vet": {
-            "definition": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. Complements prep.",
-            "distinctions": [
-                {
-                    "note": "vet = post-experiment review of outcomes vs expectations; prep = experiment design write-up before running",
-                    "token": "prep",
-                },
-                {
-                    "note": "wasinawa = what/so-what/now-what reflection on past events; vet = structured review of experiment results against predictions",
-                    "token": "wasinawa",
-                },
-            ],
-            "heuristics": [
-                "review the results against what we predicted",
-                "post-experiment review",
-                "compare outcomes to expectations",
-                "what did we actually observe vs what we expected",
-                "debrief on the experiment",
-                "what were the results compared to our hypothesis",
-                "review what happened vs what we planned",
             ],
         },
     },
@@ -4085,32 +4068,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what follows downstream",
             ],
         },
-        "enforce": {
-            "definition": "The response must express validation artifacts using the strongest enforceable mechanism available in the current medium. Let M_env be the set of available "
-            "validation mechanisms ordered by enforcement strength ≤. The response must select m* = max(M_env) and encode validation artifacts using that mechanism. Strength ordering "
-            "(strongest to weakest): executable code written to files > formal notation that encodes constraints > structured criteria with concrete checkable values > prose "
-            "descriptions. Weaker descriptive forms may only be used when stronger enforceable mechanisms are unavailable. The response may not substitute weaker representations "
-            "when stronger ones exist.",
-            "distinctions": [
-                {
-                    "note": "ground = treat governing layer as fixed authority; enforce = select strongest available validation mechanism for the medium",
-                    "token": "ground",
-                },
-                {
-                    "note": "verify = apply falsification pressure; enforce = express validation using strongest enforceable mechanism",
-                    "token": "verify",
-                },
-            ],
-            "heuristics": [
-                "enforce validation",
-                "strongest mechanism available",
-                "validation artifacts",
-                "enforceable mechanism",
-                "select strongest validation",
-                "validation mechanism",
-                "enforce strongest",
-            ],
-        },
         "experimental": {
             "definition": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how "
             "results would update the hypotheses.",
@@ -4118,11 +4075,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
                     "token": "verify",
-                },
-                {
-                    "note": "experimental = design experiments to test hypotheses; observe = run available artifacts and incorporate actual outcomes",
-                    "token": "observe",
-                },
+                }
             ],
             "heuristics": [
                 "design an experiment",
@@ -4192,10 +4145,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ground": {
-            "definition": "The response treats a declared governing layer — intent, correctness criteria, or explicit constraints — as fixed and authoritative, requiring all structures, "
-            "behaviors, or conclusions to satisfy it through observable validation rather than redefine it, maintaining traceable grounding between representations and their "
-            "originating intent; validation artifacts must be falsifiable — there must exist some output that would fail them, otherwise they do not constrain the governing layer; "
-            "in code contexts the governing layer is expressed as executable tests or acceptance criteria that the model must produce before any implementation code.",
+            "definition": "The response treats I (stated goals, correctness criteria, or explicit constraints) as fixed. Express V at exactly the next feasible layer above I's current "
+            "expression, advancing one step at a time: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → "
+            "passing validation run → executable implementation → observed running behavior. V must be falsifiable and repeatable. If V is executable, run it and present "
+            "evidence before O. Present V, then 'Validation artifact V complete' on its own line, then O satisfying V. You must advance through every feasible layer; "
+            "stopping is only permitted when the next layer is not achievable in the current medium.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "
@@ -4499,35 +4453,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "is this a fact or an opinion",
             ],
         },
-        "observe": {
-            "definition": "The response enhances the task by running available executable artifacts — tests, experiments, simulations, or measurements — stating how each was run or "
-            "observation made, and incorporating their actual outcomes into reasoning rather than assuming them.",
-            "distinctions": [
-                {
-                    "note": "experimental = design experiments to test hypotheses; observe = run available artifacts and incorporate actual outcomes",
-                    "token": "experimental",
-                },
-                {
-                    "note": "verify = apply falsification pressure analytically; observe = require empirical execution of available artifacts",
-                    "token": "verify",
-                },
-                {
-                    "note": "perturb = actively vary the system to see effects; observe = run existing artifacts without introducing controlled variations",
-                    "token": "perturb",
-                },
-            ],
-            "heuristics": [
-                "run the tests",
-                "actually execute this",
-                "see what happens when you run it",
-                "don't assume — run it",
-                "show me the test results",
-                "red before green",
-                "run the experiment",
-                "what does the output actually say",
-                "incorporate the actual result",
-            ],
-        },
         "operations": {
             "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
             "distinctions": [
@@ -4599,10 +4524,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "experimental = design experiments to test hypotheses; perturb = actively vary the system to see effects",
                     "token": "experimental",
-                },
-                {
-                    "note": "perturb = actively vary the system to see effects; observe = run existing artifacts without introducing controlled variations",
-                    "token": "observe",
                 },
             ],
             "heuristics": [
@@ -5233,12 +5154,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "rigor",
                 },
                 {
-                    "note": "ground = define a falsifiable artifact before producing output, imposing I → V → O structure; verify = apply falsification pressure to claims after the fact without imposing a governing structure",
+                    "note": "ground = define a falsifiable artifact before producing output, imposing I → V → O structure; verify = apply falsification pressure to claims after "
+                    "the fact without imposing a governing structure",
                     "token": "ground",
-                },
-                {
-                    "note": "observe = require empirical execution of available artifacts; verify = apply falsification pressure analytically without running anything",
-                    "token": "observe",
                 },
             ],
             "heuristics": [

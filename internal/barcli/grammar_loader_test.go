@@ -349,6 +349,43 @@ func TestPersonaMetadataForPresetsContent(t *testing.T) {
 	}
 }
 
+// TestADR0162GroundConsolidation specifies that observe and enforce are retired as
+// method tokens and ground carries the full mandatory-advancement ladder (ADR-0162).
+func TestADR0162GroundConsolidation(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+
+	// observe and enforce must not exist as method tokens.
+	methodTokens := grammar.AxisTokenSet("method")
+	if _, ok := methodTokens["observe"]; ok {
+		t.Error("method token 'observe' must be retired (ADR-0162)")
+	}
+	if _, ok := methodTokens["enforce"]; ok {
+		t.Error("method token 'enforce' must be retired (ADR-0162)")
+	}
+
+	// ground must carry the full mandatory-advancement ladder.
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	for _, phrase := range []string{
+		"prose",
+		"executable validation",
+		"passing validation run",
+		"executable implementation",
+		"observed running behavior",
+		"every feasible layer",
+	} {
+		if !strings.Contains(groundDesc, phrase) {
+			t.Errorf("ground description missing expected phrase %q (ADR-0162)", phrase)
+		}
+	}
+}
+
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")
 	t.Setenv(envGrammarPath, missing)

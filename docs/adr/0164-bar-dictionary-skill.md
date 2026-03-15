@@ -7,14 +7,14 @@
 
 ## Context
 
-The bar skill ecosystem currently has three skills that require token knowledge to function:
-`bar-autopilot`, `bar-workflow`, and `bar-manual`. Each embeds its own inline token guidance
-in its `SKILL.md`:
+The bar skill ecosystem currently has four skills that require token knowledge to function:
+`bar-autopilot`, `bar-workflow`, `bar-suggest`, and `bar-manual`. Each embeds its own inline
+token guidance in its `SKILL.md`:
 
-- **`bar-autopilot`** and **`bar-workflow`** carry a full "Token Selection Strategy" section with
-  embedded heuristics (e.g., "for debugging: look for method tokens about diagnosis") and
-  fallback discovery logic. These heuristics duplicate — and can drift from — the `heuristics[]`
-  field in the grammar SSOT.
+- **`bar-autopilot`**, **`bar-workflow`**, and **`bar-suggest`** carry embedded fallback heuristics
+  sections ("Legacy Token Selection" / "Legacy Option Generation") with hardcoded scope/method/form
+  lookup phrases (e.g., "look for method tokens about diagnosis"). These duplicate — and can drift
+  from — the `heuristics[]` field in the grammar SSOT.
 - **`bar-manual`** documents specific tokens by name, which drift when tokens are renamed, retired,
   or semantically shifted.
 

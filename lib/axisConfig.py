@@ -4150,6 +4150,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what would we measure",
                 "design a study",
                 "run a test to find out",
+                "debug this scientifically",
+                "what hypothesis explains this bug",
+                "treat this as a debugging experiment",
+                "systematic debugging",
+                "how do I isolate the cause",
             ],
         },
         "field": {

@@ -3140,7 +3140,12 @@
             "how do we validate",
             "what would we measure",
             "design a study",
-            "run a test to find out"
+            "run a test to find out",
+            "debug this scientifically",
+            "what hypothesis explains this bug",
+            "treat this as a debugging experiment",
+            "systematic debugging",
+            "how do I isolate the cause"
           ]
         },
         "field": {
@@ -8311,7 +8316,7 @@
     }
   ],
   "checksums": {
-    "axes": "4cf6ba5b94c67c1a71144e14f946bace9f68e75bcd3449f800db15ce620d2e70",
+    "axes": "a0d6d12d027bc627dc2588e0827af03a303a0e88ee530d2f0f2bc04e6f2ae158",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

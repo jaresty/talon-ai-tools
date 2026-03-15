@@ -168,6 +168,18 @@ configurations across all three surfaces.
 - CLI: `bar preset save <name> [tokens...]` / `bar preset load <name>` (subcommand may already
   exist — check `bar preset` in current help)
 
+### TUI2: Harness mode for LLM-driven UX exploration (ADR-0167)
+**What**: A `--harness` flag for `bar tui2` that skips terminal rendering and instead reads JSON
+actions from stdin / writes JSON state snapshots to stdout. An LLM (or test) can navigate axes,
+select tokens, and observe the TUI's visible state without a PTY.
+**Why Tier 2**: The most direct path to discovering UX gaps — an LLM acting as a user will surface
+friction that manual review and ADR-0113 eval loops only catch indirectly. Also enables automated
+regression tests against the TUI's state machine.
+**Shape**: `Harness` type in `internal/bartui2/` wrapping existing `Model`; `--harness` flag in
+`bar tui2`; `HarnessState` JSON schema; optional `--harness-transcript` for JSONL replay capture.
+Bubble Tea renderer replaced with a no-op writer; update loop unchanged.
+**ADR**: docs/adr/0167-tui-harness-mode.md (Proposed)
+
 ### TUI2: Clipboard shortcut for text fields
 **What**: A keyboard shortcut (e.g., Ctrl+V or a dedicated key) that reads the system clipboard
 and inserts it into the currently focused text field (Run Command, Subject).

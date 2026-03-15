@@ -1,6 +1,6 @@
 # ADR-0167: TUI Harness Mode for LLM-Driven UX Exploration
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-03-15
 
 ---
@@ -71,44 +71,40 @@ Add a `--harness` flag to `bar tui2` that activates headless mode:
     {"key": "analysis", "label": "Component decomposition", "selected": true}
   ],
   "selected": {
-    "task": "probe",
-    "completeness": "full",
-    "scope": [],
-    "method": ["analysis"],
-    "form": "",
-    "channel": "",
-    "directional": ""
+    "task": ["probe"],
+    "completeness": ["full"],
+    "method": ["analysis"]
   },
   "command_preview": "bar build probe full analysis",
-  "help_visible": false,
+  "done": false,
   "error": ""
 }
 ```
+
+`selected` only includes axes that have at least one non-auto-filled token; empty axes are omitted.
 
 ### Action input (stdin, one JSON object per line)
 
 ```json
 {"type": "nav", "target": "method"}
-{"type": "select", "token": "diagnose"}
-{"type": "deselect", "token": "analysis"}
-{"type": "key", "key": "tab"}
+{"type": "select", "target": "diagnose"}
+{"type": "deselect", "target": "analysis"}
 {"type": "filter", "text": "root cause"}
+{"type": "skip"}
+{"type": "back"}
 {"type": "quit"}
 ```
 
-`nav` moves to a named stage/axis. `select`/`deselect` toggle a token by key. `key` injects a
-raw Bubble Tea `KeyMsg` for actions not covered by semantic types (e.g., scrolling). `filter`
-sets the search filter text. `quit` terminates the harness and emits the final state.
-
-### Transcript capture
-
-When `--harness-transcript <path>` is passed, each `(state, action)` pair is appended to a JSONL
-file. This enables replay, regression suites, and prompt improvement data.
+`nav` jumps to a named stage. `select`/`deselect` add/remove a token by key or slug. `filter`
+restricts visible tokens without affecting selection. `skip` advances past the current stage
+without selecting. `back` returns to the previous stage. `quit` sets `done: true` and terminates
+the loop.
 
 ### No PTY requirement
 
-The harness replaces the Bubble Tea `Program` renderer with a no-op writer. The Bubble Tea update
-loop still runs; only the renderer is suppressed.
+The harness wraps the existing `model` struct directly, bypassing the Bubble Tea `Program`
+entirely. No renderer is instantiated. The Bubble Tea update loop is not used — actions are
+applied by calling model methods directly.
 
 ---
 

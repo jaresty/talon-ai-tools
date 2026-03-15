@@ -101,8 +101,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
-        "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. "
-        "The coverage allocation is stakes-proportionate rather than uniform.",
+        "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
+        "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
     },
     "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
@@ -214,6 +214,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
+        "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
+        "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
         "is maintained.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
@@ -249,12 +251,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to evaluate, "
-        "while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
+        "ground": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to evaluate, while "
+        "remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
         "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any rung, first locate the highest "
-        "already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only "
-        "permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, "
-        "then O satisfying V.",
+        "already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only permitted when the "
+        "next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -320,9 +321,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "thrust": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural "
         "changes.",
-        "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — "
-        "identifying where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
-        "unknowns":"The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
+        "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
         "the layer those tests must satisfy.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
@@ -345,8 +344,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
         "their internal topology in detail or their boundary-spanning distribution.",
-        "persist": "The response focuses on the persistence dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and "
-        "recovery guarantees, and the conditions under which it can be lost or corrupted.",
+        "persist": "The response focuses on the persistence dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
+        "guarantees, and the conditions under which it can be lost or corrupted.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
         "perturbations affect their continuity.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal "
@@ -454,7 +453,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "method": {
         "abduce": "Generate explanatory hypotheses",
         "actors": "Center people, roles, and agents",
-        "automate": "Prefer automated over manual steps",
         "adversarial": "Constructive stress-testing",
         "afford": "Affordance-driven behavior analysis",
         "align": "Restructure for global coherence",
@@ -462,6 +460,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
+        "automate": "Prefer automated over manual steps",
         "balance": "Equilibrium description",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
@@ -641,7 +640,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "method": {
         "abduce": "因",
         "actors": "者",
-        "automate": "自",
         "adversarial": "攻",
         "afford": "構",
         "align": "調",
@@ -649,6 +647,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "analog": "類",
         "analysis": "析",
         "argue": "論",
+        "automate": "自",
         "balance": "均",
         "bias": "偏",
         "boom": "極",
@@ -2427,7 +2426,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "triage": {
-            "definition": "Stakes-proportionate coverage depth: allocates analytical depth by consequence × uncertainty. Areas where both are high receive full coverage; areas where both are low receive minimal or no coverage.",
+            "definition": "Stakes-proportionate coverage depth: allocates analytical depth by consequence × uncertainty. Areas where both are high receive full coverage; areas where "
+            "both are low receive minimal or no coverage.",
             "distinctions": [
                 {
                     "note": "triage = allocate depth by consequence × uncertainty stakes; grow = expand only where analysis explicitly demands it",
@@ -3723,7 +3723,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "automate": {
-            "definition": "Automation-first reasoning: models what can be expressed as automatic, repeatable operations, preferring those over manual, human-dependent steps. Identifies where human intervention can be eliminated and expresses solutions in terms of what the system can do without human involvement.",
+            "definition": "Automation-first reasoning: models what can be expressed as automatic, repeatable operations, preferring those over manual, human-dependent steps. Identifies "
+            "where human intervention can be eliminated and expresses solutions in terms of what the system can do without human involvement.",
             "distinctions": [
                 {
                     "note": "automate = prefer automated operations over manual ones; ground = enforce falsifiability and advance through validation rungs",
@@ -4206,10 +4207,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ground": {
-            "definition": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment "
-            "to evaluate, while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable "
-            "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any "
-            "rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every "
+            "definition": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to "
+            "evaluate, while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable "
+            "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning "
+            "at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every "
             "feasible step; stopping is only permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase "
             "'Validation artifact V complete' on its own line, then O satisfying V.",
             "distinctions": [
@@ -5412,7 +5413,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "persist": {
-            "definition": "Persistence and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
+            "definition": "Persistence and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
+            "guarantees, and the conditions under which it can be lost or corrupted.",
             "distinctions": [
                 {
                     "note": "persist = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",

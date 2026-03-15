@@ -32,7 +32,8 @@
         "max": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
-        "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
+        "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+        "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. The coverage allocation is stakes-proportionate rather than uniform."
       },
       "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together.",
@@ -104,6 +105,7 @@
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
+        "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance is maintained.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
@@ -127,7 +129,7 @@
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
-        "ground": "The response treats I (stated goals, correctness criteria, or explicit constraints) as fixed. Express V at exactly the next feasible layer above I's current expression, advancing one step at a time: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. V must be falsifiable and repeatable. If V is executable, run it and present evidence before O. Present V, then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V. You must advance through every feasible layer; stopping is only permitted when the next layer is not achievable in the current medium.",
+        "ground": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to evaluate, while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
@@ -173,7 +175,6 @@
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
         "thrust": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural changes.",
-        "triage": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing the layer those tests must satisfy.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction."
@@ -188,6 +189,7 @@
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
         "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution.",
+        "persist": "The response focuses on the persistence dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how perturbations affect their continuity.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
@@ -224,7 +226,8 @@
         "max",
         "minimal",
         "narrow",
-        "skim"
+        "skim",
+        "triage"
       ],
       "directional": [
         "bog",
@@ -296,6 +299,7 @@
         "analog",
         "analysis",
         "argue",
+        "automate",
         "balance",
         "bias",
         "boom",
@@ -365,7 +369,6 @@
         "systemic",
         "thrust",
         "trace",
-        "triage",
         "unknowns",
         "verify",
         "yield"
@@ -380,6 +383,7 @@
         "good",
         "mean",
         "motifs",
+        "persist",
         "stable",
         "struct",
         "thing",
@@ -413,7 +417,8 @@
         "max": "Exhaustive, treat omissions as errors",
         "minimal": "Smallest satisfying answer only",
         "narrow": "Restricted to a very small slice",
-        "skim": "Light pass, obvious issues only"
+        "skim": "Light pass, obvious issues only",
+        "triage": "Stakes-weighted coverage depth"
       },
       "directional": {
         "bog": "Span reflection and action (rog + ong)",
@@ -484,6 +489,7 @@
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
+        "automate": "Prefer automated over manual steps",
         "balance": "Equilibrium description",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
@@ -552,7 +558,6 @@
         "systemic": "Interacting whole and feedback loops",
         "thrust": "Catalog competing structural forces",
         "trace": "Narrate sequential progression",
-        "triage": "Triage by consequence×uncertainty gradient",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
         "yield": "Minimal action, allow natural resolution"
@@ -567,6 +572,7 @@
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
+        "persist": "Durable state and persistence layer",
         "stable": "Stability and persistence of states",
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
@@ -595,7 +601,8 @@
         "video": "映"
       },
       "completeness": {
-        "grow": "増"
+        "grow": "増",
+        "triage": "険"
       },
       "directional": {
         "bog": "反",
@@ -666,6 +673,7 @@
         "analog": "類",
         "analysis": "析",
         "argue": "論",
+        "automate": "自",
         "balance": "均",
         "bias": "偏",
         "boom": "極",
@@ -735,7 +743,6 @@
         "systemic": "系",
         "thrust": "衡",
         "trace": "跡",
-        "triage": "険",
         "unknowns": "未",
         "verify": "証",
         "yield": "任"
@@ -750,6 +757,7 @@
         "good": "良",
         "mean": "意",
         "motifs": "紋",
+        "persist": "保",
         "stable": "安",
         "struct": "造",
         "thing": "物",
@@ -768,6 +776,7 @@
         "analog": "Generative",
         "analysis": "Structural",
         "argue": "Reasoning",
+        "automate": "Structural",
         "balance": "Comparative",
         "bias": "Reasoning",
         "boom": "Exploration",
@@ -837,7 +846,6 @@
         "systemic": "Temporal/Dynamic",
         "thrust": "Comparative",
         "trace": "Temporal/Dynamic",
-        "triage": "Diagnostic",
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
         "yield": "Minimal intervention"
@@ -872,7 +880,8 @@
         "max": "Exhaustive — every case, every edge",
         "minimal": "Briefest valid response",
         "narrow": "Focused depth on a specific slice",
-        "skim": "Surface-level coverage"
+        "skim": "Surface-level coverage",
+        "triage": "Stakes-proportionate coverage depth"
       },
       "directional": {
         "bog": "Reflect + act",
@@ -944,6 +953,7 @@
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
+        "automate": "Automate repeatable steps",
         "balance": "Equilibrium description",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
@@ -1013,7 +1023,6 @@
         "systemic": "System as whole",
         "thrust": "Catalog structural forces",
         "trace": "Sequential narration",
-        "triage": "Risk-gradient depth",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
         "yield": "Minimal intervention / natural resolution"
@@ -1028,6 +1037,7 @@
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
+        "persist": "Durable state and persistence",
         "stable": "Invariants/stable states",
         "struct": "Entities/boundaries",
         "thing": "Entities/boundaries",
@@ -1466,6 +1476,30 @@
             "surface-level look",
             "sanity check",
             "quick skim"
+          ]
+        },
+        "triage": {
+          "definition": "Stakes-proportionate coverage depth: allocates analytical depth by consequence × uncertainty. Areas where both are high receive full coverage; areas where both are low receive minimal or no coverage.",
+          "distinctions": [
+            {
+              "note": "triage = allocate depth by consequence × uncertainty stakes; grow = expand only where analysis explicitly demands it",
+              "token": "grow"
+            },
+            {
+              "note": "triage = stakes-proportionate, leaving low-stakes areas at minimal depth; full = uniform thorough coverage across all aspects",
+              "token": "full"
+            }
+          ],
+          "heuristics": [
+            "focus on the high-risk areas",
+            "triage by impact and uncertainty",
+            "risk-proportionate depth",
+            "where are the stakes highest",
+            "most dangerous parts first",
+            "consequence-weighted review",
+            "allocate attention by risk",
+            "what deserves the most scrutiny",
+            "protect the high-stakes areas"
           ]
         }
       },
@@ -2690,6 +2724,32 @@
             "explicit reasoning structure"
           ]
         },
+        "automate": {
+          "definition": "Automation-first reasoning: models what can be expressed as automatic, repeatable operations, preferring those over manual, human-dependent steps. Identifies where human intervention can be eliminated and expresses solutions in terms of what the system can do without human involvement.",
+          "distinctions": [
+            {
+              "note": "automate = prefer automated operations over manual ones; ground = enforce falsifiability and advance through validation rungs",
+              "token": "ground"
+            },
+            {
+              "note": "automate = remove human dependency from repeatable operations; control = focus on factors within agency",
+              "token": "control"
+            }
+          ],
+          "heuristics": [
+            "automate this",
+            "make it automatic",
+            "remove manual steps",
+            "don't require human intervention",
+            "repeatable without human involvement",
+            "script this",
+            "set it and forget it",
+            "CI/CD",
+            "automated pipeline",
+            "reduce toil",
+            "eliminate manual work"
+          ]
+        },
         "balance": {
           "definition": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance is maintained.",
           "distinctions": [
@@ -3136,7 +3196,7 @@
           ]
         },
         "ground": {
-          "definition": "The response treats I (stated goals, correctness criteria, or explicit constraints) as fixed. Express V at exactly the next feasible layer above I's current expression, advancing one step at a time: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. V must be falsifiable and repeatable. If V is executable, run it and present evidence before O. Present V, then 'Validation artifact V complete' on its own line, then O satisfying V. You must advance through every feasible layer; stopping is only permitted when the next layer is not achievable in the current medium.",
+          "definition": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to evaluate, while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
           "distinctions": [
             {
               "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must justify against",
@@ -4070,21 +4130,6 @@
             "surface intermediate state"
           ]
         },
-        "triage": {
-          "definition": "The response enhances the task by differentiating system areas by consequence magnitude and uncertainty, and allocating analytical depth proportionally to those gradients.",
-          "distinctions": [],
-          "heuristics": [
-            "focus on the high-risk areas",
-            "triage by impact and uncertainty",
-            "risk-proportionate depth",
-            "where are the stakes highest",
-            "most dangerous parts first",
-            "consequence-weighted review",
-            "allocate attention by risk",
-            "what deserves the most scrutiny",
-            "protect the high-stakes areas"
-          ]
-        },
         "unknowns": {
           "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
           "distinctions": [
@@ -4320,12 +4365,41 @@
             "same pattern in different places"
           ]
         },
+        "persist": {
+          "definition": "Persistence and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
+          "distinctions": [
+            {
+              "note": "persist = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
+              "token": "stable"
+            },
+            {
+              "note": "persist = what survives and in what form; time = temporal sequence and change",
+              "token": "time"
+            }
+          ],
+          "heuristics": [
+            "where does this get saved",
+            "what persists after the operation",
+            "durability requirements",
+            "what must survive a restart",
+            "storage medium",
+            "data persistence",
+            "recovery guarantees",
+            "what gets written to disk",
+            "durable state",
+            "persistence layer"
+          ]
+        },
         "stable": {
           "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
           "distinctions": [
             {
               "note": "stable = what persists; time = how things evolve (often paired)",
               "token": "time"
+            },
+            {
+              "note": "stable = descriptive (what already persists or is invariant); persist = prescriptive (what must be made durable)",
+              "token": "persist"
             }
           ],
           "heuristics": [
@@ -6526,7 +6600,8 @@
         "max": "max",
         "minimal": "minimal",
         "narrow": "narrow",
-        "skim": "skim"
+        "skim": "skim",
+        "triage": "triage"
       },
       "directional": {
         "bog": "bog",
@@ -6598,6 +6673,7 @@
         "analog": "analog",
         "analysis": "analysis",
         "argue": "argue",
+        "automate": "automate",
         "balance": "balance",
         "bias": "bias",
         "boom": "boom",
@@ -6667,7 +6743,6 @@
         "systemic": "systemic",
         "thrust": "thrust",
         "trace": "trace",
-        "triage": "triage",
         "unknowns": "unknowns",
         "verify": "verify",
         "yield": "yield"
@@ -6682,6 +6757,7 @@
         "good": "good",
         "mean": "mean",
         "motifs": "motifs",
+        "persist": "persist",
         "stable": "stable",
         "struct": "struct",
         "thing": "thing",
@@ -6788,7 +6864,8 @@
         "completeness=max": "completeness-max",
         "completeness=minimal": "completeness-minimal",
         "completeness=narrow": "completeness-narrow",
-        "completeness=skim": "completeness-skim"
+        "completeness=skim": "completeness-skim",
+        "completeness=triage": "completeness-triage"
       },
       "scope": {
         "scope=act": "scope-act",
@@ -6800,6 +6877,7 @@
         "scope=good": "scope-good",
         "scope=mean": "scope-mean",
         "scope=motifs": "scope-motifs",
+        "scope=persist": "scope-persist",
         "scope=stable": "scope-stable",
         "scope=struct": "scope-struct",
         "scope=thing": "scope-thing",
@@ -6816,6 +6894,7 @@
         "method=analog": "method-analog",
         "method=analysis": "method-analysis",
         "method=argue": "method-argue",
+        "method=automate": "method-automate",
         "method=balance": "method-balance",
         "method=bias": "method-bias",
         "method=boom": "method-boom",
@@ -6885,7 +6964,6 @@
         "method=systemic": "method-systemic",
         "method=thrust": "method-thrust",
         "method=trace": "method-trace",
-        "method=triage": "method-triage",
         "method=unknowns": "method-unknowns",
         "method=verify": "method-verify",
         "method=yield": "method-yield"
@@ -7060,6 +7138,7 @@
       "audience=to stakeholders": "audience-to-stakeholders",
       "audience=to stream aligned team": "audience-to-stream-aligned-team",
       "audience=to team": "audience-to-team",
+      "automate": "automate",
       "balance": "balance",
       "bias": "bias",
       "bog": "bog",
@@ -7109,6 +7188,7 @@
       "completeness=minimal": "completeness-minimal",
       "completeness=narrow": "completeness-narrow",
       "completeness=skim": "completeness-skim",
+      "completeness=triage": "completeness-triage",
       "completion": "completion",
       "contextualise": "contextualise",
       "control": "control",
@@ -7253,6 +7333,7 @@
       "method=analog": "method-analog",
       "method=analysis": "method-analysis",
       "method=argue": "method-argue",
+      "method=automate": "method-automate",
       "method=balance": "method-balance",
       "method=bias": "method-bias",
       "method=boom": "method-boom",
@@ -7322,7 +7403,6 @@
       "method=systemic": "method-systemic",
       "method=thrust": "method-thrust",
       "method=trace": "method-trace",
-      "method=triage": "method-triage",
       "method=unknowns": "method-unknowns",
       "method=verify": "method-verify",
       "method=yield": "method-yield",
@@ -7339,6 +7419,7 @@
       "operations": "operations",
       "order": "order",
       "origin": "origin",
+      "persist": "persist",
       "persona=designer_to_pm": "persona-designer_to_pm",
       "persona=executive_brief": "persona-executive_brief",
       "persona=fun_mode": "persona-fun_mode",
@@ -7386,6 +7467,7 @@
       "scope=good": "scope-good",
       "scope=mean": "scope-mean",
       "scope=motifs": "scope-motifs",
+      "scope=persist": "scope-persist",
       "scope=stable": "scope-stable",
       "scope=struct": "scope-struct",
       "scope=thing": "scope-thing",
@@ -8227,11 +8309,11 @@
     }
   ],
   "checksums": {
-    "axes": "6807022cf86db5c1fa7cb0443d88b17549711b609b8d64bcf558bbf40a80c49a",
+    "axes": "0eb8052492966ae22e67ef741c5b1f37f1bd48f8f9a3d8f0b9d198562ed903a0",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "0694ed90e86ed7d558eff80d37db0c65e0a39885ffa1f0206c49759254b062a0",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "789ea56cbd726b7c0c8393768809459a1ccd4046b1cf7593073921dbdeb60250",
+    "slugs": "0fe846b629c25186c3a7c8bc5c175c39e0296ef20a4135fdedea144b9567d6e1",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

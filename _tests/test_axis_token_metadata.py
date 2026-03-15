@@ -10,7 +10,7 @@ from lib.axisConfig import AXIS_TOKEN_METADATA
 
 
 class CompletenessAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-3: completeness axis has structured metadata for all 7 tokens."""
+    """ADR-0155 T-3: completeness axis has structured metadata for all 9 tokens (triage moved from method)."""
 
     AXIS = "completeness"
     EXPECTED_TOKENS = {
@@ -22,13 +22,14 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         "minimal",
         "narrow",
         "skim",
+        "triage",
     }
 
     def setUp(self):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_completeness_metadata_covers_all_tokens(self):
-        """All 8 completeness tokens must have metadata entries — no silent omissions."""
+        """All 9 completeness tokens must have metadata entries — no silent omissions."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -82,6 +83,28 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         self.assertIn("max", distinction_tokens, "full distinctions must reference max")
         self.assertIn(
             "deep", distinction_tokens, "full distinctions must reference deep"
+        )
+
+    def test_triage_in_completeness_not_method(self):
+        """triage must be a completeness token, not a method token (moved in ADR-0163)."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        self.assertIn(
+            "triage",
+            AXIS_KEY_TO_VALUE.get("completeness", {}),
+            "triage must be in completeness AXIS_KEY_TO_VALUE",
+        )
+        self.assertNotIn(
+            "triage",
+            AXIS_KEY_TO_VALUE.get("method", {}),
+            "triage must NOT be in method AXIS_KEY_TO_VALUE",
+        )
+
+    def test_triage_distinguishes_from_grow(self):
+        """triage must distinguish from grow (triage=stakes-weighted depth; grow=demand-driven depth)."""
+        triage = self.meta.get("triage", {})
+        distinction_tokens = [d["token"] for d in triage.get("distinctions", [])]
+        self.assertIn(
+            "grow", distinction_tokens, "triage distinctions must reference grow"
         )
 
 
@@ -224,7 +247,7 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
 
 
 class ScopeAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-6: scope axis has structured metadata for all 14 tokens."""
+    """ADR-0155 T-6: scope axis has structured metadata for all 15 tokens (persist added)."""
 
     AXIS = "scope"
     EXPECTED_TOKENS = {
@@ -237,6 +260,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         "good",
         "mean",
         "motifs",
+        "persist",
         "stable",
         "struct",
         "thing",
@@ -248,7 +272,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_scope_metadata_covers_all_tokens(self):
-        """All 13 scope tokens must have metadata entries."""
+        """All 15 scope tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -282,6 +306,14 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         )
         self.assertIn(
             "motifs", distinction_tokens, "cross must distinguish from motifs"
+        )
+
+    def test_persist_distinguishes_from_stable(self):
+        """persist must distinguish from stable (persist=what must be made durable; stable=what IS currently stable)."""
+        persist = self.meta.get("persist", {})
+        distinction_tokens = [d["token"] for d in persist.get("distinctions", [])]
+        self.assertIn(
+            "stable", distinction_tokens, "persist must distinguish from stable"
         )
 
 
@@ -381,7 +413,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 80 tokens (enforce/observe retired in ADR-0162)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 80 tokens (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -413,6 +445,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "dimension",
         "domains",
         "drift",
+        "automate",
         "effects",
         "experimental",
         "field",
@@ -463,7 +496,6 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "systemic",
         "thrust",
         "trace",
-        "triage",
         "unknowns",
         "verify",
         "yield",
@@ -473,7 +505,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 80 method tokens must have metadata entries (enforce/observe retired in ADR-0162)."""
+        """All 80 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

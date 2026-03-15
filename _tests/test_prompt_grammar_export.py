@@ -95,6 +95,21 @@ class PromptGrammarCliTests(unittest.TestCase):
             meta_guidance,
             "meta_interpretation_guidance should reference the '## Model interpretation' heading",
         )
+        self.assertNotIn(
+            "style",
+            meta_guidance,
+            "meta_interpretation_guidance must not use 'style' as an example axis — it is not a valid bar axis",
+        )
+        self.assertNotIn(
+            "focus",
+            meta_guidance,
+            "meta_interpretation_guidance must not use 'focus' as an example token — it is not a valid bar token",
+        )
+        self.assertIn(
+            "token catalog",
+            meta_guidance,
+            "meta_interpretation_guidance must include a conditional guard requiring access to the bar token catalog before suggesting tokens",
+        )
 
 
 if bootstrap is None and not TYPE_CHECKING:  # pragma: no cover - Talon runtime

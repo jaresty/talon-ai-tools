@@ -74,6 +74,7 @@
         "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
+        "persist": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document.",
@@ -189,8 +190,8 @@
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective.",
         "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution.",
-        "persist": "The response focuses on the persistence dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how perturbations affect their continuity.",
+        "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
         "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
@@ -268,6 +269,7 @@
         "ladder",
         "log",
         "merge",
+        "persist",
         "prep",
         "questions",
         "quiz",
@@ -383,8 +385,8 @@
         "good",
         "mean",
         "motifs",
-        "persist",
         "stable",
+        "storage",
         "struct",
         "thing",
         "time",
@@ -459,6 +461,7 @@
         "ladder": "Abstraction ladder up and down",
         "log": "Work or research log entry",
         "merge": "Combine multiple sources coherently",
+        "persist": "Durable save state for resumption or handoff",
         "prep": "Experiment design write-up",
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
@@ -574,8 +577,8 @@
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
-        "persist": "Durable state and persistence layer",
         "stable": "Stability and persistence of states",
+        "storage": "Durable state and storage layer",
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
         "time": "Sequences and temporal change",
@@ -645,6 +648,7 @@
         "ladder": "階",
         "log": "誌",
         "merge": "合",
+        "persist": "残",
         "prep": "備",
         "questions": "問",
         "quiz": "試",
@@ -759,8 +763,8 @@
         "good": "良",
         "mean": "意",
         "motifs": "紋",
-        "persist": "保",
         "stable": "安",
+        "storage": "庫",
         "struct": "造",
         "thing": "物",
         "time": "時",
@@ -924,6 +928,7 @@
         "ladder": "Abstraction ladder",
         "log": "Work log entry",
         "merge": "Combine sources",
+        "persist": "Durable save state for resumption",
         "prep": "Experiment design",
         "questions": "Probing questions",
         "quiz": "Quiz structure",
@@ -1039,8 +1044,8 @@
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
-        "persist": "Durable state and persistence",
         "stable": "Invariants/stable states",
+        "storage": "Durable state and storage layer",
         "struct": "Entities/boundaries",
         "thing": "Entities/boundaries",
         "time": "Sequences/change",
@@ -2180,6 +2185,35 @@
             "bring these together",
             "unify these documents",
             "integrate these into a single output"
+          ]
+        },
+        "persist": {
+          "definition": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
+          "distinctions": [
+            {
+              "note": "ghost = execution trace of autonomous actions and results; persist = save state structured for future resumption or handoff",
+              "token": "ghost"
+            },
+            {
+              "note": "log = narrative record of what happened; persist = forward-oriented state snapshot for resumption",
+              "token": "log"
+            },
+            {
+              "note": "mark (method) = capture checkpoint evidence during execution; persist (form) = structure output as a durable resumable artifact",
+              "token": "mark"
+            }
+          ],
+          "heuristics": [
+            "save where we are",
+            "checkpoint the work",
+            "make this resumable",
+            "save state so we can continue later",
+            "handoff document",
+            "what do I need to pick this up again",
+            "save progress",
+            "create a save file",
+            "durable record for resumption",
+            "so the next session can continue"
           ]
         },
         "prep": {
@@ -4382,15 +4416,15 @@
             "same pattern in different places"
           ]
         },
-        "persist": {
-          "definition": "Persistence and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
+        "storage": {
+          "definition": "Storage and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
           "distinctions": [
             {
-              "note": "persist = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
+              "note": "storage = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
               "token": "stable"
             },
             {
-              "note": "persist = what survives and in what form; time = temporal sequence and change",
+              "note": "storage = what survives and in what form; time = temporal sequence and change",
               "token": "time"
             }
           ],
@@ -4415,8 +4449,8 @@
               "token": "time"
             },
             {
-              "note": "stable = descriptive (what already persists or is invariant); persist = prescriptive (what must be made durable)",
-              "token": "persist"
+              "note": "stable = descriptive (what already persists or is invariant); storage = prescriptive (what must be made durable)",
+              "token": "storage"
             }
           ],
           "heuristics": [
@@ -6662,6 +6696,7 @@
         "ladder": "ladder",
         "log": "log",
         "merge": "merge",
+        "persist": "persist",
         "prep": "prep",
         "questions": "questions",
         "quiz": "quiz",
@@ -6777,8 +6812,8 @@
         "good": "good",
         "mean": "mean",
         "motifs": "motifs",
-        "persist": "persist",
         "stable": "stable",
+        "storage": "storage",
         "struct": "struct",
         "thing": "thing",
         "time": "time",
@@ -6897,8 +6932,8 @@
         "scope=good": "scope-good",
         "scope=mean": "scope-mean",
         "scope=motifs": "scope-motifs",
-        "scope=persist": "scope-persist",
         "scope=stable": "scope-stable",
+        "scope=storage": "scope-storage",
         "scope=struct": "scope-struct",
         "scope=thing": "scope-thing",
         "scope=time": "scope-time",
@@ -7009,6 +7044,7 @@
         "form=ladder": "form-ladder",
         "form=log": "form-log",
         "form=merge": "form-merge",
+        "form=persist": "form-persist",
         "form=prep": "form-prep",
         "form=questions": "form-questions",
         "form=quiz": "form-quiz",
@@ -7284,6 +7320,7 @@
       "form=ladder": "form-ladder",
       "form=log": "form-log",
       "form=merge": "form-merge",
+      "form=persist": "form-persist",
       "form=prep": "form-prep",
       "form=questions": "form-questions",
       "form=quiz": "form-quiz",
@@ -7487,8 +7524,8 @@
       "scope=good": "scope-good",
       "scope=mean": "scope-mean",
       "scope=motifs": "scope-motifs",
-      "scope=persist": "scope-persist",
       "scope=stable": "scope-stable",
+      "scope=storage": "scope-storage",
       "scope=struct": "scope-struct",
       "scope=thing": "scope-thing",
       "scope=time": "scope-time",
@@ -7511,6 +7548,7 @@
       "split": "split",
       "spur": "spur",
       "stable": "stable",
+      "storage": "storage",
       "story": "story",
       "struct": "struct",
       "svg": "svg",
@@ -8329,11 +8367,11 @@
     }
   ],
   "checksums": {
-    "axes": "afc8803699c48f0fd0f3b8e2cdf1a10d3fea4d12b10b6f5ee45e8965a28ff8d2",
+    "axes": "9f001c764517c247f0e4bda6efa74e9071922815439166f28a133b835800c08b",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "8c6551e60703e86fba5a95d52b2a7de68ea2fd36bd96c04bee6e878f11ece84e",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "0fe846b629c25186c3a7c8bc5c175c39e0296ef20a4135fdedea144b9567d6e1",
+    "slugs": "c755949a35df0be2e4322f93318fe92eafc63744284b6acd99384073936f0d58",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

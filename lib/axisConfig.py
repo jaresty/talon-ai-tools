@@ -164,6 +164,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
+        "persist": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off "
+        "the work from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
@@ -344,7 +346,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
         "their internal topology in detail or their boundary-spanning distribution.",
-        "persist": "The response focuses on the persistence dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
+        "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
         "guarantees, and the conditions under which it can be lost or corrupted.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
         "perturbations affect their continuity.",
@@ -430,6 +432,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "ladder": "Abstraction ladder up and down",
         "log": "Work or research log entry",
         "merge": "Combine multiple sources coherently",
+        "persist": "Durable save state for resumption or handoff",
         "prep": "Experiment design write-up",
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
@@ -545,7 +548,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "good": "Quality criteria and success standards",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
-        "persist": "Durable state and persistence layer",
+        "storage": "Durable state and storage layer",
         "stable": "Stability and persistence of states",
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
@@ -619,6 +622,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "ladder": "階",
         "log": "誌",
         "merge": "合",
+        "persist": "残",
         "prep": "備",
         "questions": "問",
         "quiz": "試",
@@ -780,7 +784,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "good": "良",
         "mean": "意",
         "motifs": "紋",
-        "persist": "保",
+        "storage": "庫",
         "stable": "安",
         "struct": "造",
         "thing": "物",
@@ -970,6 +974,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "ladder": "Abstraction ladder",
         "log": "Work log entry",
         "merge": "Combine sources",
+        "persist": "Durable save state for resumption",
         "prep": "Experiment design",
         "questions": "Probing questions",
         "quiz": "Quiz structure",
@@ -1085,7 +1090,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "good": "Quality/criteria",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
-        "persist": "Durable state and persistence",
+        "storage": "Durable state and storage layer",
         "stable": "Invariants/stable states",
         "struct": "Entities/boundaries",
         "thing": "Entities/boundaries",
@@ -3152,6 +3157,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "bring these together",
                 "unify these documents",
                 "integrate these into a single output",
+            ],
+        },
+        "persist": {
+            "definition": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or "
+            "hand off the work from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
+            "distinctions": [
+                {
+                    "note": "ghost = execution trace of autonomous actions and results; persist = save state structured for future resumption or handoff",
+                    "token": "ghost",
+                },
+                {
+                    "note": "log = narrative record of what happened; persist = forward-oriented state snapshot for resumption",
+                    "token": "log",
+                },
+                {
+                    "note": "mark (method) = capture checkpoint evidence during execution; persist (form) = structure output as a durable resumable artifact",
+                    "token": "mark",
+                },
+            ],
+            "heuristics": [
+                "save where we are",
+                "checkpoint the work",
+                "make this resumable",
+                "save state so we can continue later",
+                "handoff document",
+                "what do I need to pick this up again",
+                "save progress",
+                "create a save file",
+                "durable record for resumption",
+                "so the next session can continue",
             ],
         },
         "prep": {
@@ -5429,16 +5464,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "same pattern in different places",
             ],
         },
-        "persist": {
-            "definition": "Persistence and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
+        "storage": {
+            "definition": "Storage and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
             "guarantees, and the conditions under which it can be lost or corrupted.",
             "distinctions": [
                 {
-                    "note": "persist = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
+                    "note": "storage = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
                     "token": "stable",
                 },
                 {
-                    "note": "persist = what survives and in what form; time = temporal sequence and change",
+                    "note": "storage = what survives and in what form; time = temporal sequence and change",
                     "token": "time",
                 },
             ],
@@ -5463,8 +5498,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "time",
                 },
                 {
-                    "note": "stable = descriptive (what already persists or is invariant); persist = prescriptive (what must be made durable)",
-                    "token": "persist",
+                    "note": "stable = descriptive (what already persists or is invariant); storage = prescriptive (what must be made durable)",
+                    "token": "storage",
                 },
             ],
             "heuristics": [

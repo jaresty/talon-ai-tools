@@ -378,7 +378,7 @@ func TestADR0162GroundConsolidation(t *testing.T) {
 		"passing validation run",
 		"executable implementation",
 		"observed running behavior",
-		"every feasible layer",
+		"every feasible step",
 	} {
 		if !strings.Contains(groundDesc, phrase) {
 			t.Errorf("ground description missing expected phrase %q (ADR-0162)", phrase)

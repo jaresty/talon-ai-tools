@@ -516,6 +516,44 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "converge", distinction_tokens, "compare must distinguish from converge"
         )
 
+    def test_ground_definition_states_governing_principle(self):
+        """ground definition must state the interpretation-reduction principle and label
+        the enumerated ladder as its instantiation, not as the rule itself."""
+        ground = self.meta.get("ground", {})
+        definition = ground.get("definition", "")
+        self.assertIn(
+            "interpretation-reduction",
+            definition,
+            "ground definition must name the governing principle",
+        )
+        self.assertIn(
+            "instantiates",
+            definition,
+            "ground definition must label the ladder as an instantiation of the rule",
+        )
+        self.assertIn(
+            "Validation artifact V complete",
+            definition,
+            "ground definition must require the checkpoint phrase",
+        )
+
+    def test_ground_definition_ladder_present(self):
+        """ground definition must still contain the full enumerated ladder."""
+        ground = self.meta.get("ground", {})
+        definition = ground.get("definition", "")
+        for rung in [
+            "prose",
+            "criteria",
+            "formal notation",
+            "executable validation",
+            "passing validation run",
+            "executable implementation",
+            "observed running behavior",
+        ]:
+            self.assertIn(
+                rung, definition, f"ground ladder must include rung: {rung}"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

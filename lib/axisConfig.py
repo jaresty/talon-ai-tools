@@ -247,11 +247,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response treats I (stated goals, correctness criteria, or explicit constraints) as fixed. Express V at exactly the next feasible layer above I's current expression, "
-        "advancing one step at a time: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → "
-        "executable implementation → observed running behavior. V must be falsifiable and repeatable. If V is executable, run it and present evidence before O. Present V, then the "
-        "exact phrase 'Validation artifact V complete' on its own line, then O satisfying V. You must advance through every feasible layer; stopping is only permitted when the next "
-        "layer is not achievable in the current medium.",
+        "ground": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment to evaluate, "
+        "while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
+        "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. Advance through every feasible step; stopping is only "
+        "permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase 'Validation artifact V complete' on its own line, "
+        "then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -4145,11 +4145,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ground": {
-            "definition": "The response treats I (stated goals, correctness criteria, or explicit constraints) as fixed. Express V at exactly the next feasible layer above I's current "
-            "expression, advancing one step at a time: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → "
-            "passing validation run → executable implementation → observed running behavior. V must be falsifiable and repeatable. If V is executable, run it and present "
-            "evidence before O. Present V, then 'Validation artifact V complete' on its own line, then O satisfying V. You must advance through every feasible layer; "
-            "stopping is only permitted when the next layer is not achievable in the current medium.",
+            "definition": "The response treats I as fixed. The governing rule is interpretation-reduction: at each step, produce V in the form that requires the least human judgment "
+            "to evaluate, while remaining achievable in the current medium. For code and text contexts the rule instantiates as: prose → criteria → formal notation → executable "
+            "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. Advance through every "
+            "feasible step; stopping is only permitted when the next step is not achievable. V must be falsifiable and repeatable. Present V, then the exact phrase "
+            "'Validation artifact V complete' on its own line, then O satisfying V.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "

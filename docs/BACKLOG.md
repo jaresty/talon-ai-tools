@@ -59,7 +59,7 @@ make guardrails
 
 ## ADR pattern
 
-New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0158).
+New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0163).
 Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-24 complete, loop-25 pending).
 
 ## How to help with this backlog
@@ -185,6 +185,28 @@ the command string. This is the biggest UX gap for iterative use.
 **Shape**: A token summary sidebar (similar to the selected token review above) where clicking
 any axis navigates back to that stage; or a non-linear mode where all axes are always accessible.
 
+### ✅ CLI: Heuristic-based suggestions on unrecognized token
+**What**: When `bar build` fails to recognize a token, instead of a bare error, surface the
+closest matching tokens by searching `heuristics[]` for the unrecognized word. For example,
+failing on `"debug"` surfaces `task:probe — Surface assumptions and implications`.
+**Implemented**: `searchByHeuristics()` + `heuristicMatch()` in `internal/barcli/build.go`;
+covers task, all 6 constraint axes, and all 5 persona axes. Each suggestion shows
+`axis:token — Label`. 9 tests in `TestHeuristicSuggestions`.
+
+### CLI: `bar lookup` — search tokens by heuristics and distinctions
+**What**: A subcommand that takes a free-text query and returns ranked matching tokens by
+searching `heuristics[]`, `distinctions[]`, and `definition` fields across all axes.
+**Why Tier 2**: Complements `bar help llm` (which gives routing guidance prose) with a direct,
+machine-readable lookup path. Users who know what they want to do but not the token name can find
+it without reading the full help output.
+**Shape**: `bar lookup "debug root cause"` → ranked list of `axis:token — Label` matches.
+`--axis` to filter by axis. `--json` flag for piping (schema: `[{axis, token, label, tier,
+matched_field, matched_text}]`). Ranking: exact heuristic match > substring heuristic > distinction
+token name > definition text. Cap 10. Empty result exits 0.
+**ADR**: docs/adr/0163-bar-lookup-subcommand.md
+**Implementation note**: extract `searchByHeuristics()` into `lookup.go`, extend to cover
+distinctions and definition fields, wire `bar lookup` subcommand in `app.go`.
+
 ---
 
 ## Tier 3 — Good ideas, not yet time-sensitive
@@ -235,7 +257,7 @@ context system could support this, but it needs a mapping layer that doesn't exi
 documentation and future `bar suggest` training data, but high-effort to author well across 150+ tokens.
 
 ### Grammar: Method axis audit — structure and factoring
-**What**: A research task, not a feature. The method axis has grown to 78 tokens — the largest axis
+**What**: A research task, not a feature. The method axis has 80 tokens — the largest axis
 by ~2.5× — and may have structural issues worth addressing before it grows further.
 **Questions to answer before writing an ADR**:
 - Are any tokens functionally duplicate? (e.g., does `analysis` overlap substantially with `diagnose`
@@ -248,6 +270,18 @@ by ~2.5× — and may have structural issues worth addressing before it grows fu
 - Should some tokens be retired in favor of combinations? Or are the current distinctions well-earned?
 **Shape**: Start with a written analysis (can be an ADR context section); then decide: prune,
 subcategorize, or leave as-is with better `distinctions[]` between similar tokens.
+
+### Skills: `bar-dictionary` shared skill for token lookup
+**What**: A standalone Claude skill that exposes token lookup by heuristics/distinctions, used
+as a shared dependency by other bar skills (`bar-workflow`, `bar-autopilot`, etc.) instead of
+each skill carrying its own inline explanation of what tokens mean.
+**Why Tier 3**: Current bar skills embed token guidance in their own `skill.md` definitions,
+which drift from the grammar SSOT. A `bar-dictionary` skill backed by `bar lookup` (or `bar help
+tokens --plain`) would give all skills a single authoritative lookup path and remove the
+duplication.
+**Shape**: Skill that accepts a user intent phrase and returns matching tokens with definitions;
+other skills call it via tool use or pipe rather than hardcoding token descriptions. Depends on
+`bar lookup` landing first.
 
 ### SPA: History and undo/redo
 **What**: Track token selection changes in a history stack; Ctrl+Z / Ctrl+Shift+Z to step through.
@@ -270,7 +304,8 @@ this belongs in `~/.config/bar/tokens.yaml` or a project-level `.bar.yaml`.
 
 - `bar suggest` (CLI) — LLM-backed suggestion is already a skill; CLI-only version would either
   be a pipe-to-LLM formatter (thin wrapper over `bar help llm`) or heuristic matching against
-  `heuristics[]` fields. Neither adds enough value over the existing skill.
+  `heuristics[]` fields. The heuristic path is now covered by `bar lookup` (ADR-0163) and the
+  unrecognized-token fallback; neither adds enough value over those plus the existing skill.
 - `bar validate` — check a command for incompatibilities before running (overlaps with existing
   conflict detection; worth doing once shell completion lands)
 - Multi-turn prompt history in SPA — scroll back through previous prompts in the session

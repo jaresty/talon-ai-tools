@@ -153,6 +153,20 @@ describe('ADR-0170: Persona chip grids', () => {
 		expect(summary?.textContent).toContain('voice=');
 	});
 
+	it('CG-8: active preset constituent tokens appear selected in voice/audience/tone grids', async () => {
+		await mountAndOpenPersonaTab();
+		const chip = Array.from(container.querySelectorAll('.persona-chip')).find((el) =>
+			el.textContent?.includes('Designer')
+		) as HTMLElement;
+		chip.click();
+		flushSync();
+
+		const voiceGrid = container.querySelector('[aria-label="voice tokens"]');
+		const selectedVoice = voiceGrid?.querySelector('[aria-selected="true"]');
+		expect(selectedVoice).not.toBeNull();
+		expect(selectedVoice?.textContent).toContain('as designer');
+	});
+
 	it('CG-7: preset chips render a subtitle from the first heuristic', async () => {
 		await mountAndOpenPersonaTab();
 		const chip = Array.from(container.querySelectorAll('.persona-chip')).find((el) =>

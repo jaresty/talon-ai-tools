@@ -156,6 +156,7 @@
 	}
 
 	let conflicts = $derived(grammar ? findConflicts(grammar, selected) : []);
+	let activePresetMeta = $derived(grammar && persona.preset ? getPersonaPresets(grammar).find(p => p.key === persona.preset) ?? null : null);
 	let promptText = $derived(grammar ? renderPrompt(grammar, selected, subject, addendum, persona) : '');
 
 	let tokens = $derived.by(() => {
@@ -564,7 +565,7 @@
 						<TokenSelector
 							axis="voice"
 							tokens={getPersonaAxisTokensMeta(grammar, 'voice')}
-							selected={persona.voice ? [persona.voice] : []}
+							selected={persona.voice ? [persona.voice] : activePresetMeta?.voice ? [activePresetMeta.voice] : []}
 							maxSelect={1}
 							onToggle={(t) => {
 								if (persona.voice === t) persona = { ...persona, preset: '', voice: '' };
@@ -574,7 +575,7 @@
 						<TokenSelector
 							axis="audience"
 							tokens={getPersonaAxisTokensMeta(grammar, 'audience')}
-							selected={persona.audience ? [persona.audience] : []}
+							selected={persona.audience ? [persona.audience] : activePresetMeta?.audience ? [activePresetMeta.audience] : []}
 							maxSelect={1}
 							onToggle={(t) => {
 								if (persona.audience === t) persona = { ...persona, preset: '', audience: '' };
@@ -584,7 +585,7 @@
 						<TokenSelector
 							axis="tone"
 							tokens={getPersonaAxisTokensMeta(grammar, 'tone')}
-							selected={persona.tone ? [persona.tone] : []}
+							selected={persona.tone ? [persona.tone] : activePresetMeta?.tone ? [activePresetMeta.tone] : []}
 							maxSelect={1}
 							onToggle={(t) => {
 								if (persona.tone === t) persona = { ...persona, preset: '', tone: '' };

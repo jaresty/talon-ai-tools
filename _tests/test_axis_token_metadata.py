@@ -550,14 +550,15 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_ground_definition_states_governing_principle(self):
-        """ground definition must state the interpretation-reduction principle and label
-        the enumerated ladder as its instantiation, not as the rule itself."""
+        """ground definition must state the evaluation-independence principle: V can be
+        evaluated against O without consulting I, and label the enumerated ladder as its
+        instantiation, not as the rule itself."""
         ground = self.meta.get("ground", {})
         definition = ground.get("definition", "")
         self.assertIn(
-            "interpretation-reduction",
+            "without consulting I",
             definition,
-            "ground definition must name the governing principle",
+            "ground definition must state the evaluation-independence principle",
         )
         self.assertIn(
             "instantiates",

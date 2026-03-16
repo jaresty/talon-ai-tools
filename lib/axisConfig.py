@@ -253,14 +253,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response treats the declared intent (I) as fixed. The governing rule is interpretation-reduction with faithful derivation: at each step, produce V in the form that requires the least "
-        "interpretation to evaluate, derived faithfully from the previous rung — the form changes, the intent does not. No new semantic commitments may be introduced when descending from one rung to the next. "
-        "For code contexts the rule instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
+        "ground": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at the first rung) — "
+        "the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without consulting I again. "
+        "Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. "
+        "Call such a representation a constraint artifact. "
+        "Note the asymmetry: producing V requires I (each rung is derived from I and the prior rung, with no new semantic commitments — meaning no constraints on valid outputs beyond what the prior rung already required — added); "
+        "evaluating O against V does not — once produced, V is self-contained as a check. "
+        "For code contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
         "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. "
-        "The ideal prior step — before declaring I — is live-system observation: confirm the gap actually exists in the running system, so that intent is derived from observation rather than asserted. "
-        "When beginning at any rung, first locate the highest "
-        "already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every feasible step; stopping is only permitted when the "
-        "next step is not achievable. Present V (the lowest executable validation rung reached), then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
+        "The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. "
+        "When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. "
+        "Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type for it. "
+        "Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -4262,14 +4266,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ground": {
-            "definition": "The response treats the declared intent (I) as fixed. The governing rule is interpretation-reduction with faithful derivation: at each step, produce V in the form that requires the "
-            "least interpretation to evaluate, derived faithfully from the previous rung — the form changes, the intent does not. No new semantic commitments may be introduced when descending from one rung to the next. "
-            "For code contexts the rule instantiates as: prose → criteria → formal notation → executable "
+            "definition": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at the first rung) — "
+            "the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without consulting I again. "
+            "Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. "
+            "Call such a representation a constraint artifact. "
+            "Note the asymmetry: producing V requires I (each rung is derived from I and the prior rung, with no new semantic commitments — meaning no constraints on valid outputs beyond what the prior rung already required — added); "
+            "evaluating O against V does not — once produced, V is self-contained as a check. "
+            "For code contexts the ladder instantiates as: prose → criteria → formal notation → executable "
             "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. "
-            "The ideal prior step — before declaring I — is live-system observation: confirm the gap actually exists in the running system, so that intent is derived from observation rather than asserted. "
-            "When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change before proceeding downward. Advance through every "
-            "feasible step; stopping is only permitted when the next step is not achievable. Present V (the lowest executable validation rung reached), then the exact phrase "
-            "'Validation artifact V complete' on its own line, then O satisfying V.",
+            "The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. "
+            "When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. "
+            "Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type for it. "
+            "Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "

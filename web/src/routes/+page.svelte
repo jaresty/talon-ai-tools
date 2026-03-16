@@ -568,8 +568,8 @@
 							selected={persona.voice ? [persona.voice] : activePresetMeta?.voice ? [activePresetMeta.voice] : []}
 							maxSelect={1}
 							onToggle={(t) => {
-								if (persona.voice === t) persona = { ...persona, preset: '', voice: '' };
-								else persona = { preset: '', voice: t, audience: persona.audience, tone: persona.tone, intent: persona.intent };
+								if (persona.voice === t || activePresetMeta?.voice === t) persona = { ...persona, preset: '', voice: '' };
+								else persona = { preset: '', voice: t, audience: persona.audience || activePresetMeta?.audience || '', tone: persona.tone || activePresetMeta?.tone || '', intent: persona.intent };
 							}}
 						/>
 						<TokenSelector
@@ -578,8 +578,8 @@
 							selected={persona.audience ? [persona.audience] : activePresetMeta?.audience ? [activePresetMeta.audience] : []}
 							maxSelect={1}
 							onToggle={(t) => {
-								if (persona.audience === t) persona = { ...persona, preset: '', audience: '' };
-								else persona = { preset: '', voice: persona.voice, audience: t, tone: persona.tone, intent: persona.intent };
+								if (persona.audience === t || activePresetMeta?.audience === t) persona = { ...persona, preset: '', audience: '' };
+								else persona = { preset: '', voice: persona.voice || activePresetMeta?.voice || '', audience: t, tone: persona.tone || activePresetMeta?.tone || '', intent: persona.intent };
 							}}
 						/>
 						<TokenSelector
@@ -588,8 +588,8 @@
 							selected={persona.tone ? [persona.tone] : activePresetMeta?.tone ? [activePresetMeta.tone] : []}
 							maxSelect={1}
 							onToggle={(t) => {
-								if (persona.tone === t) persona = { ...persona, preset: '', tone: '' };
-								else persona = { preset: '', voice: persona.voice, audience: persona.audience, tone: t, intent: persona.intent };
+								if (persona.tone === t || activePresetMeta?.tone === t) persona = { ...persona, preset: '', tone: '' };
+								else persona = { preset: '', voice: persona.voice || activePresetMeta?.voice || '', audience: persona.audience || activePresetMeta?.audience || '', tone: t, intent: persona.intent };
 							}}
 						/>
 					</div>

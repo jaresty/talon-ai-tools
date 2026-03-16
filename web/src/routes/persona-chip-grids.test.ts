@@ -167,6 +167,34 @@ describe('ADR-0170: Persona chip grids', () => {
 		expect(selectedVoice?.textContent).toContain('as designer');
 	});
 
+	it('CG-9: overriding voice from preset preserves audience and tone', async () => {
+		await mountAndOpenPersonaTab();
+		// activate preset
+		const presetChip = Array.from(container.querySelectorAll('.persona-chip')).find((el) =>
+			el.textContent?.includes('Designer')
+		) as HTMLElement;
+		presetChip.click();
+		flushSync();
+
+		// click a different voice token (two-click pattern: first opens panel, second selects)
+		const voiceGrid = container.querySelector('[aria-label="voice tokens"]');
+		const programmerChip = Array.from(voiceGrid?.querySelectorAll('[role="option"]') ?? []).find(
+			(el) => el.textContent?.includes('as programmer')
+		) as HTMLElement;
+		programmerChip.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+		programmerChip.click();
+		flushSync();
+		programmerChip.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+		programmerChip.click();
+		flushSync();
+
+		// audience and tone should still be selected from the preset
+		const audienceGrid = container.querySelector('[aria-label="audience tokens"]');
+		const toneGrid = container.querySelector('[aria-label="tone tokens"]');
+		expect(audienceGrid?.querySelector('[aria-selected="true"]')?.textContent).toContain('to product manager');
+		expect(toneGrid?.querySelector('[aria-selected="true"]')?.textContent).toContain('directly');
+	});
+
 	it('CG-7: preset chips render a subtitle from the first heuristic', async () => {
 		await mountAndOpenPersonaTab();
 		const chip = Array.from(container.querySelectorAll('.persona-chip')).find((el) =>

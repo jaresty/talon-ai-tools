@@ -47,6 +47,7 @@ method:
   assess:
     label: Evaluate readiness before committing
     routing_concept: Readiness evaluation pipeline
+    kanji: 備
     definition: |
       The response evaluates the subject against the team's readiness criteria,
       identifying gaps, risks, and next steps before committing to a direction.
@@ -60,9 +61,10 @@ method:
 ```
 
 Fields per token: `label` (short display name), `routing_concept` (reference key shown in TUI/SPA),
-`definition` (full prose instruction), `heuristics` (discovery trigger words), `distinctions`
-(cross-references to related tokens). All fields are optional except `definition`; omitting
-`label` falls back to the token key.
+`kanji` (single CJK character used as compact visual label), `definition` (full prose instruction),
+`heuristics` (discovery trigger words), `distinctions` (cross-references to related tokens).
+All fields are optional except `definition`; omitting `label` falls back to the token key;
+omitting `kanji` leaves the compact label blank.
 
 **YAML footgun note**: YAML has implicit type coercion (`yes` → `true`, bare numbers parsed
 as integers, the Norway problem with `NO` → `false`). Token set files should quote string

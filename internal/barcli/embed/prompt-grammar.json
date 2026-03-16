@@ -5429,6 +5429,7 @@
         "as PM",
         "as designer",
         "as facilitator",
+        "as future historian",
         "as junior engineer",
         "as principal engineer",
         "as programmer",
@@ -5476,6 +5477,7 @@
         "as PM": "The response speaks as a product manager, focusing on outcomes, scope, and stakeholders.",
         "as designer": "The response speaks as a designer, foregrounding usability, interaction, and visual clarity.",
         "as facilitator": "The response speaks as a facilitator, guiding process, balancing voices, and maintaining momentum.",
+        "as future historian": "The response speaks as a future historian looking back at the present, treating current events and decisions as already-settled historical record with the benefit of hindsight.",
         "as junior engineer": "The response speaks as a junior engineer, showing curiosity, asking clarifying questions, and being candid about uncertainty.",
         "as principal engineer": "The response speaks as a principal engineer, bringing systems thinking, trade-offs, and pragmatic guidance.",
         "as programmer": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer.",
@@ -5663,6 +5665,7 @@
         "as PM": "Product manager focus",
         "as designer": "Designer's UX perspective",
         "as facilitator": "Facilitation and process",
+        "as future historian": "Future historian retrospective",
         "as junior engineer": "Junior engineer curiosity",
         "as principal engineer": "Principal engineer systems view",
         "as programmer": "Programmer stance",
@@ -5710,6 +5713,7 @@
         "as PM": "監",
         "as designer": "師",
         "as facilitator": "介",
+        "as future historian": "史",
         "as junior engineer": "初",
         "as principal engineer": "纂",
         "as programmer": "程",
@@ -5757,6 +5761,7 @@
         "as PM": "PM voice",
         "as designer": "Designer voice",
         "as facilitator": "Facilitator voice",
+        "as future historian": "Future historian voice",
         "as junior engineer": "Junior engineer voice",
         "as principal engineer": "Principal engineer voice",
         "as programmer": "Programmer voice",
@@ -5879,6 +5884,28 @@
             {
               "token": "as teacher",
               "note": "as facilitator = guides process and participation; as teacher = transmits content and builds understanding"
+            }
+          ]
+        },
+        "as future historian": {
+          "definition": "Adopt a future historian's retrospective stance: the response treats the present moment as already-settled historical record, placing current events and decisions in a longer arc with the benefit of hindsight.",
+          "heuristics": [
+            "from a future historian's perspective",
+            "historian from the future",
+            "how will this be remembered",
+            "looking back from the future",
+            "what will history say about this",
+            "view this from a historical distance",
+            "retrospective on the present"
+          ],
+          "distinctions": [
+            {
+              "token": "as scientist",
+              "note": "as future historian = retrospective framing of the present using temporal distance; as scientist = evidence-first, hypothesis-driven rigor without temporal displacement"
+            },
+            {
+              "token": "as writer",
+              "note": "as future historian = historical narrative perspective on present events; as writer = prose craft and communication flow without the temporal frame"
             }
           ]
         },
@@ -6865,6 +6892,7 @@
           "as PM": "as-pm",
           "as designer": "as-designer",
           "as facilitator": "as-facilitator",
+          "as future historian": "as-future-historian",
           "as junior engineer": "as-junior-engineer",
           "as principal engineer": "as-principal-engineer",
           "as programmer": "as-programmer",
@@ -7110,6 +7138,7 @@
         "voice=as PM": "voice-as-pm",
         "voice=as designer": "voice-as-designer",
         "voice=as facilitator": "voice-as-facilitator",
+        "voice=as future historian": "voice-as-future-historian",
         "voice=as junior engineer": "voice-as-junior-engineer",
         "voice=as principal engineer": "voice-as-principal-engineer",
         "voice=as programmer": "voice-as-programmer",
@@ -7172,6 +7201,7 @@
       "as PM": "as-pm",
       "as designer": "as-designer",
       "as facilitator": "as-facilitator",
+      "as future historian": "as-future-historian",
       "as junior engineer": "as-junior-engineer",
       "as principal engineer": "as-principal-engineer",
       "as programmer": "as-programmer",
@@ -7610,6 +7640,7 @@
       "voice=as PM": "voice-as-pm",
       "voice=as designer": "voice-as-designer",
       "voice=as facilitator": "voice-as-facilitator",
+      "voice=as future historian": "voice-as-future-historian",
       "voice=as junior engineer": "voice-as-junior-engineer",
       "voice=as principal engineer": "voice-as-principal-engineer",
       "voice=as programmer": "voice-as-programmer",
@@ -8370,9 +8401,9 @@
   "checksums": {
     "axes": "a66ccb9af6a508f56eace8fec90fe3918d046eb73be1053bdabd1dac53bc8ba5",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
-    "persona": "8c6551e60703e86fba5a95d52b2a7de68ea2fd36bd96c04bee6e878f11ece84e",
+    "persona": "e1e19c6a9e1a860d7782b27bc519c92abb000149d4d38f0a154b34c8b9acf7fa",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "c755949a35df0be2e4322f93318fe92eafc63744284b6acd99384073936f0d58",
+    "slugs": "7b1f8872899e2fb48b148eb13be1ddf18bf7022b6e44801e873396ca87338e41",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

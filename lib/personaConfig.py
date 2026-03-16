@@ -31,6 +31,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as junior engineer": "The response speaks as a junior engineer, showing curiosity, asking clarifying questions, and being candid about uncertainty.",
         "as principal engineer": "The response speaks as a principal engineer, bringing systems thinking, trade-offs, and pragmatic guidance.",
         "as Kent Beck": "The response channels Kent Beck's pragmatic, iterative style with an emphasis on tests and simplicity.",
+        "as future historian": "The response speaks as a future historian looking back at the present, treating current events and decisions as already-settled historical record with the benefit of hindsight.",
     },
     "audience": {
         "to managers": "The response addresses managers, highlighting outcomes, risk, and staffing.",
@@ -81,6 +82,7 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "as junior engineer": "Junior engineer curiosity",
         "as principal engineer": "Principal engineer systems view",
         "as Kent Beck": "Kent Beck pragmatic style",
+        "as future historian": "Future historian retrospective",
     },
     "audience": {
         "to managers": "Outcome-focused for managers",
@@ -122,8 +124,9 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 # Parallel to AXIS_KEY_TO_ROUTING_CONCEPT; SSOT for persona routing labels in TUI2/SPA.
 PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "voice": {
-        "as Kent Beck":          "Kent Beck voice",
-        "as PM":                 "PM voice",
+        "as Kent Beck":                  "Kent Beck voice",
+        "as future historian":  "Future historian voice",
+        "as PM":                         "PM voice",
         "as designer":           "Designer voice",
         "as facilitator":        "Facilitator voice",
         "as junior engineer":    "Junior engineer voice",
@@ -182,6 +185,7 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
 PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
     "voice": {
         "as Kent Beck": "貝",
+        "as future historian": "史",
         "as PM": "監",
         "as designer": "師",
         "as facilitator": "介",
@@ -1017,6 +1021,28 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "as programmer",
                     "note": "as Kent Beck = specifically XP/TDD simplicity philosophy; as programmer = general engineering voice without that specific philosophy",
+                },
+            ],
+        },
+        "as future historian": {
+            "definition": "Adopt a future historian's retrospective stance: the response treats the present moment as already-settled historical record, placing current events and decisions in a longer arc with the benefit of hindsight.",
+            "heuristics": [
+                "from a future historian's perspective",
+                "historian from the future",
+                "how will this be remembered",
+                "looking back from the future",
+                "what will history say about this",
+                "view this from a historical distance",
+                "retrospective on the present",
+            ],
+            "distinctions": [
+                {
+                    "token": "as scientist",
+                    "note": "as future historian = retrospective framing of the present using temporal distance; as scientist = evidence-first, hypothesis-driven rigor without temporal displacement",
+                },
+                {
+                    "token": "as writer",
+                    "note": "as future historian = historical narrative perspective on present events; as writer = prose craft and communication flow without the temporal frame",
                 },
             ],
         },

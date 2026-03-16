@@ -45,6 +45,8 @@ namespace: myteam
 
 method:
   assess:
+    label: Evaluate readiness before committing
+    routing_concept: Readiness evaluation pipeline
     definition: |
       The response evaluates the subject against the team's readiness criteria,
       identifying gaps, risks, and next steps before committing to a direction.
@@ -56,6 +58,11 @@ method:
       - token: check
         note: check = evaluate against a condition; assess = evaluate readiness before committing
 ```
+
+Fields per token: `label` (short display name), `routing_concept` (reference key shown in TUI/SPA),
+`definition` (full prose instruction), `heuristics` (discovery trigger words), `distinctions`
+(cross-references to related tokens). All fields are optional except `definition`; omitting
+`label` falls back to the token key.
 
 **YAML footgun note**: YAML has implicit type coercion (`yes` → `true`, bare numbers parsed
 as integers, the Norway problem with `NO` → `false`). Token set files should quote string

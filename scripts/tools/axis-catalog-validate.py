@@ -231,6 +231,23 @@ def _read_list_tokens(path: Path) -> list[str]:
     return tokens
 
 
+def validate_kanji_no_duplicates_within_axis(catalog) -> List[str]:
+    """Each kanji character must be unique within its axis."""
+    errors: List[str] = []
+    axis_kanji = catalog.get("axis_kanji", {}) or {}
+    for axis_name, kanji_map in axis_kanji.items():
+        seen: dict[str, str] = {}
+        for token, kanji in (kanji_map or {}).items():
+            if kanji in seen:
+                errors.append(
+                    f"[kanji duplicate] axis={axis_name} kanji '{kanji}' used by both "
+                    f"'{seen[kanji]}' and '{token}'"
+                )
+            else:
+                seen[kanji] = token
+    return errors
+
+
 def validate_generated_lists(catalog, lists_dir: Path) -> List[str]:
     """Ensure committed Talon lists match catalog-generated tokens."""
 
@@ -339,6 +356,7 @@ def main() -> int:
     catalog = axis_catalog(lists_dir=effective_lists_dir)
     errors.extend(validate_axis_tokens(catalog))
     errors.extend(validate_no_legacy_style_axis(catalog))
+    errors.extend(validate_kanji_no_duplicates_within_axis(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
     errors.extend(validate_static_prompt_descriptions(catalog))
     errors.extend(validate_static_prompt_sections_present(catalog))

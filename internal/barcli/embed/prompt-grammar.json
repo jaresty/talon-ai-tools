@@ -34,7 +34,8 @@
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
-        "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. The coverage allocation is stakes-proportionate rather than uniform."
+        "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. The coverage allocation is stakes-proportionate rather than uniform.",
+        "zoom": "The response groups and buckets at intervals proportional to the magnitude of the span being covered. Resolution contracts as scale expands — steps are multiplicative, not additive. Coarser granularity at large scale is the correct behaviour, not an omission. Works for any sequence with intuitive size: time, quantities, complexity tiers, hierarchy levels, or fuzzy magnitude buckets."
       },
       "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together.",
@@ -229,7 +230,8 @@
         "minimal",
         "narrow",
         "skim",
-        "triage"
+        "triage",
+        "zoom"
       ],
       "directional": [
         "bog",
@@ -421,7 +423,8 @@
         "minimal": "Smallest satisfying answer only",
         "narrow": "Restricted to a very small slice",
         "skim": "Light pass, obvious issues only",
-        "triage": "Stakes-weighted coverage depth"
+        "triage": "Stakes-weighted coverage depth",
+        "zoom": "Scale-adaptive granularity"
       },
       "directional": {
         "bog": "Span reflection and action (rog + ong)",
@@ -608,7 +611,8 @@
       },
       "completeness": {
         "grow": "増",
-        "triage": "険"
+        "triage": "険",
+        "zoom": "比"
       },
       "directional": {
         "bog": "反",
@@ -664,7 +668,7 @@
         "tight": "簡",
         "twin": "双",
         "variants": "変",
-        "vet": "検",
+        "vet": "評",
         "visual": "絵",
         "walkthrough": "歩",
         "wardley": "鎖",
@@ -888,7 +892,8 @@
         "minimal": "Briefest valid response",
         "narrow": "Focused depth on a specific slice",
         "skim": "Surface-level coverage",
-        "triage": "Stakes-proportionate coverage depth"
+        "triage": "Stakes-proportionate coverage depth",
+        "zoom": "Scale-adaptive granularity"
       },
       "directional": {
         "bog": "Reflect + act",
@@ -1508,6 +1513,34 @@
             "allocate attention by risk",
             "what deserves the most scrutiny",
             "protect the high-stakes areas"
+          ]
+        },
+        "zoom": {
+          "definition": "Scale-adaptive granularity: groups and buckets at intervals proportional to the magnitude of the span being covered. Resolution contracts as scale expands — steps are multiplicative, not additive. Coarser granularity at large scale is the correct behaviour, not an omission. Works for any sequence with intuitive size: time, quantities, complexity tiers, hierarchy levels, or fuzzy magnitude buckets.",
+          "distinctions": [
+            {
+              "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
+              "token": "full"
+            },
+            {
+              "note": "zoom = coarser grain at large scale is correct, not an omission; max = fine grain everywhere, omissions are errors",
+              "token": "max"
+            },
+            {
+              "note": "zoom = interval size expands proportionally to span; grow = depth expands only where analysis explicitly demands it",
+              "token": "grow"
+            }
+          ],
+          "heuristics": [
+            "appropriate granularity",
+            "at the right level of detail for the range",
+            "group by week month year",
+            "proportional resolution",
+            "bucket by magnitude",
+            "coarser as it gets larger",
+            "group at natural intervals",
+            "scale the detail to the span",
+            "log scale grouping"
           ]
         }
       },
@@ -6683,7 +6716,8 @@
         "minimal": "minimal",
         "narrow": "narrow",
         "skim": "skim",
-        "triage": "triage"
+        "triage": "triage",
+        "zoom": "zoom"
       },
       "directional": {
         "bog": "bog",
@@ -6949,7 +6983,8 @@
         "completeness=minimal": "completeness-minimal",
         "completeness=narrow": "completeness-narrow",
         "completeness=skim": "completeness-skim",
-        "completeness=triage": "completeness-triage"
+        "completeness=triage": "completeness-triage",
+        "completeness=zoom": "completeness-zoom"
       },
       "scope": {
         "scope=act": "scope-act",
@@ -7276,6 +7311,7 @@
       "completeness=narrow": "completeness-narrow",
       "completeness=skim": "completeness-skim",
       "completeness=triage": "completeness-triage",
+      "completeness=zoom": "completeness-zoom",
       "completion": "completion",
       "contextualise": "contextualise",
       "control": "control",
@@ -7651,7 +7687,8 @@
       "walkthrough": "walkthrough",
       "wardley": "wardley",
       "wasinawa": "wasinawa",
-      "yield": "yield"
+      "yield": "yield",
+      "zoom": "zoom"
     }
   },
   "patterns": [
@@ -8399,11 +8436,11 @@
     }
   ],
   "checksums": {
-    "axes": "a66ccb9af6a508f56eace8fec90fe3918d046eb73be1053bdabd1dac53bc8ba5",
+    "axes": "99685ec239e920ac452eca0c5d934b32c0ecd28168fb949cc00110b4716195d3",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "e1e19c6a9e1a860d7782b27bc519c92abb000149d4d38f0a154b34c8b9acf7fa",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "7b1f8872899e2fb48b148eb13be1ddf18bf7022b6e44801e873396ca87338e41",
+    "slugs": "228278acf7d1fce1486b85e8631b035964fd12975637d1a6e881cab44226a6ba",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

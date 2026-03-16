@@ -23,6 +23,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         "narrow",
         "skim",
         "triage",
+        "zoom",
     }
 
     def setUp(self):

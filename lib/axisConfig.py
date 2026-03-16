@@ -103,6 +103,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
         "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
+        "zoom": "The response groups and buckets at intervals proportional to the magnitude of the span being covered. Resolution contracts as scale expands — steps are multiplicative, not "
+        "additive. Coarser granularity at large scale is the correct behaviour, not an omission. Works for any sequence with intuitive size: time, quantities, complexity tiers, "
+        "hierarchy levels, or fuzzy magnitude buckets.",
     },
     "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
@@ -253,18 +256,17 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at the first rung) — "
-        "the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without consulting I again. "
-        "Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. "
-        "Call such a representation a constraint artifact. "
-        "Note the asymmetry: producing V requires I (each rung is derived from I and the prior rung, with no new semantic commitments — meaning no constraints on valid outputs beyond what the prior rung already required — added); "
-        "evaluating O against V does not — once produced, V is self-contained as a check. "
-        "For code contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
-        "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. "
-        "The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. "
-        "When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. "
-        "Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type for it. "
-        "Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
+        "ground": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at "
+        "the first rung) — the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without consulting I again. Faithful derivation "
+        "means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a "
+        "representation a constraint artifact. Note the asymmetry: producing V requires I (each rung is derived from I and the prior rung, with no new semantic commitments — meaning no "
+        "constraints on valid outputs beyond what the prior rung already required — added); evaluating O against V does not — once produced, V is self-contained as a check. For code "
+        "contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → "
+        "executable implementation → observed running behavior. The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so "
+        "that intent is derived from observation rather than asserted. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the "
+        "intended change (using I to determine what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not "
+        "achievable — a rung is not achievable when the domain provides no standard artifact type for it. Present V (the lowest constraint artifact reached), then the exact phrase "
+        "'Validation artifact V complete' on its own line, then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -399,6 +401,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "narrow": "Restricted to a very small slice",
         "skim": "Light pass, obvious issues only",
         "triage": "Stakes-weighted coverage depth",
+        "zoom": "Scale-adaptive granularity",
     },
     "directional": {
         "bog": "Span reflection and action (rog + ong)",
@@ -589,7 +592,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "sync": "期",
         "video": "映",
     },
-    "completeness": {"grow": "増", "triage": "険"},
+    "completeness": {"grow": "増", "triage": "険", "zoom": "比"},
     "directional": {
         "bog": "反",
         "dig": "具",
@@ -644,7 +647,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "tight": "簡",
         "twin": "双",
         "variants": "変",
-        "vet": "検",
+        "vet": "評",
         "visual": "絵",
         "walkthrough": "歩",
         "wardley": "鎖",
@@ -772,6 +775,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
             "as PM": "監",
             "as designer": "師",
             "as facilitator": "介",
+            "as future historian": "史",
             "as junior engineer": "初",
             "as principal engineer": "纂",
             "as programmer": "程",
@@ -941,6 +945,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "narrow": "Focused depth on a specific slice",
         "skim": "Surface-level coverage",
         "triage": "Stakes-proportionate coverage depth",
+        "zoom": "Scale-adaptive granularity",
     },
     "directional": {
         "bog": "Reflect + act",
@@ -2462,6 +2467,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "allocate attention by risk",
                 "what deserves the most scrutiny",
                 "protect the high-stakes areas",
+            ],
+        },
+        "zoom": {
+            "definition": "Scale-adaptive granularity: groups and buckets at intervals proportional to the magnitude of the span being covered. Resolution contracts as scale expands — "
+            "steps are multiplicative, not additive. Coarser granularity at large scale is the correct behaviour, not an omission. Works for any sequence with intuitive "
+            "size: time, quantities, complexity tiers, hierarchy levels, or fuzzy magnitude buckets.",
+            "distinctions": [
+                {
+                    "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
+                    "token": "full",
+                },
+                {
+                    "note": "zoom = coarser grain at large scale is correct, not an omission; max = fine grain everywhere, omissions are errors",
+                    "token": "max",
+                },
+                {
+                    "note": "zoom = interval size expands proportionally to span; grow = depth expands only where analysis explicitly demands it",
+                    "token": "grow",
+                },
+            ],
+            "heuristics": [
+                "appropriate granularity",
+                "at the right level of detail for the range",
+                "group by week month year",
+                "proportional resolution",
+                "bucket by magnitude",
+                "coarser as it gets larger",
+                "group at natural intervals",
+                "scale the detail to the span",
+                "log scale grouping",
             ],
         },
     },
@@ -4266,18 +4301,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ground": {
-            "definition": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at the first rung) — "
-            "the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without consulting I again. "
-            "Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. "
-            "Call such a representation a constraint artifact. "
-            "Note the asymmetry: producing V requires I (each rung is derived from I and the prior rung, with no new semantic commitments — meaning no constraints on valid outputs beyond what the prior rung already required — added); "
-            "evaluating O against V does not — once produced, V is self-contained as a check. "
-            "For code contexts the ladder instantiates as: prose → criteria → formal notation → executable "
-            "validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. "
-            "The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. "
-            "When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. "
-            "Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type for it. "
-            "Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line, then O satisfying V.",
+            "definition": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or "
+            "from I alone, at the first rung) — the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without "
+            "consulting I again. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no "
+            "additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I (each rung is derived from I "
+            "and the prior rung, with no new semantic commitments — meaning no constraints on valid outputs beyond what the prior rung already required — added); evaluating "
+            "O against V does not — once produced, V is self-contained as a check. For code contexts the ladder instantiates as: prose → criteria → formal notation → "
+            "executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. The "
+            "ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather "
+            "than asserted. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine "
+            "what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not "
+            "achievable when the domain provides no standard artifact type for it. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation "
+            "artifact V complete' on its own line, then O satisfying V.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "

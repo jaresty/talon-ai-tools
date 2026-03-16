@@ -267,7 +267,7 @@ exclusive forks. An LLM that picks a preset then attempts to set individual voic
 conflicting state with no diagnostic signal.
 **Shape**: Track in `Harness` struct; set on `select` action for the relevant stage categories.
 
-### TUI2: Group method tokens by SemanticGroup in stage display
+### ✅ TUI2: Group method tokens by SemanticGroup in stage display
 **What**: Use the existing `SemanticGroup` field (ADR-0144) to sort and visually group the 82 method
 tokens in the TUI stage, rather than presenting them as a flat alphabetical list. First visible tokens
 today are `abduce, argue, bias, calc` — none of the common-use methods.

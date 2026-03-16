@@ -319,7 +319,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
 
 
 class FormAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-7: form axis has structured metadata for all 41 tokens."""
+    """ADR-0155 T-7: form axis has structured metadata for all 40 tokens."""
 
     AXIS = "form"
     EXPECTED_TOKENS = {
@@ -349,7 +349,6 @@ class FormAxisMetadataTests(unittest.TestCase):
         "quiz",
         "recipe",
         "scaffold",
-        "sense",
         "socratic",
         "spike",
         "story",
@@ -371,7 +370,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_form_metadata_covers_all_tokens(self):
-        """All 41 form tokens must have metadata entries."""
+        """All 40 form tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -416,7 +415,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 80 tokens (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 81 tokens (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -482,6 +481,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "release",
         "ritual",
         "resilience",
+        "sense",
         "reset",
         "rigor",
         "risks",
@@ -508,7 +508,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 80 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
+        """All 81 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

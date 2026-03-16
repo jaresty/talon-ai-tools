@@ -75,6 +75,7 @@ export interface Grammar {
 			tone: string[];
 		};
 		docs?: Record<string, Record<string, string>>;
+		labels?: Record<string, Record<string, string>>;             // ADR-0170
 		kanji?: Record<string, Record<string, string>>;              // ADR-0143
 		routing_concept?: Record<string, Record<string, string>>;    // ADR-0146
 		metadata?: Record<string, Record<string, TaskMetadata>>;     // ADR-0156
@@ -207,15 +208,19 @@ export function getPersonaAxisTokens(grammar: Grammar, axis: 'voice' | 'audience
 	return [...(grammar.persona?.axes?.[axis] ?? [])].sort();
 }
 
-export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audience' | 'tone'): TokenMeta[] {
-	const tokens = getPersonaAxisTokens(grammar, axis);
+// ADR-0170: extended to support 'intent' axis and populate labels from grammar.
+export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audience' | 'tone' | 'intent'): TokenMeta[] {
+	const tokens = axis === 'intent'
+		? [...(grammar.persona?.intent?.axis_tokens?.intent ?? [])].sort()
+		: getPersonaAxisTokens(grammar, axis);
 	const docs = grammar.persona?.docs?.[axis] ?? {};
+	const labels = grammar.persona?.labels?.[axis] ?? {};
 	const kanji = grammar.persona?.kanji?.[axis] ?? {};
 	const routing_concepts = grammar.persona?.routing_concept?.[axis] ?? {};
 	const personaMetadata = grammar.persona?.metadata?.[axis] ?? {};
 	return tokens.map((token) => ({
 		token,
-		label: token,
+		label: labels[token] ?? token,
 		description: docs[token] ?? '',
 		guidance: '',
 		use_when: '',
@@ -224,6 +229,11 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 		routing_concept: routing_concepts[token] ?? '',
 		metadata: personaMetadata[token] ?? null  // ADR-0156
 	}));
+}
+
+/** Returns the first heuristic phrase for a preset, for use as a subtitle. */
+export function getPresetHint(grammar: Grammar, key: string): string {
+	return grammar.persona?.metadata?.['presets']?.[key]?.heuristics?.[0] ?? '';
 }
 
 /** Returns heuristic trigger phrases for a persona token, joined by '; '. ADR-0156. */

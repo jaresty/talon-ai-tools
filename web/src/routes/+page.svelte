@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokens, getPersonaIntentTokens, toPersonaSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks, personaTokenHint, personaTokenDistinctionText } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokensMeta, getPresetHint, toPersonaSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
@@ -545,126 +545,65 @@
 											persona = { preset: preset.key, voice: '', audience: '', tone: '', intent: persona.intent };
 										}
 									}}
-								>{preset.label}</button>
+								>{preset.label}{#if getPresetHint(grammar, preset.key)}<span class="persona-chip-hint">{getPresetHint(grammar, preset.key)}</span>{/if}</button>
 							{/each}
 						</div>
 						{#if persona.preset}
 							{@const presetMeta = getPersonaPresets(grammar).find(p => p.key === persona.preset)}
-						{@const presetData = grammar?.persona?.metadata?.['presets']?.[persona.preset]}
-							<div class="persona-use-when preset-detail-card">
-								<div class="preset-detail-header">
-									<span class="preset-detail-name">{presetMeta?.label ?? persona.preset}</span>
-									{#if presetMeta?.voice || presetMeta?.audience || presetMeta?.tone}
-										<div class="preset-detail-axes">
-											{#if presetMeta?.voice}<code class="preset-axis-tag">voice={presetMeta.voice}</code>{/if}
-											{#if presetMeta?.audience}<code class="preset-axis-tag">audience={presetMeta.audience}</code>{/if}
-											{#if presetMeta?.tone}<code class="preset-axis-tag">tone={presetMeta.tone}</code>{/if}
-										</div>
-									{/if}
-								</div>
-								{#if presetData?.heuristics?.length}
-									<div class="preset-detail-section">
-										<span class="persona-use-when-label">Heuristics</span>
-										<div class="preset-heuristics">
-											{#each presetData.heuristics as h}
-												<span class="preset-heuristic-chip">{h}</span>
-											{/each}
-										</div>
-									</div>
-								{/if}
-								{#if presetData?.distinctions?.length}
-									<div class="preset-detail-section preset-detail-notes">
-										<span class="persona-use-when-label">Distinctions</span>
-										{#each presetData.distinctions as d}
-											<p class="preset-distinction-entry" onmouseenter={() => hoveredDistinctionPreset = d.token} onmouseleave={() => hoveredDistinctionPreset = null}><code>{d.token}</code> — {d.note}</p>
-										{/each}
-									</div>
-								{/if}
+							<div class="persona-use-when preset-axis-summary">
+								{#if presetMeta?.voice}<code class="preset-axis-tag">voice={presetMeta.voice}</code>{/if}
+								{#if presetMeta?.audience}<code class="preset-axis-tag">audience={presetMeta.audience}</code>{/if}
+								{#if presetMeta?.tone}<code class="preset-axis-tag">tone={presetMeta.tone}</code>{/if}
 							</div>
 						{/if}
 					</div>
 
-					<!-- Custom axes -->
-					<div class="persona-group">
-						<div class="persona-group-label">Custom</div>
-						<div class="persona-selects">
-							<label class="persona-select-label">
-								<span>Voice</span>
-								<select
-									class="persona-select"
-									value={persona.voice}
-									onchange={(e) => { persona = { preset: '', voice: (e.target as HTMLSelectElement).value, audience: persona.audience, tone: persona.tone, intent: persona.intent }; }}
-								>
-									<option value="">—</option>
-									{#each getPersonaAxisTokens(grammar, 'voice') as v (v)}
-										<option value={v}>{v}</option>
-									{/each}
-								</select>
-								{#if persona.voice && personaTokenHint(grammar, 'voice', persona.voice)}
-									<span class="persona-hint">{personaTokenHint(grammar, 'voice', persona.voice)}</span>
-								{/if}
-								{#if persona.voice && personaTokenDistinctionText(grammar, 'voice', persona.voice)}
-									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'voice', persona.voice)}</span>
-								{/if}
-							</label>
-							<label class="persona-select-label">
-								<span>Audience</span>
-								<select
-									class="persona-select"
-									value={persona.audience}
-									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: (e.target as HTMLSelectElement).value, tone: persona.tone, intent: persona.intent }; }}
-								>
-									<option value="">—</option>
-									{#each getPersonaAxisTokens(grammar, 'audience') as a (a)}
-										<option value={a}>{a}</option>
-									{/each}
-								</select>
-								{#if persona.audience && personaTokenHint(grammar, 'audience', persona.audience)}
-									<span class="persona-hint">{personaTokenHint(grammar, 'audience', persona.audience)}</span>
-								{/if}
-								{#if persona.audience && personaTokenDistinctionText(grammar, 'audience', persona.audience)}
-									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'audience', persona.audience)}</span>
-								{/if}
-							</label>
-							<label class="persona-select-label">
-								<span>Tone</span>
-								<select
-									class="persona-select"
-									value={persona.tone}
-									onchange={(e) => { persona = { preset: '', voice: persona.voice, audience: persona.audience, tone: (e.target as HTMLSelectElement).value, intent: persona.intent }; }}
-								>
-									<option value="">—</option>
-									{#each getPersonaAxisTokens(grammar, 'tone') as t (t)}
-										<option value={t}>{t}</option>
-									{/each}
-								</select>
-								{#if persona.tone && personaTokenHint(grammar, 'tone', persona.tone)}
-									<span class="persona-hint">{personaTokenHint(grammar, 'tone', persona.tone)}</span>
-								{/if}
-								{#if persona.tone && personaTokenDistinctionText(grammar, 'tone', persona.tone)}
-									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'tone', persona.tone)}</span>
-								{/if}
-							</label>
-							<label class="persona-select-label">
-								<span>Intent</span>
-								<select
-									class="persona-select"
-									value={persona.intent}
-									onchange={(e) => { persona = { preset: persona.preset, voice: persona.voice, audience: persona.audience, tone: persona.tone, intent: (e.target as HTMLSelectElement).value }; }}
-								>
-									<option value="">—</option>
-									{#each getPersonaIntentTokens(grammar) as it (it)}
-										<option value={it}>{it}</option>
-									{/each}
-								</select>
-								{#if persona.intent && personaTokenHint(grammar, 'intent', persona.intent)}
-									<span class="persona-hint">{personaTokenHint(grammar, 'intent', persona.intent)}</span>
-								{/if}
-								{#if persona.intent && personaTokenDistinctionText(grammar, 'intent', persona.intent)}
-									<span class="persona-hint persona-hint-note">{personaTokenDistinctionText(grammar, 'intent', persona.intent)}</span>
-								{/if}
-							</label>
-						</div>
+					<!-- Override axes: voice, audience, tone (mutually exclusive with preset) -->
+					<div class="override-group">
+						<div class="override-group-label">or customize</div>
+						<TokenSelector
+							axis="voice"
+							tokens={getPersonaAxisTokensMeta(grammar, 'voice')}
+							selected={persona.voice ? [persona.voice] : []}
+							maxSelect={1}
+							onToggle={(t) => {
+								if (persona.voice === t) persona = { ...persona, preset: '', voice: '' };
+								else persona = { preset: '', voice: t, audience: persona.audience, tone: persona.tone, intent: persona.intent };
+							}}
+						/>
+						<TokenSelector
+							axis="audience"
+							tokens={getPersonaAxisTokensMeta(grammar, 'audience')}
+							selected={persona.audience ? [persona.audience] : []}
+							maxSelect={1}
+							onToggle={(t) => {
+								if (persona.audience === t) persona = { ...persona, preset: '', audience: '' };
+								else persona = { preset: '', voice: persona.voice, audience: t, tone: persona.tone, intent: persona.intent };
+							}}
+						/>
+						<TokenSelector
+							axis="tone"
+							tokens={getPersonaAxisTokensMeta(grammar, 'tone')}
+							selected={persona.tone ? [persona.tone] : []}
+							maxSelect={1}
+							onToggle={(t) => {
+								if (persona.tone === t) persona = { ...persona, preset: '', tone: '' };
+								else persona = { preset: '', voice: persona.voice, audience: persona.audience, tone: t, intent: persona.intent };
+							}}
+						/>
+					</div>
+					<!-- Intent: additive, does not clear preset -->
+					<div class="intent-group">
+						<TokenSelector
+							axis="intent"
+							tokens={getPersonaAxisTokensMeta(grammar, 'intent')}
+							selected={persona.intent ? [persona.intent] : []}
+							maxSelect={1}
+							onToggle={(t) => {
+								if (persona.intent === t) persona = { ...persona, intent: '' };
+								else persona = { ...persona, intent: t };
+							}}
+						/>
 					</div>
 				</div>
 				{/if}
@@ -1290,6 +1229,15 @@
 
 	.persona-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 
+	.persona-chip-hint {
+		display: block;
+		font-size: 0.62rem;
+		color: var(--color-text-muted);
+		font-weight: 400;
+		margin-top: 0.1rem;
+		opacity: 0.75;
+	}
+
 	.persona-chip {
 		padding: 0.2rem 0.55rem;
 		background: transparent;
@@ -1408,40 +1356,39 @@
 		border-radius: 3px;
 	}
 
-	.persona-hint {
-		font-size: 0.68rem;
-		color: var(--color-text-muted);
-		line-height: 1.4;
-		font-style: italic;
-	}
-
-	.persona-hint-note {
-		color: var(--color-accent);
-		font-style: normal;
-	}
-
-	.persona-selects { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
-	.persona-select-label {
+	.preset-axis-summary {
 		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-top: 0.4rem;
+	}
+
+	.preset-axis-tag {
+		font-size: 0.72rem;
+		padding: 0.1rem 0.4rem;
+		background: color-mix(in srgb, var(--color-accent-muted) 40%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+		border-radius: 3px;
+		color: var(--color-text-muted);
+	}
+
+	.override-group {
+		border-left: 2px solid var(--color-border);
+		padding-left: 0.75rem;
+		margin-top: 0.75rem;
+	}
+
+	.override-group-label {
 		font-size: 0.72rem;
 		color: var(--color-text-muted);
-		flex: 1;
-		min-width: 90px;
+		margin-bottom: 0.5rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
 	}
 
-	.persona-select {
-		background: var(--color-bg);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		color: var(--color-text);
-		font-size: 0.78rem;
-		padding: 0.2rem 0.35rem;
+	.intent-group {
+		margin-top: 1rem;
 	}
-
-	.persona-select:focus { outline: none; border-color: var(--color-accent-muted); }
 
 	/* Load command section */
 	.load-cmd-section {
@@ -1665,14 +1612,6 @@
 
 		.main {
 			grid-template-columns: 1fr;
-		}
-
-		.persona-selects {
-			flex-direction: column;
-		}
-
-		.persona-select-label {
-			min-width: 100%;
 		}
 
 		/* FAB — always visible at layout root, fixed bottom-right */

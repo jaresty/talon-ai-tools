@@ -59,13 +59,15 @@ vi.mock('$lib/grammar.js', () => ({
 	getAxisTokens: vi.fn().mockReturnValue([]),
 	getTaskTokens: vi.fn().mockReturnValue([]),
 	getPersonaPresets: vi.fn().mockReturnValue([
-		{ key: 'engineer_to_engineer', label: 'Engineer → Engineer' }
+		{ key: 'engineer_to_engineer', label: 'Engineer → Engineer', voice: 'as programmer', audience: 'to senior engineer', tone: '', spoken: '' }
 	]),
 	getPersonaAxisTokens: vi.fn().mockImplementation((_grammar, axis) => {
 		if (axis === 'audience') return ['to managers'];
 		return [];
 	}),
 	getPersonaIntentTokens: vi.fn().mockReturnValue([]),
+	getPersonaAxisTokensMeta: vi.fn().mockReturnValue([]),
+	getPresetHint: vi.fn().mockReturnValue(''),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn((s: string) => s.toLowerCase().replace(/\s+/g, '-')),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
@@ -112,10 +114,10 @@ describe('Persona use_when visibility', () => {
 		flushSync();
 	}
 
-	it('clicking a preset chip shows its use_when panel', async () => {
+	it('clicking a preset chip shows its axis summary strip', async () => {
 		await mountAndOpenPersonaTab();
 
-		expect(container.querySelector('.persona-use-when')).toBeNull();
+		expect(container.querySelector('.preset-axis-summary')).toBeNull();
 
 		const chip = Array.from(container.querySelectorAll('.persona-chip')).find((el) =>
 			el.textContent?.includes('Engineer')
@@ -123,13 +125,12 @@ describe('Persona use_when visibility', () => {
 		chip.click();
 		flushSync();
 
-		const panel = container.querySelector('.persona-use-when');
+		const panel = container.querySelector('.preset-axis-summary');
 		expect(panel).not.toBeNull();
-		expect(panel?.textContent).toContain('Heuristics');
-		expect(panel?.textContent).toContain('developer');
+		expect(panel?.textContent).toContain('voice=');
 	});
 
-	it('clicking the active preset again hides the use_when panel', async () => {
+	it('clicking the active preset again hides the axis summary strip', async () => {
 		await mountAndOpenPersonaTab();
 
 		const chip = Array.from(container.querySelectorAll('.persona-chip')).find((el) =>
@@ -137,48 +138,10 @@ describe('Persona use_when visibility', () => {
 		) as HTMLElement;
 		chip.click();
 		flushSync();
-		expect(container.querySelector('.persona-use-when')).not.toBeNull();
+		expect(container.querySelector('.preset-axis-summary')).not.toBeNull();
 
 		chip.click();
 		flushSync();
-		expect(container.querySelector('.persona-use-when')).toBeNull();
-	});
-
-	it('selecting an audience value shows its use_when hint', async () => {
-		await mountAndOpenPersonaTab();
-
-		expect(container.querySelector('.persona-hint')).toBeNull();
-
-		const selects = container.querySelectorAll('.persona-select');
-		const audienceSelect = Array.from(selects).find(
-			(el) => el.parentElement?.querySelector('span')?.textContent === 'Audience'
-		) as HTMLSelectElement;
-
-		audienceSelect.value = 'to managers';
-		audienceSelect.dispatchEvent(new Event('change', { bubbles: true }));
-		flushSync();
-
-		const hint = container.querySelector('.persona-hint');
-		expect(hint).not.toBeNull();
-		expect(hint?.textContent).toContain('managers');
-	});
-
-	it('clearing audience selection hides the use_when hint', async () => {
-		await mountAndOpenPersonaTab();
-
-		const selects = container.querySelectorAll('.persona-select');
-		const audienceSelect = Array.from(selects).find(
-			(el) => el.parentElement?.querySelector('span')?.textContent === 'Audience'
-		) as HTMLSelectElement;
-
-		audienceSelect.value = 'to managers';
-		audienceSelect.dispatchEvent(new Event('change', { bubbles: true }));
-		flushSync();
-		expect(container.querySelector('.persona-hint')).not.toBeNull();
-
-		audienceSelect.value = '';
-		audienceSelect.dispatchEvent(new Event('change', { bubbles: true }));
-		flushSync();
-		expect(container.querySelector('.persona-hint')).toBeNull();
+		expect(container.querySelector('.preset-axis-summary')).toBeNull();
 	});
 });

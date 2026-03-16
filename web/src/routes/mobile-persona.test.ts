@@ -28,8 +28,12 @@ vi.mock('$lib/grammar.js', () => ({
 	getPersonaPresets: vi.fn().mockReturnValue([
 		{ key: 'designer_to_pm', label: 'Designer → PM' }
 	]),
-	getPersonaAxisTokens: vi.fn().mockReturnValue(['as-designer']),
+	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
 	getPersonaIntentTokens: vi.fn().mockReturnValue([]),
+	getPersonaAxisTokensMeta: vi.fn().mockReturnValue([]),
+	getPresetHint: vi.fn().mockReturnValue(''),
+	personaTokenHint: vi.fn().mockReturnValue(''),
+	personaTokenDistinctionText: vi.fn().mockReturnValue(''),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue('designer'),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
@@ -53,7 +57,7 @@ describe('Page — Mobile Stacked Persona Selects', () => {
 		document.body.appendChild(container);
 	});
 
-	it('has persona selects in the DOM', async () => {
+	it('has persona chip grids in the DOM', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 
@@ -66,7 +70,7 @@ describe('Page — Mobile Stacked Persona Selects', () => {
 		(personaTab as HTMLElement).click();
 		flushSync();
 
-		const selects = container.querySelectorAll('.persona-select');
-		expect(selects.length).toBeGreaterThanOrEqual(3);
+		expect(container.querySelectorAll('.persona-select').length).toBe(0);
+		expect(container.querySelector('.override-group')).not.toBeNull();
 	});
 });

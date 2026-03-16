@@ -311,6 +311,25 @@ searching `heuristics[]`, `distinctions[]`, and `definition` fields across all a
 definition text), AND logic across words, cap 10. 13 tests in `lookup_test.go`.
 **ADR**: docs/adr/0163-bar-lookup-subcommand.md (Accepted)
 
+### User-defined token sets — decentralized token ownership (ADR-0169)
+**What**: A phased mechanism for users to bring their own token sets, merge them with the
+built-in grammar at runtime, and optionally share them. Four independently shippable phases:
+
+- **Phase 1** (lowest cost): `BAR_EXTRA_GRAMMAR` env var / `extra_grammar` config key pointing
+  to a single JSON file. Merged at load time; user tokens win on same-axis+key conflict.
+- **Phase 2**: Config accepts a list of paths + `~/.bar/tokens/` scan directory. All `*.json`
+  files merged alphabetically. Symlink-friendly; package-manager installable by convention.
+- **Phase 3**: Optional `"namespace": "myorg"` field in token set JSON. Tokens addressable as
+  `myorg:token` in `bar build`. Resolves collision without filesystem isolation.
+- **Phase 4**: `bar add <url>` / `bar update` / `bar remove` — thin package manager fetching
+  sets into the phase-2 directory with a `~/.bar/lockfile.json`.
+
+**Precondition** (before phase 1): Stabilize the grammar JSON schema as a public contract and
+document merge-order semantics in `docs/grammar-schema.md`.
+**Why Tier 2**: Unlocks team/org/domain-specific vocabularies without PRs to this repo.
+Phases 1–2 have low implementation cost and deliver the core value independently.
+**ADR**: docs/adr/0169-user-defined-token-sets.md (Proposed)
+
 ---
 
 ## Tier 3 — Good ideas, not yet time-sensitive
@@ -446,13 +465,8 @@ meaningful state management complexity on top of Svelte's existing reactive stat
 **Shape**: History array of snapshots; bounded depth (e.g., 20 steps); stored in memory only (not
 persisted across page refresh).
 
-### CLI: Custom tokens via YAML / config file
-**What**: Allow users to define additional tokens in a local config file, which are merged into
-the grammar at runtime.
-**Why Tier 3**: Enables team-specific or project-specific tokens without forking the grammar.
-**Open questions**: Schema design (how does a custom token declare its axis, description,
-heuristics?); merge strategy (what if a custom token conflicts with a canonical one?); whether
-this belongs in `~/.config/bar/tokens.yaml` or a project-level `.bar.yaml`.
+### ~~CLI: Custom tokens via YAML / config file~~
+Superseded by ADR-0169 (user-defined token sets). See Tier 2 entry below.
 
 ---
 

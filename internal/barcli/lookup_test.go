@@ -110,10 +110,10 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "interpretation-reduction" appears in method:ground definition but not heuristics/distinctions
-	results := LookupTokens("interpretation-reduction", grammar, "method")
+	// "faithful derivation" appears in method:ground definition but not heuristics/distinctions
+	results := LookupTokens("faithful derivation", grammar, "method")
 	if len(results) == 0 {
-		t.Fatal("expected results for 'interpretation-reduction', got none")
+		t.Fatal("expected results for 'faithful derivation', got none")
 	}
 	var found *LookupResult
 	for i := range results {
@@ -123,7 +123,7 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		}
 	}
 	if found == nil {
-		t.Fatalf("expected method:ground in results for 'interpretation-reduction', got %v", results)
+		t.Fatalf("expected method:ground in results for 'faithful derivation', got %v", results)
 	}
 	if found.Tier != 0 {
 		t.Errorf("expected tier 0 for definition-only match, got %d", found.Tier)

@@ -405,7 +405,7 @@ func TestADR0162GroundConsolidation(t *testing.T) {
 
 // TestGroundDefinitionReverseCheck specifies that the ground definition includes the
 // bidirectional obligation: when beginning at any rung, first locate the highest
-// already-instantiated rung and update it before proceeding downward.
+// already-instantiated rung and update it before descending.
 func TestGroundDefinitionReverseCheck(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
 	grammar, err := LoadGrammar("")
@@ -418,7 +418,7 @@ func TestGroundDefinitionReverseCheck(t *testing.T) {
 	}
 	for _, phrase := range []string{
 		"highest already-instantiated",
-		"before proceeding downward",
+		"then descend",
 	} {
 		if !strings.Contains(groundDesc, phrase) {
 			t.Errorf("ground description missing reverse-check phrase %q", phrase)

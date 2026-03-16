@@ -316,6 +316,10 @@ func LoadGrammar(path string) (*Grammar, error) {
 		},
 	}
 
+	if err := loadAndMergeExtraGrammar(grammar); err != nil {
+		return nil, err
+	}
+
 	grammar.initialise()
 	grammar.initialiseSlugs(raw.Slugs)
 	if err := grammar.validateNoPersonaCollisions(); err != nil {

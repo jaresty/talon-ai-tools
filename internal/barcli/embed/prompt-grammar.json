@@ -82,6 +82,7 @@
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas where first-principles exposition contradicts assumed expertise.",
+        "sense": "The response surfaces pre-reductive judgment—a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit analytic decomposition. Multiple weak signals are held together rather than unpacked one by one.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
         "story": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.",
@@ -278,6 +279,7 @@
         "quiz",
         "recipe",
         "scaffold",
+        "sense",
         "socratic",
         "spike",
         "story",
@@ -471,6 +473,7 @@
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
         "scaffold": "First-principles scaffolded explanation",
+        "sense": "Pre-reductive evaluative impression",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
         "story": "User story format",
@@ -659,6 +662,7 @@
         "quiz": "試",
         "recipe": "法",
         "scaffold": "足",
+        "sense": "感",
         "socratic": "導",
         "spike": "査",
         "story": "話",
@@ -940,6 +944,7 @@
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
         "scaffold": "Building understanding",
+        "sense": "Weighted impression before analysis",
         "socratic": "Question-led inquiry",
         "spike": "Research spike",
         "story": "User story",
@@ -2345,6 +2350,33 @@
             "teach me this",
             "start from first principles",
             "build up my understanding"
+          ]
+        },
+        "sense": {
+          "definition": "The response surfaces pre-reductive judgment: a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit analytic decomposition. Multiple weak signals are held together rather than unpacked one by one.",
+          "distinctions": [
+            {
+              "note": "indirect = reasoning explicitly before the conclusion; sense = impression before decomposition, without necessarily resolving to a conclusion",
+              "token": "indirect"
+            },
+            {
+              "note": "direct = conclusion first; sense = directional lean without full resolution",
+              "token": "direct"
+            },
+            {
+              "note": "ladder = steps up and down abstraction levels; sense = compressed multi-signal impression at the current level",
+              "token": "ladder"
+            }
+          ],
+          "heuristics": [
+            "what does this feel like",
+            "what's your sense of",
+            "surface your impression",
+            "weighted intuition",
+            "felt gradient",
+            "hold the uncertainty",
+            "pre-reductive judgment",
+            "compressed impression"
           ]
         },
         "socratic": {
@@ -6764,6 +6796,7 @@
         "quiz": "quiz",
         "recipe": "recipe",
         "scaffold": "scaffold",
+        "sense": "sense",
         "socratic": "socratic",
         "spike": "spike",
         "story": "story",
@@ -7114,6 +7147,7 @@
         "form=quiz": "form-quiz",
         "form=recipe": "form-recipe",
         "form=scaffold": "form-scaffold",
+        "form=sense": "form-sense",
         "form=socratic": "form-socratic",
         "form=spike": "form-spike",
         "form=story": "form-story",
@@ -7393,6 +7427,7 @@
       "form=quiz": "form-quiz",
       "form=recipe": "form-recipe",
       "form=scaffold": "form-scaffold",
+      "form=sense": "form-sense",
       "form=socratic": "form-socratic",
       "form=spike": "form-spike",
       "form=story": "form-story",
@@ -7598,6 +7633,7 @@
       "scope=time": "scope-time",
       "scope=view": "scope-view",
       "seep": "seep",
+      "sense": "sense",
       "sever": "sever",
       "shear": "shear",
       "shellscript": "shellscript",
@@ -8436,11 +8472,11 @@
     }
   ],
   "checksums": {
-    "axes": "99685ec239e920ac452eca0c5d934b32c0ecd28168fb949cc00110b4716195d3",
+    "axes": "06dc4d3cfa2f4f65a504dba228cac4cacaaf96b1dd719888f729ea1f743421a9",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "e1e19c6a9e1a860d7782b27bc519c92abb000149d4d38f0a154b34c8b9acf7fa",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "228278acf7d1fce1486b85e8631b035964fd12975637d1a6e881cab44226a6ba",
+    "slugs": "8d04025b6ce77c7e91d0d9fb845c6fc5f9e549aa5ce978ba1aa20c8c6a780d83",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

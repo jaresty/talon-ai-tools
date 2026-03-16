@@ -178,6 +178,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
+        "sense": "The response surfaces pre-reductive judgment—a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit analytic "
+        "decomposition. Multiple weak signals are held together rather than unpacked one by one.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full "
         "conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
@@ -448,6 +450,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
         "scaffold": "First-principles scaffolded explanation",
+        "sense": "Pre-reductive evaluative impression",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
         "story": "User story format",
@@ -638,6 +641,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "quiz": "試",
         "recipe": "法",
         "scaffold": "足",
+        "sense": "感",
         "socratic": "導",
         "spike": "査",
         "story": "話",
@@ -992,6 +996,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
         "scaffold": "Building understanding",
+        "sense": "Weighted impression before analysis",
         "socratic": "Question-led inquiry",
         "spike": "Research spike",
         "story": "User story",
@@ -3331,6 +3336,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "teach me this",
                 "start from first principles",
                 "build up my understanding",
+            ],
+        },
+        "sense": {
+            "definition": "The response surfaces pre-reductive judgment: a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit "
+            "analytic decomposition. Multiple weak signals are held together rather than unpacked one by one.",
+            "distinctions": [
+                {
+                    "note": "indirect = reasoning explicitly before the conclusion; sense = impression before decomposition, without necessarily resolving to a conclusion",
+                    "token": "indirect",
+                },
+                {
+                    "note": "direct = conclusion first; sense = directional lean without full resolution",
+                    "token": "direct",
+                },
+                {
+                    "note": "ladder = steps up and down abstraction levels; sense = compressed multi-signal impression at the current level",
+                    "token": "ladder",
+                },
+            ],
+            "heuristics": [
+                "what does this feel like",
+                "what's your sense of",
+                "surface your impression",
+                "weighted intuition",
+                "felt gradient",
+                "hold the uncertainty",
+                "pre-reductive judgment",
+                "compressed impression",
             ],
         },
         "socratic": {

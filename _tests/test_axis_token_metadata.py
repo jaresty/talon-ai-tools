@@ -319,7 +319,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
 
 
 class FormAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-7: form axis has structured metadata for all 40 tokens."""
+    """ADR-0155 T-7: form axis has structured metadata for all 41 tokens."""
 
     AXIS = "form"
     EXPECTED_TOKENS = {
@@ -349,6 +349,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "quiz",
         "recipe",
         "scaffold",
+        "sense",
         "socratic",
         "spike",
         "story",
@@ -370,7 +371,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_form_metadata_covers_all_tokens(self):
-        """All 39 form tokens must have metadata entries."""
+        """All 41 form tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

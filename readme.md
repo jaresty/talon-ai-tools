@@ -108,11 +108,39 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    bar preset delete daily-standup --force     # remove a preset
    ```
    Cached state lives in `~/.config/bar/state/last_build.json` (override with `BAR_CONFIG_DIR`). Set `BAR_DISABLE_STATE=1` to skip persistence entirely.
-5. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`. The metadata-aware completion backend now emits tab-delimited suggestions (`value\tcategory\tdescription`) so shells can show axis information; older scripts simply ignore the extra columns.
+5. Extend the grammar with your own tokens using `BAR_EXTRA_GRAMMAR`:
+   ```bash
+   export BAR_EXTRA_GRAMMAR=~/.config/bar/my-tokens.yaml
+   bar help tokens method   # custom tokens appear alongside built-ins
+   ```
+   Point `BAR_EXTRA_GRAMMAR` at a `.yaml`, `.yml`, or `.json` file. Bar merges it into the built-in grammar at load time; user tokens win on same-axis + same-key conflicts, letting you override any built-in definition.
+
+   **Token file format** (YAML recommended — block scalars and `#` comments are supported):
+   ```yaml
+   # ~/.config/bar/my-tokens.yaml
+   method:
+     assess:
+       label: Evaluate readiness before committing      # short display name
+       routing_concept: Readiness evaluation pipeline   # reference key shown in TUI/SPA
+       kanji: 備                                        # compact CJK visual label
+       definition: |
+         The response evaluates the subject against readiness criteria,
+         identifying gaps and risks before committing to a direction.
+       heuristics:
+         - are we ready
+         - readiness check
+         - go/no-go
+       distinctions:
+         - token: check
+           note: check = evaluate against a condition; assess = evaluate readiness before committing
+   ```
+   All fields except `definition` are optional. Omitting `label` falls back to the token key; omitting `kanji` leaves the compact label blank. Top-level keys name axes (`method`, `scope`, `form`, etc.); the `namespace` key is reserved for a future phase and is silently ignored.
+
+6. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`. The metadata-aware completion backend now emits tab-delimited suggestions (`value\tcategory\tdescription`) so shells can show axis information; older scripts simply ignore the extra columns.
 
    > [!NOTE]
    > CLI suggestions now insert slug tokens such as `as-teacher`. Shorthand must use slugs, but canonical key=value overrides remain valid (for example `scope=focus`). Update any scripts or shell history accordingly.
- 
+
 #### Bubble Tea prompt editor (`bar tui`)
 
 Launch the interactive TUI to preview recipes while editing subjects:

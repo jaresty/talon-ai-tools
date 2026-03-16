@@ -1,6 +1,6 @@
 # ADR-0169: User-Defined Token Sets — Decentralized Token Ownership
 
-**Status**: Accepted
+**Status**: Accepted (Phase 1 implemented; Phases 2–4 not yet started)
 **Date**: 2026-03-15
 
 ---

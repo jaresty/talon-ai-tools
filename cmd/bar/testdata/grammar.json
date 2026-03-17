@@ -35,7 +35,7 @@
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. The coverage allocation is stakes-proportionate rather than uniform.",
-        "zoom": "The response groups and buckets at intervals proportional to the magnitude of the span being covered. Resolution contracts as scale expands — steps are multiplicative, not additive. Coarser granularity at large scale is the correct behaviour, not an omission. Works for any sequence with intuitive size: time, quantities, complexity tiers, hierarchy levels, or fuzzy magnitude buckets."
+        "zoom": "The response adapts its granularity proportionally to the span being covered: fine detail at small scale, coarse grouping at large scale. Steps are multiplicative, not additive — intervals expand with span. A narrow span uses fine grain (hours, days, small quantities); a broad span uses coarse buckets (months, years, magnitude tiers). Both ends are equally correct — coarseness at large scale is not an omission, and fineness at small scale is not padding. Works for any sequence with intuitive magnitude: time, quantities, complexity tiers, hierarchy levels, or fuzzy buckets."
       },
       "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together.",
@@ -1522,7 +1522,7 @@
           ]
         },
         "zoom": {
-          "definition": "Scale-adaptive granularity: groups and buckets at intervals proportional to the magnitude of the span being covered. Resolution contracts as scale expands — steps are multiplicative, not additive. Coarser granularity at large scale is the correct behaviour, not an omission. Works for any sequence with intuitive size: time, quantities, complexity tiers, hierarchy levels, or fuzzy magnitude buckets.",
+          "definition": "Scale-adaptive granularity: fine detail at small scale, coarse grouping at large scale. Steps are multiplicative, not additive — intervals expand proportionally to span. A narrow span uses fine grain (hours, days, small quantities); a broad span uses coarse buckets (months, years, magnitude tiers). Both ends are equally correct. Works for any sequence with intuitive magnitude: time, quantities, complexity tiers, hierarchy levels, or fuzzy buckets.",
           "distinctions": [
             {
               "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
@@ -8473,7 +8473,7 @@
     }
   ],
   "checksums": {
-    "axes": "49666a8428e71b62b9415be8ea774c2fed8b67862fe2a16fd061d88c7a6ec05f",
+    "axes": "44d644b724ccc9851c8de64303bae150646bf479d5284f3b93a1f99b393ee0b4",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "e1e19c6a9e1a860d7782b27bc519c92abb000149d4d38f0a154b34c8b9acf7fa",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

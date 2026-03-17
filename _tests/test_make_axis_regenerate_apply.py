@@ -1,3 +1,4 @@
+import importlib
 import subprocess
 import sys
 import unittest
@@ -71,4 +72,51 @@ class MakeAxisRegenerateApplyTests(unittest.TestCase):
             axis_text,
             gen_text,
             "axisConfig.py should match generated output when already in sync",
+        )
+
+    def test_axis_regenerate_apply_preserves_category_order(self):
+        """AXIS_CATEGORY_ORDER and axis_category_order() must survive axis-regenerate-apply.
+
+        Regression guard: the generator must emit these symbols so they are not
+        silently wiped when axisConfig.py is overwritten.
+        """
+        repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
+
+        result = subprocess.run(
+            ["make", "axis-regenerate-apply"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            self.fail(
+                f"make axis-regenerate-apply failed:\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+            )
+
+        # Re-import axisConfig so we test the on-disk state, not the cached module.
+        import lib.axisConfig as _ac
+        importlib.reload(_ac)
+
+        self.assertTrue(
+            hasattr(_ac, "AXIS_CATEGORY_ORDER"),
+            "AXIS_CATEGORY_ORDER must be present in axisConfig.py after axis-regenerate-apply",
+        )
+        self.assertIsInstance(_ac.AXIS_CATEGORY_ORDER, dict, "AXIS_CATEGORY_ORDER must be a dict")
+        self.assertIn(
+            "method",
+            _ac.AXIS_CATEGORY_ORDER,
+            "AXIS_CATEGORY_ORDER must contain 'method' key after axis-regenerate-apply",
+        )
+        self.assertTrue(
+            hasattr(_ac, "axis_category_order"),
+            "axis_category_order() must be present in axisConfig.py after axis-regenerate-apply",
+        )
+        method_order = _ac.axis_category_order("method")
+        self.assertIsInstance(method_order, list, "axis_category_order('method') must return a list")
+        self.assertGreater(
+            len(method_order),
+            0,
+            "axis_category_order('method') must return a non-empty list after axis-regenerate-apply",
         )

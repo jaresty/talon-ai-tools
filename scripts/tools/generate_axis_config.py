@@ -138,6 +138,13 @@ def render_axis_config() -> str:
     label_body = pprint.pformat(label_mapping, width=200, sort_dicts=True)
     kanji_body = pprint.pformat(kanji_mapping, width=200, sort_dicts=True)
     category_body = pprint.pformat(category_mapping, width=200, sort_dicts=True)
+    category_order_raw = payload.get("axis_category_order", {}) or {}
+    category_order_mapping: dict[str, Any] = {
+        axis: list(cats)
+        for axis, cats in sorted(category_order_raw.items())
+        if cats
+    }
+    category_order_body = pprint.pformat(category_order_mapping, width=200, sort_dicts=True)
     routing_concept_body = pprint.pformat(routing_concept_mapping, width=200, sort_dicts=True)
     axis_desc_raw = payload.get("axis_descriptions", {}) or {}
     axis_desc_mapping: dict[str, str] = dict(sorted(axis_desc_raw.items()))
@@ -196,7 +203,7 @@ def render_axis_config() -> str:
         from __future__ import annotations
 
         from dataclasses import dataclass, field
-        from typing import Any, Dict, FrozenSet, TypedDict, Union
+        from typing import Any, Dict, FrozenSet, List, TypedDict, Union
         """
     )
     dataclasses = textwrap.dedent(
@@ -235,6 +242,11 @@ def render_axis_config() -> str:
         def axis_key_to_category_map(axis: str) -> dict[str, str]:
             \"\"\"Return the key->category map for a given axis (ADR-0144).\"\"\"
             return AXIS_KEY_TO_CATEGORY.get(axis, {})
+
+
+        def axis_category_order(axis: str) -> List[str]:
+            \"\"\"Return the canonical category display order for a given axis (ADR-0144).\"\"\"
+            return AXIS_CATEGORY_ORDER.get(axis, [])
 
 
         def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
@@ -354,6 +366,9 @@ def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:
                 f"# Tokens that span multiple families are placed by primary use case; contested\n"
                 f"# placements are resolved by the authors and recorded here as the authoritative SSOT.\n"
                 f"AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {category_body}",
+                f"# Canonical display order for semantic category groups within each axis (ADR-0144).\n"
+                f"# Adding a new category requires only updating this dict; all consumers derive order from it.\n"
+                f"AXIS_CATEGORY_ORDER: Dict[str, List[str]] = {category_order_body}",
                 f"# Distilled routing concept phrases for nav surfaces (ADR-0146 Phase 2).\n"
                 f"# Each token maps to the shortest phrase that maps a user's framing to that token.\n"
                 f"# Tokens sharing the same phrase group into a single routing bullet:\n"

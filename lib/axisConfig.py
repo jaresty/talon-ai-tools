@@ -17,7 +17,6 @@ Required for all axes:
 
 Conditional:
 - AXIS_KEY_TO_CATEGORY      — method axis only: semantic family (ADR-0144)
-- AXIS_CATEGORY_ORDER       — canonical display order for each axis's category groups (ADR-0144)
 - CROSS_AXIS_COMPOSITION    — only if the token has notable cross-axis interactions (ADR-0147)
 - FORM_DEFAULT_COMPLETENESS — form axis only, if the format structurally constrains depth (ADR-0153)
 
@@ -929,12 +928,17 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
 # Adding a new category requires only updating this dict; all consumers derive order from it.
 AXIS_CATEGORY_ORDER: Dict[str, List[str]] = {
     "method": [
-        "Reasoning", "Exploration", "Structural", "Diagnostic",
-        "Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
+        "Reasoning",
+        "Exploration",
+        "Structural",
+        "Diagnostic",
+        "Actor-centered",
+        "Temporal/Dynamic",
+        "Comparative",
+        "Generative",
         "Conduct",
-    ],
+    ]
 }
-
 
 # Distilled routing concept phrases for nav surfaces (ADR-0146 Phase 2).
 # Each token maps to the shortest phrase that maps a user's framing to that token.

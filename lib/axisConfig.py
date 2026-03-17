@@ -279,7 +279,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
-        "melody": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
+        "melody": "The response characterises a seam or coupling using three Concordance pressures. Visibility: how explicit and discoverable the contract is — named orchestrators, typed "
+        "interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how widely a change propagates across domains or layers — wide scope "
+        "crosses many bounded contexts, narrow scope stays local. Volatility: how tightly temporal or structural coupling forces synchronised change sets — tight timing dependencies or "
+        "shared schemas score high. All three pressures must appear in the output; omitting any one is incomplete.",
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
@@ -510,7 +513,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mapping": "Surface elements and relationships",
         "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
-        "melody": "Coordination across components or time",
+        "melody": "Concordance pressure profile of a seam",
         "mesh": "Describe coupling propagation",
         "migrate": "Introduce a transition path between structures",
         "mint": "Explicit constructive derivation",
@@ -871,7 +874,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "mapping": "Structural",
         "mark": "Temporal/Dynamic",
         "meld": "Comparative",
-        "melody": "Generative",
+        "melody": "Diagnostic",
         "mesh": "Diagnostic",
         "migrate": "Structural",
         "mint": "Structural",
@@ -1058,7 +1061,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "mapping": "Spatial map",
         "mark": "Audit trail",
         "meld": "Combinations/overlaps",
-        "melody": "Coordination across parts",
+        "melody": "Seam pressure profile",
         "mesh": "Coupling analysis",
         "migrate": "Compatibility transition path",
         "mint": "Constructive derivation",
@@ -4496,17 +4499,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "melody": {
-            "definition": "The response enhances the task by analyzing coordination across components, time, or teams, including coupling, synchronization, and change alignment.",
-            "distinctions": [{"note": "what relies on what", "token": "depends"}],
+            "definition": "The response characterises a seam or coupling using three Concordance pressures — all three must appear in the output, omitting any one is incomplete. "
+            "Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit "
+            "state = low). Scope: how widely a change propagates across domains or layers (crosses many bounded contexts = wide; stays local = narrow). Volatility: how "
+            "tightly temporal or structural coupling forces synchronised change sets (shared schemas, execution-order dependencies = high).",
+            "distinctions": [
+                {
+                    "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",
+                    "token": "depends",
+                },
+                {
+                    "note": "snag = surface where coupling seams exist; melody = characterise the quality of a seam across three pressure dimensions",
+                    "token": "snag",
+                },
+                {
+                    "note": "mesh = trace how coupling propagates across a seam; melody = rate the seam's visibility, scope, and volatility",
+                    "token": "mesh",
+                },
+            ],
             "heuristics": [
-                "coordinate across teams",
-                "synchronize changes",
-                "change alignment",
-                "coupling between components",
-                "parallel work streams",
-                "avoid conflicts between teams",
-                "migration coordination",
-                "who needs to change when",
+                "Concordance pressure",
+                "characterise the seam",
+                "how bad is this coupling",
+                "visibility scope volatility",
+                "how discoverable is the contract",
+                "how wide does the change propagate",
+                "temporal coupling sensitivity",
+                "structural coupling sensitivity",
+                "how tightly coupled are these changes",
+                "seam quality",
+                "coupling pressure profile",
             ],
         },
         "mesh": {

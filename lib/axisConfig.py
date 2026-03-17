@@ -343,7 +343,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
         "the layer those tests must satisfy.",
         "visual": "The response enhances the task by framing ideas spatially or metaphorically — placing concepts in positional relationship, using visual analogies, or building a spatial model "
-        "of the subject. Output format is not constrained; pair with channel:draw for spatial prose layout or channel:diagram for machine-readable diagrams.",
+        "of the subject.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
     },
     "scope": {
@@ -5417,8 +5417,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "visual": {
-            "definition": "Frame ideas spatially or metaphorically — place concepts in positional relationship, use visual analogies, or build a spatial model of the subject. The output "
-            "format is not constrained by this token: pair with channel:draw for spatial prose layout, or channel:diagram for machine-readable diagrams.",
+            "definition": "Frame ideas spatially or metaphorically — place concepts in positional relationship, use visual analogies, or build a spatial model of the subject.",
             "distinctions": [
                 {
                     "note": "draw (channel) = deliver the output as ASCII spatial layout; visual (method) = frame ideas spatially regardless of output format",

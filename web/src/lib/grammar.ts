@@ -141,7 +141,8 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 // Category order for method axis (ADR-0144)
 export const METHOD_CATEGORY_ORDER = [
 	'Reasoning', 'Exploration', 'Structural', 'Diagnostic',
-	'Actor-centered', 'Temporal/Dynamic', 'Comparative', 'Generative'
+	'Actor-centered', 'Temporal/Dynamic', 'Comparative', 'Generative',
+	'Conduct'
 ];
 
 // Returns method tokens grouped by category in canonical order (ADR-0144).

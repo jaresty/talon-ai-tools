@@ -701,14 +701,14 @@
 	}
 
 	.token-grid {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		gap: 0.4rem;
-		align-items: flex-start;
+		align-items: stretch;
 	}
 
 	.category-header {
-		width: 100%;
+		grid-column: 1 / -1;
 		font-size: 0.68rem;
 		font-weight: 600;
 		text-transform: uppercase;
@@ -1015,6 +1015,10 @@
 	}
 
 	@media (max-width: 767px) {
+		.token-grid {
+			grid-template-columns: 1fr;
+		}
+
 		.token-chip {
 			min-height: 44px;
 			padding: 0.5rem 0.75rem;

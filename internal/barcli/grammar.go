@@ -47,6 +47,7 @@ type AxisSection struct {
 	Labels         map[string]map[string]string // ADR-0109: short CLI-facing selection labels
 	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
 	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
+	CategoryOrder  map[string][]string          // ADR-0144: canonical display order for category groups
 	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
 	CrossAxisComposition   map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
 	AxisDescriptions       map[string]string                              // axis-level empty-state descriptions
@@ -171,7 +172,8 @@ type rawAxisSection struct {
 	ListTokens     map[string][]string          `json:"list_tokens"`
 	Labels         map[string]map[string]string `json:"labels"`           // ADR-0109
 	Kanji          map[string]map[string]string `json:"kanji"`            // ADR-0143
-	Categories     map[string]map[string]string `json:"categories"`       // ADR-0144
+	Categories     map[string]map[string]string `json:"categories"`        // ADR-0144
+	CategoryOrder  map[string][]string          `json:"category_order"`    // ADR-0144
 	RoutingConcept       map[string]map[string]string                `json:"routing_concept"`        // ADR-0146
 	CrossAxisComposition    map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"`     // ADR-0147
 	AxisDescriptions        map[string]string                              `json:"axis_descriptions"`          // axis-level empty-state descriptions
@@ -277,6 +279,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			Labels:         raw.Axes.Labels,
 			Kanji:          raw.Axes.Kanji,
 			Categories:     raw.Axes.Categories,
+			CategoryOrder:  raw.Axes.CategoryOrder,
 			RoutingConcept:       raw.Axes.RoutingConcept,
 			CrossAxisComposition:    raw.Axes.CrossAxisComposition,
 			AxisDescriptions:        raw.Axes.AxisDescriptions,

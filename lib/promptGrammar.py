@@ -169,6 +169,14 @@ def _build_axis_section(
         if tokens
     }
 
+    # CategoryOrder (ADR-0144): canonical display order for category groups per axis.
+    axis_category_order_raw = catalog.get("axis_category_order") or {}
+    axis_category_order: dict[str, list[str]] = {
+        str(axis): [str(cat) for cat in cats]
+        for axis, cats in sorted(axis_category_order_raw.items(), key=lambda i: str(i[0]))
+        if cats
+    }
+
     # RoutingConcept (ADR-0146): distilled routing concept phrases for nav surfaces.
     axis_routing_concept_raw = catalog.get("axis_routing_concept") or {}
     axis_routing_concept: dict[str, dict[str, str]] = {
@@ -196,6 +204,8 @@ def _build_axis_section(
         section["kanji"] = axis_kanji
     if axis_category:
         section["categories"] = axis_category
+    if axis_category_order:
+        section["category_order"] = axis_category_order
     if axis_routing_concept:
         section["routing_concept"] = axis_routing_concept
     if axis_descriptions:

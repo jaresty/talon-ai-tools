@@ -47,6 +47,7 @@ export interface Grammar {
 		use_when: Record<string, Record<string, string>>;
 		kanji: Record<string, Record<string, string>>; // ADR-0143
 		categories?: Record<string, Record<string, string>>; // ADR-0144: semantic family groupings for method tokens
+		category_order?: Record<string, string[]>;           // ADR-0144: canonical display order for category groups
 		routing_concept?: Record<string, Record<string, string>>; // ADR-0146: distilled routing concept phrases
 		cross_axis_composition?: Record<string, Record<string, Record<string, CrossAxisPair>>>; // ADR-0148
 		axis_descriptions?: Record<string, string>; // axis-level empty-state descriptions
@@ -138,17 +139,16 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 		}));
 }
 
-// Category order for method axis (ADR-0144)
-export const METHOD_CATEGORY_ORDER = [
-	'Reasoning', 'Exploration', 'Structural', 'Diagnostic',
-	'Actor-centered', 'Temporal/Dynamic', 'Comparative', 'Generative',
-	'Conduct'
-];
+// Category order for method axis (ADR-0144). Derived from grammar JSON — not hardcoded.
+export function getMethodCategoryOrder(grammar: Grammar): string[] {
+	return grammar.axes.category_order?.['method'] ?? [];
+}
 
 // Returns method tokens grouped by category in canonical order (ADR-0144).
-// Each entry is { category: string, tokens: TokenMeta[] }.
+// Order is derived from grammar.axes.category_order — not hardcoded.
 export function getMethodTokensByCategory(grammar: Grammar): { category: string; tokens: TokenMeta[] }[] {
 	const all = getAxisTokens(grammar, 'method');
+	const categoryOrder = getMethodCategoryOrder(grammar);
 	const byCategory = new Map<string, TokenMeta[]>();
 	const uncategorized: TokenMeta[] = [];
 	for (const t of all) {
@@ -157,7 +157,7 @@ export function getMethodTokensByCategory(grammar: Grammar): { category: string;
 		byCategory.get(t.category)!.push(t);
 	}
 	const result: { category: string; tokens: TokenMeta[] }[] = [];
-	for (const cat of METHOD_CATEGORY_ORDER) {
+	for (const cat of categoryOrder) {
 		const tokens = byCategory.get(cat);
 		if (tokens && tokens.length > 0) result.push({ category: cat, tokens });
 	}

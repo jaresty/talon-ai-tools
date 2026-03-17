@@ -528,10 +528,9 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 		}
 		sort.Strings(tokenNames)
 
-		if axisName == "method" {
-			// Group method tokens by semantic category (ADR-0144).
-			// Emit a bold category header row before each new category group.
-			categoryOrder := []string{"Reasoning", "Exploration", "Structural", "Diagnostic", "Actor-centered", "Temporal/Dynamic", "Comparative", "Generative", "Conduct"}
+		if categoryOrder := grammar.Axes.CategoryOrder[axisName]; len(categoryOrder) > 0 {
+			// Group tokens by semantic category in canonical order (ADR-0144).
+			// categoryOrder is derived from grammar JSON — not hardcoded here.
 			byCategory := make(map[string][]string)
 			uncategorized := []string{}
 			for _, token := range tokenNames {

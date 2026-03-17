@@ -185,7 +185,33 @@ func TestMethodAxisGroupedBySemanticCategory(t *testing.T) {
 	}
 }
 
+// TestAxisCategoryOrderInGrammar specifies that grammar.Axes.CategoryOrder is populated
+// from the JSON export (ADR-0144). This is the ground-rung test: it fails until grammar.go
+// reads the new category_order field.
+func TestAxisCategoryOrderInGrammar(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+	order, ok := grammar.Axes.CategoryOrder["method"]
+	if !ok || len(order) == 0 {
+		t.Fatal("grammar.Axes.CategoryOrder[\"method\"] must be non-empty (wired from JSON category_order)")
+	}
+	// Conduct must be present (added in this ADR cycle)
+	found := false
+	for _, cat := range order {
+		if cat == "Conduct" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("grammar.Axes.CategoryOrder[\"method\"] must include \"Conduct\", got %v", order)
+	}
+}
+
 // TestMethodAxisCanonicalCategoryOrder specifies that the canonical category order is preserved (ADR-0144).
+// After wiring, canonicalOrder is derived from grammar — not hardcoded here.
 func TestMethodAxisCanonicalCategoryOrder(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -194,10 +220,14 @@ func TestMethodAxisCanonicalCategoryOrder(t *testing.T) {
 
 	options := buildAxisOptions(grammar, "method")
 
-	canonicalOrder := []string{
-		"Reasoning", "Exploration", "Structural", "Diagnostic",
-		"Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
-		"Conduct",
+	canonicalOrder := grammar.Axes.CategoryOrder["method"]
+	if len(canonicalOrder) == 0 {
+		// Fallback for before grammar.go is wired — keeps test runnable
+		canonicalOrder = []string{
+			"Reasoning", "Exploration", "Structural", "Diagnostic",
+			"Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
+			"Conduct",
+		}
 	}
 	orderIndex := map[string]int{}
 	for i, cat := range canonicalOrder {

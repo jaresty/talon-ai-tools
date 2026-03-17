@@ -2,6 +2,24 @@ import { describe, it, expect, vi } from 'vitest';
 import { flushSync } from 'svelte';
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import TokenSelector from './TokenSelector.svelte';
+import type { Grammar } from './grammar.js';
+
+// Minimal grammar fixture with category_order for ADR-0144 category grouping tests.
+const categoryGrammar: Grammar = {
+	axes: {
+		definitions: { method: {} },
+		labels: {},
+		guidance: {},
+		use_when: {},
+		category_order: { method: ['Reasoning', 'Exploration', 'Structural', 'Diagnostic'] }
+	},
+	tasks: { descriptions: {}, labels: {}, guidance: {} },
+	hierarchy: { axis_priority: [], axis_soft_caps: {}, axis_incompatibilities: {} },
+	persona: { presets: {}, axes: { voice: [], audience: [], tone: [] } },
+	reference_key: '',
+	execution_reminder: '',
+	meta_interpretation_guidance: ''
+} as unknown as Grammar;
 
 // ── Hover-safety fix (option B) ───────────────────────────────────────────────
 // Spec:
@@ -521,7 +539,7 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 			{ token: 'analysis', label: '', description: 'Structural breakdown.', guidance: '', use_when: '', kanji: '', category: 'Structural' },
 		];
 		render(TokenSelector, {
-			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn() }
+			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn(), grammar: categoryGrammar }
 		});
 		expect(screen.getByText('Reasoning')).toBeTruthy();
 		expect(screen.getByText('Exploration')).toBeTruthy();
@@ -534,7 +552,7 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 			{ token: 'explore', label: '', description: '', guidance: '', use_when: '', kanji: '', category: 'Exploration' },
 		];
 		render(TokenSelector, {
-			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn() }
+			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn(), grammar: categoryGrammar }
 		});
 		const headers = document.querySelectorAll('.category-header');
 		expect(headers.length).toBe(2);
@@ -542,13 +560,13 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		headers.forEach((h) => expect(h.getAttribute('role')).not.toBe('option'));
 	});
 
-	it('C3: category groups follow METHOD_CATEGORY_ORDER (Reasoning before Exploration)', () => {
+	it('C3: category groups follow grammar category_order (Reasoning before Exploration)', () => {
 		const methodTokens = [
 			{ token: 'explore', label: '', description: '', guidance: '', use_when: '', kanji: '', category: 'Exploration' },
 			{ token: 'deduce', label: '', description: '', guidance: '', use_when: '', kanji: '', category: 'Reasoning' },
 		];
 		render(TokenSelector, {
-			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn() }
+			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn(), grammar: categoryGrammar }
 		});
 		const headers = document.querySelectorAll('.category-header');
 		expect(headers[0].textContent).toBe('Reasoning');
@@ -561,7 +579,7 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 			{ token: 'explore', label: '', description: '', guidance: '', use_when: '', kanji: '', category: 'Exploration' },
 		];
 		const { container } = render(TokenSelector, {
-			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn() }
+			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn(), grammar: categoryGrammar }
 		});
 		const filterInput = container.querySelector('.filter-input') as HTMLInputElement | null;
 		// No filter input for 2-token list (shows only when >8 tokens), so test directly via hasCategoryGroups + filter state.
@@ -576,7 +594,7 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 			{ token: 'unknown', label: '', description: '', guidance: '', use_when: '', kanji: '', category: '' },
 		];
 		render(TokenSelector, {
-			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn() }
+			props: { axis: 'method', tokens: methodTokens, selected: [], maxSelect: 3, onToggle: vi.fn(), grammar: categoryGrammar }
 		});
 		const chips = document.querySelectorAll('[role="option"]');
 		const chipTexts = Array.from(chips).map((c) => c.querySelector('code')?.textContent);

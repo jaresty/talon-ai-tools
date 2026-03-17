@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-	import { METHOD_CATEGORY_ORDER, getCompositionData, getChipState, getReverseChipState, getChipStateWithReason } from './grammar.js';
+	import { getMethodCategoryOrder, getCompositionData, getChipState, getReverseChipState, getChipStateWithReason } from './grammar.js';
 	import type { TokenMeta, Grammar } from './grammar.js';
 
 	interface Props {
@@ -54,10 +54,10 @@
 	// True when any token has a non-empty category — enables grouped rendering
 	let hasCategoryGroups = $derived(tokens.some((t) => t.category));
 
-	// Groups for grouped rendering (no filter active). Follows canonical METHOD_CATEGORY_ORDER,
-	// with uncategorized tokens in a trailing group.
+	// Groups for grouped rendering (no filter active). Order derived from grammar — not hardcoded.
 	let categoryGroups = $derived((): { category: string; tokens: TokenMeta[] }[] => {
 		if (!hasCategoryGroups) return [];
+		const categoryOrder = grammar ? getMethodCategoryOrder(grammar) : [];
 		const byCategory = new Map<string, TokenMeta[]>();
 		const uncategorized: TokenMeta[] = [];
 		for (const t of tokens) {
@@ -66,7 +66,7 @@
 			byCategory.get(t.category)!.push(t);
 		}
 		const result: { category: string; tokens: TokenMeta[] }[] = [];
-		for (const cat of METHOD_CATEGORY_ORDER) {
+		for (const cat of categoryOrder) {
 			const catTokens = byCategory.get(cat);
 			if (catTokens && catTokens.length > 0) result.push({ category: cat, tokens: catTokens });
 		}

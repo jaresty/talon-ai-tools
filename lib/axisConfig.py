@@ -17,6 +17,7 @@ Required for all axes:
 
 Conditional:
 - AXIS_KEY_TO_CATEGORY      — method axis only: semantic family (ADR-0144)
+- AXIS_CATEGORY_ORDER       — canonical display order for each axis's category groups (ADR-0144)
 - CROSS_AXIS_COMPOSITION    — only if the token has notable cross-axis interactions (ADR-0147)
 - FORM_DEFAULT_COMPLETENESS — form axis only, if the format structurally constrains depth (ADR-0153)
 
@@ -40,7 +41,7 @@ along three directions at once: they are still orientations, not sequences.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, FrozenSet, TypedDict, Union
+from typing import Any, Dict, FrozenSet, List, TypedDict, Union
 
 AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
@@ -924,6 +925,17 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
     }
 }
 
+# Canonical display order for semantic category groups within each axis (ADR-0144).
+# Adding a new category requires only updating this dict; all consumers derive order from it.
+AXIS_CATEGORY_ORDER: Dict[str, List[str]] = {
+    "method": [
+        "Reasoning", "Exploration", "Structural", "Diagnostic",
+        "Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
+        "Conduct",
+    ],
+}
+
+
 # Distilled routing concept phrases for nav surfaces (ADR-0146 Phase 2).
 # Each token maps to the shortest phrase that maps a user's framing to that token.
 # Tokens sharing the same phrase group into a single routing bullet:
@@ -1589,6 +1601,11 @@ def axis_key_to_kanji_map(
 def axis_key_to_category_map(axis: str) -> dict[str, str]:
     """Return the key->category map for a given axis (ADR-0144)."""
     return AXIS_KEY_TO_CATEGORY.get(axis, {})
+
+
+def axis_category_order(axis: str) -> List[str]:
+    """Return the canonical category display order for a given axis (ADR-0144)."""
+    return AXIS_CATEGORY_ORDER.get(axis, [])
 
 
 def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:

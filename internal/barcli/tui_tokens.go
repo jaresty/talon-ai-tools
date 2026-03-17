@@ -231,13 +231,6 @@ func buildStaticCategory(grammar *Grammar) (bartui2.TokenCategory, bool) {
 	}, true
 }
 
-// methodCategoryOrder is the canonical display order for method semantic groups (ADR-0144).
-var methodCategoryOrder = []string{
-	"Reasoning", "Exploration", "Structural", "Diagnostic",
-	"Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
-	"Conduct",
-}
-
 func buildAxisOptions(grammar *Grammar, axis string) []bartui2.TokenOption {
 	set := grammar.AxisTokenSet(axis)
 	if len(set) == 0 {
@@ -281,13 +274,13 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui2.TokenOption {
 
 	// For axes that have semantic groups, re-sort by (categoryOrder, slug) so
 	// tokens are contiguous within each group (ADR-0144).
-	if axis == "method" {
-		catRank := make(map[string]int, len(methodCategoryOrder))
-		for i, cat := range methodCategoryOrder {
+	if categoryOrder := grammar.Axes.CategoryOrder[axis]; len(categoryOrder) > 0 {
+		catRank := make(map[string]int, len(categoryOrder))
+		for i, cat := range categoryOrder {
 			catRank[cat] = i
 		}
 		sort.SliceStable(options, func(i, j int) bool {
-			ri, rj := len(methodCategoryOrder), len(methodCategoryOrder) // uncategorised sink to end
+			ri, rj := len(categoryOrder), len(categoryOrder) // uncategorised sink to end
 			if r, ok := catRank[options[i].SemanticGroup]; ok {
 				ri = r
 			}

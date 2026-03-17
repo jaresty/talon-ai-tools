@@ -207,6 +207,11 @@ def axis_catalog(
         "axis_category": {
             axis: axisConfig.axis_key_to_category_map(axis) for axis in axis_map
         },
+        "axis_category_order": {
+            axis: axisConfig.axis_category_order(axis)
+            for axis in axis_map
+            if axisConfig.axis_category_order(axis)
+        },
         "axis_routing_concept": {
             axis: axisConfig.axis_key_to_routing_concept_map(axis) for axis in axis_map
         },
@@ -247,6 +252,7 @@ def serialize_axis_config(
         "axis_labels": catalog["axis_labels"],
         "axis_kanji": catalog["axis_kanji"],
         "axis_category": catalog["axis_category"],
+        "axis_category_order": catalog["axis_category_order"],
         "axis_routing_concept": catalog["axis_routing_concept"],
         "axis_descriptions": catalog["axis_descriptions"],
     }

@@ -7,6 +7,7 @@ import {
 	getPersonaAxisTokensMeta,
 	getPersonaIntentTokens,
 	getMethodTokensByCategory,
+	getMethodCategoryOrder,
 	toPersonaSlug,
 	getReverseChipState,
 	getChipStateWithReason,
@@ -251,6 +252,9 @@ describe('getMethodTokensByCategory', () => {
 					analysis: 'Structural',
 					diagnose: 'Diagnostic'
 				}
+			},
+			category_order: {
+				method: ['Reasoning', 'Exploration', 'Structural', 'Diagnostic']
 			}
 		}
 	};
@@ -286,6 +290,39 @@ describe('getMethodTokensByCategory', () => {
 		const tokens = getAxisTokens(categoryGrammar, 'method');
 		const abduce = tokens.find((t) => t.token === 'abduce')!;
 		expect(abduce.category).toBe('Reasoning');
+	});
+});
+
+// ADR-0144: getMethodCategoryOrder reads from grammar JSON, not a hardcoded constant.
+describe('getMethodCategoryOrder', () => {
+	it('returns category_order from grammar when present', () => {
+		const g: Grammar = {
+			...minimalGrammar,
+			axes: {
+				...minimalGrammar.axes,
+				category_order: { method: ['Reasoning', 'Structural', 'Conduct'] }
+			}
+		};
+		expect(getMethodCategoryOrder(g)).toEqual(['Reasoning', 'Structural', 'Conduct']);
+	});
+
+	it('returns empty array when category_order is absent', () => {
+		expect(getMethodCategoryOrder(minimalGrammar)).toEqual([]);
+	});
+
+	it('getMethodTokensByCategory uses grammar-derived order, not hardcoded constant', () => {
+		const g: Grammar = {
+			...minimalGrammar,
+			axes: {
+				...minimalGrammar.axes,
+				definitions: { method: { abduce: 'A', explore: 'B' } },
+				categories: { method: { abduce: 'Reasoning', explore: 'Exploration' } },
+				category_order: { method: ['Exploration', 'Reasoning'] } // reversed
+			}
+		};
+		const groups = getMethodTokensByCategory(g);
+		expect(groups[0].category).toBe('Exploration');
+		expect(groups[1].category).toBe('Reasoning');
 	});
 });
 

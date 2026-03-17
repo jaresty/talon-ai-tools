@@ -873,6 +873,19 @@
         "yield": "Conduct"
       }
     },
+    "category_order": {
+      "method": [
+        "Reasoning",
+        "Exploration",
+        "Structural",
+        "Diagnostic",
+        "Actor-centered",
+        "Temporal/Dynamic",
+        "Comparative",
+        "Generative",
+        "Conduct"
+      ]
+    },
     "routing_concept": {
       "channel": {
         "adr": "Architecture decision record",
@@ -8594,7 +8607,7 @@
     }
   ],
   "checksums": {
-    "axes": "f3252c8e5408cd593d57db1384857de0f1501f1b0154825c8555ee339d7724d2",
+    "axes": "ef970f7d87a537c185fe6c55ed5623bd29f068a667f4b109a3f9d305e8131ae7",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

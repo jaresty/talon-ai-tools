@@ -410,7 +410,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "narrow": "Restricted to a very small slice",
         "skim": "Light pass, obvious issues only",
         "triage": "Stakes-weighted coverage depth",
-        "zoom": "Scale-adaptive granularity",
+        "zoom": "Full-range coverage at adaptive granularity",
     },
     "directional": {
         "bog": "Span reflection and action (rog + ong)",
@@ -978,7 +978,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "narrow": "Focused depth on a specific slice",
         "skim": "Surface-level coverage",
         "triage": "Stakes-proportionate coverage depth",
-        "zoom": "Scale-adaptive granularity",
+        "zoom": "Full-range coverage at adaptive granularity",
     },
     "directional": {
         "bog": "Reflect + act",
@@ -2542,7 +2542,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "naming or listing the scale. Both ends must appear as explicit anchors; do not begin at an intermediate level or leave either end implicit. Bucket sizes "
             "scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. "
             "Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), "
-            "complexity tiers, or fuzzy buckets.",
+            "complexity tiers, or fuzzy buckets. Zoom is a focusing mechanism, not uniform enumeration: when no specific target is provided, content at each finer level "
+            "should be chosen for what is most illuminating relative to the level above — the fine-grained anchor earns its place by revealing something about the span "
+            "it sits within.",
             "distinctions": [
                 {
                     "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
@@ -2569,8 +2571,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "group at natural intervals",
                 "scale the detail to the span",
                 "log scale grouping",
-                "zoom in",
-                "zoom out",
+                "span the full range",
+                "from smallest to largest",
+                "cover every level of scale",
             ],
         },
     },

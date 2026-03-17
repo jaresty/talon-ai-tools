@@ -1570,7 +1570,7 @@
           ]
         },
         "zoom": {
-          "definition": "Scale-adaptive granularity: cover the full range of the subject as exponentially-spaced buckets, providing substantive content at every level — not just naming or listing the scale. Both ends must appear as explicit anchors; do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets. Zoom is a focusing mechanism, not uniform enumeration: when no specific target is provided, content at each finer level should be chosen for what is most illuminating relative to the level above — the fine-grained anchor earns its place by revealing something about the span it sits within.",
+          "definition": "Scale-adaptive granularity: cover the full range of the subject as exponentially-spaced buckets, providing substantive content at every level — not just naming or listing the scale. Both ends must appear as explicit anchors; do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets. Zoom is a focusing mechanism, not uniform enumeration: when no specific target is provided, content at each finer level should be chosen for what is most illuminating relative to the level above — the fine-grained anchor earns its place by revealing something about the span it sits within. At each level, frame the content to show what it reveals about the scale above — the connection between levels should be evident from the presentation.",
           "distinctions": [
             {
               "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
@@ -8608,7 +8608,7 @@
     }
   ],
   "checksums": {
-    "axes": "2e73dbc49c1b14d7553370efe69f9dc9ee56822627542163b36e1f98af78f533",
+    "axes": "5d4b80a5f6121dd9b702177ac090e61f62b58134a2bde6f1f5c392d96c6f4a31",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -2544,7 +2544,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), "
             "complexity tiers, or fuzzy buckets. Zoom is a focusing mechanism, not uniform enumeration: when no specific target is provided, content at each finer level "
             "should be chosen for what is most illuminating relative to the level above — the fine-grained anchor earns its place by revealing something about the span "
-            "it sits within.",
+            "it sits within. At each level, frame the content to show what it reveals about the scale above — the connection between levels should be evident from the "
+            "presentation.",
             "distinctions": [
                 {
                     "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",

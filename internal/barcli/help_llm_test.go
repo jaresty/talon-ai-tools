@@ -398,7 +398,8 @@ func TestHelpLLMPersonaTablesUseStructuredMetadata(t *testing.T) {
 //
 //	D1: code/html/shellscript mention sim/probe task-affinity restriction
 //	D3: § Token Catalog mentions compound directionals
-//	D4: taxonomy and visual descriptions are channel-adaptive ("Adapts to the channel")
+//	D4: taxonomy description is channel-adaptive ("Output adapts to channel")
+//	     (visual moved to method axis; no longer channel-adaptive by design)
 //	D5: fix task description contains disambiguation note
 //	D6: order method description contains sort disambiguation note
 func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
@@ -430,14 +431,14 @@ func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 		t.Error("D3: bar help llm output missing compound directional documentation (expected 'compound' and 'fly rog')")
 	}
 
-	// D4: taxonomy and visual descriptions are channel-adaptive
+	// D4: taxonomy description is channel-adaptive; visual is now a method token and no longer channel-adaptive
 	catalogStart := strings.Index(output, "## Token Catalog")
 	if catalogStart == -1 {
 		t.Fatal("could not locate ## Token Catalog section")
 	}
 	catalog := output[catalogStart:]
-	if !strings.Contains(catalog, "Adapts to the channel") {
-		t.Error("D4: Token Catalog missing channel-adaptive description for taxonomy/visual (expected 'Adapts to the channel')")
+	if !strings.Contains(catalog, "Output adapts to channel") {
+		t.Error("D4: Token Catalog missing channel-adaptive description for taxonomy (expected 'Output adapts to channel')")
 	}
 
 	// D5 and D6 are token description changes validated by the grammar itself;

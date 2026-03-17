@@ -103,10 +103,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
         "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
-        "zoom": "The response adapts its granularity proportionally to the span being covered: fine detail at small scale, coarse grouping at large scale. Steps are multiplicative, not "
-        "additive — intervals expand with span. A narrow span uses fine grain (hours, days, small quantities); a broad span uses coarse buckets (months, years, magnitude tiers). "
-        "Both ends are equally correct — coarseness at large scale is not an omission, and fineness at small scale is not padding. Works for any sequence with intuitive magnitude: "
-        "time, quantities, complexity tiers, hierarchy levels, or fuzzy buckets.",
+        "zoom": "The response adapts its granularity proportionally to the span being covered: fine detail at small scale, coarse grouping at large scale. Intervals expand as span grows "
+        "and contract as span shrinks — steps are multiplicative, not additive. A narrow span gets fine grain (hours, days, small quantities); a broad span gets coarse buckets "
+        "(months, years, magnitude tiers). Both directions are equally correct. Works for any sequence with intuitive magnitude: time, quantities, complexity tiers, hierarchy "
+        "levels, or fuzzy buckets.",
     },
     "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
@@ -2477,20 +2477,21 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "zoom": {
-            "definition": "Scale-adaptive granularity: fine detail at small scale, coarse grouping at large scale. Steps are multiplicative, not additive — intervals expand "
-            "proportionally to span. A narrow span uses fine grain (hours, days, small quantities); a broad span uses coarse buckets (months, years, magnitude tiers). "
-            "Both ends are equally correct. Works for any sequence with intuitive magnitude: time, quantities, complexity tiers, hierarchy levels, or fuzzy buckets.",
+            "definition": "Scale-adaptive granularity: fine detail at small scale, coarse grouping at large scale. Intervals expand as span grows and contract as span shrinks — steps "
+            "are multiplicative, not additive. A narrow span gets fine grain (hours, days, small quantities); a broad span gets coarse buckets (months, years, magnitude "
+            "tiers). Both directions are equally correct. Works for any sequence with intuitive magnitude: time, quantities, complexity tiers, hierarchy levels, or fuzzy "
+            "buckets.",
             "distinctions": [
                 {
                     "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
                     "token": "full",
                 },
                 {
-                    "note": "zoom = coarser grain at large scale is correct, not an omission; max = fine grain everywhere, omissions are errors",
+                    "note": "zoom = grain scales with span in both directions; max = fine grain everywhere regardless of span",
                     "token": "max",
                 },
                 {
-                    "note": "zoom = interval size expands proportionally to span; grow = depth expands only where analysis explicitly demands it",
+                    "note": "zoom = interval size scales with span; grow = depth expands only where analysis explicitly demands it",
                     "token": "grow",
                 },
             ],
@@ -2501,6 +2502,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "proportional resolution",
                 "bucket by magnitude",
                 "coarser as it gets larger",
+                "finer as it gets smaller",
+                "fine grain for short spans",
+                "daily detail for a week-long range",
                 "group at natural intervals",
                 "scale the detail to the span",
                 "log scale grouping",

@@ -855,7 +855,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "clash": "Diagnostic",
         "cluster": "Structural",
         "compare": "Comparative",
-        "control": "Reasoning",
+        "control": "Conduct",
         "converge": "Comparative",
         "crystal": "Structural",
         "deduce": "Reasoning",
@@ -896,12 +896,12 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "product": "Generative",
         "pulse": "Temporal/Dynamic",
         "reify": "Generative",
-        "release": "Reasoning",
+        "release": "Conduct",
         "reset": "Structural",
         "resilience": "Diagnostic",
         "rigor": "Reasoning",
         "risks": "Diagnostic",
-        "ritual": "Social structure",
+        "ritual": "Conduct",
         "robust": "Diagnostic",
         "root": "Structural",
         "seep": "Diagnostic",
@@ -920,7 +920,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
         "visual": "Generative",
-        "yield": "Minimal intervention",
+        "yield": "Conduct",
     }
 }
 

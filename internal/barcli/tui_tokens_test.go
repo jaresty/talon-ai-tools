@@ -197,6 +197,7 @@ func TestMethodAxisCanonicalCategoryOrder(t *testing.T) {
 	canonicalOrder := []string{
 		"Reasoning", "Exploration", "Structural", "Diagnostic",
 		"Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
+		"Conduct",
 	}
 	orderIndex := map[string]int{}
 	for i, cat := range canonicalOrder {

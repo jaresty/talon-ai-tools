@@ -235,6 +235,7 @@ func buildStaticCategory(grammar *Grammar) (bartui2.TokenCategory, bool) {
 var methodCategoryOrder = []string{
 	"Reasoning", "Exploration", "Structural", "Diagnostic",
 	"Actor-centered", "Temporal/Dynamic", "Comparative", "Generative",
+	"Conduct",
 }
 
 func buildAxisOptions(grammar *Grammar, axis string) []bartui2.TokenOption {

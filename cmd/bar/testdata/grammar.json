@@ -805,7 +805,7 @@
         "clash": "Diagnostic",
         "cluster": "Structural",
         "compare": "Comparative",
-        "control": "Reasoning",
+        "control": "Conduct",
         "converge": "Comparative",
         "crystal": "Structural",
         "deduce": "Reasoning",
@@ -846,12 +846,12 @@
         "product": "Generative",
         "pulse": "Temporal/Dynamic",
         "reify": "Generative",
-        "release": "Reasoning",
+        "release": "Conduct",
         "reset": "Structural",
         "resilience": "Diagnostic",
         "rigor": "Reasoning",
         "risks": "Diagnostic",
-        "ritual": "Social structure",
+        "ritual": "Conduct",
         "robust": "Diagnostic",
         "root": "Structural",
         "seep": "Diagnostic",
@@ -870,7 +870,7 @@
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
         "visual": "Generative",
-        "yield": "Minimal intervention"
+        "yield": "Conduct"
       }
     },
     "routing_concept": {
@@ -8594,7 +8594,7 @@
     }
   ],
   "checksums": {
-    "axes": "32889a8d888437e9362aa7f13786184a2f2e2b8f29bff6776d9f10f07502666d",
+    "axes": "f3252c8e5408cd593d57db1384857de0f1501f1b0154825c8555ee339d7724d2",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

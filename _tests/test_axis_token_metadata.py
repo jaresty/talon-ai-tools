@@ -110,7 +110,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
 
 
 class ChannelAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-4: channel axis has structured metadata for all 18 tokens."""
+    """ADR-0155 T-4: channel axis has structured metadata for all 19 tokens."""
 
     AXIS = "channel"
     EXPECTED_TOKENS = {
@@ -118,6 +118,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "code",
         "codetour",
         "diagram",
+        "draw",
         "gherkin",
         "html",
         "image",
@@ -138,7 +139,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_channel_metadata_covers_all_tokens(self):
-        """All 18 channel tokens must have metadata entries."""
+        """All 19 channel tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -319,7 +320,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
 
 
 class FormAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-7: form axis has structured metadata for all 40 tokens."""
+    """ADR-0155 T-7: form axis has structured metadata for all 38 tokens."""
 
     AXIS = "form"
     EXPECTED_TOKENS = {
@@ -340,7 +341,6 @@ class FormAxisMetadataTests(unittest.TestCase):
         "formats",
         "ghost",
         "indirect",
-        "ladder",
         "log",
         "merge",
         "persist",
@@ -360,7 +360,6 @@ class FormAxisMetadataTests(unittest.TestCase):
         "twin",
         "variants",
         "vet",
-        "visual",
         "walkthrough",
         "wardley",
         "wasinawa",
@@ -370,7 +369,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_form_metadata_covers_all_tokens(self):
-        """All 40 form tokens must have metadata entries."""
+        """All 38 form tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -397,14 +396,6 @@ class FormAxisMetadataTests(unittest.TestCase):
             "indirect", distinction_tokens, "direct must distinguish from indirect"
         )
 
-    def test_visual_distinguishes_from_diagram(self):
-        """visual must distinguish from diagram channel."""
-        visual = self.meta.get("visual", {})
-        distinction_tokens = [d["token"] for d in visual.get("distinctions", [])]
-        self.assertIn(
-            "diagram", distinction_tokens, "visual must distinguish from diagram"
-        )
-
     def test_socratic_distinguishes_from_questions(self):
         """socratic must distinguish from questions form."""
         socratic = self.meta.get("socratic", {})
@@ -415,7 +406,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 81 tokens (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 83 tokens (enforce/observe retired ADR-0162; triage moved to completeness, automate added; ladder/visual moved from form)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -480,6 +471,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "reify",
         "release",
         "ritual",
+        "ladder",
         "resilience",
         "sense",
         "reset",
@@ -501,6 +493,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "trace",
         "unknowns",
         "verify",
+        "visual",
         "yield",
     }
 
@@ -508,7 +501,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 81 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added)."""
+        """All 83 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added; ladder/visual moved from form)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

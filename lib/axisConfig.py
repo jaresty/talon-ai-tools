@@ -51,6 +51,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "surrounding explanation.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not "
         "allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
+        "draw": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not "
+        "machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2.",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram "
         "channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
@@ -164,8 +166,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
-        "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the "
-        "audience.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
@@ -198,9 +198,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
         "vet": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. Complements prep.",
-        "visual": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend where the subject lends itself to visual representation, emphasising "
-        "big-picture structure over dense prose. Adapts to the channel: when combined with a code channel, visual structure is expressed through code organization, comments, or inline "
-        "ASCII; without a channel, through prose metaphors and spatial layout.",
         "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
@@ -276,6 +273,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
         "or design around those paths.",
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
+        "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
+        "consequences or implementations, ordered by importance to the audience.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
@@ -343,6 +342,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
         "the layer those tests must satisfy.",
+        "visual": "The response enhances the task by framing ideas spatially or metaphorically — placing concepts in positional relationship, using visual analogies, or building a spatial model "
+        "of the subject. Output format is not constrained; pair with channel:draw for spatial prose layout or channel:diagram for machine-readable diagrams.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
     },
     "scope": {
@@ -387,6 +388,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "code": "Code or markup only, no prose",
         "codetour": "VS Code CodeTour JSON file",
         "diagram": "Mermaid diagram only",
+        "draw": "Spatial ASCII prose layout",
         "gherkin": "Gherkin scenario format",
         "html": "Semantic HTML only, no prose",
         "jira": "Jira markup formatting",
@@ -447,7 +449,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "formats": "Document types and writing formats",
         "ghost": "Workflow execution trace",
         "indirect": "Background first, conclusion last",
-        "ladder": "Abstraction ladder up and down",
         "log": "Work or research log entry",
         "merge": "Combine multiple sources coherently",
         "persist": "Durable save state for resumption or handoff",
@@ -467,7 +468,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "twin": "Side-by-side comparison layout",
         "variants": "Several distinct labeled options",
         "vet": "Post-experiment review",
-        "visual": "Abstract visual or metaphorical layout",
         "walkthrough": "Step-by-step guided walkthrough",
         "wardley": "Wardley map",
         "wasinawa": "What–So What–Now What reflection",
@@ -511,6 +511,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "induce": "Generalize patterns from examples",
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
+        "ladder": "Move between abstraction levels",
         "mapping": "Surface elements and relationships",
         "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
@@ -555,6 +556,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "trace": "Narrate sequential progression",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
+        "visual": "Spatial or metaphorical framing",
         "yield": "Minimal action, allow natural resolution",
     },
     "scope": {
@@ -587,6 +589,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "code": "碼",
         "codetour": "観",
         "diagram": "図",
+        "draw": "枠",
         "gherkin": "瓜",
         "html": "標",
         "image": "像",
@@ -638,7 +641,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "formats": "様",
         "ghost": "幽",
         "indirect": "間",
-        "ladder": "階",
         "log": "誌",
         "merge": "合",
         "persist": "残",
@@ -657,7 +659,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "twin": "双",
         "variants": "変",
         "vet": "評",
-        "visual": "絵",
         "walkthrough": "歩",
         "wardley": "鎖",
         "wasinawa": "振",
@@ -701,6 +702,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "induce": "帰",
         "inversion": "逆",
         "jobs": "需",
+        "ladder": "階",
         "mapping": "写",
         "mark": "印",
         "meld": "融",
@@ -745,6 +747,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "trace": "跡",
         "unknowns": "未",
         "verify": "証",
+        "visual": "絵",
         "yield": "任",
     },
     "persona": {
@@ -872,6 +875,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "induce": "Reasoning",
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
+        "ladder": "Reasoning",
         "mapping": "Structural",
         "mark": "Temporal/Dynamic",
         "meld": "Comparative",
@@ -916,6 +920,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "trace": "Temporal/Dynamic",
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
+        "visual": "Generative",
         "yield": "Minimal intervention",
     }
 }
@@ -932,6 +937,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "code": "Code output",
         "codetour": "VS Code tour",
         "diagram": "Mermaid diagram",
+        "draw": "ASCII spatial layout",
         "gherkin": "Gherkin scenarios",
         "html": "HTML output",
         "image": "Image output",
@@ -995,7 +1001,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "formats": "Format comparison",
         "ghost": "Workflow execution trace",
         "indirect": "Background then conclusion",
-        "ladder": "Abstraction ladder",
         "log": "Work log entry",
         "merge": "Combine sources",
         "persist": "Durable save state for resumption",
@@ -1015,7 +1020,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "twin": "Side-by-side comparison",
         "variants": "Multiple alternatives",
         "vet": "Post-experiment review",
-        "visual": "Visual/spatial layout",
         "walkthrough": "Linear step-by-step narration",
         "wardley": "Wardley map",
         "wasinawa": "What/So What/Now What",
@@ -1059,6 +1063,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "induce": "Generalise from examples",
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
+        "ladder": "Abstraction level traversal",
         "mapping": "Spatial map",
         "mark": "Audit trail",
         "meld": "Combinations/overlaps",
@@ -1103,6 +1108,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "trace": "Sequential narration",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
+        "visual": "Spatial/metaphorical framing",
         "yield": "Minimal intervention / natural resolution",
     },
     "scope": {
@@ -2097,6 +2103,35 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "draw this out",
                 "architecture diagram in Mermaid",
                 "as a diagram",
+            ],
+        },
+        "draw": {
+            "definition": "Spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable; not machine-parseable. Use when "
+            "spatial overview is wanted without the precision constraints of Mermaid or D2.",
+            "distinctions": [
+                {
+                    "note": "diagram (channel) = Mermaid code, machine-parseable; draw (channel) = spatial ASCII prose, human-readable",
+                    "token": "diagram",
+                },
+                {
+                    "note": "sketch (channel) = D2 diagram source; draw (channel) = freehand ASCII spatial layout without a schema",
+                    "token": "sketch",
+                },
+                {
+                    "note": "visual (method) = frame ideas spatially regardless of output format; draw (channel) = deliver that framing as ASCII spatial layout",
+                    "token": "visual",
+                },
+            ],
+            "heuristics": [
+                "ASCII diagram",
+                "boxes and arrows",
+                "spatial layout",
+                "ASCII layout",
+                "hand-drawn style",
+                "rough diagram",
+                "text-based visual",
+                "ASCII art",
+                "prose diagram",
             ],
         },
         "gherkin": {
@@ -3167,16 +3202,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "reasoning before conclusion",
             ],
         },
-        "ladder": {
-            "definition": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance "
-            "to the audience.",
-            "distinctions": [],
-            "heuristics": [
-                "step up and down abstraction levels",
-                "root cause hierarchy",
-                "why at a systems level",
-            ],
-        },
         "log": {
             "definition": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference "
             "without unrelated narrative.",
@@ -3569,23 +3594,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "post-debug review",
                 "review what my debugging found vs what I expected",
                 "what did the debugging reveal vs my hypothesis",
-            ],
-        },
-        "visual": {
-            "definition": "The response presents the main answer as an abstract visual or metaphorical layout with a short legend, emphasising big-picture structure over diagrammatic "
-            "precision. Adapts to channel: with a code channel, visual structure is expressed through code organization, comments, or inline ASCII; without a channel, through "
-            "prose metaphors and spatial layout.",
-            "distinctions": [
-                {
-                    "note": "diagram (channel) = precise Mermaid code with exact nodes and edges; visual (form) = abstract/metaphorical prose layout with a short legend when "
-                    "conceptual overview is more useful than diagrammatic precision",
-                    "token": "diagram",
-                }
-            ],
-            "heuristics": [
-                "abstract visual",
-                "conceptual layout",
-                "big-picture structure for non-technical audience",
             ],
         },
         "walkthrough": {
@@ -4440,6 +4448,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "user motivation behind",
                 "JTBD",
                 "jobs to be done",
+            ],
+        },
+        "ladder": {
+            "definition": "Move deliberately between abstraction levels: step up to higher-level causes, patterns, or systems; step down to concrete consequences or implementations. Both "
+            "directions must be traversed — the response places the focal point, moves up at least one level, and moves down at least one level, ordered by importance.",
+            "distinctions": [
+                {
+                    "note": "fog/dig (directional) = push the whole response toward abstract or concrete; ladder (method) = actively traverse both directions within the response",
+                    "token": "fog",
+                },
+                {
+                    "note": "zoom (completeness) = scale bucket size to span magnitude; ladder (method) = move between named abstraction levels around a focal point",
+                    "token": "zoom",
+                },
+            ],
+            "heuristics": [
+                "step up and down abstraction levels",
+                "root cause hierarchy",
+                "why at a systems level",
+                "zoom out then zoom in",
+                "from concrete to abstract and back",
+                "abstraction ladder",
+                "levels of abstraction",
             ],
         },
         "mapping": {
@@ -5383,6 +5414,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "pressure-test the conclusions",
                 "don't just assert — verify",
                 "what evidence would disprove this",
+            ],
+        },
+        "visual": {
+            "definition": "Frame ideas spatially or metaphorically — place concepts in positional relationship, use visual analogies, or build a spatial model of the subject. The output "
+            "format is not constrained by this token: pair with channel:draw for spatial prose layout, or channel:diagram for machine-readable diagrams.",
+            "distinctions": [
+                {
+                    "note": "draw (channel) = deliver the output as ASCII spatial layout; visual (method) = frame ideas spatially regardless of output format",
+                    "token": "draw",
+                },
+                {
+                    "note": "diagram (channel) = Mermaid code output; visual (method) = spatial framing that can be expressed in any output format",
+                    "token": "diagram",
+                },
+                {
+                    "note": "analog (method) = reason through a structural mapping from a specific known case; visual (method) = frame ideas in spatial/positional terms without "
+                    "requiring a parallel case",
+                    "token": "analog",
+                },
+            ],
+            "heuristics": [
+                "think spatially",
+                "spatial framing",
+                "place these concepts in space",
+                "use a visual metaphor",
+                "conceptual layout",
+                "big-picture structure",
+                "map this out conceptually",
+                "visual mental model",
+                "frame this as a landscape",
             ],
         },
         "yield": {

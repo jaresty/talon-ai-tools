@@ -103,10 +103,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
         "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
-        "zoom": "The response explicitly names the smallest natural unit for the subject and the largest, then fills in with exponentially-spaced buckets between. Both ends must appear as "
-        "explicit anchors — do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude in "
-        "span produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), "
-        "hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets.",
+        "zoom": "The response covers the full range of the subject by treating it as exponentially-spaced buckets from smallest natural unit to largest. Each bucket receives substantive "
+        "coverage — the response addresses the subject at every level, not merely names or lists the scale. Both ends must appear as explicit anchors: do not begin at an "
+        "intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude in span produces roughly one step up in "
+        "granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), "
+        "spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets.",
     },
     "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
@@ -786,6 +787,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
             "as programmer": "程",
             "as prompt engineer": "吟",
             "as scientist": "科",
+            "as storyteller": "語",
             "as teacher": "教",
             "as writer": "著",
         },
@@ -2477,8 +2479,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "zoom": {
-            "definition": "Scale-adaptive granularity with explicit end anchors. The response names the smallest natural unit for the subject and the largest, then fills in with "
-            "exponentially-spaced buckets between. Both ends must appear explicitly — do not begin at an intermediate level or leave either end implicit. Bucket sizes "
+            "definition": "Scale-adaptive granularity: cover the full range of the subject as exponentially-spaced buckets, providing substantive content at every level — not just "
+            "naming or listing the scale. Both ends must appear as explicit anchors; do not begin at an intermediate level or leave either end implicit. Bucket sizes "
             "scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. "
             "Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), "
             "complexity tiers, or fuzzy buckets.",

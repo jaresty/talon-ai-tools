@@ -32,6 +32,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as principal engineer": "The response speaks as a principal engineer, bringing systems thinking, trade-offs, and pragmatic guidance.",
         "as Kent Beck": "The response channels Kent Beck's pragmatic, iterative style with an emphasis on tests and simplicity.",
         "as future historian": "The response speaks as a future historian looking back at the present, treating current events and decisions as already-settled historical record with the benefit of hindsight.",
+        "as storyteller": "The response speaks as a storyteller, inventing vivid metaphors and fantastical scenarios to make ideas engaging and memorable.",
     },
     "audience": {
         "to managers": "The response addresses managers, highlighting outcomes, risk, and staffing.",
@@ -83,6 +84,7 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "as principal engineer": "Principal engineer systems view",
         "as Kent Beck": "Kent Beck pragmatic style",
         "as future historian": "Future historian retrospective",
+        "as storyteller": "Fantastical metaphor and story",
     },
     "audience": {
         "to managers": "Outcome-focused for managers",
@@ -136,6 +138,7 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "as scientist":          "Scientist voice",
         "as teacher":            "Teacher voice",
         "as writer":             "Writer voice",
+        "as storyteller":        "Storyteller voice",
     },
     "audience": {
         "to CEO":                 "CEO audience",
@@ -196,6 +199,7 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "as scientist": "科",
         "as teacher": "教",
         "as writer": "著",
+        "as storyteller": "語",
     },
     "audience": {
         "to managers": "監",
@@ -890,6 +894,10 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                     "token": "as teacher",
                     "note": "as writer = craft of prose and narrative; as teacher = scaffolded explanation and pedagogy",
                 },
+                {
+                    "token": "as storyteller",
+                    "note": "as writer = prose craft, grounded in clarity; as storyteller = invents fantastical metaphors and scenarios for engagement",
+                },
             ],
         },
         "as designer": {
@@ -1043,6 +1051,33 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "as writer",
                     "note": "as future historian = historical narrative perspective on present events; as writer = prose craft and communication flow without the temporal frame",
+                },
+            ],
+        },
+        "as storyteller": {
+            "definition": "Adopt a storyteller's imaginative stance: invent vivid metaphors and fantastical scenarios to make ideas engaging and memorable — treats any topic as an opportunity for creative, narrative-driven illumination.",
+            "heuristics": [
+                "tell a story",
+                "use a metaphor",
+                "make it fantastical",
+                "explain through a made-up world",
+                "be imaginative",
+                "use an analogy",
+                "make it fun and engaging",
+                "bring it to life with a story",
+            ],
+            "distinctions": [
+                {
+                    "token": "as writer",
+                    "note": "as storyteller = invents fantastical scenarios and metaphors for engagement; as writer = prose craft and narrative clarity, grounded",
+                },
+                {
+                    "token": "as teacher",
+                    "note": "as storyteller = illuminates through invented narrative and metaphor; as teacher = scaffolds understanding through structured pedagogy",
+                },
+                {
+                    "token": "as scientist",
+                    "note": "as storyteller = invents and imagines freely; as scientist = evidence-first, grounded in rigor — avoid storyteller for factual or analytical tasks",
                 },
             ],
         },

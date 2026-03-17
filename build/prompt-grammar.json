@@ -35,7 +35,7 @@
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. The coverage allocation is stakes-proportionate rather than uniform.",
-        "zoom": "The response explicitly names the smallest natural unit for the subject and the largest, then fills in with exponentially-spaced buckets between. Both ends must appear as explicit anchors — do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude in span produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets."
+        "zoom": "The response covers the full range of the subject by treating it as exponentially-spaced buckets from smallest natural unit to largest. Each bucket receives substantive coverage — the response addresses the subject at every level, not merely names or lists the scale. Both ends must appear as explicit anchors: do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude in span produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets."
       },
       "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together.",
@@ -1522,7 +1522,7 @@
           ]
         },
         "zoom": {
-          "definition": "Scale-adaptive granularity with explicit end anchors. The response names the smallest natural unit for the subject and the largest, then fills in with exponentially-spaced buckets between. Both ends must appear explicitly — do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets.",
+          "definition": "Scale-adaptive granularity: cover the full range of the subject as exponentially-spaced buckets, providing substantive content at every level — not just naming or listing the scale. Both ends must appear as explicit anchors; do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets.",
           "distinctions": [
             {
               "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
@@ -5505,6 +5505,7 @@
         "as programmer",
         "as prompt engineer",
         "as scientist",
+        "as storyteller",
         "as teacher",
         "as writer"
       ]
@@ -5553,6 +5554,7 @@
         "as programmer": "The response adopts the stance and language of a programmer, explaining and reasoning like an engineer.",
         "as prompt engineer": "The response reflects a prompt-engineer stance, explicitly designing and refining prompts.",
         "as scientist": "The response speaks as a scientist, emphasising evidence, hypotheses, and rigor.",
+        "as storyteller": "The response speaks as a storyteller, inventing vivid metaphors and fantastical scenarios to make ideas engaging and memorable.",
         "as teacher": "The response speaks as a teacher, breaking concepts down and scaffolding understanding.",
         "as writer": "The response speaks as a writer, focusing on narrative clarity and flow."
       }
@@ -5741,6 +5743,7 @@
         "as programmer": "Programmer stance",
         "as prompt engineer": "Prompt engineering focus",
         "as scientist": "Scientific, evidence-based",
+        "as storyteller": "Fantastical metaphor and story",
         "as teacher": "Teaching and scaffolding",
         "as writer": "Writer's narrative voice"
       },
@@ -5789,6 +5792,7 @@
         "as programmer": "程",
         "as prompt engineer": "吟",
         "as scientist": "科",
+        "as storyteller": "語",
         "as teacher": "教",
         "as writer": "著"
       },
@@ -5837,6 +5841,7 @@
         "as programmer": "Programmer voice",
         "as prompt engineer": "Prompt engineer voice",
         "as scientist": "Scientist voice",
+        "as storyteller": "Storyteller voice",
         "as teacher": "Teacher voice",
         "as writer": "Writer voice"
       },
@@ -6074,6 +6079,33 @@
             }
           ]
         },
+        "as storyteller": {
+          "definition": "Adopt a storyteller's imaginative stance: invent vivid metaphors and fantastical scenarios to make ideas engaging and memorable — treats any topic as an opportunity for creative, narrative-driven illumination.",
+          "heuristics": [
+            "tell a story",
+            "use a metaphor",
+            "make it fantastical",
+            "explain through a made-up world",
+            "be imaginative",
+            "use an analogy",
+            "make it fun and engaging",
+            "bring it to life with a story"
+          ],
+          "distinctions": [
+            {
+              "token": "as writer",
+              "note": "as storyteller = invents fantastical scenarios and metaphors for engagement; as writer = prose craft and narrative clarity, grounded"
+            },
+            {
+              "token": "as teacher",
+              "note": "as storyteller = illuminates through invented narrative and metaphor; as teacher = scaffolds understanding through structured pedagogy"
+            },
+            {
+              "token": "as scientist",
+              "note": "as storyteller = invents and imagines freely; as scientist = evidence-first, grounded in rigor — avoid storyteller for factual or analytical tasks"
+            }
+          ]
+        },
         "as teacher": {
           "definition": "Adopt a teacher's stance that scaffolds understanding: the response breaks concepts down gradually for a learner.",
           "heuristics": [
@@ -6107,6 +6139,10 @@
             {
               "token": "as teacher",
               "note": "as writer = craft of prose and narrative; as teacher = scaffolded explanation and pedagogy"
+            },
+            {
+              "token": "as storyteller",
+              "note": "as writer = prose craft, grounded in clarity; as storyteller = invents fantastical metaphors and scenarios for engagement"
             }
           ]
         }
@@ -6970,6 +7006,7 @@
           "as programmer": "as-programmer",
           "as prompt engineer": "as-prompt-engineer",
           "as scientist": "as-scientist",
+          "as storyteller": "as-storyteller",
           "as teacher": "as-teacher",
           "as writer": "as-writer"
         },
@@ -7218,6 +7255,7 @@
         "voice=as programmer": "voice-as-programmer",
         "voice=as prompt engineer": "voice-as-prompt-engineer",
         "voice=as scientist": "voice-as-scientist",
+        "voice=as storyteller": "voice-as-storyteller",
         "voice=as teacher": "voice-as-teacher",
         "voice=as writer": "voice-as-writer"
       },
@@ -7281,6 +7319,7 @@
       "as programmer": "as-programmer",
       "as prompt engineer": "as-prompt-engineer",
       "as scientist": "as-scientist",
+      "as storyteller": "as-storyteller",
       "as teacher": "as-teacher",
       "as writer": "as-writer",
       "assume": "assume",
@@ -7723,6 +7762,7 @@
       "voice=as programmer": "voice-as-programmer",
       "voice=as prompt engineer": "voice-as-prompt-engineer",
       "voice=as scientist": "voice-as-scientist",
+      "voice=as storyteller": "voice-as-storyteller",
       "voice=as teacher": "voice-as-teacher",
       "voice=as writer": "voice-as-writer",
       "walkthrough": "walkthrough",
@@ -8477,11 +8517,11 @@
     }
   ],
   "checksums": {
-    "axes": "09cc44c00f1bb2c7666cd24a45ce52d4c381f977697c7a83a29a8eb6dd56ea64",
+    "axes": "5e3bb9a1cf78dd1dce793337b6bdc927829d8ad0ef80a217d60e6d3557bd2ad9",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
-    "persona": "e1e19c6a9e1a860d7782b27bc519c92abb000149d4d38f0a154b34c8b9acf7fa",
+    "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "92aee3c370c7ea8105f24a87c12d0e4a5d55ec275e46c00355f61a8ffe14180e",
+    "slugs": "01bd4429f9ca5b65c0812692c5d09cbcb700042c463e893f2acb6a34c0b5b8fb",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

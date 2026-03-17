@@ -280,9 +280,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
         "melody": "The response characterises a seam or coupling using three Concordance pressures. Visibility: how explicit and discoverable the contract is — named orchestrators, typed "
-        "interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how widely a change propagates across domains or layers — wide scope "
-        "crosses many bounded contexts, narrow scope stays local. Volatility: how tightly temporal or structural coupling forces synchronised change sets — tight timing dependencies or "
-        "shared schemas score high. All three pressures must appear in the output; omitting any one is incomplete.",
+        "interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how many locations require simultaneous code edits when this seam changes — "
+        "a config read in many places but changed in one scores low; a positional interface referenced at every call site scores high. Volatility: how tightly temporal or structural "
+        "coupling forces synchronised change sets — tight timing dependencies or shared schemas score high. All three pressures must appear in the output; omitting any one is "
+        "incomplete.",
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
@@ -4501,8 +4502,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "melody": {
             "definition": "The response characterises a seam or coupling using three Concordance pressures — all three must appear in the output, omitting any one is incomplete. "
             "Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit "
-            "state = low). Scope: how widely a change propagates across domains or layers (crosses many bounded contexts = wide; stays local = narrow). Volatility: how "
-            "tightly temporal or structural coupling forces synchronised change sets (shared schemas, execution-order dependencies = high).",
+            "state = low). Scope: how many locations require simultaneous code edits when this seam changes (a config read in many places but changed in one = low; a "
+            "positional interface referenced at every call site = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (shared "
+            "schemas, execution-order dependencies = high).",
             "distinctions": [
                 {
                     "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",

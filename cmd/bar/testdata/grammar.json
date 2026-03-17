@@ -140,7 +140,7 @@
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
-        "melody": "The response characterises a seam or coupling using three Concordance pressures. Visibility: how explicit and discoverable the contract is — named orchestrators, typed interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how widely a change propagates across domains or layers — wide scope crosses many bounded contexts, narrow scope stays local. Volatility: how tightly temporal or structural coupling forces synchronised change sets — tight timing dependencies or shared schemas score high. All three pressures must appear in the output; omitting any one is incomplete.",
+        "melody": "The response characterises a seam or coupling using three Concordance pressures. Visibility: how explicit and discoverable the contract is — named orchestrators, typed interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how many locations require simultaneous code edits when this seam changes — a config read in many places but changed in one scores low; a positional interface referenced at every call site scores high. Volatility: how tightly temporal or structural coupling forces synchronised change sets — tight timing dependencies or shared schemas score high. All three pressures must appear in the output; omitting any one is incomplete.",
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the shift.",
         "mint": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
@@ -3453,7 +3453,7 @@
           ]
         },
         "melody": {
-          "definition": "The response characterises a seam or coupling using three Concordance pressures — all three must appear in the output, omitting any one is incomplete. Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit state = low). Scope: how widely a change propagates across domains or layers (crosses many bounded contexts = wide; stays local = narrow). Volatility: how tightly temporal or structural coupling forces synchronised change sets (shared schemas, execution-order dependencies = high).",
+          "definition": "The response characterises a seam or coupling using three Concordance pressures — all three must appear in the output, omitting any one is incomplete. Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit state = low). Scope: how many locations require simultaneous code edits when this seam changes (a config read in many places but changed in one = low; a positional interface referenced at every call site = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (shared schemas, execution-order dependencies = high).",
           "distinctions": [
             {
               "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",
@@ -8528,7 +8528,7 @@
     }
   ],
   "checksums": {
-    "axes": "c3eb60118d485522a8ed5117132be3e08ecd20f3ab23161999a768a820441ddd",
+    "axes": "d80f272edf624d8269c5b97d5042e609751f75c0d6c2e78f608965e1bdb365e3",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

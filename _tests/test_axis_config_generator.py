@@ -38,10 +38,12 @@ if bootstrap is not None:
                 'axis_key_to_category_map', 'axis_key_to_routing_concept_map',
                 'axis_key_to_axis_desc', 'get_cross_axis_composition', 'axis_docs_for',
                 'axis_docs_index', 'get_usage_patterns', 'dataclass', 'field', 'Any', 'Dict',
-                'FrozenSet', 'TypedDict', 'Union', 'annotations', '__doc__', '__annotations__',
+                'FrozenSet', 'List', 'TypedDict', 'Union', 'annotations', '__doc__', '__annotations__',
                 '__conditional_annotations__',
                 # ADR-0155: axis token structured metadata
                 'AxisTokenDistinction', 'AxisTokenMetadata', 'AXIS_TOKEN_METADATA', 'axis_token_metadata',
+                # ADR-0144: category order
+                'AXIS_CATEGORY_ORDER', 'axis_category_order',
             }
             unexpected_globals = set(globals_dict.keys()) - expected_globals - allowed_helpers
             if unexpected_globals:

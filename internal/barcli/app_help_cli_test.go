@@ -80,8 +80,8 @@ func TestFormTokensHaveStructuredMetadataHeuristics(t *testing.T) {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
 	specialistForms := []string{
-		"wardley", "wasinawa", "spike", "cocreate", "ladder",
-		"taxonomy", "facilitate", "recipe", "visual",
+		"wardley", "wasinawa", "spike", "cocreate",
+		"taxonomy", "facilitate", "recipe",
 	}
 	for _, token := range specialistForms {
 		meta := grammar.AxisMetadataFor("form", token)

@@ -103,10 +103,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
         "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
-        "zoom": "The response adapts its granularity to the span being covered: fine detail at small scale, coarse grouping at large scale. Bucket sizes scale exponentially with span "
-        "magnitude — each order of magnitude in span produces roughly one step up in granularity. Steps are multiplicative, not additive. A narrow span gets fine grain (hours, "
-        "days, small quantities); a broad span gets coarse buckets (months, years, magnitude tiers). Both directions are equally correct. Works for any sequence with intuitive "
-        "magnitude: time, quantities, complexity tiers, hierarchy levels, or fuzzy buckets.",
+        "zoom": "The response adapts its granularity to the magnitude of the span being covered. Bucket sizes scale exponentially — each order of magnitude in span produces roughly one "
+        "step up in granularity, so steps are multiplicative, not additive. A small span gets fine-grained buckets; a large span gets coarse ones. Applies to any axis with natural "
+        "magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets. Both directions "
+        "are equally correct.",
     },
     "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "
@@ -2477,10 +2477,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "zoom": {
-            "definition": "Scale-adaptive granularity: fine detail at small scale, coarse grouping at large scale. Bucket sizes scale exponentially with span magnitude — each order of "
-            "magnitude in span produces roughly one step up in granularity. Steps are multiplicative, not additive. A narrow span gets fine grain (hours, days, small "
-            "quantities); a broad span gets coarse buckets (months, years, magnitude tiers). Both directions are equally correct. Works for any sequence with intuitive "
-            "magnitude: time, quantities, complexity tiers, hierarchy levels, or fuzzy buckets.",
+            "definition": "Scale-adaptive granularity: bucket sizes scale exponentially with span magnitude. Each order of magnitude in span produces roughly one step up in "
+            "granularity — steps are multiplicative, not additive. A small span gets fine-grained buckets; a large span gets coarse ones. Both directions are equally "
+            "correct. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → "
+            "years), complexity tiers, or fuzzy buckets.",
             "distinctions": [
                 {
                     "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
@@ -2498,16 +2498,17 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "heuristics": [
                 "appropriate granularity",
                 "at the right level of detail for the range",
-                "group by week month year",
+                "bucket by order of magnitude",
                 "proportional resolution",
                 "bucket by magnitude",
                 "coarser as it gets larger",
                 "finer as it gets smaller",
-                "fine grain for short spans",
-                "daily detail for a week-long range",
+                "fine grain for small spans",
                 "group at natural intervals",
                 "scale the detail to the span",
                 "log scale grouping",
+                "zoom in",
+                "zoom out",
             ],
         },
     },

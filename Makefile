@@ -80,6 +80,13 @@ axis-regenerate:
 	PYTHONPATH=. $(PYTHON) scripts/tools/axis-catalog-validate.py --skip-list-files
 
 axis-regenerate-apply: axis-regenerate
+	@$(PYTHON) -c "\
+import sys; \
+text = open('tmp/axisConfig.generated.py').read(); \
+required = ['AXIS_CATEGORY_ORDER', 'def axis_category_order', 'AXIS_KEY_TO_VALUE', 'def axis_key_to_value_map']; \
+missing = [s for s in required if s not in text]; \
+sys.exit('axis-regenerate-apply: generated file is missing required symbols: ' + ', '.join(missing)) if missing else None \
+"
 	@if ! cmp -s tmp/axisConfig.generated.py lib/axisConfig.py; then \
 		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
 	fi

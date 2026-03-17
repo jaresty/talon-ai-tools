@@ -342,8 +342,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
         "the layer those tests must satisfy.",
-        "visual": "The response enhances the task by framing ideas spatially or metaphorically — placing concepts in positional relationship, using visual analogies, or building a spatial model "
-        "of the subject.",
+        "visual": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
     },
     "scope": {
@@ -556,7 +555,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "trace": "Narrate sequential progression",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
-        "visual": "Spatial or metaphorical framing",
+        "visual": "Spatial/positional framing",
         "yield": "Minimal action, allow natural resolution",
     },
     "scope": {
@@ -1108,7 +1107,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "trace": "Sequential narration",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
-        "visual": "Spatial/metaphorical framing",
+        "visual": "Spatial/positional framing",
         "yield": "Minimal intervention / natural resolution",
     },
     "scope": {
@@ -5417,7 +5416,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "visual": {
-            "definition": "Frame ideas spatially or metaphorically — place concepts in positional relationship, use visual analogies, or build a spatial model of the subject.",
+            "definition": "Frame ideas spatially — place concepts in positional relationship and build a coordinate model of the subject.",
             "distinctions": [
                 {
                     "note": "draw (channel) = deliver the output as ASCII spatial layout; visual (method) = frame ideas spatially regardless of output format",
@@ -5437,7 +5436,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "think spatially",
                 "spatial framing",
                 "place these concepts in space",
-                "use a visual metaphor",
+                "frame this as a coordinate space",
                 "conceptual layout",
                 "big-picture structure",
                 "map this out conceptually",

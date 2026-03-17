@@ -181,7 +181,7 @@
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural changes.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
         "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing the layer those tests must satisfy.",
-        "visual": "The response enhances the task by framing ideas spatially or metaphorically — placing concepts in positional relationship, using visual analogies, or building a spatial model of the subject.",
+        "visual": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction."
       },
       "scope": {
@@ -574,7 +574,7 @@
         "trace": "Narrate sequential progression",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
-        "visual": "Spatial or metaphorical framing",
+        "visual": "Spatial/positional framing",
         "yield": "Minimal action, allow natural resolution"
       },
       "scope": {
@@ -1050,7 +1050,7 @@
         "trace": "Sequential narration",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
-        "visual": "Spatial/metaphorical framing",
+        "visual": "Spatial/positional framing",
         "yield": "Minimal intervention / natural resolution"
       },
       "scope": {
@@ -4341,7 +4341,7 @@
           ]
         },
         "visual": {
-          "definition": "Frame ideas spatially or metaphorically — place concepts in positional relationship, use visual analogies, or build a spatial model of the subject.",
+          "definition": "Frame ideas spatially — place concepts in positional relationship and build a coordinate model of the subject.",
           "distinctions": [
             {
               "note": "draw (channel) = deliver the output as ASCII spatial layout; visual (method) = frame ideas spatially regardless of output format",
@@ -4360,7 +4360,7 @@
             "think spatially",
             "spatial framing",
             "place these concepts in space",
-            "use a visual metaphor",
+            "frame this as a coordinate space",
             "conceptual layout",
             "big-picture structure",
             "map this out conceptually",
@@ -8594,7 +8594,7 @@
     }
   ],
   "checksums": {
-    "axes": "ea9dbcf6c7aa2655261f64514ecb637b02e1e68c79817e3390e8127391a791fc",
+    "axes": "32889a8d888437e9362aa7f13786184a2f2e2b8f29bff6776d9f10f07502666d",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

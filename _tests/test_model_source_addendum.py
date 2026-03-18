@@ -47,6 +47,25 @@ if bootstrap is not None:
                 "format_source_messages must not use legacy '# Prompt' heading",
             )
 
+        def test_execution_reminder_precedes_addendum(self) -> None:
+            """EXECUTION REMINDER must appear before ADDENDUM in format_source_messages output,
+            so it gates completion-intent before the task prompt anchors the model's response plan."""
+            messages = format_source_messages("do this", _SimpleSource())
+            all_text = " ".join(
+                item.get("text", "")
+                for item in messages
+                if isinstance(item, dict)
+            )
+            reminder_idx = all_text.find("=== EXECUTION REMINDER ===")
+            addendum_idx = all_text.find("=== ADDENDUM (CLARIFICATION) ===")
+            self.assertGreater(reminder_idx, -1, "EXECUTION REMINDER section must be present")
+            self.assertGreater(addendum_idx, -1, "ADDENDUM section must be present")
+            self.assertLess(
+                reminder_idx,
+                addendum_idx,
+                "EXECUTION REMINDER must appear before ADDENDUM so it intercepts completion-intent",
+            )
+
         def test_prompt_reference_key_documents_addendum_section(self) -> None:
             """PROMPT_REFERENCE_KEY must describe the ADDENDUM section."""
             self.assertIn(

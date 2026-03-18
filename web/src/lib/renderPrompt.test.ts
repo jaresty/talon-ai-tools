@@ -186,6 +186,15 @@ describe('renderPrompt', () => {
 		expect(result).not.toContain('=== META INTERPRETATION ===');
 	});
 
+	it('EXECUTION REMINDER appears before CONSTRAINTS section', () => {
+		const result = renderPrompt(grammar, { completeness: ['full'] }, 'x', '');
+		const reminderIdx = result.indexOf('=== EXECUTION REMINDER ===');
+		const constraintsIdx = result.indexOf('=== CONSTRAINTS 制約 (GUARDRAILS) ===');
+		expect(reminderIdx).toBeGreaterThan(-1);
+		expect(constraintsIdx).toBeGreaterThan(-1);
+		expect(reminderIdx).toBeLessThan(constraintsIdx);
+	});
+
 	it('output ends with a single newline', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
 		expect(result.endsWith('\n')).toBe(true);

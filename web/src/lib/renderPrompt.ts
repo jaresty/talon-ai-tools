@@ -48,6 +48,10 @@ export function renderPrompt(
 		: '';
 	parts.push(writeSection('=== TASK 任務 (DO THIS) ===', taskDesc));
 
+	// EXECUTION REMINDER immediately after TASK to gate completion-intent
+	// before constraints arrive — mirrors render.go ordering.
+	parts.push(writeSection('=== EXECUTION REMINDER ===', grammar.execution_reminder));
+
 	// ADDENDUM section (only if present)
 	if (addendum.trim()) {
 		parts.push(writeSection('=== ADDENDUM 追加 (CLARIFICATION) ===', addendum.trim()));
@@ -190,9 +194,6 @@ export function renderPrompt(
 	if (grammar.meta_interpretation_guidance?.trim()) {
 		parts.push(writeSection('=== META INTERPRETATION ===', grammar.meta_interpretation_guidance));
 	}
-
-	// EXECUTION REMINDER — kept last to counteract recency bias
-	parts.push(writeSection('=== EXECUTION REMINDER ===', grammar.execution_reminder));
 
 	return parts.join('').trimEnd() + '\n';
 }

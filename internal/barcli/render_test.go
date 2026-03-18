@@ -138,6 +138,35 @@ func TestRenderPersonaPresetWithIntent(t *testing.T) {
 	}
 }
 
+// TestExecutionReminderPrecedesConstraints specifies that the EXECUTION REMINDER
+// section appears before the CONSTRAINTS section in RenderPlainText output, so
+// it gates completion-intent before constraints arrive rather than functioning
+// as a late-position advisory.
+func TestExecutionReminderPrecedesConstraints(t *testing.T) {
+	result := &BuildResult{
+		Task:             "make something",
+		ExecutionReminder: "Execute the TASK. Satisfy CONSTRAINTS before producing content.",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "full", Description: "Thorough answer."},
+		},
+	}
+
+	output := RenderPlainText(result)
+
+	reminderIdx := strings.Index(output, sectionExecution)
+	constraintsIdx := strings.Index(output, sectionConstraints)
+
+	if reminderIdx == -1 {
+		t.Fatalf("expected output to contain EXECUTION REMINDER section, got:\n%s", output)
+	}
+	if constraintsIdx == -1 {
+		t.Fatalf("expected output to contain CONSTRAINTS section, got:\n%s", output)
+	}
+	if reminderIdx >= constraintsIdx {
+		t.Fatalf("expected EXECUTION REMINDER (pos %d) to appear before CONSTRAINTS (pos %d):\n%s", reminderIdx, constraintsIdx, output)
+	}
+}
+
 func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
 	result := &BuildResult{
 		Task:        "probe fail full",

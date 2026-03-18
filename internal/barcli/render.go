@@ -30,6 +30,10 @@ func RenderPlainText(result *BuildResult) string {
 	taskBody = strings.TrimSpace(taskBody)
 	writeSection(&b, sectionTask, taskBody)
 
+	// Add execution reminder immediately after TASK to gate completion-intent
+	// before constraints arrive — prevents it functioning as a late-position advisory.
+	writeSection(&b, sectionExecution, result.ExecutionReminder)
+
 	if strings.TrimSpace(result.Addendum) != "" {
 		writeSection(&b, sectionAddendum, strings.TrimSpace(result.Addendum))
 	}
@@ -75,9 +79,6 @@ func RenderPlainText(result *BuildResult) string {
 	if strings.TrimSpace(result.MetaInterpretationGuidance) != "" {
 		writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
 	}
-
-	// Add execution reminder last to counteract recency bias
-	writeSection(&b, sectionExecution, result.ExecutionReminder)
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }

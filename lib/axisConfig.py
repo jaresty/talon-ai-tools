@@ -259,7 +259,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at "
-        "the first rung) — the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without consulting I again. Faithful derivation "
+        "the first rung — I is not itself a rung; the prose artifact is) — the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without consulting I again. Faithful derivation "
         "means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a "
         "representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code "
         "contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → "
@@ -4379,7 +4379,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "ground": {
             "definition": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or "
-            "from I alone, at the first rung) — the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without "
+            "from I alone, at the first rung — I is not itself a rung; the prose artifact is) — the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without "
             "consulting I again. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no "
             "additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal notation → "
             "executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. The "

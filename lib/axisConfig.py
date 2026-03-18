@@ -283,8 +283,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "execution do not satisfy this requirement and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is "
         "inconvenient or its outcome is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), "
         "then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against "
-        "I), then O satisfying V.",
-        "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
+        "I), then O satisfying V. Rung legibility: when descent creates multiple artifacts, open with a brief rung manifest — a short document listing each planned artifact, its rung label, and its derivation source — before writing the first artifact. Each artifact should carry a header comment identifying its rung and what it was derived from. File naming conventions are left to domain context; where none exists, a name that reflects the artifact's rung (e.g., validate_*, *_spec, *_test) aids legibility without being required.",
+        "grove":"The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
@@ -4454,7 +4454,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is inconvenient or its outcome "
             "is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), then the exact "
             "phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against "
-            "I), then O satisfying V.",
+            "I), then O satisfying V. Rung legibility: when descent creates multiple artifacts, open with a brief rung manifest — a short document listing each planned artifact, its rung label, and its derivation source — before writing the first artifact. Each artifact should carry a header comment identifying its rung and what it was derived from. File naming conventions are left to domain context; where none exists, a name that reflects the artifact's rung (e.g., validate_*, *_spec, *_test) aids legibility without being required.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "

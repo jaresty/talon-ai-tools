@@ -130,6 +130,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "shellscript",
         "sketch",
         "slack",
+        "store",
         "svg",
         "sync",
         "video",
@@ -139,7 +140,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_channel_metadata_covers_all_tokens(self):
-        """All 19 channel tokens must have metadata entries."""
+        """All 20 channel tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -343,7 +344,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "indirect",
         "log",
         "merge",
-        "persist",
+        "snap",
         "prep",
         "questions",
         "quiz",

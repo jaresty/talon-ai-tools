@@ -89,6 +89,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the "
         "output is syntactically correct and compiles successfully with the D2 CLI.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
+        "store": "The response additionally writes output to persistent storage using available tools — a file on disk, a memory system, or any other durable medium the environment supports — "
+        "as the work progresses. Conversational output continues normally; storage is additive, not a replacement. When no storage tool is available, the response notes explicitly what "
+        "should be saved and suggests how.",
         "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
         "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding "
@@ -169,8 +172,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
-        "persist": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work "
-        "from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
@@ -180,6 +181,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
+        "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from "
+        "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full "
         "conclusions until enough answers exist or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
@@ -397,6 +400,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "shellscript": "Shell script format",
         "sketch": "D2 diagram source only",
         "slack": "Slack-formatted Markdown",
+        "store": "Write output to persistent storage",
         "svg": "SVG markup only",
         "sync": "Synchronous session plan",
     },
@@ -450,12 +454,12 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "indirect": "Background first, conclusion last",
         "log": "Work or research log entry",
         "merge": "Combine multiple sources coherently",
-        "persist": "Durable save state for resumption or handoff",
         "prep": "Experiment design write-up",
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
         "scaffold": "First-principles scaffolded explanation",
+        "snap": "State snapshot for resumption or handoff",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
         "story": "User story format",
@@ -599,6 +603,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "shellscript": "脚",
         "sketch": "描",
         "slack": "通",
+        "store": "保",
         "svg": "画",
         "sync": "期",
         "video": "映",
@@ -642,12 +647,12 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "indirect": "間",
         "log": "誌",
         "merge": "合",
-        "persist": "残",
         "prep": "備",
         "questions": "問",
         "quiz": "試",
         "recipe": "法",
         "scaffold": "足",
+        "snap": "残",
         "socratic": "導",
         "spike": "査",
         "story": "話",
@@ -964,6 +969,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "shellscript": "Shell script",
         "sketch": "D2 diagram",
         "slack": "Slack formatting",
+        "store": "Persist to durable storage",
         "svg": "SVG output",
         "sync": "Session plan",
         "video": "Video output",
@@ -1018,12 +1024,12 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "indirect": "Background then conclusion",
         "log": "Work log entry",
         "merge": "Combine sources",
-        "persist": "Durable save state for resumption",
         "prep": "Experiment design",
         "questions": "Probing questions",
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
         "scaffold": "Building understanding",
+        "snap": "State snapshot for resumption",
         "socratic": "Question-led inquiry",
         "spike": "Research spike",
         "story": "User story",
@@ -2298,6 +2304,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "for a Slack post",
             ],
         },
+        "store": {
+            "definition": "Write to persistent storage: additionally writes output to a file, memory system, or other durable medium via available tools as the work progresses — additive, "
+            "not a replacement for conversational output. Falls back to surfacing content with explicit save instructions when no storage tool is available.",
+            "distinctions": [
+                {
+                    "note": "snap (form) = structure content as a save-state artifact; store (channel) = deliver output to durable storage — they compose naturally",
+                    "token": "snap",
+                }
+            ],
+            "heuristics": [
+                "save this to disk",
+                "write this to a file",
+                "persist this",
+                "store this",
+                "save to memory",
+                "keep saving as we go",
+                "I want to be able to find this later",
+                "make it findable later",
+                "save it somewhere",
+                "also write it out",
+            ],
+        },
         "svg": {
             "definition": "SVG markup only: complete output as SVG for direct use in an `.svg` file.",
             "distinctions": [],
@@ -3269,36 +3297,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "integrate these into a single output",
             ],
         },
-        "persist": {
-            "definition": "The response structures the output as a durable save state: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or "
-            "hand off the work from this point without loss. Forward-oriented — designed to be picked up again, not merely to record what happened.",
-            "distinctions": [
-                {
-                    "note": "ghost = execution trace of autonomous actions and results; persist = save state structured for future resumption or handoff",
-                    "token": "ghost",
-                },
-                {
-                    "note": "log = narrative record of what happened; persist = forward-oriented state snapshot for resumption",
-                    "token": "log",
-                },
-                {
-                    "note": "mark (method) = capture checkpoint evidence during execution; persist (form) = structure output as a durable resumable artifact",
-                    "token": "mark",
-                },
-            ],
-            "heuristics": [
-                "save where we are",
-                "checkpoint the work",
-                "make this resumable",
-                "save state so we can continue later",
-                "handoff document",
-                "what do I need to pick this up again",
-                "save progress",
-                "create a save file",
-                "durable record for resumption",
-                "so the next session can continue",
-            ],
-        },
         "prep": {
             "definition": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before "
             "running it.",
@@ -3399,6 +3397,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "teach me this",
                 "start from first principles",
                 "build up my understanding",
+            ],
+        },
+        "snap": {
+            "definition": "State snapshot: structures output as a forward-oriented capture of current state — progress made, key decisions, what remains — with enough context to resume or "
+            "hand off from this point.",
+            "distinctions": [
+                {
+                    "note": "ghost = execution trace of autonomous actions and results; snap = save state structured for future resumption or handoff",
+                    "token": "ghost",
+                },
+                {
+                    "note": "log = narrative record of what happened; snap = forward-oriented state snapshot for resumption",
+                    "token": "log",
+                },
+                {
+                    "note": "mark (method) = capture checkpoint evidence during execution; snap (form) = structure output as a resumable state artifact",
+                    "token": "mark",
+                },
+            ],
+            "heuristics": [
+                "save where we are",
+                "checkpoint the work",
+                "make this resumable",
+                "save state so we can continue later",
+                "handoff document",
+                "what do I need to pick this up again",
+                "save progress",
+                "create a save file",
+                "durable record for resumption",
+                "so the next session can continue",
             ],
         },
         "socratic": {

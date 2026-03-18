@@ -4408,6 +4408,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
             "heuristics": [
                 "define the spec first",
+                "TDD",
                 "test-driven design",
                 "what should it do before how",
                 "specification before implementation",

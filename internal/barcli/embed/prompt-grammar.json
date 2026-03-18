@@ -3363,6 +3363,7 @@
           ],
           "heuristics": [
             "define the spec first",
+            "TDD",
             "test-driven design",
             "what should it do before how",
             "specification before implementation",
@@ -8671,7 +8672,7 @@
     }
   ],
   "checksums": {
-    "axes": "d0fed7d036c4a3e43013f9665d0162a06e45d3f8c7c973d67149e798cf964d0e",
+    "axes": "a0f802943fa6c3afbe18b4c16f85481b0cf63ab51a74a8012a6d13ea3860b16e",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -249,7 +249,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
-        "allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
+        "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
@@ -263,8 +263,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a "
         "representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code "
         "contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → "
-        "executable implementation → observed running behavior. The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so "
-        "that intent is derived from observation rather than asserted. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the "
+        "executable implementation → observed running behavior. (The passing validation run rung records the execution observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so "
+        "that intent is derived from observation rather than asserted. In code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the "
         "intended change (using I to determine what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not "
         "achievable — a rung is not achievable when the domain provides no standard artifact type for it. Execution gate: before descending to any rung, the gap at the current rung must be confirmed by actual observation — for executable rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, asserted expectations, or documented rationales for skipping execution do not satisfy this requirement and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is inconvenient or its outcome is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
@@ -279,11 +279,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
-        "melody": "The response characterises a seam or coupling using three Concordance pressures. Visibility: how explicit and discoverable the contract is — named orchestrators, typed "
-        "interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how many locations require simultaneous code edits when this seam changes — "
-        "a config read in many places but changed in one scores low; a positional interface referenced at every call site scores high. Volatility: how tightly temporal or structural "
-        "coupling forces synchronised change sets — tight timing dependencies or shared schemas score high. All three pressures must appear in the output; omitting any one is "
-        "incomplete.",
+        "melody": "The response rates a seam or coupling using three coupling pressure dimensions. Visibility: how explicit and discoverable the contract is — named orchestrators, typed "
+        "interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how widely a change at this seam propagates across domains or layers — "
+        "confined to a single bounded context scores low; ripples across multiple services, teams, or abstraction layers scores high. Volatility: how tightly temporal or structural "
+        "coupling forces synchronised change sets — tight timing dependencies, shared schemas, shared algorithms, or positional interfaces score high. All three pressures must appear "
+        "in the output; omitting any one is incomplete.",
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
@@ -516,7 +516,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mapping": "Surface elements and relationships",
         "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
-        "melody": "Concordance pressure profile of a seam",
+        "melody": "Rate seam coupling pressure",
         "mesh": "Describe coupling propagation",
         "migrate": "Introduce a transition path between structures",
         "mint": "Explicit constructive derivation",
@@ -4055,6 +4055,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "misaligned rules",
                 "structural conflict",
                 "find the incompatibilities",
+                "both constraints are explicitly stated but they contradict",
             ],
         },
         "cluster": {
@@ -4257,7 +4258,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "drift": {
             "definition": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how "
-            "this looseness allows interpretive inference, inconsistency, or hidden assumption to substitute for derivability.",
+            "this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
             "distinctions": [
                 {
                     "note": "gap = implicit assumptions in rules or roles produce coordination failures; drift = structural looseness allows interpretive inference to substitute "
@@ -4265,17 +4266,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "gap",
                 },
                 {
-                    "note": "derive = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
+                    "note": "mint = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
                     "token": "mint",
                 },
             ],
             "heuristics": [
                 "conclusions that depend on interpretation",
-                "hidden assumptions substituting for structure",
                 "where reasoning could diverge",
                 "identify underenforced conclusions",
                 "conclusions that are implicit not derivable",
                 "where does the representation allow inconsistency",
+                "conclusions that vary on re-derivation",
+                "where the same premises yield different outputs",
             ],
         },
         "effects": {
@@ -4375,6 +4377,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where are the hidden assumptions",
                 "what's taken for granted",
                 "gap between stated and actual",
+                "two people assumed different things about this rule",
             ],
         },
         "ground": {
@@ -4382,9 +4385,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "from I alone, at the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the intent does not — such that any proposed output O can be accepted or rejected against V without "
             "consulting I again. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no "
             "additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal notation → "
-            "executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. The "
+            "executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. "
+            "(The passing validation run rung records the execution observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The "
             "ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather "
-            "than asserted. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine "
+            "than asserted. In code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine "
             "what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not "
             "achievable when the domain provides no standard artifact type for it. Execution gate: before descending to any rung, the gap at the current rung must be confirmed by actual observation — for executable rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, asserted expectations, or documented rationales for skipping execution do not satisfy this requirement and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is inconvenient or its outcome is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V.",
             "distinctions": [
@@ -4398,8 +4402,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "crystal",
                 },
                 {
-                    "note": "derive = make generating assumptions structurally explicit for derivability; ground = treat declared governing layer as fixed authority that "
-                    "conclusions must justify against",
+                    "note": "mint = build forward from assumptions toward conclusions; ground = validate backward against a fixed declared intent — they operate in opposite directions",
                     "token": "mint",
                 },
             ],
@@ -4410,13 +4413,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "specification before implementation",
                 "write the tests first",
                 "define success criteria",
-                "TDD",
                 "correctness criteria",
                 "ensure intent governs downstream",
                 "justify against declared constraints",
                 "explicit intent alignment",
                 "meaning governed by intent",
-                "what is the governing layer",
+                "I have a declared spec and want all reasoning to justify against it",
                 "I cannot tell from the requirement alone whether this output is correct",
                 "do not apply during active exploration when intent is not yet stable",
                 "what would prove this is done",
@@ -4585,18 +4587,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "melody": {
-            "definition": "The response characterises a seam or coupling using three Concordance pressures — all three must appear in the output, omitting any one is incomplete. "
+            "definition": "The response rates a seam or coupling using three coupling pressure dimensions — all three must appear in the output, omitting any one is incomplete. "
             "Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit "
-            "state = low). Scope: how many locations require simultaneous code edits when this seam changes (a config read in many places but changed in one = low; a "
-            "positional interface referenced at every call site = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (shared "
-            "schemas, execution-order dependencies = high).",
+            "state = low). Scope: how widely a change at this seam propagates across domains or layers (confined to a single bounded context = low; ripples across multiple "
+            "services, teams, or abstraction layers = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (tight timing dependencies, "
+            "shared schemas, shared algorithms, or positional interfaces = high).",
             "distinctions": [
                 {
                     "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",
                     "token": "depends",
                 },
                 {
-                    "note": "snag = surface where coupling seams exist; melody = characterise the quality of a seam across three pressure dimensions",
+                    "note": "snag = surface where coupling seams exist; melody = rate the quality of a seam across three pressure dimensions",
                     "token": "snag",
                 },
                 {
@@ -4605,7 +4607,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "Concordance pressure",
+                "rate this seam",
                 "characterise the seam",
                 "how bad is this coupling",
                 "visibility scope volatility",
@@ -4628,6 +4630,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "shear = outline steps to separate coupled domains; mesh = describe the propagation structure before separating",
                     "token": "shear",
+                },
+                {
+                    "note": "mesh = describe how coupling propagates across a seam; seep = identify where that coupling has leaked past intended scope",
+                    "token": "seep",
                 },
             ],
             "heuristics": [
@@ -4667,11 +4673,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
             "distinctions": [
                 {
-                    "note": "deduce = apply deductive logic to stated premises; derive = construct the generative structure so conclusions are built forward",
+                    "note": "deduce = apply deductive logic to stated premises; mint = construct the generative structure so conclusions are built forward",
                     "token": "deduce",
                 },
                 {
-                    "note": "ground = treat declared governing layer as fixed authority; derive = construct generative assumptions into explicit derivations",
+                    "note": "ground = treat declared governing layer as fixed authority; mint = construct generative assumptions into explicit derivations",
                     "token": "ground",
                 },
             ],
@@ -4680,7 +4686,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "construct explicit derivations",
                 "conclusions are products of the model",
                 "derivation structure is the response",
-                "formally construct the proof",
+                "make derivation steps explicit and auditable",
             ],
         },
         "mod": {
@@ -4958,13 +4964,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 }
             ],
             "heuristics": [
-                "what's unstated but assumed",
-                "what rules actually apply here",
-                "what constraints are assumed",
-                "what rules constrain this",
                 "name this pattern",
                 "what principle is this following",
                 "give this a name",
+                "I've found a pattern everyone follows implicitly — encode it as an explicit rule",
+                "what rules actually govern this",
+                "what constraints should be formally stated",
+                "make this convention into a constraint",
             ],
         },
         "release": {
@@ -5147,6 +5153,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "cross (scope) = concerns spanning modules by design; seep (method) = concerns overreaching their intended scope unintentionally",
                     "token": "cross",
                 },
+                {
+                    "note": "snag = surface where coupling seams exist; seep = identify where influence from those seams has leaked past intended scope",
+                    "token": "snag",
+                },
+                {
+                    "note": "shear/sever = install a separation; seep = audit whether the boundary is actually holding after installation",
+                    "token": "sever",
+                },
             ],
             "heuristics": [
                 "where does this leak",
@@ -5157,6 +5171,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where is influence extending too far",
                 "coupling from overreach",
                 "what is reaching outside its scope",
+                "is the boundary actually holding",
+                "did the decoupling work",
+                "has coupling re-emerged through a side channel",
             ],
         },
         "sense": {
@@ -5203,16 +5220,20 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "snag/mesh = diagnose coupling seams; sever = address it by structural separation",
                     "token": "snag",
                 },
+                {
+                    "note": "sever = introduce structural separation; seep = audit whether the boundary is holding after separation",
+                    "token": "seep",
+                },
             ],
             "heuristics": [
-                "separate these concerns",
-                "introduce a boundary here",
                 "enforce domain separation",
                 "make these modules independent",
                 "controlled interfaces only",
-                "decouple these",
-                "introduce an abstraction boundary",
                 "route interactions through explicit interfaces",
+                "make direct dependency structurally impossible",
+                "enforce that all interaction goes through a defined interface",
+                "make this separation permanent, not just a plan",
+                "this needs to be architectural not just procedural",
             ],
         },
         "shear": {
@@ -5231,10 +5252,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how to separate these",
                 "steps to decouple",
                 "realign these domains",
-                "reduce to a controlled interface",
                 "outline the separation",
                 "how to untangle",
-                "introduce a boundary",
+                "give me a plan to pull these apart",
+                "what are the steps to separate these two things",
+                "give me a migration plan to decouple these",
             ],
         },
         "shift": {
@@ -5291,6 +5313,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "shear = outline separation steps; snag = identify the coupling seams that need separating",
                     "token": "shear",
+                },
+                {
+                    "note": "snag = surface where the coupling seams are (where is it broken?); seep = audit whether influence has leaked past intended scope (did it work?)",
+                    "token": "seep",
                 },
             ],
             "heuristics": [
@@ -5409,7 +5435,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "flow",
                 },
                 {
-                    "note": "derive = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
+                    "note": "mint = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
                     "token": "mint",
                 },
             ],

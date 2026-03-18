@@ -430,6 +430,21 @@ context system could support this, but it needs a mapping layer that doesn't exi
 **Why Tier 3**: Complements `heuristics[]` and `definition` with a concrete case. High-value for
 documentation and future `bar suggest` training data, but high-effort to author well across 150+ tokens.
 
+### Grammar: Eliminate duplicate definition storage in axisConfig.py
+**What**: `lib/axisConfig.py` stores each method/scope/form/etc. token definition twice: once in a
+flat string dict (~lines 217–330, used for prompt rendering) and once in the `AXIS_TOKEN_METADATA`
+nested dict (~lines 3800+, used for `bar help tokens --plain` and the grammar JSON). These can
+silently drift — editing one without the other produces prompts that disagree with the catalog.
+**Why**: Discovered during structural-analysis-token audit (2026-03-17): melody, drift, and ground
+definitions were updated in `AXIS_TOKEN_METADATA` but the rendered prompt text was unchanged until
+the flat dict was also updated. The two-copy pattern is a latent SSOT violation.
+**Shape**: Consolidate to a single source. Options: (a) drive prompt rendering from
+`AXIS_TOKEN_METADATA["definition"]` directly, deprecating the flat dict; (b) generate the flat dict
+from `AXIS_TOKEN_METADATA` at export time via `make bar-grammar-update`. Either way the grammar
+export pipeline (`promptGrammar.py`) needs to be the join point.
+**Precondition**: Audit which code paths read the flat dict vs `AXIS_TOKEN_METADATA["definition"]`
+and confirm the two fields are always identical (or note where they differ).
+
 ### Grammar: Method axis audit — structure and factoring
 **What**: A research task, not a feature. The method axis has 80 tokens — the largest axis
 by ~2.5× — and may have structural issues worth addressing before it grows further.

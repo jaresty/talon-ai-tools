@@ -110,6 +110,7 @@
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance is maintained.",
+        "behave": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation plan.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring effects remain within intended conceptual or operational regions.",
@@ -309,6 +310,7 @@
         "argue",
         "automate",
         "balance",
+        "behave",
         "bias",
         "boom",
         "bound",
@@ -505,6 +507,7 @@
         "argue": "Explicit argument structure",
         "automate": "Prefer automated over manual steps",
         "balance": "Equilibrium description",
+        "behave": "COM-B behavioral analysis",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
         "bound": "Constrain propagation",
@@ -695,6 +698,7 @@
         "argue": "論",
         "automate": "自",
         "balance": "均",
+        "behave": "動",
         "bias": "偏",
         "boom": "極",
         "bound": "限",
@@ -801,6 +805,7 @@
         "argue": "Reasoning",
         "automate": "Structural",
         "balance": "Comparative",
+        "behave": "Actor-centered",
         "bias": "Reasoning",
         "boom": "Exploration",
         "bound": "Structural",
@@ -996,6 +1001,7 @@
         "argue": "Formal argument",
         "automate": "Automate repeatable steps",
         "balance": "Equilibrium description",
+        "behave": "COM-B / behavior change",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
         "bound": "Contain side effects",
@@ -2906,6 +2912,31 @@
             "how do trade-offs play out",
             "what tensions exist",
             "balance of forces"
+          ]
+        },
+        "behave": {
+          "definition": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation plan.",
+          "distinctions": [
+            {
+              "note": "jobs = analyze outcomes users want and forces shaping choices; behave = model capability/opportunity/motivation to diagnose why a behavior occurs or doesn't and design interventions",
+              "token": "jobs"
+            },
+            {
+              "note": "actors = identify and center who is involved; behave = apply COM-B framework to model what that actor needs to change behavior",
+              "token": "actors"
+            }
+          ],
+          "heuristics": [
+            "why aren't people doing X",
+            "behavior change analysis",
+            "COM-B",
+            "what's preventing adoption",
+            "capability opportunity motivation",
+            "behavior change intervention",
+            "what barriers prevent behavior change",
+            "how do we get people to do X",
+            "behavior change wheel",
+            "BCT"
           ]
         },
         "bias": {
@@ -7012,6 +7043,7 @@
         "argue": "argue",
         "automate": "automate",
         "balance": "balance",
+        "behave": "behave",
         "bias": "bias",
         "boom": "boom",
         "bound": "bound",
@@ -7239,6 +7271,7 @@
         "method=argue": "method-argue",
         "method=automate": "method-automate",
         "method=balance": "method-balance",
+        "method=behave": "method-behave",
         "method=bias": "method-bias",
         "method=boom": "method-boom",
         "method=bound": "method-bound",
@@ -7491,6 +7524,7 @@
       "audience=to team": "audience-to-team",
       "automate": "automate",
       "balance": "balance",
+      "behave": "behave",
       "bias": "bias",
       "bog": "bog",
       "boom": "boom",
@@ -7689,6 +7723,7 @@
       "method=argue": "method-argue",
       "method=automate": "method-automate",
       "method=balance": "method-balance",
+      "method=behave": "method-behave",
       "method=bias": "method-bias",
       "method=boom": "method-boom",
       "method=bound": "method-bound",
@@ -8672,11 +8707,11 @@
     }
   ],
   "checksums": {
-    "axes": "a0f802943fa6c3afbe18b4c16f85481b0cf63ab51a74a8012a6d13ea3860b16e",
+    "axes": "d742588a5e212d33827425fa28e0f3489614cc56bbad0ed0ecd5e08c446d3b95",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "e3890d893e07102c77a2539af39dc788a34297b9a3c9eab4409780108801442f",
+    "slugs": "9b3defba3e5090e9867f83f2f434170c59ae0d7ce46bd7faac5d56ec42b25773",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

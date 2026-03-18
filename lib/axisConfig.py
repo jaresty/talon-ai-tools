@@ -225,6 +225,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
         "is maintained.",
+        "behave": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those "
+        "dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation "
+        "plan.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
@@ -499,6 +502,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "argue": "Explicit argument structure",
         "automate": "Prefer automated over manual steps",
         "balance": "Equilibrium description",
+        "behave": "COM-B behavioral analysis",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
         "bound": "Constrain propagation",
@@ -691,6 +695,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "argue": "論",
         "automate": "自",
         "balance": "均",
+        "behave": "動",
         "bias": "偏",
         "boom": "極",
         "bound": "限",
@@ -864,6 +869,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "argue": "Reasoning",
         "automate": "Structural",
         "balance": "Comparative",
+        "behave": "Actor-centered",
         "bias": "Reasoning",
         "boom": "Exploration",
         "bound": "Structural",
@@ -1069,6 +1075,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "argue": "Formal argument",
         "automate": "Automate repeatable steps",
         "balance": "Equilibrium description",
+        "behave": "COM-B / behavior change",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
         "bound": "Contain side effects",
@@ -3944,6 +3951,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how do trade-offs play out",
                 "what tensions exist",
                 "balance of forces",
+            ],
+        },
+        "behave": {
+            "definition": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across "
+            "those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable "
+            "implementation and evaluation plan.",
+            "distinctions": [
+                {
+                    "note": "jobs = analyze outcomes users want and forces shaping choices; behave = model capability/opportunity/motivation to diagnose why a behavior occurs or "
+                    "doesn't and design interventions",
+                    "token": "jobs",
+                },
+                {
+                    "note": "actors = identify and center who is involved; behave = apply COM-B framework to model what that actor needs to change behavior",
+                    "token": "actors",
+                },
+            ],
+            "heuristics": [
+                "why aren't people doing X",
+                "behavior change analysis",
+                "COM-B",
+                "what's preventing adoption",
+                "capability opportunity motivation",
+                "behavior change intervention",
+                "what barriers prevent behavior change",
+                "how do we get people to do X",
+                "behavior change wheel",
+                "BCT",
             ],
         },
         "bias": {

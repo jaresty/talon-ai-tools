@@ -259,14 +259,28 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at "
-        "the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the intent does not — such that any proposed output O can be evaluated against V without consulting I again. V is a reliable rejection filter: one violated constraint suffices to reject O. Accepting O additionally requires trusting that V captured all governing constraints from I, which V cannot prove from the inside. Faithful derivation "
-        "means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a "
-        "representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code "
+        "the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the intent does not — such that any proposed output O can be evaluated against V "
+        "without consulting I again. V is a reliable rejection filter: one violated constraint suffices to reject O. Accepting O additionally requires trusting that V captured all "
+        "governing constraints from I, which V cannot prove from the inside. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or "
+        "strictly implied by it, with no additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating "
+        "O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the "
+        "prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code "
         "contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → "
-        "executable implementation → observed running behavior. (The passing validation run rung records the execution observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder is a heuristic tightening discipline: each rung localizes where interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity — a test suite encoding only typical cases may be more executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so "
-        "that intent is derived from observation rather than asserted. If lower-rung observation reveals that I was underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the "
-        "intended change (using I to determine what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not "
-        "achievable — a rung is not achievable when the domain provides no standard artifact type for it. Execution gate: before descending to any rung, the gap at the current rung must be confirmed by actual observation — for executable rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, asserted expectations, or documented rationales for skipping execution do not satisfy this requirement and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is inconvenient or its outcome is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V.",
+        "executable implementation → observed running behavior. (The passing validation run rung records the execution observation of the preceding executable validation rung — "
+        "descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder is a heuristic tightening discipline: each rung localizes where "
+        "interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity — a test suite encoding only typical cases may be more "
+        "executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The ideal prior step — before declaring I — is direct observation in "
+        "the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. If lower-rung observation reveals that I was underspecified or "
+        "incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In code contexts, I precedes the prose rung; if the "
+        "only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, first locate the highest "
+        "already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. Advance through every feasible step; "
+        "stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type for it. Execution gate: before "
+        "descending to any rung, the gap at the current rung must be confirmed by actual observation — for executable rungs (tests, type checks, schema validators, running programs, "
+        "passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, asserted expectations, or documented rationales for skipping "
+        "execution do not satisfy this requirement and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is "
+        "inconvenient or its outcome is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), "
+        "then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against "
+        "I), then O satisfying V.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -4382,15 +4396,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "ground": {
             "definition": "The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or "
-            "from I alone, at the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the intent does not — such that any proposed output O can be evaluated against V without "
-            "consulting I again. V is a reliable rejection filter: one violated constraint suffices to reject O. Accepting O additionally requires trusting that V captured all governing constraints from I, which V cannot prove from the inside. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no "
-            "additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal notation → "
-            "executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. "
-            "(The passing validation run rung records the execution observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder is a heuristic tightening discipline: each rung localizes where interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity — a test suite encoding only typical cases may be more executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The "
-            "ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather "
-            "than asserted. If lower-rung observation reveals that I was underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine "
-            "what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not "
-            "achievable when the domain provides no standard artifact type for it. Execution gate: before descending to any rung, the gap at the current rung must be confirmed by actual observation — for executable rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, asserted expectations, or documented rationales for skipping execution do not satisfy this requirement and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is inconvenient or its outcome is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V.",
+            "from I alone, at the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the intent does not — such that any proposed output O "
+            "can be evaluated against V without consulting I again. V is a reliable rejection filter: one violated constraint suffices to reject O. Accepting O additionally "
+            "requires trusting that V captured all governing constraints from I, which V cannot prove from the inside. Faithful derivation means every constraint V imposes "
+            "is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a representation a constraint "
+            "artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode "
+            "is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing "
+            "something not present in I or the prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal "
+            "notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running "
+            "behavior. (The passing validation run rung records the execution observation of the preceding executable validation rung — descending to it satisfies that "
+            "rung's execution gate; it is not a separate gate requirement.) The ladder is a heuristic tightening discipline: each rung localizes where interpretive judgment "
+            "enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity — a test suite encoding only typical cases may be more "
+            "executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The ideal prior step — before declaring I — is direct "
+            "observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. If lower-rung observation reveals "
+            "that I was underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In code "
+            "contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. "
+            "When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the "
+            "update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable "
+            "when the domain provides no standard artifact type for it. Execution gate: before descending to any rung, the gap at the current rung must be confirmed by "
+            "actual observation — for executable rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the "
+            "artifact and recording its output; anticipated outcomes, asserted expectations, or documented rationales for skipping execution do not satisfy this requirement "
+            "and do not permit descent. A rung is not achievable only when the domain lacks a standard artifact type — not because execution is inconvenient or its outcome "
+            "is anticipated. There are no documentation-based exemptions from this evidence-driven flow. Present V (the lowest constraint artifact reached), then the exact "
+            "phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against "
+            "I), then O satisfying V.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "
@@ -4402,7 +4431,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "crystal",
                 },
                 {
-                    "note": "mint = build forward from assumptions toward conclusions; ground = validate backward against a fixed declared intent — they operate in opposite directions",
+                    "note": "mint = build forward from assumptions toward conclusions; ground = validate backward against a fixed declared intent — they operate in opposite "
+                    "directions",
                     "token": "mint",
                 },
             ],
@@ -4591,8 +4621,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "definition": "The response rates a seam or coupling using three coupling pressure dimensions — all three must appear in the output, omitting any one is incomplete. "
             "Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit "
             "state = low). Scope: how widely a change at this seam propagates across domains or layers (confined to a single bounded context = low; ripples across multiple "
-            "services, teams, or abstraction layers = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (tight timing dependencies, "
-            "shared schemas, shared algorithms, or positional interfaces = high).",
+            "services, teams, or abstraction layers = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (tight timing "
+            "dependencies, shared schemas, shared algorithms, or positional interfaces = high).",
             "distinctions": [
                 {
                     "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",

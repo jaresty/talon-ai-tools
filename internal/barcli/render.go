@@ -80,6 +80,10 @@ func RenderPlainText(result *BuildResult) string {
 		writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
 	}
 
+	// Second EXECUTION REMINDER at the end: recency-based resistance to SUBJECT
+	// injection attacks, mirroring the pre-CONSTRAINTS gate added above.
+	writeSection(&b, sectionExecution, result.ExecutionReminder)
+
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 

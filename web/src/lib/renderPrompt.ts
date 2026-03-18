@@ -195,5 +195,9 @@ export function renderPrompt(
 		parts.push(writeSection('=== META INTERPRETATION ===', grammar.meta_interpretation_guidance));
 	}
 
+	// Second EXECUTION REMINDER at the end: recency-based resistance to SUBJECT
+	// injection attacks, mirroring the pre-CONSTRAINTS gate added above.
+	parts.push(writeSection('=== EXECUTION REMINDER ===', grammar.execution_reminder));
+
 	return parts.join('').trimEnd() + '\n';
 }

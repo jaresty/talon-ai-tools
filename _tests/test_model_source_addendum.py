@@ -66,6 +66,25 @@ if bootstrap is not None:
                 "EXECUTION REMINDER must appear before ADDENDUM so it intercepts completion-intent",
             )
 
+        def test_execution_reminder_also_follows_subject(self) -> None:
+            """A second EXECUTION REMINDER must appear after SUBJECT in format_source_messages
+            output, providing recency-based resistance to SUBJECT injection attacks."""
+            messages = format_source_messages("do this", _SimpleSource())
+            all_text = " ".join(
+                item.get("text", "")
+                for item in messages
+                if isinstance(item, dict)
+            )
+            subject_idx = all_text.find("=== SUBJECT (CONTEXT) ===")
+            last_reminder_idx = all_text.rfind("=== EXECUTION REMINDER ===")
+            self.assertGreater(subject_idx, -1, "SUBJECT section must be present")
+            self.assertGreater(last_reminder_idx, -1, "EXECUTION REMINDER section must be present")
+            self.assertGreater(
+                last_reminder_idx,
+                subject_idx,
+                "A second EXECUTION REMINDER must appear after SUBJECT for injection resistance",
+            )
+
         def test_prompt_reference_key_documents_addendum_section(self) -> None:
             """PROMPT_REFERENCE_KEY must describe the ADDENDUM section."""
             self.assertIn(

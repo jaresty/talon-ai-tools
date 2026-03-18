@@ -195,6 +195,15 @@ describe('renderPrompt', () => {
 		expect(reminderIdx).toBeLessThan(constraintsIdx);
 	});
 
+	it('EXECUTION REMINDER also appears after SUBJECT as final section', () => {
+		const result = renderPrompt(grammar, { completeness: ['full'] }, 'some subject', '');
+		const subjectIdx = result.indexOf('=== SUBJECT 題材 (CONTEXT) ===');
+		const lastReminderIdx = result.lastIndexOf('=== EXECUTION REMINDER ===');
+		expect(subjectIdx).toBeGreaterThan(-1);
+		expect(lastReminderIdx).toBeGreaterThan(-1);
+		expect(lastReminderIdx).toBeGreaterThan(subjectIdx);
+	});
+
 	it('output ends with a single newline', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
 		expect(result.endsWith('\n')).toBe(true);

@@ -643,6 +643,23 @@ func TestHelpLLMCompactMentionsCompareMode(t *testing.T) {
 	}
 }
 
+// TestHelpLLMBarOutputIsGoverningInstruction verifies that bar help llm
+// explicitly states that the bar output is the governing instruction —
+// not a source of information to parse while planning independently.
+func TestHelpLLMBarOutputIsGoverningInstruction(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	if !strings.Contains(output, "governing instruction") {
+		t.Error("bar help llm must state that bar output is the governing instruction, not information to parse")
+	}
+	if !strings.Contains(output, "prior plan") {
+		t.Error("bar help llm must warn against proceeding from a prior plan after reading bar output")
+	}
+}
+
 // TestHelpLLMPreBarToolCallConstraint verifies that the Usage Guidance for
 // Automated/Agent Contexts section documents the pre-bar tool call constraint:
 // bar CLI commands are permitted before bar build runs, but domain exploration

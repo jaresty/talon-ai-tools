@@ -392,7 +392,7 @@ func TestADR0162GroundConsolidation(t *testing.T) {
 	for _, phrase := range []string{
 		"prose",
 		"executable validation",
-		"passing validation run",
+		"validation run observation",
 		"executable implementation",
 		"observed running behavior",
 		"every feasible rung",

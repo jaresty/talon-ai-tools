@@ -643,6 +643,36 @@ func TestHelpLLMCompactMentionsCompareMode(t *testing.T) {
 	}
 }
 
+// TestHelpLLMPreBarToolCallConstraint verifies that the Usage Guidance for
+// Automated/Agent Contexts section documents the pre-bar tool call constraint:
+// bar CLI commands are permitted before bar build runs, but domain exploration
+// (file reads, searches) must not precede the first bar build execution.
+func TestHelpLLMPreBarToolCallConstraint(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	usageStart := strings.Index(output, "### Usage Guidance for Automated/Agent Contexts")
+	if usageStart == -1 {
+		t.Fatal("could not locate ### Usage Guidance for Automated/Agent Contexts section")
+	}
+	sectionEnd := strings.Index(output[usageStart:], "\n###")
+	var usageSection string
+	if sectionEnd == -1 {
+		usageSection = output[usageStart:]
+	} else {
+		usageSection = output[usageStart : usageStart+sectionEnd]
+	}
+
+	if !strings.Contains(usageSection, "domain exploration") {
+		t.Error("Usage Guidance must prohibit domain exploration before bar build")
+	}
+	if !strings.Contains(usageSection, "bar") && !strings.Contains(usageSection, "CLI") {
+		t.Error("Usage Guidance must explicitly permit bar CLI commands before bar build")
+	}
+}
+
 // TestHelpLLMAutomationFlags verifies that bar help llm documents --no-input and
 // --command so LLMs and automation scripts can discover non-interactive usage.
 func TestHelpLLMAutomationFlags(t *testing.T) {

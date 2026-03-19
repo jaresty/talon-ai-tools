@@ -432,6 +432,42 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	}
 }
 
+// TestGroundR4GateEmphasis specifies that the ground definition makes the
+// validation→implementation gate prominent by:
+// (1) stating the blocking rule before the R4 sequence, not only in a
+//     post-sequence parenthetical, and
+// (2) explicitly marking the gate inside the R4 sequence itself so it reads
+//     as a distinct step rather than one item in a flat arrow chain.
+func TestGroundR4GateEmphasis(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+
+	// The "may not be skipped or combined" rule must appear adjacent to R4.
+	if !strings.Contains(groundDesc, "may not be skipped or combined") {
+		t.Error("ground R4 section must state rungs may not be skipped or combined")
+	}
+
+	// The blocking rule must appear before the R4 sequence, not only after it.
+	blockedIdx := strings.Index(groundDesc, "executable implementation rung is blocked")
+	r4Idx := strings.Index(groundDesc, "R4 instantiates as")
+	if blockedIdx == -1 {
+		t.Fatal("ground must state that executable implementation rung is blocked until gap declared")
+	}
+	if r4Idx == -1 {
+		t.Fatal("ground must contain R4 instantiation")
+	}
+	if blockedIdx > r4Idx {
+		t.Error("blocking rule must appear before R4 instantiation, not only in the post-sequence parenthetical")
+	}
+}
+
 // TestGroundRungLabelNotSectionHeading specifies that the ground definition
 // distinguishes between a rung label in the manifest (a plan entry) and a rung
 // label during execution (a marker that the artifact begins immediately). A rung

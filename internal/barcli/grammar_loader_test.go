@@ -432,6 +432,25 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	}
 }
 
+// TestGroundRungLabelNotSectionHeading specifies that the ground definition
+// distinguishes between a rung label in the manifest (a plan entry) and a rung
+// label during execution (a marker that the artifact begins immediately). A rung
+// label must not be used as a section heading for planning text or exploration.
+func TestGroundRungLabelNotSectionHeading(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	if !strings.Contains(groundDesc, "rung label during execution") {
+		t.Error("ground must distinguish rung labels during execution from manifest plan entries")
+	}
+}
+
 // TestGroundImplementationGateBroadScope specifies that the ground definition
 // gates all implementation artifact types — not just file-tool invocations —
 // before valid execution sentinels. Planning text and code blocks are explicitly

@@ -432,6 +432,36 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	}
 }
 
+// TestGroundImplementationGateBroadScope specifies that the ground definition
+// gates all implementation artifact types — not just file-tool invocations —
+// before valid execution sentinels. Planning text and code blocks are explicitly
+// named as gated, closing the loophole where Thinking-block implementation
+// content bypasses the gate.
+func TestGroundImplementationGateBroadScope(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	// The gate must cover planning text and code blocks, not just file tool calls.
+	for _, phrase := range []string{
+		"planning text",
+		"code blocks",
+	} {
+		if !strings.Contains(groundDesc, phrase) {
+			t.Errorf("ground implementation gate missing broad-scope phrase %q — gate must cover all implementation artifact types", phrase)
+		}
+	}
+	// The narrow gate (file tool calls only) must not be the primary statement.
+	if strings.Contains(groundDesc, "no file-creating or file-editing tool call for an implementation rung may be invoked") {
+		t.Error("ground implementation gate must not lead with file-tool-call-only scope — broader gate should be primary")
+	}
+}
+
 // TestGroundDefinitionReverseCheck specifies that the ground definition includes the
 // bidirectional obligation: when beginning at any rung, first locate the highest
 // already-instantiated rung and update it before descending.

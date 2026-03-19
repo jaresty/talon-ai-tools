@@ -432,6 +432,28 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	}
 }
 
+// TestGroundExecutableValidationRequiresRunnable specifies that the ground
+// definition makes clear that executable validation must be a file artifact
+// invocable by an automated tool — file reads, grep output, and manual
+// inspection do not satisfy the rung regardless of label.
+func TestGroundExecutableValidationRequiresRunnable(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	if !strings.Contains(groundDesc, "file reads") || !strings.Contains(groundDesc, "do not constitute executable validation") {
+		t.Error("ground must state that file reads do not constitute executable validation")
+	}
+	if !strings.Contains(groundDesc, "automated tool") {
+		t.Error("ground must state that executable validation requires an artifact invocable by an automated tool")
+	}
+}
+
 // TestGroundR4GateEmphasis specifies that the ground definition makes the
 // validation→implementation gate prominent by:
 // (1) stating the blocking rule before the R4 sequence, not only in a

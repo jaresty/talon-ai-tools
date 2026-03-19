@@ -281,9 +281,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "For code contexts, R4 instantiates as: "
         "prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks, passing validation runs) → validation run observation → "
         "executable implementation → observed running behavior. (Validation run observation records the actual output of the executable validation rung and declares the gap — tests "
-        "must fail before implementation exists — if the observed output shows all tests passing before any implementation has been written, the executable validation rung is not "
-        "testing the intended behavior and must be corrected; the executable implementation rung is blocked until failures have been observed; if tests skip, fix the executable "
-        "validation rung first.) When the lowest V is complete, output 'Validation artifact V complete' on "
+        "must reveal the gap — tests covering behavior that does not yet exist must fail; if all tests pass before new implementation has been written, either the intended behavior "
+        "is already implemented (verify this; the thread may be complete) or the tests are not testing the intended behavior and must be corrected; the executable implementation "
+        "rung is blocked until the gap has been observed; if tests skip, fix the executable validation rung first.) When the lowest V is complete, output 'Validation artifact V complete' on "
         "its own line before producing O. Non-executable rungs appear inline as labeled log entries; executable rungs are placed where they can be executed — in an existing file "
         "where a natural home exists, or a new file where none does.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "

@@ -432,6 +432,24 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	}
 }
 
+// TestGroundCompletenessTokensGovernDepthNotExistence specifies that ground
+// defines how completeness tokens interact with the process: they govern
+// depth within each rung, not whether rungs exist.
+func TestGroundCompletenessTokensGovernDepthNotExistence(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	if !strings.Contains(groundDesc, "shallower rung, not a skipped one") {
+		t.Error("ground must state that completeness tokens produce shallower rungs, not skipped ones")
+	}
+}
+
 // TestGroundExecutableValidationNoImplementation specifies that the ground
 // definition explicitly prohibits producing implementation code at the
 // executable validation rung — permission to write artifacts at R4 applies

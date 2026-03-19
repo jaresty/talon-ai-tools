@@ -303,10 +303,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "— including planning text, code blocks, or tool calls — may appear before valid Execution observed + Gap sentinels; if any implementation content appears without these "
         "sentinels immediately preceding it, it is invalid and must be discarded before the tool is run. Traversal (R5): depth-first by thread; within a thread, advance through every "
         "feasible rung; stopping mid-thread is only permitted when the next rung is not achievable (the domain provides no standard artifact type for it); the active completeness token "
-        "governs how many threads are batched per descent; when a thread reaches observed running behavior, return to the top for the next thread. Ground applies regardless of "
-        "perceived task complexity — the rung manifest and all execution gates are mandatory even for tasks that appear straightforward; other constraint tokens operate within each "
-        "rung of the process, not on the process structure itself — they govern depth, scope, and style at each step but cannot eliminate steps or the manifest; completeness tokens "
-        "govern how deeply each rung is executed — a minimal completeness token produces a shallower rung, not a skipped one. When a rung reveals the rung above needs correction — a "
+        "governs how many threads are batched per descent; when a thread reaches observed running behavior, return to the top for the next thread. ground is a Process method (see "
+        "CONSTRAINTS reference key) — the task governs the character of each rung's output but not the process structure; the manifest, rung sequence, and execution gates are mandatory "
+        "regardless of which task or other tokens are combined with ground; completeness governs rung depth, not rung existence. When a rung reveals the rung above needs correction — a "
         "constraint conflict, a pivot, or new information — correct the rung above to restore faithfulness to I, then re-derive the current rung; this is correction, not enrichment; if "
         "the rung requiring correction is I, surface as a revision signal and stop the current thread. When beginning mid-ladder, first locate the highest already-instantiated rung and "
         "update it to reflect the intended change, then descend. For code contexts, each rung in this sequence may not be skipped or combined with another — the executable "
@@ -935,7 +934,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
         "gap": "Structural",
-        "ground": "Structural",
+        "ground": "Process",
         "grove": "Generative",
         "induce": "Reasoning",
         "inversion": "Diagnostic",
@@ -994,6 +993,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
 # Adding a new category requires only updating this dict; all consumers derive order from it.
 AXIS_CATEGORY_ORDER: Dict[str, List[str]] = {
     "method": [
+        "Process",
         "Reasoning",
         "Exploration",
         "Structural",

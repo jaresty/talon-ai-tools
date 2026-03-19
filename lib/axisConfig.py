@@ -262,7 +262,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response opens with a rung manifest — a short document that decomposes I into threads (discrete units each independently descended and validated) and for each thread lists "
-        "planned artifacts, rung labels, and derivation sources — rung labels and artifact types only, no rung content appears in the manifest. Each thread must include an executable "
+        "planned artifacts, rung labels, and derivation sources — rung labels and artifact types only, no rung content appears in the manifest. The rung sequence must follow the ladder order — executable validation precedes executable implementation; a manifest that places implementation before validation is malformed. Each thread must include an executable "
         "validation rung and a validation run observation rung, or explicitly state why the domain provides no standard artifact type for it. The rung manifest does not instantiate any "
         "rung — listing a rung in the manifest is a plan, not a production; no rung is complete until its artifact has been produced and its execution gate satisfied. Gate: output '✅ "
         "Rung manifest complete' on its own line before any artifact. Boundary: no file-creating or file-editing tool call may be invoked before this phrase appears in output; after "

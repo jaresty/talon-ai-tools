@@ -184,7 +184,7 @@ if bootstrap is not None:
                 hydrated,
             )
             self.assertIn(
-                "Method: The response enhances the task by describing the linear ordering of stages",
+                "Method [Temporal/Dynamic]: The response enhances the task by describing the linear ordering of stages",
                 hydrated,
             )
             self.assertIn(

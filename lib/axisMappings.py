@@ -6,6 +6,7 @@ from .axisConfig import (
     AXIS_KEY_TO_VALUE,
     FORM_DEFAULT_COMPLETENESS,  # ADR-0153: re-exported for façade callers
     axis_docs_for,
+    axis_key_to_category_map,   # ADR-0144: re-exported for façade callers
     axis_key_to_kanji_map,
     axis_key_to_value_map,
     get_cross_axis_composition,  # ADR-0153: re-exported for façade callers

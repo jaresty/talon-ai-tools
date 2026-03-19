@@ -60,6 +60,7 @@ type HydratedPromptlet struct {
 	Token        string `json:"token"`
 	Description  string `json:"description"`
 	Kanji        string `json:"kanji,omitempty"`
+	Category     string `json:"category,omitempty"`     // ADR-0144: semantic family category (method axis only)
 	ConflictNote string `json:"conflict_note,omitempty"` // ADR-0153: render-time constraint conflict note
 }
 
@@ -815,11 +816,13 @@ func (s *buildState) buildHydratedConstraints() []HydratedPromptlet {
 			}
 			description := s.grammar.AxisDescription(axis, canonical)
 			kanji := s.grammar.AxisKanji(axis, canonical)
+			category := s.grammar.AxisCategory(axis, canonical)
 			entries = append(entries, HydratedPromptlet{
 				Axis:        axis,
 				Token:       canonical,
 				Description: description,
 				Kanji:       kanji,
+				Category:    category,
 			})
 		}
 	}
@@ -995,6 +998,7 @@ func formatPromptlet(p HydratedPromptlet) string {
 	axis := axisHeading(p.Axis)
 	token := strings.TrimSpace(p.Token)
 	kanji := strings.TrimSpace(p.Kanji)
+	category := strings.TrimSpace(p.Category)
 	description := strings.TrimSpace(p.Description)
 
 	tokenWithKanji := token
@@ -1002,15 +1006,20 @@ func formatPromptlet(p HydratedPromptlet) string {
 		tokenWithKanji = fmt.Sprintf("%s %s", token, kanji)
 	}
 
+	axisWithCategory := axis
+	if category != "" {
+		axisWithCategory = fmt.Sprintf("%s [%s]", axis, category)
+	}
+
 	switch {
 	case token != "" && description != "":
-		return fmt.Sprintf("%s (%s): %s", axis, tokenWithKanji, description)
+		return fmt.Sprintf("%s (%s): %s", axisWithCategory, tokenWithKanji, description)
 	case token != "":
-		return fmt.Sprintf("%s: %s", axis, tokenWithKanji)
+		return fmt.Sprintf("%s: %s", axisWithCategory, tokenWithKanji)
 	case description != "":
-		return fmt.Sprintf("%s: %s", axis, description)
+		return fmt.Sprintf("%s: %s", axisWithCategory, description)
 	default:
-		return axis
+		return axisWithCategory
 	}
 }
 

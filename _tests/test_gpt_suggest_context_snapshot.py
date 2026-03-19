@@ -174,7 +174,7 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
     ), content
     assert _contains_any(
         [
-            "Method: The response enhances the task by describing the linear ordering",
+            "Method [Temporal/Dynamic]: The response enhances the task by describing the linear ordering",
         ]
     ), content
     assert _contains_any(
@@ -269,7 +269,7 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
         axis_expected = [
             "Completeness: " + axis_hydrate_tokens("completeness", ["full"])[0],
             "Scope: " + " ".join(axis_hydrate_tokens("scope", ["act"])),
-            "Method: " + " ".join(axis_hydrate_tokens("method", ["flow"])),
+            "Method [Temporal/Dynamic]: " + " ".join(axis_hydrate_tokens("method", ["flow"])),
             "Form: " + " ".join(axis_hydrate_tokens("form", ["bullets"])),
             "Channel: " + " ".join(axis_hydrate_tokens("channel", ["slack"])),
         ]

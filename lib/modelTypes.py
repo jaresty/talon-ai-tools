@@ -4,6 +4,7 @@ from talon import settings
 from .axisMappings import axis_key_to_kanji_map
 from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
 from .axisMappings import FORM_DEFAULT_COMPLETENESS, get_cross_axis_composition  # ADR-0153
+from .axisMappings import axis_key_to_category_map  # ADR-0144
 from .personaConfig import (
     normalize_intent_token,
     persona_docs_map,
@@ -361,9 +362,14 @@ class GPTSystemPrompt:
         if note:
             lines.append(f"  \u21b3 {note}")
 
+        _method_raw = self.get_method()
+        _method_tokens = [t for t in _method_raw.split() if t] if _method_raw else []
+        _cat_map = axis_key_to_category_map("method")
+        _categories = list(dict.fromkeys(c for t in _method_tokens if (c := _cat_map.get(t, ""))))
+        _method_label = "Method [{}]".format(", ".join(_categories)) if _categories else "Method"
         lines.extend([
             f"Scope: {hydrate('scope', self.get_scope())}",
-            f"Method: {hydrate('method', self.get_method())}",
+            f"{_method_label}: {hydrate('method', _method_raw)}",
             f"Form: {hydrate('form', self.get_form())}",
         ])
 

@@ -466,8 +466,8 @@ func TestGroundCompletenessTokensGovernDepthNotExistence(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "shallower rung, not a skipped one") {
-		t.Error("ground must state that completeness tokens produce shallower rungs, not skipped ones")
+	if !strings.Contains(groundDesc, "completeness governs rung depth, not rung existence") {
+		t.Error("ground must state that completeness governs rung depth, not rung existence")
 	}
 }
 

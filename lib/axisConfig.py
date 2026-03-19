@@ -300,7 +300,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "may be complete) or the tests are not testing the intended behavior and must be corrected; the executable implementation rung is blocked until the gap has been observed; the "
         "executable implementation rung is scoped to the declared gap — implement only what closing the observed gap requires; anticipated future behavior belongs to a future gap "
         "declaration; if tests skip, fix the executable validation rung first.) When the lowest V is complete, output '✅ Validation artifact V complete' on its own line before "
-        "producing O. Non-executable rungs appear inline as labeled log entries; executable rungs are placed where they can be executed — in an existing file where a natural home "
+        "producing O — this phrase may only appear after the executable validation rung has been both produced and invoked and the validation run observation rung has declared a gap; "
+        "it may not be placed after planning, criteria, file exploration, or any non-executable rung alone. Non-executable rungs appear inline as labeled log entries; executable rungs are placed where they can be executed — in an existing file where a natural home "
         "exists, or a new file where none does.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",

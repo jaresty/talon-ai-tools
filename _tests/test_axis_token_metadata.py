@@ -6,7 +6,8 @@ Each block verifies coverage, schema conformance, and key distinctions.
 
 import unittest
 
-from lib.axisConfig import AXIS_TOKEN_METADATA
+from lib.axisConfig import axis_token_metadata as _axis_token_metadata
+_AXIS_TOKEN_METADATA = _axis_token_metadata()
 
 
 class CompletenessAxisMetadataTests(unittest.TestCase):
@@ -27,7 +28,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
     }
 
     def setUp(self):
-        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+        self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_completeness_metadata_covers_all_tokens(self):
         """All 9 completeness tokens must have metadata entries — no silent omissions."""
@@ -137,7 +138,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
     }
 
     def setUp(self):
-        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+        self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_channel_metadata_covers_all_tokens(self):
         """All 20 channel tokens must have metadata entries."""
@@ -206,7 +207,7 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
     }
 
     def setUp(self):
-        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+        self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_directional_metadata_covers_all_tokens(self):
         """All 16 directional tokens must have metadata entries."""
@@ -272,7 +273,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
     }
 
     def setUp(self):
-        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+        self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_scope_metadata_covers_all_tokens(self):
         """All 15 scope tokens must have metadata entries."""
@@ -367,7 +368,7 @@ class FormAxisMetadataTests(unittest.TestCase):
     }
 
     def setUp(self):
-        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+        self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_form_metadata_covers_all_tokens(self):
         """All 38 form tokens must have metadata entries."""
@@ -500,7 +501,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
     }
 
     def setUp(self):
-        self.meta = AXIS_TOKEN_METADATA.get(self.AXIS, {})
+        self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
         """All 83 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added; ladder/visual moved from form)."""

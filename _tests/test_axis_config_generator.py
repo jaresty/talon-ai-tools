@@ -52,6 +52,21 @@ if bootstrap is not None:
                     "This indicates potential side effects or namespace pollution."
                 )
 
+        def test_generator_omits_definition_from_axis_token_metadata(self) -> None:
+            """AXIS_TOKEN_METADATA must not store definition — derived at runtime from AXIS_KEY_TO_VALUE."""
+            import re
+            output = render_axis_config()
+            start = output.find("AXIS_TOKEN_METADATA:")
+            end = output.find("def axis_token_metadata")
+            section = output[start:end]
+            definitions = re.findall(r"['\"]definition['\"]:\s*['\"]", section)
+            self.assertEqual(
+                len(definitions),
+                0,
+                f"Generator produced {len(definitions)} redundant definition field(s) in AXIS_TOKEN_METADATA. "
+                "definition must be omitted from stored data and derived at runtime from AXIS_KEY_TO_VALUE.",
+            )
+
         def test_markdown_includes_all_axes_and_tokens(self) -> None:
             markdown = render_axis_markdown()
             for axis, mapping in AXIS_KEY_TO_VALUE.items():

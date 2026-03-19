@@ -261,33 +261,33 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response opens with a rung manifest to make rung membership legible before descent begins — a short document listing each planned artifact, its rung label, and "
-        "its derivation source. Gate: output the exact phrase 'Rung manifest complete' on its own line before producing any other artifact. Boundary: no artifact from any rung may "
-        "appear before this phrase. Execution gate: before descending to each rung, confirm the gap at the current rung by actual observation — for executable rungs (tests, type checks, "
-        "schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, documented rationales, or "
-        "asserted expectations do not satisfy this and do not permit descent; a rung is not achievable only when the domain lacks a standard artifact type, not because execution is "
+        "ground": "The response opens with a rung manifest to make rung membership legible before descent begins — a short document listing each planned artifact, its rung label, and its "
+        "derivation source. Gate: output the exact phrase 'Rung manifest complete' on its own line before producing any other artifact. Boundary: no artifact from any rung may appear "
+        "before this phrase. Execution gate: before descending to each rung, confirm the gap at the current rung by actual observation — for executable rungs (tests, type checks, "
+        "schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, documented rationales, "
+        "or asserted expectations do not satisfy this and do not permit descent; a rung is not achievable only when the domain lacks a standard artifact type, not because execution is "
         "inconvenient or anticipated; there are no documentation-based exemptions. The response treats the declared intent (I) as fixed. At each step, the response produces a "
-        "representation V derived faithfully from I and the prior rung (or from I alone, at the first rung — I is not an artifact; artifacts are derived from I) — the form changes, "
-        "the intent does not — such that any proposed output O can be evaluated against V without consulting I again. V is a reliable rejection filter: one violated constraint suffices "
-        "to reject O. Accepting O additionally requires trusting that V captured all governing constraints from I, which V cannot prove from the inside. Faithful derivation means every "
-        "constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a representation a constraint "
-        "artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent "
-        "V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the "
-        "prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, "
-        "contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. (The passing validation run rung records the execution "
-        "observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder is a "
-        "heuristic tightening discipline: each rung localizes where interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity "
-        "— a test suite encoding only typical cases may be more executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The ideal prior "
-        "step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. If lower-rung "
-        "observation reveals that I was underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In "
-        "code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When "
-        "beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then "
-        "descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard "
-        "artifact type for it. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as "
-        "complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V. Each artifact should carry a header comment identifying its rung and "
-        "what it was derived from. File naming conventions are left to domain context; where none exists, a name that reflects the artifact's rung (e.g., validate_*, *_spec, *_test) "
-        "aids legibility without being required.",
-        "grove":"The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
+        "representation V derived faithfully from I and the prior rung (or from I alone, at the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the "
+        "intent does not — such that any proposed output O can be evaluated against V without consulting I again. V is a reliable rejection filter: one violated constraint suffices to "
+        "reject O. Accepting O additionally requires trusting that V captured all governing constraints from I, which V cannot prove from the inside. Faithful derivation means every "
+        "constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a representation a "
+        "constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is "
+        "silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I "
+        "or the prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, "
+        "types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. (The passing validation run rung records the "
+        "execution observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder "
+        "is a heuristic tightening discipline: each rung localizes where interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of "
+        "ambiguity — a test suite encoding only typical cases may be more executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The "
+        "ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. "
+        "If lower-rung observation reveals that I was underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as "
+        "a rung gap. In code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing "
+        "intent. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update "
+        "should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain "
+        "provides no standard artifact type for it. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this "
+        "phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V. Each artifact should carry a header comment "
+        "identifying its rung and what it was derived from. File naming conventions are left to domain context; where none exists, a name that reflects the artifact's rung (e.g., "
+        "validate_*, *_spec, *_test) aids legibility without being required.",
+        "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
@@ -2099,8 +2099,6 @@ class AxisTokenMetadata(TypedDict, total=False):
 AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     "channel": {
         "adr": {
-            "definition": "Architecture Decision Record format: structures output as an ADR document with Context, Decision, and Consequences sections. Best for decision-making tasks and "
-            "architectural tradeoffs.",
             "distinctions": [],
             "heuristics": [
                 "write an ADR",
@@ -2111,7 +2109,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "code": {
-            "definition": "Code or markup only, no prose: outputs only executable or markup with no surrounding explanation.",
             "distinctions": [],
             "heuristics": [
                 "just the code",
@@ -2124,7 +2121,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "codetour": {
-            "definition": "VS Code CodeTour JSON file: structures the response as a valid CodeTour `.tour` file for navigating code in VS Code.",
             "distinctions": [],
             "heuristics": [
                 "codetour",
@@ -2135,7 +2131,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "diagram": {
-            "definition": "Mermaid diagram code only: response is Mermaid diagram source, inferred to the best diagram type.",
             "distinctions": [
                 {
                     "note": "diagram = Mermaid format; sketch = D2 diagram format",
@@ -2154,8 +2149,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "draw": {
-            "definition": "Spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable; not machine-parseable. Use when "
-            "spatial overview is wanted without the precision constraints of Mermaid or D2.",
             "distinctions": [
                 {
                     "note": "diagram (channel) = Mermaid code, machine-parseable; draw (channel) = spatial ASCII prose, human-readable",
@@ -2183,7 +2176,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "gherkin": {
-            "definition": "Gherkin scenario format: output as Given/When/Then Gherkin scenarios.",
             "distinctions": [],
             "heuristics": [
                 "Gherkin format",
@@ -2195,7 +2187,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "html": {
-            "definition": "Semantic HTML only, no prose: complete output as HTML markup with no surrounding explanation.",
             "distinctions": [],
             "heuristics": [
                 "HTML output",
@@ -2207,7 +2198,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "image": {
-            "definition": "Image as the final output: user wants to generate an image.",
             "distinctions": [
                 {
                     "note": "image = static image generation; video = video generation",
@@ -2226,7 +2216,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "jira": {
-            "definition": "Jira markup formatting: response formatted using Jira markdown (headings, lists, panels).",
             "distinctions": [],
             "heuristics": [
                 "Jira format",
@@ -2238,7 +2227,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "notebook": {
-            "definition": "Jupyter notebook format: response as a runnable `.ipynb` notebook with code cells, markdown narrative, and structured outputs.",
             "distinctions": [],
             "heuristics": [
                 "Jupyter notebook",
@@ -2252,7 +2240,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "plain": {
-            "definition": "Suppress structural formatting: explicitly requests plain prose with no lists, bullets, or structural decoration.",
             "distinctions": [],
             "heuristics": [
                 "no bullets",
@@ -2264,7 +2251,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "presenterm": {
-            "definition": "Presenterm slide deck: output as a multi-slide presenterm Markdown deck with valid front matter, slide separators, and end_slide directives.",
             "distinctions": [
                 {
                     "note": "presenterm = actual slide deck artifact; sync = session plan with timing cues",
@@ -2282,7 +2268,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "remote": {
-            "definition": "Optimizing output for remote or distributed delivery contexts (video calls, voice, or screen sharing).",
             "distinctions": [],
             "heuristics": [
                 "remote delivery",
@@ -2293,7 +2278,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "shellscript": {
-            "definition": "Shell script format: response as executable shell code.",
             "distinctions": [],
             "heuristics": [
                 "shell script",
@@ -2305,7 +2289,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "sketch": {
-            "definition": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source.",
             "distinctions": [
                 {
                     "note": "sketch = D2 diagram format; diagram = Mermaid format",
@@ -2315,7 +2298,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "heuristics": ["D2 diagram", "D2 format", "sketch diagram", "d2 source"],
         },
         "slack": {
-            "definition": "Slack-formatted Markdown: response formatted for Slack with appropriate Markdown, mentions, and code blocks.",
             "distinctions": [],
             "heuristics": [
                 "Slack format",
@@ -2327,8 +2309,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "store": {
-            "definition": "Write to persistent storage: additionally writes output to a file, memory system, or other durable medium via available tools as the work progresses — additive, "
-            "not a replacement for conversational output. Falls back to surfacing content with explicit save instructions when no storage tool is available.",
             "distinctions": [
                 {
                     "note": "snap (form) = structure content as a save-state artifact; store (channel) = deliver output to durable storage — they compose naturally",
@@ -2349,7 +2329,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "svg": {
-            "definition": "SVG markup only: complete output as SVG for direct use in an `.svg` file.",
             "distinctions": [],
             "heuristics": [
                 "SVG format",
@@ -2361,7 +2340,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "sync": {
-            "definition": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery.",
             "distinctions": [
                 {
                     "note": "sync = session plan with timing cues; presenterm = actual slide deck artifact",
@@ -2376,7 +2354,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "video": {
-            "definition": "Video as the final output: user wants to generate a video.",
             "distinctions": [
                 {
                     "note": "video = video generation; image = static image generation",
@@ -2398,7 +2375,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     },
     "completeness": {
         "deep": {
-            "definition": "Substantial depth within the chosen scope: thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case.",
             "distinctions": [
                 {
                     "note": "deep = depth within a focused scope; max = exhaustive across all relevant coverage",
@@ -2421,7 +2397,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "full": {
-            "definition": "Thorough but not exhaustive: covers all major aspects without every micro-detail.",
             "distinctions": [
                 {
                     "note": "full = thorough normal coverage; max = treat omissions as errors",
@@ -2443,7 +2418,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "gist": {
-            "definition": "Brief but complete response: quick summary or overview without deep exploration.",
             "distinctions": [
                 {
                     "note": "gist = brief but complete; skim = light pass, may miss non-obvious issues",
@@ -2462,8 +2436,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "grow": {
-            "definition": "Dynamic depth constraint: start minimal, expand only where the analysis explicitly demands it. Each elaboration must be justified by demonstrated need "
-            "rather than anticipated complexity.",
             "distinctions": [
                 {
                     "note": "grow = start minimal and expand on demand; minimal = keep output minimal throughout",
@@ -2485,7 +2457,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "max": {
-            "definition": "Exhaustive and leave nothing out: user explicitly wants the most complete possible response, treating omissions as errors.",
             "distinctions": [
                 {
                     "note": "max = every relevant item, omissions are errors; full = thorough normal coverage",
@@ -2508,7 +2479,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "minimal": {
-            "definition": "Smallest satisfying answer only: minimum change or response that addresses the core need, no extras.",
             "distinctions": [
                 {
                     "note": "minimal = smallest valid answer to the request; narrow = restrict to a small topic slice",
@@ -2528,7 +2498,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "narrow": {
-            "definition": "Restricts discussion to a very specific topic slice: user explicitly limits scope to one aspect.",
             "distinctions": [
                 {
                     "note": "narrow = very small slice of topic; minimal = smallest answer",
@@ -2545,7 +2514,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "skim": {
-            "definition": "Light, surface-level pass: quick scan for most obvious or critical issues without depth.",
             "distinctions": [
                 {
                     "note": "skim = light pass that may miss non-obvious issues; gist = brief but complete",
@@ -2563,8 +2531,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "triage": {
-            "definition": "Stakes-proportionate coverage depth: allocates analytical depth by consequence × uncertainty. Areas where both are high receive full coverage; areas where "
-            "both are low receive minimal or no coverage.",
             "distinctions": [
                 {
                     "note": "triage = allocate depth by consequence × uncertainty stakes; grow = expand only where analysis explicitly demands it",
@@ -2588,14 +2554,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "zoom": {
-            "definition": "Scale-adaptive granularity: cover the full range of the subject as exponentially-spaced buckets, providing substantive content at every level — not just "
-            "naming or listing the scale. Both ends must appear as explicit anchors; do not begin at an intermediate level or leave either end implicit. Bucket sizes "
-            "scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. "
-            "Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), "
-            "complexity tiers, or fuzzy buckets. Zoom is a focusing mechanism, not uniform enumeration: when no specific target is provided, content at each finer level "
-            "should be chosen for what is most illuminating relative to the level above — the fine-grained anchor earns its place by revealing something about the span "
-            "it sits within. At each level, frame the content to show what it reveals about the scale above — the connection between levels should be evident from the "
-            "presentation.",
             "distinctions": [
                 {
                     "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
@@ -2630,8 +2588,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     },
     "directional": {
         "bog": {
-            "definition": "Orient across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, "
-            "implications, actions, and extensions together.",
             "distinctions": [
                 {
                     "note": "bog = full horizontal span (reflective + acting); rog = reflective pole only",
@@ -2650,7 +2606,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dig": {
-            "definition": "Ground in concrete specifics: examples, real cases, and grounded details rather than abstract analysis.",
             "distinctions": [
                 {
                     "note": "dig = stay concrete and grounded; fog = orient toward the abstract principle",
@@ -2669,8 +2624,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dip bog": {
-            "definition": "Orient toward the concrete across the full horizontal span — grounded in specific examples and details, shaped by structural examination and action "
-            "together.",
             "distinctions": [
                 {
                     "note": "dip bog = concrete + full horizontal orientation together; dig = concrete pole only",
@@ -2689,7 +2642,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dip ong": {
-            "definition": "Orient toward the concrete and acting — grounded in specific examples and details, shaped toward identifying what to do and extending those actions.",
             "distinctions": [
                 {
                     "note": "dip ong = concrete + acting orientation together; dig = concrete pole only",
@@ -2708,7 +2660,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dip rog": {
-            "definition": "Orient toward the concrete and structural — grounded in specific examples and details, shaped by how they are organized and what that reveals.",
             "distinctions": [
                 {
                     "note": "dip rog = concrete + structural orientation together; dig = concrete pole only",
@@ -2727,8 +2678,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fig": {
-            "definition": "Orient across the full vertical axis — spanning both the abstract/general dimension (fog) and the concrete/specific dimension (dig), using each to illuminate "
-            "the other.",
             "distinctions": [
                 {
                     "note": "fig = full vertical span (abstract + concrete); fog = abstract pole only",
@@ -2748,7 +2697,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fip bog": {
-            "definition": "Orient across all four compass dimensions — spanning abstract and concrete while shaped by structural examination and action together.",
             "distinctions": [
                 {
                     "note": "fip bog = full vertical + full horizontal orientation (all 4 directions); fig = vertical span only",
@@ -2767,7 +2715,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fip ong": {
-            "definition": "Orient across the full vertical axis toward action — spanning abstract and concrete, shaped toward identifying what to do and extending those actions.",
             "distinctions": [
                 {
                     "note": "fip ong = vertical span + acting orientation together; fig = vertical span only",
@@ -2786,7 +2733,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fip rog": {
-            "definition": "Orient across the full vertical axis toward the structural — spanning abstract and concrete, shaped by how the subject is organized and what that reveals.",
             "distinctions": [
                 {
                     "note": "fip rog = vertical span + structural orientation together; fig = vertical span only",
@@ -2805,8 +2751,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fly bog": {
-            "definition": "Orient toward the abstract across the full horizontal span — anchored in general patterns and principles, shaped by structural examination and action "
-            "together.",
             "distinctions": [
                 {
                     "note": "fly bog = abstract + full horizontal orientation together; fog = abstract pole only",
@@ -2825,7 +2769,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fly ong": {
-            "definition": "Orient toward the abstract and acting — anchored in general patterns and principles, shaped toward identifying what to do and extending those actions.",
             "distinctions": [
                 {
                     "note": "fly ong = abstract + acting orientation together; fog = abstract pole only",
@@ -2844,7 +2787,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fly rog": {
-            "definition": "Orient toward the abstract and structural — anchored in general patterns and principles, shaped by how they are organized and what that reveals.",
             "distinctions": [
                 {
                     "note": "fly rog = abstract + structural orientation together; fog = abstract pole only",
@@ -2863,7 +2805,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fog": {
-            "definition": "Surface the abstract pattern or principle: orient toward the general insight that transcends specific cases.",
             "distinctions": [
                 {
                     "note": "fog = orient toward the abstract and general; dig = stay concrete and grounded",
@@ -2886,8 +2827,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "jog": {
-            "definition": "The null directional: applies no compass orientation. Use when a directional token is required by the grammar (e.g. as a Talon phrase-ender) but no "
-            "directional push is desired. Has no effect on response angle.",
             "distinctions": [],
             "heuristics": [
                 "no directional preference",
@@ -2896,7 +2835,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ong": {
-            "definition": "Orient toward action and extension: identify what to do and extend those actions to related contexts.",
             "distinctions": [
                 {
                     "note": "ong = acting/extending pole (right); rog = reflective/structural pole (left)",
@@ -2916,7 +2854,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "rog": {
-            "definition": "Orient toward the structural and reflective dimension: how the subject is organised and what that organisation reveals.",
             "distinctions": [
                 {
                     "note": "rog = reflective/structural pole (left); ong = acting/extending pole (right)",
@@ -2945,7 +2882,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     },
     "form": {
         "actions": {
-            "definition": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
             "distinctions": [
                 {
                     "note": "checklist = imperative checkbox items designed to be ticked off; actions = broader action-structured output including tasks, steps, and next moves",
@@ -2968,7 +2904,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "activities": {
-            "definition": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
             "distinctions": [
                 {
                     "note": "facilitate = overall facilitation plan with session goals and participation mechanics; activities = segment-by-segment content of what to do and "
@@ -2986,8 +2921,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "bug": {
-            "definition": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing "
-            "concise, testable details.",
             "distinctions": [
                 {
                     "note": "log = work log entry for archival and reference; bug = structured defect report with reproduction steps and expected/actual behavior",
@@ -3004,7 +2937,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "bullets": {
-            "definition": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
             "distinctions": [
                 {
                     "note": "checklist = imperative action items designed to be ticked off; bullets = general bullet-point organization, not necessarily imperative",
@@ -3022,7 +2954,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "cards": {
-            "definition": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
             "distinctions": [
                 {
                     "note": "bullets = brief bullet items; cards = richer discrete units each with a heading and short body",
@@ -3040,8 +2971,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "case": {
-            "definition": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a "
-            "clear recommendation.",
             "distinctions": [
                 {
                     "note": "indirect = softer narrative reasoning that converges on a point; case = structured argument with explicit evidence, alternatives, and objection handling "
@@ -3060,7 +2989,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "checklist": {
-            "definition": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
             "distinctions": [
                 {
                     "note": "actions = general action-structured output; checklist = specifically checkbox-style imperative items designed to be ticked off",
@@ -3078,9 +3006,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "cocreate": {
-            "definition": "The response structures itself as a collaborative process—small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without a "
-            "channel: interactive, proposing and iterating with explicit pauses for feedback. With an output-exclusive channel: formats the artifact to expose decision "
-            "points and invite response.",
             "distinctions": [
                 {
                     "note": "variants = present a choice of distinct designs; cocreate = iterative process with decision points and alignment checks",
@@ -3094,7 +3019,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "commit": {
-            "definition": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
             "distinctions": [
                 {
                     "note": "log = dated work log entry with bullet updates; commit = short type/scope header format for version control",
@@ -3111,8 +3035,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "contextualise": {
-            "definition": "The response packages the subject to be passed directly to another LLM operation, enriching content with all context a downstream model needs to act on it "
-            "without further explanation.",
             "distinctions": [
                 {
                     "note": "merge = combine multiple sources into one coherent whole; contextualise = package existing content with full context for another LLM to act on "
@@ -3135,8 +3057,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "coupling": {
-            "definition": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the "
-            "interface is.",
             "distinctions": [
                 {
                     "note": "coupling (form) = output structured as a coupling map; snag/mesh (method) = analytical lens for finding or resolving coupling",
@@ -3154,7 +3074,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "direct": {
-            "definition": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
             "distinctions": [
                 {
                     "note": "indirect = background first, conclusion last; direct = main point first, supporting detail after",
@@ -3172,9 +3091,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "facilitate": {
-            "definition": "The response structures itself as a facilitation plan—framing the goal, proposing session structure, managing participation and turn-taking rather than doing "
-            "the work solo. Without a channel: acts as a live facilitator, asking questions and managing participation interactively. With an output-exclusive channel: "
-            "produces a static facilitation guide.",
             "distinctions": [
                 {
                     "note": "walkthrough = linear narrated steps through a process; facilitate = session structure with participation cues and facilitation agenda",
@@ -3192,7 +3108,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "faq": {
-            "definition": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim.",
             "distinctions": [
                 {
                     "note": "questions = response IS a list of questions to investigate (no answers); faq = questions paired with their answers as a reference artifact",
@@ -3210,7 +3125,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "formats": {
-            "definition": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
             "distinctions": [
                 {
                     "note": "table = present content as a columnar grid; formats = the response IS about document types and their suitability",
@@ -3228,9 +3142,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ghost": {
-            "definition": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. Presents a workflow "
-            "execution trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format "
-            "constraints.",
             "distinctions": [
                 {
                     "note": "log = dated work log entry for reference; ghost = workflow execution trace showing actions and their results",
@@ -3256,7 +3167,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "indirect": {
-            "definition": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
             "distinctions": [
                 {
                     "note": "direct = conclusion first, supporting detail after; indirect = reasoning first, conclusion last",
@@ -3277,8 +3187,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "log": {
-            "definition": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference "
-            "without unrelated narrative.",
             "distinctions": [
                 {
                     "note": "walkthrough = guided sequential narration; log = concise dated entry format for archival and reference",
@@ -3301,7 +3209,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "merge": {
-            "definition": "The response combines multiple sources into a single coherent whole while preserving essential information.",
             "distinctions": [
                 {
                     "note": "contextualise = package with context for downstream LLM; merge = combine multiple sources into one coherent whole",
@@ -3320,8 +3227,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "prep": {
-            "definition": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before "
-            "running it.",
             "distinctions": [
                 {
                     "note": "prep = design the experiment before running it; vet = review the results after running it",
@@ -3346,7 +3251,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "questions": {
-            "definition": "The response presents the answer as a series of probing or clarifying questions rather than statements.",
             "distinctions": [
                 {
                     "note": "socratic = LLM asks the USER questions interactively to surface their thinking; questions = response IS a question-list artifact the user takes "
@@ -3368,9 +3272,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "quiz": {
-            "definition": "The response organizes content as a quiz structure—questions posed before explanations, testing understanding through active recall before providing answers. "
-            "Without a channel: interactive exchange, posing questions and waiting for responses. With an output-exclusive channel: structures the output as a static quiz "
-            "document.",
             "distinctions": [
                 {
                     "note": "socratic = question-led dialogue to surface user reasoning; quiz = test recall via question-then-answer structure",
@@ -3389,7 +3290,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "recipe": {
-            "definition": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
             "distinctions": [
                 {
                     "note": "walkthrough = linear narrated steps without custom notation; recipe = structured recipe with a custom mini-language and notation key",
@@ -3405,8 +3305,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "scaffold": {
-            "definition": "Learning-oriented explanation: starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a "
-            "learner can follow and retain them.",
             "distinctions": [
                 {
                     "note": "walkthrough = guided sequential steps through a known process; scaffold = pedagogical first-principles introduction that builds understanding",
@@ -3422,8 +3320,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "snap": {
-            "definition": "State snapshot: structures output as a forward-oriented capture of current state — progress made, key decisions, what remains — with enough context to resume or "
-            "hand off from this point.",
             "distinctions": [
                 {
                     "note": "ghost = execution trace of autonomous actions and results; snap = save state structured for future resumption or handoff",
@@ -3452,8 +3348,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "socratic": {
-            "definition": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, "
-            "withholding full conclusions until enough answers are given.",
             "distinctions": [
                 {
                     "note": "questions = response IS a question-list artifact the user takes away; socratic = LLM asks the USER questions interactively to surface their thinking",
@@ -3475,8 +3369,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "spike": {
-            "definition": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, "
-            "and stays focused on questions and learning outcomes.",
             "distinctions": [
                 {
                     "note": "story = user-facing value statement with acceptance criteria; spike = research question artifact focused on unknowns",
@@ -3490,8 +3382,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "story": {
-            "definition": "The response formats the backlog item as a user story using 'As a <persona>, I want <capability>, so that <value>.' It may include a short description and "
-            "high-level acceptance criteria.",
             "distinctions": [
                 {
                     "note": "spike = research question artifact focused on unknowns; story = user-facing value statement with acceptance criteria",
@@ -3509,7 +3399,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "table": {
-            "definition": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
             "distinctions": [
                 {
                     "note": "cards = discrete headed items; table = columnar grid layout",
@@ -3528,8 +3417,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "taxonomy": {
-            "definition": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and "
-            "distinguishing attributes clearly.",
             "distinctions": [
                 {
                     "note": "table = flat columnar comparison; taxonomy = type hierarchy with defined relationships and distinguishing attributes",
@@ -3543,7 +3430,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "test": {
-            "definition": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type.",
             "distinctions": [
                 {
                     "note": "checklist = imperative tasks to complete; test = structured test scenarios with setup/execute/assert structure",
@@ -3561,7 +3447,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "tight": {
-            "definition": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
             "distinctions": [
                 {
                     "note": "plain = no structural decoration as a delivery format (channel); tight = concise dense prose style (form) that avoids filler",
@@ -3579,8 +3464,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "timeline": {
-            "definition": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each "
-            "occurs.",
             "distinctions": [
                 {
                     "note": "timeline (form) = output structured as a temporal sequence layout; walkthrough (form) = guided step-by-step narration",
@@ -3602,8 +3485,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "twin": {
-            "definition": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative "
-            "interleaving.",
             "distinctions": [
                 {
                     "note": "twin = strict side-by-side layout with equal weight per alternative; variants = labeled options with descriptions (may be narrative)",
@@ -3625,7 +3506,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "variants": {
-            "definition": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description.",
             "distinctions": [
                 {
                     "note": "cocreate = iterative process with decision points and alignment checks; variants = present distinct labeled options without necessarily evaluating "
@@ -3645,8 +3525,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "vet": {
-            "definition": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. "
-            "Complements prep.",
             "distinctions": [
                 {
                     "note": "vet = post-experiment review of outcomes vs expectations; prep = experiment design write-up before running",
@@ -3671,7 +3549,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "walkthrough": {
-            "definition": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
             "distinctions": [
                 {
                     "note": "actions = list of actions to take; walkthrough = guided sequential narration that builds understanding",
@@ -3693,7 +3570,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "wardley": {
-            "definition": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
             "distinctions": [],
             "heuristics": [
                 "Wardley map",
@@ -3702,7 +3578,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "wasinawa": {
-            "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
             "distinctions": [
                 {
                     "note": "inversion (method) = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa (form) = "
@@ -3719,7 +3594,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     },
     "method": {
         "abduce": {
-            "definition": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations.",
             "distinctions": [
                 {
                     "note": "diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing explanations explicitly",
@@ -3742,7 +3616,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "actors": {
-            "definition": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
             "distinctions": [
                 {
                     "note": "agent (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
@@ -3762,8 +3635,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "adversarial": {
-            "definition": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, "
-            "and unstated assumptions.",
             "distinctions": [
                 {
                     "note": "risks = enumerate failure modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples",
@@ -3783,9 +3654,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "afford": {
-            "definition": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and "
-            "practical salience, account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived "
-            "action space. Outcomes may not be attributed solely to preferences or incentives without modeling how affordances influenced selection.",
             "distinctions": [
                 {
                     "note": "actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices",
@@ -3809,8 +3677,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "align": {
-            "definition": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring "
-            "global coherence across the system.",
             "distinctions": [
                 {
                     "note": "balance = model opposing forces that offset each other; align = restructure explicit elements to achieve mutual reinforcement",
@@ -3831,8 +3697,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "amorph": {
-            "definition": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than "
-            "stable, explicit organization, indicating lack of crystallized system form.",
             "distinctions": [
                 {
                     "note": "gap = specific implicit/explicit mismatch in rules or roles; amorph = broader regions lacking stable explicit organization",
@@ -3853,8 +3717,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "analog": {
-            "definition": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy "
-            "holds or breaks.",
             "distinctions": [
                 {
                     "note": "models = apply named mental models explicitly; analog = reason through a structural mapping from a specific known case",
@@ -3872,9 +3734,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "analysis": {
-            "definition": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and "
-            "interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or "
-            "governing criteria.",
             "distinctions": [
                 {
                     "note": "diagnose = root cause via falsification; analysis = structural decomposition without fault-finding",
@@ -3892,8 +3751,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "argue": {
-            "definition": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their "
-            "support.",
             "distinctions": [
                 {
                     "note": "case (form) = narrative that builds to a recommendation; argue (method) = expose the logical structure of claims and their supports",
@@ -3911,8 +3768,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "automate": {
-            "definition": "Automation-first reasoning: models what can be expressed as automatic, repeatable operations, preferring those over manual, human-dependent steps. Identifies "
-            "where human intervention can be eliminated and expresses solutions in terms of what the system can do without human involvement.",
             "distinctions": [
                 {
                     "note": "automate = prefer automated operations over manual ones; ground = enforce falsifiability and advance through validation rungs",
@@ -3938,8 +3793,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "balance": {
-            "definition": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under "
-            "which balance is maintained.",
             "distinctions": [
                 {
                     "note": "resilience = behavior under stress; balance = how opposing forces produce equilibrium or instability",
@@ -3957,9 +3810,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "behave": {
-            "definition": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across "
-            "those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable "
-            "implementation and evaluation plan.",
             "distinctions": [
                 {
                     "note": "jobs = analyze outcomes users want and forces shaping choices; behave = model capability/opportunity/motivation to diagnose why a behavior occurs or "
@@ -3985,8 +3835,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "bias": {
-            "definition": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or "
-            "conclusions.",
             "distinctions": [
                 {
                     "note": "verify = falsify specific claims; bias = identify cognitive mechanisms producing distortion",
@@ -4005,7 +3853,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "boom": {
-            "definition": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
             "distinctions": [
                 {
                     "note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; resilience = behavior under normal stress range",
@@ -4024,8 +3871,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "bound": {
-            "definition": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the "
-            "system, ensuring effects remain within intended conceptual or operational regions.",
             "distinctions": [
                 {
                     "note": "depends = trace all dependencies; bound = limit how far they spread",
@@ -4047,8 +3892,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "calc": {
-            "definition": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain "
-            "conclusions.",
             "distinctions": [
                 {
                     "note": "probability = statistical and probabilistic reasoning; calc = general quantitative or quasi-executable procedures",
@@ -4068,7 +3911,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "cite": {
-            "definition": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
             "distinctions": [
                 {
                     "note": "verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check",
@@ -4086,8 +3928,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "clash": {
-            "definition": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce "
-            "global inconsistency or breakdown.",
             "distinctions": [
                 {
                     "note": "gap = implicit treated as explicit producing coordination failures; clash = conflict between explicitly stated structures",
@@ -4111,8 +3951,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "cluster": {
-            "definition": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying "
-            "content or meaning of the items.",
             "distinctions": [
                 {
                     "note": "compare = evaluate alternatives against criteria; cluster = group without evaluating",
@@ -4131,8 +3969,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "compare": {
-            "definition": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and "
-            "decision factors. Use when the user presents options and asks which to choose or how they differ.",
             "distinctions": [
                 {
                     "note": "converge = narrow from exploration to recommendation; compare = explicit criteria-based evaluation of specified alternatives",
@@ -4151,7 +3987,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "control": {
-            "definition": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
             "distinctions": [
                 {
                     "note": "agent (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within "
@@ -4170,8 +4005,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "converge": {
-            "definition": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are "
-            "filtered.",
             "distinctions": [
                 {
                     "note": "compare = evaluate alternatives side by side; converge = narrow exploration toward a single recommendation",
@@ -4189,8 +4022,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "crystal": {
-            "definition": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural "
-            "organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
             "distinctions": [
                 {
                     "note": "ground = treat declared governing layer as fixed authority; crystal = broadly shape system toward explicit structural determination",
@@ -4217,8 +4048,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "deduce": {
-            "definition": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical "
-            "entailment explicit.",
             "distinctions": [{"note": "evidence → hypothesis", "token": "abduce"}],
             "heuristics": [
                 "what follows from",
@@ -4232,7 +4061,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "depends": {
-            "definition": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
             "distinctions": [
                 {
                     "note": "struct (scope) = internal arrangement; depends (method) = propagation and reliance relationships specifically",
@@ -4251,8 +4079,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "diagnose": {
-            "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks "
-            "before proposing fixes or changes.",
             "distinctions": [
                 {
                     "note": "abduce = generate and compare competing hypotheses; diagnose = narrow to single most likely cause via falsification",
@@ -4273,7 +4099,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dimension": {
-            "definition": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
             "distinctions": [
                 {
                     "note": "split = decompose into parts; dimension = surface analytical axes that the parts exist along",
@@ -4291,7 +4116,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "domains": {
-            "definition": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
             "distinctions": [
                 {
                     "note": "struct (scope) = internal arrangement; domains (method) = identify bounded context separations and capabilities",
@@ -4309,8 +4133,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "drift": {
-            "definition": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how "
-            "this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
             "distinctions": [
                 {
                     "note": "gap = implicit assumptions in rules or roles produce coordination failures; drift = structural looseness allows interpretive inference to substitute "
@@ -4333,7 +4155,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "effects": {
-            "definition": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
             "distinctions": [
                 {
                     "note": "grove = how effects accumulate and compound; effects = trace the chain of consequences",
@@ -4351,8 +4172,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "experimental": {
-            "definition": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how "
-            "results would update the hypotheses.",
             "distinctions": [
                 {
                     "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
@@ -4376,8 +4195,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "field": {
-            "definition": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference "
-            "between actors. Explanations must make the medium and its selection rules explicit.",
             "distinctions": [
                 {
                     "note": "surface elements; field = model the medium and why compatibility produces observed routing",
@@ -4395,7 +4212,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "flow": {
-            "definition": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
             "distinctions": [
                 {
                     "note": "time = temporal emphasis as scope lens; flow = step-by-step progression as a reasoning method",
@@ -4414,8 +4230,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "gap": {
-            "definition": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that "
-            "mismatch produces ambiguity, coordination failure, or error.",
             "distinctions": [
                 {
                     "note": "assume (scope) = restrict analysis to the premises domain; gap (method) = identify where implicit is treated as explicit",
@@ -4433,33 +4247,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ground": {
-            "definition": "The response opens with a rung manifest to make rung membership legible before descent begins — a short document listing each planned artifact, its rung "
-            "label, and its derivation source. Gate: output the exact phrase 'Rung manifest complete' on its own line before producing any other artifact. Boundary: no artifact "
-            "from any rung may appear before this phrase. Execution gate: before descending to each rung, confirm the gap at the current rung by actual observation — for executable "
-            "rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated "
-            "outcomes, documented rationales, or asserted expectations do not satisfy this and do not permit descent; a rung is not achievable only when the domain lacks a standard "
-            "artifact type, not because execution is inconvenient or anticipated; there are no documentation-based exemptions. The response treats the declared intent (I) as fixed. "
-            "At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at the first rung — I is not an artifact; artifacts "
-            "are derived from I) — the form changes, the intent does not — such that any proposed output O can be evaluated against V without consulting I again. V is a reliable "
-            "rejection filter: one violated constraint suffices to reject O. Accepting O additionally requires trusting that V captured all governing constraints from I, which V "
-            "cannot prove from the inside. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no "
-            "additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — "
-            "once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before "
-            "presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code contexts the "
-            "ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → "
-            "executable implementation → observed running behavior. (The passing validation run rung records the execution observation of the preceding executable validation rung — "
-            "descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder is a heuristic tightening discipline: each rung localizes "
-            "where interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity — a test suite encoding only typical cases "
-            "may be more executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The ideal prior step — before declaring I — is direct "
-            "observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. If lower-rung observation reveals that I was "
-            "underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In code contexts, I precedes "
-            "the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, "
-            "first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. Advance "
-            "through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type "
-            "for it. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and "
-            "self-contained — what follows is evaluated against V, not against I), then O satisfying V. Each artifact should carry a header comment identifying its rung and what it "
-            "was derived from. File naming conventions are left to domain context; where none exists, a name that reflects the artifact's rung (e.g., validate_*, *_spec, *_test) "
-            "aids legibility without being required.",
             "distinctions": [
                 {
                     "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "
@@ -4500,8 +4287,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "grove": {
-            "definition": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking "
-            "not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
             "distinctions": [
                 {
                     "note": "interacting whole; grove = rate of accumulation through mechanisms",
@@ -4520,8 +4305,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "induce": {
-            "definition": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
-            "generalizations.",
             "distinctions": [
                 {
                     "note": "abduce = generate competing hypotheses to explain evidence; induce = generalize a rule or pattern from a set of examples",
@@ -4539,8 +4322,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "inversion": {
-            "definition": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to "
-            "avoid, mitigate, or design around those paths.",
             "distinctions": [
                 {
                     "note": "risks = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
@@ -4558,7 +4339,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "jobs": {
-            "definition": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
             "distinctions": [
                 {
                     "note": "product = features, user needs, value propositions broadly; jobs = specifically the outcome/progress users seek and the forces blocking or enabling it",
@@ -4578,8 +4358,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ladder": {
-            "definition": "Move deliberately between abstraction levels: step up to higher-level causes, patterns, or systems; step down to concrete consequences or implementations. Both "
-            "directions must be traversed — the response places the focal point, moves up at least one level, and moves down at least one level, ordered by importance.",
             "distinctions": [
                 {
                     "note": "fog/dig (directional) = push the whole response toward abstract or concrete; ladder (method) = actively traverse both directions within the response",
@@ -4601,8 +4379,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "mapping": {
-            "definition": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear "
-            "narrative.",
             "distinctions": [
                 {
                     "note": "struct (scope) = internal topology of one unit; mapping (method) = surface and organize across the whole landscape",
@@ -4621,8 +4397,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "mark": {
-            "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the "
-            "progression.",
             "distinctions": [
                 {
                     "note": "trace = narrate the sequential control/data progression; mark = record checkpoint observations without narrating",
@@ -4640,7 +4414,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "meld": {
-            "definition": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
             "distinctions": [
                 {
                     "note": "evaluate alternatives; meld = balance constraints between elements that must coexist",
@@ -4658,11 +4431,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "melody": {
-            "definition": "The response rates a seam or coupling using three coupling pressure dimensions — all three must appear in the output, omitting any one is incomplete. "
-            "Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit "
-            "state = low). Scope: how widely a change at this seam propagates across domains or layers (confined to a single bounded context = low; ripples across multiple "
-            "services, teams, or abstraction layers = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (tight timing "
-            "dependencies, shared schemas, shared algorithms, or positional interfaces = high).",
             "distinctions": [
                 {
                     "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",
@@ -4692,7 +4460,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "mesh": {
-            "definition": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
             "distinctions": [
                 {
                     "note": "snag = surface where coupling seams exist; mesh = describe how coupling propagates across them",
@@ -4717,8 +4484,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "migrate": {
-            "definition": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility "
-            "during the shift.",
             "distinctions": [
                 {
                     "note": "preserve = keep existing behavior unchanged; migrate = introduce a transition path that moves toward a new structure",
@@ -4741,7 +4506,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "mint": {
-            "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
             "distinctions": [
                 {
                     "note": "deduce = apply deductive logic to stated premises; mint = construct the generative structure so conclusions are built forward",
@@ -4761,8 +4525,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "mod": {
-            "definition": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with "
-            "a defined period or wraps around boundaries.",
             "distinctions": [
                 {
                     "note": "motifs (scope) = recurring patterns across codebase; mod (method) = cyclic/periodic reasoning about behavior that repeats with a defined period",
@@ -4780,8 +4542,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "models": {
-            "definition": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining "
-            "them.",
             "distinctions": [
                 {
                     "note": "analog = reason from a specific analogous case; models = apply named, established mental models explicitly",
@@ -4800,7 +4560,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "objectivity": {
-            "definition": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
             "distinctions": [
                 {
                     "note": "rigor = disciplined logical reasoning; objectivity = separate what is factual from what is evaluative",
@@ -4818,7 +4577,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "operations": {
-            "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
             "distinctions": [
                 {
                     "note": "systemic = feedback loops and emergent behavior; operations = OR/management science frameworks for resource and flow optimization",
@@ -4839,8 +4597,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "order": {
-            "definition": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds "
-            "emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
             "distinctions": [
                 {
                     "note": "prioritize = rank by importance with rationale; order = abstract structural reasoning about ordering schemes",
@@ -4858,7 +4614,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "origin": {
-            "definition": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
             "distinctions": [
                 {
                     "note": "time (scope) = sequential/temporal emphasis; origin (method) = specifically causal history and why the present state is as it is",
@@ -4878,8 +4633,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "perturb": {
-            "definition": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its "
-            "safeguards, assumptions, or detection mechanisms.",
             "distinctions": [
                 {
                     "note": "adversarial = construct attacks to find weaknesses; perturb = introduce controlled variations to observe response",
@@ -4903,8 +4656,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "polar": {
-            "definition": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), "
-            "distinguishing pursuit from avoidance.",
             "distinctions": [
                 {
                     "note": "balance = forces offsetting each other; polar = attraction toward some states and aversion from others",
@@ -4922,8 +4673,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "preserve": {
-            "definition": "The response modifies the task by maintaining compatibility with existing structures, interfaces, or assumptions, constraining changes so previously valid "
-            "components continue to function without modification.",
             "distinctions": [
                 {
                     "note": "migrate = introduce a transition path toward a new structure; preserve = constrain changes to keep existing components working unchanged",
@@ -4946,7 +4695,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "prioritize": {
-            "definition": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
             "distinctions": [
                 {
                     "note": "order = abstract structural reasoning about ordering schemes; prioritize = rank by importance or impact with explicit rationale",
@@ -4965,7 +4713,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "probability": {
-            "definition": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
             "distinctions": [
                 {
                     "note": "calc = general quantitative computation; probability = specifically statistical and probabilistic reasoning under uncertainty",
@@ -4986,7 +4733,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "product": {
-            "definition": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
             "distinctions": [
                 {
                     "note": "jobs = outcomes users seek and forces shaping adoption; product = broader product lens including features and value propositions",
@@ -5005,8 +4751,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "pulse": {
-            "definition": "The response models information transfer as a staged encode/decode process, distinguishing message from signal, accounting for noise and channel distortion, and "
-            "specifying how transmission errors are detected and repaired.",
             "distinctions": [
                 {
                     "note": "flow = narrate step-by-step sequence; pulse = model noise, distortion, and fidelity across encode/decode stages",
@@ -5026,8 +4770,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "reify": {
-            "definition": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or "
-            "rules that constrain reasoning.",
             "distinctions": [
                 {
                     "note": "analysis = describe and structure; reify = convert implicit patterns into explicit formal rules",
@@ -5045,7 +4787,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "release": {
-            "definition": "The response reduces distortion or disturbance by loosening attachment or identification with transient states, roles, or outcomes.",
             "distinctions": [
                 {
                     "note": "shift = rotate through multiple cognitive perspectives; release = reduce distortion by loosening identification with transient states or roles "
@@ -5066,7 +4807,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "reset": {
-            "definition": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed.",
             "distinctions": [
                 {
                     "note": "preserve = maintain existing compatibility; reset = discard it entirely",
@@ -5089,8 +4829,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "resilience": {
-            "definition": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail "
-            "risks.",
             "distinctions": [
                 {
                     "note": "robust = choose options that perform across uncertain futures; resilience = analyze system behavior under stress specifically",
@@ -5109,7 +4847,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "rigor": {
-            "definition": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
             "distinctions": [
                 {
                     "note": "verify = apply falsification pressure to claims; rigor = discipline the reasoning process throughout",
@@ -5128,7 +4865,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "risks": {
-            "definition": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
             "distinctions": [
                 {
                     "note": "adversarial = construct attacks to stress-test; risks = enumerate and assess failure modes and their likelihood",
@@ -5148,8 +4884,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "ritual": {
-            "definition": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized "
-            "procedures.",
             "distinctions": [
                 {
                     "note": "ritual = structured by established roles and procedures; melody = coordination through timing and synchronization",
@@ -5167,8 +4901,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "robust": {
-            "definition": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than "
-            "optimizing for a single forecast.",
             "distinctions": [
                 {
                     "note": "resilience = system behavior under stress; robust = select options that perform across uncertain futures",
@@ -5187,9 +4919,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "root": {
-            "definition": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be "
-            "reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of "
-            "the same knowledge as independent causal or justificatory elements without specifying their dependency relationship.",
             "distinctions": [
                 {
                     "note": "depends = trace what relies on what; root = reduce multiple representations to a single authoritative locus",
@@ -5213,8 +4942,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "seep": {
-            "definition": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this "
-            "overreach increases coupling, ambiguity, or fragility.",
             "distinctions": [
                 {
                     "note": "bound = introduce or reinforce propagation limits proactively; seep = identify where those limits have been violated or never existed",
@@ -5248,8 +4975,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "sense": {
-            "definition": "The response surfaces pre-reductive judgment: a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit "
-            "analytic decomposition. Multiple weak signals are held together rather than unpacked one by one.",
             "distinctions": [
                 {
                     "note": "indirect = form that puts reasoning before the conclusion; sense = method that holds impression before decomposition, without necessarily resolving",
@@ -5276,8 +5001,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "sever": {
-            "definition": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that "
-            "interactions occur only through explicit, controlled interfaces.",
             "distinctions": [
                 {
                     "note": "bound = limit how far effects propagate; sever = introduce a structural separation that routes all interaction through explicit interfaces",
@@ -5308,7 +5031,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "shear": {
-            "definition": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
             "distinctions": [
                 {
                     "note": "snag = identify the coupling seams; shear = outline steps to separate them",
@@ -5331,7 +5053,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "shift": {
-            "definition": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
             "distinctions": [
                 {
                     "note": "models = apply named mental models; shift = rotate through distinct cognitive modes or stakeholder perspectives",
@@ -5350,8 +5071,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "simulation": {
-            "definition": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback "
-            "loops, bottlenecks, tipping points, and emergent effects.",
             "distinctions": [
                 {
                     "note": "sim = standalone scenario narrative of what unfolds; simulation method = enriches probe/plan with thought-experiment reasoning about feedback "
@@ -5374,8 +5093,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "snag": {
-            "definition": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean "
-            "separation.",
             "distinctions": [
                 {
                     "note": "mesh = describe how coupling propagates; snag = surface where the coupling seams are",
@@ -5401,8 +5118,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "split": {
-            "definition": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing "
-            "interactions, treating the decomposition as provisional and preparatory rather than final.",
             "distinctions": [
                 {
                     "note": "dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis",
@@ -5421,8 +5136,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "spur": {
-            "definition": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning "
-            "alternatives.",
             "distinctions": [
                 {
                     "note": "sweep = enumerate option space without forking; spur = fork on a key assumption and pursue each path before evaluating",
@@ -5439,8 +5152,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "sweep": {
-            "definition": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of "
-            "them.",
             "distinctions": [
                 {
                     "note": "spur = fork on a key assumption and pursue paths; sweep = broad enumeration without forking on a specific choice",
@@ -5459,8 +5170,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "systemic": {
-            "definition": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent "
-            "behaviour that arise from their interactions rather than from parts in isolation.",
             "distinctions": [
                 {
                     "note": "analysis = describe and structure; systemic = reason about interactions and emergence",
@@ -5479,7 +5188,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "thrust": {
-            "definition": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
             "distinctions": [
                 {
                     "note": "balance = acceptable equilibrium state between opposing forces; thrust = identify and catalog the competing forces themselves",
@@ -5498,8 +5206,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "trace": {
-            "definition": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps "
-            "and structural changes.",
             "distinctions": [
                 {
                     "note": "flow = describe linear ordering of stages; trace = narrate the sequential control/data progression with intermediate steps",
@@ -5523,7 +5229,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "unknowns": {
-            "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
             "distinctions": [
                 {
                     "note": "assume (scope) = restrict analysis to the premises domain; unknowns (method) = surface what has not yet been considered or named",
@@ -5542,8 +5247,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "verify": {
-            "definition": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, "
-            "without governing the layer those tests must satisfy.",
             "distinctions": [
                 {
                     "note": "rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs",
@@ -5568,7 +5271,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "visual": {
-            "definition": "Frame ideas spatially — place concepts in positional relationship and build a coordinate model of the subject.",
             "distinctions": [
                 {
                     "note": "draw (channel) = deliver the output as ASCII spatial layout; visual (method) = frame ideas spatially regardless of output format",
@@ -5597,8 +5299,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "yield": {
-            "definition": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed "
-            "direction.",
             "distinctions": [
                 {
                     "note": "yield = allow natural resolution with minimal guidance; preserve = maintain compatibility with existing structures",
@@ -5618,7 +5318,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     },
     "scope": {
         "act": {
-            "definition": "Actions and intended operations focus: what is being done or needs to be done, not why or how it is structured.",
             "distinctions": [
                 {
                     "note": "act = what entities are doing or performing; thing = what entities exist",
@@ -5636,7 +5335,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "agent": {
-            "definition": "Decision-making or agency focus: who can act, who has authority, or how choices are made between actors.",
             "distinctions": [
                 {
                     "note": "agent = who has decision-making authority; view = how the subject appears from a specific vantage point",
@@ -5653,7 +5351,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "assume": {
-            "definition": "Assumptions and premises focus: what must be true, what is taken for granted, or what preconditions are embedded in the design.",
             "distinctions": [],
             "heuristics": [
                 "what assumptions",
@@ -5665,7 +5362,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "cross": {
-            "definition": "Cross-cutting concerns spanning the system: a concern that appears across many unrelated modules (logging, error handling, auth, observability).",
             "distinctions": [
                 {
                     "note": "cross = concerns that propagate and span across module boundaries; motifs = structural patterns that repeat",
@@ -5688,8 +5384,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "dam": {
-            "definition": "Containment boundaries focus: what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between inside versus "
-            "outside.",
             "distinctions": [
                 {
                     "note": "dam = containment boundaries describing what stays in/out; bound (method) = introducing or reinforcing limits on propagation",
@@ -5709,7 +5403,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "fail": {
-            "definition": "Failure modes, breakdowns, and limits focus: how and when something stops working, what the edge cases are, or where fragility lives.",
             "distinctions": [
                 {
                     "note": "fail = scope of breakdown conditions; good = quality criteria and success standards (often paired)",
@@ -5728,7 +5421,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "good": {
-            "definition": "Quality criteria or success standards focus: what makes something good, what criteria matter, or how to judge quality.",
             "distinctions": [
                 {
                     "note": "good = quality and success standards; fail = breakdown conditions (often paired together)",
@@ -5751,7 +5443,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "mean": {
-            "definition": "Conceptual framing and definitional focus: what something means, how it is understood, or what its purpose is before evaluating or acting.",
             "distinctions": [
                 {
                     "note": "mean = conceptual framing before evaluation; good = how to judge quality",
@@ -5770,7 +5461,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "motifs": {
-            "definition": "Recurring or repeated patterns across the codebase or system: structures or idioms that appear in multiple places.",
             "distinctions": [
                 {
                     "note": "motifs = patterns that repeat across the system; struct = one system's internal arrangement",
@@ -5791,7 +5481,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "stable": {
-            "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
             "distinctions": [
                 {
                     "note": "stable = what persists; time = how things evolve (often paired)",
@@ -5814,8 +5503,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "storage": {
-            "definition": "Storage and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, "
-            "and the conditions under which it can be lost or corrupted.",
             "distinctions": [
                 {
                     "note": "storage = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
@@ -5840,7 +5527,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "struct": {
-            "definition": "Internal arrangement and dependency focus: how parts of a system relate and are organized — the internal topology, not cross-cutting span.",
             "distinctions": [
                 {
                     "note": "struct = internal topology and arrangement within units; cross = horizontal span across module boundaries",
@@ -5858,7 +5544,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "thing": {
-            "definition": "Entity and bounded unit focus: what objects, roles, systems, or domains are in scope — what the relevant entities are.",
             "distinctions": [
                 {
                     "note": "thing = what entities exist; act = what those entities are doing or performing",
@@ -5877,7 +5562,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "time": {
-            "definition": "Temporal or sequential focus: sequence, history, phases, or how something changes over time.",
             "distinctions": [
                 {
                     "note": "time = how things evolve; stable = what persists (often paired)",
@@ -5897,7 +5581,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "view": {
-            "definition": "Stakeholder or positional perspective focus: how the subject appears from a specific role or vantage point.",
             "distinctions": [
                 {
                     "note": "view = how the subject appears from a specific vantage point; agent = who has decision-making authority",
@@ -5919,5 +5602,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
 
 
 def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:
-    """Return structured metadata for axis tokens (ADR-0155)."""
-    return dict(AXIS_TOKEN_METADATA)
+    """Return structured metadata for axis tokens (ADR-0155).
+
+    'definition' is not stored in AXIS_TOKEN_METADATA — it is derived here from
+    AXIS_KEY_TO_VALUE so callers receive a complete entry without duplicate storage.
+    """
+    result = {}
+    for axis, tokens in AXIS_TOKEN_METADATA.items():
+        result[axis] = {}
+        value_map = AXIS_KEY_TO_VALUE.get(axis, {})
+        for token, meta in tokens.items():
+            entry = dict(meta)
+            if token in value_map:
+                entry["definition"] = value_map[token]
+            result[axis][token] = entry
+    return result

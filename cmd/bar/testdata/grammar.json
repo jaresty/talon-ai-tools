@@ -1113,7 +1113,6 @@
     "metadata": {
       "channel": {
         "adr": {
-          "definition": "Architecture Decision Record format: structures output as an ADR document with Context, Decision, and Consequences sections. Best for decision-making tasks and architectural tradeoffs.",
           "distinctions": [],
           "heuristics": [
             "write an ADR",
@@ -1121,10 +1120,10 @@
             "ADR format",
             "decision record",
             "record this decision formally for version control"
-          ]
+          ],
+          "definition": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control. Best suited for decision-making tasks and architectural tradeoffs."
         },
         "code": {
-          "definition": "Code or markup only, no prose: outputs only executable or markup with no surrounding explanation.",
           "distinctions": [],
           "heuristics": [
             "just the code",
@@ -1134,10 +1133,10 @@
             "code without prose",
             "just the markup",
             "implementation without explanation"
-          ]
+          ],
+          "definition": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative."
         },
         "codetour": {
-          "definition": "VS Code CodeTour JSON file: structures the response as a valid CodeTour `.tour` file for navigating code in VS Code.",
           "distinctions": [],
           "heuristics": [
             "codetour",
@@ -1145,10 +1144,10 @@
             "code tour file",
             "interactive code walkthrough",
             "create a codetour"
-          ]
+          ],
+          "definition": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation."
         },
         "diagram": {
-          "definition": "Mermaid diagram code only: response is Mermaid diagram source, inferred to the best diagram type.",
           "distinctions": [
             {
               "note": "diagram = Mermaid format; sketch = D2 diagram format",
@@ -1164,10 +1163,10 @@
             "draw this out",
             "architecture diagram in Mermaid",
             "as a diagram"
-          ]
+          ],
+          "definition": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters)."
         },
         "draw": {
-          "definition": "Spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable; not machine-parseable. Use when spatial overview is wanted without the precision constraints of Mermaid or D2.",
           "distinctions": [
             {
               "note": "diagram (channel) = Mermaid code, machine-parseable; draw (channel) = spatial ASCII prose, human-readable",
@@ -1192,10 +1191,10 @@
             "text-based visual",
             "ASCII art",
             "prose diagram"
-          ]
+          ],
+          "definition": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2."
         },
         "gherkin": {
-          "definition": "Gherkin scenario format: output as Given/When/Then Gherkin scenarios.",
           "distinctions": [],
           "heuristics": [
             "Gherkin format",
@@ -1204,10 +1203,10 @@
             "acceptance tests in Gherkin",
             "feature file",
             "BDD test cases"
-          ]
+          ],
+          "definition": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks."
         },
         "html": {
-          "definition": "Semantic HTML only, no prose: complete output as HTML markup with no surrounding explanation.",
           "distinctions": [],
           "heuristics": [
             "HTML output",
@@ -1216,10 +1215,10 @@
             "output as a webpage",
             "HTML page",
             "HTML only"
-          ]
+          ],
+          "definition": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation."
         },
         "image": {
-          "definition": "Image as the final output: user wants to generate an image.",
           "distinctions": [
             {
               "note": "image = static image generation; video = video generation",
@@ -1235,10 +1234,10 @@
             "DALL-E",
             "Midjourney",
             "Stable Diffusion"
-          ]
+          ],
+          "definition": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose or explanation."
         },
         "jira": {
-          "definition": "Jira markup formatting: response formatted using Jira markdown (headings, lists, panels).",
           "distinctions": [],
           "heuristics": [
             "Jira format",
@@ -1247,10 +1246,10 @@
             "Jira ticket format",
             "for a Jira comment",
             "use Jira markup"
-          ]
+          ],
+          "definition": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material."
         },
         "notebook": {
-          "definition": "Jupyter notebook format: response as a runnable `.ipynb` notebook with code cells, markdown narrative, and structured outputs.",
           "distinctions": [],
           "heuristics": [
             "Jupyter notebook",
@@ -1261,10 +1260,10 @@
             "notebook with code cells",
             "data exploration notebook",
             "interactive notebook"
-          ]
+          ],
+          "definition": "The response is delivered as a valid Jupyter notebook (`.ipynb` JSON), with an ordered sequence of markdown and code cells appropriate to the task, structured for execution and exploration. No surrounding prose outside the notebook structure."
         },
         "plain": {
-          "definition": "Suppress structural formatting: explicitly requests plain prose with no lists, bullets, or structural decoration.",
           "distinctions": [],
           "heuristics": [
             "no bullets",
@@ -1273,10 +1272,10 @@
             "continuous prose",
             "flowing paragraphs",
             "paragraph form"
-          ]
+          ],
+          "definition": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code blocks."
         },
         "presenterm": {
-          "definition": "Presenterm slide deck: output as a multi-slide presenterm Markdown deck with valid front matter, slide separators, and end_slide directives.",
           "distinctions": [
             {
               "note": "presenterm = actual slide deck artifact; sync = session plan with timing cues",
@@ -1291,10 +1290,10 @@
             "slide format",
             "multi-slide deck",
             "presentation"
-          ]
+          ],
+          "definition": "The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: \"--- newline title: <descriptive title based on the input with colons encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- newline\" with no other keys. The deck contains up to 12 slides. Each slide starts with a Setext header (title line followed by a line of ---), includes content and references, and ends with an HTML comment named end_slide on its own line followed by a blank line; the final slide may omit the closing end_slide. A blank line always precedes the References section so that a line with \"References\" or \"- References\" is separated by one empty line. Directives appear only as standalone HTML comments with exact syntax: \"<!-- end_slide -->\", \"<!-- pause -->\", \"<!-- column_layout: [7, 3] -->\", \"<!-- column: 0 -->\", \"<!-- reset_layout -->\", and \"<!-- jump_to_middle -->\". Code fence safety is enforced: whenever a fenced code block opens (for example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), the response includes a matching closing fence of exactly three backticks on its own line before any non-code content, directive, or end_slide; if a fence remains open at slide end, the response emits the closing fence first. Mermaid diagrams use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 +render; executable snippets use fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image. The response emits \"<!-- snippet_output: name -->\" only when a snippet with +id:name exists. Lines hidden with # or /// prefixes follow language conventions; other code blocks appear only when relevant and include the language name; images appear only when valid paths or URLs exist. Within the slide body (outside fenced or inline code and outside HTML directives), the deck never includes raw HTML: every literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\") while intentional \"~~text~~\" remains unchanged. Mermaid safety keeps grammar and delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII double quotes and use Mermaid-compatible numeric codes with no leading ampersand, such as \"#91;\" for \"[\", \"#93;\" for \"]\", \"#40;\" for \"(\", \"#41;\" for \")\", \"#123;\" for \"{{\", \"#125;\" for \"}}\", \"#60;\" for \"<\", \"#62;\" for \">\", \"#35;\" for \"#\", \"#58;\" for \":\", and \"&\" and slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies."
         },
         "remote": {
-          "definition": "Optimizing output for remote or distributed delivery contexts (video calls, voice, or screen sharing).",
           "distinctions": [],
           "heuristics": [
             "remote delivery",
@@ -1302,10 +1301,10 @@
             "video call context",
             "screen sharing",
             "remote-friendly"
-          ]
+          ],
+          "definition": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing."
         },
         "shellscript": {
-          "definition": "Shell script format: response as executable shell code.",
           "distinctions": [],
           "heuristics": [
             "shell script",
@@ -1314,10 +1313,10 @@
             "automate this with a shell script",
             "script format",
             "shell code only"
-          ]
+          ],
+          "definition": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation."
         },
         "sketch": {
-          "definition": "D2 diagram output: when user explicitly requests D2 format or D2 diagram source.",
           "distinctions": [
             {
               "note": "sketch = D2 diagram format; diagram = Mermaid format",
@@ -1329,10 +1328,10 @@
             "D2 format",
             "sketch diagram",
             "d2 source"
-          ]
+          ],
+          "definition": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
         },
         "slack": {
-          "definition": "Slack-formatted Markdown: response formatted for Slack with appropriate Markdown, mentions, and code blocks.",
           "distinctions": [],
           "heuristics": [
             "Slack format",
@@ -1341,10 +1340,10 @@
             "Slack message",
             "Slack-friendly format",
             "for a Slack post"
-          ]
+          ],
+          "definition": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration."
         },
         "store": {
-          "definition": "Write to persistent storage: additionally writes output to a file, memory system, or other durable medium via available tools as the work progresses — additive, not a replacement for conversational output. Falls back to surfacing content with explicit save instructions when no storage tool is available.",
           "distinctions": [
             {
               "note": "snap (form) = structure content as a save-state artifact; store (channel) = deliver output to durable storage — they compose naturally",
@@ -1362,10 +1361,10 @@
             "make it findable later",
             "save it somewhere",
             "also write it out"
-          ]
+          ],
+          "definition": "The response additionally writes output to persistent storage using available tools — a file on disk, a memory system, or any other durable medium the environment supports — as the work progresses. Conversational output continues normally; storage is additive, not a replacement. When no storage tool is available, the response notes explicitly what should be saved and suggests how."
         },
         "svg": {
-          "definition": "SVG markup only: complete output as SVG for direct use in an `.svg` file.",
           "distinctions": [],
           "heuristics": [
             "SVG format",
@@ -1374,10 +1373,10 @@
             "output as SVG",
             "SVG markup only",
             "create an SVG"
-          ]
+          ],
+          "definition": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file."
         },
         "sync": {
-          "definition": "Live or synchronous session planning: agenda with timing, steps, and cues for real-time delivery.",
           "distinctions": [
             {
               "note": "sync = session plan with timing cues; presenterm = actual slide deck artifact",
@@ -1389,10 +1388,10 @@
             "live workshop agenda",
             "meeting agenda with timing cues",
             "synchronous workshop plan"
-          ]
+          ],
+          "definition": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
         },
         "video": {
-          "definition": "Video as the final output: user wants to generate a video.",
           "distinctions": [
             {
               "note": "video = video generation; image = static image generation",
@@ -1409,12 +1408,12 @@
             "Runway",
             "Pika",
             "Kling"
-          ]
+          ],
+          "definition": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding prose or explanation."
         }
       },
       "completeness": {
         "deep": {
-          "definition": "Substantial depth within the chosen scope: thorough unpacking of reasoning, layers, or fine details without necessarily enumerating every edge case.",
           "distinctions": [
             {
               "note": "deep = depth within a focused scope; max = exhaustive across all relevant coverage",
@@ -1434,10 +1433,10 @@
             "I want the details",
             "deep dive",
             "depth over breadth"
-          ]
+          ],
+          "definition": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case."
         },
         "full": {
-          "definition": "Thorough but not exhaustive: covers all major aspects without every micro-detail.",
           "distinctions": [
             {
               "note": "full = thorough normal coverage; max = treat omissions as errors",
@@ -1456,10 +1455,10 @@
             "full picture",
             "don't leave anything major out",
             "complete treatment"
-          ]
+          ],
+          "definition": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail."
         },
         "gist": {
-          "definition": "Brief but complete response: quick summary or overview without deep exploration.",
           "distinctions": [
             {
               "note": "gist = brief but complete; skim = light pass, may miss non-obvious issues",
@@ -1475,10 +1474,10 @@
             "high-level",
             "standup update",
             "just the gist"
-          ]
+          ],
+          "definition": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail."
         },
         "grow": {
-          "definition": "Dynamic depth constraint: start minimal, expand only where the analysis explicitly demands it. Each elaboration must be justified by demonstrated need rather than anticipated complexity.",
           "distinctions": [
             {
               "note": "grow = start minimal and expand on demand; minimal = keep output minimal throughout",
@@ -1497,10 +1496,10 @@
             "justify each elaboration",
             "minimal unless warranted",
             "add depth only where analysis demands"
-          ]
+          ],
+          "definition": "The response begins at minimal depth and expands only where the analysis explicitly demands it, so every elaboration is justified rather than anticipated."
         },
         "max": {
-          "definition": "Exhaustive and leave nothing out: user explicitly wants the most complete possible response, treating omissions as errors.",
           "distinctions": [
             {
               "note": "max = every relevant item, omissions are errors; full = thorough normal coverage",
@@ -1520,10 +1519,10 @@
             "comprehensive and exhaustive",
             "cover every case",
             "I need everything"
-          ]
+          ],
+          "definition": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors."
         },
         "minimal": {
-          "definition": "Smallest satisfying answer only: minimum change or response that addresses the core need, no extras.",
           "distinctions": [
             {
               "note": "minimal = smallest valid answer to the request; narrow = restrict to a small topic slice",
@@ -1540,10 +1539,10 @@
             "don't add anything extra",
             "bare minimum",
             "only what I asked for"
-          ]
+          ],
+          "definition": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need."
         },
         "narrow": {
-          "definition": "Restricts discussion to a very specific topic slice: user explicitly limits scope to one aspect.",
           "distinctions": [
             {
               "note": "narrow = very small slice of topic; minimal = smallest answer",
@@ -1557,10 +1556,10 @@
             "restricted to",
             "nothing beyond",
             "only X"
-          ]
+          ],
+          "definition": "The response restricts the discussion to a very small slice of the topic, avoiding broad context."
         },
         "skim": {
-          "definition": "Light, surface-level pass: quick scan for most obvious or critical issues without depth.",
           "distinctions": [
             {
               "note": "skim = light pass that may miss non-obvious issues; gist = brief but complete",
@@ -1575,10 +1574,10 @@
             "surface-level look",
             "sanity check",
             "quick skim"
-          ]
+          ],
+          "definition": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness."
         },
         "triage": {
-          "definition": "Stakes-proportionate coverage depth: allocates analytical depth by consequence × uncertainty. Areas where both are high receive full coverage; areas where both are low receive minimal or no coverage.",
           "distinctions": [
             {
               "note": "triage = allocate depth by consequence × uncertainty stakes; grow = expand only where analysis explicitly demands it",
@@ -1599,10 +1598,10 @@
             "allocate attention by risk",
             "what deserves the most scrutiny",
             "protect the high-stakes areas"
-          ]
+          ],
+          "definition": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no coverage. The coverage allocation is stakes-proportionate rather than uniform."
         },
         "zoom": {
-          "definition": "Scale-adaptive granularity: cover the full range of the subject as exponentially-spaced buckets, providing substantive content at every level — not just naming or listing the scale. Both ends must appear as explicit anchors; do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets. Zoom is a focusing mechanism, not uniform enumeration: when no specific target is provided, content at each finer level should be chosen for what is most illuminating relative to the level above — the fine-grained anchor earns its place by revealing something about the span it sits within. At each level, frame the content to show what it reveals about the scale above — the connection between levels should be evident from the presentation.",
           "distinctions": [
             {
               "note": "zoom = resolution adapts to span magnitude; full = uniform thorough coverage at consistent grain",
@@ -1632,12 +1631,12 @@
             "span the full range",
             "from smallest to largest",
             "cover every level of scale"
-          ]
+          ],
+          "definition": "The response covers the full range of the subject by treating it as exponentially-spaced buckets from smallest natural unit to largest. Each bucket receives substantive coverage — the response addresses the subject at every level, not merely names or lists the scale. Both ends must appear as explicit anchors: do not begin at an intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude in span produces roughly one step up in granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets."
         }
       },
       "directional": {
         "bog": {
-          "definition": "Orient across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together.",
           "distinctions": [
             {
               "note": "bog = full horizontal span (reflective + acting); rog = reflective pole only",
@@ -1653,10 +1652,10 @@
             "both the structural examination and the actions",
             "understand it structurally while also acting on that understanding",
             "analysis and actions both"
-          ]
+          ],
+          "definition": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together."
         },
         "dig": {
-          "definition": "Ground in concrete specifics: examples, real cases, and grounded details rather than abstract analysis.",
           "distinctions": [
             {
               "note": "dig = stay concrete and grounded; fog = orient toward the abstract principle",
@@ -1672,10 +1671,10 @@
             "practical examples only",
             "make it tangible",
             "I need specifics not theory"
-          ]
+          ],
+          "definition": "The response additionally orients toward the concrete and specific — examining grounded details and examples rather than abstractions."
         },
         "dip bog": {
-          "definition": "Orient toward the concrete across the full horizontal span — grounded in specific examples and details, shaped by structural examination and action together.",
           "distinctions": [
             {
               "note": "dip bog = concrete + full horizontal orientation together; dig = concrete pole only",
@@ -1691,10 +1690,10 @@
             "ground it in examples and orient toward both structure and action",
             "real examples shaping both what it reveals and what to do",
             "grounded in specifics, oriented toward structure and action"
-          ]
+          ],
+          "definition": "The response additionally orients toward the concrete across the full horizontal span — grounded in specific examples and details, shaped by structural examination and action together."
         },
         "dip ong": {
-          "definition": "Orient toward the concrete and acting — grounded in specific examples and details, shaped toward identifying what to do and extending those actions.",
           "distinctions": [
             {
               "note": "dip ong = concrete + acting orientation together; dig = concrete pole only",
@@ -1710,10 +1709,10 @@
             "ground it in specifics and orient toward what to do",
             "practical examples with actions",
             "real cases with actionable direction"
-          ]
+          ],
+          "definition": "The response additionally orients toward the concrete and acting — grounded in specific examples and details, shaped toward identifying what to do and extending those actions."
         },
         "dip rog": {
-          "definition": "Orient toward the concrete and structural — grounded in specific examples and details, shaped by how they are organized and what that reveals.",
           "distinctions": [
             {
               "note": "dip rog = concrete + structural orientation together; dig = concrete pole only",
@@ -1729,10 +1728,10 @@
             "ground it in specifics and orient toward its structure",
             "specifics and what their structure reveals",
             "specific example oriented toward structural patterns"
-          ]
+          ],
+          "definition": "The response additionally orients toward the concrete and structural — grounded in specific examples and details, shaped by how they are organized and what that reveals."
         },
         "fig": {
-          "definition": "Orient across the full vertical axis — spanning both the abstract/general dimension (fog) and the concrete/specific dimension (dig), using each to illuminate the other.",
           "distinctions": [
             {
               "note": "fig = full vertical span (abstract + concrete); fog = abstract pole only",
@@ -1749,10 +1748,10 @@
             "both the theory and the concrete reality",
             "be abstract and concrete",
             "cover the full range from general to specific"
-          ]
+          ],
+          "definition": "The response additionally orients across the full vertical axis — spanning both the abstract/general dimension (fog) and the concrete/specific dimension (dig), using each to illuminate the other."
         },
         "fip bog": {
-          "definition": "Orient across all four compass dimensions — spanning abstract and concrete while shaped by structural examination and action together.",
           "distinctions": [
             {
               "note": "fip bog = full vertical + full horizontal orientation (all 4 directions); fig = vertical span only",
@@ -1768,10 +1767,10 @@
             "abstract and concrete, structural and acting",
             "all four compass directions at once",
             "span abstract to concrete while orienting toward structure and action"
-          ]
+          ],
+          "definition": "The response additionally orients across all four compass dimensions — spanning abstract and concrete while shaped by structural examination and action together."
         },
         "fip ong": {
-          "definition": "Orient across the full vertical axis toward action — spanning abstract and concrete, shaped toward identifying what to do and extending those actions.",
           "distinctions": [
             {
               "note": "fip ong = vertical span + acting orientation together; fig = vertical span only",
@@ -1787,10 +1786,10 @@
             "span abstract to concrete and orient toward action",
             "both levels of abstraction, shaped toward what to do",
             "span abstract to concrete, orienting toward actions"
-          ]
+          ],
+          "definition": "The response additionally orients across the full vertical axis toward action — spanning abstract and concrete, shaped toward identifying what to do and extending those actions."
         },
         "fip rog": {
-          "definition": "Orient across the full vertical axis toward the structural — spanning abstract and concrete, shaped by how the subject is organized and what that reveals.",
           "distinctions": [
             {
               "note": "fip rog = vertical span + structural orientation together; fig = vertical span only",
@@ -1806,10 +1805,10 @@
             "span abstract to concrete and orient toward structure",
             "both levels of abstraction, shaped by what the structure reveals",
             "span abstract to concrete, orienting toward structural meaning"
-          ]
+          ],
+          "definition": "The response additionally orients across the full vertical axis toward the structural — spanning abstract and concrete, shaped by how the subject is organized and what that reveals."
         },
         "fly bog": {
-          "definition": "Orient toward the abstract across the full horizontal span — anchored in general patterns and principles, shaped by structural examination and action together.",
           "distinctions": [
             {
               "note": "fly bog = abstract + full horizontal orientation together; fog = abstract pole only",
@@ -1825,10 +1824,10 @@
             "big picture anchoring, orienting toward both structure and action",
             "principles shaping both what they reveal and what to do",
             "abstract anchoring, oriented toward structure and action"
-          ]
+          ],
+          "definition": "The response additionally orients toward the abstract across the full horizontal span — anchored in general patterns and principles, shaped by structural examination and action together."
         },
         "fly ong": {
-          "definition": "Orient toward the abstract and acting — anchored in general patterns and principles, shaped toward identifying what to do and extending those actions.",
           "distinctions": [
             {
               "note": "fly ong = abstract + acting orientation together; fog = abstract pole only",
@@ -1844,10 +1843,10 @@
             "big picture anchoring, oriented toward action",
             "principles shaping what to do",
             "big picture anchoring with action orientation"
-          ]
+          ],
+          "definition": "The response additionally orients toward the abstract and acting — anchored in general patterns and principles, shaped toward identifying what to do and extending those actions."
         },
         "fly rog": {
-          "definition": "Orient toward the abstract and structural — anchored in general patterns and principles, shaped by how they are organized and what that reveals.",
           "distinctions": [
             {
               "note": "fly rog = abstract + structural orientation together; fog = abstract pole only",
@@ -1863,10 +1862,10 @@
             "big picture anchoring, oriented toward structure",
             "principles shaping what the structure reveals",
             "big picture anchoring with structural orientation"
-          ]
+          ],
+          "definition": "The response additionally orients toward the abstract and structural — anchored in general patterns and principles, shaped by how they are organized and what that reveals."
         },
         "fog": {
-          "definition": "Surface the abstract pattern or principle: orient toward the general insight that transcends specific cases.",
           "distinctions": [
             {
               "note": "fog = orient toward the abstract and general; dig = stay concrete and grounded",
@@ -1885,19 +1884,19 @@
             "what underlying pattern do these cases share",
             "zoom out",
             "what's the broader implication"
-          ]
+          ],
+          "definition": "The response additionally orients toward the abstract and general — identifying patterns and principles that transcend the specifics, toward broader insights."
         },
         "jog": {
-          "definition": "The null directional: applies no compass orientation. Use when a directional token is required by the grammar (e.g. as a Talon phrase-ender) but no directional push is desired. Has no effect on response angle.",
           "distinctions": [],
           "heuristics": [
             "no directional preference",
             "null direction",
             "no compass push"
-          ]
+          ],
+          "definition": "The response applies no directional orientation. Use when a directional token is required by the grammar but no compass push is desired."
         },
         "ong": {
-          "definition": "Orient toward action and extension: identify what to do and extend those actions to related contexts.",
           "distinctions": [
             {
               "note": "ong = acting/extending pole (right); rog = reflective/structural pole (left)",
@@ -1913,10 +1912,10 @@
             "give me the actions with follow-on steps",
             "what do I do and what's the next step after that",
             "next steps and their extensions"
-          ]
+          ],
+          "definition": "The response additionally orients toward action and extension — identifying what to do and extending those actions to related situations or next steps."
         },
         "rog": {
-          "definition": "Orient toward the structural and reflective dimension: how the subject is organised and what that organisation reveals.",
           "distinctions": [
             {
               "note": "rog = reflective/structural pole (left); ong = acting/extending pole (right)",
@@ -1940,12 +1939,12 @@
             "how is it organised and what does that reveal",
             "walk me through the structure and reflect on the implications",
             "what does the organisation tell us"
-          ]
+          ],
+          "definition": "The response additionally orients toward the structural and reflective dimension — how the subject is organized and what that organization reveals."
         }
       },
       "form": {
         "actions": {
-          "definition": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
           "distinctions": [
             {
               "note": "checklist = imperative checkbox items designed to be ticked off; actions = broader action-structured output including tasks, steps, and next moves",
@@ -1965,10 +1964,10 @@
             "just the actions",
             "tasks to do",
             "list of actions"
-          ]
+          ],
+          "definition": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation."
         },
         "activities": {
-          "definition": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
           "distinctions": [
             {
               "note": "facilitate = overall facilitation plan with session goals and participation mechanics; activities = segment-by-segment content of what to do and when",
@@ -1982,10 +1981,10 @@
             "design sprint activities",
             "what happens in each segment",
             "activities list for the workshop"
-          ]
+          ],
+          "definition": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description."
         },
         "bug": {
-          "definition": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details.",
           "distinctions": [
             {
               "note": "log = work log entry for archival and reference; bug = structured defect report with reproduction steps and expected/actual behavior",
@@ -1999,10 +1998,10 @@
             "steps to reproduce",
             "expected vs actual behavior",
             "create a bug ticket"
-          ]
+          ],
+          "definition": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live session agenda."
         },
         "bullets": {
-          "definition": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
           "distinctions": [
             {
               "note": "checklist = imperative action items designed to be ticked off; bullets = general bullet-point organization, not necessarily imperative",
@@ -2017,10 +2016,10 @@
             "short bullets",
             "list format with bullets",
             "no paragraphs, just bullets"
-          ]
+          ],
+          "definition": "The response organizes ideas as concise bullet points, avoiding long paragraphs."
         },
         "cards": {
-          "definition": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
           "distinctions": [
             {
               "note": "bullets = brief bullet items; cards = richer discrete units each with a heading and short body",
@@ -2035,10 +2034,10 @@
             "card format",
             "organize as cards",
             "section cards with headings"
-          ]
+          ],
+          "definition": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose."
         },
         "case": {
-          "definition": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation.",
           "distinctions": [
             {
               "note": "indirect = softer narrative reasoning that converges on a point; case = structured argument with explicit evidence, alternatives, and objection handling before the recommendation",
@@ -2053,10 +2052,10 @@
             "present the case",
             "evidence then conclusion",
             "case for X"
-          ]
+          ],
+          "definition": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation that addresses objections and constraints."
         },
         "checklist": {
-          "definition": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
           "distinctions": [
             {
               "note": "actions = general action-structured output; checklist = specifically checkbox-style imperative items designed to be ticked off",
@@ -2071,10 +2070,10 @@
             "checkboxes",
             "items to check off",
             "pre-flight checklist"
-          ]
+          ],
+          "definition": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose."
         },
         "cocreate": {
-          "definition": "The response structures itself as a collaborative process—small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without a channel: interactive, proposing and iterating with explicit pauses for feedback. With an output-exclusive channel: formats the artifact to expose decision points and invite response.",
           "distinctions": [
             {
               "note": "variants = present a choice of distinct designs; cocreate = iterative process with decision points and alignment checks",
@@ -2085,10 +2084,10 @@
             "work through incrementally",
             "with decision points",
             "iterative design"
-          ]
+          ],
+          "definition": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With one, formats the artifact to expose decision points and invite response."
         },
         "commit": {
-          "definition": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
           "distinctions": [
             {
               "note": "log = dated work log entry with bullet updates; commit = short type/scope header format for version control",
@@ -2102,10 +2101,10 @@
             "git commit message",
             "commit message",
             "type: scope format"
-          ]
+          ],
+          "definition": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body."
         },
         "contextualise": {
-          "definition": "The response packages the subject to be passed directly to another LLM operation, enriching content with all context a downstream model needs to act on it without further explanation.",
           "distinctions": [
             {
               "note": "merge = combine multiple sources into one coherent whole; contextualise = package existing content with full context for another LLM to act on it",
@@ -2123,10 +2122,10 @@
             "make this self-contained for an LLM",
             "include all necessary context",
             "so I can feed this to"
-          ]
+          ],
+          "definition": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten."
         },
         "coupling": {
-          "definition": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is.",
           "distinctions": [
             {
               "note": "coupling (form) = output structured as a coupling map; snag/mesh (method) = analytical lens for finding or resolving coupling",
@@ -2141,10 +2140,10 @@
             "coupling diagram",
             "what is joined at the interface",
             "where do these components couple"
-          ]
+          ],
+          "definition": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs naturally with snag/mesh methods and diagram/sketch channels."
         },
         "direct": {
-          "definition": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
           "distinctions": [
             {
               "note": "indirect = background first, conclusion last; direct = main point first, supporting detail after",
@@ -2159,10 +2158,10 @@
             "direct response",
             "state the recommendation first",
             "don't bury the lede"
-          ]
+          ],
+          "definition": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps."
         },
         "facilitate": {
-          "definition": "The response structures itself as a facilitation plan—framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without a channel: acts as a live facilitator, asking questions and managing participation interactively. With an output-exclusive channel: produces a static facilitation guide.",
           "distinctions": [
             {
               "note": "walkthrough = linear narrated steps through a process; facilitate = session structure with participation cues and facilitation agenda",
@@ -2177,10 +2176,10 @@
             "facilitate a X",
             "run a retrospective",
             "workshop planning"
-          ]
+          ],
+          "definition": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide."
         },
         "faq": {
-          "definition": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim.",
           "distinctions": [
             {
               "note": "questions = response IS a list of questions to investigate (no answers); faq = questions paired with their answers as a reference artifact",
@@ -2195,10 +2194,10 @@
             "questions and answers",
             "write as Q&A",
             "question headings with answers below"
-          ]
+          ],
+          "definition": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose."
         },
         "formats": {
-          "definition": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
           "distinctions": [
             {
               "note": "table = present content as a columnar grid; formats = the response IS about document types and their suitability",
@@ -2213,10 +2212,10 @@
             "what structure should this take",
             "what are the format options",
             "format comparison"
-          ]
+          ],
+          "definition": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability."
         },
         "ghost": {
-          "definition": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. Presents a workflow execution trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
           "distinctions": [
             {
               "note": "log = dated work log entry for reference; ghost = workflow execution trace showing actions and their results",
@@ -2239,10 +2238,10 @@
             "what actions were taken and what happened",
             "trace of work performed",
             "autonomous workflow execution"
-          ]
+          ],
+          "definition": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints."
         },
         "indirect": {
-          "definition": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
           "distinctions": [
             {
               "note": "direct = conclusion first, supporting detail after; indirect = reasoning first, conclusion last",
@@ -2259,10 +2258,10 @@
             "show your thinking before the conclusion",
             "give me the context before the answer",
             "reasoning before conclusion"
-          ]
+          ],
+          "definition": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together."
         },
         "log": {
-          "definition": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
           "distinctions": [
             {
               "note": "walkthrough = guided sequential narration; log = concise dated entry format for archival and reference",
@@ -2282,10 +2281,10 @@
             "journal entry",
             "log what we did",
             "write up as a log"
-          ]
+          ],
+          "definition": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative."
         },
         "merge": {
-          "definition": "The response combines multiple sources into a single coherent whole while preserving essential information.",
           "distinctions": [
             {
               "note": "contextualise = package with context for downstream LLM; merge = combine multiple sources into one coherent whole",
@@ -2301,10 +2300,10 @@
             "bring these together",
             "unify these documents",
             "integrate these into a single output"
-          ]
+          ],
+          "definition": "The response combines multiple sources into a single coherent whole while preserving essential information."
         },
         "prep": {
-          "definition": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
           "distinctions": [
             {
               "note": "prep = design the experiment before running it; vet = review the results after running it",
@@ -2326,10 +2325,10 @@
             "plan my debugging experiment",
             "structure my debugging hypothesis and tests",
             "write up the debugging test plan"
-          ]
+          ],
+          "definition": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it."
         },
         "questions": {
-          "definition": "The response presents the answer as a series of probing or clarifying questions rather than statements.",
           "distinctions": [
             {
               "note": "socratic = LLM asks the USER questions interactively to surface their thinking; questions = response IS a question-list artifact the user takes away",
@@ -2347,10 +2346,10 @@
             "frame this as questions",
             "questions I should explore",
             "diagnostic questions for"
-          ]
+          ],
+          "definition": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject."
         },
         "quiz": {
-          "definition": "The response organizes content as a quiz structure—questions posed before explanations, testing understanding through active recall before providing answers. Without a channel: interactive exchange, posing questions and waiting for responses. With an output-exclusive channel: structures the output as a static quiz document.",
           "distinctions": [
             {
               "note": "socratic = question-led dialogue to surface user reasoning; quiz = test recall via question-then-answer structure",
@@ -2366,10 +2365,10 @@
             "knowledge check",
             "quiz questions on",
             "multiple choice quiz"
-          ]
+          ],
+          "definition": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document."
         },
         "recipe": {
-          "definition": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
           "distinctions": [
             {
               "note": "walkthrough = linear narrated steps without custom notation; recipe = structured recipe with a custom mini-language and notation key",
@@ -2382,10 +2381,10 @@
             "using a custom notation",
             "with a symbolic key",
             "repeating pattern I can express as a formula"
-          ]
+          ],
+          "definition": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it."
         },
         "scaffold": {
-          "definition": "Learning-oriented explanation: starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain them.",
           "distinctions": [
             {
               "note": "walkthrough = guided sequential steps through a known process; scaffold = pedagogical first-principles introduction that builds understanding",
@@ -2398,10 +2397,10 @@
             "teach me this",
             "start from first principles",
             "build up my understanding"
-          ]
+          ],
+          "definition": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas where first-principles exposition contradicts assumed expertise."
         },
         "snap": {
-          "definition": "State snapshot: structures output as a forward-oriented capture of current state — progress made, key decisions, what remains — with enough context to resume or hand off from this point.",
           "distinctions": [
             {
               "note": "ghost = execution trace of autonomous actions and results; snap = save state structured for future resumption or handoff",
@@ -2427,10 +2426,10 @@
             "create a save file",
             "durable record for resumption",
             "so the next session can continue"
-          ]
+          ],
+          "definition": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work."
         },
         "socratic": {
-          "definition": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers are given.",
           "distinctions": [
             {
               "note": "questions = response IS a question-list artifact the user takes away; socratic = LLM asks the USER questions interactively to surface their thinking",
@@ -2449,10 +2448,10 @@
             "probe my thinking",
             "question me as we work through this",
             "help me reason this out"
-          ]
+          ],
+          "definition": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary."
         },
         "spike": {
-          "definition": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning outcomes.",
           "distinctions": [
             {
               "note": "story = user-facing value statement with acceptance criteria; spike = research question artifact focused on unknowns",
@@ -2463,10 +2462,10 @@
             "should we adopt X?",
             "spike on Y",
             "investigation backlog item"
-          ]
+          ],
+          "definition": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks."
         },
         "story": {
-          "definition": "The response formats the backlog item as a user story using 'As a <persona>, I want <capability>, so that <value>.' It may include a short description and high-level acceptance criteria.",
           "distinctions": [
             {
               "note": "spike = research question artifact focused on unknowns; story = user-facing value statement with acceptance criteria",
@@ -2481,10 +2480,10 @@
             "user story for this feature",
             "backlog user story",
             "story card"
-          ]
+          ],
+          "definition": "The response formats the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax."
         },
         "table": {
-          "definition": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
           "distinctions": [
             {
               "note": "cards = discrete headed items; table = columnar grid layout",
@@ -2500,10 +2499,10 @@
             "grid format",
             "as a table",
             "column-row layout"
-          ]
+          ],
+          "definition": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact."
         },
         "taxonomy": {
-          "definition": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly.",
           "distinctions": [
             {
               "note": "table = flat columnar comparison; taxonomy = type hierarchy with defined relationships and distinguishing attributes",
@@ -2514,10 +2513,10 @@
             "classify all types of X",
             "what kinds of Y exist",
             "type hierarchy"
-          ]
+          ],
+          "definition": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly. Output adapts to channel: code channel → type system (interfaces, enums, hierarchies); markup → hierarchical structure; no channel → prose sections."
         },
         "test": {
-          "definition": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type.",
           "distinctions": [
             {
               "note": "checklist = imperative tasks to complete; test = structured test scenarios with setup/execute/assert structure",
@@ -2532,10 +2531,10 @@
             "test scenarios",
             "write the tests",
             "test case format with setup and assertion"
-          ]
+          ],
+          "definition": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, boundaries) and including descriptive test names."
         },
         "tight": {
-          "definition": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
           "distinctions": [
             {
               "note": "plain = no structural decoration as a delivery format (channel); tight = concise dense prose style (form) that avoids filler",
@@ -2550,10 +2549,10 @@
             "brevity without structure",
             "no padding or filler",
             "maximum signal per word"
-          ]
+          ],
+          "definition": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler."
         },
         "timeline": {
-          "definition": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs.",
           "distinctions": [
             {
               "note": "timeline (form) = output structured as a temporal sequence layout; walkthrough (form) = guided step-by-step narration",
@@ -2572,10 +2571,10 @@
             "temporal order with markers",
             "sequence of stages over time",
             "show this as a timeline"
-          ]
+          ],
+          "definition": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs. Pairs naturally with trace/flow methods and diagram/sketch channels."
         },
         "twin": {
-          "definition": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
           "distinctions": [
             {
               "note": "twin = strict side-by-side layout with equal weight per alternative; variants = labeled options with descriptions (may be narrative)",
@@ -2594,10 +2593,10 @@
             "show both without interleaving",
             "parallel comparison layout",
             "show the two options in parallel"
-          ]
+          ],
+          "definition": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving."
         },
         "variants": {
-          "definition": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description.",
           "distinctions": [
             {
               "note": "cocreate = iterative process with decision points and alignment checks; variants = present distinct labeled options without necessarily evaluating them against each other",
@@ -2613,10 +2612,10 @@
             "what are the options with labels",
             "present 3 options",
             "decision-ready alternatives"
-          ]
+          ],
+          "definition": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when helpful while avoiding near-duplicate alternatives."
         },
         "vet": {
-          "definition": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. Complements prep.",
           "distinctions": [
             {
               "note": "vet = post-experiment review of outcomes vs expectations; prep = experiment design write-up before running",
@@ -2638,10 +2637,10 @@
             "post-debug review",
             "review what my debugging found vs what I expected",
             "what did the debugging reveal vs my hypothesis"
-          ]
+          ],
+          "definition": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. Complements prep."
         },
         "walkthrough": {
-          "definition": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
           "distinctions": [
             {
               "note": "actions = list of actions to take; walkthrough = guided sequential narration that builds understanding",
@@ -2660,19 +2659,19 @@
             "step-by-step guide",
             "walkthrough of",
             "narrate the steps"
-          ]
+          ],
+          "definition": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually."
         },
         "wardley": {
-          "definition": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
           "distinctions": [],
           "heuristics": [
             "Wardley map",
             "map on evolution axis",
             "genesis to commodity"
-          ]
+          ],
+          "definition": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity."
         },
         "wasinawa": {
-          "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
           "distinctions": [
             {
               "note": "inversion (method) = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa (form) = structured reflection on past events using what/so-what/now-what",
@@ -2683,12 +2682,12 @@
             "reflect on incident",
             "what went wrong and what to do next",
             "lessons learned"
-          ]
+          ],
+          "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
         }
       },
       "method": {
         "abduce": {
-          "definition": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations.",
           "distinctions": [
             {
               "note": "diagnose = narrow to single root cause via evidence; abduce = generate and compare multiple competing explanations explicitly",
@@ -2708,10 +2707,10 @@
             "what could explain this",
             "what are the possible causes of this bug",
             "generate competing explanations for this error"
-          ]
+          ],
+          "definition": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations."
         },
         "actors": {
-          "definition": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
           "distinctions": [
             {
               "note": "agent (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
@@ -2728,10 +2727,10 @@
             "what motivates each party",
             "threat actors",
             "roles and responsibilities"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying and centering people, roles, or agents involved in the system."
         },
         "adversarial": {
-          "definition": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions.",
           "distinctions": [
             {
               "note": "risks = enumerate failure modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples",
@@ -2748,10 +2747,10 @@
             "red-team this",
             "what are the counterexamples",
             "play devil's advocate"
-          ]
+          ],
+          "definition": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions."
         },
         "afford": {
-          "definition": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be attributed solely to preferences or incentives without modeling how affordances influenced selection.",
           "distinctions": [
             {
               "note": "actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices",
@@ -2772,10 +2771,10 @@
             "structural constraints on behavior",
             "design defaults bias toward",
             "interface suppresses this action"
-          ]
+          ],
+          "definition": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be attributed solely to preferences or incentives without modeling how affordances influenced selection."
         },
         "align": {
-          "definition": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring global coherence across the system.",
           "distinctions": [
             {
               "note": "balance = model opposing forces that offset each other; align = restructure explicit elements to achieve mutual reinforcement",
@@ -2793,10 +2792,10 @@
             "reconcile conflicting commitments",
             "restructure so parts reinforce each other",
             "everything needs to be consistent globally"
-          ]
+          ],
+          "definition": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring global coherence across the system."
         },
         "amorph": {
-          "definition": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit organization, indicating lack of crystallized system form.",
           "distinctions": [
             {
               "note": "gap = specific implicit/explicit mismatch in rules or roles; amorph = broader regions lacking stable explicit organization",
@@ -2814,10 +2813,10 @@
             "identify the ambiguous areas",
             "where does implicit understanding substitute for structure",
             "fluid or changing structure"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit organization, indicating lack of crystallized system form."
         },
         "analog": {
-          "definition": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
           "distinctions": [
             {
               "note": "models = apply named mental models explicitly; analog = reason through a structural mapping from a specific known case",
@@ -2832,10 +2831,10 @@
             "reason by analogy",
             "find a parallel case",
             "what known situation does this resemble"
-          ]
+          ],
+          "definition": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks."
         },
         "analysis": {
-          "definition": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
           "distinctions": [
             {
               "note": "diagnose = root cause via falsification; analysis = structural decomposition without fault-finding",
@@ -2850,10 +2849,10 @@
             "what is going on here",
             "break this down for me",
             "understand before acting"
-          ]
+          ],
+          "definition": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria."
         },
         "argue": {
-          "definition": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
           "distinctions": [
             {
               "note": "case (form) = narrative that builds to a recommendation; argue (method) = expose the logical structure of claims and their supports",
@@ -2868,10 +2867,10 @@
             "build the logical case",
             "argument and rebuttal",
             "explicit reasoning structure"
-          ]
+          ],
+          "definition": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support."
         },
         "automate": {
-          "definition": "Automation-first reasoning: models what can be expressed as automatic, repeatable operations, preferring those over manual, human-dependent steps. Identifies where human intervention can be eliminated and expresses solutions in terms of what the system can do without human involvement.",
           "distinctions": [
             {
               "note": "automate = prefer automated operations over manual ones; ground = enforce falsifiability and advance through validation rungs",
@@ -2894,10 +2893,10 @@
             "automated pipeline",
             "reduce toil",
             "eliminate manual work"
-          ]
+          ],
+          "definition": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement."
         },
         "balance": {
-          "definition": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance is maintained.",
           "distinctions": [
             {
               "note": "resilience = behavior under stress; balance = how opposing forces produce equilibrium or instability",
@@ -2912,10 +2911,10 @@
             "how do trade-offs play out",
             "what tensions exist",
             "balance of forces"
-          ]
+          ],
+          "definition": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance is maintained."
         },
         "behave": {
-          "definition": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation plan.",
           "distinctions": [
             {
               "note": "jobs = analyze outcomes users want and forces shaping choices; behave = model capability/opportunity/motivation to diagnose why a behavior occurs or doesn't and design interventions",
@@ -2937,10 +2936,10 @@
             "how do we get people to do X",
             "behavior change wheel",
             "BCT"
-          ]
+          ],
+          "definition": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation plan."
         },
         "bias": {
-          "definition": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
           "distinctions": [
             {
               "note": "verify = falsify specific claims; bias = identify cognitive mechanisms producing distortion",
@@ -2956,10 +2955,10 @@
             "where are we susceptible to bias",
             "confirmation bias",
             "availability heuristic"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions."
         },
         "boom": {
-          "definition": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
           "distinctions": [
             {
               "note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; resilience = behavior under normal stress range",
@@ -2975,10 +2974,10 @@
             "what dominates at scale",
             "scale to the extreme",
             "at the limit"
-          ]
+          ],
+          "definition": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes."
         },
         "bound": {
-          "definition": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring effects remain within intended conceptual or operational regions.",
           "distinctions": [
             {
               "note": "depends = trace all dependencies; bound = limit how far they spread",
@@ -2997,10 +2996,10 @@
             "what happens locally vs globally",
             "limit responsibility propagation",
             "scope the change impact"
-          ]
+          ],
+          "definition": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring effects remain within intended conceptual or operational regions."
         },
         "calc": {
-          "definition": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
           "distinctions": [
             {
               "note": "probability = statistical and probabilistic reasoning; calc = general quantitative or quasi-executable procedures",
@@ -3017,10 +3016,10 @@
             "formal calculation",
             "compute",
             "what are the numbers"
-          ]
+          ],
+          "definition": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions."
         },
         "cite": {
-          "definition": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
           "distinctions": [
             {
               "note": "verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check",
@@ -3035,10 +3034,10 @@
             "where does this come from",
             "support with citations",
             "show your evidence"
-          ]
+          ],
+          "definition": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration."
         },
         "clash": {
-          "definition": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global inconsistency or breakdown.",
           "distinctions": [
             {
               "note": "gap = implicit treated as explicit producing coordination failures; clash = conflict between explicitly stated structures",
@@ -3059,10 +3058,10 @@
             "structural conflict",
             "find the incompatibilities",
             "both constraints are explicitly stated but they contradict"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global inconsistency or breakdown."
         },
         "cluster": {
-          "definition": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
           "distinctions": [
             {
               "note": "compare = evaluate alternatives against criteria; cluster = group without evaluating",
@@ -3078,10 +3077,10 @@
             "sort into buckets",
             "group by similarity",
             "classify these items"
-          ]
+          ],
+          "definition": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items."
         },
         "compare": {
-          "definition": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision factors. Use when the user presents options and asks which to choose or how they differ.",
           "distinctions": [
             {
               "note": "converge = narrow from exploration to recommendation; compare = explicit criteria-based evaluation of specified alternatives",
@@ -3097,10 +3096,10 @@
             "side by side comparison",
             "which should I choose",
             "pros and cons"
-          ]
+          ],
+          "definition": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision factors. Use when the user presents options and asks which to choose or how they differ."
         },
         "control": {
-          "definition": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
           "distinctions": [
             {
               "note": "agent (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within agency, excluding those outside it",
@@ -3115,10 +3114,10 @@
             "what can I influence",
             "what's within my agency",
             "focus on what's in my control"
-          ]
+          ],
+          "definition": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former."
         },
         "converge": {
-          "definition": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
           "distinctions": [
             {
               "note": "compare = evaluate alternatives side by side; converge = narrow exploration toward a single recommendation",
@@ -3133,10 +3132,10 @@
             "from all options, which is best",
             "converge on an answer",
             "filter and recommend"
-          ]
+          ],
+          "definition": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered."
         },
         "crystal": {
-          "definition": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
           "distinctions": [
             {
               "note": "ground = treat declared governing layer as fixed authority; crystal = broadly shape system toward explicit structural determination",
@@ -3160,10 +3159,10 @@
             "remove implicit coupling",
             "the whole system should be explicit",
             "no more convention over configuration"
-          ]
+          ],
+          "definition": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling."
         },
         "deduce": {
-          "definition": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit.",
           "distinctions": [
             {
               "note": "evidence → hypothesis",
@@ -3179,10 +3178,10 @@
             "derive the consequence",
             "if X then what",
             "logically entails"
-          ]
+          ],
+          "definition": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit."
         },
         "depends": {
-          "definition": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
           "distinctions": [
             {
               "note": "struct (scope) = internal arrangement; depends (method) = propagation and reliance relationships specifically",
@@ -3198,10 +3197,10 @@
             "dependency chain",
             "what would be affected",
             "what does Z need to work"
-          ]
+          ],
+          "definition": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system."
         },
         "diagnose": {
-          "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
           "distinctions": [
             {
               "note": "abduce = generate and compare competing hypotheses; diagnose = narrow to single most likely cause via falsification",
@@ -3219,10 +3218,10 @@
             "find the root cause",
             "debug this",
             "help me debug"
-          ]
+          ],
+          "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes."
         },
         "dimension": {
-          "definition": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
           "distinctions": [
             {
               "note": "split = decompose into parts; dimension = surface analytical axes that the parts exist along",
@@ -3237,10 +3236,10 @@
             "what are we not considering",
             "analyze across dimensions",
             "surface the implicit factors"
-          ]
+          ],
+          "definition": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact."
         },
         "domains": {
-          "definition": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
           "distinctions": [
             {
               "note": "struct (scope) = internal arrangement; domains (method) = identify bounded context separations and capabilities",
@@ -3255,10 +3254,10 @@
             "domain boundaries",
             "how to carve up the system into domains",
             "which team owns which"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities."
         },
         "drift": {
-          "definition": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
           "distinctions": [
             {
               "note": "gap = implicit assumptions in rules or roles produce coordination failures; drift = structural looseness allows interpretive inference to substitute for derivability",
@@ -3277,10 +3276,10 @@
             "where does the representation allow inconsistency",
             "conclusions that vary on re-derivation",
             "where the same premises yield different outputs"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency."
         },
         "effects": {
-          "definition": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
           "distinctions": [
             {
               "note": "grove = how effects accumulate and compound; effects = trace the chain of consequences",
@@ -3295,10 +3294,10 @@
             "unintended consequences",
             "how does this propagate",
             "what follows downstream"
-          ]
+          ],
+          "definition": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences."
         },
         "experimental": {
-          "definition": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
           "distinctions": [
             {
               "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
@@ -3319,10 +3318,10 @@
             "treat this as a debugging experiment",
             "systematic debugging",
             "how do I isolate the cause"
-          ]
+          ],
+          "definition": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses."
         },
         "field": {
-          "definition": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
           "distinctions": [
             {
               "note": "surface elements; field = model the medium and why compatibility produces observed routing",
@@ -3337,10 +3336,10 @@
             "why things route through",
             "broadcast patterns",
             "effects propagate through a shared layer"
-          ]
+          ],
+          "definition": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit."
         },
         "flow": {
-          "definition": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
           "distinctions": [
             {
               "note": "time = temporal emphasis as scope lens; flow = step-by-step progression as a reasoning method",
@@ -3356,10 +3355,10 @@
             "how does it progress",
             "follow the data through the system",
             "trace the path"
-          ]
+          ],
+          "definition": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops."
         },
         "gap": {
-          "definition": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
           "distinctions": [
             {
               "note": "assume (scope) = restrict analysis to the premises domain; gap (method) = identify where implicit is treated as explicit",
@@ -3374,10 +3373,10 @@
             "what's taken for granted",
             "gap between stated and actual",
             "two people assumed different things about this rule"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error."
         },
         "ground": {
-          "definition": "The response opens with a rung manifest to make rung membership legible before descent begins — a short document listing each planned artifact, its rung label, and its derivation source. Gate: output the exact phrase 'Rung manifest complete' on its own line before producing any other artifact. Boundary: no artifact from any rung may appear before this phrase. Execution gate: before descending to each rung, confirm the gap at the current rung by actual observation — for executable rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, documented rationales, or asserted expectations do not satisfy this and do not permit descent; a rung is not achievable only when the domain lacks a standard artifact type, not because execution is inconvenient or anticipated; there are no documentation-based exemptions. The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the intent does not — such that any proposed output O can be evaluated against V without consulting I again. V is a reliable rejection filter: one violated constraint suffices to reject O. Accepting O additionally requires trusting that V captured all governing constraints from I, which V cannot prove from the inside. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. (The passing validation run rung records the execution observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder is a heuristic tightening discipline: each rung localizes where interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity — a test suite encoding only typical cases may be more executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. If lower-rung observation reveals that I was underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type for it. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V. Each artifact should carry a header comment identifying its rung and what it was derived from. File naming conventions are left to domain context; where none exists, a name that reflects the artifact's rung (e.g., validate_*, *_spec, *_test) aids legibility without being required.",
           "distinctions": [
             {
               "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must justify against",
@@ -3413,10 +3412,10 @@
             "write the acceptance criteria before the document",
             "what does passing look like",
             "what check would reject a bad version of this"
-          ]
+          ],
+          "definition": "The response opens with a rung manifest to make rung membership legible before descent begins — a short document listing each planned artifact, its rung label, and its derivation source. Gate: output the exact phrase 'Rung manifest complete' on its own line before producing any other artifact. Boundary: no artifact from any rung may appear before this phrase. Execution gate: before descending to each rung, confirm the gap at the current rung by actual observation — for executable rungs (tests, type checks, schema validators, running programs, passing validation runs), observation means executing the artifact and recording its output; anticipated outcomes, documented rationales, or asserted expectations do not satisfy this and do not permit descent; a rung is not achievable only when the domain lacks a standard artifact type, not because execution is inconvenient or anticipated; there are no documentation-based exemptions. The response treats the declared intent (I) as fixed. At each step, the response produces a representation V derived faithfully from I and the prior rung (or from I alone, at the first rung — I is not an artifact; artifacts are derived from I) — the form changes, the intent does not — such that any proposed output O can be evaluated against V without consulting I again. V is a reliable rejection filter: one violated constraint suffices to reject O. Accepting O additionally requires trusting that V captured all governing constraints from I, which V cannot prove from the inside. Faithful derivation means every constraint V imposes is either directly stated in the prior rung or strictly implied by it, with no additional judgment about I required. Call such a representation a constraint artifact. Note the asymmetry: producing V requires I; evaluating O against V does not — once produced, V is self-contained as a check. The primary failure mode is silent V-enrichment: V introduces a constraint not traceable to I or the prior rung; before presenting V, verify that no constraint requires knowing something not present in I or the prior rung — if any does, revise V before continuing. For code contexts the ladder instantiates as: prose → criteria → formal notation → executable validation (tests, types, contracts, schemas, property checks) → passing validation run → executable implementation → observed running behavior. (The passing validation run rung records the execution observation of the preceding executable validation rung — descending to it satisfies that rung's execution gate; it is not a separate gate requirement.) The ladder is a heuristic tightening discipline: each rung localizes where interpretive judgment enters rather than eliminating it. Lower rungs do not guarantee monotonic reduction of ambiguity — a test suite encoding only typical cases may be more executable than prose while less faithful to intent. Descent presumes tightening; it does not prove it. The ideal prior step — before declaring I — is direct observation in the domain: confirm the gap actually exists, so that intent is derived from observation rather than asserted. If lower-rung observation reveals that I was underspecified or incorrect, do not continue descent — surface the conflict as a revision signal for I rather than treating it as a rung gap. In code contexts, I precedes the prose rung; if the only artifact available is a written spec, treat it as V₁ (the prose rung) and extract I from its governing intent. When beginning at any rung, first locate the highest already-instantiated rung and update it to reflect the intended change (using I to determine what the update should be), then descend. Advance through every feasible step; stopping is only permitted when the next rung is not achievable — a rung is not achievable when the domain provides no standard artifact type for it. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V. Each artifact should carry a header comment identifying its rung and what it was derived from. File naming conventions are left to domain context; where none exists, a name that reflects the artifact's rung (e.g., validate_*, *_spec, *_test) aids legibility without being required."
         },
         "grove": {
-          "definition": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
           "distinctions": [
             {
               "note": "interacting whole; grove = rate of accumulation through mechanisms",
@@ -3432,10 +3431,10 @@
             "how things build up",
             "rate of change over time",
             "snowball"
-          ]
+          ],
+          "definition": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms."
         },
         "induce": {
-          "definition": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
           "distinctions": [
             {
               "note": "abduce = generate competing hypotheses to explain evidence; induce = generalize a rule or pattern from a set of examples",
@@ -3450,10 +3449,10 @@
             "what can I conclude from these cases",
             "what rule emerges from these instances",
             "extrapolate from these examples"
-          ]
+          ],
+          "definition": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations."
         },
         "inversion": {
-          "definition": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
           "distinctions": [
             {
               "note": "risks = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
@@ -3468,10 +3467,10 @@
             "invert the goal",
             "work backwards from disaster",
             "what produces the worst outcome"
-          ]
+          ],
+          "definition": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths."
         },
         "jobs": {
-          "definition": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
           "distinctions": [
             {
               "note": "product = features, user needs, value propositions broadly; jobs = specifically the outcome/progress users seek and the forces blocking or enabling it",
@@ -3488,10 +3487,10 @@
             "user motivation behind",
             "JTBD",
             "jobs to be done"
-          ]
+          ],
+          "definition": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices."
         },
         "ladder": {
-          "definition": "Move deliberately between abstraction levels: step up to higher-level causes, patterns, or systems; step down to concrete consequences or implementations. Both directions must be traversed — the response places the focal point, moves up at least one level, and moves down at least one level, ordered by importance.",
           "distinctions": [
             {
               "note": "fog/dig (directional) = push the whole response toward abstract or concrete; ladder (method) = actively traverse both directions within the response",
@@ -3510,10 +3509,10 @@
             "from concrete to abstract and back",
             "abstraction ladder",
             "levels of abstraction"
-          ]
+          ],
+          "definition": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete consequences or implementations, ordered by importance to the audience."
         },
         "mapping": {
-          "definition": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
           "distinctions": [
             {
               "note": "struct (scope) = internal topology of one unit; mapping (method) = surface and organize across the whole landscape",
@@ -3529,10 +3528,10 @@
             "what's the structure of the landscape",
             "map the territory",
             "visualize the relationships"
-          ]
+          ],
+          "definition": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative."
         },
         "mark": {
-          "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
           "distinctions": [
             {
               "note": "trace = narrate the sequential control/data progression; mark = record checkpoint observations without narrating",
@@ -3547,10 +3546,10 @@
             "capture intermediate state",
             "audit trail",
             "what was the system state at X"
-          ]
+          ],
+          "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression."
         },
         "meld": {
-          "definition": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
           "distinctions": [
             {
               "note": "evaluate alternatives; meld = balance constraints between elements that must coexist",
@@ -3565,10 +3564,10 @@
             "where X and Y interact",
             "navigate tensions between",
             "find the combination that satisfies"
-          ]
+          ],
+          "definition": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements."
         },
         "melody": {
-          "definition": "The response rates a seam or coupling using three coupling pressure dimensions — all three must appear in the output, omitting any one is incomplete. Visibility: how explicit and discoverable the contract is (named orchestrators, typed interfaces, documented invariants = high; scattered helpers or implicit state = low). Scope: how widely a change at this seam propagates across domains or layers (confined to a single bounded context = low; ripples across multiple services, teams, or abstraction layers = high). Volatility: how tightly temporal or structural coupling forces synchronised change sets (tight timing dependencies, shared schemas, shared algorithms, or positional interfaces = high).",
           "distinctions": [
             {
               "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",
@@ -3595,10 +3594,10 @@
             "how tightly coupled are these changes",
             "seam quality",
             "coupling pressure profile"
-          ]
+          ],
+          "definition": "The response rates a seam or coupling using three coupling pressure dimensions. Visibility: how explicit and discoverable the contract is — named orchestrators, typed interfaces, documented invariants score high; scattered helpers or implicit state score low. Scope: how widely a change at this seam propagates across domains or layers — confined to a single bounded context scores low; ripples across multiple services, teams, or abstraction layers scores high. Volatility: how tightly temporal or structural coupling forces synchronised change sets — tight timing dependencies, shared schemas, shared algorithms, or positional interfaces score high. All three pressures must appear in the output; omitting any one is incomplete."
         },
         "mesh": {
-          "definition": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
           "distinctions": [
             {
               "note": "snag = surface where coupling seams exist; mesh = describe how coupling propagates across them",
@@ -3620,10 +3619,10 @@
             "how does change in X affect Y",
             "describe the coupling structure",
             "what travels across the boundary"
-          ]
+          ],
+          "definition": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam."
         },
         "migrate": {
-          "definition": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the shift.",
           "distinctions": [
             {
               "note": "preserve = keep existing behavior unchanged; migrate = introduce a transition path that moves toward a new structure",
@@ -3643,10 +3642,10 @@
             "phased transition",
             "backward compatible change",
             "coexist old and new"
-          ]
+          ],
+          "definition": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the shift."
         },
         "mint": {
-          "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
           "distinctions": [
             {
               "note": "deduce = apply deductive logic to stated premises; mint = construct the generative structure so conclusions are built forward",
@@ -3663,10 +3662,10 @@
             "conclusions are products of the model",
             "derivation structure is the response",
             "make derivation steps explicit and auditable"
-          ]
+          ],
+          "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model."
         },
         "mod": {
-          "definition": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries.",
           "distinctions": [
             {
               "note": "motifs (scope) = recurring patterns across codebase; mod (method) = cyclic/periodic reasoning about behavior that repeats with a defined period",
@@ -3681,10 +3680,10 @@
             "what wraps around",
             "recurs periodically",
             "equivalent states"
-          ]
+          ],
+          "definition": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
         },
         "models": {
-          "definition": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
           "distinctions": [
             {
               "note": "analog = reason from a specific analogous case; models = apply named, established mental models explicitly",
@@ -3700,10 +3699,10 @@
             "apply systems thinking",
             "what models explain this",
             "name the applicable mental models"
-          ]
+          ],
+          "definition": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them."
         },
         "objectivity": {
-          "definition": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
           "distinctions": [
             {
               "note": "rigor = disciplined logical reasoning; objectivity = separate what is factual from what is evaluative",
@@ -3718,10 +3717,10 @@
             "evidence-based only",
             "distinguish observation from interpretation",
             "is this a fact or an opinion"
-          ]
+          ],
+          "definition": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence."
         },
         "operations": {
-          "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
           "distinctions": [
             {
               "note": "systemic = feedback loops and emergent behavior; operations = OR/management science frameworks for resource and flow optimization",
@@ -3739,10 +3738,10 @@
             "operations research",
             "minimize wait time",
             "optimization problem"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation."
         },
         "order": {
-          "definition": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
           "distinctions": [
             {
               "note": "prioritize = rank by importance with rationale; order = abstract structural reasoning about ordering schemes",
@@ -3757,10 +3756,10 @@
             "dominance structure",
             "what makes one thing rank above another",
             "ordering and precedence"
-          ]
+          ],
+          "definition": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed."
         },
         "origin": {
-          "definition": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
           "distinctions": [
             {
               "note": "time (scope) = sequential/temporal emphasis; origin (method) = specifically causal history and why the present state is as it is",
@@ -3777,10 +3776,10 @@
             "how did this evolve",
             "archaeology of the codebase",
             "why is this the way it is"
-          ]
+          ],
+          "definition": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state."
         },
         "perturb": {
-          "definition": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, or detection mechanisms.",
           "distinctions": [
             {
               "note": "adversarial = construct attacks to find weaknesses; perturb = introduce controlled variations to observe response",
@@ -3801,10 +3800,10 @@
             "test the assumptions",
             "check detection mechanisms",
             "probe resilience"
-          ]
+          ],
+          "definition": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, or detection mechanisms."
         },
         "polar": {
-          "definition": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit from avoidance.",
           "distinctions": [
             {
               "note": "balance = forces offsetting each other; polar = attraction toward some states and aversion from others",
@@ -3819,10 +3818,10 @@
             "what pulls toward and pushes away",
             "what's the attractor and repeller",
             "positive and negative forces"
-          ]
+          ],
+          "definition": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit from avoidance."
         },
         "preserve": {
-          "definition": "The response modifies the task by maintaining compatibility with existing structures, interfaces, or assumptions, constraining changes so previously valid components continue to function without modification.",
           "distinctions": [
             {
               "note": "migrate = introduce a transition path toward a new structure; preserve = constrain changes to keep existing components working unchanged",
@@ -3842,10 +3841,10 @@
             "existing clients must still work",
             "no breaking changes",
             "stay compatible with"
-          ]
+          ],
+          "definition": "The response modifies the task by maintaining compatibility with existing structures, interfaces, or assumptions, constraining changes so previously valid components continue to function without modification."
         },
         "prioritize": {
-          "definition": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
           "distinctions": [
             {
               "note": "order = abstract structural reasoning about ordering schemes; prioritize = rank by importance or impact with explicit rationale",
@@ -3861,10 +3860,10 @@
             "what matters most",
             "high-priority items",
             "rank and explain the ranking"
-          ]
+          ],
+          "definition": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit."
         },
         "probability": {
-          "definition": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
           "distinctions": [
             {
               "note": "calc = general quantitative computation; probability = specifically statistical and probabilistic reasoning under uncertainty",
@@ -3882,10 +3881,10 @@
             "how certain are we",
             "Bayesian reasoning",
             "likelihood"
-          ]
+          ],
+          "definition": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes."
         },
         "product": {
-          "definition": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
           "distinctions": [
             {
               "note": "jobs = outcomes users seek and forces shaping adoption; product = broader product lens including features and value propositions",
@@ -3901,10 +3900,10 @@
             "what does the product offer",
             "user needs analysis",
             "product thinking"
-          ]
+          ],
+          "definition": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions."
         },
         "pulse": {
-          "definition": "The response models information transfer as a staged encode/decode process, distinguishing message from signal, accounting for noise and channel distortion, and specifying how transmission errors are detected and repaired.",
           "distinctions": [
             {
               "note": "flow = narrate step-by-step sequence; pulse = model noise, distortion, and fidelity across encode/decode stages",
@@ -3921,10 +3920,10 @@
             "where does noise enter",
             "signal-to-noise",
             "observability pipeline fidelity"
-          ]
+          ],
+          "definition": "The response models information transfer as a staged encode/decode process, distinguishing message from signal, accounting for noise and channel distortion, and specifying how transmission errors are detected and repaired."
         },
         "reify": {
-          "definition": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that constrain reasoning.",
           "distinctions": [
             {
               "note": "analysis = describe and structure; reify = convert implicit patterns into explicit formal rules",
@@ -3939,10 +3938,10 @@
             "what rules actually govern this",
             "what constraints should be formally stated",
             "make this convention into a constraint"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that constrain reasoning."
         },
         "release": {
-          "definition": "The response reduces distortion or disturbance by loosening attachment or identification with transient states, roles, or outcomes.",
           "distinctions": [
             {
               "note": "shift = rotate through multiple cognitive perspectives; release = reduce distortion by loosening identification with transient states or roles rather than rotating perspective",
@@ -3959,10 +3958,10 @@
             "non-attached analysis",
             "release the assumption",
             "stop holding onto X"
-          ]
+          ],
+          "definition": "The response reduces distortion or disturbance by loosening attachment or identification with transient states, roles, or outcomes."
         },
         "reset": {
-          "definition": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed.",
           "distinctions": [
             {
               "note": "preserve = maintain existing compatibility; reset = discard it entirely",
@@ -3982,10 +3981,10 @@
             "pretend it doesn't exist yet",
             "clean slate",
             "break from the current design"
-          ]
+          ],
+          "definition": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed."
         },
         "resilience": {
-          "definition": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
           "distinctions": [
             {
               "note": "robust = choose options that perform across uncertain futures; resilience = analyze system behavior under stress specifically",
@@ -4001,10 +4000,10 @@
             "how does it behave under stress",
             "graceful degradation",
             "fault tolerance"
-          ]
+          ],
+          "definition": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks."
         },
         "rigor": {
-          "definition": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
           "distinctions": [
             {
               "note": "verify = apply falsification pressure to claims; rigor = discipline the reasoning process throughout",
@@ -4020,10 +4019,10 @@
             "logical rigor",
             "no handwaving",
             "substantiate your claims"
-          ]
+          ],
+          "definition": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit."
         },
         "risks": {
-          "definition": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
           "distinctions": [
             {
               "note": "adversarial = construct attacks to stress-test; risks = enumerate and assess failure modes and their likelihood",
@@ -4040,10 +4039,10 @@
             "what might fail",
             "enumerate the risks",
             "likelihood and severity"
-          ]
+          ],
+          "definition": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity."
         },
         "ritual": {
-          "definition": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized procedures.",
           "distinctions": [
             {
               "note": "ritual = structured by established roles and procedures; melody = coordination through timing and synchronization",
@@ -4058,10 +4057,10 @@
             "ritualized process",
             "according to tradition",
             "roles and responsibilities"
-          ]
+          ],
+          "definition": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized procedures."
         },
         "robust": {
-          "definition": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast.",
           "distinctions": [
             {
               "note": "resilience = system behavior under stress; robust = select options that perform across uncertain futures",
@@ -4077,10 +4076,10 @@
             "which option survives the most scenarios",
             "resilient to unknowns",
             "option value under uncertainty"
-          ]
+          ],
+          "definition": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast."
         },
         "root": {
-          "definition": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as independent causal or justificatory elements without specifying their dependency relationship.",
           "distinctions": [
             {
               "note": "depends = trace what relies on what; root = reduce multiple representations to a single authoritative locus",
@@ -4101,10 +4100,10 @@
             "derive X from Y instead of duplicating",
             "canonical source for",
             "reduce duplication to derivation"
-          ]
+          ],
+          "definition": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as independent causal or justificatory elements without specifying their dependency relationship."
         },
         "seep": {
-          "definition": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases coupling, ambiguity, or fragility.",
           "distinctions": [
             {
               "note": "bound = introduce or reinforce propagation limits proactively; seep = identify where those limits have been violated or never existed",
@@ -4135,10 +4134,10 @@
             "is the boundary actually holding",
             "did the decoupling work",
             "has coupling re-emerged through a side channel"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond its intended scope, analyzing how this overreach increases coupling, ambiguity, or fragility."
         },
         "sense": {
-          "definition": "The response surfaces pre-reductive judgment: a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit analytic decomposition. Multiple weak signals are held together rather than unpacked one by one.",
           "distinctions": [
             {
               "note": "indirect = form that puts reasoning before the conclusion; sense = method that holds impression before decomposition, without necessarily resolving",
@@ -4162,10 +4161,10 @@
             "hold the uncertainty",
             "pre-reductive judgment",
             "compressed impression"
-          ]
+          ],
+          "definition": "The response surfaces pre-reductive judgment—a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit analytic decomposition. Multiple weak signals are held together rather than unpacked one by one."
         },
         "sever": {
-          "definition": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only through explicit, controlled interfaces.",
           "distinctions": [
             {
               "note": "bound = limit how far effects propagate; sever = introduce a structural separation that routes all interaction through explicit interfaces",
@@ -4193,10 +4192,10 @@
             "enforce that all interaction goes through a defined interface",
             "make this separation permanent, not just a plan",
             "this needs to be architectural not just procedural"
-          ]
+          ],
+          "definition": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only through explicit, controlled interfaces."
         },
         "shear": {
-          "definition": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
           "distinctions": [
             {
               "note": "snag = identify the coupling seams; shear = outline steps to separate them",
@@ -4216,10 +4215,10 @@
             "give me a plan to pull these apart",
             "what are the steps to separate these two things",
             "give me a migration plan to decouple these"
-          ]
+          ],
+          "definition": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface."
         },
         "shift": {
-          "definition": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
           "distinctions": [
             {
               "note": "models = apply named mental models; shift = rotate through distinct cognitive modes or stakeholder perspectives",
@@ -4235,10 +4234,10 @@
             "what would X think about this",
             "see it through different frames",
             "consider multiple viewpoints"
-          ]
+          ],
+          "definition": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts."
         },
         "simulation": {
-          "definition": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects.",
           "distinctions": [
             {
               "note": "sim = standalone scenario narrative of what unfolds; simulation method = enriches probe/plan with thought-experiment reasoning about feedback loops, tipping points, and emergent system behaviour",
@@ -4257,10 +4256,10 @@
             "what emergent effects would arise",
             "project systemic dynamics",
             "model how effects compound over time"
-          ]
+          ],
+          "definition": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects."
         },
         "snag": {
-          "definition": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
           "distinctions": [
             {
               "note": "mesh = describe how coupling propagates; snag = surface where the coupling seams are",
@@ -4283,10 +4282,10 @@
             "where are responsibilities intermixed",
             "surface the seams",
             "what can't be cleanly separated"
-          ]
+          ],
+          "definition": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation."
         },
         "split": {
-          "definition": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
           "distinctions": [
             {
               "note": "dimension = surface analytical axes; split = decompose into component parts for provisional isolated analysis",
@@ -4302,10 +4301,10 @@
             "separate concerns",
             "split into sub-problems",
             "analyze in isolation"
-          ]
+          ],
+          "definition": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final."
         },
         "spur": {
-          "definition": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
           "distinctions": [
             {
               "note": "sweep = enumerate option space without forking; spur = fork on a key assumption and pursue each path before evaluating",
@@ -4319,10 +4318,10 @@
             "multiple lines of reasoning",
             "explore alternatives before choosing",
             "parallel hypotheses"
-          ]
+          ],
+          "definition": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives."
         },
         "sweep": {
-          "definition": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them.",
           "distinctions": [
             {
               "note": "spur = fork on a key assumption and pursue paths; sweep = broad enumeration without forking on a specific choice",
@@ -4338,10 +4337,10 @@
             "survey the landscape",
             "open-ended exploration",
             "what's possible here"
-          ]
+          ],
+          "definition": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them."
         },
         "systemic": {
-          "definition": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
           "distinctions": [
             {
               "note": "analysis = describe and structure; systemic = reason about interactions and emergence",
@@ -4357,10 +4356,10 @@
             "unintended consequences",
             "second order effects across the system",
             "interconnections"
-          ]
+          ],
+          "definition": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation."
         },
         "thrust": {
-          "definition": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
           "distinctions": [
             {
               "note": "balance = acceptable equilibrium state between opposing forces; thrust = identify and catalog the competing forces themselves",
@@ -4376,10 +4375,10 @@
             "alternative configurations",
             "what are we trading off",
             "evaluate alternatives across dimensions"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit."
         },
         "trace": {
-          "definition": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural changes.",
           "distinctions": [
             {
               "note": "flow = describe linear ordering of stages; trace = narrate the sequential control/data progression with intermediate steps",
@@ -4400,10 +4399,10 @@
             "audit the steps",
             "I want to follow along",
             "surface intermediate state"
-          ]
+          ],
+          "definition": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural changes."
         },
         "unknowns": {
-          "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
           "distinctions": [
             {
               "note": "assume (scope) = restrict analysis to the premises domain; unknowns (method) = surface what has not yet been considered or named",
@@ -4419,10 +4418,10 @@
             "what's not on our radar",
             "gaps in our knowledge",
             "what could surprise us"
-          ]
+          ],
+          "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
         },
         "verify": {
-          "definition": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing the layer those tests must satisfy.",
           "distinctions": [
             {
               "note": "rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs",
@@ -4443,10 +4442,10 @@
             "pressure-test the conclusions",
             "don't just assert — verify",
             "what evidence would disprove this"
-          ]
+          ],
+          "definition": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing the layer those tests must satisfy."
         },
         "visual": {
-          "definition": "Frame ideas spatially — place concepts in positional relationship and build a coordinate model of the subject.",
           "distinctions": [
             {
               "note": "draw (channel) = deliver the output as ASCII spatial layout; visual (method) = frame ideas spatially regardless of output format",
@@ -4471,10 +4470,10 @@
             "map this out conceptually",
             "visual mental model",
             "frame this as a landscape"
-          ]
+          ],
+          "definition": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject."
         },
         "yield": {
-          "definition": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
           "distinctions": [
             {
               "note": "yield = allow natural resolution with minimal guidance; preserve = maintain compatibility with existing structures",
@@ -4489,12 +4488,12 @@
             "don't force it",
             "step back and let it unfold",
             "guide without imposing"
-          ]
+          ],
+          "definition": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction."
         }
       },
       "scope": {
         "act": {
-          "definition": "Actions and intended operations focus: what is being done or needs to be done, not why or how it is structured.",
           "distinctions": [
             {
               "note": "act = what entities are doing or performing; thing = what entities exist",
@@ -4509,10 +4508,10 @@
             "what work is happening",
             "what are the intended operations",
             "the activities it performs"
-          ]
+          ],
+          "definition": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting."
         },
         "agent": {
-          "definition": "Decision-making or agency focus: who can act, who has authority, or how choices are made between actors.",
           "distinctions": [
             {
               "note": "agent = who has decision-making authority; view = how the subject appears from a specific vantage point",
@@ -4526,10 +4525,10 @@
             "decision-making",
             "agency",
             "who is responsible"
-          ]
+          ],
+          "definition": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics."
         },
         "assume": {
-          "definition": "Assumptions and premises focus: what must be true, what is taken for granted, or what preconditions are embedded in the design.",
           "distinctions": [],
           "heuristics": [
             "what assumptions",
@@ -4538,10 +4537,10 @@
             "what preconditions",
             "hidden assumptions",
             "what are we taking for granted"
-          ]
+          ],
+          "definition": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function."
         },
         "cross": {
-          "definition": "Cross-cutting concerns spanning the system: a concern that appears across many unrelated modules (logging, error handling, auth, observability).",
           "distinctions": [
             {
               "note": "cross = concerns that propagate and span across module boundaries; motifs = structural patterns that repeat",
@@ -4561,10 +4560,10 @@
             "horizontal concern",
             "error handling across our codebase",
             "where does X live across the system"
-          ]
+          ],
+          "definition": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form."
         },
         "dam": {
-          "definition": "Containment boundaries focus: what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between inside versus outside.",
           "distinctions": [
             {
               "note": "dam = containment boundaries describing what stays in/out; bound (method) = introducing or reinforcing limits on propagation",
@@ -4581,10 +4580,10 @@
             "what belongs in this domain",
             "what's excluded",
             "where do we draw the line"
-          ]
+          ],
+          "definition": "The response focuses on containment boundaries — what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between what belongs inside versus outside a defined scope."
         },
         "fail": {
-          "definition": "Failure modes, breakdowns, and limits focus: how and when something stops working, what the edge cases are, or where fragility lives.",
           "distinctions": [
             {
               "note": "fail = scope of breakdown conditions; good = quality criteria and success standards (often paired)",
@@ -4600,10 +4599,10 @@
             "limits",
             "fragility",
             "what stress would break this"
-          ]
+          ],
+          "definition": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes."
         },
         "good": {
-          "definition": "Quality criteria or success standards focus: what makes something good, what criteria matter, or how to judge quality.",
           "distinctions": [
             {
               "note": "good = quality and success standards; fail = breakdown conditions (often paired together)",
@@ -4623,10 +4622,10 @@
             "what good looks like",
             "standards for",
             "what does success look like"
-          ]
+          ],
+          "definition": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting perspective."
         },
         "mean": {
-          "definition": "Conceptual framing and definitional focus: what something means, how it is understood, or what its purpose is before evaluating or acting.",
           "distinctions": [
             {
               "note": "mean = conceptual framing before evaluation; good = how to judge quality",
@@ -4642,10 +4641,10 @@
             "what does this term refer to",
             "how do we conceptualize this",
             "theoretical framing"
-          ]
+          ],
+          "definition": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective."
         },
         "motifs": {
-          "definition": "Recurring or repeated patterns across the codebase or system: structures or idioms that appear in multiple places.",
           "distinctions": [
             {
               "note": "motifs = patterns that repeat across the system; struct = one system's internal arrangement",
@@ -4663,10 +4662,10 @@
             "common idioms",
             "what keeps showing up",
             "same pattern in different places"
-          ]
+          ],
+          "definition": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing their internal topology in detail or their boundary-spanning distribution."
         },
         "stable": {
-          "definition": "Stability and persistence focus: what is stable, unlikely to change, or self-reinforcing in the system or design.",
           "distinctions": [
             {
               "note": "stable = what persists; time = how things evolve (often paired)",
@@ -4686,10 +4685,10 @@
             "fixed constraints",
             "what has remained stable",
             "backward-compatible"
-          ]
+          ],
+          "definition": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how perturbations affect their continuity."
         },
         "storage": {
-          "definition": "Storage and durability focus: what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted.",
           "distinctions": [
             {
               "note": "storage = prescriptive (what must be made durable and how); stable = descriptive (what currently persists or is invariant)",
@@ -4711,10 +4710,10 @@
             "what gets written to disk",
             "durable state",
             "persistence layer"
-          ]
+          ],
+          "definition": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery guarantees, and the conditions under which it can be lost or corrupted."
         },
         "struct": {
-          "definition": "Internal arrangement and dependency focus: how parts of a system relate and are organized — the internal topology, not cross-cutting span.",
           "distinctions": [
             {
               "note": "struct = internal topology and arrangement within units; cross = horizontal span across module boundaries",
@@ -4729,10 +4728,10 @@
             "how do the parts relate",
             "what holds it together",
             "the coordination and constraints inside"
-          ]
+          ],
+          "definition": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal topology of units without emphasizing repetition across instances or boundary-spanning propagation."
         },
         "thing": {
-          "definition": "Entity and bounded unit focus: what objects, roles, systems, or domains are in scope — what the relevant entities are.",
           "distinctions": [
             {
               "note": "thing = what entities exist; act = what those entities are doing or performing",
@@ -4748,10 +4747,10 @@
             "what things exist here",
             "name the components",
             "what are we talking about"
-          ]
+          ],
+          "definition": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective."
         },
         "time": {
-          "definition": "Temporal or sequential focus: sequence, history, phases, or how something changes over time.",
           "distinctions": [
             {
               "note": "time = how things evolve; stable = what persists (often paired)",
@@ -4768,10 +4767,10 @@
             "history",
             "how did we get here",
             "phases"
-          ]
+          ],
+          "definition": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action."
         },
         "view": {
-          "definition": "Stakeholder or positional perspective focus: how the subject appears from a specific role or vantage point.",
           "distinctions": [
             {
               "note": "view = how the subject appears from a specific vantage point; agent = who has decision-making authority",
@@ -4786,7 +4785,8 @@
             "how does this look to stakeholders",
             "from a customer's view",
             "through the lens of"
-          ]
+          ],
+          "definition": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
         }
       }
     },
@@ -8707,7 +8707,7 @@
     }
   ],
   "checksums": {
-    "axes": "216d3de742d5f256b3e8299cb79ceda2a7af59b9ef5931cd9fcf88c57d2faddc",
+    "axes": "a1766eb60b212c193d5416f39cc33db0ddb83a575ef89125b64b5594ea1dbd67",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

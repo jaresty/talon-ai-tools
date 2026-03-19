@@ -156,8 +156,13 @@ def render_axis_config() -> str:
         dict(sorted(form_default_completeness_raw.items())), width=200, sort_dicts=True
     )
     axis_token_metadata_raw = payload.get("axis_token_metadata", {}) or {}
+    # Strip 'definition' — it duplicates AXIS_KEY_TO_VALUE; derived at runtime by the accessor (ADR-0155 SSOT).
+    axis_token_metadata_stripped = {
+        axis: {token: {k: v for k, v in meta.items() if k != "definition"} for token, meta in tokens.items()}
+        for axis, tokens in axis_token_metadata_raw.items()
+    }
     axis_token_metadata_body = pprint.pformat(
-        dict(sorted(axis_token_metadata_raw.items())), width=200, sort_dicts=True
+        dict(sorted(axis_token_metadata_stripped.items())), width=200, sort_dicts=True
     )
     header = textwrap.dedent(
         """\
@@ -342,8 +347,21 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {axis_token_metad
 
 
 def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:
-    \"\"\"Return structured metadata for axis tokens (ADR-0155).\"\"\"
-    return dict(AXIS_TOKEN_METADATA)
+    \"\"\"Return structured metadata for axis tokens (ADR-0155).
+
+    'definition' is not stored in AXIS_TOKEN_METADATA — it is derived here from
+    AXIS_KEY_TO_VALUE so callers receive a complete entry without duplicate storage.
+    \"\"\"
+    result = {{}}
+    for axis, tokens in AXIS_TOKEN_METADATA.items():
+        result[axis] = {{}}
+        value_map = AXIS_KEY_TO_VALUE.get(axis, {{}})
+        for token, meta in tokens.items():
+            entry = dict(meta)
+            if token in value_map:
+                entry["definition"] = value_map[token]
+            result[axis][token] = entry
+    return result
 """
 
     return (

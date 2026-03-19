@@ -289,7 +289,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "needs correction — a constraint conflict, a pivot, or new information — correct the rung above to restore faithfulness to I, then re-derive the current rung; this is "
         "correction, not enrichment; if the rung requiring correction is I, surface as a revision signal and stop the current thread. When beginning mid-ladder, first locate the "
         "highest already-instantiated rung and update it to reflect the intended change, then descend. For code contexts, R4 instantiates as: prose → criteria → formal notation → "
-        "executable validation (tests, types, contracts, schemas, property checks, passing validation runs) → validation run observation → executable implementation → observed running "
+        "executable validation (artifact written to target the declared gap and reveal whether it has been closed — tests, types, contracts, schemas, or property checks; pre-existing artifacts not targeting the gap do not satisfy this rung) → validation run observation → executable implementation → observed running "
         "behavior. (Validation run observation records the actual output of the executable validation rung and declares the gap — tests must reveal the gap — tests covering behavior "
         "that does not yet exist must fail; if all tests pass before new implementation has been written, either the intended behavior is already implemented (verify this; the thread "
         "may be complete) or the tests are not testing the intended behavior and must be corrected; the executable implementation rung is blocked until the gap has been observed; the "

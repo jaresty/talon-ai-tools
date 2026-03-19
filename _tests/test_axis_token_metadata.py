@@ -578,7 +578,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "criteria",
             "formal notation",
             "executable validation",
-            "passing validation run",
+            "validation run observation",
             "executable implementation",
             "observed running behavior",
         ]:

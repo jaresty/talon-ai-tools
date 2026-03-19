@@ -432,6 +432,25 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	}
 }
 
+// TestGroundExecutableValidationNoImplementation specifies that the ground
+// definition explicitly prohibits producing implementation code at the
+// executable validation rung — permission to write artifacts at R4 applies
+// only to validation artifacts, not implementation.
+func TestGroundExecutableValidationNoImplementation(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	if !strings.Contains(groundDesc, "implementation code is not permitted at this rung") {
+		t.Error("ground must state that implementation code is not permitted at the executable validation rung")
+	}
+}
+
 // TestGroundExecutableValidationRequiresRunnable specifies that the ground
 // definition makes clear that executable validation must be a file artifact
 // invocable by an automated tool — file reads, grep output, and manual

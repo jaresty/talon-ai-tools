@@ -302,7 +302,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "provides no standard artifact type for it. Present V (the lowest constraint artifact reached), then the exact phrase 'Validation artifact V complete' on its own line (this "
         "phrase marks V as complete and self-contained — what follows is evaluated against V, not against I), then O satisfying V. Non-executable rungs (prose, criteria, formal "
         "notation) appear inline in the response as labeled log entries identifying the rung and its derivation source — they do not require separate files. Executable rungs (tests, "
-        "type checks, schemas, implementation, running programs) warrant separate files; naming that reflects the artifact's rung and context aids legibility.",
+        "type checks, schemas, implementation, running programs) must be placed where they can be executed — in an existing file where domain context provides a natural home, or a new "
+        "file where none exists.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

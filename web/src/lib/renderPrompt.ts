@@ -95,16 +95,19 @@ export function renderPrompt(
 	for (const axis of CONSTRAINT_AXES) {
 		const tokens = effectiveSelected[axis] ?? [];
 		const kanjiMap = grammar.axes?.kanji?.[axis] ?? {};
+		const categoryMap = grammar.axes?.categories?.[axis] ?? {};
 		for (const token of tokens) {
 			const desc = grammar.axes?.definitions?.[axis]?.[token] ?? '';
 			const heading = axisHeading(axis);
 			const kanji = kanjiMap[token] ?? '';
+			const category = categoryMap[token] ?? '';
 			const tokenWithKanji = kanji ? `${token} ${kanji}` : token;
+			const headingWithCategory = category ? `${heading} [${category}]` : heading;
 			let line = '';
 			if (token && desc) {
-				line = `- ${heading} (${tokenWithKanji}): ${desc}`;
+				line = `- ${headingWithCategory} (${tokenWithKanji}): ${desc}`;
 			} else if (token) {
-				line = `- ${heading}: ${tokenWithKanji}`;
+				line = `- ${headingWithCategory}: ${tokenWithKanji}`;
 			}
 			if (line) {
 				const note = conflictNotes[axis]?.[token];

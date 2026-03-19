@@ -403,6 +403,35 @@ func TestADR0162GroundConsolidation(t *testing.T) {
 	}
 }
 
+// TestGroundIFormationPermittedPreManifest specifies that the ground definition
+// permits observation of existing code or running behavior before the manifest
+// when I cannot be declared from context alone (I-formation), while still
+// prohibiting rung work and planning text pre-manifest.
+func TestGroundIFormationPermittedPreManifest(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	for _, phrase := range []string{
+		"I-formation",
+		"observation of existing code",
+	} {
+		if !strings.Contains(groundDesc, phrase) {
+			t.Errorf("ground boundary clause missing I-formation phrase %q", phrase)
+		}
+	}
+	// The old blanket prohibition on all pre-manifest domain exploration must
+	// not survive — it is replaced by the I-formation distinction.
+	if strings.Contains(groundDesc, "state minimal assumptions and write it from I") {
+		t.Error("ground boundary clause must not retain blanket 'state minimal assumptions' prohibition — replaced by I-formation distinction")
+	}
+}
+
 // TestGroundDefinitionReverseCheck specifies that the ground definition includes the
 // bidirectional obligation: when beginning at any rung, first locate the highest
 // already-instantiated rung and update it before descending.

@@ -432,6 +432,27 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	}
 }
 
+// TestGroundMotivationalReframe specifies that ground explicitly reframes
+// the cost model: the ladder is the shortest path to valid output, not the
+// longest. Eagerness to implement is named as the primary failure mode.
+func TestGroundMotivationalReframe(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	groundDesc := grammar.AxisDescription("method", "ground")
+	if groundDesc == "" {
+		t.Fatal("ground description must not be empty")
+	}
+	if !strings.Contains(groundDesc, "shortest path") {
+		t.Error("ground must state that strict rung adherence is the shortest path to valid output")
+	}
+	if !strings.Contains(groundDesc, "primary failure mode") {
+		t.Error("ground must name eagerness to implement as the primary failure mode")
+	}
+}
+
 // TestGroundCompletenessTokensGovernDepthNotExistence specifies that ground
 // defines how completeness tokens interact with the process: they govern
 // depth within each rung, not whether rungs exist.

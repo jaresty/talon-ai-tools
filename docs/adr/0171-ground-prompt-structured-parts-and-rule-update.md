@@ -1,6 +1,6 @@
 # ADR-0171: Ground Prompt — Structured Parts and Rule Update
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-03-20
 
 ---
@@ -68,17 +68,29 @@ The four parts below are the canonical rule content. They supersede the current 
 
 > I is the declared intent governing the invocation. I precedes and is not itself an artifact. Every artifact derives from I through the prior rung — form changes, intent does not. V is a constraint artifact self-contained to evaluate the next artifact without consulting I. O is the output evaluated against V.
 >
-> A rung is complete when and only when its artifact has been produced — not when it has been listed, planned, or described. A rung is not achievable when the domain provides no standard artifact type for it; this must be stated explicitly with justification — convenience, anticipated outcome, or prior knowledge do not make a rung not achievable. Completeness governs the depth of each rung's artifact; it does not affect whether a rung must be produced. Executable verification is required only for executable artifacts; prose artifacts do not require execution to be complete. Formal notation must satisfy R2: every behavioral constraint from the criteria rung must be re-expressed in the notation — not just interface shape; type signatures or schemas that capture structure without encoding invariants do not satisfy this rung.
+> Three rules govern every thread. R1 (I is fixed): every artifact derives from I through faithful derivation of the prior rung — the form changes, the intent does not. R2 (rung criterion): an artifact is a rung iff upward-faithful (derived from the prior rung without adding unstated constraints) and downward-sufficient (self-contained to evaluate the next artifact without consulting I); domain phases are not downward-sufficient — writing tests for 'API layer' requires knowing what the API must do, which comes from I, not the phase name. R3 (observation terminates): every thread descends to observed running behavior; only tool-executed output with a declared gap satisfies the execution gate; skipped tests are not observations.
+>
+> A rung is complete when and only when its artifact has been produced — not when it has been listed, planned, or described. A rung is not achievable when the domain provides no standard artifact type for it; this must be stated explicitly with justification — convenience, anticipated outcome, or prior knowledge do not make a rung not achievable. ground is a Process method — the task governs the character of each rung's output but not the process structure; the manifest, rung sequence, and execution gates are mandatory regardless of which task or other tokens are combined with ground; completeness governs rung depth, not rung existence. Executable verification is required only for executable artifacts; prose artifacts do not require execution to be complete. Formal notation must satisfy R2: every behavioral constraint from the criteria rung must be re-expressed in the notation — not just interface shape; type signatures or schemas that capture structure without encoding invariants do not satisfy this rung.
+>
+> Boundary: the manifest is the first and only output before the manifest-complete sentinel — no rung work, planning text, or content of any kind may appear before it; observation of existing code or running behavior sufficient to establish I is permitted before the manifest when I cannot be declared from context alone — this is I-formation, not rung work; exploration beyond what is needed to declare I belongs as the first rung of the manifest, not pre-manifest.
+>
+> Foundational constraint: a symbol is not the state it represents — a rung label during execution marks the point where the artifact begins — it is not a section heading for planning, description, or exploration about the rung; no content other than the artifact itself may appear between a rung label and the artifact it precedes.
+>
+> Eagerness to implement is the primary failure mode — an implementation produced without passing validation is invalid and will be discarded; the shortest path to a valid implementation is strict rung adherence, not shortcuts; every skipped rung produces output that must be thrown away.
+>
+> When beginning mid-ladder, first locate the highest already-instantiated rung and update it to reflect the intended change, then descend. Traversal (R5): depth-first by thread; within a thread, advance through every feasible rung; stopping mid-thread is only permitted when the next rung is not achievable.
+>
+> For code contexts, each rung in this sequence may not be skipped or combined with another — the executable implementation rung is blocked until the validation run observation rung has declared a gap. R4 instantiates as: prose (natural language description of intent and constraints) → criteria (acceptance conditions as plain statements) → formal notation (non-executable specification — contracts with pre/post conditions, schemas with explicit invariants, or pseudocode with behavioral constraints stated; must satisfy R2 — artifact cannot be run as written) → executable validation (a file artifact invocable by an automated tool — go test, pytest, or equivalent — written to target the declared gap; only validation artifacts may be produced at this rung — implementation code is not permitted at this rung even though artifact-writing is permitted; file reads, grep output, and manual inspection do not constitute executable validation regardless of label; pre-existing artifacts not targeting the gap do not satisfy this rung) → validation run observation → executable implementation → observed running behavior.
 
 ---
 
 #### Part: `gate_validity`
 
-> A gate is a conversation-state condition: open when and only when the required event has occurred in this conversation for this thread. Prior knowledge, anticipation, and model reasoning cannot satisfy any gate regardless of accuracy.
+> A gate is a conversation-state condition: open when and only when the required event has occurred in this conversation for this thread. Prior knowledge, anticipation, and model reasoning cannot satisfy any gate regardless of accuracy. Underlying all compliance failures is one epistemological error: substituting model knowledge for conversation events.
 >
-> For executable rungs, emit `🔴 Execution observed: [verbatim tool output — content composed without running the tool is invalid]` then `🔴 Gap: [what the verbatim output reveals]` on their own lines before any implementation artifact. Before producing implementation code, emit `🟢 Implementation gate cleared — gap cited: [verbatim from 🔴 Execution observed]`. The quote must be verbatim from the `🔴 Execution observed` sentinel of this thread; quoting anticipated output or a prior thread's observation is invalid.
+> For executable rungs, emit `🔴 Execution observed: [verbatim tool output — content composed without running the tool is invalid]` then `🔴 Gap: [what the verbatim output reveals]` on their own lines before any implementation artifact. No implementation artifact — including planning text, code blocks, or tool calls — may appear before valid Execution observed + Gap sentinels; if any implementation content appears without these sentinels immediately preceding it, it is invalid and must be discarded before the tool is run. Before producing implementation code, emit `🟢 Implementation gate cleared — gap cited: [verbatim from 🔴 Execution observed]`. The quote must be verbatim from the `🔴 Execution observed` sentinel of this thread; quoting anticipated output or a prior thread's observation is invalid.
 >
-> The `🔴` sentinel format is reserved exclusively for executable rung gates. For non-executable rungs, observation appears inline as labeled prose. No implementation artifact may appear before the `🔴` sentinels for the current thread.
+> The `🔴` sentinel format is reserved exclusively for executable rung gates. For non-executable rungs, observation appears inline as labeled prose.
 
 ---
 

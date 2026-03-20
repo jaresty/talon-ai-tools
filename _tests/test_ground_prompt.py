@@ -52,6 +52,16 @@ def test_formal_notation_r2_requirement():
     )
 
 
+def test_i_formation_causal_chain():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "assumed" in ds or "actual constraints" in ds, (
+        "derivation_structure must explain that skipping I-formation derives from assumed rather than actual constraints"
+    )
+    assert "discarded" in ds or "must be discarded" in ds, (
+        "derivation_structure must state that artifacts derived from skipped I-formation must be discarded"
+    )
+
+
 def test_i_formation_is_required_not_permitted():
     ds = GROUND_PARTS["derivation_structure"]
     assert "required" in ds and "I cannot be declared from context alone" in ds, (
@@ -62,6 +72,16 @@ def test_i_formation_is_required_not_permitted():
     )
     assert "permitted" not in ds or ds.index("required") < ds.index("permitted") + 100, (
         "I-formation must be framed as required, not merely permitted"
+    )
+
+
+def test_sentinel_causal_chain():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "anticipated" in gv, (
+        "gate_validity must explain that a composed sentinel records anticipated rather than observed state"
+    )
+    assert "regardless" in gv and ("correct" in gv or "accuracy" in gv), (
+        "gate_validity must state that artifacts from a composed sentinel are invalid regardless of correctness"
     )
 
 
@@ -81,6 +101,13 @@ def test_gate_validity_passing_run_is_gap_signal():
 
 def test_derivation_discipline_content():
     assert "Gap-locality" in GROUND_PARTS["derivation_discipline"]
+
+
+def test_upward_correction_causal_chain():
+    dd = GROUND_PARTS["derivation_discipline"]
+    assert "resurface" in dd or "deficiency" in dd, (
+        "derivation_discipline must explain that an uncorrected deficiency resurfaces at every rung below"
+    )
 
 
 def test_upward_correction_requires_observation_before_loop():

@@ -46,6 +46,16 @@ def test_gate_validity_content():
     assert "conversation-state condition" in GROUND_PARTS["gate_validity"]
 
 
+def test_gate_validity_passing_run_is_gap_signal():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "vacuous" in gv, (
+        "gate_validity must state that a passing run without observed failure may be vacuous"
+    )
+    assert "gap signal" in gv, (
+        "gate_validity must name a passing run without prior failure as a gap signal"
+    )
+
+
 def test_derivation_discipline_content():
     assert "Gap-locality" in GROUND_PARTS["derivation_discipline"]
 

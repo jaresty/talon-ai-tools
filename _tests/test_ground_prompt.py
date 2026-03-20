@@ -328,3 +328,46 @@ def test_r2_audit_checklist_format():
 
 def test_reconciliation_content():
     assert "Intent precedes its representations" in GROUND_PARTS["reconciliation_and_completion"]
+
+
+def test_r3_positive_definition_for_code_contexts():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "rendered" in ds or "DOM" in ds or "api response" in ds.lower() or "response body" in ds, (
+        "derivation_structure must give a positive definition of what satisfies R3 in code contexts "
+        "(e.g., rendered DOM content, API response body)"
+    )
+    assert "direct" in ds or "directly" in ds or "demonstrates" in ds, (
+        "derivation_structure must require the R3 output to directly demonstrate the declared feature"
+    )
+
+
+def test_carry_forward_is_a_gate():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "no implementation" in gv and ("carry-forward" in gv or "carry forward" in gv), (
+        "gate_validity must state that no implementation artifact may appear until carry-forward is emitted "
+        "after validation artifact modification"
+    )
+    cf_idx = gv.find("carry-forward") if "carry-forward" in gv else gv.find("carry forward")
+    # Find the gate language near the carry-forward requirement
+    cf_context = gv[max(0, cf_idx - 200):cf_idx + 300]
+    assert "gate" in cf_context or "violation" in cf_context or "blocked" in cf_context or "no implementation" in cf_context, (
+        "gate_validity must frame carry-forward as a gate/violation, not merely an emission requirement"
+    )
+
+
+def test_r2_audit_only_two_valid_outcomes():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "no other resolution" in ds or "only two valid" in ds or "only valid row" in ds, (
+        "derivation_structure must state the R2 audit has exactly two valid row outcomes — no other resolution"
+    )
+    assert "architectural constraint" in ds or "constraint type" in ds or "names constraint" in ds, (
+        "derivation_structure must name that a constraint-type label is UNENCODED, not a behavioral invariant"
+    )
+
+
+def test_sentinel_must_precede_tool_invocation():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "retroactively" in gv or "before its sentinel" in gv or "immediately before the tool" in gv, (
+        "gate_validity must state the sentinel appears immediately before the tool is invoked "
+        "and tool output appearing before its sentinel is uncovered — retroactive labeling is invalid"
+    )

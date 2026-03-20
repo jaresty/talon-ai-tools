@@ -29,6 +29,16 @@ def test_derivation_structure_content():
     assert "I is the declared intent" in GROUND_PARTS["derivation_structure"]
 
 
+def test_rung_label_mandatory_at_every_transition():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "must be emitted" in ds or "must appear" in ds or "required at every" in ds, (
+        "derivation_structure must mandate a rung label at every rung transition"
+    )
+    assert "absence" in ds and ("violation" in ds or "invalid" in ds), (
+        "derivation_structure must state that absence of a rung label is a violation"
+    )
+
+
 def test_formal_notation_r2_requirement():
     ds = GROUND_PARTS["derivation_structure"]
     assert "Formal notation must satisfy R2" in ds, (

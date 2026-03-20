@@ -52,6 +52,19 @@ def test_formal_notation_r2_requirement():
     )
 
 
+def test_i_formation_is_required_not_permitted():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "required" in ds and "I cannot be declared from context alone" in ds, (
+        "derivation_structure must state that I-formation is required when context is insufficient"
+    )
+    assert "error" in ds or "skipping" in ds.lower(), (
+        "derivation_structure must name skipping I-formation when context is insufficient as an error"
+    )
+    assert "permitted" not in ds or ds.index("required") < ds.index("permitted") + 100, (
+        "I-formation must be framed as required, not merely permitted"
+    )
+
+
 def test_gate_validity_content():
     assert "conversation-state condition" in GROUND_PARTS["gate_validity"]
 

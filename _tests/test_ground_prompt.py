@@ -330,6 +330,62 @@ def test_reconciliation_content():
     assert "Intent precedes its representations" in GROUND_PARTS["reconciliation_and_completion"]
 
 
+def test_r3_requires_declared_behavior_in_output():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "named in the gap" in ds or "by name" in ds or "output content" in ds or "verifiable" in ds, (
+        "derivation_structure must state R3 validity depends on output content naming declared behavior — "
+        "the specific behavior named in the gap must appear as a verifiable event in the output"
+    )
+    assert "route loads" in ds or "infrastructure state" in ds, (
+        "derivation_structure must name infrastructure-state outputs (e.g., 'route loads') as insufficient for R3"
+    )
+
+
+def test_carry_forward_scope_behavioral_only():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "import" in gv or "structural" in gv or "assertion" in gv, (
+        "gate_validity must clarify carry-forward scope — behavioral changes vs. import/structural corrections"
+    )
+    cf_idx = gv.find("carry-forward") if "carry-forward" in gv else gv.find("carry forward")
+    cf_context = gv[max(0, cf_idx - 100):cf_idx + 500]
+    assert "import" in cf_context or "assertion" in cf_context or "behavioral" in cf_context, (
+        "gate_validity must name the carry-forward scope near the carry-forward requirement"
+    )
+
+
+def test_r2_audit_must_begin_with_1():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "begin with" in ds or "begins with" in ds or "start with" in ds or "starts with '1.'" in ds, (
+        "derivation_structure must state the R2 audit must begin with '1.' on the first row"
+    )
+    assert "1." in ds and ("begin with" in ds or "starts with" in ds), (
+        "derivation_structure must explicitly name '1.' as the required start of the audit"
+    )
+
+
+def test_retroactive_sentinel_does_not_open_gate():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "retroact" in gv or "re-run" in gv or "rerun" in gv, (
+        "gate_validity must state that a retroactive sentinel leaves the gate closed and the tool must be re-run"
+    )
+    # Verify the re-run / gate-closed consequence is linked to retroactive labeling
+    retro_idx = gv.find("retroact") if "retroact" in gv else gv.find("re-run")
+    context = gv[max(0, retro_idx - 50):retro_idx + 350]
+    assert "gate" in context or "re-run" in context or "closed" in context, (
+        "gate_validity must state the gate consequence of retroactive sentinel — gate does not open"
+    )
+
+
+def test_manifest_must_include_vro():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "must name every" in ds or "must include every" in ds or "must list every" in ds, (
+        "derivation_structure must state the manifest must name every R4 rung"
+    )
+    assert "malformed" in ds or "omitting" in ds, (
+        "derivation_structure must state that omitting a required rung from the manifest is malformed"
+    )
+
+
 def test_r3_positive_definition_for_code_contexts():
     ds = GROUND_PARTS["derivation_structure"]
     assert "rendered" in ds or "DOM" in ds or "api response" in ds.lower() or "response body" in ds, (
@@ -349,7 +405,7 @@ def test_carry_forward_is_a_gate():
     )
     cf_idx = gv.find("carry-forward") if "carry-forward" in gv else gv.find("carry forward")
     # Find the gate language near the carry-forward requirement
-    cf_context = gv[max(0, cf_idx - 200):cf_idx + 300]
+    cf_context = gv[max(0, cf_idx - 200):cf_idx + 600]
     assert "gate" in cf_context or "violation" in cf_context or "blocked" in cf_context or "no implementation" in cf_context, (
         "gate_validity must frame carry-forward as a gate/violation, not merely an emission requirement"
     )

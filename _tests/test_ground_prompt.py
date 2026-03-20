@@ -220,5 +220,111 @@ def test_upward_correction_requires_observation_before_loop():
     )
 
 
+def test_r3_requires_red_sentinels():
+    ds = GROUND_PARTS["derivation_structure"]
+    gv = GROUND_PARTS["gate_validity"]
+    # R3 sentinel requirement: derivation_structure must state observed running behavior
+    # requires 🔴 sentinels, and gap must name behavior from I
+    assert "observed running behavior" in ds and (
+        "Execution observed" in ds or "\U0001F534" in ds
+    ), (
+        "derivation_structure must require 🔴 Execution observed at the observed running behavior rung"
+    )
+    assert "behavior from I" in ds or ("behavior" in ds and "from I" in ds), (
+        "derivation_structure must require R3 gap to name the specific behavior from I"
+    )
+
+
+def test_prior_failure_scoped_to_test():
+    gv = GROUND_PARTS["gate_validity"]
+    assert ("individual test" in gv or "specific test" in gv) and "produced it" in gv, (
+        "gate_validity must state prior recorded failure applies to the specific test that produced it"
+    )
+    assert "carry-forward" in gv or "carry forward" in gv, (
+        "gate_validity must require a carry-forward statement after validation artifact modification"
+    )
+    assert "uncovered" in gv or "no covering" in gv, (
+        "gate_validity must state uncovered tests trigger the vacuous-green check"
+    )
+
+
+def test_r2_audit_separate_section():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "separate" in ds and "section" in ds, (
+        "derivation_structure must state the R2 audit is a separate named section"
+    )
+    assert "numbered" in ds, (
+        "derivation_structure must require each criterion on a numbered row"
+    )
+    assert "prose" in ds and ("not satisfy" in ds or "does not satisfy" in ds), (
+        "derivation_structure must state a prose list does not satisfy the R2 audit"
+    )
+
+
+def test_execution_observed_block_delimiter():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "complete" in gv and ("block" in gv or "```" in gv or "triple" in gv or "delimit" in gv), (
+        "gate_validity must require 🔴 Execution observed to contain a complete delimited block"
+    )
+    assert "nothing omitted" in gv or "complete output" in gv or "complete tool output" in gv, (
+        "gate_validity must state the block contains the complete tool output — nothing omitted"
+    )
+
+
+def test_vacuous_green_unconditional():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "recorded" in gv and ("failure" in gv or "failed" in gv), (
+        "gate_validity must require prior recorded failure in this conversation before a green run is accepted"
+    )
+
+
+def test_self_check_requires_citation():
+    gv = GROUND_PARTS["gate_validity"]
+    self_check_idx = gv.find("Self-check")
+    assert self_check_idx >= 0, "gate_validity must contain a Self-check section"
+    # Isolate text from Self-check to end of its sentence block (up to next sentinel or end)
+    self_check_text = gv[self_check_idx:self_check_idx + 500]
+    assert "quot" in self_check_text or "cannot be located" in self_check_text or "from this conversation" in self_check_text, (
+        "gate_validity self-check must require citing sentinels from this conversation, not asserting from memory"
+    )
+
+
+def test_r3_behavioral_specificity():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "build" in ds or "system-state" in ds or "system state" in ds, (
+        "derivation_structure must exclude build success and system-state events from R3 observation"
+    )
+
+
+def test_validation_artifact_freeze():
+    dd = GROUND_PARTS["derivation_discipline"]
+    assert "modif" in dd or "frozen" in dd, (
+        "derivation_discipline must state that post-declaration modification of the validation artifact requires upward correction"
+    )
+    assert "mock" in dd or "simplif" in dd or "weaken" in dd, (
+        "derivation_discipline must name mock weakening or simplification as a prohibited modification form"
+    )
+
+
+def test_execution_observed_raw_only():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "no prose" in gv or "only the raw" in gv or "contains only" in gv, (
+        "gate_validity must state that 🔴 Execution observed contains only raw tool output"
+    )
+    assert "interpretation" in gv and "Gap" in gv, (
+        "gate_validity must locate interpretation exclusively in the 🔴 Gap line"
+    )
+
+
+def test_r2_audit_checklist_format():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "✅ Formal notation R2 audit complete" in ds, (
+        "derivation_structure must define the R2 audit completion sentinel"
+    )
+    assert "UNENCODED" in ds, (
+        "derivation_structure must name UNENCODED as the marker for unencodeable criteria"
+    )
+
+
 def test_reconciliation_content():
     assert "Intent precedes its representations" in GROUND_PARTS["reconciliation_and_completion"]

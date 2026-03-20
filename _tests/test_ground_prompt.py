@@ -29,6 +29,16 @@ def test_derivation_structure_content():
     assert "I is the declared intent" in GROUND_PARTS["derivation_structure"]
 
 
+def test_observed_running_behavior_requires_traceability():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "traceable" in ds or "traceability" in ds or "behavioral gap" in ds, (
+        "derivation_structure must require observed running behavior to be traceable to the declared gap"
+    )
+    assert "server response" in ds or "HTTP" in ds or "URL" in ds or "rendering" in ds, (
+        "derivation_structure must name domain-specific anti-patterns for observed running behavior"
+    )
+
+
 def test_rung_label_mandatory_at_every_transition():
     ds = GROUND_PARTS["derivation_structure"]
     assert "must be emitted" in ds or "must appear" in ds or "required at every" in ds, (
@@ -36,6 +46,16 @@ def test_rung_label_mandatory_at_every_transition():
     )
     assert "absence" in ds and ("violation" in ds or "invalid" in ds), (
         "derivation_structure must state that absence of a rung label is a violation"
+    )
+
+
+def test_r2_audit_gate():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "audit" in ds or "enumerate" in ds, (
+        "derivation_structure must require an explicit R2 audit before advancing from formal notation"
+    )
+    assert "incomplete" in ds or "unencoded" in ds, (
+        "derivation_structure must state the rung is incomplete until all criteria are encoded"
     )
 
 
@@ -49,6 +69,16 @@ def test_formal_notation_r2_requirement():
     )
     assert "interface shape" in ds or "structure without encoding invariants" in ds, (
         "derivation_structure must distinguish shape-only notation from complete notation"
+    )
+
+
+def test_i_formation_sentinel():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "I-formation complete" in ds, (
+        "derivation_structure must define a sentinel for I-formation completion"
+    )
+    assert "manifest may not appear" in ds or "before the" in ds, (
+        "derivation_structure must state the manifest may not appear before the I-formation sentinel"
     )
 
 
@@ -75,6 +105,16 @@ def test_i_formation_is_required_not_permitted():
     )
 
 
+def test_build_error_excluded_from_gate():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "build" in gv or "compile" in gv or "import error" in gv, (
+        "gate_validity must explicitly exclude build/compile errors from satisfying the validation gate"
+    )
+    assert "incomplete" in gv, (
+        "gate_validity must state that a build failure means the validation artifact is incomplete"
+    )
+
+
 def test_sentinel_causal_chain():
     gv = GROUND_PARTS["gate_validity"]
     assert "anticipated" in gv, (
@@ -89,6 +129,16 @@ def test_gate_validity_content():
     assert "conversation-state condition" in GROUND_PARTS["gate_validity"]
 
 
+def test_v_complete_sentinel_position():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "before" in gv and "implementation" in gv, (
+        "gate_validity must state V-complete appears before implementation begins"
+    )
+    assert "after tests pass" in gv or "not after" in gv or "may not appear after" in gv, (
+        "gate_validity must explicitly state V-complete may not appear after tests pass"
+    )
+
+
 def test_gate_validity_passing_run_is_gap_signal():
     gv = GROUND_PARTS["gate_validity"]
     assert "vacuous" in gv, (
@@ -101,6 +151,16 @@ def test_gate_validity_passing_run_is_gap_signal():
 
 def test_derivation_discipline_content():
     assert "Gap-locality" in GROUND_PARTS["derivation_discipline"]
+
+
+def test_minimal_scope_extends_to_post_ladder():
+    dd = GROUND_PARTS["derivation_discipline"]
+    assert "entire invocation" in dd or "post-ladder" in dd or "after the ladder" in dd, (
+        "derivation_discipline must extend minimal scope to the entire invocation, including post-ladder additions"
+    )
+    assert "new" in dd and ("manifest" in dd or "descent" in dd), (
+        "derivation_discipline must require post-completion additions not in I to have their own manifest"
+    )
 
 
 def test_upward_correction_causal_chain():

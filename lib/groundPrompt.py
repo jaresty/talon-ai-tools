@@ -115,7 +115,12 @@ GROUND_PARTS: dict[str, str] = {
         "Upward revision must be signposted with: what was observed, which rung is being revised, and why. "
         "It is never permitted to change I without first observing a gap in V that derived it. "
         "Changing I requires revising every artifact derived from it to restore chain consistency "
-        "before descent continues."
+        "before descent continues. "
+        "Upward correction is mandatory when a rung failure reveals that a higher rung is deficient \u2014 "
+        "a failure at rung N is evidence that rung N-1 (or higher) did not correctly derive or constrain it; "
+        "find the highest broken rung, correct it, and rederive every artifact below it before redescending; "
+        "this is correction, not enrichment \u2014 the corrected rung must still be faithful to I; "
+        "if the broken rung is I itself, surface as a revision signal and stop the current thread."
     ),
     "reconciliation_and_completion": (
         "Intent precedes its representations. "

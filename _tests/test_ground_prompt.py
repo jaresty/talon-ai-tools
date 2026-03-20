@@ -29,6 +29,16 @@ def test_derivation_structure_content():
     assert "I is the declared intent" in GROUND_PARTS["derivation_structure"]
 
 
+def test_observed_running_behavior_excludes_preview():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "screenshot" in ds or "preview" in ds or "preview panel" in ds, (
+        "derivation_structure must name screenshot/preview as insufficient for observed running behavior"
+    )
+    assert "specific behavior" in ds or "declared gap" in ds, (
+        "derivation_structure must require observation to reference the specific behavior declared in the gap"
+    )
+
+
 def test_observed_running_behavior_requires_traceability():
     ds = GROUND_PARTS["derivation_structure"]
     assert "traceable" in ds or "traceability" in ds or "behavioral gap" in ds, (
@@ -105,6 +115,16 @@ def test_i_formation_is_required_not_permitted():
     )
 
 
+def test_self_check_before_advancing_executable_rung():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "before advancing" in gv, (
+        "gate_validity must require explicit self-verification before advancing past an executable rung"
+    )
+    assert "incomplete" in gv, (
+        "gate_validity must state the rung is incomplete if self-check conditions are unmet"
+    )
+
+
 def test_build_error_excluded_from_gate():
     gv = GROUND_PARTS["gate_validity"]
     assert "build" in gv or "compile" in gv or "import error" in gv, (
@@ -129,6 +149,16 @@ def test_gate_validity_content():
     assert "conversation-state condition" in GROUND_PARTS["gate_validity"]
 
 
+def test_v_complete_requires_green_gate_before_implementation():
+    gv = GROUND_PARTS["gate_validity"]
+    assert "both" in gv or "then" in gv.lower() and "Implementation gate cleared" in gv, (
+        "gate_validity must state both V-complete and 🟢 are required in order before implementation"
+    )
+    assert "does not open" in gv or "insufficient" in gv or ("alone" in gv and "gate" in gv), (
+        "gate_validity must state V-complete alone does not open the implementation gate"
+    )
+
+
 def test_v_complete_sentinel_position():
     gv = GROUND_PARTS["gate_validity"]
     assert "before" in gv and "implementation" in gv, (
@@ -151,6 +181,16 @@ def test_gate_validity_passing_run_is_gap_signal():
 
 def test_derivation_discipline_content():
     assert "Gap-locality" in GROUND_PARTS["derivation_discipline"]
+
+
+def test_test_reduction_is_scope_violation():
+    dd = GROUND_PARTS["derivation_discipline"]
+    assert "reducing" in dd or "reduction" in dd or "deleting" in dd or "fewer tests" in dd, (
+        "derivation_discipline must name test reduction as a scope violation"
+    )
+    assert "gap signal" in dd or "gap signal" in GROUND_PARTS["gate_validity"], (
+        "prompt must state a passing suite with fewer tests than the gap requires is a gap signal"
+    )
 
 
 def test_minimal_scope_extends_to_post_ladder():

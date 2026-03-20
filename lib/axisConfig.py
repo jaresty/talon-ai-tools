@@ -399,6 +399,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
         "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
+        "survive": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, "
+        "distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions determine what "
+        "remains credible.",
         "sweep": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
@@ -617,6 +620,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "snag": "Surface coupling seams",
         "split": "Decompose into parts or components",
         "spur": "Parallel reasoning paths",
+        "survive": "Environmental survival of claims",
         "sweep": "Enumerate option space without evaluating",
         "systemic": "Interacting whole and feedback loops",
         "thrust": "Catalog competing structural forces",
@@ -661,6 +665,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "html": "標",
         "image": "像",
         "jira": "票",
+        "notebook": "帳",
         "plain": "文",
         "presenterm": "演",
         "remote": "遠",
@@ -810,6 +815,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "snag": "絡",
         "split": "分",
         "spur": "枝",
+        "survive": "耐",
         "sweep": "探",
         "systemic": "系",
         "thrust": "衡",
@@ -984,6 +990,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "snag": "Diagnostic",
         "split": "Exploration",
         "spur": "Exploration",
+        "survive": "Diagnostic",
         "sweep": "Exploration",
         "systemic": "Temporal/Dynamic",
         "thrust": "Comparative",
@@ -1191,6 +1198,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "snag": "Coupling detection",
         "split": "Decompose in isolation",
         "spur": "Multiple paths",
+        "survive": "Environmental arbitration",
         "sweep": "Enumerate option space",
         "systemic": "System as whole",
         "thrust": "Catalog structural forces",
@@ -5213,6 +5221,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "survey the landscape",
                 "open-ended exploration",
                 "what's possible here",
+            ],
+        },
+        "survive": {
+            "distinctions": [
+                {
+                    "note": "verify = design a challenge against a claim analytically; survive = let uncontrolled environmental exposure answer whether the claim held",
+                    "token": "verify",
+                },
+                {
+                    "note": "ground = staged external derivation that earns permission to exist; survive = post-derivation environmental exposure that determines whether what was built remains valid",
+                    "token": "ground",
+                },
+                {
+                    "note": "experimental = propose a test to challenge a claim; survive = what the uncontrolled environment actually returned",
+                    "token": "experimental",
+                },
+            ],
+            "heuristics": [
+                "what survived in production",
+                "does this hold under real conditions",
+                "production behavior vs design intent",
+                "what remained valid after deployment",
+                "telemetry vs specification",
+                "what happened when real users encountered it",
+                "live environment as authority",
+                "what did the world keep",
             ],
         },
         "systemic": {

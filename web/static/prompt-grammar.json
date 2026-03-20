@@ -177,6 +177,7 @@
         "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, treating the decomposition as provisional and preparatory rather than final.",
         "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
+        "survive": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions determine what remains credible.",
         "sweep": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation.",
         "thrust": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit.",
@@ -377,6 +378,7 @@
         "snag",
         "split",
         "spur",
+        "survive",
         "sweep",
         "systemic",
         "thrust",
@@ -574,6 +576,7 @@
         "snag": "Surface coupling seams",
         "split": "Decompose into parts or components",
         "spur": "Parallel reasoning paths",
+        "survive": "Environmental survival of claims",
         "sweep": "Enumerate option space without evaluating",
         "systemic": "Interacting whole and feedback loops",
         "thrust": "Catalog competing structural forces",
@@ -612,6 +615,7 @@
         "html": "標",
         "image": "像",
         "jira": "票",
+        "notebook": "帳",
         "plain": "文",
         "presenterm": "演",
         "remote": "遠",
@@ -765,6 +769,7 @@
         "snag": "絡",
         "split": "分",
         "spur": "枝",
+        "survive": "耐",
         "sweep": "探",
         "systemic": "系",
         "thrust": "衡",
@@ -872,6 +877,7 @@
         "snag": "Diagnostic",
         "split": "Exploration",
         "spur": "Exploration",
+        "survive": "Diagnostic",
         "sweep": "Exploration",
         "systemic": "Temporal/Dynamic",
         "thrust": "Comparative",
@@ -1069,6 +1075,7 @@
         "snag": "Coupling detection",
         "split": "Decompose in isolation",
         "spur": "Multiple paths",
+        "survive": "Environmental arbitration",
         "sweep": "Enumerate option space",
         "systemic": "System as whole",
         "thrust": "Catalog structural forces",
@@ -4341,6 +4348,33 @@
           ],
           "definition": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them."
         },
+        "survive": {
+          "distinctions": [
+            {
+              "note": "verify = design a challenge against a claim analytically; survive = let uncontrolled environmental exposure answer whether the claim held",
+              "token": "verify"
+            },
+            {
+              "note": "ground = staged external derivation that earns permission to exist; survive = post-derivation environmental exposure that determines whether what was built remains valid",
+              "token": "ground"
+            },
+            {
+              "note": "experimental = propose a test to challenge a claim; survive = what the uncontrolled environment actually returned",
+              "token": "experimental"
+            }
+          ],
+          "heuristics": [
+            "what survived in production",
+            "does this hold under real conditions",
+            "production behavior vs design intent",
+            "what remained valid after deployment",
+            "telemetry vs specification",
+            "what happened when real users encountered it",
+            "live environment as authority",
+            "what did the world keep"
+          ],
+          "definition": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions determine what remains credible."
+        },
         "systemic": {
           "distinctions": [
             {
@@ -7111,6 +7145,7 @@
         "snag": "snag",
         "split": "split",
         "spur": "spur",
+        "survive": "survive",
         "sweep": "sweep",
         "systemic": "systemic",
         "thrust": "thrust",
@@ -7339,6 +7374,7 @@
         "method=snag": "method-snag",
         "method=split": "method-split",
         "method=spur": "method-spur",
+        "method=survive": "method-survive",
         "method=sweep": "method-sweep",
         "method=systemic": "method-systemic",
         "method=thrust": "method-thrust",
@@ -7791,6 +7827,7 @@
       "method=snag": "method-snag",
       "method=split": "method-split",
       "method=spur": "method-spur",
+      "method=survive": "method-survive",
       "method=sweep": "method-sweep",
       "method=systemic": "method-systemic",
       "method=thrust": "method-thrust",
@@ -7889,6 +7926,7 @@
       "store": "store",
       "story": "story",
       "struct": "struct",
+      "survive": "survive",
       "svg": "svg",
       "sweep": "sweep",
       "sync": "sync",
@@ -8708,11 +8746,11 @@
     }
   ],
   "checksums": {
-    "axes": "768275260ba6b9c9348f4a32b02c4d209d60becea7e6be06be1a85517b64a9bf",
+    "axes": "5d12aaff68eafbc2b9a7aa3af263d432f44a1e2d540c3bb55fc829cf7321b15f",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "9b3defba3e5090e9867f83f2f434170c59ae0d7ce46bd7faac5d56ec42b25773",
+    "slugs": "88b00a95d248608d9f364fadd41a1df78dcc743307b025fc0492c20f2acda0e6",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

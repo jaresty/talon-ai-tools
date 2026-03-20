@@ -60,5 +60,15 @@ def test_derivation_discipline_content():
     assert "Gap-locality" in GROUND_PARTS["derivation_discipline"]
 
 
+def test_upward_correction_requires_observation_before_loop():
+    dd = GROUND_PARTS["derivation_discipline"]
+    assert "before correcting" in dd, (
+        "derivation_discipline must require emitting the observation before correcting any higher rung"
+    )
+    assert "observation record is invalid" in dd, (
+        "derivation_discipline must state that corrections without an observation record are invalid"
+    )
+
+
 def test_reconciliation_content():
     assert "Intent precedes its representations" in GROUND_PARTS["reconciliation_and_completion"]

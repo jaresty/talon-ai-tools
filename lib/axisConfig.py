@@ -309,14 +309,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "something encountered via direct interaction with reality, code, or a stakeholder. Upward revision must be signposted with: what was observed, which rung is being revised, and "
         "why. It is never permitted to change I without first observing a gap in V that derived it. Changing I requires revising every artifact derived from it to restore chain "
         "consistency before descent continues. Upward correction is mandatory when a rung failure reveals that a higher rung is deficient — a failure at rung N is evidence that rung "
-        "N-1 (or higher) did not correctly derive or constrain it; find the highest broken rung, correct it, and rederive every artifact below it before redescending; this is "
-        "correction, not enrichment — the corrected rung must still be faithful to I; if the broken rung is I itself, surface as a revision signal and stop the current thread. Intent "
-        "precedes its representations. Every artifact that documents the governing intent of this invocation — whether produced in this invocation or pre-existing in the codebase — "
-        "must be consistent with I before the invocation closes. If reconciliation is feasible, return up the chain to prose and rederive. If not feasible, report as a named process "
-        "failure: which artifact diverges, what the divergence is, and why reconciliation could not occur. The invocation close must include a reconciliation report: either “all "
-        "representations reconciled” or the list of named failures with reasons. ✅ Thread N complete may only appear after observed running behavior for that thread has been produced "
-        "and recorded. ✅ Manifest exhausted — N/N threads complete may only appear after all threads have emitted their completion sentinels and the reconciliation report has been "
-        "produced.",
+        "N-1 (or higher) did not correctly derive or constrain it; before correcting any higher rung, emit what was observed at the current rung, which higher rung is being corrected, "
+        "and why — a correction without this observation record is invalid and indistinguishable from enrichment; find the highest broken rung, correct it, and rederive every artifact "
+        "below it before redescending; this is correction, not enrichment — the corrected rung must still be faithful to I; if the broken rung is I itself, surface as a revision signal "
+        "and stop the current thread. Intent precedes its representations. Every artifact that documents the governing intent of this invocation — whether produced in this invocation "
+        "or pre-existing in the codebase — must be consistent with I before the invocation closes. If reconciliation is feasible, return up the chain to prose and rederive. If not "
+        "feasible, report as a named process failure: which artifact diverges, what the divergence is, and why reconciliation could not occur. The invocation close must include a "
+        "reconciliation report: either “all representations reconciled” or the list of named failures with reasons. ✅ Thread N complete may only appear after observed running behavior "
+        "for that thread has been produced and recorded. ✅ Manifest exhausted — N/N threads complete may only appear after all threads have emitted their completion sentinels and the "
+        "reconciliation report has been produced.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

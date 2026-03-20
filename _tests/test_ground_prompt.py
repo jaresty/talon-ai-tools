@@ -1,0 +1,54 @@
+"""Thread 1 validation: lib/groundPrompt.py structure and content."""
+import pytest
+from lib.groundPrompt import GROUND_PARTS, build_ground_prompt
+
+EXPECTED_KEYS = ["derivation_structure", "gate_validity", "derivation_discipline", "reconciliation_and_completion"]
+
+
+def test_ground_parts_has_expected_keys():
+    assert list(GROUND_PARTS.keys()) == EXPECTED_KEYS
+
+
+def test_ground_parts_all_nonempty():
+    for key in EXPECTED_KEYS:
+        assert GROUND_PARTS[key].strip(), f"GROUND_PARTS['{key}'] is empty"
+
+
+def test_build_ground_prompt_joins_all_parts():
+    result = build_ground_prompt()
+    for key in EXPECTED_KEYS:
+        assert GROUND_PARTS[key] in result
+
+
+def test_build_ground_prompt_is_space_joined():
+    result = build_ground_prompt()
+    assert result == " ".join(GROUND_PARTS[k] for k in EXPECTED_KEYS)
+
+
+def test_derivation_structure_content():
+    assert "I is the declared intent" in GROUND_PARTS["derivation_structure"]
+
+
+def test_formal_notation_r2_requirement():
+    ds = GROUND_PARTS["derivation_structure"]
+    assert "Formal notation must satisfy R2" in ds, (
+        "derivation_structure must state that formal notation must satisfy R2"
+    )
+    assert "behavioral constraint" in ds, (
+        "derivation_structure must mention behavioral constraints for formal notation"
+    )
+    assert "interface shape" in ds or "structure without encoding invariants" in ds, (
+        "derivation_structure must distinguish shape-only notation from complete notation"
+    )
+
+
+def test_gate_validity_content():
+    assert "conversation-state condition" in GROUND_PARTS["gate_validity"]
+
+
+def test_derivation_discipline_content():
+    assert "Gap-locality" in GROUND_PARTS["derivation_discipline"]
+
+
+def test_reconciliation_content():
+    assert "Intent precedes its representations" in GROUND_PARTS["reconciliation_and_completion"]

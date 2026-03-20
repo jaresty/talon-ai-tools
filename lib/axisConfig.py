@@ -42,6 +42,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, FrozenSet, List, TypedDict, Union
 
+# ADR-0171: ground prompt structured parts — SSOT is lib/groundPrompt.py (not generated).
+# Edit GROUND_PARTS there and run `make axis-regenerate-apply` to propagate changes.
+from lib.groundPrompt import GROUND_PARTS, build_ground_prompt  # noqa: F401
+
 AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready "
@@ -261,77 +265,33 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "ground": "The response opens with a rung manifest — a short document that decomposes I into threads (discrete units each independently descended and validated) and for each thread lists "
-        "planned artifacts, rung labels, and derivation sources — rung labels and artifact types only, no rung content appears in the manifest. The rung sequence must follow the ladder "
-        "order — executable validation and validation run observation must both precede executable implementation; a manifest that places implementation before validation or before "
-        "validation run observation is malformed. Each thread must include an executable validation rung and a validation run observation rung, or explicitly state why the domain "
-        "provides no standard artifact type for it. The rung manifest does not instantiate any rung — listing a rung in the manifest is a plan, not a production; no rung is complete "
-        "until its artifact has been produced and its execution gate satisfied. Gate: output '✅ Rung manifest complete' on its own line before any artifact — this sentinel marks the "
-        "end of the manifest document and may only appear after a manifest containing at least one thread with labeled rungs; an empty manifest, a stated intention to write one, or "
-        "planning notes do not satisfy this requirement. Boundary: the manifest is the first and only output before this phrase — no rung work, planning text, or content of any kind "
-        "may appear before it; observation of existing code or running behavior sufficient to establish I is permitted before the manifest when I cannot be declared from context alone "
-        "— this is I-formation, not rung work; exploration beyond what is needed to declare I belongs as the first rung of the manifest, not pre-manifest; after this phrase, execution "
-        "must begin at Rung 1 of Thread 1 — no rung may be skipped on grounds of perceived simplicity, prior knowledge, other active constraint tokens, or content described in or "
-        "implied by the manifest. I is the declared intent (the fixed governing authority); V is a constraint artifact derived from I through the ladder; O is the output evaluated "
-        "against V. Three rules govern every thread. R1 (I is fixed): every artifact derives faithfully from I and the prior rung — the form changes, the intent does not. R2 (rung "
-        "criterion): an artifact is a rung iff upward-faithful (derived from the prior rung without adding unstated constraints) and downward-sufficient (self-contained to evaluate the "
-        "next artifact without consulting I); domain phases are not downward-sufficient — writing tests for 'API layer' requires knowing what the API must do, which comes from I, not "
-        "the phase name. R3 (observation terminates): every thread descends to observed running behavior; only tool-executed output with a declared gap satisfies the execution gate; "
-        "skipped tests are not observations. Single-step derivation: each rung addresses only the gap declared by the immediately preceding rung; using gaps or intent from any rung "
-        "higher than the prior rung to drive the current rung is an error. Gap-locality: a gap is local to the rung that produced it — the gap that gates descent to rung N is the "
-        "output of executing rung N-1; no other rung’s observation, including I, may serve as the gating gap. Foundational constraint: a symbol is not the state it represents — writing "
-        "a sentinel does not instantiate the observation it marks; a manifest entry does not complete the rung it describes; understanding how to produce an artifact does not produce "
-        "it; a rung label during execution marks the point where the artifact begins — it is not a section heading for planning, description, or exploration about the rung; no content "
-        "other than the artifact itself may appear between a rung label and the artifact it precedes. Eagerness to implement is the primary failure mode — an implementation produced "
-        "without passing validation is invalid and will be discarded; the shortest path to a valid implementation is strict rung adherence, not shortcuts; every skipped rung produces "
-        "output that must be thrown away, leaving the agent further from completion than if it had followed the ladder. Underlying all compliance failures is one epistemological error: "
-        "substituting model knowledge for conversation events. Gate validity is a conversation-state condition, not a knowledge condition — a gate is open when and only when the "
-        "required event has occurred in this conversation for this thread; prior knowledge of what a result would contain, reasoning that a gap is known, or confidence about what "
-        "execution would show are all knowledge-state claims and cannot satisfy any gate regardless of their accuracy. Known bypass patterns (all invalid, each an instance of this "
-        "error): (1) Treating implementation as validation — writing tests and running them after implementing is not the validation run observation rung; the validation rung must "
-        "produce a failing artifact before any implementation exists. (2) Composing an 'Execution observed' sentinel from anticipated output, test structure, or prior knowledge rather "
-        "than from an actual tool call result in the conversation. (3) Recognizing a violation only after producing the invalid artifact — post-hoc recognition does not retroactively "
-        "validate the output; the artifact must be discarded and the ladder re-entered from the correct rung. (4) Stopping after partial thread execution — executing one or more manifest "
-        "threads and halting without continuing to remaining threads is a traversal violation even when the completed threads are correct; the invocation is not closed until all "
-        "declared threads have emitted their per-thread completion sentinels and the manifest exhaustion gate has been produced; partial completion is not completion. Execution gate (R3): one principle governs all gates — every rung "
-        "advancement requires an externally received result; nothing self-produced by the model (planning text, anticipated output, composed code blocks, or inline expansions) counts "
-        "as permission to advance. Before descending to an executable rung, output '🔴 Execution observed: [verbatim tool output — content composed without running the tool is invalid]' "
-        "then '🔴 Gap: [what the verbatim output reveals]' on their own lines; non-executable rung observations appear inline as prose — the 🔴 sentinel format is reserved exclusively "
-        "for executable rung gates and must not be used as a general observation marker, gap-discovery record, or preamble; place sentinels immediately before the executable rung "
-        "artifact they gate, not at the manifest level or in any earlier position — these sentinels apply only to executable rungs and gate the immediately following executable rung "
-        "only; they do not permit skipping intervening rungs; a rung manifest, verbal description, or code block containing a command and its expected output is never a valid Execution "
-        "observed — only output received as a distinct tool call result in the conversation satisfies R3; for executable rungs, observation means invoking the artifact as a running "
-        "process and recording the terminal output — required regardless of whether tests pass or fail; if tests do not run, fix the rung before descending; no implementation artifact "
-        "— including planning text, code blocks, or tool calls — may appear before valid Execution observed + Gap sentinels; if any implementation content appears without these "
-        "sentinels immediately preceding it, it is invalid and must be discarded before the tool is run. Traversal (R5): depth-first by thread; within a thread, advance through every "
-        "feasible rung; stopping mid-thread is only permitted when the next rung is not achievable (the domain provides no standard artifact type for it); the active completeness token "
-        "governs how many threads are batched per descent; when a thread reaches observed running behavior, output '✅ Thread N complete' on its own line (where N is the thread number) "
-        "then return to the top for the next thread; this sentinel is required for every thread and may only appear after observed running behavior for that thread; it marks the thread "
-        "boundary and makes partial execution structurally visible — its absence on a completed thread is a traversal violation. When all declared threads have emitted their per-thread "
-        "completion sentinels, output '✅ Manifest exhausted — N/N threads complete' on its own line; this manifest exhaustion gate may only appear after every manifest thread has both "
-        "produced its observed running behavior and emitted its thread completion sentinel; it is the closing gate of the ground invocation. ground is a Process method (see "
-        "CONSTRAINTS reference key) — the task governs the character of each rung's output but not the process structure; the manifest, rung sequence, and execution gates are mandatory "
-        "regardless of which task or other tokens are combined with ground; completeness governs rung depth, not rung existence. When a rung reveals the rung above needs correction — a "
-        "constraint conflict, a pivot, or new information — correct the rung above to restore faithfulness to I, then re-derive the current rung; this is correction, not enrichment; if "
-        "the rung requiring correction is I, surface as a revision signal and stop the current thread. When beginning mid-ladder, first locate the highest already-instantiated rung and "
-        "update it to reflect the intended change, then descend. For code contexts, each rung in this sequence may not be skipped or combined with another — the executable "
-        "implementation rung is blocked until the validation run observation rung has declared a gap; announcing two rungs together or labeling one rung with another's name does not "
-        "satisfy either. R4 instantiates as: prose (natural language description of intent and constraints) → criteria (acceptance conditions as plain statements) → formal notation "
-        "(non-executable specification — type signatures, schemas, pseudocode, or contracts; may use code syntax to describe interfaces but the artifact cannot be run as written) → "
-        "executable validation (a file artifact invocable by an automated tool — go test, pytest, or equivalent — written to target the declared gap and reveal whether it has been "
-        "closed; only validation artifacts may be produced at this rung — implementation code is not permitted at this rung even though artifact-writing is permitted; file reads, grep "
-        "output, and manual inspection do not constitute executable validation regardless of label; pre-existing artifacts not targeting the gap do not satisfy this rung) → [GATE: "
-        "validation run observation — executable implementation is blocked until this rung has been executed and declared a gap; before producing implementation code, output '🟢 "
-        "Implementation gate cleared — gap cited: [quote the gap from the validation run observation verbatim]' on its own line; this sentinel requires verbatim citation from the "
-        "actual conversation — a gap composed from anticipated output, test structure, or prior knowledge is invalid; if no validation run observation exists for this thread in the "
-        "conversation, the gate is not open and this sentinel may not be produced] → executable implementation → observed running behavior. (Validation run observation records the "
-        "actual output of the executable validation rung and declares the gap — tests must reveal the gap — tests covering behavior that does not yet exist must fail; if all tests pass "
-        "before new implementation has been written, either the intended behavior is already implemented (verify this; the thread may be complete) or the tests are not testing the "
-        "intended behavior and must be corrected; the executable implementation rung is blocked until the gap has been observed; if tests skip, fix the executable validation rung "
-        "first.) When the lowest V is complete, output '✅ Validation artifact V complete' on its own line before producing O — this phrase may only appear after the executable "
-        "validation rung has been both produced and invoked and the validation run observation rung has declared a gap; it may not be placed after planning, criteria, file exploration, "
-        "or any non-executable rung alone. Non-executable rungs appear inline as labeled log entries; executable rungs are placed where they can be executed — in an existing file where "
-        "a natural home exists, or a new file where none does.",
+        "ground": "I is the declared intent governing the invocation. I precedes and is not itself an artifact. Every artifact derives from I through the prior rung — form changes, intent does "
+        "not. V is a constraint artifact self-contained to evaluate the next artifact without consulting I. O is the output evaluated against V. A rung is complete when and only when "
+        "its artifact has been produced — not when it has been listed, planned, or described. A rung is not achievable when the domain provides no standard artifact type for it; this "
+        "must be stated explicitly with justification — convenience, anticipated outcome, or prior knowledge do not make a rung not achievable. Completeness governs the depth of each "
+        "rung's artifact; it does not affect whether a rung must be produced. Executable verification is required only for executable artifacts; prose artifacts do not require "
+        "execution to be complete. Formal notation must satisfy R2: every behavioral constraint from the criteria rung must be re-expressed in the notation — not just interface shape; "
+        "type signatures or schemas that capture structure without encoding invariants do not satisfy this rung. For code contexts the ladder instantiates as: prose (natural language "
+        "description of intent and constraints) → criteria (acceptance conditions as plain statements) → formal notation (non-executable specification — type signatures, schemas, "
+        "pseudocode, or contracts with behavioral invariants; may use code syntax but the artifact cannot be run as written) → executable validation (a file artifact invocable by an "
+        "automated tool — go test, pytest, or equivalent — written to target the declared gap) → validation run observation → executable implementation → observed running behavior. A "
+        "gate is a conversation-state condition: open when and only when the required event has occurred in this conversation for this thread. Prior knowledge, anticipation, and model "
+        "reasoning cannot satisfy any gate regardless of accuracy. For executable rungs, emit 🔴 Execution observed: [verbatim tool output — content composed without running the tool is "
+        "invalid] then 🔴 Gap: [what the verbatim output reveals] on their own lines before any implementation artifact. Before producing implementation code, emit 🟢 Implementation gate "
+        "cleared — gap cited: [verbatim from 🔴 Execution observed]. The quote must be verbatim from the 🔴 Execution observed sentinel of this thread; quoting anticipated output or a "
+        "prior thread's observation is invalid. The 🔴 sentinel format is reserved exclusively for executable rung gates. For non-executable rungs, observation appears inline as labeled "
+        "prose. No implementation artifact may appear before the 🔴 sentinels for the current thread. When the lowest V is complete, output ‘✅ Validation artifact V complete’ on its own "
+        "line before producing O — this phrase may only appear after the executable validation rung has been both produced and invoked and the validation run observation rung has "
+        "declared a gap. Gap-locality: the gap gating rung N is the output of executing rung N-1. No gap from any higher rung, and no element of I directly, may serve as the gating gap "
+        "for the current rung. Minimal scope: the current rung's artifact addresses the declared gap and nothing more. Implementing beyond the declared gap is a violation — not a "
+        "benefit. Upward revision is always permitted when a gap is observed between prior understanding of I and something encountered via direct interaction with reality, code, or a "
+        "stakeholder. Upward revision must be signposted with: what was observed, which rung is being revised, and why. It is never permitted to change I without first observing a gap "
+        "in V that derived it. Changing I requires revising every artifact derived from it to restore chain consistency before descent continues. Intent precedes its representations. "
+        "Every artifact that documents the governing intent of this invocation — whether produced in this invocation or pre-existing in the codebase — must be consistent with I before "
+        "the invocation closes. If reconciliation is feasible, return up the chain to prose and rederive. If not feasible, report as a named process failure: which artifact diverges, "
+        "what the divergence is, and why reconciliation could not occur. The invocation close must include a reconciliation report: either “all representations reconciled” or the list "
+        "of named failures with reasons. ✅ Thread N complete may only appear after observed running behavior for that thread has been produced and recorded. ✅ Manifest exhausted — N/N "
+        "threads complete may only appear after all threads have emitted their completion sentinels and the reconciliation report has been produced.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -400,8 +360,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "treating the decomposition as provisional and preparatory rather than final.",
         "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
         "survive": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, "
-        "distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions determine what "
-        "remains credible.",
+        "distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions "
+        "determine what remains credible.",
         "sweep": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
@@ -815,7 +775,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "snag": "絡",
         "split": "分",
         "spur": "枝",
-        "survive": "耐",
+        "survive": "存",
         "sweep": "探",
         "systemic": "系",
         "thrust": "衡",
@@ -5205,24 +5165,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "parallel hypotheses",
             ],
         },
-        "sweep": {
-            "distinctions": [
-                {
-                    "note": "spur = fork on a key assumption and pursue paths; sweep = broad enumeration without forking on a specific choice",
-                    "token": "spur",
-                }
-            ],
-            "heuristics": [
-                "what are the options",
-                "explore the solution space",
-                "what approaches exist",
-                "brainstorm possibilities",
-                "what could we do",
-                "survey the landscape",
-                "open-ended exploration",
-                "what's possible here",
-            ],
-        },
         "survive": {
             "distinctions": [
                 {
@@ -5230,7 +5172,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "verify",
                 },
                 {
-                    "note": "ground = staged external derivation that earns permission to exist; survive = post-derivation environmental exposure that determines whether what was built remains valid",
+                    "note": "ground = staged external derivation that earns permission to exist; survive = post-derivation environmental exposure that determines whether what "
+                    "was built remains valid",
                     "token": "ground",
                 },
                 {
@@ -5247,6 +5190,24 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what happened when real users encountered it",
                 "live environment as authority",
                 "what did the world keep",
+            ],
+        },
+        "sweep": {
+            "distinctions": [
+                {
+                    "note": "spur = fork on a key assumption and pursue paths; sweep = broad enumeration without forking on a specific choice",
+                    "token": "spur",
+                }
+            ],
+            "heuristics": [
+                "what are the options",
+                "explore the solution space",
+                "what approaches exist",
+                "brainstorm possibilities",
+                "what could we do",
+                "survey the landscape",
+                "open-ended exploration",
+                "what's possible here",
             ],
         },
         "systemic": {

@@ -80,12 +80,17 @@ def _axis_kanji_mapping() -> dict[str, Any]:
 
 def render_axis_config() -> str:
     """Render an axisConfig.py module based on the registry."""
+    from lib.groundPrompt import build_ground_prompt as _build_ground_prompt  # ADR-0171
+
     payload = _axis_payload()
     axes = payload.get("axes", {}) or {}
     mapping = {
         axis: dict(sorted((axes.get(axis) or {}).items()))
         for axis in sorted(axes.keys())
     }
+    # ADR-0171: override ground with structured builder so GROUND_PARTS is the SSOT.
+    if "method" in mapping and "ground" in mapping["method"]:
+        mapping["method"]["ground"] = _build_ground_prompt()
     labels = payload.get("axis_labels", {}) or {}
     label_mapping = {
         axis: dict(sorted((labels.get(axis) or {}).items()))
@@ -209,6 +214,10 @@ def render_axis_config() -> str:
 
         from dataclasses import dataclass, field
         from typing import Any, Dict, FrozenSet, List, TypedDict, Union
+
+        # ADR-0171: ground prompt structured parts — SSOT is lib/groundPrompt.py (not generated).
+        # Edit GROUND_PARTS there and run `make axis-regenerate-apply` to propagate changes.
+        from lib.groundPrompt import GROUND_PARTS, build_ground_prompt  # noqa: F401
         """
     )
     dataclasses = textwrap.dedent(

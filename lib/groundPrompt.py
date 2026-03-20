@@ -12,6 +12,7 @@ identified in ADR-0171. Each part is a self-contained rule block.
 # Edit each part independently; build_ground_prompt() serializes them in canonical order.
 GROUND_PARTS: dict[str, str] = {
     "derivation_structure": (
+        "The response opens with a rung manifest and descends through a mandatory rung sequence governed by declared intent. "
         "I is the declared intent governing the invocation. "
         "I precedes and is not itself an artifact. "
         "Every artifact derives from I through the prior rung \u2014 form changes, intent does not. "

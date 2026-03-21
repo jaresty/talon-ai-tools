@@ -917,6 +917,43 @@ def test_ev_artifact_must_be_in_project_tree():
     )
 
 
+def test_ei_rung_requires_minimal_edit_per_cycle():
+    rsc = RSC()
+    ei_idx = rsc.rfind("executable implementation")
+    assert ei_idx >= 0, "rung_sequence_code must contain executable implementation rung"
+    context = rsc[ei_idx:ei_idx + 800]
+    assert "minimal" in context or "minimum" in context, (
+        "EI rung must state each edit is minimal — bounded by the current observed failure only"
+    )
+    assert "re-run" in context or "rerun" in context or "re-execute" in context, (
+        "EI rung must require re-running the validation artifact after each edit"
+    )
+
+
+def test_ei_rung_single_pass_is_violation():
+    rsc = RSC()
+    ei_idx = rsc.rfind("executable implementation")
+    assert ei_idx >= 0
+    context = rsc[ei_idx:ei_idx + 1000]
+    assert "single" in context or "undifferentiated" in context or "one pass" in context, (
+        "EI rung must name a single undifferentiated implementation pass as a traversal violation"
+    )
+    assert "violation" in context, (
+        "EI rung must use the word 'violation' for the single-pass anti-pattern"
+    )
+
+
+def test_ei_rung_vacuous_green_rearms_during_cycle():
+    rsc = RSC()
+    ei_idx = rsc.rfind("executable implementation")
+    assert ei_idx >= 0
+    context = rsc[ei_idx:ei_idx + 1000]
+    assert "vacuous" in context or "uncovered" in context, (
+        "EI rung must re-arm the vacuous-green check: a test passing without a prior "
+        "recorded failure from this cycle is uncovered"
+    )
+
+
 def test_i_formation_prohibits_implementation_intent():
     rsc = RSC()
     assert "I-formation ends" in rsc or "gate prohibiting" in rsc, (

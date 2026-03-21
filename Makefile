@@ -23,8 +23,11 @@ bar-grammar-check:
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
 	@cp build/prompt-grammar.json web/static/prompt-grammar.json
 	@echo "Checking for grammar drift..."
-	@git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json || \
-		(echo "ERROR: Grammar files are out of sync. Run 'make bar-grammar-update' to fix." && exit 1)
+	@if ! git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json > /dev/null 2>&1; then \
+		git add build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; \
+		echo "Grammar files were out of sync — updated and staged automatically."; \
+		exit 1; \
+	fi
 	@echo "✓ Grammar files are in sync"
 
 bar-grammar-update:

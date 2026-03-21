@@ -511,6 +511,56 @@ def test_composed_prose_body_always_invalid():
     )
 
 
+def test_sentinel_is_prospective_commitment_not_label():
+    gv = GROUND_PARTS["gate_validity"]
+    # The sentinel's function is prospective capture before interpretation, not retrospective labeling.
+    # Placing a sentinel after tool output has appeared redefines a conversation event as composed content —
+    # the same epistemological error as a prose description of output.
+    assert "prospective" in gv or "before interpretation" in gv or "commitment" in gv, (
+        "gate_validity must state the sentinel is a prospective commitment — its function is to capture "
+        "output before interpretation occurs, not to label output already seen"
+    )
+    retro_idx = gv.find("retroact") if "retroact" in gv else -1
+    assert retro_idx >= 0, "gate_validity must contain retroactive sentinel language"
+    context = gv[max(0, retro_idx - 200):retro_idx + 600]
+    assert "interpret" in context or "composed" in context or "epistemological" in context, (
+        "gate_validity must name placing a sentinel after output as the same epistemological error "
+        "as composing a prose description — already interpreted, not captured"
+    )
+
+
+def test_self_check_requires_temporal_precedence():
+    gv = GROUND_PARTS["gate_validity"]
+    self_check_idx = gv.find("Self-check")
+    assert self_check_idx >= 0, "gate_validity must contain a Self-check section"
+    self_check_text = gv[self_check_idx:self_check_idx + 700]
+    # The self-check must require confirming the sentinel appears BEFORE the tool output,
+    # not merely that it can be "located" anywhere in the conversation.
+    assert (
+        "before the tool" in self_check_text
+        or "precedes" in self_check_text
+        or "appears before" in self_check_text
+        or "before tool output" in self_check_text
+        or "appears after" in self_check_text
+    ), (
+        "gate_validity self-check must require confirming the sentinel precedes the tool invocation — "
+        "locating it anywhere in the conversation is insufficient; a sentinel after tool output is not located"
+    )
+
+
+def test_structural_correction_has_concrete_predicate_test():
+    dd = GROUND_PARTS["derivation_discipline"]
+    structural_idx = dd.find("structural correction")
+    assert structural_idx >= 0, "derivation_discipline must mention structural correction"
+    context = dd[max(0, structural_idx - 100):structural_idx + 800]
+    # Must give an operational test for predicate identity —
+    # not just "predicate identical" but what makes predicates the same.
+    assert "behaviors" in context or "same observable" in context or "which behaviors" in context, (
+        "derivation_discipline must state the operational test for structural correction: "
+        "whether the set of component behaviors that would cause the assertion to fail is unchanged"
+    )
+
+
 def test_manifest_enumerates_seven_canonical_rung_names():
     ds = GROUND_PARTS["derivation_structure"]
     # The manifest rule must enumerate the seven canonical rung names

@@ -20,9 +20,41 @@ def test_build_ground_prompt_joins_all_parts():
         assert GROUND_PARTS[key] in result
 
 
-def test_build_ground_prompt_is_space_joined():
+def test_build_ground_prompt_contains_all_parts():
     result = build_ground_prompt()
-    assert result == " ".join(GROUND_PARTS[k] for k in EXPECTED_KEYS)
+    for key in EXPECTED_KEYS:
+        assert GROUND_PARTS[key] in result
+
+
+def test_section_headers_present_in_prompt():
+    result = build_ground_prompt()
+    assert "── STRUCTURE ──" in result
+    assert "── GATES ──" in result
+    assert "── DISCIPLINE ──" in result
+    assert "── COMPLETION ──" in result
+
+
+def test_section_headers_precede_parts():
+    result = build_ground_prompt()
+    label_map = {
+        "derivation_structure": "── STRUCTURE ──",
+        "gate_validity": "── GATES ──",
+        "derivation_discipline": "── DISCIPLINE ──",
+        "reconciliation_and_completion": "── COMPLETION ──",
+    }
+    for key, label in label_map.items():
+        label_pos = result.index(label)
+        part_pos = result.index(GROUND_PARTS[key])
+        assert label_pos < part_pos, f"Header '{label}' must precede GROUND_PARTS['{key}']"
+
+
+def test_section_headers_canonical_order():
+    result = build_ground_prompt()
+    pos_structure = result.index("── STRUCTURE ──")
+    pos_gates = result.index("── GATES ──")
+    pos_discipline = result.index("── DISCIPLINE ──")
+    pos_completion = result.index("── COMPLETION ──")
+    assert pos_structure < pos_gates < pos_discipline < pos_completion
 
 
 def test_derivation_structure_content():

@@ -277,10 +277,23 @@ GROUND_PARTS: dict[str, str] = {
 }
 
 
+_SECTION_LABELS: dict[str, str] = {
+    "derivation_structure": "── STRUCTURE ──",
+    "gate_validity": "── GATES ──",
+    "derivation_discipline": "── DISCIPLINE ──",
+    "reconciliation_and_completion": "── COMPLETION ──",
+}
+
+
 def build_ground_prompt() -> str:
     """Serialize GROUND_PARTS into the ground method prompt string.
 
-    Joins the four concern blocks in canonical order with a single space separator.
+    Joins the four concern blocks in canonical order, each preceded by a
+    section label so the model sees structural breaks in CONSTRAINTS.
     This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"].
     """
-    return " ".join(GROUND_PARTS[k] for k in GROUND_PARTS)
+    parts = [
+        f"{_SECTION_LABELS[k]} {GROUND_PARTS[k]}"
+        for k in GROUND_PARTS
+    ]
+    return " ".join(parts)

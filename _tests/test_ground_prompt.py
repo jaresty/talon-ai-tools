@@ -421,6 +421,48 @@ def test_r2_audit_only_two_valid_outcomes():
     )
 
 
+def test_manifest_thread_count_bounds_emissions():
+    rc = GROUND_PARTS["reconciliation_and_completion"]
+    # The manifest thread count must bound ✅ Thread N complete emissions
+    assert "declared" in rc or "count" in rc or "exact" in rc or "bound" in rc, (
+        "reconciliation_and_completion must state the declared thread count bounds emissions"
+    )
+    assert "Thread" in rc and ("complete" in rc or "sentinels" in rc), (
+        "reconciliation_and_completion must reference Thread N complete sentinels"
+    )
+    thread_idx = rc.find("Thread")
+    context = rc[max(0, thread_idx - 100):thread_idx + 400]
+    assert "declared" in context or "count" in context or "exact" in context or "bound" in context, (
+        "reconciliation_and_completion must bind thread emissions to declared count near Thread sentinel text"
+    )
+
+
+def test_compile_error_records_zero_prior_failures():
+    gv = GROUND_PARTS["gate_validity"]
+    # A compile/import error must not be treated as prior failure coverage for any test
+    assert "compile" in gv or "import error" in gv, (
+        "gate_validity must address compile/import errors in the context of prior failure coverage"
+    )
+    compile_idx = gv.find("compile") if "compile" in gv else gv.find("import error")
+    context = gv[max(0, compile_idx - 100):compile_idx + 400]
+    assert "zero" in context or "no test" in context or "no prior" in context or "uncovered" in context, (
+        "gate_validity must state that a compile error records zero prior failures — "
+        "no test executed, so no test has a prior failure"
+    )
+
+
+def test_compile_then_pass_triggers_vacuous_green():
+    gv = GROUND_PARTS["gate_validity"]
+    # After a compile error is corrected and tests pass, every test is uncovered
+    assert "compile" in gv, "gate_validity must address compile errors"
+    compile_idx = gv.find("compile")
+    context = gv[max(0, compile_idx - 100):compile_idx + 600]
+    assert "uncovered" in context or "vacuous" in context or "all tests" in context, (
+        "gate_validity must state that a compile-then-pass sequence leaves all tests uncovered, "
+        "requiring the vacuous-green check for each"
+    )
+
+
 def test_sentinel_must_precede_tool_invocation():
     gv = GROUND_PARTS["gate_validity"]
     assert "retroactively" in gv or "before its sentinel" in gv or "immediately before the tool" in gv, (

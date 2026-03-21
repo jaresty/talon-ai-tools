@@ -139,7 +139,11 @@ GROUND_PARTS: dict[str, str] = {
         "if either condition is unmet, the rung is incomplete and must not be treated as satisfied. "
         "A build error or compile failure does not satisfy this rung \u2014 "
         "the validation artifact must compile and execute before its output can reveal a behavioral gap; "
-        "a failure to compile means the artifact is incomplete and must be corrected before the gate can open. "
+        "a failure to compile means the artifact is incomplete and must be corrected before the gate can open; "
+        "a compile or import error that prevents tests from running records zero prior failures \u2014 "
+        "no test executed, so no test has a prior failure; "
+        "when the suite subsequently passes after the compile error is corrected, every test is uncovered "
+        "and the vacuous-green check applies to all of them unconditionally. "
         "Before producing implementation code, emit "
         "\U0001F7E2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001F534 Execution observed]; "
         "the quote must be verbatim from the \U0001F534 Execution observed sentinel of this thread; "
@@ -199,7 +203,10 @@ GROUND_PARTS: dict[str, str] = {
         "\u2705 Thread N complete may only appear after observed running behavior for that thread "
         "has been produced and recorded. "
         "\u2705 Manifest exhausted \u2014 N/N threads complete may only appear after all threads "
-        "have emitted their completion sentinels and the reconciliation report has been produced."
+        "have emitted their completion sentinels and the reconciliation report has been produced. "
+        "The N in \u2018\u2705 Manifest exhausted \u2014 N/N threads complete\u2019 must equal the exact count of threads declared in the manifest; "
+        "emitting more \u2705 Thread N complete sentinels than declared threads is a manifest contract violation \u2014 "
+        "the declared thread count is the bound on how many thread-completion sentinels the invocation may produce."
     ),
 }
 

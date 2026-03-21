@@ -664,6 +664,45 @@ def test_pre_action_rung_self_check():
     )
 
 
+def test_implementation_gate_blocks_file_edits():
+    gv = GROUND_PARTS["gate_validity"]
+    # The 🟢 sentinel must gate file edits (action class), not just artifact production.
+    # Find the 🟢 Implementation gate cleared section.
+    gate_idx = gv.find("Implementation gate cleared")
+    assert gate_idx >= 0, "gate_validity must contain 🟢 Implementation gate cleared"
+    context = gv[max(0, gate_idx - 100):gate_idx + 700]
+    # Must name file edits / tool calls that modify files as the gated action.
+    assert (
+        "file edit" in context
+        or "file" in context and "edit" in context
+        or "modif" in context and "file" in context
+        or "tool call" in context
+        or "creates or modifies" in context
+    ), (
+        "gate_validity must explicitly name file edits / tool calls that create or modify "
+        "implementation files as gated by 🟢 — not just 'implementation artifacts'"
+    )
+    # Must carve out validation files as not gated by this sentinel.
+    assert (
+        "validation" in context
+        or "test file" in context
+        or "carry-forward" in context
+    ), (
+        "gate_validity must carve out validation artifacts from the 🟢 file-edit gate — "
+        "test files are governed by EV rung and carry-forward rules, not this sentinel"
+    )
+    # Must state characterization is irrelevant.
+    assert (
+        "regardless" in context
+        or "characteriz" in context
+        or "small fix" in context
+        or "config" in context
+    ), (
+        "gate_validity must state that characterization of the edit is irrelevant — "
+        "'small fix', 'config change' etc. do not exempt the edit from the gate"
+    )
+
+
 def test_i_formation_is_read_only():
     ds = GROUND_PARTS["derivation_structure"]
     # I-formation must be explicitly read-only: reading, running, examining only.

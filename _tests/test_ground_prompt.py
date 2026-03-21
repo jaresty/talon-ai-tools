@@ -862,6 +862,35 @@ def test_checkmark_sentinel_backward_binding():
     )
 
 
+def test_sentinel_body_consistency_criterion():
+    gv = GROUND_PARTS["gate_validity"]
+    # The sentinel body must be consistent with what the validation artifact as written
+    # could produce. Output naming symbols absent from the artifact is fabricated
+    # regardless of structural resemblance to real tool output.
+    assert (
+        "consistent" in gv
+        or "traceable" in gv
+        or "consistent with" in gv
+    ), (
+        "gate_validity must state the sentinel body must be consistent with "
+        "what the validation artifact as written could produce"
+    )
+    assert (
+        "symbol" in gv
+        or "absent" in gv
+        or "not present" in gv
+    ), (
+        "gate_validity must state that output naming symbols absent from the "
+        "validation artifact is fabricated regardless of structural resemblance"
+    )
+    assert (
+        "fabricated" in gv
+        or "fabrication" in gv
+    ), (
+        "gate_validity must name output inconsistent with the artifact as fabricated"
+    )
+
+
 def test_manifest_enumerates_seven_canonical_rung_names():
     ds = GROUND_PARTS["derivation_structure"]
     # The manifest rule must enumerate the seven canonical rung names

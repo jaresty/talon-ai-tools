@@ -561,6 +561,28 @@ def test_structural_correction_has_concrete_predicate_test():
     )
 
 
+def test_pre_action_rung_self_check():
+    gv = GROUND_PARTS["gate_validity"]
+    # The pre-action check must fire before producing ANY artifact — not just before
+    # advancing past executable rungs. It is unconditional.
+    assert "before producing" in gv or "before any artifact" in gv or "before each artifact" in gv, (
+        "gate_validity must define a pre-action self-check that fires before producing any artifact, "
+        "not just before advancing past executable rungs"
+    )
+    # It must require naming the current rung.
+    pre_idx = gv.find("before producing") if "before producing" in gv else gv.find("before any artifact")
+    assert pre_idx >= 0
+    context = gv[max(0, pre_idx - 50):pre_idx + 500]
+    assert "rung" in context, (
+        "gate_validity pre-action check must require identifying the current rung"
+    )
+    # It must cover non-executable rungs (prose, criteria, etc.) — not just executable ones.
+    assert "prose" in context or "criteria" in context or "non-executable" in context or "all artifact" in context or "every artifact" in context, (
+        "gate_validity pre-action check must explicitly apply to non-executable rungs "
+        "(prose, criteria) not just executable rungs"
+    )
+
+
 def test_obr_infrastructure_creation_is_production():
     ds = GROUND_PARTS["derivation_structure"]
     obr_idx = ds.rfind("observed running behavior")

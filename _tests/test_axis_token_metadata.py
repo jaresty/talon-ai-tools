@@ -446,6 +446,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "experimental",
         "field",
         "flow",
+        "fourfold",
         "gap",
         "ground",
         "grove",
@@ -462,6 +463,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "models",
         "objectivity",
         "operations",
+        "orbit",
         "order",
         "origin",
         "perturb",
@@ -489,6 +491,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "simulation",
         "snag",
         "split",
+        "square",
         "spur",
         "survive",
         "sweep",
@@ -505,7 +508,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 85 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added; ladder/visual moved from form; survive added)."""
+        """All 88 method tokens must have metadata entries (enforce/observe retired ADR-0162; triage moved to completeness, automate added; ladder/visual moved from form; survive added; fourfold/orbit/square added)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

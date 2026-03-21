@@ -262,6 +262,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
+        "fourfold": "The response enhances the task by exhausting the logical stance space before closure: explicitly considering the affirmative position, its negation, the possibility that "
+        "both hold simultaneously, and the possibility that neither holds. Each quadrant must be treated as a live candidate rather than dismissed by assumption. Use when binary "
+        "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
         "ground": "The response opens with a rung manifest and descends through a mandatory rung sequence governed by declared intent. The manifest must name every rung of the R4 sequence for "
@@ -294,84 +297,98 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "R2 audit section contains one numbered row per criterion: ‘1. criterion → behavioral invariant’ or ‘1. criterion → UNENCODED’; the audit must begin with ‘1.’ on the first row "
         "— an audit that does not begin with ‘1.’ is incomplete regardless of whether a ✅ sentinel has been emitted; these are the only two valid row resolutions — no other resolution "
         "is valid; a label that names constraint type rather than expressing a behavioral invariant (e.g., ‘architectural constraint’, ‘exclusion constraint’) is UNENCODED, not a "
-        "behavioral invariant; the rung is incomplete until every criterion resolves to a behavioral invariant — no UNENCODED entries may remain; emit ‘✅ Formal notation R2 audit "
-        "complete — N/N criteria encoded’ on its own line as the gate before advancing to executable validation. When I-formation is required: observation of existing code or running "
-        "behavior sufficient to establish I is required before the manifest when I cannot be declared from context alone — skipping I-formation when context is insufficient is an "
-        "error, not a permitted shortcut — it produces a specification derived from assumed rather than actual constraints, and every downstream artifact will be wrong in ways that "
-        "only surface at executable validation or observed running behavior, by which point multiple rungs must be discarded and rederived; output ‘✅ I-formation complete’ on its own "
-        "line after declaring I and before the rung manifest — the manifest may not appear before this sentinel; exploration beyond what is needed to declare I belongs as the first "
-        "rung of the manifest, not pre-manifest. Boundary: no rung work, planning text, or content of any kind may appear before the manifest-complete sentinel. Eagerness to implement "
-        "is the primary failure mode — the shortest path to a valid implementation is strict rung adherence; every skipped rung produces output that must be discarded and rederived. "
-        "When beginning mid-ladder, first locate the highest already-instantiated rung and update it to reflect the intended change, then descend. Traversal (R5): depth-first by "
-        "thread; within a thread, advance through every feasible rung; stopping mid-thread is only permitted when the next rung is not achievable. For code contexts, each rung in this "
-        "sequence may not be skipped or combined with another — the executable implementation rung is blocked until the validation run observation rung has declared a gap. R4 "
-        "instantiates as: prose (natural language description of intent and constraints) → criteria (acceptance conditions as plain statements) → formal notation (non-executable "
-        "specification — contracts with pre/post conditions, schemas with explicit invariants, or pseudocode with behavioral constraints stated; must satisfy R2 — artifact cannot be "
-        "run as written) → executable validation (a file artifact invocable by an automated tool — go test, pytest, or equivalent — written to target the declared gap; only validation "
-        "artifacts may be produced at this rung — implementation code is not permitted at this rung even though artifact-writing is permitted; file reads, grep output, and manual "
-        "inspection do not constitute executable validation regardless of label; pre-existing artifacts not targeting the gap do not satisfy this rung) → validation run observation "
-        "(only satisfied by an observed failure; a passing run is a gap signal — see gate_validity) → executable implementation → observed running behavior. The observed running "
-        "behavior rung is an observation rung, not a production rung — no new files may be created at this rung; OBR is satisfied by invoking artifacts already produced by this ladder "
-        "and recording their output; creating a new test file at the OBR rung is a post-ladder scope violation requiring its own manifest and descent. A gate is a conversation-state "
-        "condition: open when and only when the required event has occurred in this conversation for this thread. Underlying all compliance failures is one epistemological error: "
-        "substituting model knowledge for conversation events — prior knowledge, anticipation, and model reasoning cannot satisfy any gate regardless of accuracy. For executable rungs, "
-        "emit 🔴 Execution observed: [verbatim tool output — content composed without running the tool is invalid] then 🔴 Gap: [what the verbatim output reveals] on their own lines "
-        "before any implementation artifact; the 🔴 Execution observed sentinel body must be a complete block delimited by triple backticks containing the complete tool output — nothing "
-        "omitted; a single extracted line does not satisfy this sentinel regardless of accuracy; a prose description of tool output — even if accurate — is always composed content and "
-        "never satisfies this sentinel; the body must contain the raw tool output, not a characterization of it; if the sentinel body could have been written without running the tool, "
-        "it is invalid regardless of accuracy; no prose, summary, or interpretation may appear before the 🔴 Gap line; interpretation belongs exclusively in the 🔴 Gap line. The 🔴 "
-        "Execution observed sentinel must appear immediately before the tool is invoked — not retroactively after tool output has already appeared in context; tool output that appeared "
-        "before its sentinel is uncovered and does not satisfy this rung regardless of subsequent labeling; a retroactive sentinel does not open the gate — the gate remains closed; the "
-        "tool must be re-run with the sentinel appearing immediately before it. No implementation artifact — including planning text, code blocks, or tool calls — may appear before "
-        "valid Execution observed + Gap sentinels; if any implementation content appears without these sentinels immediately preceding it, it is invalid and must be discarded before "
-        "the tool is run. The 🔴 sentinel format is reserved exclusively for executable rung gates; for non-executable rungs, observation appears inline as labeled prose. The validation "
-        "run observation rung is only satisfied by an observed failure that reveals the declared gap — a prior recorded failure applies to the specific test that produced it, not the "
-        "thread as a whole; when the validation artifact is modified — tests added, rewritten, or mocks changed — emit a carry-forward statement: carry-forward is triggered by changes "
-        "to behavioral assertions, mocks for the component under test, or test data; import path corrections and structural fixes that leave assertions unchanged do not trigger "
-        "carry-forward, but also do not extend prior failure coverage — the prior failure coverage for each test is unchanged by import-only corrections; ‘Carry-forward: [list which "
-        "original failures cover which current tests]’; the carry-forward is a gate: no implementation artifact may appear after validation artifact modification until a carry-forward "
-        "statement has been emitted; modification without carry-forward is a traversal violation equivalent to producing implementation code without sentinels; any current test with no "
-        "covering prior failure is uncovered and triggers the vacuous-green check; a green run on an uncovered test is a gap signal unless the behavior is already implemented (verify "
-        "this). A green validation run is a gap signal unless a prior recorded failure for each test exists in this conversation; if the run is green and no prior failure has been "
-        "recorded for a test, assess whether that test exercises the declared gap — either the behavior is already implemented (verify this; the thread may be complete) or the "
-        "validation artifact is vacuous with respect to the declared gap and must be corrected before descent continues; this check is unconditional within the validation rung — it "
-        "applies regardless of whether implementation has begun. Self-check: before advancing past any executable rung, verify: (a) the required sentinels for this rung have been "
-        "emitted with verbatim tool output, not summaries or compositions — confirm by quoting the sentinel text from this conversation; if the sentinel cannot be located in this "
-        "conversation, the gate is not open; (b) no implementation content appeared before them; if either condition is unmet, the rung is incomplete and must not be treated as "
-        "satisfied. A build error or compile failure does not satisfy this rung — the validation artifact must compile and execute before its output can reveal a behavioral gap; a "
-        "failure to compile means the artifact is incomplete and must be corrected before the gate can open; a compile or import error that prevents tests from running records zero "
-        "prior failures — no test executed, so no test has a prior failure; when the suite subsequently passes after the compile error is corrected, every test is uncovered and the "
-        "vacuous-green check applies to all of them unconditionally. Before producing implementation code, emit 🟢 Implementation gate cleared — gap cited: [verbatim from 🔴 Execution "
-        "observed]; the quote must be verbatim from the 🔴 Execution observed sentinel of this thread; quoting anticipated output or a prior thread’s observation is invalid. Before "
-        "executable implementation begins, both of the following must appear in this order: first ‘✅ Validation artifact V complete’ on its own line immediately after the validation "
-        "run observation rung has declared a gap, then ‘🟢 Implementation gate cleared’ on its own line — V-complete alone does not open the implementation gate; both sentinels are "
-        "required in sequence; V-complete may not appear after tests pass, after implementation, or after observed running behavior; it marks the transition from validation to "
-        "implementation, not the completion of the thread. Gap-locality: the gap gating rung N is the output of executing rung N-1; no gap from any higher rung, and no element of I "
-        "directly, may serve as the gating gap for the current rung. Minimal scope: the current rung’s artifact addresses the declared gap and nothing more; implementing beyond the "
-        "declared gap is a violation — not a benefit; minimal scope applies to the entire invocation, not just individual rungs — any artifact added after the ladder is complete that "
-        "was not present in I must be treated as a new I requiring its own manifest and descent; adding it inline without a new manifest is a scope violation regardless of how it is "
-        "labeled; the validation artifact is frozen at the point the gap is declared; any modification to the validation artifact after that point — including reducing test count, "
-        "simplifying mocks, or weakening assertions — requires upward correction: return to criteria, demonstrate the modified artifact still encodes the gap, and re-emit the R2 audit "
-        "before redescending; a modification that cannot be justified through criteria is a scope violation; reducing the validation artifact to make tests pass is a scope violation "
-        "equivalent to skipping the gap — the validation artifact must be corrected to properly exercise the declared gap, not reduced to avoid testing it; a passing suite with fewer "
-        "tests than the declared gap requires is a gap signal, not a success. Modifying what a behavioral assertion checks to conform to implementation behavior redefines the gap "
-        "contract using model knowledge of the implementation — this is a scope violation regardless of whether the change reduces, redirects, or strengthens coverage; the direction of "
-        "modification is irrelevant — any change to the predicate of a behavioral assertion requires upward correction through criteria; the only permitted modification to a behavioral "
-        "assertion is structural correction that leaves the predicate identical. Upward revision is always permitted when a gap is observed between prior understanding of I and "
-        "something encountered via direct interaction with reality, code, or a stakeholder; upward revision must be signposted with: what was observed, which rung is being revised, and "
-        "why; it is never permitted to change I without first observing a gap in V that derived it; changing I requires revising every artifact derived from it to restore chain "
-        "consistency before descent continues. Upward correction is mandatory when a rung failure reveals that a higher rung is deficient — failing to correct the highest broken rung "
-        "means every artifact below it is derived from a deficiency that will resurface at each subsequent rung — correction is not a detour but the only path to a valid artifact at "
-        "the current rung; before correcting any higher rung, emit what was observed at the current rung, which higher rung is being corrected, and why — a correction without this "
-        "observation record is invalid and indistinguishable from enrichment; find the highest broken rung, correct it, and rederive every artifact below it before redescending; this "
-        "is correction, not enrichment — the corrected rung must still be faithful to I; if the broken rung is I itself, surface as a revision signal and stop the current thread. "
-        "Intent precedes its representations. Every artifact that documents the governing intent of this invocation — whether produced in this invocation or pre-existing in the "
-        "codebase — must be consistent with I before the invocation closes. If reconciliation is feasible, return up the chain to prose and rederive. If not feasible, report as a named "
-        "process failure: which artifact diverges, what the divergence is, and why reconciliation could not occur. The invocation close must include a reconciliation report: either "
-        "“all representations reconciled” or the list of named failures with reasons. ✅ Thread N complete may only appear after observed running behavior for that thread has been "
-        "produced and recorded. ✅ Manifest exhausted — N/N threads complete may only appear after all threads have emitted their completion sentinels and the reconciliation report has "
-        "been produced. The N in ‘✅ Manifest exhausted — N/N threads complete’ must equal the exact count of threads declared in the manifest; emitting more ✅ Thread N complete "
-        "sentinels than declared threads is a manifest contract violation — the declared thread count is the bound on how many thread-completion sentinels the invocation may produce.",
+        "behavioral invariant; ‘handled by existing X’, ‘outside component scope’, and ‘delegated to existing infrastructure’ are also UNENCODED — any criterion whose behavioral "
+        "invariant cannot be expressed for the component under test must be labeled UNENCODED; delegation to an external system is not a valid resolution and does not reduce the "
+        "UNENCODED count; the rung is incomplete until every criterion resolves to a behavioral invariant — no UNENCODED entries may remain; emit ‘✅ Formal notation R2 audit complete — "
+        "N/N criteria encoded’ on its own line as the gate before advancing to executable validation. When I-formation is required: observation of existing code or running behavior "
+        "sufficient to establish I is required before the manifest when I cannot be declared from context alone — skipping I-formation when context is insufficient is an error, not a "
+        "permitted shortcut — it produces a specification derived from assumed rather than actual constraints, and every downstream artifact will be wrong in ways that only surface at "
+        "executable validation or observed running behavior, by which point multiple rungs must be discarded and rederived; output ‘✅ I-formation complete’ on its own line after "
+        "declaring I and before the rung manifest — the manifest may not appear before this sentinel; exploration beyond what is needed to declare I belongs as the first rung of the "
+        "manifest, not pre-manifest. Boundary: no rung work, planning text, or content of any kind may appear before the manifest-complete sentinel. Eagerness to implement is the "
+        "primary failure mode — the shortest path to a valid implementation is strict rung adherence; every skipped rung produces output that must be discarded and rederived. When "
+        "beginning mid-ladder, first locate the highest already-instantiated rung and update it to reflect the intended change, then descend. Traversal (R5): depth-first by thread; "
+        "within a thread, advance through every feasible rung; stopping mid-thread is only permitted when the next rung is not achievable. For code contexts, each rung in this sequence "
+        "may not be skipped or combined with another — the executable implementation rung is blocked until the validation run observation rung has declared a gap. R4 instantiates as: "
+        "prose (natural language description of intent and constraints) → criteria (acceptance conditions as plain statements) → formal notation (non-executable specification — "
+        "contracts with pre/post conditions, schemas with explicit invariants, or pseudocode with behavioral constraints stated; must satisfy R2 — artifact cannot be run as written) → "
+        "executable validation (a file artifact invocable by an automated tool — go test, pytest, or equivalent — written to target the declared gap; only validation artifacts may be "
+        "produced at this rung — implementation code is not permitted at this rung even though artifact-writing is permitted; file reads, grep output, and manual inspection do not "
+        "constitute executable validation regardless of label; pre-existing artifacts not targeting the gap do not satisfy this rung) → validation run observation (only satisfied by an "
+        "observed failure; a passing run is a gap signal — see gate_validity) → executable implementation → observed running behavior. The observed running behavior rung is an "
+        "observation rung, not a production rung — no new files may be created at this rung; OBR is satisfied by invoking artifacts already produced by this ladder and recording their "
+        "output; creating a new test file at the OBR rung is a post-ladder scope violation requiring its own manifest and descent; when the preferred observation method (e.g., browser "
+        "navigation, UI rendering) requires infrastructure absent from the ladder — authentication bypasses, mock servers, mock API data, or modified hooks — creating that "
+        "infrastructure to enable observation is production regardless of how the necessity is characterized; the correct action when preferred observation requires absent "
+        "infrastructure is to use existing ladder artifacts as OBR — the test suite output demonstrating the declared behaviors satisfies this rung — or to declare the preferred "
+        "observation method not achievable with justification; the rationalization that infrastructure creation is required to observe anything does not change its category: it is "
+        "production. A gate is a conversation-state condition: open when and only when the required event has occurred in this conversation for this thread. Underlying all compliance "
+        "failures is one epistemological error: substituting model knowledge for conversation events — prior knowledge, anticipation, and model reasoning cannot satisfy any gate "
+        "regardless of accuracy. For executable rungs, emit 🔴 Execution observed: [verbatim tool output — content composed without running the tool is invalid] then 🔴 Gap: [what the "
+        "verbatim output reveals] on their own lines before any implementation artifact; the 🔴 Execution observed sentinel body must be a complete block delimited by triple backticks "
+        "containing the complete tool output — nothing omitted; a single extracted line does not satisfy this sentinel regardless of accuracy; a prose description of tool output — even "
+        "if accurate — is always composed content and never satisfies this sentinel; the body must contain the raw tool output, not a characterization of it; if the sentinel body could "
+        "have been written without running the tool, it is invalid regardless of accuracy; no prose, summary, or interpretation may appear before the 🔴 Gap line; interpretation belongs "
+        "exclusively in the 🔴 Gap line. The 🔴 Execution observed sentinel must appear immediately before the tool is invoked — not retroactively after tool output has already appeared "
+        "in context; tool output that appeared before its sentinel is uncovered and does not satisfy this rung regardless of subsequent labeling; a retroactive sentinel does not open "
+        "the gate — the gate remains closed; the tool must be re-run with the sentinel appearing immediately before it. The 🔴 Execution observed sentinel is a prospective commitment, "
+        "not a retrospective label — its function is to ensure the tool output is captured before any interpretation occurs; placing a sentinel after tool output has already appeared "
+        "in context is the same epistemological error as composing a prose description of that output — the model has already processed and interpreted the output, and any sentinel "
+        "placed after it records interpreted content, not a captured event; the accuracy of the retrospective label is irrelevant — the sentinel’s purpose is not accuracy but "
+        "prior-to-interpretation capture. No implementation artifact — including planning text, code blocks, or tool calls — may appear before valid Execution observed + Gap sentinels; "
+        "if any implementation content appears without these sentinels immediately preceding it, it is invalid and must be discarded before the tool is run. The 🔴 sentinel format is "
+        "reserved exclusively for executable rung gates; for non-executable rungs, observation appears inline as labeled prose. The validation run observation rung is only satisfied by "
+        "an observed failure that reveals the declared gap — a prior recorded failure applies to the specific test that produced it, not the thread as a whole; when the validation "
+        "artifact is modified — tests added, rewritten, or mocks changed — emit a carry-forward statement: carry-forward is triggered by changes to behavioral assertions, mocks for the "
+        "component under test, or test data; import path corrections and structural fixes that leave assertions unchanged do not trigger carry-forward, but also do not extend prior "
+        "failure coverage — the prior failure coverage for each test is unchanged by import-only corrections; ‘Carry-forward: [list which original failures cover which current tests]’; "
+        "the carry-forward is a gate: no implementation artifact may appear after validation artifact modification until a carry-forward statement has been emitted; modification "
+        "without carry-forward is a traversal violation equivalent to producing implementation code without sentinels; any current test with no covering prior failure is uncovered and "
+        "triggers the vacuous-green check; a green run on an uncovered test is a gap signal unless the behavior is already implemented (verify this). A green validation run is a gap "
+        "signal unless a prior recorded failure for each test exists in this conversation; if the run is green and no prior failure has been recorded for a test, assess whether that "
+        "test exercises the declared gap — either the behavior is already implemented (verify this; the thread may be complete) or the validation artifact is vacuous with respect to "
+        "the declared gap and must be corrected before descent continues; this check is unconditional within the validation rung — it applies regardless of whether implementation has "
+        "begun. Self-check: before advancing past any executable rung, verify: (a) the required sentinels for this rung have been emitted with verbatim tool output, not summaries or "
+        "compositions — confirm by quoting the sentinel text from this conversation; if the sentinel cannot be located in this conversation, the gate is not open; locating the sentinel "
+        "requires confirming it appears before the tool output in this conversation — a sentinel that appears after tool output in this conversation is not located for the purpose of "
+        "this check; (b) no implementation content appeared before them; if either condition is unmet, the rung is incomplete and must not be treated as satisfied. A build error or "
+        "compile failure does not satisfy this rung — the validation artifact must compile and execute before its output can reveal a behavioral gap; a failure to compile means the "
+        "artifact is incomplete and must be corrected before the gate can open; a compile or import error that prevents tests from running records zero prior failures — no test "
+        "executed, so no test has a prior failure; when the suite subsequently passes after the compile error is corrected, every test is uncovered and the vacuous-green check applies "
+        "to all of them unconditionally. Before producing implementation code, emit 🟢 Implementation gate cleared — gap cited: [verbatim from 🔴 Execution observed]; the quote must be "
+        "verbatim from the 🔴 Execution observed sentinel of this thread; quoting anticipated output or a prior thread’s observation is invalid. Before executable implementation begins, "
+        "both of the following must appear in this order: first ‘✅ Validation artifact V complete’ on its own line immediately after the validation run observation rung has declared a "
+        "gap, then ‘🟢 Implementation gate cleared’ on its own line — V-complete alone does not open the implementation gate; both sentinels are required in sequence; V-complete may not "
+        "appear after tests pass, after implementation, or after observed running behavior; it marks the transition from validation to implementation, not the completion of the thread. "
+        "Gap-locality: the gap gating rung N is the output of executing rung N-1; no gap from any higher rung, and no element of I directly, may serve as the gating gap for the current "
+        "rung. Minimal scope: the current rung’s artifact addresses the declared gap and nothing more; implementing beyond the declared gap is a violation — not a benefit; minimal "
+        "scope applies to the entire invocation, not just individual rungs — any artifact added after the ladder is complete that was not present in I must be treated as a new I "
+        "requiring its own manifest and descent; adding it inline without a new manifest is a scope violation regardless of how it is labeled; the validation artifact is frozen at the "
+        "point the gap is declared; any modification to the validation artifact after that point — including reducing test count, simplifying mocks, or weakening assertions — requires "
+        "upward correction: return to criteria, demonstrate the modified artifact still encodes the gap, and re-emit the R2 audit before redescending; a modification that cannot be "
+        "justified through criteria is a scope violation; reducing the validation artifact to make tests pass is a scope violation equivalent to skipping the gap — the validation "
+        "artifact must be corrected to properly exercise the declared gap, not reduced to avoid testing it; a passing suite with fewer tests than the declared gap requires is a gap "
+        "signal, not a success. Modifying what a behavioral assertion checks to conform to implementation behavior redefines the gap contract using model knowledge of the "
+        "implementation — this is a scope violation regardless of whether the change reduces, redirects, or strengthens coverage; the direction of modification is irrelevant — any "
+        "change to the predicate of a behavioral assertion requires upward correction through criteria; the only permitted modification to a behavioral assertion is structural "
+        "correction that leaves the predicate identical; the operational test for structural correction is whether the set of component behaviors that would cause the assertion to fail "
+        "is unchanged — if any behavior that would previously fail the assertion now passes it, or any behavior that would pass it now fails it, the predicate has changed regardless of "
+        "how the modification is characterized; correcting an expression that changes which behaviors the assertion detects is a predicate change, not a structural correction. Upward "
+        "revision is always permitted when a gap is observed between prior understanding of I and something encountered via direct interaction with reality, code, or a stakeholder; "
+        "upward revision must be signposted with: what was observed, which rung is being revised, and why; it is never permitted to change I without first observing a gap in V that "
+        "derived it; changing I requires revising every artifact derived from it to restore chain consistency before descent continues. Upward correction is mandatory when a rung "
+        "failure reveals that a higher rung is deficient — failing to correct the highest broken rung means every artifact below it is derived from a deficiency that will resurface at "
+        "each subsequent rung — correction is not a detour but the only path to a valid artifact at the current rung; before correcting any higher rung, emit what was observed at the "
+        "current rung, which higher rung is being corrected, and why — a correction without this observation record is invalid and indistinguishable from enrichment; find the highest "
+        "broken rung, correct it, and rederive every artifact below it before redescending; this is correction, not enrichment — the corrected rung must still be faithful to I; if the "
+        "broken rung is I itself, surface as a revision signal and stop the current thread. Intent precedes its representations. Every artifact that documents the governing intent of "
+        "this invocation — whether produced in this invocation or pre-existing in the codebase — must be consistent with I before the invocation closes. If reconciliation is feasible, "
+        "return up the chain to prose and rederive. If not feasible, report as a named process failure: which artifact diverges, what the divergence is, and why reconciliation could "
+        "not occur. The invocation close must include a reconciliation report: either “all representations reconciled” or the list of named failures with reasons. ✅ Thread N complete "
+        "may only appear after observed running behavior for that thread has been produced and recorded. ✅ Manifest exhausted — N/N threads complete may only appear after all threads "
+        "have emitted their completion sentinels and the reconciliation report has been produced. The N in ‘✅ Manifest exhausted — N/N threads complete’ must equal the exact count of "
+        "threads declared in the manifest; emitting more ✅ Thread N complete sentinels than declared threads is a manifest contract violation — the declared thread count is the bound "
+        "on how many thread-completion sentinels the invocation may produce.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -398,6 +415,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+        "orbit": "The response enhances the task by varying initial conditions or assumptions across multiple trajectories and identifying the invariant structural form that behavior tends "
+        "toward despite sensitive dependence on starting points. Use when a system appears complex or chaotic but may have underlying recurrent geometry — the goal is to surface the "
+        "attractor shape, not predict any specific path.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
@@ -439,6 +459,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, "
         "treating the decomposition as provisional and preparatory rather than final.",
         "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
+        "square": "The response enhances the task by mapping the full semantic field of a binary opposition: surfacing the original pair, their negations, and the four relational positions "
+        "(contrariety, contradiction, complementarity) that arise between them. Concepts suppressed or invisible in the original framing appear as explicit positions in the field.",
         "survive": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, "
         "distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions "
         "determine what remains credible.",
@@ -615,6 +637,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
+        "fourfold": "Exhaust logical stance space before closure",
         "gap": "Implicit-to-explicit gap analysis",
         "ground": "Intent-governed validation pipeline",
         "grove": "Accumulation and rate-of-change effects",
@@ -633,6 +656,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "models": "Apply named mental models explicitly",
         "objectivity": "Separate facts from opinions",
         "operations": "Operations research frameworks",
+        "orbit": "Find attractor geometry across trajectories",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
         "perturb": "Introduce controlled faults to observe system response",
@@ -660,6 +684,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "snag": "Surface coupling seams",
         "split": "Decompose into parts or components",
         "spur": "Parallel reasoning paths",
+        "square": "Map semantic opposition field",
         "survive": "Environmental survival of claims",
         "sweep": "Enumerate option space without evaluating",
         "systemic": "Interacting whole and feedback loops",
@@ -810,6 +835,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "experimental": "実",
         "field": "場",
         "flow": "流",
+        "fourfold": "四",
         "gap": "隙",
         "ground": "地",
         "grove": "蓄",
@@ -828,6 +854,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "models": "型",
         "objectivity": "客",
         "operations": "営",
+        "orbit": "軌",
         "order": "順",
         "origin": "起",
         "perturb": "擾",
@@ -855,6 +882,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "snag": "絡",
         "split": "分",
         "spur": "枝",
+        "square": "矩",
         "survive": "存",
         "sweep": "探",
         "systemic": "系",
@@ -985,6 +1013,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
+        "fourfold": "Reasoning",
         "gap": "Structural",
         "ground": "Process",
         "grove": "Generative",
@@ -1003,6 +1032,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "models": "Generative",
         "objectivity": "Reasoning",
         "operations": "Temporal/Dynamic",
+        "orbit": "Exploration",
         "order": "Structural",
         "origin": "Structural",
         "perturb": "Diagnostic",
@@ -1030,6 +1060,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "snag": "Diagnostic",
         "split": "Exploration",
         "spur": "Exploration",
+        "square": "Structural",
         "survive": "Diagnostic",
         "sweep": "Exploration",
         "systemic": "Temporal/Dynamic",
@@ -1193,6 +1224,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
+        "fourfold": "Exhaust stance space",
         "gap": "Implicit gaps",
         "ground": "Intent-governed validation pipeline",
         "grove": "Compounding effects",
@@ -1211,6 +1243,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "models": "Named mental models",
         "objectivity": "Facts vs opinions",
         "operations": "Operations research",
+        "orbit": "Attractor geometry",
         "order": "Abstract ordering",
         "origin": "Historical causation",
         "perturb": "Introduce controlled variations",
@@ -1238,6 +1271,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "snag": "Coupling detection",
         "split": "Decompose in isolation",
         "spur": "Multiple paths",
+        "square": "Semantic opposition map",
         "survive": "Environmental arbitration",
         "sweep": "Enumerate option space",
         "systemic": "System as whole",
@@ -4323,6 +4357,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "trace the path",
             ],
         },
+        "fourfold": {
+            "distinctions": [
+                {
+                    "note": "sweep (method) = generate options broadly without commitment; fourfold = exhaust logical stance space (A / not-A / both / neither) before closure",
+                    "token": "sweep",
+                },
+                {
+                    "note": "spur (method) = branch on key assumptions and prune; fourfold = apply tetralemma exhaustion across all four logical positions",
+                    "token": "spur",
+                },
+            ],
+            "heuristics": [
+                "what if both are true",
+                "what if neither is true",
+                "could this be true and false simultaneously",
+                "exhaust the logical positions",
+                "don't close on a binary",
+                "is the either/or framing premature",
+                "what stances are being suppressed",
+                "tetralemma",
+                "fourfold negation",
+                "neither true nor false",
+            ],
+        },
         "gap": {
             "distinctions": [
                 {
@@ -4688,6 +4746,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "operations research",
                 "minimize wait time",
                 "optimization problem",
+            ],
+        },
+        "orbit": {
+            "distinctions": [
+                {
+                    "note": "simulation = project one scenario forward over time; orbit = vary starting conditions across many trajectories to find invariant attractor geometry",
+                    "token": "simulation",
+                },
+                {
+                    "note": "systemic = map components, flows, and feedback loops; orbit = identify recurrent structural form that persists across varied trajectories",
+                    "token": "systemic",
+                },
+            ],
+            "heuristics": [
+                "what does this keep returning to",
+                "strange attractor",
+                "attractor",
+                "chaotic but patterned",
+                "what's the underlying structure despite the variation",
+                "what shape does the behavior trace",
+                "sensitive dependence on initial conditions",
+                "what's invariant across different starting points",
+                "what recurs despite variation",
+                "chaos theory",
+                "nonlinear dynamics",
             ],
         },
         "order": {
@@ -5243,6 +5326,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "multiple lines of reasoning",
                 "explore alternatives before choosing",
                 "parallel hypotheses",
+            ],
+        },
+        "square": {
+            "distinctions": [
+                {
+                    "note": "fourfold = exhaust logical stance space (true/false/both/neither); square = map semantic opposition field (A, not-A, contrary-A, contrary-not-A) to "
+                    "surface hidden concepts",
+                    "token": "fourfold",
+                },
+                {
+                    "note": "shift = rotate through perspectives; square = derive the full relational structure of a binary opposition as a semantic map",
+                    "token": "shift",
+                },
+            ],
+            "heuristics": [
+                "semiotic square",
+                "Greimas square",
+                "what's the opposite of the opposite",
+                "map the semantic field",
+                "what concepts are hidden in this binary",
+                "what does the negation of each term reveal",
+                "what's suppressed by framing it as A vs B",
+                "semantic opposition",
+                "contrariety and contradiction",
+                "what four positions does this opposition generate",
             ],
         },
         "survive": {

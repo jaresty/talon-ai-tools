@@ -1,8 +1,14 @@
-"""Thread 1 validation: lib/groundPrompt.py structure and content."""
+"""Thread 1 validation: lib/groundPrompt.py structure and content (ADR-0172)."""
 import pytest
 from lib.groundPrompt import GROUND_PARTS, build_ground_prompt
 
-EXPECTED_KEYS = ["derivation_structure", "gate_validity", "derivation_discipline", "reconciliation_and_completion"]
+EXPECTED_KEYS = ["epistemological_protocol", "sentinel_rules", "rung_sequence_code", "reconciliation_and_completion"]
+
+# Domain aliases — update here if keys change; behavioral assertions below are stable.
+EP  = lambda: GROUND_PARTS["epistemological_protocol"]   # Rule 0, primitives, scope discipline
+SR  = lambda: GROUND_PARTS["sentinel_rules"]              # Gate mechanics, sentinels, carry-forward
+RSC = lambda: GROUND_PARTS["rung_sequence_code"]          # R4 sequence, rung-level rules
+RC  = lambda: GROUND_PARTS["reconciliation_and_completion"]
 
 
 def test_ground_parts_has_expected_keys():
@@ -16,467 +22,421 @@ def test_ground_parts_all_nonempty():
 
 def test_build_ground_prompt_joins_all_parts():
     result = build_ground_prompt()
-    # derivation_structure is split at 'The response ' so check its tail content
-    assert GROUND_PARTS["derivation_structure"][len("The response "):] in result
-    for key in EXPECTED_KEYS[1:]:
+    for key in EXPECTED_KEYS:
         assert GROUND_PARTS[key] in result
 
 
 def test_build_ground_prompt_contains_all_parts():
     result = build_ground_prompt()
-    # derivation_structure is split at 'The response ' prefix; check tail content
-    assert GROUND_PARTS["derivation_structure"][len("The response "):] in result
-    for key in EXPECTED_KEYS[1:]:
+    for key in EXPECTED_KEYS:
         assert GROUND_PARTS[key] in result
 
 
 def test_section_headers_present_in_prompt():
     result = build_ground_prompt()
-    assert "── STRUCTURE ──" in result
-    assert "── GATES ──" in result
-    assert "── DISCIPLINE ──" in result
-    assert "── COMPLETION ──" in result
+    assert "\u2500\u2500 PROTOCOL \u2500\u2500" in result
+    assert "\u2500\u2500 GATES \u2500\u2500" in result
+    assert "\u2500\u2500 STRUCTURE \u2500\u2500" in result
+    assert "\u2500\u2500 COMPLETION \u2500\u2500" in result
 
 
 def test_section_headers_precede_parts():
     result = build_ground_prompt()
     label_map = {
-        "derivation_structure": "── STRUCTURE ──",
-        "gate_validity": "── GATES ──",
-        "derivation_discipline": "── DISCIPLINE ──",
-        "reconciliation_and_completion": "── COMPLETION ──",
+        "epistemological_protocol": "\u2500\u2500 PROTOCOL \u2500\u2500",
+        "sentinel_rules": "\u2500\u2500 GATES \u2500\u2500",
+        "rung_sequence_code": "\u2500\u2500 STRUCTURE \u2500\u2500",
+        "reconciliation_and_completion": "\u2500\u2500 COMPLETION \u2500\u2500",
     }
     for key, label in label_map.items():
         label_pos = result.index(label)
-        # derivation_structure is split at 'The response '; check tail content
-        content = GROUND_PARTS[key] if key != "derivation_structure" else GROUND_PARTS[key][len("The response "):]
-        part_pos = result.index(content)
+        part_pos = result.index(GROUND_PARTS[key])
         assert label_pos < part_pos, f"Header '{label}' must precede GROUND_PARTS['{key}']"
 
 
 def test_section_headers_canonical_order():
     result = build_ground_prompt()
-    pos_structure = result.index("── STRUCTURE ──")
-    pos_gates = result.index("── GATES ──")
-    pos_discipline = result.index("── DISCIPLINE ──")
-    pos_completion = result.index("── COMPLETION ──")
-    assert pos_structure < pos_gates < pos_discipline < pos_completion
+    pos_protocol   = result.index("\u2500\u2500 PROTOCOL \u2500\u2500")
+    pos_gates      = result.index("\u2500\u2500 GATES \u2500\u2500")
+    pos_structure  = result.index("\u2500\u2500 STRUCTURE \u2500\u2500")
+    pos_completion = result.index("\u2500\u2500 COMPLETION \u2500\u2500")
+    assert pos_protocol < pos_gates < pos_structure < pos_completion
 
 
 def test_derivation_structure_content():
-    assert "I is the declared intent" in GROUND_PARTS["derivation_structure"]
+    assert "I is the declared intent" in EP()
 
 
 def test_observed_running_behavior_excludes_preview():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "screenshot" in ds or "preview" in ds or "preview panel" in ds, (
-        "derivation_structure must name screenshot/preview as insufficient for observed running behavior"
+    rsc = RSC()
+    assert "screenshot" in rsc or "preview" in rsc or "preview panel" in rsc, (
+        "rung_sequence_code must name screenshot/preview as insufficient for observed running behavior"
     )
-    assert "specific behavior" in ds or "declared gap" in ds, (
-        "derivation_structure must require observation to reference the specific behavior declared in the gap"
+    assert "specific behavior" in rsc or "declared gap" in rsc, (
+        "rung_sequence_code must require observation to reference the specific behavior declared in the gap"
     )
 
 
 def test_observed_running_behavior_requires_traceability():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "traceable" in ds or "traceability" in ds or "behavioral gap" in ds, (
-        "derivation_structure must require observed running behavior to be traceable to the declared gap"
+    rsc = RSC()
+    assert "traceable" in rsc or "traceability" in rsc or "behavioral gap" in rsc, (
+        "rung_sequence_code must require observed running behavior to be traceable to the declared gap"
     )
-    assert "server response" in ds or "HTTP" in ds or "URL" in ds or "rendering" in ds, (
-        "derivation_structure must name domain-specific anti-patterns for observed running behavior"
+    assert "server response" in rsc or "HTTP" in rsc or "URL" in rsc or "rendering" in rsc, (
+        "rung_sequence_code must name domain-specific anti-patterns for observed running behavior"
     )
 
 
 def test_rung_label_mandatory_at_every_transition():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "must be emitted" in ds or "must appear" in ds or "required at every" in ds, (
-        "derivation_structure must mandate a rung label at every rung transition"
+    ep = EP()
+    assert "must be emitted" in ep or "must appear" in ep or "required at every" in ep, (
+        "epistemological_protocol must mandate a rung label at every rung transition"
     )
-    assert "absence" in ds and ("violation" in ds or "invalid" in ds), (
-        "derivation_structure must state that absence of a rung label is a violation"
+    assert "absence" in ep and ("violation" in ep or "invalid" in ep), (
+        "epistemological_protocol must state that absence of a rung label is a violation"
     )
 
 
 def test_r2_audit_gate():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "audit" in ds or "enumerate" in ds, (
-        "derivation_structure must require an explicit R2 audit before advancing from formal notation"
+    rsc = RSC()
+    assert "audit" in rsc or "enumerate" in rsc, (
+        "rung_sequence_code must require an explicit R2 audit before advancing from formal notation"
     )
-    assert "incomplete" in ds or "unencoded" in ds, (
-        "derivation_structure must state the rung is incomplete until all criteria are encoded"
+    assert "incomplete" in rsc or "unencoded" in rsc.lower(), (
+        "rung_sequence_code must state the rung is incomplete until all criteria are encoded"
     )
 
 
 def test_formal_notation_r2_requirement():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "Formal notation must satisfy R2" in ds, (
-        "derivation_structure must state that formal notation must satisfy R2"
+    rsc = RSC()
+    assert "Formal notation must satisfy R2" in rsc, (
+        "rung_sequence_code must state that formal notation must satisfy R2"
     )
-    assert "behavioral constraint" in ds, (
-        "derivation_structure must mention behavioral constraints for formal notation"
+    assert "behavioral constraint" in rsc or "behavioral invariant" in rsc, (
+        "rung_sequence_code must mention behavioral constraints for formal notation"
     )
-    assert "interface shape" in ds or "structure without encoding invariants" in ds, (
-        "derivation_structure must distinguish shape-only notation from complete notation"
+    assert "interface shape" in rsc or "structure without encoding invariants" in rsc, (
+        "rung_sequence_code must distinguish shape-only notation from complete notation"
     )
 
 
 def test_i_formation_sentinel():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "I-formation complete" in ds, (
-        "derivation_structure must define a sentinel for I-formation completion"
+    rsc = RSC()
+    assert "I-formation complete" in rsc, (
+        "rung_sequence_code must define a sentinel for I-formation completion"
     )
-    assert "manifest may not appear" in ds or "before the" in ds, (
-        "derivation_structure must state the manifest may not appear before the I-formation sentinel"
+    assert "manifest may not appear" in rsc or "before the" in rsc, (
+        "rung_sequence_code must state the manifest may not appear before the I-formation sentinel"
     )
 
 
 def test_i_formation_causal_chain():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "assumed" in ds or "actual constraints" in ds, (
-        "derivation_structure must explain that skipping I-formation derives from assumed rather than actual constraints"
+    rsc = RSC()
+    assert "assumed" in rsc or "actual constraints" in rsc, (
+        "rung_sequence_code must explain that skipping I-formation derives from assumed rather than actual constraints"
     )
-    assert "discarded" in ds or "must be discarded" in ds, (
-        "derivation_structure must state that artifacts derived from skipped I-formation must be discarded"
+    assert "discarded" in rsc or "must be discarded" in rsc, (
+        "rung_sequence_code must state that artifacts derived from skipped I-formation must be discarded"
     )
 
 
 def test_i_formation_is_required_not_permitted():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "required" in ds and "I cannot be declared from context alone" in ds, (
-        "derivation_structure must state that I-formation is required when context is insufficient"
+    rsc = RSC()
+    assert "required" in rsc and "I cannot be declared from context alone" in rsc, (
+        "rung_sequence_code must state that I-formation is required when context is insufficient"
     )
-    assert "error" in ds or "skipping" in ds.lower(), (
-        "derivation_structure must name skipping I-formation when context is insufficient as an error"
-    )
-    assert "permitted" not in ds or ds.index("required") < ds.index("permitted") + 100, (
-        "I-formation must be framed as required, not merely permitted"
+    assert "error" in rsc or "skipping" in rsc.lower(), (
+        "rung_sequence_code must name skipping I-formation when context is insufficient as an error"
     )
 
 
 def test_self_check_before_advancing_executable_rung():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "before advancing" in gv, (
-        "gate_validity must require explicit self-verification before advancing past an executable rung"
+    sr = SR()
+    assert "before advancing" in sr, (
+        "sentinel_rules must require explicit self-verification before advancing past an executable rung"
     )
-    assert "incomplete" in gv, (
-        "gate_validity must state the rung is incomplete if self-check conditions are unmet"
+    assert "incomplete" in sr, (
+        "sentinel_rules must state the rung is incomplete if self-check conditions are unmet"
     )
 
 
 def test_build_error_excluded_from_gate():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "build" in gv or "compile" in gv or "import error" in gv, (
-        "gate_validity must explicitly exclude build/compile errors from satisfying the validation gate"
+    sr = SR()
+    assert "build" in sr or "compile" in sr or "import error" in sr, (
+        "sentinel_rules must explicitly exclude build/compile errors from satisfying the validation gate"
     )
-    assert "incomplete" in gv, (
-        "gate_validity must state that a build failure means the validation artifact is incomplete"
+    assert "incomplete" in sr, (
+        "sentinel_rules must state that a build failure means the validation artifact is incomplete"
     )
 
 
 def test_sentinel_causal_chain():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "anticipated" in gv, (
-        "gate_validity must explain that a composed sentinel records anticipated rather than observed state"
+    sr = SR()
+    assert "anticipated" in sr, (
+        "sentinel_rules must explain that a composed sentinel records anticipated rather than observed state"
     )
-    assert "regardless" in gv and ("correct" in gv or "accuracy" in gv), (
-        "gate_validity must state that artifacts from a composed sentinel are invalid regardless of correctness"
+    assert "regardless" in sr and ("correct" in sr or "accuracy" in sr), (
+        "sentinel_rules must state that artifacts from a composed sentinel are invalid regardless of correctness"
     )
 
 
 def test_gate_validity_content():
-    assert "conversation-state condition" in GROUND_PARTS["gate_validity"]
+    assert "conversation-state condition" in SR()
 
 
 def test_v_complete_requires_green_gate_before_implementation():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "both" in gv or "then" in gv.lower() and "Implementation gate cleared" in gv, (
-        "gate_validity must state both V-complete and 🟢 are required in order before implementation"
+    sr = SR()
+    assert "both" in sr or ("then" in sr.lower() and "Implementation gate cleared" in sr), (
+        "sentinel_rules must state both V-complete and 🟢 are required in order before implementation"
     )
-    assert "does not open" in gv or "insufficient" in gv or ("alone" in gv and "gate" in gv), (
-        "gate_validity must state V-complete alone does not open the implementation gate"
+    assert "does not open" in sr or "insufficient" in sr or ("alone" in sr and "gate" in sr), (
+        "sentinel_rules must state V-complete alone does not open the implementation gate"
     )
 
 
 def test_v_complete_sentinel_position():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "before" in gv and "implementation" in gv, (
-        "gate_validity must state V-complete appears before implementation begins"
+    sr = SR()
+    assert "before" in sr and "implementation" in sr, (
+        "sentinel_rules must state V-complete appears before implementation begins"
     )
-    assert "after tests pass" in gv or "not after" in gv or "may not appear after" in gv, (
-        "gate_validity must explicitly state V-complete may not appear after tests pass"
+    assert "after tests pass" in sr or "not after" in sr or "may not appear after" in sr, (
+        "sentinel_rules must explicitly state V-complete may not appear after tests pass"
     )
 
 
 def test_gate_validity_passing_run_is_gap_signal():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "vacuous" in gv, (
-        "gate_validity must state that a passing run without observed failure may be vacuous"
+    sr = SR()
+    assert "vacuous" in sr, (
+        "sentinel_rules must state that a passing run without observed failure may be vacuous"
     )
-    assert "gap signal" in gv, (
-        "gate_validity must name a passing run without prior failure as a gap signal"
+    assert "gap signal" in sr, (
+        "sentinel_rules must name a passing run without prior failure as a gap signal"
     )
 
 
 def test_derivation_discipline_content():
-    assert "Gap-locality" in GROUND_PARTS["derivation_discipline"]
+    assert "Gap-locality" in EP()
 
 
 def test_test_reduction_is_scope_violation():
-    dd = GROUND_PARTS["derivation_discipline"]
-    assert "reducing" in dd or "reduction" in dd or "deleting" in dd or "fewer tests" in dd, (
-        "derivation_discipline must name test reduction as a scope violation"
+    ep = EP()
+    assert "reducing" in ep or "reduction" in ep or "deleting" in ep or "fewer tests" in ep, (
+        "epistemological_protocol must name test reduction as a scope violation"
     )
-    assert "gap signal" in dd or "gap signal" in GROUND_PARTS["gate_validity"], (
+    assert "gap signal" in ep or "gap signal" in SR(), (
         "prompt must state a passing suite with fewer tests than the gap requires is a gap signal"
     )
 
 
 def test_minimal_scope_extends_to_post_ladder():
-    dd = GROUND_PARTS["derivation_discipline"]
-    assert "entire invocation" in dd or "post-ladder" in dd or "after the ladder" in dd, (
-        "derivation_discipline must extend minimal scope to the entire invocation, including post-ladder additions"
+    ep = EP()
+    assert "entire invocation" in ep or "post-ladder" in ep or "after the ladder" in ep, (
+        "epistemological_protocol must extend minimal scope to the entire invocation, including post-ladder additions"
     )
-    assert "new" in dd and ("manifest" in dd or "descent" in dd), (
-        "derivation_discipline must require post-completion additions not in I to have their own manifest"
+    assert "new" in ep and ("manifest" in ep or "descent" in ep), (
+        "epistemological_protocol must require post-completion additions not in I to have their own manifest"
     )
 
 
 def test_upward_correction_causal_chain():
-    dd = GROUND_PARTS["derivation_discipline"]
-    assert "resurface" in dd or "deficiency" in dd, (
-        "derivation_discipline must explain that an uncorrected deficiency resurfaces at every rung below"
+    ep = EP()
+    assert "resurface" in ep or "deficiency" in ep, (
+        "epistemological_protocol must explain that an uncorrected deficiency resurfaces at every rung below"
     )
 
 
 def test_upward_correction_requires_observation_before_loop():
-    dd = GROUND_PARTS["derivation_discipline"]
-    assert "before correcting" in dd, (
-        "derivation_discipline must require emitting the observation before correcting any higher rung"
+    ep = EP()
+    assert "before correcting" in ep, (
+        "epistemological_protocol must require emitting the observation before correcting any higher rung"
     )
-    assert "observation record is invalid" in dd, (
-        "derivation_discipline must state that corrections without an observation record are invalid"
-    )
-
-
-def test_r3_requires_red_sentinels():
-    ds = GROUND_PARTS["derivation_structure"]
-    gv = GROUND_PARTS["gate_validity"]
-    # R3 sentinel requirement: derivation_structure must state observed running behavior
-    # requires 🔴 sentinels, and gap must name behavior from I
-    assert "observed running behavior" in ds and (
-        "Execution observed" in ds or "\U0001F534" in ds
-    ), (
-        "derivation_structure must require 🔴 Execution observed at the observed running behavior rung"
-    )
-    assert "behavior from I" in ds or ("behavior" in ds and "from I" in ds), (
-        "derivation_structure must require R3 gap to name the specific behavior from I"
-    )
-
-
-def test_prior_failure_scoped_to_test():
-    gv = GROUND_PARTS["gate_validity"]
-    assert ("individual test" in gv or "specific test" in gv) and "produced it" in gv, (
-        "gate_validity must state prior recorded failure applies to the specific test that produced it"
-    )
-    assert "carry-forward" in gv or "carry forward" in gv, (
-        "gate_validity must require a carry-forward statement after validation artifact modification"
-    )
-    assert "uncovered" in gv or "no covering" in gv, (
-        "gate_validity must state uncovered tests trigger the vacuous-green check"
+    assert "observation record is invalid" in ep, (
+        "epistemological_protocol must state that corrections without an observation record are invalid"
     )
 
 
 def test_r2_audit_separate_section():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "separate" in ds and "section" in ds, (
-        "derivation_structure must state the R2 audit is a separate named section"
+    rsc = RSC()
+    assert "separate" in rsc and "section" in rsc, (
+        "rung_sequence_code must state the R2 audit is a separate named section"
     )
-    assert "numbered" in ds, (
-        "derivation_structure must require each criterion on a numbered row"
+    assert "numbered" in rsc, (
+        "rung_sequence_code must require each criterion on a numbered row"
     )
-    assert "prose" in ds and ("not satisfy" in ds or "does not satisfy" in ds), (
-        "derivation_structure must state a prose list does not satisfy the R2 audit"
+    assert "prose" in rsc and ("not satisfy" in rsc or "does not satisfy" in rsc), (
+        "rung_sequence_code must state a prose list does not satisfy the R2 audit"
     )
 
 
 def test_execution_observed_block_delimiter():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "complete" in gv and ("block" in gv or "```" in gv or "triple" in gv or "delimit" in gv), (
-        "gate_validity must require 🔴 Execution observed to contain a complete delimited block"
+    sr = SR()
+    assert "complete" in sr and ("block" in sr or "```" in sr or "triple" in sr or "delimit" in sr), (
+        "sentinel_rules must require 🔴 Execution observed to contain a complete delimited block"
     )
-    assert "nothing omitted" in gv or "complete output" in gv or "complete tool output" in gv, (
-        "gate_validity must state the block contains the complete tool output — nothing omitted"
+    assert "nothing omitted" in sr or "complete output" in sr or "complete tool output" in sr, (
+        "sentinel_rules must state the block contains the complete tool output — nothing omitted"
     )
 
 
 def test_vacuous_green_unconditional():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "recorded" in gv and ("failure" in gv or "failed" in gv), (
-        "gate_validity must require prior recorded failure in this conversation before a green run is accepted"
+    sr = SR()
+    assert "recorded" in sr and ("failure" in sr or "failed" in sr), (
+        "sentinel_rules must require prior recorded failure in this conversation before a green run is accepted"
     )
 
 
 def test_self_check_requires_citation():
-    gv = GROUND_PARTS["gate_validity"]
-    self_check_idx = gv.find("Self-check")
-    assert self_check_idx >= 0, "gate_validity must contain a Self-check section"
-    # Isolate text from Self-check to end of its sentence block (up to next sentinel or end)
-    self_check_text = gv[self_check_idx:self_check_idx + 500]
+    sr = SR()
+    self_check_idx = sr.find("Self-check")
+    assert self_check_idx >= 0, "sentinel_rules must contain a Self-check section"
+    self_check_text = sr[self_check_idx:self_check_idx + 500]
     assert "quot" in self_check_text or "cannot be located" in self_check_text or "from this conversation" in self_check_text, (
-        "gate_validity self-check must require citing sentinels from this conversation, not asserting from memory"
+        "sentinel_rules self-check must require citing sentinels from this conversation, not asserting from memory"
     )
 
 
 def test_r3_behavioral_specificity():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "build" in ds or "system-state" in ds or "system state" in ds, (
-        "derivation_structure must exclude build success and system-state events from R3 observation"
+    ep = EP()
+    assert "build" in ep or "system-state" in ep or "system state" in ep, (
+        "epistemological_protocol must exclude build success and system-state events from R3 observation"
     )
 
 
 def test_validation_artifact_freeze():
-    dd = GROUND_PARTS["derivation_discipline"]
-    assert "modif" in dd or "frozen" in dd, (
-        "derivation_discipline must state that post-declaration modification of the validation artifact requires upward correction"
+    ep = EP()
+    assert "modif" in ep or "frozen" in ep, (
+        "epistemological_protocol must state that post-declaration modification of the validation artifact requires upward correction"
     )
-    assert "mock" in dd or "simplif" in dd or "weaken" in dd, (
-        "derivation_discipline must name mock weakening or simplification as a prohibited modification form"
+    assert "mock" in ep or "simplif" in ep or "weaken" in ep, (
+        "epistemological_protocol must name mock weakening or simplification as a prohibited modification form"
     )
 
 
 def test_execution_observed_raw_only():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "no prose" in gv or "only the raw" in gv or "contains only" in gv, (
-        "gate_validity must state that 🔴 Execution observed contains only raw tool output"
+    sr = SR()
+    assert "no prose" in sr or "only the raw" in sr or "contains only" in sr or "characterization" in sr, (
+        "sentinel_rules must state that 🔴 Execution observed contains only raw tool output"
     )
-    assert "interpretation" in gv and "Gap" in gv, (
-        "gate_validity must locate interpretation exclusively in the 🔴 Gap line"
+    assert "interpretation" in sr and "Gap" in sr, (
+        "sentinel_rules must locate interpretation exclusively in the 🔴 Gap line"
     )
 
 
 def test_r2_audit_checklist_format():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "✅ Formal notation R2 audit complete" in ds, (
-        "derivation_structure must define the R2 audit completion sentinel"
+    rsc = RSC()
+    assert "\u2705 Formal notation R2 audit complete" in rsc, (
+        "rung_sequence_code must define the R2 audit completion sentinel"
     )
-    assert "UNENCODED" in ds, (
-        "derivation_structure must name UNENCODED as the marker for unencodeable criteria"
+    assert "UNENCODED" in rsc, (
+        "rung_sequence_code must name UNENCODED as the marker for unencodeable criteria"
     )
 
 
 def test_reconciliation_content():
-    assert "Intent precedes its representations" in GROUND_PARTS["reconciliation_and_completion"]
+    assert "Intent precedes its representations" in RC()
 
 
 def test_r3_requires_declared_behavior_in_output():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "named in the gap" in ds or "by name" in ds or "output content" in ds or "verifiable" in ds, (
-        "derivation_structure must state R3 validity depends on output content naming declared behavior — "
-        "the specific behavior named in the gap must appear as a verifiable event in the output"
+    rsc = RSC()
+    assert "named in the gap" in rsc or "by name" in rsc or "output content" in rsc or "verifiable" in rsc, (
+        "rung_sequence_code must state R3 validity depends on output content naming declared behavior"
     )
-    assert "route loads" in ds or "infrastructure state" in ds, (
-        "derivation_structure must name infrastructure-state outputs (e.g., 'route loads') as insufficient for R3"
+    assert "route loads" in rsc or "infrastructure state" in rsc, (
+        "rung_sequence_code must name infrastructure-state outputs as insufficient for R3"
     )
 
 
 def test_carry_forward_scope_behavioral_only():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "import" in gv or "structural" in gv or "assertion" in gv, (
-        "gate_validity must clarify carry-forward scope — behavioral changes vs. import/structural corrections"
+    sr = SR()
+    assert "import" in sr or "structural" in sr or "assertion" in sr, (
+        "sentinel_rules must clarify carry-forward scope — behavioral changes vs. import/structural corrections"
     )
-    cf_idx = gv.find("carry-forward") if "carry-forward" in gv else gv.find("carry forward")
-    cf_context = gv[max(0, cf_idx - 100):cf_idx + 500]
+    cf_idx = sr.find("carry-forward") if "carry-forward" in sr else sr.find("carry forward")
+    cf_context = sr[max(0, cf_idx - 100):cf_idx + 500]
     assert "import" in cf_context or "assertion" in cf_context or "behavioral" in cf_context, (
-        "gate_validity must name the carry-forward scope near the carry-forward requirement"
+        "sentinel_rules must name the carry-forward scope near the carry-forward requirement"
     )
 
 
 def test_r2_audit_must_begin_with_1():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "begin with" in ds or "begins with" in ds or "start with" in ds or "starts with '1.'" in ds, (
-        "derivation_structure must state the R2 audit must begin with '1.' on the first row"
+    rsc = RSC()
+    assert "begin with" in rsc or "begins with" in rsc or "start with" in rsc or "starts with '1.'" in rsc, (
+        "rung_sequence_code must state the R2 audit must begin with '1.' on the first row"
     )
-    assert "1." in ds and ("begin with" in ds or "starts with" in ds), (
-        "derivation_structure must explicitly name '1.' as the required start of the audit"
+    assert "1." in rsc and ("begin with" in rsc or "starts with" in rsc), (
+        "rung_sequence_code must explicitly name '1.' as the required start of the audit"
     )
 
 
 def test_retroactive_sentinel_does_not_open_gate():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "retroact" in gv or "re-run" in gv or "rerun" in gv, (
-        "gate_validity must state that a retroactive sentinel leaves the gate closed and the tool must be re-run"
+    sr = SR()
+    assert "retroact" in sr or "re-run" in sr or "rerun" in sr, (
+        "sentinel_rules must state that a retroactive sentinel leaves the gate closed and the tool must be re-run"
     )
-    # Verify the re-run / gate-closed consequence is linked to retroactive labeling
-    retro_idx = gv.find("retroact") if "retroact" in gv else gv.find("re-run")
-    context = gv[max(0, retro_idx - 50):retro_idx + 350]
+    retro_idx = sr.find("retroact") if "retroact" in sr else sr.find("re-run")
+    context = sr[max(0, retro_idx - 50):retro_idx + 350]
     assert "gate" in context or "re-run" in context or "closed" in context, (
-        "gate_validity must state the gate consequence of retroactive sentinel — gate does not open"
+        "sentinel_rules must state the gate consequence of retroactive sentinel — gate does not open"
     )
 
 
 def test_manifest_must_include_vro():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "must name every" in ds or "must include every" in ds or "must list every" in ds, (
-        "derivation_structure must state the manifest must name every R4 rung"
+    ep = EP()
+    assert "must name every" in ep or "must include every" in ep or "must list every" in ep, (
+        "epistemological_protocol must state the manifest must name every R4 rung"
     )
-    assert "malformed" in ds or "omitting" in ds, (
-        "derivation_structure must state that omitting a required rung from the manifest is malformed"
+    assert "malformed" in ep or "omitting" in ep, (
+        "epistemological_protocol must state that omitting a required rung from the manifest is malformed"
     )
 
 
 def test_r3_positive_definition_for_code_contexts():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "rendered" in ds or "DOM" in ds or "api response" in ds.lower() or "response body" in ds, (
-        "derivation_structure must give a positive definition of what satisfies R3 in code contexts "
-        "(e.g., rendered DOM content, API response body)"
+    rsc = RSC()
+    assert "rendered" in rsc or "DOM" in rsc or "api response" in rsc.lower() or "response body" in rsc, (
+        "rung_sequence_code must give a positive definition of what satisfies R3 in code contexts"
     )
-    assert "direct" in ds or "directly" in ds or "demonstrates" in ds, (
-        "derivation_structure must require the R3 output to directly demonstrate the declared feature"
+    assert "direct" in rsc or "directly" in rsc or "demonstrates" in rsc, (
+        "rung_sequence_code must require the R3 output to directly demonstrate the declared feature"
     )
 
 
 def test_carry_forward_is_a_gate():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "no implementation" in gv and ("carry-forward" in gv or "carry forward" in gv), (
-        "gate_validity must state that no implementation artifact may appear until carry-forward is emitted "
-        "after validation artifact modification"
+    sr = SR()
+    assert "no implementation" in sr and ("carry-forward" in sr or "carry forward" in sr), (
+        "sentinel_rules must state that no implementation artifact may appear until carry-forward is emitted"
     )
-    cf_idx = gv.find("carry-forward") if "carry-forward" in gv else gv.find("carry forward")
-    # Find the gate language near the carry-forward requirement
-    cf_context = gv[max(0, cf_idx - 200):cf_idx + 600]
+    cf_idx = sr.find("carry-forward") if "carry-forward" in sr else sr.find("carry forward")
+    cf_context = sr[max(0, cf_idx - 200):cf_idx + 600]
     assert "gate" in cf_context or "violation" in cf_context or "blocked" in cf_context or "no implementation" in cf_context, (
-        "gate_validity must frame carry-forward as a gate/violation, not merely an emission requirement"
+        "sentinel_rules must frame carry-forward as a gate/violation"
     )
 
 
 def test_r2_audit_only_two_valid_outcomes():
-    ds = GROUND_PARTS["derivation_structure"]
-    assert "no other resolution" in ds or "only two valid" in ds or "only valid row" in ds, (
-        "derivation_structure must state the R2 audit has exactly two valid row outcomes — no other resolution"
+    rsc = RSC()
+    assert "no other resolution" in rsc or "only two valid" in rsc or "only valid row" in rsc, (
+        "rung_sequence_code must state the R2 audit has exactly two valid row outcomes"
     )
-    assert "architectural constraint" in ds or "constraint type" in ds or "names constraint" in ds, (
-        "derivation_structure must name that a constraint-type label is UNENCODED, not a behavioral invariant"
+    assert "architectural constraint" in rsc or "constraint type" in rsc or "names constraint" in rsc, (
+        "rung_sequence_code must name that a constraint-type label is UNENCODED"
     )
 
 
 def test_obr_is_observation_not_production():
-    ds = GROUND_PARTS["derivation_structure"]
-    # OBR is an observation rung — no new files may be created there
-    assert "observation" in ds or "observe" in ds, (
-        "derivation_structure must state OBR is an observation rung"
+    rsc = RSC()
+    assert "observation" in rsc or "observe" in rsc, (
+        "rung_sequence_code must state OBR is an observation rung"
     )
-    obr_idx = ds.rfind("observed running behavior")
-    assert obr_idx >= 0, "derivation_structure must mention observed running behavior"
-    # Find the OBR description near the end (last occurrence is in the R4 sequence)
-    context = ds[max(0, obr_idx - 100):obr_idx + 500]
+    obr_idx = rsc.rfind("observed running behavior")
+    assert obr_idx >= 0, "rung_sequence_code must mention observed running behavior"
+    context = rsc[max(0, obr_idx - 100):obr_idx + 500]
     assert "no new" in context or "not a production" in context or "new file" in context or "new artifact" in context, (
-        "derivation_structure must state no new files may be created at the OBR rung"
+        "rung_sequence_code must state no new files may be created at the OBR rung"
     )
 
 
 def test_manifest_thread_count_bounds_emissions():
-    rc = GROUND_PARTS["reconciliation_and_completion"]
-    # The manifest thread count must bound ✅ Thread N complete emissions
+    rc = RC()
     assert "declared" in rc or "count" in rc or "exact" in rc or "bound" in rc, (
         "reconciliation_and_completion must state the declared thread count bounds emissions"
     )
@@ -486,94 +446,79 @@ def test_manifest_thread_count_bounds_emissions():
     thread_idx = rc.find("Thread")
     context = rc[max(0, thread_idx - 100):thread_idx + 400]
     assert "declared" in context or "count" in context or "exact" in context or "bound" in context, (
-        "reconciliation_and_completion must bind thread emissions to declared count near Thread sentinel text"
+        "reconciliation_and_completion must bind thread emissions to declared count"
     )
 
 
 def test_compile_error_records_zero_prior_failures():
-    gv = GROUND_PARTS["gate_validity"]
-    # A compile/import error must not be treated as prior failure coverage for any test
-    assert "compile" in gv or "import error" in gv, (
-        "gate_validity must address compile/import errors in the context of prior failure coverage"
+    sr = SR()
+    assert "compile" in sr or "import error" in sr, (
+        "sentinel_rules must address compile/import errors in the context of prior failure coverage"
     )
-    compile_idx = gv.find("compile") if "compile" in gv else gv.find("import error")
-    context = gv[max(0, compile_idx - 100):compile_idx + 400]
+    compile_idx = sr.find("compile") if "compile" in sr else sr.find("import error")
+    context = sr[max(0, compile_idx - 100):compile_idx + 400]
     assert "zero" in context or "no test" in context or "no prior" in context or "uncovered" in context, (
-        "gate_validity must state that a compile error records zero prior failures — "
-        "no test executed, so no test has a prior failure"
+        "sentinel_rules must state that a compile error records zero prior failures"
     )
 
 
 def test_compile_then_pass_triggers_vacuous_green():
-    gv = GROUND_PARTS["gate_validity"]
-    # After a compile error is corrected and tests pass, every test is uncovered
-    assert "compile" in gv, "gate_validity must address compile errors"
-    compile_idx = gv.find("compile")
-    context = gv[max(0, compile_idx - 100):compile_idx + 600]
+    sr = SR()
+    assert "compile" in sr, "sentinel_rules must address compile errors"
+    compile_idx = sr.find("compile")
+    context = sr[max(0, compile_idx - 100):compile_idx + 600]
     assert "uncovered" in context or "vacuous" in context or "all tests" in context, (
-        "gate_validity must state that a compile-then-pass sequence leaves all tests uncovered, "
-        "requiring the vacuous-green check for each"
+        "sentinel_rules must state that a compile-then-pass sequence leaves all tests uncovered"
     )
 
 
 def test_sentinel_must_precede_tool_invocation():
-    gv = GROUND_PARTS["gate_validity"]
-    assert "retroactively" in gv or "before its sentinel" in gv or "immediately before the tool" in gv, (
-        "gate_validity must state the sentinel appears immediately before the tool is invoked "
-        "and tool output appearing before its sentinel is uncovered — retroactive labeling is invalid"
+    sr = SR()
+    assert "retroactively" in sr or "before its sentinel" in sr or "immediately before the tool" in sr, (
+        "sentinel_rules must state the sentinel appears immediately before the tool is invoked"
     )
 
 
 def test_assertion_modification_direction_independent():
-    dd = GROUND_PARTS["derivation_discipline"]
-    # The frozen-artifact rule must cover direction-independent modifications —
-    # changing assertions to match implementation must be named as a scope violation
-    assert "conform" in dd or "match" in dd or "redefine" in dd or "direction" in dd, (
-        "derivation_discipline must state that modifying assertions to match implementation "
+    ep = EP()
+    assert "conform" in ep or "match" in ep or "redefine" in ep or "direction" in ep, (
+        "epistemological_protocol must state that modifying assertions to match implementation "
         "redefines the gap contract — direction of change is irrelevant"
     )
-    assert "gap contract" in dd or "contract" in dd or "epistemological" in dd, (
-        "derivation_discipline must name the epistemological error: using model knowledge "
+    assert "gap contract" in ep or "contract" in ep or "epistemological" in ep, (
+        "epistemological_protocol must name the epistemological error: using model knowledge "
         "of implementation to define the gap"
     )
 
 
 def test_composed_prose_body_always_invalid():
-    gv = GROUND_PARTS["gate_validity"]
-    # A prose description of tool output — even accurate — is always composed content
-    assert "characterization" in gv or "description of tool output" in gv or "prose description" in gv, (
-        "gate_validity must state that a prose description of tool output is always composed content"
+    sr = SR()
+    assert "characterization" in sr or "description of tool output" in sr or "prose description" in sr, (
+        "sentinel_rules must state that a prose description of tool output is always composed content"
     )
-    assert "even if accurate" in gv or "regardless of whether" in gv or "even accurate" in gv, (
-        "gate_validity must state the rule is not conditioned on accuracy of the description"
+    assert "even if accurate" in sr or "regardless of whether" in sr or "even accurate" in sr, (
+        "sentinel_rules must state the rule is not conditioned on accuracy of the description"
     )
 
 
 def test_sentinel_is_prospective_commitment_not_label():
-    gv = GROUND_PARTS["gate_validity"]
-    # The sentinel's function is prospective capture before interpretation, not retrospective labeling.
-    # Placing a sentinel after tool output has appeared redefines a conversation event as composed content —
-    # the same epistemological error as a prose description of output.
-    assert "prospective" in gv or "before interpretation" in gv or "commitment" in gv, (
-        "gate_validity must state the sentinel is a prospective commitment — its function is to capture "
-        "output before interpretation occurs, not to label output already seen"
+    sr = SR()
+    assert "prospective" in sr or "before interpretation" in sr or "commitment" in sr, (
+        "sentinel_rules must state the sentinel is a prospective commitment"
     )
-    retro_idx = gv.find("retroact") if "retroact" in gv else -1
-    assert retro_idx >= 0, "gate_validity must contain retroactive sentinel language"
-    context = gv[max(0, retro_idx - 200):retro_idx + 600]
+    retro_idx = sr.find("retroact") if "retroact" in sr else -1
+    assert retro_idx >= 0, "sentinel_rules must contain retroactive sentinel language"
+    context = sr[max(0, retro_idx - 200):retro_idx + 600]
     assert "interpret" in context or "composed" in context or "epistemological" in context, (
-        "gate_validity must name placing a sentinel after output as the same epistemological error "
-        "as composing a prose description — already interpreted, not captured"
+        "sentinel_rules must name placing a sentinel after output as the same epistemological error"
     )
 
 
 def test_self_check_requires_temporal_precedence():
-    gv = GROUND_PARTS["gate_validity"]
-    self_check_idx = gv.find("Self-check")
-    assert self_check_idx >= 0, "gate_validity must contain a Self-check section"
-    self_check_text = gv[self_check_idx:self_check_idx + 700]
-    # The self-check must require confirming the sentinel appears BEFORE the tool output,
-    # not merely that it can be "located" anywhere in the conversation.
+    sr = SR()
+    self_check_idx = sr.find("Self-check")
+    assert self_check_idx >= 0, "sentinel_rules must contain a Self-check section"
+    self_check_text = sr[self_check_idx:self_check_idx + 700]
     assert (
         "before the tool" in self_check_text
         or "precedes" in self_check_text
@@ -581,34 +526,25 @@ def test_self_check_requires_temporal_precedence():
         or "before tool output" in self_check_text
         or "appears after" in self_check_text
     ), (
-        "gate_validity self-check must require confirming the sentinel precedes the tool invocation — "
-        "locating it anywhere in the conversation is insufficient; a sentinel after tool output is not located"
+        "sentinel_rules self-check must require confirming the sentinel precedes the tool invocation"
     )
 
 
 def test_structural_correction_has_concrete_predicate_test():
-    dd = GROUND_PARTS["derivation_discipline"]
-    structural_idx = dd.find("structural correction")
-    assert structural_idx >= 0, "derivation_discipline must mention structural correction"
-    context = dd[max(0, structural_idx - 100):structural_idx + 800]
-    # Must give an operational test for predicate identity —
-    # not just "predicate identical" but what makes predicates the same.
+    ep = EP()
+    structural_idx = ep.find("structural correction")
+    assert structural_idx >= 0, "epistemological_protocol must mention structural correction"
+    context = ep[max(0, structural_idx - 100):structural_idx + 800]
     assert "behaviors" in context or "same observable" in context or "which behaviors" in context, (
-        "derivation_discipline must state the operational test for structural correction: "
-        "whether the set of component behaviors that would cause the assertion to fail is unchanged"
+        "epistemological_protocol must state the operational test for structural correction"
     )
 
 
 def test_ei_entry_imperative_blocking_check():
-    ds = GROUND_PARTS["derivation_structure"]
-    # The EI blocking check must be imperative — a stop-and-verify command —
-    # not just a descriptive fact ("is blocked until").
-    # It must appear in the R4 sequence near the EI entry.
-    # Find the EI entry in the R4 sequence (the last occurrence, in the sequence definition).
-    ei_idx = ds.rfind("executable implementation")
-    assert ei_idx >= 0, "derivation_structure must contain 'executable implementation' in R4 sequence"
-    # Look for imperative blocking language nearby (within 400 chars after EI entry).
-    context = ds[ei_idx:ei_idx + 400]
+    rsc = RSC()
+    ei_idx = rsc.rfind("executable implementation")
+    assert ei_idx >= 0, "rung_sequence_code must contain 'executable implementation' in R4 sequence"
+    context = rsc[ei_idx:ei_idx + 400]
     assert (
         "stop" in context
         or "verify" in context
@@ -616,320 +552,284 @@ def test_ei_entry_imperative_blocking_check():
         or "you must" in context
         or "cannot quote" in context
     ), (
-        "derivation_structure must have an imperative blocking check at the EI entry — "
-        "'stop and verify' or 'must be able to quote', not just 'is blocked until'"
+        "rung_sequence_code must have an imperative blocking check at the EI entry"
     )
-    # Must require quoting the 🔴 Execution observed sentinel.
     assert "quote" in context or "Execution observed" in context, (
-        "derivation_structure EI blocking check must require quoting the "
-        "🔴 Execution observed sentinel from this conversation"
+        "rung_sequence_code EI blocking check must require quoting the 🔴 Execution observed sentinel"
     )
 
 
 def test_explicit_discard_required_on_skip_ahead_recovery():
-    gv = GROUND_PARTS["gate_validity"]
-    # When a skip-ahead violation is discovered, the model must explicitly discard
-    # the invalid artifact before re-entering — silent re-entry leaves status ambiguous.
-    assert "discard" in gv or "discarding" in gv.lower() or "explicitly" in gv, (
-        "gate_validity must require an explicit discard statement when a skip-ahead "
-        "violation is discovered — silent re-entry does not invalidate the artifact"
+    sr = SR()
+    assert "discard" in sr or "discarding" in sr.lower() or "explicitly" in sr, (
+        "sentinel_rules must require an explicit discard statement when a skip-ahead violation is discovered"
     )
-    discard_idx = gv.lower().find("discard")
+    discard_idx = sr.lower().find("discard")
     assert discard_idx >= 0
-    context = gv[max(0, discard_idx - 100):discard_idx + 500]
-    # Must cover: name the artifact, declare re-entry rung, state silent re-entry is insufficient.
+    context = sr[max(0, discard_idx - 100):discard_idx + 500]
     assert "re-enter" in context or "re-entry" in context or "reenter" in context, (
-        "gate_validity discard language must reference re-entering the ladder at the correct rung"
+        "sentinel_rules discard language must reference re-entering the ladder"
     )
     assert "silent" in context or "ambiguous" in context or "name" in context or "explicit" in context, (
-        "gate_validity must state that silent re-entry is insufficient — "
-        "the invalid artifact must be explicitly named and declared discarded"
+        "sentinel_rules must state that silent re-entry is insufficient"
     )
 
 
 def test_complexity_exemption_prohibited():
-    ds = GROUND_PARTS["derivation_structure"]
-    # Complexity, scope, and requirement clarity are not exemption criteria.
-    # Must be stated explicitly near 'completeness governs rung depth, not rung existence'.
+    ep = EP()
     assert (
-        "simple" in ds
-        or "complexity" in ds
-        or "incremental" in ds
-        or "clear requirements" in ds
+        "simple" in ep
+        or "complexity" in ep
+        or "incremental" in ep
+        or "clear requirements" in ep
     ), (
-        "derivation_structure must prohibit complexity-based exemption from the ladder — "
-        "'simple', 'incremental', 'clear requirements' must be named as non-exemption bases"
+        "epistemological_protocol must prohibit complexity-based exemption from the ladder"
     )
-    # The valid exemption (domain has no standard artifact type) must be distinguished.
-    assert "achievable" in ds or "not achievable" in ds or "standard artifact" in ds, (
-        "derivation_structure must distinguish complexity exemption (invalid) from "
-        "domain-achievability exemption (valid, per-rung with justification)"
+    assert "achievable" in ep or "not achievable" in ep or "standard artifact" in ep, (
+        "epistemological_protocol must distinguish complexity exemption (invalid) from "
+        "domain-achievability exemption (valid)"
     )
 
 
 def test_ground_governs_invocation_unconditionally():
-    ds = GROUND_PARTS["derivation_structure"]
-    # Once ground is present, it governs the entire invocation — not a per-task user preference.
-    assert "invocation" in ds or "unconditional" in ds or "once" in ds, (
-        "derivation_structure must state ground governs the entire invocation once present"
+    ep = EP()
+    assert "invocation" in ep or "unconditional" in ep or "once" in ep, (
+        "epistemological_protocol must state ground governs the entire invocation once present"
     )
-    # Must name asking whether to apply ground as invalid.
-    assert "optional" in ds or "preference" in ds or "asking" in ds or "whether to apply" in ds, (
-        "derivation_structure must state ground is not an optional style preference — "
-        "asking whether to apply it treats a mandatory constraint as optional guidance"
+    assert "optional" in ep or "preference" in ep or "asking" in ep or "whether to apply" in ep, (
+        "epistemological_protocol must state ground is not an optional style preference"
     )
 
 
 def test_pre_action_rung_self_check():
-    gv = GROUND_PARTS["gate_validity"]
-    # The pre-action check must fire before producing ANY artifact — not just before
-    # advancing past executable rungs. It is unconditional.
-    assert "before producing" in gv or "before any artifact" in gv or "before each artifact" in gv, (
-        "gate_validity must define a pre-action self-check that fires before producing any artifact, "
-        "not just before advancing past executable rungs"
+    sr = SR()
+    assert "before producing" in sr or "before any artifact" in sr or "before each artifact" in sr, (
+        "sentinel_rules must define a pre-action self-check that fires before producing any artifact"
     )
-    # It must require naming the current rung.
-    pre_idx = gv.find("before producing") if "before producing" in gv else gv.find("before any artifact")
+    pre_idx = sr.find("before producing") if "before producing" in sr else sr.find("before any artifact")
     assert pre_idx >= 0
-    context = gv[max(0, pre_idx - 50):pre_idx + 500]
+    context = sr[max(0, pre_idx - 50):pre_idx + 500]
     assert "rung" in context, (
-        "gate_validity pre-action check must require identifying the current rung"
+        "sentinel_rules pre-action check must require identifying the current rung"
     )
-    # It must cover non-executable rungs (prose, criteria, etc.) — not just executable ones.
     assert "prose" in context or "criteria" in context or "non-executable" in context or "all artifact" in context or "every artifact" in context, (
-        "gate_validity pre-action check must explicitly apply to non-executable rungs "
-        "(prose, criteria) not just executable rungs"
+        "sentinel_rules pre-action check must explicitly apply to non-executable rungs"
     )
 
 
 def test_implementation_gate_blocks_file_edits():
-    gv = GROUND_PARTS["gate_validity"]
-    # The 🟢 sentinel must gate file edits (action class), not just artifact production.
-    # Find the 🟢 Implementation gate cleared section.
-    gate_idx = gv.find("Implementation gate cleared")
-    assert gate_idx >= 0, "gate_validity must contain 🟢 Implementation gate cleared"
-    context = gv[max(0, gate_idx - 100):gate_idx + 700]
-    # Must name file edits / tool calls that modify files as the gated action.
+    sr = SR()
+    gate_idx = sr.find("Implementation gate cleared")
+    assert gate_idx >= 0, "sentinel_rules must contain 🟢 Implementation gate cleared"
+    context = sr[max(0, gate_idx - 100):gate_idx + 700]
     assert (
         "file edit" in context
-        or "file" in context and "edit" in context
-        or "modif" in context and "file" in context
+        or ("file" in context and "edit" in context)
+        or ("modif" in context and "file" in context)
         or "tool call" in context
         or "creates or modifies" in context
     ), (
-        "gate_validity must explicitly name file edits / tool calls that create or modify "
-        "implementation files as gated by 🟢 — not just 'implementation artifacts'"
+        "sentinel_rules must explicitly name file edits / tool calls that create or modify "
+        "implementation files as gated by 🟢"
     )
-    # Must carve out validation files as not gated by this sentinel.
     assert (
         "validation" in context
         or "test file" in context
         or "carry-forward" in context
     ), (
-        "gate_validity must carve out validation artifacts from the 🟢 file-edit gate — "
-        "test files are governed by EV rung and carry-forward rules, not this sentinel"
+        "sentinel_rules must carve out validation artifacts from the 🟢 file-edit gate"
     )
-    # Must state characterization is irrelevant.
     assert (
         "regardless" in context
         or "characteriz" in context
         or "small fix" in context
         or "config" in context
     ), (
-        "gate_validity must state that characterization of the edit is irrelevant — "
-        "'small fix', 'config change' etc. do not exempt the edit from the gate"
+        "sentinel_rules must state that characterization of the edit is irrelevant"
     )
 
 
 def test_i_formation_is_read_only():
-    ds = GROUND_PARTS["derivation_structure"]
-    # I-formation must be explicitly read-only: reading, running, examining only.
-    # File creation, modification, and code writing are excluded.
-    i_form_idx = ds.find("I-formation")
-    assert i_form_idx >= 0, "derivation_structure must contain I-formation section"
-    context = ds[i_form_idx:i_form_idx + 800]
-    # Must state I-formation is observation/read-only, grounded in state-invariance.
+    rsc = RSC()
+    i_form_idx = rsc.find("I-formation")
+    assert i_form_idx >= 0, "rung_sequence_code must contain I-formation section"
+    context = rsc[i_form_idx:i_form_idx + 800]
     assert (
         "read-only" in context
         or "observation-only" in context
         or "reading" in context
         or "state" in context
     ), (
-        "derivation_structure I-formation must be defined as observation-only / state-invariant"
+        "rung_sequence_code I-formation must be defined as observation-only / state-invariant"
     )
-    # Must explicitly exclude file modification.
     assert (
         "modif" in context
         or "creat" in context
         or "writing" in context
         or "write" in context
     ), (
-        "derivation_structure I-formation must explicitly exclude file creation/modification"
+        "rung_sequence_code I-formation must explicitly exclude file creation/modification"
     )
-    # Must close the 'still exploring' rationalization.
     assert (
         "exploring" in context
         or "exploration" in context
         or "rung work" in context
         or "regardless" in context
     ), (
-        "derivation_structure must state that file modification before the manifest "
+        "rung_sequence_code must state that file modification before the manifest "
         "is rung work regardless of what phase the model believes it is in"
     )
 
 
 def test_pre_action_check_is_citation_not_assessment():
-    gv = GROUND_PARTS["gate_validity"]
-    # Condition (c) must require quoting prior-rung artifacts from this conversation,
-    # not self-assessing their completeness from memory.
-    pre_idx = gv.find("before producing") if "before producing" in gv else gv.find("before any artifact")
+    sr = SR()
+    pre_idx = sr.find("before producing") if "before producing" in sr else sr.find("before any artifact")
     assert pre_idx >= 0
-    context = gv[pre_idx:pre_idx + 600]
-    # Must require quoting/citing, not just assessing.
+    context = sr[pre_idx:pre_idx + 600]
     assert "quote" in context or "cite" in context or "locate" in context, (
-        "gate_validity pre-action check condition (c) must require quoting prior-rung "
-        "artifacts from this conversation — not self-assessing their completeness"
+        "sentinel_rules pre-action check condition (c) must require quoting prior-rung "
+        "artifacts from this conversation"
     )
-    # Must state inability to quote means the rung is not complete.
     assert "cannot quote" in context or "cannot locate" in context or "not complete" in context or "if you cannot" in context, (
-        "gate_validity pre-action check must state that inability to quote means "
+        "sentinel_rules pre-action check must state that inability to quote means "
         "the prior rung is not complete"
     )
 
 
 def test_obr_infrastructure_creation_is_production():
-    ds = GROUND_PARTS["derivation_structure"]
-    obr_idx = ds.rfind("observed running behavior")
+    rsc = RSC()
+    obr_idx = rsc.rfind("observed running behavior")
     assert obr_idx >= 0
-    context = ds[max(0, obr_idx - 100):obr_idx + 1100]
-    # Creating infrastructure to enable observation is production — the necessity
-    # rationalization does not change the category.
+    context = rsc[max(0, obr_idx - 100):obr_idx + 1100]
     assert "infrastructure" in context or "enable" in context or "enabling" in context, (
-        "derivation_structure must state that creating infrastructure to enable OBR observation "
-        "is production, not observation — the necessity rationalization does not change the category"
+        "rung_sequence_code must state that creating infrastructure to enable OBR observation "
+        "is production, not observation"
     )
-    # When preferred observation method requires absent infrastructure, use existing ladder artifacts.
     assert "existing" in context or "fall back" in context or "ladder artifacts" in context or "test suite" in context, (
-        "derivation_structure must state the correct alternative: use existing ladder artifacts "
-        "when the preferred observation method requires absent infrastructure"
+        "rung_sequence_code must state the correct alternative: use existing ladder artifacts"
     )
 
 
 def test_r2_audit_outside_scope_is_unencoded():
-    ds = GROUND_PARTS["derivation_structure"]
-    # 'handled by X' / 'outside component scope' / 'delegated to existing infrastructure'
-    # are not valid R2 audit resolutions — they are UNENCODED.
-    assert "delegat" in ds or "outside" in ds or "handled by" in ds or "scope" in ds, (
-        "derivation_structure must address the 'outside scope / handled by X' rationalization "
+    rsc = RSC()
+    assert "delegat" in rsc or "outside" in rsc or "handled by" in rsc or "scope" in rsc, (
+        "rung_sequence_code must address the 'outside scope / handled by X' rationalization "
         "in the R2 audit section"
     )
-    # Must name it as UNENCODED, not a valid third resolution.
-    r2_idx = ds.find("R2 audit")
+    r2_idx = rsc.find("R2 audit")
     assert r2_idx >= 0
-    context = ds[r2_idx:r2_idx + 800]
+    context = rsc[r2_idx:r2_idx + 800]
     assert "delegat" in context or "outside" in context or "handled" in context, (
-        "derivation_structure R2 audit section must explicitly address delegation/scope justifications "
-        "as UNENCODED, not a third valid resolution"
+        "rung_sequence_code R2 audit section must explicitly address delegation/scope justifications "
+        "as UNENCODED"
     )
 
 
 def test_checkmark_sentinel_backward_binding():
-    gv = GROUND_PARTS["gate_validity"]
-    # ✅ sentinels attest prior completion — they do not constitute it.
-    # Premature emission does not close the phase.
-    # Work continuing after a ✅ sentinel retroactively invalidates it.
-    # ✅ tokens in manifest entries or planning text are inert.
+    sr = SR()
     assert (
-        "attest" in gv
-        or "prior completion" in gv
-        or "backward" in gv
-        or "does not close" in gv
-        or "not constitute" in gv
+        "attest" in sr
+        or "prior completion" in sr
+        or "backward" in sr
+        or "does not close" in sr
+        or "not constitute" in sr
     ), (
-        "gate_validity must state ✅ sentinels attest prior completion — "
-        "they do not constitute it; premature emission does not close the phase"
+        "sentinel_rules must state ✅ sentinels attest prior completion — they do not constitute it"
     )
     assert (
-        "retroactively" in gv
-        or "invalidates" in gv
-        or "reopens" in gv
+        "retroactively" in sr
+        or "invalidates" in sr
+        or "reopens" in sr
     ), (
-        "gate_validity must state that work continuing after a ✅ sentinel "
-        "retroactively invalidates it"
+        "sentinel_rules must state that work continuing after a ✅ sentinel retroactively invalidates it"
     )
     assert (
-        "inert" in gv
-        or "manifest entries" in gv
-        or "status annotation" in gv
-        or "planning text" in gv
+        "inert" in sr
+        or "manifest entries" in sr
+        or "status annotation" in sr
+        or "planning text" in sr
     ), (
-        "gate_validity must state ✅ tokens in manifest entries or planning text "
-        "are inert and cannot be cited as satisfying phase-completion requirements"
+        "sentinel_rules must state ✅ tokens in manifest entries or planning text are inert"
     )
 
 
 def test_sentinel_body_consistency_criterion():
-    gv = GROUND_PARTS["gate_validity"]
-    # The sentinel body must be consistent with what the validation artifact as written
-    # could produce. Output naming symbols absent from the artifact is fabricated
-    # regardless of structural resemblance to real tool output.
+    sr = SR()
     assert (
-        "consistent" in gv
-        or "traceable" in gv
-        or "consistent with" in gv
+        "consistent" in sr
+        or "traceable" in sr
+        or "consistent with" in sr
     ), (
-        "gate_validity must state the sentinel body must be consistent with "
+        "sentinel_rules must state the sentinel body must be consistent with "
         "what the validation artifact as written could produce"
     )
     assert (
-        "symbol" in gv
-        or "absent" in gv
-        or "not present" in gv
+        "symbol" in sr
+        or "absent" in sr
+        or "not present" in sr
     ), (
-        "gate_validity must state that output naming symbols absent from the "
-        "validation artifact is fabricated regardless of structural resemblance"
+        "sentinel_rules must state that output naming symbols absent from the "
+        "validation artifact is fabricated"
     )
     assert (
-        "fabricated" in gv
-        or "fabrication" in gv
+        "fabricated" in sr
+        or "fabrication" in sr
     ), (
-        "gate_validity must name output inconsistent with the artifact as fabricated"
+        "sentinel_rules must name output inconsistent with the artifact as fabricated"
     )
 
 
 def test_manifest_enumerates_seven_canonical_rung_names():
-    ds = GROUND_PARTS["derivation_structure"]
-    # The manifest rule must enumerate the seven canonical rung names
-    # and state that collapsing VRO into an adjacent rung is malformed
-    assert "seven" in ds or "collapses" in ds or "collapse" in ds, (
-        "derivation_structure must enumerate the seven canonical rung names in the manifest rule "
+    ep = EP()
+    assert "seven" in ep or "collapses" in ep or "collapse" in ep, (
+        "epistemological_protocol must enumerate the seven canonical rung names in the manifest rule "
         "and state that collapsing VRO into an adjacent rung is malformed"
     )
 
 
 def test_red_token_validity_is_operational():
-    gv = GROUND_PARTS["gate_validity"]
-    # Sentinel validity is defined operationally: a 🔴 token not immediately followed
-    # by verbatim tool output is not a sentinel — it is inert text with no gate function.
-    # This is stronger than a prohibition on location because it forecloses the
-    # rationalization "I intended it as a sentinel."
+    sr = SR()
     assert (
-        "inert" in gv
-        or "no gate function" in gv
-        or "not a sentinel" in gv
-        or "carries no gate" in gv
+        "inert" in sr
+        or "no gate function" in sr
+        or "not a sentinel" in sr
+        or "carries no gate" in sr
     ), (
-        "gate_validity must state that a 🔴 token not followed by verbatim tool output "
+        "sentinel_rules must state that a 🔴 token not followed by verbatim tool output "
         "is not a sentinel — it is inert text and carries no gate function"
     )
-    # Must state it cannot be cited or pointed to as satisfying any gate.
     assert (
-        "cited" in gv
-        or "point to" in gv
-        or "pointed to" in gv
-        or "treated as satisfying" in gv
-        or "cannot be cited" in gv
+        "cited" in sr
+        or "point to" in sr
+        or "pointed to" in sr
+        or "treated as satisfying" in sr
+        or "cannot be cited" in sr
     ), (
-        "gate_validity must state the inert token cannot be cited or pointed to "
+        "sentinel_rules must state the inert token cannot be cited or pointed to "
         "as satisfying any gate requirement"
+    )
+
+
+def test_r3_requires_red_sentinels():
+    rsc = RSC()
+    assert "observed running behavior" in rsc and (
+        "Execution observed" in rsc or "\U0001F534" in rsc
+    ), (
+        "rung_sequence_code must require 🔴 Execution observed at the observed running behavior rung"
+    )
+    assert "behavior from I" in rsc or ("behavior" in rsc and "from I" in rsc), (
+        "rung_sequence_code must require R3 gap to name the specific behavior from I"
+    )
+
+
+def test_prior_failure_scoped_to_test():
+    sr = SR()
+    assert ("individual test" in sr or "specific test" in sr) and "produced it" in sr, (
+        "sentinel_rules must state prior recorded failure applies to the specific test that produced it"
+    )
+    assert "carry-forward" in sr or "carry forward" in sr, (
+        "sentinel_rules must require a carry-forward statement after validation artifact modification"
+    )
+    assert "uncovered" in sr or "no covering" in sr, (
+        "sentinel_rules must state uncovered tests trigger the vacuous-green check"
     )

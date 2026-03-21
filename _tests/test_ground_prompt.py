@@ -421,6 +421,21 @@ def test_r2_audit_only_two_valid_outcomes():
     )
 
 
+def test_obr_is_observation_not_production():
+    ds = GROUND_PARTS["derivation_structure"]
+    # OBR is an observation rung — no new files may be created there
+    assert "observation" in ds or "observe" in ds, (
+        "derivation_structure must state OBR is an observation rung"
+    )
+    obr_idx = ds.rfind("observed running behavior")
+    assert obr_idx >= 0, "derivation_structure must mention observed running behavior"
+    # Find the OBR description near the end (last occurrence is in the R4 sequence)
+    context = ds[max(0, obr_idx - 100):obr_idx + 500]
+    assert "no new" in context or "not a production" in context or "new file" in context or "new artifact" in context, (
+        "derivation_structure must state no new files may be created at the OBR rung"
+    )
+
+
 def test_manifest_thread_count_bounds_emissions():
     rc = GROUND_PARTS["reconciliation_and_completion"]
     # The manifest thread count must bound ✅ Thread N complete emissions

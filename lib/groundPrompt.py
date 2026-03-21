@@ -90,7 +90,11 @@ GROUND_PARTS: dict[str, str] = {
         "pre-existing artifacts not targeting the gap do not satisfy this rung) \u2192 "
         "validation run observation (only satisfied by an observed failure; a passing run is a gap signal \u2014 see gate_validity) \u2192 "
         "executable implementation \u2192 "
-        "observed running behavior."
+        "observed running behavior. "
+        "The observed running behavior rung is an observation rung, not a production rung \u2014 "
+        "no new files may be created at this rung; "
+        "OBR is satisfied by invoking artifacts already produced by this ladder and recording their output; "
+        "creating a new test file at the OBR rung is a post-ladder scope violation requiring its own manifest and descent."
     ),
     "gate_validity": (
         "A gate is a conversation-state condition: open when and only when the required event has occurred in this conversation for this thread. "

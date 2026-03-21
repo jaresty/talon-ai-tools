@@ -888,3 +888,47 @@ def test_locality_directional_asymmetry_with_nonconflict():
         "must explicitly state the two constraints do not conflict because they apply "
         "in opposite directions"
     )
+
+
+def test_manifest_entries_name_behavioral_gaps_not_implementation_decisions():
+    ep = EP()
+    manifest_idx = ep.find("The manifest must name every rung")
+    assert manifest_idx >= 0, \
+        "epistemological_protocol must contain manifest rung-naming requirement"
+    context = ep[manifest_idx:manifest_idx + 600]
+    assert "implementation decision" in context, (
+        "manifest rules must name implementation decisions as a prohibited content type"
+    )
+    assert "behavioral gap" in context, (
+        "manifest rules must name behavioral gaps as the required content type"
+    )
+
+
+def test_ev_artifact_must_be_in_project_tree():
+    rsc = RSC()
+    ev_idx = rsc.find("executable validation (")
+    assert ev_idx >= 0, "rung_sequence_code must contain executable validation rung"
+    context = rsc[ev_idx:ev_idx + 600]
+    assert "project directory" in context or "project tree" in context, (
+        "EV rung must require the artifact to reside within the project directory"
+    )
+    assert "/tmp" in context or "outside the project" in context, (
+        "EV rung must name out-of-project paths (e.g. /tmp) as not satisfying the rung"
+    )
+
+
+def test_i_formation_prohibits_implementation_intent():
+    rsc = RSC()
+    assert "I-formation ends" in rsc or "gate prohibiting" in rsc, (
+        "rung_sequence_code I-formation must end at a gate prohibiting implementation intent"
+    )
+    i_form_end_idx = rsc.find("I-formation ends")
+    if i_form_end_idx < 0:
+        i_form_end_idx = rsc.find("gate prohibiting")
+    context = rsc[i_form_end_idx:i_form_end_idx + 400]
+    assert "implementation decisions" in context or "implementation decision" in context, (
+        "I-formation gate must name implementation decisions as prohibited"
+    )
+    assert "behavioral gap" in context.lower(), (
+        "I-formation gate must name behavioral gaps as the only permitted manifest content"
+    )

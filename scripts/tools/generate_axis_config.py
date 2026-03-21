@@ -217,6 +217,7 @@ def render_axis_config() -> str:
 
         # ADR-0171: ground prompt SSOT is lib/groundPrompt.py (not generated).
         # Edit GROUND_PARTS there and run `make axis-regenerate-apply` to propagate changes.
+        from lib.groundPrompt import GROUND_PARTS, build_ground_prompt  # noqa: F401
         """
     )
     dataclasses = textwrap.dedent(

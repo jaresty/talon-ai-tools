@@ -44,6 +44,8 @@ if bootstrap is not None:
                 'AxisTokenDistinction', 'AxisTokenMetadata', 'AXIS_TOKEN_METADATA', 'axis_token_metadata',
                 # ADR-0144: category order
                 'AXIS_CATEGORY_ORDER', 'axis_category_order',
+                # ADR-0171: ground prompt SSOT imports
+                'GROUND_PARTS', 'build_ground_prompt',
             }
             unexpected_globals = set(globals_dict.keys()) - expected_globals - allowed_helpers
             if unexpected_globals:

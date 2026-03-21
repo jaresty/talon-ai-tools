@@ -917,6 +917,42 @@ def test_ev_artifact_must_be_in_project_tree():
     )
 
 
+def test_ep_opens_with_pre_adoption_gate():
+    ep = EP()
+    first_200 = ep[:200]
+    assert "task label" in first_200 or "task token" in first_200, (
+        "epistemological_protocol must open with a sentence naming the task-label competitor"
+    )
+    assert "last rung" in first_200, (
+        "epistemological_protocol opening must state the task label names the last rung"
+    )
+    assert "failing test" in first_200 or "test that fails" in first_200 or "failing" in first_200, (
+        "epistemological_protocol opening must contain the pre-adoption gate: no implementation without a failing test"
+    )
+
+
+def test_rsc_opens_with_goal_reframe():
+    rsc = RSC()
+    first_150 = rsc[:150]
+    assert "next rung" in first_150 or "lowest" in first_150 or "have not yet completed" in first_150, (
+        "rung_sequence_code must open with a goal-reframe sentence: current goal is the next incomplete rung"
+    )
+
+
+def test_rsc_has_numbered_rung_list():
+    rsc = RSC()
+    # Numbered list must appear before the prose arrow-chain
+    arrow_pos = rsc.find("→")
+    assert "1." in rsc, "rung_sequence_code must contain a numbered rung list"
+    numbered_pos = rsc.find("1.")
+    assert numbered_pos < arrow_pos, (
+        "numbered rung list must appear before the prose arrow-chain in rung_sequence_code"
+    )
+    assert "2." in rsc and "7." in rsc, (
+        "numbered rung list must enumerate all 7 rungs"
+    )
+
+
 def test_ei_rung_requires_minimal_edit_per_cycle():
     rsc = RSC()
     ei_idx = rsc.rfind("executable implementation")

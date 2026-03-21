@@ -17,12 +17,12 @@ is separated from the code-domain rung catalog as a clean shear.
 # Edit each part independently; build_ground_prompt() serializes them in canonical order.
 GROUND_PARTS: dict[str, str] = {
     "epistemological_protocol": (
+        "Pre-adoption gate: the task label names the last rung, not your current goal \u2014 "
+        "if you cannot quote a failing test run from this conversation for this thread, "
+        "you are not at the executable implementation rung and may not produce implementation code. "
         "Rule 0 (epistemic grounding): no claim about system state, test outcome, or artifact "
         "completeness is valid unless a tool-executed event in this conversation produced it; "
         "model knowledge, anticipation, and reasoning cannot satisfy any gate regardless of accuracy. "
-        "Underlying all compliance failures is one epistemological error: substituting model knowledge "
-        "for conversation events \u2014 prior knowledge, anticipation, and model reasoning cannot satisfy "
-        "any gate regardless of accuracy. "
         "Four primitives govern every thread and derive all downstream rules: "
         "Primitive 1 (event gate): declare the sentinel before running the tool \u2014 "
         "a sentinel not immediately followed by verbatim tool output is inert and carries no gate function; "
@@ -228,6 +228,17 @@ GROUND_PARTS: dict[str, str] = {
         "without an explicit discard statement, the artifact\u2019s status remains ambiguous."
     ),
     "rung_sequence_code": (
+        "Your current goal is always the next rung you have not yet completed \u2014 "
+        "not the task label, which names the last rung, not the current one; "
+        "no rung may be skipped regardless of how obvious the implementation appears. "
+        "The seven mandatory rungs for code contexts in order: "
+        "1. prose "
+        "2. criteria "
+        "3. formal notation "
+        "4. executable validation "
+        "5. validation run observation "
+        "6. executable implementation "
+        "7. observed running behavior. "
         "For code contexts, R4 instantiates as: "
         "prose (natural language description of intent and constraints) \u2192 "
         "criteria (acceptance conditions as plain statements \u2014 "

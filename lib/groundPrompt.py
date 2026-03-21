@@ -13,6 +13,67 @@ the prior enumerative violation-listing structure. The epistemological protocol
 is separated from the code-domain rung catalog as a clean shear.
 """
 
+# Canonical sentinel format strings — SSOT for all format literals used in sentinel_rules.
+# Each value is the exact text the model must emit; keys are reference names used in prose.
+RUNG_SEQUENCE: list[dict] = [
+    {
+        "name": "prose",
+        "artifact": "natural language description of intent and constraints",
+        "gate": "I declared",
+        "voids_if": "skipped",
+    },
+    {
+        "name": "criteria",
+        "artifact": "falsifiable behavioral acceptance conditions",
+        "gate": "prose complete",
+        "voids_if": "criterion is structural/implementation rather than behavioral",
+    },
+    {
+        "name": "formal notation",
+        "artifact": "non-executable specification with behavioral invariants + R2 audit",
+        "gate": "criteria complete; R2 audit 0 UNENCODED entries",
+        "voids_if": "UNENCODED entries remain; audit not a separate named section",
+    },
+    {
+        "name": "executable validation",
+        "artifact": "test file invocable by automated runner, within project tree",
+        "gate": "formal notation R2 audit complete",
+        "voids_if": "implementation code included; outside project tree; pre-existing artifact",
+    },
+    {
+        "name": "validation run observation",
+        "artifact": "exec_observed sentinel with verbatim failure naming declared gap",
+        "gate": "executable validation artifact runs",
+        "voids_if": "build/compile error; green run without prior failure; infrastructure-only output",
+    },
+    {
+        "name": "executable implementation",
+        "artifact": "implementation source edits; one edit per re-run cycle",
+        "gate": "exec_observed + gap declared; impl_gate sentinel emitted",
+        "voids_if": "multiple edits without intervening re-run; newly-passing test has no prior failure",
+    },
+    {
+        "name": "observed running behavior",
+        "artifact": "tool output demonstrating declared behavioral intent (not infrastructure state)",
+        "gate": "implementation complete; exec_observed + gap for behavior from I",
+        "voids_if": "new files created; output names only infrastructure state",
+    },
+]
+
+
+SENTINEL_TEMPLATES: dict[str, str] = {
+    "exec_observed":      "\U0001F534 Execution observed: [verbatim tool output \u2014 triple-backtick delimited, complete, nothing omitted]",
+    "gap":                "\U0001F534 Gap: [what the verbatim output reveals]",
+    "impl_gate":          "\U0001F7E2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001F534 Execution observed]",
+    "v_complete":         "\u2705 Validation artifact V complete",
+    "thread_complete":    "\u2705 Thread N complete",
+    "manifest_exhausted": "\u2705 Manifest exhausted \u2014 N/N threads complete",
+    "carry_forward":      "Carry-forward: [list which original failures cover which current tests]",
+    "i_formation":        "\u2705 I-formation complete",
+    "r2_audit":           "\u2705 Formal notation R2 audit complete \u2014 N/N criteria encoded",
+}
+
+
 # ADR-0172: ground prompt structured parts.
 # Edit each part independently; build_ground_prompt() serializes them in canonical order.
 GROUND_PARTS: dict[str, str] = {
@@ -210,8 +271,8 @@ GROUND_PARTS: dict[str, str] = {
         "then \u2018\U0001F7E2 Implementation gate cleared\u2019 on its own line \u2014 "
         "V-complete alone does not open the implementation gate; both sentinels are required in sequence; "
         "V-complete may not appear after tests pass, after implementation, or after observed running behavior. "
-        "Before producing implementation code, emit "
-        "\U0001F7E2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001F534 Execution observed]; "
+        "Before producing implementation code, emit the \U0001F7E2 Implementation gate cleared sentinel "
+        "(same format as above, gap cited from this thread\u2019s \U0001F534 Execution observed); "
         "the quote must be verbatim from the \U0001F534 Execution observed sentinel of this thread; "
         "quoting anticipated output or a prior thread\u2019s observation is invalid. "
         "Pre-action check: before producing any artifact at any rung \u2014 "
@@ -240,14 +301,9 @@ GROUND_PARTS: dict[str, str] = {
         "Your current goal is always the next rung you have not yet completed \u2014 "
         "not the task label, which names the last rung, not the current one; "
         "no rung may be skipped regardless of how obvious the implementation appears. "
-        "The seven mandatory rungs for code contexts in order: "
-        "1. prose "
-        "2. criteria "
-        "3. formal notation "
-        "4. executable validation "
-        "5. validation run observation "
-        "6. executable implementation "
-        "7. observed running behavior. "
+        "Seven mandatory rungs in order: "
+        "prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 "
+        "validation run observation \u2192 executable implementation \u2192 observed running behavior. "
         "For code contexts, R4 instantiates as: "
         "prose (natural language description of intent and constraints) \u2192 "
         "criteria (acceptance conditions as plain statements \u2014 "

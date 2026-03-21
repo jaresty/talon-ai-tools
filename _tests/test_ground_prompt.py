@@ -964,18 +964,24 @@ def test_rsc_opens_with_goal_reframe():
     )
 
 
-def test_rsc_has_numbered_rung_list():
+def test_rsc_has_rung_sequence_header():
     rsc = RSC()
-    # Numbered list must appear before the prose arrow-chain
-    arrow_pos = rsc.find("→")
-    assert "1." in rsc, "rung_sequence_code must contain a numbered rung list"
-    numbered_pos = rsc.find("1.")
-    assert numbered_pos < arrow_pos, (
-        "numbered rung list must appear before the prose arrow-chain in rung_sequence_code"
+    # ADR-0173: numbered list replaced with compact arrow sequence as header
+    assert "Seven mandatory rungs in order:" in rsc, (
+        "rung_sequence_code must contain the compact arrow-sequence rung header"
     )
-    assert "2." in rsc and "7." in rsc, (
-        "numbered rung list must enumerate all 7 rungs"
+    # Arrow sequence must appear before the prose R4 chain
+    header_pos = rsc.find("Seven mandatory rungs in order:")
+    r4_pos = rsc.find("R4 instantiates as:")
+    assert header_pos < r4_pos, (
+        "compact rung header must appear before the R4 prose chain"
     )
+    # All 7 canonical rung names must appear in the section
+    for name in [
+        "prose", "criteria", "formal notation", "executable validation",
+        "validation run observation", "executable implementation", "observed running behavior",
+    ]:
+        assert name in rsc, f"rung name missing from rung_sequence_code: {name}"
 
 
 def test_ei_edit_unit_defined_as_tool_call():

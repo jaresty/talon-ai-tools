@@ -664,6 +664,25 @@ def test_pre_action_rung_self_check():
     )
 
 
+def test_pre_action_check_is_citation_not_assessment():
+    gv = GROUND_PARTS["gate_validity"]
+    # Condition (c) must require quoting prior-rung artifacts from this conversation,
+    # not self-assessing their completeness from memory.
+    pre_idx = gv.find("before producing") if "before producing" in gv else gv.find("before any artifact")
+    assert pre_idx >= 0
+    context = gv[pre_idx:pre_idx + 600]
+    # Must require quoting/citing, not just assessing.
+    assert "quote" in context or "cite" in context or "locate" in context, (
+        "gate_validity pre-action check condition (c) must require quoting prior-rung "
+        "artifacts from this conversation — not self-assessing their completeness"
+    )
+    # Must state inability to quote means the rung is not complete.
+    assert "cannot quote" in context or "cannot locate" in context or "not complete" in context or "if you cannot" in context, (
+        "gate_validity pre-action check must state that inability to quote means "
+        "the prior rung is not complete"
+    )
+
+
 def test_obr_infrastructure_creation_is_production():
     ds = GROUND_PARTS["derivation_structure"]
     obr_idx = ds.rfind("observed running behavior")

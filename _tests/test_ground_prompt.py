@@ -561,6 +561,27 @@ def test_structural_correction_has_concrete_predicate_test():
     )
 
 
+def test_explicit_discard_required_on_skip_ahead_recovery():
+    gv = GROUND_PARTS["gate_validity"]
+    # When a skip-ahead violation is discovered, the model must explicitly discard
+    # the invalid artifact before re-entering — silent re-entry leaves status ambiguous.
+    assert "discard" in gv or "discarding" in gv.lower() or "explicitly" in gv, (
+        "gate_validity must require an explicit discard statement when a skip-ahead "
+        "violation is discovered — silent re-entry does not invalidate the artifact"
+    )
+    discard_idx = gv.lower().find("discard")
+    assert discard_idx >= 0
+    context = gv[max(0, discard_idx - 100):discard_idx + 500]
+    # Must cover: name the artifact, declare re-entry rung, state silent re-entry is insufficient.
+    assert "re-enter" in context or "re-entry" in context or "reenter" in context, (
+        "gate_validity discard language must reference re-entering the ladder at the correct rung"
+    )
+    assert "silent" in context or "ambiguous" in context or "name" in context or "explicit" in context, (
+        "gate_validity must state that silent re-entry is insufficient — "
+        "the invalid artifact must be explicitly named and declared discarded"
+    )
+
+
 def test_complexity_exemption_prohibited():
     ds = GROUND_PARTS["derivation_structure"]
     # Complexity, scope, and requirement clarity are not exemption criteria.

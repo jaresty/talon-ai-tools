@@ -827,6 +827,41 @@ def test_r2_audit_outside_scope_is_unencoded():
     )
 
 
+def test_checkmark_sentinel_backward_binding():
+    gv = GROUND_PARTS["gate_validity"]
+    # ✅ sentinels attest prior completion — they do not constitute it.
+    # Premature emission does not close the phase.
+    # Work continuing after a ✅ sentinel retroactively invalidates it.
+    # ✅ tokens in manifest entries or planning text are inert.
+    assert (
+        "attest" in gv
+        or "prior completion" in gv
+        or "backward" in gv
+        or "does not close" in gv
+        or "not constitute" in gv
+    ), (
+        "gate_validity must state ✅ sentinels attest prior completion — "
+        "they do not constitute it; premature emission does not close the phase"
+    )
+    assert (
+        "retroactively" in gv
+        or "invalidates" in gv
+        or "reopens" in gv
+    ), (
+        "gate_validity must state that work continuing after a ✅ sentinel "
+        "retroactively invalidates it"
+    )
+    assert (
+        "inert" in gv
+        or "manifest entries" in gv
+        or "status annotation" in gv
+        or "planning text" in gv
+    ), (
+        "gate_validity must state ✅ tokens in manifest entries or planning text "
+        "are inert and cannot be cited as satisfying phase-completion requirements"
+    )
+
+
 def test_manifest_enumerates_seven_canonical_rung_names():
     ds = GROUND_PARTS["derivation_structure"]
     # The manifest rule must enumerate the seven canonical rung names

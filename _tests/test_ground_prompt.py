@@ -561,6 +561,39 @@ def test_structural_correction_has_concrete_predicate_test():
     )
 
 
+def test_complexity_exemption_prohibited():
+    ds = GROUND_PARTS["derivation_structure"]
+    # Complexity, scope, and requirement clarity are not exemption criteria.
+    # Must be stated explicitly near 'completeness governs rung depth, not rung existence'.
+    assert (
+        "simple" in ds
+        or "complexity" in ds
+        or "incremental" in ds
+        or "clear requirements" in ds
+    ), (
+        "derivation_structure must prohibit complexity-based exemption from the ladder — "
+        "'simple', 'incremental', 'clear requirements' must be named as non-exemption bases"
+    )
+    # The valid exemption (domain has no standard artifact type) must be distinguished.
+    assert "achievable" in ds or "not achievable" in ds or "standard artifact" in ds, (
+        "derivation_structure must distinguish complexity exemption (invalid) from "
+        "domain-achievability exemption (valid, per-rung with justification)"
+    )
+
+
+def test_ground_governs_invocation_unconditionally():
+    ds = GROUND_PARTS["derivation_structure"]
+    # Once ground is present, it governs the entire invocation — not a per-task user preference.
+    assert "invocation" in ds or "unconditional" in ds or "once" in ds, (
+        "derivation_structure must state ground governs the entire invocation once present"
+    )
+    # Must name asking whether to apply ground as invalid.
+    assert "optional" in ds or "preference" in ds or "asking" in ds or "whether to apply" in ds, (
+        "derivation_structure must state ground is not an optional style preference — "
+        "asking whether to apply it treats a mandatory constraint as optional guidance"
+    )
+
+
 def test_pre_action_rung_self_check():
     gv = GROUND_PARTS["gate_validity"]
     # The pre-action check must fire before producing ANY artifact — not just before

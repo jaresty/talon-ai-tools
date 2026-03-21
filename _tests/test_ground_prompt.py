@@ -835,3 +835,31 @@ def test_manifest_enumerates_seven_canonical_rung_names():
         "derivation_structure must enumerate the seven canonical rung names in the manifest rule "
         "and state that collapsing VRO into an adjacent rung is malformed"
     )
+
+
+def test_red_token_validity_is_operational():
+    gv = GROUND_PARTS["gate_validity"]
+    # Sentinel validity is defined operationally: a 🔴 token not immediately followed
+    # by verbatim tool output is not a sentinel — it is inert text with no gate function.
+    # This is stronger than a prohibition on location because it forecloses the
+    # rationalization "I intended it as a sentinel."
+    assert (
+        "inert" in gv
+        or "no gate function" in gv
+        or "not a sentinel" in gv
+        or "carries no gate" in gv
+    ), (
+        "gate_validity must state that a 🔴 token not followed by verbatim tool output "
+        "is not a sentinel — it is inert text and carries no gate function"
+    )
+    # Must state it cannot be cited or pointed to as satisfying any gate.
+    assert (
+        "cited" in gv
+        or "point to" in gv
+        or "pointed to" in gv
+        or "treated as satisfying" in gv
+        or "cannot be cited" in gv
+    ), (
+        "gate_validity must state the inert token cannot be cited or pointed to "
+        "as satisfying any gate requirement"
+    )

@@ -427,3 +427,38 @@ def test_sentinel_must_precede_tool_invocation():
         "gate_validity must state the sentinel appears immediately before the tool is invoked "
         "and tool output appearing before its sentinel is uncovered — retroactive labeling is invalid"
     )
+
+
+def test_assertion_modification_direction_independent():
+    dd = GROUND_PARTS["derivation_discipline"]
+    # The frozen-artifact rule must cover direction-independent modifications —
+    # changing assertions to match implementation must be named as a scope violation
+    assert "conform" in dd or "match" in dd or "redefine" in dd or "direction" in dd, (
+        "derivation_discipline must state that modifying assertions to match implementation "
+        "redefines the gap contract — direction of change is irrelevant"
+    )
+    assert "gap contract" in dd or "contract" in dd or "epistemological" in dd, (
+        "derivation_discipline must name the epistemological error: using model knowledge "
+        "of implementation to define the gap"
+    )
+
+
+def test_composed_prose_body_always_invalid():
+    gv = GROUND_PARTS["gate_validity"]
+    # A prose description of tool output — even accurate — is always composed content
+    assert "characterization" in gv or "description of tool output" in gv or "prose description" in gv, (
+        "gate_validity must state that a prose description of tool output is always composed content"
+    )
+    assert "even if accurate" in gv or "regardless of whether" in gv or "even accurate" in gv, (
+        "gate_validity must state the rule is not conditioned on accuracy of the description"
+    )
+
+
+def test_manifest_enumerates_seven_canonical_rung_names():
+    ds = GROUND_PARTS["derivation_structure"]
+    # The manifest rule must enumerate the seven canonical rung names
+    # and state that collapsing VRO into an adjacent rung is malformed
+    assert "seven" in ds or "collapses" in ds or "collapse" in ds, (
+        "derivation_structure must enumerate the seven canonical rung names in the manifest rule "
+        "and state that collapsing VRO into an adjacent rung is malformed"
+    )

@@ -917,6 +917,31 @@ def test_ev_artifact_must_be_in_project_tree():
     )
 
 
+def test_general_divergence_rule_present():
+    ep = EP()
+    assert "divergence" in ep or "would change" in ep, (
+        "epistemological_protocol must state the general divergence-triggered upward-return rule"
+    )
+    assert "highest affected" in ep or "highest" in ep and "rung" in ep, (
+        "epistemological_protocol must require returning to the highest affected rung"
+    )
+    assert "normal operating mode" in ep or "not an exception" in ep, (
+        "epistemological_protocol must name upward return as normal operating mode, not an exception"
+    )
+
+
+def test_rederivation_faithful_to_predecessor_not_implementation():
+    ep = EP()
+    assert "rederiv" in ep, (
+        "epistemological_protocol must use 'rederiv' language for the downward chain after upward return"
+    )
+    # The key constraint: tests must not be adjusted to conform to implementation
+    assert "conform" in ep or "implementation" in ep and "faithful" in ep, (
+        "epistemological_protocol must state rederived artifacts must be faithful to the rung above, "
+        "not to existing implementation"
+    )
+
+
 def test_ep_opens_with_pre_adoption_gate():
     ep = EP()
     first_200 = ep[:200]

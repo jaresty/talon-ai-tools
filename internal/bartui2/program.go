@@ -32,10 +32,6 @@ type Options struct {
 	// ClipboardWrite writes text to the system clipboard.
 	ClipboardWrite func(string) error
 
-	// ClipboardRead reads text from the system clipboard. Returns the text or an error.
-	// May be nil; in that case Ctrl+V in text inputs shows a not-configured toast.
-	ClipboardRead func() (string, error)
-
 	// RunCommand executes a shell command with stdin and returns stdout/stderr.
 	RunCommand func(ctx context.Context, command string, stdin string) (stdout string, stderr string, err error)
 
@@ -66,12 +62,12 @@ type Options struct {
 
 // completion represents a single completion option with metadata.
 type completion struct {
-	Value          string
-	Slug           string // canonical slug for cross-axis map lookups (may differ from Value for persona tokens)
-	Display        string
-	Category       string
-	Description    string
-	Distinctions   string // formatted from distinctions[] metadata
+	Value       string
+	Slug        string // canonical slug for cross-axis map lookups (may differ from Value for persona tokens)
+	Display     string
+	Category    string
+	Description string
+	Distinctions string // formatted from distinctions[] metadata
 	Heuristics     string // trigger phrases from heuristics[] metadata
 	Kanji          string // ADR-0143: kanji icons for visual display
 	SemanticGroup  string // ADR-0144: semantic family for method tokens; empty for other axes
@@ -296,19 +292,19 @@ func newModel(opts Options) model {
 	resultVP.SoftWrap = true
 
 	m := model{
-		commandInput:            ti,
-		tokensByCategory:        make(map[string][]string),
-		autoFilledTokens:        make(map[string]bool),
-		autoFillSource:          make(map[string]string),
-		tokenCategories:         opts.TokenCategories,
-		subjectInput:            ta,
-		addendumInput:           at,
-		shellCommandInput:       sci,
-		previewViewport:         previewVP,
-		resultViewport:          resultVP,
-		preview:                 opts.Preview,
-		runCommand:              opts.RunCommand,
-		commandTimeout:          timeout,
+		commandInput:      ti,
+		tokensByCategory:  make(map[string][]string),
+		autoFilledTokens:  make(map[string]bool),
+		autoFillSource:    make(map[string]string),
+		tokenCategories:   opts.TokenCategories,
+		subjectInput:      ta,
+		addendumInput:     at,
+		shellCommandInput: sci,
+		previewViewport:   previewVP,
+		resultViewport:    resultVP,
+		preview:           opts.Preview,
+		runCommand:        opts.RunCommand,
+		commandTimeout:    timeout,
 		clipboardWrite:          opts.ClipboardWrite,
 		crossAxisCompositionFor: opts.CrossAxisCompositionFor,
 		axisDescriptions:        opts.AxisDescriptions,
@@ -897,17 +893,17 @@ func (m *model) updateCompletions() {
 				slug = opt.Value
 			}
 			results = append(results, completion{
-				Value:          opt.Value,
-				Slug:           slug,
-				Display:        display,
-				Category:       category.Label,
-				Description:    opt.Description,
-				Distinctions:   opt.Distinctions,
+				Value:         opt.Value,
+				Slug:          slug,
+				Display:       display,
+				Category:      category.Label,
+				Description:   opt.Description,
+				Distinctions:      opt.Distinctions,
 				Heuristics:     opt.Heuristics,
 				Kanji:          opt.Kanji,
 				SemanticGroup:  opt.SemanticGroup,
 				RoutingConcept: opt.RoutingConcept,
-				Fills:          opt.Fills,
+				Fills:         opt.Fills,
 			})
 		}
 	}
@@ -1909,11 +1905,11 @@ func (m model) renderTokensPane() string {
 		}
 	}
 
-	var selectedDesc string         // Store full description of selected item
+	var selectedDesc string     // Store full description of selected item
 	var selectedDistinctions string // Store guidance of selected item
 	var selectedHeuristics string
-	var selectedValue string // Store token value for cross-axis lookup (ADR-0148)
-	var selectedSlug string  // Store token slug for caution map key lookup (may differ for persona tokens)
+	var selectedValue string    // Store token value for cross-axis lookup (ADR-0148)
+	var selectedSlug string     // Store token slug for caution map key lookup (may differ for persona tokens)
 
 	// Chip traffic light: show prefix column when any active token on another axis has
 	// cross-axis composition data referencing the current stage (generic, ADR-0148).
@@ -2005,11 +2001,11 @@ func (m model) renderTokensPane() string {
 			if i == m.completionIndex {
 				selectionMark = "▸ "
 				style = completionSelectedStyle
-				selectedDesc = c.Description          // Capture full description
+				selectedDesc = c.Description  // Capture full description
 				selectedDistinctions = c.Distinctions // Capture guidance if present
 				selectedHeuristics = c.Heuristics
-				selectedValue = c.Value // Capture token value for cross-axis lookup (ADR-0148)
-				selectedSlug = c.Slug   // Slug form for caution map key lookup
+				selectedValue = c.Value       // Capture token value for cross-axis lookup (ADR-0148)
+				selectedSlug = c.Slug         // Slug form for caution map key lookup
 			}
 			// Chip traffic light prefix column (ADR-0148 Phase 1c).
 			// Column is always present when showPrefixColumn to avoid layout shift.

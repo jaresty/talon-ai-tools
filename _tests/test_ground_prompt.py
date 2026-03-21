@@ -664,6 +664,43 @@ def test_pre_action_rung_self_check():
     )
 
 
+def test_i_formation_is_read_only():
+    ds = GROUND_PARTS["derivation_structure"]
+    # I-formation must be explicitly read-only: reading, running, examining only.
+    # File creation, modification, and code writing are excluded.
+    i_form_idx = ds.find("I-formation")
+    assert i_form_idx >= 0, "derivation_structure must contain I-formation section"
+    context = ds[i_form_idx:i_form_idx + 800]
+    # Must state I-formation is observation/read-only, grounded in state-invariance.
+    assert (
+        "read-only" in context
+        or "observation-only" in context
+        or "reading" in context
+        or "state" in context
+    ), (
+        "derivation_structure I-formation must be defined as observation-only / state-invariant"
+    )
+    # Must explicitly exclude file modification.
+    assert (
+        "modif" in context
+        or "creat" in context
+        or "writing" in context
+        or "write" in context
+    ), (
+        "derivation_structure I-formation must explicitly exclude file creation/modification"
+    )
+    # Must close the 'still exploring' rationalization.
+    assert (
+        "exploring" in context
+        or "exploration" in context
+        or "rung work" in context
+        or "regardless" in context
+    ), (
+        "derivation_structure must state that file modification before the manifest "
+        "is rung work regardless of what phase the model believes it is in"
+    )
+
+
 def test_pre_action_check_is_citation_not_assessment():
     gv = GROUND_PARTS["gate_validity"]
     # Condition (c) must require quoting prior-rung artifacts from this conversation,

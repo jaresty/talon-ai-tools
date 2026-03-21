@@ -561,6 +561,33 @@ def test_structural_correction_has_concrete_predicate_test():
     )
 
 
+def test_ei_entry_imperative_blocking_check():
+    ds = GROUND_PARTS["derivation_structure"]
+    # The EI blocking check must be imperative — a stop-and-verify command —
+    # not just a descriptive fact ("is blocked until").
+    # It must appear in the R4 sequence near the EI entry.
+    # Find the EI entry in the R4 sequence (the last occurrence, in the sequence definition).
+    ei_idx = ds.rfind("executable implementation")
+    assert ei_idx >= 0, "derivation_structure must contain 'executable implementation' in R4 sequence"
+    # Look for imperative blocking language nearby (within 400 chars after EI entry).
+    context = ds[ei_idx:ei_idx + 400]
+    assert (
+        "stop" in context
+        or "verify" in context
+        or "must be able to quote" in context
+        or "you must" in context
+        or "cannot quote" in context
+    ), (
+        "derivation_structure must have an imperative blocking check at the EI entry — "
+        "'stop and verify' or 'must be able to quote', not just 'is blocked until'"
+    )
+    # Must require quoting the 🔴 Execution observed sentinel.
+    assert "quote" in context or "Execution observed" in context, (
+        "derivation_structure EI blocking check must require quoting the "
+        "🔴 Execution observed sentinel from this conversation"
+    )
+
+
 def test_explicit_discard_required_on_skip_ahead_recovery():
     gv = GROUND_PARTS["gate_validity"]
     # When a skip-ahead violation is discovered, the model must explicitly discard

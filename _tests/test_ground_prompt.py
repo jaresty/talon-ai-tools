@@ -561,6 +561,42 @@ def test_structural_correction_has_concrete_predicate_test():
     )
 
 
+def test_obr_infrastructure_creation_is_production():
+    ds = GROUND_PARTS["derivation_structure"]
+    obr_idx = ds.rfind("observed running behavior")
+    assert obr_idx >= 0
+    context = ds[max(0, obr_idx - 100):obr_idx + 1100]
+    # Creating infrastructure to enable observation is production — the necessity
+    # rationalization does not change the category.
+    assert "infrastructure" in context or "enable" in context or "enabling" in context, (
+        "derivation_structure must state that creating infrastructure to enable OBR observation "
+        "is production, not observation — the necessity rationalization does not change the category"
+    )
+    # When preferred observation method requires absent infrastructure, use existing ladder artifacts.
+    assert "existing" in context or "fall back" in context or "ladder artifacts" in context or "test suite" in context, (
+        "derivation_structure must state the correct alternative: use existing ladder artifacts "
+        "when the preferred observation method requires absent infrastructure"
+    )
+
+
+def test_r2_audit_outside_scope_is_unencoded():
+    ds = GROUND_PARTS["derivation_structure"]
+    # 'handled by X' / 'outside component scope' / 'delegated to existing infrastructure'
+    # are not valid R2 audit resolutions — they are UNENCODED.
+    assert "delegat" in ds or "outside" in ds or "handled by" in ds or "scope" in ds, (
+        "derivation_structure must address the 'outside scope / handled by X' rationalization "
+        "in the R2 audit section"
+    )
+    # Must name it as UNENCODED, not a valid third resolution.
+    r2_idx = ds.find("R2 audit")
+    assert r2_idx >= 0
+    context = ds[r2_idx:r2_idx + 800]
+    assert "delegat" in context or "outside" in context or "handled" in context, (
+        "derivation_structure R2 audit section must explicitly address delegation/scope justifications "
+        "as UNENCODED, not a third valid resolution"
+    )
+
+
 def test_manifest_enumerates_seven_canonical_rung_names():
     ds = GROUND_PARTS["derivation_structure"]
     # The manifest rule must enumerate the seven canonical rung names

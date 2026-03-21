@@ -833,3 +833,58 @@ def test_prior_failure_scoped_to_test():
     assert "uncovered" in sr or "no covering" in sr, (
         "sentinel_rules must state uncovered tests trigger the vacuous-green check"
     )
+
+
+def test_criteria_rung_falsifiability_is_a_gate():
+    rsc = RSC()
+    criteria_idx = rsc.find("criteria (")
+    assert criteria_idx >= 0, "rung_sequence_code must contain a criteria rung"
+    context = rsc[criteria_idx:criteria_idx + 400]
+    assert "falsif" in context.lower(), (
+        "criteria rung must state a falsifiability requirement"
+    )
+    assert "before advancing" in context or "verify" in context, (
+        "falsifiability must be framed as a gate before advancing, not descriptive guidance"
+    )
+    assert "structural" in context or "implementation detail" in context or "behavioral" in context, (
+        "criteria rung must name the anti-pattern: structural shape or implementation detail "
+        "rather than behavioral condition"
+    )
+
+
+def test_carry_forward_names_a1_exception_with_causal_chain():
+    sr = SR()
+    cf_idx = sr.find("carry-forward is the one")
+    if cf_idx < 0:
+        cf_idx = sr.find("carry-forward")
+    assert cf_idx >= 0, "sentinel_rules must contain carry-forward language"
+    context = sr[cf_idx:cf_idx + 400]
+    assert "exception" in context.lower(), (
+        "carry-forward must be named as an exception to the event-gate requirement "
+        "in proximity to the carry-forward instruction"
+    )
+    assert "composed" in context.lower(), (
+        "carry-forward must be named as a composed claim rather than a captured event"
+    )
+    assert "strict" in context.lower() or "derives" in context.lower(), (
+        "must state that the strictness of the format requirement derives from "
+        "its exception status (causal chain)"
+    )
+
+
+def test_locality_directional_asymmetry_with_nonconflict():
+    ep = EP()
+    motion_idx = ep.find("downward motion")
+    assert motion_idx >= 0, (
+        "epistemological_protocol must state locality constrains downward motion "
+        "(not just 'downward-sufficient' in Primitive 2)"
+    )
+    context = ep[max(0, motion_idx - 50):motion_idx + 300]
+    assert "upward" in context, (
+        "downward-motion statement must reference upward correction in the same context "
+        "to establish the directional asymmetry"
+    )
+    assert "not conflict" in context or "opposite" in context or "do not conflict" in context, (
+        "must explicitly state the two constraints do not conflict because they apply "
+        "in opposite directions"
+    )

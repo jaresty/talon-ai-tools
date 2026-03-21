@@ -34,6 +34,38 @@ Four attractors were identified across all sections:
 
 ### Reify/mint/shear analysis: the simpler formation
 
+**Formal axiom set (generating set)**
+
+Every rule in the protocol is a derived consequence of four axioms. Nothing in the document is a primitive beyond these four:
+
+- **A1 (valid claim):** A claim about state S is valid iff there exists an event E in this conversation, produced by tool execution, that directly witnesses S.
+- **A2 (chain derivation):** An artifact A_n is valid iff derived from A_{n-1} without adding unstated constraints, and A_{n-1} is valid.
+- **A3 (gap license):** Forward motion from A_{n-1} to A_n is licensed iff the gap between A_{n-1} and I is witnessed by an event that names that gap specifically.
+- **A4 (exact scope):** The scope of A_n is exactly the gap licensed by A_{n-1}'s observation event — neither I directly, nor any gap from a higher rung, may expand it.
+
+| Rule | Derives from |
+|---|---|
+| Sentinels must precede tool | A1 |
+| No retroactive sentinels | A1 (event must follow commitment) |
+| Skipped rung voids artifacts below | A2 (chain validity is transitive) |
+| Carry-forward required on test modification | A2 |
+| Vacuous-green check | A3 (green without prior failure = gap not witnessed) |
+| Gap-locality | A4 |
+| Upward correction before rederivation | A2 (invalid ancestor invalidates all descendants) |
+
+**Formal object model**
+
+The protocol's type system has two non-comparable types: **captured events** and **composed content**. Accuracy is a property of composed content. Events do not have accuracy — they either exist at a position in the conversation or they do not. This is why "regardless of accuracy" appears repeatedly: accuracy is a property of the wrong type.
+
+Named formal objects:
+
+- **Event** `E`: Verbatim tool output with a conversation position. Not a summary, characterization, or anticipation.
+- **Gate** `G`: Binary conversation-state condition (`open | closed`). Monotonic within a thread; non-transferable across threads.
+- **Sentinel** `S`: Prospective commitment token. Valid iff `position(S) < position(E)`. A sentinel placed after E is inert — a different object from a valid sentinel, not a weaker one.
+- **Rung** `R_n`: Positioned artifact. Valid iff upward-faithful (no added constraints vs. R_{n-1}) AND downward-sufficient (self-contained to evaluate R_{n+1}). These are independent failure modes.
+- **Gap** `G_n`: Behavioral delta declared by R_{n-1}'s observation event. Declared, not inferred — must appear as a named entity in a captured event.
+- **Thread** `T`: Directed sequence R_0...R_k. Complete iff ∃ observed running behavior event naming the declared behavioral gap.
+
 **Rule 0 (epistemic grounding):** No claim about system state, test outcome, or artifact completeness is valid unless a tool-executed event in this conversation produced it. Model knowledge, anticipation, and reasoning cannot satisfy any gate.
 
 **Four primitives generate the full rule set:**
@@ -41,7 +73,7 @@ Four attractors were identified across all sections:
 - **Primitive 1 (event gate):** Sentinel declared before tool invocation; retroactive sentinels are inert.
 - **Primitive 2 (derivation chain):** Artifact(n) derived from artifact(n-1); skipped rung voids all downstream artifacts.
 - **Primitive 3 (observation terminates):** Thread ends at tool output naming declared gap; infrastructure events are not behavioral observations.
-- **Primitive 4 (locality):** Each artifact addresses the gap declared by the prior rung's output only.
+- **Primitive 4 (locality):** Each artifact addresses the gap declared by the prior rung's output only. Locality constrains downward motion — it bounds what a forward step may address. Upward correction governs the opposite direction and re-scopes all artifacts below the corrected rung; the two constraints do not conflict.
 
 **The shear:** Two concerns are currently coupled:
 - **Concern A — epistemological protocol:** What counts as valid evidence; how gates open. Domain-independent, stable.
@@ -162,6 +194,12 @@ GROUND_PARTS: dict[str, str] = {
 - The current prompt has been battle-tested; the reformulation has not. Behavioral equivalence should be validated against known failure modes (retroactive sentinels, vacuous-green, eagerness violations) before replacing.
 - Some nuance in the current `gate_validity` section (e.g., the upward-correction observation record requirement, the I-formation permitted-criterion detail) may need to be reintegrated if omitted from the sketch above.
 - Requires `make axis-regenerate-apply` after editing `groundPrompt.py` to propagate downstream.
+
+**Structural shear planes (enforcement-model divergences):**
+- **SP1 — Top-rung softness:** The axiomatic model (A2, A3) applies uniformly across all rungs, but the prose and criteria rungs have no mechanical gate — violations here surface only at validation run observation, not at the point of production. Mitigation: explicit self-check guidance at criteria rung (falsifiability requirement before advancing).
+- **SP2 — Carry-forward as A1 exception:** Carry-forward is the one deliberate exception to A1 in the protocol — it is a composed claim, not a captured event, because no tool invocation can produce it. The strictness of its format requirement (explicit, named, traceable) derives directly from this exception status. This trade is necessary but should be made explicit in the prompt text so the model understands why the requirement is strict.
+- **SP3 — Locality/upward-correction directionality:** A4 (locality) and upward correction appear to pull against each other but govern opposite directions of chain traversal. The protocol is consistent but the directional asymmetry is implicit; making it explicit ("locality constrains downward motion only") prevents misreading the two constraints as contradictory.
+- **SP4 — Flat artifact section boundary:** The clean shear between epistemological protocol and code-domain rung catalog exists structurally in the `GROUND_PARTS` Python dict but is represented in the delivered artifact only by visual separators embedded in continuous prose. A model receiving the prompt cannot syntactically distinguish section boundaries. This is inherent to the medium; the mitigation is the source-level dict structure, which this ADR preserves.
 
 ---
 

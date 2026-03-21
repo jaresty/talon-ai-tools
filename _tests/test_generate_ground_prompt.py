@@ -19,7 +19,8 @@ def test_generated_output_contains_groundprompt_import():
 
 def test_generated_ground_value_matches_builder():
     output = render_axis_config()
-    expected = build_ground_prompt()
+    # ADR-0174: minimal spec is the current default; matches generate_axis_config.py minimal=True
+    expected = build_ground_prompt(minimal=True)
     # pformat may wrap long strings into implicit concat segments; evaluate the
     # generated code to get the actual runtime value rather than raw text search.
     ns: dict = {}

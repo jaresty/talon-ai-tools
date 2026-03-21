@@ -435,6 +435,53 @@ GROUND_PARTS: dict[str, str] = {
 }
 
 
+def _rung_names_sentence() -> str:
+    return (
+        "Seven rungs in order: "
+        + " \u2192 ".join(e["name"] for e in RUNG_SEQUENCE)
+        + "."
+    )
+
+
+def _sentinel_block() -> str:
+    lines = "; ".join(SENTINEL_TEMPLATES.values())
+    return "Sentinel formats \u2014 " + lines + "."
+
+
+GROUND_PARTS_MINIMAL: dict[str, str] = {
+    "core": (
+        "Rule 1: every claim about system state or artifact completeness is valid "
+        "only if a tool-executed event in this conversation produced it. "
+        "Rule 2: each artifact derives from the prior rung \u2014 form changes, intent does not; "
+        "a skipped rung voids all artifacts below it; "
+        "each artifact addresses only the gap declared by the prior rung \u2014 nothing beyond it. "
+        "Rule 3: every thread ends when tool output names the declared gap; stop there. "
+        "I is the declared intent governing the invocation; I precedes and is not itself an artifact; "
+        "each artifact must be self-sufficient to derive the next without consulting I; "
+        "faithful derivation requires form to change, intent to stay fixed. "
+        "Advance through every feasible rung; completeness governs rung depth, not rung existence; "
+        "each rung may not be skipped or combined with another. "
+        "The executable implementation rung is blocked until the validation run observation rung has declared a gap. "
+        "Only validation artifacts may be produced at the executable validation rung \u2014 "
+        "implementation code is not permitted at this rung; "
+        "file reads, grep output, and manual inspection do not constitute executable validation \u2014 "
+        "the artifact must be invocable by an automated tool. "
+        "A rung label must be emitted at every rung transition; "
+        "a rung label during execution marks the point where the artifact begins, "
+        "not a section heading for planning or description. "
+        "When beginning mid-ladder, locate the highest already-instantiated rung, "
+        "update it to reflect the intended change, then descend. "
+        "Reconciliation gate: at every upward rung transition \u2014 whether the scheduled "
+        "formal-notation \u2192 executable-validation gate or any upward return triggered by "
+        "new information \u2014 reconcile all artifacts at that rung against I before redescending; "
+        "documentation is a reconciliation artifact, not a thread. "
+        + _rung_names_sentence()
+        + " "
+        + _sentinel_block()
+    ),
+}
+
+
 _SECTION_LABELS: dict[str, str] = {
     "epistemological_protocol": "\u2500\u2500 PROTOCOL \u2500\u2500",
     "sentinel_rules": "\u2500\u2500 GATES \u2500\u2500",
@@ -443,13 +490,19 @@ _SECTION_LABELS: dict[str, str] = {
 }
 
 
-def build_ground_prompt() -> str:
+def build_ground_prompt(minimal: bool = False) -> str:
     """Serialize GROUND_PARTS into the ground method prompt string.
 
-    Joins the four concern blocks in canonical order, each preceded by a
-    section label so the model sees structural breaks in CONSTRAINTS.
+    If minimal=True, uses GROUND_PARTS_MINIMAL (three-rule abstract core +
+    rung names + sentinel formats only). This is the experimental variant for
+    stress-testing minimal specification (ADR-0174).
+
+    Joins the concern blocks in canonical order, each preceded by a section
+    label so the model sees structural breaks in CONSTRAINTS.
     This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"].
     """
+    if minimal:
+        return "The response " + GROUND_PARTS_MINIMAL["core"]
     parts = [
         f"{_SECTION_LABELS[k]} {GROUND_PARTS[k]}"
         for k in GROUND_PARTS

@@ -417,18 +417,12 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	for _, phrase := range []string{
-		"I-formation",
-		"observation of existing code",
-	} {
-		if !strings.Contains(groundDesc, phrase) {
-			t.Errorf("ground boundary clause missing I-formation phrase %q", phrase)
-		}
-	}
-	// The old blanket prohibition on all pre-manifest domain exploration must
-	// not survive — it is replaced by the I-formation distinction.
-	if strings.Contains(groundDesc, "state minimal assumptions and write it from I") {
-		t.Error("ground boundary clause must not retain blanket 'state minimal assumptions' prohibition — replaced by I-formation distinction")
+	// ADR-0174: minimal spec experiment — I-formation detail ("observation of existing code")
+	// is a patch rule and intentionally absent. Only verify the general pre-manifest
+	// observation concept survives in some form.
+	// Re-tighten if experiment restores full spec or violation is observed.
+	if !strings.Contains(groundDesc, "declared intent") {
+		t.Error("ground boundary clause must reference I as the declared intent")
 	}
 }
 
@@ -445,11 +439,11 @@ func TestGroundMotivationalReframe(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "shortest path") {
-		t.Error("ground must state that strict rung adherence is the shortest path to valid output")
-	}
-	if !strings.Contains(groundDesc, "primary failure mode") {
-		t.Error("ground must name eagerness to implement as the primary failure mode")
+	// ADR-0174: minimal spec experiment — motivational framing ("shortest path",
+	// "primary failure mode") is intentionally absent; these are framing, not rules.
+	// Re-tighten if experiment restores full spec.
+	if !strings.Contains(groundDesc, "derives from") {
+		t.Error("ground must state the faithful derivation rule")
 	}
 }
 
@@ -534,17 +528,11 @@ func TestGroundR4GateEmphasis(t *testing.T) {
 		t.Error("ground R4 section must state rungs may not be skipped or combined")
 	}
 
-	// The blocking rule must appear before the R4 sequence, not only after it.
-	blockedIdx := strings.Index(groundDesc, "executable implementation rung is blocked")
-	r4Idx := strings.Index(groundDesc, "R4 instantiates as")
-	if blockedIdx == -1 {
+	// The blocking rule must be present.
+	// ADR-0174: minimal spec experiment — "R4 instantiates as" scaffolding is absent;
+	// ordering check relaxed. Only verify the blocking rule exists.
+	if !strings.Contains(groundDesc, "executable implementation rung is blocked") {
 		t.Fatal("ground must state that executable implementation rung is blocked until gap declared")
-	}
-	if r4Idx == -1 {
-		t.Fatal("ground must contain R4 instantiation")
-	}
-	if blockedIdx > r4Idx {
-		t.Error("blocking rule must appear before R4 instantiation, not only in the post-sequence parenthetical")
 	}
 }
 
@@ -582,18 +570,12 @@ func TestGroundImplementationGateBroadScope(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	// The gate must cover planning text and code blocks, not just file tool calls.
-	for _, phrase := range []string{
-		"planning text",
-		"code blocks",
-	} {
-		if !strings.Contains(groundDesc, phrase) {
-			t.Errorf("ground implementation gate missing broad-scope phrase %q — gate must cover all implementation artifact types", phrase)
-		}
-	}
-	// The narrow gate (file tool calls only) must not be the primary statement.
-	if strings.Contains(groundDesc, "no file-creating or file-editing tool call for an implementation rung may be invoked") {
-		t.Error("ground implementation gate must not lead with file-tool-call-only scope — broader gate should be primary")
+	// ADR-0174: minimal spec experiment — "planning text" and "code blocks" are patch
+	// rules for the thinking-block loophole and are intentionally absent from the minimal
+	// spec. This check is relaxed to only verify the gate exists at all.
+	// Re-tighten if experiment restores full spec or violation is observed.
+	if !strings.Contains(groundDesc, "rung label") && !strings.Contains(groundDesc, "sentinel") {
+		t.Error("ground description must contain basic gate mechanism")
 	}
 }
 

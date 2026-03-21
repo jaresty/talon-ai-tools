@@ -554,19 +554,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
     def test_ground_definition_states_governing_principle(self):
         """ground definition must state the evaluation-independence principle: V can be
         evaluated against O without consulting I, and label the enumerated ladder as its
-        instantiation, not as the rule itself."""
+        instantiation, not as the rule itself.
+
+        ADR-0174: minimal spec experiment — evaluation-independence ("without consulting I")
+        and ladder-as-instantiation ("instantiates") are intentionally omitted from the
+        minimal spec. This test is relaxed to only check for the sentinel checkpoint phrase,
+        which is present in both full and minimal specs. Re-tighten if experiment restores
+        full spec.
+        """
         ground = self.meta.get("ground", {})
         definition = ground.get("definition", "")
-        self.assertIn(
-            "without consulting I",
-            definition,
-            "ground definition must state the evaluation-independence principle",
-        )
-        self.assertIn(
-            "instantiates",
-            definition,
-            "ground definition must label the ladder as an instantiation of the rule",
-        )
         self.assertIn(
             "Validation artifact V complete",
             definition,

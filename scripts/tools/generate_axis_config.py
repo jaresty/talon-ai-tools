@@ -89,8 +89,9 @@ def render_axis_config() -> str:
         for axis in sorted(axes.keys())
     }
     # ADR-0171: override ground with structured builder so GROUND_PARTS is the SSOT.
+    # ADR-0174: use minimal spec by default while iterating; set minimal=False to restore full.
     if "method" in mapping and "ground" in mapping["method"]:
-        mapping["method"]["ground"] = _build_ground_prompt()
+        mapping["method"]["ground"] = _build_ground_prompt(minimal=True)
     labels = payload.get("axis_labels", {}) or {}
     label_mapping = {
         axis: dict(sorted((labels.get(axis) or {}).items()))

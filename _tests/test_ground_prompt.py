@@ -978,6 +978,19 @@ def test_rsc_has_numbered_rung_list():
     )
 
 
+def test_ei_edit_unit_defined_as_tool_call():
+    rsc = RSC()
+    ei_idx = rsc.rfind("executable implementation")
+    assert ei_idx >= 0
+    context = rsc[ei_idx:ei_idx + 1200]
+    assert "tool call" in context, (
+        "EI rung must define 'edit' as a tool call that creates or modifies an implementation file"
+    )
+    assert "multiple" in context or "N edit" in context or "more than one" in context, (
+        "EI rung must name multiple file modifications in one response as multiple cycle violations"
+    )
+
+
 def test_ei_rung_requires_minimal_edit_per_cycle():
     rsc = RSC()
     ei_idx = rsc.rfind("executable implementation")
@@ -1008,7 +1021,7 @@ def test_ei_rung_vacuous_green_rearms_during_cycle():
     rsc = RSC()
     ei_idx = rsc.rfind("executable implementation")
     assert ei_idx >= 0
-    context = rsc[ei_idx:ei_idx + 1000]
+    context = rsc[ei_idx:ei_idx + 1400]
     assert "vacuous" in context or "uncovered" in context, (
         "EI rung must re-arm the vacuous-green check: a test passing without a prior "
         "recorded failure from this cycle is uncovered"

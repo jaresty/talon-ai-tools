@@ -32,11 +32,6 @@ type Options struct {
 	// ClipboardWrite writes text to the system clipboard.
 	ClipboardWrite func(string) error
 
-	// ClipboardRead reads text from the system clipboard. Returns empty string and nil error if
-	// clipboard is empty or unavailable. Returns error if clipboard read fails.
-	// If nil, uses RunCommand with platform-specific paste command (pbpaste/wl-paste/xclip).
-	ClipboardRead func() (string, error)
-
 	// RunCommand executes a shell command with stdin and returns stdout/stderr.
 	RunCommand func(ctx context.Context, command string, stdin string) (stdout string, stderr string, err error)
 

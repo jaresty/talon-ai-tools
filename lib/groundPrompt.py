@@ -303,12 +303,23 @@ _SECTION_LABELS: dict[str, str] = {
 def build_ground_prompt() -> str:
     """Serialize GROUND_PARTS into the ground method prompt string.
 
-    Joins the four concern blocks in canonical order, each preceded by a
-    section label so the model sees structural breaks in CONSTRAINTS.
+    Joins the four concern blocks in canonical order with section labels.
+    The first section (derivation_structure) starts with 'The response '
+    per axis description convention; its label is inserted after that prefix
+    so the combined string still opens with 'The response '.
     This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"].
     """
-    parts = [
-        f"{_SECTION_LABELS[k]} {GROUND_PARTS[k]}"
-        for k in GROUND_PARTS
-    ]
+    parts = []
+    for k in GROUND_PARTS:
+        label = _SECTION_LABELS[k]
+        content = GROUND_PARTS[k]
+        if k == "derivation_structure":
+            # Preserve 'The response ' as the opening phrase.
+            prefix = "The response "
+            assert content.startswith(prefix), (
+                f"derivation_structure must start with {prefix!r}"
+            )
+            parts.append(f"{prefix}{label} {content[len(prefix):]}")
+        else:
+            parts.append(f"{label} {content}")
     return " ".join(parts)

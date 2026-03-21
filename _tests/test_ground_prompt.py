@@ -16,13 +16,17 @@ def test_ground_parts_all_nonempty():
 
 def test_build_ground_prompt_joins_all_parts():
     result = build_ground_prompt()
-    for key in EXPECTED_KEYS:
+    # derivation_structure is split at 'The response ' so check its tail content
+    assert GROUND_PARTS["derivation_structure"][len("The response "):] in result
+    for key in EXPECTED_KEYS[1:]:
         assert GROUND_PARTS[key] in result
 
 
 def test_build_ground_prompt_contains_all_parts():
     result = build_ground_prompt()
-    for key in EXPECTED_KEYS:
+    # derivation_structure is split at 'The response ' prefix; check tail content
+    assert GROUND_PARTS["derivation_structure"][len("The response "):] in result
+    for key in EXPECTED_KEYS[1:]:
         assert GROUND_PARTS[key] in result
 
 
@@ -44,7 +48,9 @@ def test_section_headers_precede_parts():
     }
     for key, label in label_map.items():
         label_pos = result.index(label)
-        part_pos = result.index(GROUND_PARTS[key])
+        # derivation_structure is split at 'The response '; check tail content
+        content = GROUND_PARTS[key] if key != "derivation_structure" else GROUND_PARTS[key][len("The response "):]
+        part_pos = result.index(content)
         assert label_pos < part_pos, f"Header '{label}' must precede GROUND_PARTS['{key}']"
 
 

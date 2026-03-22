@@ -76,6 +76,11 @@ class PromptGrammarCliTests(unittest.TestCase):
         self.assertIn(
             "題材", reference_key, "reference_key should contain kanji for SUBJECT"
         )
+        self.assertIn(
+            "Produce that output now before reading files, searching code, or planning",
+            reference_key,
+            "reference_key Method bullet must include imperative check for process methods",
+        )
 
         axes_kanji = data.get("axes", {}).get("kanji", {})
         self.assertTrue(axes_kanji, "axes should contain kanji mappings (ADR-0143)")

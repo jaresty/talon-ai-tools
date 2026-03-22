@@ -85,6 +85,14 @@ if bootstrap is not None:
                 "A second EXECUTION REMINDER must appear after SUBJECT for injection resistance",
             )
 
+        def test_prompt_reference_key_process_method_imperative_check(self) -> None:
+            """PROMPT_REFERENCE_KEY must include imperative check for process methods."""
+            self.assertIn(
+                "Produce that output now before reading files, searching code, or planning",
+                PROMPT_REFERENCE_KEY,
+                "PROMPT_REFERENCE_KEY Method bullet must include imperative check for process methods",
+            )
+
         def test_prompt_reference_key_documents_addendum_section(self) -> None:
             """PROMPT_REFERENCE_KEY must describe the ADDENDUM section."""
             self.assertIn(

@@ -51,6 +51,12 @@ pre-commit-autofix:
 
 bar-grammar-check:
 	@echo "Regenerating grammar to check for drift..."
+	@mkdir -p tmp
+	@PYTHONPATH=. $(PYTHON) scripts/tools/generate_axis_config.py --out tmp/axisConfig.generated.py
+	@if ! cmp -s tmp/axisConfig.generated.py lib/axisConfig.py; then \
+		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
+		echo "axisConfig.py was out of sync — updated."; \
+	fi
 	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
 	@cp build/prompt-grammar.json web/static/prompt-grammar.json
@@ -64,6 +70,12 @@ bar-grammar-check:
 
 bar-grammar-update:
 	@echo "Regenerating grammar files..."
+	@mkdir -p tmp
+	@PYTHONPATH=. $(PYTHON) scripts/tools/generate_axis_config.py --out tmp/axisConfig.generated.py
+	@if ! cmp -s tmp/axisConfig.generated.py lib/axisConfig.py; then \
+		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
+		echo "axisConfig.py was out of sync — updated."; \
+	fi
 	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
 	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
 	@cp build/prompt-grammar.json web/static/prompt-grammar.json

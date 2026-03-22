@@ -112,6 +112,10 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("naming an absent artifact is not a valid gap", self.prompt,
             "Minimal spec must state gap names a behavior not an absent artifact")
 
+    def test_gap_phrased_as_currently_false_assertion(self):
+        self.assertIn("phrased as a currently-false assertion", self.prompt,
+            "Minimal spec must require gap to be phrased as a currently-false assertion not a goal")
+
     def test_gap_sentinel_not_a_stopping_point(self):
         self.assertIn("only the validation run observation rung stops after naming the gap", self.prompt,
             "Minimal spec must state gap sentinel is not a stopping point — only VRO stops")

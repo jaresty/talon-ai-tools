@@ -168,6 +168,10 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("if the artifact passes on its first run", self.prompt,
             "Minimal spec must require return to gap rung when EV passes green on first run")
 
+    def test_prose_reemitted_before_each_criteria_rung(self):
+        self.assertIn("re-emit the prose rung", self.prompt,
+            "Minimal spec must require prose to be re-emitted before criteria in every cycle after the first")
+
     def test_obs_rung_required_every_cycle(self):
         self.assertIn("including the observed running behavior rung", self.prompt,
             "Minimal spec must state OBS rung is required in every cycle, not just final")

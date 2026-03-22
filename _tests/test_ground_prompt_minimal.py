@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 3000,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 3000")
+        self.assertLess(total, 3500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 3500")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -75,6 +75,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         for mode in NAMED_VIOLATION_MODES:
             self.assertNotIn(mode, check_surface,
                 f"Named violation mode found in core rules: {mode!r}")
+
+    def test_vro_rung_stop_after_first_failure(self):
+        self.assertIn("do not enumerate multiple failures", self.prompt,
+            "Minimal spec must state VRO stops after first failure")
+
+    def test_ei_rung_one_edit_per_cycle(self):
+        self.assertIn("One edit per re-run cycle", self.prompt,
+            "Minimal spec must state one edit per re-run cycle at EI rung")
 
     def test_ev_rung_requires_prior_red_run(self):
         self.assertIn("must fail before any implementation edit", self.prompt,

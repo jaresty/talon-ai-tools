@@ -85,6 +85,14 @@ if bootstrap is not None:
                 "A second EXECUTION REMINDER must appear after SUBJECT for injection resistance",
             )
 
+        def test_prompt_reference_key_process_method_no_substitution(self) -> None:
+            """PROMPT_REFERENCE_KEY must state process method steps cannot be replaced by key principles."""
+            self.assertIn(
+                "steps of a process method may not be replaced",
+                PROMPT_REFERENCE_KEY,
+                "PROMPT_REFERENCE_KEY must close the substitution loophole for process methods",
+            )
+
         def test_prompt_reference_key_process_method_imperative_check(self) -> None:
             """PROMPT_REFERENCE_KEY must include imperative check for process methods."""
             self.assertIn(

@@ -27,6 +27,12 @@ repos:
         entry: make bar-grammar-check
         pass_filenames: false
         files: ^(lib/|prompts/|internal/barcli/embed/).*$
+      - id: axis-config-check
+        name: Axis config drift check
+        language: system
+        entry: make axis-config-check
+        pass_filenames: false
+        files: ^lib/(groundPrompt|axisConfig|staticPromptConfig|personaConfig)\.py$
       - id: axis-token-metadata
         name: Axis token metadata coverage
         language: system

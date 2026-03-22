@@ -529,9 +529,9 @@ func TestGroundR4GateEmphasis(t *testing.T) {
 	}
 
 	// The blocking rule must be present.
-	// ADR-0174: minimal spec experiment — gate-form phrasing used.
-	// Impl-gate validity: sentinel is prohibited unless antecedent exists.
-	if !strings.Contains(groundDesc, "Implementation gate sentinel may only be emitted if") {
+	// ADR-0174: minimal spec experiment — imperative check-form phrasing.
+	// "before emitting ... check: does a 🔴 Execution observed: sentinel exist"
+	if !strings.Contains(groundDesc, "before emitting") && !strings.Contains(groundDesc, "Implementation gate cleared, check") {
 		t.Fatal("ground must state that executable implementation rung is blocked until gap declared")
 	}
 }

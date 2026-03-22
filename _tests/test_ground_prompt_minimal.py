@@ -128,6 +128,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("including after an upward return", self.prompt,
             "Minimal spec must state EV and VRO required even after mid-ladder upward return")
 
+    def test_obs_rung_requires_tool_output(self):
+        self.assertIn("observed running behavior rung, emit tool output", self.prompt,
+            "Minimal spec must require tool output at OBS rung before thread-complete sentinel")
+
+    def test_conjunction_ban_has_example(self):
+        self.assertIn("are two criteria, not one", self.prompt,
+            "Minimal spec must include a concrete example showing conjunction splits into two criteria")
+
     def test_gap_sentinel_not_a_stopping_point(self):
         self.assertIn("only the validation run observation rung stops after naming the gap", self.prompt,
             "Minimal spec must state gap sentinel is not a stopping point — only VRO stops")

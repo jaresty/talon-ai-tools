@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 3500,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 3500")
+        self.assertLess(total, 4000,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 4000")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -83,6 +83,10 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_vro_rung_stop_after_first_failure(self):
         self.assertIn("do not enumerate multiple failures", self.prompt,
             "Minimal spec must state VRO stops after first failure")
+
+    def test_ei_rung_pre_edit_check(self):
+        self.assertIn("Before each edit, check", self.prompt,
+            "Minimal spec must require a pre-edit check for Execution observed sentinel")
 
     def test_ei_rung_one_edit_per_cycle(self):
         self.assertIn("One edit per re-run cycle", self.prompt,

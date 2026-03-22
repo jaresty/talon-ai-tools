@@ -478,6 +478,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "stop there \u2014 do not enumerate multiple failures or plan fixes; "
         "if the observed gap matches the prior cycle's gap, the edit did not address it \u2014 "
         "return to formal notation before any further edit. "
+        "Before each edit, check: does a \U0001F534 Execution observed: sentinel exist for the current gap? "
+        "If not, run the validation artifact now before editing. "
         "One edit per re-run cycle; after each edit re-run the validation artifact before any further edit. "
         "Outputting a rung label is what begins that rung \u2014 it is not a heading or annotation; "
         "a rung whose label has not been output has not begun and no artifact for it may exist. "

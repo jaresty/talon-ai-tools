@@ -529,9 +529,9 @@ func TestGroundR4GateEmphasis(t *testing.T) {
 	}
 
 	// The blocking rule must be present.
-	// ADR-0174: minimal spec experiment — "R4 instantiates as" scaffolding is absent;
-	// ordering check relaxed. Only verify the blocking rule exists.
-	if !strings.Contains(groundDesc, "executable implementation rung is blocked") {
+	// ADR-0174: minimal spec experiment — gate-form phrasing used.
+	// "Implementation artifacts may only be produced after" encodes the same gate.
+	if !strings.Contains(groundDesc, "Implementation artifacts may only be produced after") {
 		t.Fatal("ground must state that executable implementation rung is blocked until gap declared")
 	}
 }
@@ -550,7 +550,9 @@ func TestGroundRungLabelNotSectionHeading(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "rung label during execution") {
+	// ADR-0174: gate-form phrasing: "Outputting a rung label is what begins that rung"
+	// encodes the constitutive rule (label = act of beginning, not a heading).
+	if !strings.Contains(groundDesc, "Outputting a rung label is what begins that rung") {
 		t.Error("ground must distinguish rung labels during execution from manifest plan entries")
 	}
 }

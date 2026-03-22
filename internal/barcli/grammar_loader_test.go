@@ -530,8 +530,8 @@ func TestGroundR4GateEmphasis(t *testing.T) {
 
 	// The blocking rule must be present.
 	// ADR-0174: minimal spec experiment — gate-form phrasing used.
-	// "Implementation artifacts may only be produced after" encodes the same gate.
-	if !strings.Contains(groundDesc, "Implementation artifacts may only be produced after") {
+	// Impl-gate validity: sentinel is prohibited unless antecedent exists.
+	if !strings.Contains(groundDesc, "Implementation gate sentinel may only be emitted if") {
 		t.Fatal("ground must state that executable implementation rung is blocked until gap declared")
 	}
 }

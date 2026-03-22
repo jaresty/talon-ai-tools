@@ -104,9 +104,13 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("pre-existing test that happens to pass does not satisfy", self.prompt,
             "Minimal spec must clarify that pre-existing passing tests do not satisfy the EV rung")
 
-    def test_criteria_rung_only_closes_declared_gap(self):
-        self.assertIn("only the conditions that close the declared gap", self.prompt,
-            "Minimal spec must state criteria rung encodes only conditions closing declared gap")
+    def test_every_rung_requires_gap_sentinel(self):
+        self.assertIn("Before beginning each rung, emit", self.prompt,
+            "Minimal spec must require a gap sentinel before every rung transition")
+
+    def test_every_rung_addresses_only_declared_gap(self):
+        self.assertIn("not all known requirements of the task", self.prompt,
+            "Minimal spec must state each rung addresses only declared gap, not all requirements")
 
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)

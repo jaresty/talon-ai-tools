@@ -108,6 +108,10 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("Before beginning each rung, emit", self.prompt,
             "Minimal spec must require a gap sentinel before every rung transition")
 
+    def test_gap_sentinel_not_a_stopping_point(self):
+        self.assertIn("only the validation run observation rung stops after naming the gap", self.prompt,
+            "Minimal spec must state gap sentinel is not a stopping point — only VRO stops")
+
     def test_every_rung_addresses_only_declared_gap(self):
         self.assertIn("not all known requirements of the task", self.prompt,
             "Minimal spec must state each rung addresses only declared gap, not all requirements")

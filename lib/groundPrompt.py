@@ -481,7 +481,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "derived from the prose alone \u2014 if stating it requires knowledge of function names, "
         "hook names, API endpoints, or data structures not in the prose, it belongs in the formal "
         "notation rung instead; \u2018the table displays attribute data\u2019 derives from the prose, "
-        "\u2018the useAttributes hook calls /attributes\u2019 does not; "
+        "\u2018the useFoo hook calls /bar\u2019 does not; "
         "if the criterion contains the word \u2018and\u2019 it is invalid \u2014 split it before continuing; "
         "\u2018the table renders Display Name\u2019 and \u2018the search bar filters results\u2019 "
         "are two criteria, not one), one notation, one test, one edit; "

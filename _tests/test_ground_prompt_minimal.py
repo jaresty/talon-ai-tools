@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 6000,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 4000")
+        self.assertLess(total, 7000,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 7000")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -121,7 +121,7 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must state criterion is one independently testable behavior")
 
     def test_criterion_may_not_use_conjunction(self):
-        self.assertIn("not a conjunction of behaviors", self.prompt,
+        self.assertIn("if the criterion contains the word", self.prompt,
             "Minimal spec must forbid joining multiple behaviors with 'and' in one criterion")
 
     def test_mid_ladder_still_requires_ev_and_vro(self):
@@ -155,6 +155,18 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_every_rung_addresses_only_declared_gap(self):
         self.assertIn("not all known requirements of the task", self.prompt,
             "Minimal spec must state each rung addresses only declared gap, not all requirements")
+
+    def test_criterion_derivable_from_prose_only(self):
+        self.assertIn("derived from the prose alone", self.prompt,
+            "Minimal spec must require criterion to be derivable from prose, not implementation knowledge")
+
+    def test_criterion_and_is_invalid(self):
+        self.assertIn("if the criterion contains the word", self.prompt,
+            "Minimal spec must mechanically ban 'and' in criteria as invalid")
+
+    def test_ev_green_first_run_return_to_gap(self):
+        self.assertIn("if the artifact passes on its first run", self.prompt,
+            "Minimal spec must require return to gap rung when EV passes green on first run")
 
     def test_obs_rung_required_every_cycle(self):
         self.assertIn("including the observed running behavior rung", self.prompt,

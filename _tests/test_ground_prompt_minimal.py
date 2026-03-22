@@ -76,6 +76,14 @@ class TestMinimalGroundParts(unittest.TestCase):
             self.assertNotIn(mode, check_surface,
                 f"Named violation mode found in core rules: {mode!r}")
 
+    def test_ev_rung_requires_prior_red_run(self):
+        self.assertIn("must fail before any implementation edit", self.prompt,
+            "Minimal spec must state that validation artifact must fail before any implementation edit")
+
+    def test_preexisting_test_does_not_satisfy_ev_rung(self):
+        self.assertIn("pre-existing test that happens to pass does not satisfy", self.prompt,
+            "Minimal spec must clarify that pre-existing passing tests do not satisfy the EV rung")
+
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)
 

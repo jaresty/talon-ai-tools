@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 7000,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 7000")
+        self.assertLess(total, 7500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 7500")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -163,6 +163,14 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_criterion_and_is_invalid(self):
         self.assertIn("if the criterion contains the word", self.prompt,
             "Minimal spec must mechanically ban 'and' in criteria as invalid")
+
+    def test_ev_green_first_run_perturb_to_distinguish(self):
+        self.assertIn("perturb the implementation", self.prompt,
+            "Minimal spec must require perturbation to distinguish pre-existing behavior from vacuous test")
+
+    def test_ev_vacuous_test_detected_by_perturbation(self):
+        self.assertIn("vacuous", self.prompt,
+            "Minimal spec must name the vacuous-test case and require rewriting the test")
 
     def test_ev_green_first_run_return_to_gap(self):
         self.assertIn("if the artifact passes on its first run", self.prompt,

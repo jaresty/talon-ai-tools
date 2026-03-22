@@ -11,7 +11,7 @@ type LookupResult struct {
 	Token        string
 	Label        string
 	Tier         int    // 0–3; higher = more specific match
-	MatchedField string // "heuristics", "distinctions", or "definition"
+	MatchedField string // "token", "heuristics", "distinctions", or "definition"
 	MatchedText  string // the specific phrase that matched
 }
 
@@ -36,8 +36,8 @@ var validLookupAxes = map[string]bool{
 //
 // Tiers (highest first):
 //
-//	3 — query word exactly equals a heuristic trigger word (case-insensitive)
-//	2 — query word is a case-insensitive substring of a heuristic trigger word
+//	3 — query word exactly equals the token name or a heuristic trigger word (case-insensitive)
+//	2 — query word is a case-insensitive substring of the token name or a heuristic trigger word
 //	1 — query word is a case-insensitive substring of a distinction token name
 //	0 — query word is a case-insensitive substring of the definition text
 //
@@ -74,7 +74,12 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			bestTier := -1
 			bestField := ""
 			bestText := ""
-			// Tier 3: exact heuristic match
+			// Tier 3: exact token name match or exact heuristic match
+			if strings.ToLower(token) == wordLower {
+				bestTier = 3
+				bestField = "token"
+				bestText = token
+			}
 			for _, h := range heuristics {
 				if strings.ToLower(h) == wordLower {
 					if bestTier < 3 {
@@ -84,7 +89,12 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 					}
 				}
 			}
-			// Tier 2: substring heuristic match
+			// Tier 2: substring token name match or substring heuristic match
+			if bestTier < 2 && strings.Contains(strings.ToLower(token), wordLower) {
+				bestTier = 2
+				bestField = "token"
+				bestText = token
+			}
 			if bestTier < 2 {
 				for _, h := range heuristics {
 					if strings.Contains(strings.ToLower(h), wordLower) {

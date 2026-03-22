@@ -215,6 +215,22 @@ func TestLookupLabelPopulated(t *testing.T) {
 
 // CLI-level tests
 
+// TestLookupTokenNameMatchesOwnToken specifies that bar lookup "ground" returns method:ground.
+func TestLookupTokenNameMatchesOwnToken(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	results := LookupTokens("ground", grammar, "")
+	for _, r := range results {
+		if r.Axis == "method" && r.Token == "ground" {
+			return
+		}
+	}
+	t.Fatalf("expected method:ground in results for 'ground', got %v", results)
+}
+
 // TestLookupCLIHumanReadableOutput specifies that human-readable output is "axis:token — Label" per line.
 func TestLookupCLIHumanReadableOutput(t *testing.T) {
 	result := runBuildCLI(t, []string{"lookup", "root cause"}, nil)

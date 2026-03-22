@@ -469,6 +469,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "leaves unresolved, then immediately produce the rung artifact \u2014 do not pause "
         "after the gap sentinel; only the validation run observation rung stops after "
         "naming the gap. "
+        "From the criteria rung onward, the gap names a specific behavior currently absent "
+        "or wrong; naming an absent artifact is not a valid gap. "
         "Each rung\u2019s artifact addresses only that gap \u2014 "
         "not all known requirements of the task. "
         "Formal notation encodes only the criteria declared at the criteria rung \u2014 "

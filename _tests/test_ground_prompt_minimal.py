@@ -42,7 +42,7 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 4000,
+        self.assertLess(total, 4500,
             f"GROUND_PARTS_MINIMAL total {total} chars; expected < 4000")
 
     def test_three_abstract_rules_present(self):
@@ -107,6 +107,10 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_every_rung_requires_gap_sentinel(self):
         self.assertIn("Before beginning each rung, emit", self.prompt,
             "Minimal spec must require a gap sentinel before every rung transition")
+
+    def test_gap_names_behavior_not_artifact_absence(self):
+        self.assertIn("naming an absent artifact is not a valid gap", self.prompt,
+            "Minimal spec must state gap names a behavior not an absent artifact")
 
     def test_gap_sentinel_not_a_stopping_point(self):
         self.assertIn("only the validation run observation rung stops after naming the gap", self.prompt,

@@ -105,8 +105,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must clarify that pre-existing passing tests do not satisfy the EV rung")
 
     def test_every_rung_requires_gap_sentinel(self):
-        self.assertIn("Before beginning each rung, emit", self.prompt,
-            "Minimal spec must require a gap sentinel before every rung transition")
+        self.assertIn("Before writing the criteria, formal notation, executable validation, executable implementation", self.prompt,
+            "Minimal spec must require a gap sentinel before specific rung label writes")
 
     def test_gap_names_behavior_not_artifact_absence(self):
         self.assertIn("naming an absent artifact is not a valid gap", self.prompt,
@@ -155,6 +155,18 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_every_rung_addresses_only_declared_gap(self):
         self.assertIn("not all known requirements of the task", self.prompt,
             "Minimal spec must state each rung addresses only declared gap, not all requirements")
+
+    def test_obs_rung_required_every_cycle(self):
+        self.assertIn("including the observed running behavior rung", self.prompt,
+            "Minimal spec must state OBS rung is required in every cycle, not just final")
+
+    def test_manifest_exhausted_when_no_gap_remains(self):
+        self.assertIn("if no currently-false behavior remains, emit", self.prompt,
+            "Minimal spec must require Manifest exhausted when no false behavior remains, not a fabricated gap")
+
+    def test_thread_complete_requires_obs_label_written(self):
+        self.assertIn("observed running behavior label has been written in the current cycle", self.prompt,
+            "Minimal spec must require OBS label written before thread-complete")
 
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)

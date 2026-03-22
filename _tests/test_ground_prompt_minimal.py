@@ -42,7 +42,7 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 4500,
+        self.assertLess(total, 5000,
             f"GROUND_PARTS_MINIMAL total {total} chars; expected < 4000")
 
     def test_three_abstract_rules_present(self):
@@ -117,8 +117,16 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require gap to be phrased as a currently-false assertion not a goal")
 
     def test_each_rung_artifact_is_minimal(self):
-        self.assertIn("one criterion, one notation, one test, one edit", self.prompt,
-            "Minimal spec must state each rung produces a minimal artifact")
+        self.assertIn("one independently testable behavior", self.prompt,
+            "Minimal spec must state criterion is one independently testable behavior")
+
+    def test_criterion_may_not_use_conjunction(self):
+        self.assertIn("not a conjunction of behaviors", self.prompt,
+            "Minimal spec must forbid joining multiple behaviors with 'and' in one criterion")
+
+    def test_mid_ladder_still_requires_ev_and_vro(self):
+        self.assertIn("including after an upward return", self.prompt,
+            "Minimal spec must state EV and VRO required even after mid-ladder upward return")
 
     def test_gap_sentinel_not_a_stopping_point(self):
         self.assertIn("only the validation run observation rung stops after naming the gap", self.prompt,

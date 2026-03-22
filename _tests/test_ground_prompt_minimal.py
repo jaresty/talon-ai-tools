@@ -92,6 +92,10 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("One edit per re-run cycle", self.prompt,
             "Minimal spec must state one edit per re-run cycle at EI rung")
 
+    def test_formal_notation_encodes_only_declared_criteria(self):
+        self.assertIn("Formal notation encodes only the criteria declared", self.prompt,
+            "Minimal spec must state formal notation encodes only declared criteria")
+
     def test_ev_rung_requires_prior_red_run(self):
         self.assertIn("must fail before any implementation edit", self.prompt,
             "Minimal spec must state that validation artifact must fail before any implementation edit")

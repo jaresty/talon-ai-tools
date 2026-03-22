@@ -465,6 +465,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "before emitting \U0001F7E2 Implementation gate cleared, check: does a \U0001F534 Execution observed: sentinel "
         "exist in conversation output? if not, do not emit it \u2014 "
         "produce the executable validation artifact instead. "
+        "Formal notation encodes only the criteria declared at the criteria rung \u2014 "
+        "no additional invariants, no anticipated cases. "
         "Only validation artifacts may be produced at the executable validation rung \u2014 "
         "implementation code is not permitted at this rung; "
         "file reads, grep output, and manual inspection do not constitute executable validation \u2014 "

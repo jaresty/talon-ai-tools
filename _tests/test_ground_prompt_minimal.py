@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 7500,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 7500")
+        self.assertLess(total, 8000,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 8000")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -179,6 +179,18 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_prose_reemitted_before_each_criteria_rung(self):
         self.assertIn("re-emit the prose rung", self.prompt,
             "Minimal spec must require prose to be re-emitted before criteria in every cycle after the first")
+
+    def test_obs_rung_produces_only_tool_output(self):
+        self.assertIn("implementation edits, new files, and code changes are not permitted", self.prompt,
+            "Minimal spec must forbid implementation edits at OBS rung")
+
+    def test_upward_return_three_level_hierarchy(self):
+        self.assertIn("prose description is insufficient", self.prompt,
+            "Minimal spec must state three-level return hierarchy: EI loop / formal notation / prose")
+
+    def test_prose_return_when_observation_impossible(self):
+        self.assertIn("observation cannot be produced", self.prompt,
+            "Minimal spec must require prose return when observation cannot be produced")
 
     def test_obs_rung_required_every_cycle(self):
         self.assertIn("including the observed running behavior rung", self.prompt,

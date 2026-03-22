@@ -184,6 +184,18 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("observed running behavior label has been written in the current cycle", self.prompt,
             "Minimal spec must require OBS label written before thread-complete")
 
+    def test_final_report_rung_by_rung(self):
+        self.assertIn("final report", self.prompt,
+            "Minimal spec must require a final rung-by-rung report after manifest exhausted")
+
+    def test_final_report_includes_prose_criteria_notation(self):
+        self.assertIn("prose, criteria, and formal notation for each thread", self.prompt,
+            "Minimal spec must specify final report includes prose, criteria, and formal notation per thread")
+
+    def test_final_report_reconciles_documents(self):
+        self.assertIn("reconcile any documents", self.prompt,
+            "Minimal spec must require document reconciliation in the final report")
+
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)
 

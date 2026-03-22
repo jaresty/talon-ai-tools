@@ -533,6 +533,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "formal-notation \u2192 executable-validation gate or any upward return triggered by "
         "new information \u2014 reconcile all artifacts at that rung against I before redescending; "
         "documentation is a reconciliation artifact, not a thread. "
+        "After emitting \u2705 Manifest exhausted, produce a final report containing "
+        "prose, criteria, and formal notation for each thread in order; "
+        "then reconcile any documents (README, specs, ADRs) the implementation affects \u2014 "
+        "this reconciliation is part of the final report, not a separate thread. "
         + _rung_names_sentence()
         + " "
         + _sentinel_block()

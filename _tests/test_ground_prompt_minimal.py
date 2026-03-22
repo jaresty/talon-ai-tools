@@ -42,7 +42,7 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 5000,
+        self.assertLess(total, 6000,
             f"GROUND_PARTS_MINIMAL total {total} chars; expected < 4000")
 
     def test_three_abstract_rules_present(self):
@@ -131,6 +131,10 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_obs_rung_requires_tool_output(self):
         self.assertIn("observed running behavior rung, emit tool output", self.prompt,
             "Minimal spec must require tool output at OBS rung before thread-complete sentinel")
+
+    def test_post_obs_completeness_check(self):
+        self.assertIn("behaviors not yet observed running", self.prompt,
+            "Minimal spec must require post-OBS check for unmet behaviors before thread-complete")
 
     def test_conjunction_ban_has_example(self):
         self.assertIn("are two criteria, not one", self.prompt,

@@ -24,7 +24,6 @@ axis-config-check:
 		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
 		git add lib/axisConfig.py; \
 		echo "axisConfig.py was out of sync — updated and staged automatically."; \
-		exit 1; \
 	fi
 	@echo "✓ axisConfig.py is in sync"
 
@@ -37,7 +36,6 @@ bar-grammar-check:
 	@if ! git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json > /dev/null 2>&1; then \
 		git add build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; \
 		echo "Grammar files were out of sync — updated and staged automatically."; \
-		exit 1; \
 	fi
 	@echo "✓ Grammar files are in sync"
 

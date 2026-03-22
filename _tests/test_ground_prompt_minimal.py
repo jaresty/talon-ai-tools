@@ -128,9 +128,13 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("including after an upward return", self.prompt,
             "Minimal spec must state EV and VRO required even after mid-ladder upward return")
 
-    def test_obs_rung_requires_tool_output(self):
-        self.assertIn("observed running behavior rung, emit tool output", self.prompt,
-            "Minimal spec must require tool output at OBS rung before thread-complete sentinel")
+    def test_ev_departure_gate(self):
+        self.assertIn("Before leaving the executable validation rung", self.prompt,
+            "Minimal spec must require test file written before leaving EV rung")
+
+    def test_obs_unconditional_tool_run(self):
+        self.assertIn("run the tool and emit its output", self.prompt,
+            "Minimal spec must require unconditional tool run at OBS rung")
 
     def test_post_obs_completeness_check(self):
         self.assertIn("behaviors not yet observed running", self.prompt,

@@ -21,18 +21,12 @@ repos:
 
   - repo: local
     hooks:
-      - id: bar-grammar-check
-        name: Grammar drift check
+      - id: pre-commit-autofix
+        name: Auto-fix generated files (axis config + grammar)
         language: system
-        entry: make bar-grammar-check
+        entry: make pre-commit-autofix
         pass_filenames: false
         files: ^(lib/|prompts/|internal/barcli/embed/).*$
-      - id: axis-config-check
-        name: Axis config drift check
-        language: system
-        entry: make axis-config-check
-        pass_filenames: false
-        files: ^lib/(groundPrompt|axisConfig|staticPromptConfig|personaConfig)\.py$
       - id: axis-token-metadata
         name: Axis token metadata coverage
         language: system

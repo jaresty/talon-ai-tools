@@ -24,8 +24,30 @@ axis-config-check:
 		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
 		git add lib/axisConfig.py; \
 		echo "axisConfig.py was out of sync — updated and staged automatically."; \
+		exit 1; \
 	fi
 	@echo "✓ axisConfig.py is in sync"
+
+pre-commit-autofix:
+	@DRIFT=0; \
+	mkdir -p tmp; \
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_axis_config.py --out tmp/axisConfig.generated.py; \
+	if ! cmp -s tmp/axisConfig.generated.py lib/axisConfig.py; then \
+		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
+		git add lib/axisConfig.py; \
+		echo "axisConfig.py was out of sync — updated and staged automatically."; \
+		DRIFT=1; \
+	fi; \
+	$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json; \
+	cp build/prompt-grammar.json cmd/bar/testdata/grammar.json; \
+	cp build/prompt-grammar.json web/static/prompt-grammar.json; \
+	if ! git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json > /dev/null 2>&1; then \
+		git add build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; \
+		echo "Grammar files were out of sync — updated and staged automatically."; \
+		DRIFT=1; \
+	fi; \
+	if [ "$$DRIFT" = "1" ]; then exit 1; fi; \
+	echo "✓ All generated files are in sync"
 
 bar-grammar-check:
 	@echo "Regenerating grammar to check for drift..."
@@ -36,6 +58,7 @@ bar-grammar-check:
 	@if ! git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json > /dev/null 2>&1; then \
 		git add build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; \
 		echo "Grammar files were out of sync — updated and staged automatically."; \
+		exit 1; \
 	fi
 	@echo "✓ Grammar files are in sync"
 

@@ -116,6 +116,10 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("phrased as a currently-false assertion", self.prompt,
             "Minimal spec must require gap to be phrased as a currently-false assertion not a goal")
 
+    def test_criteria_rung_produces_exactly_one_criterion(self):
+        self.assertIn("exactly one criterion", self.prompt,
+            "Minimal spec must state criteria rung produces exactly one criterion")
+
     def test_gap_sentinel_not_a_stopping_point(self):
         self.assertIn("only the validation run observation rung stops after naming the gap", self.prompt,
             "Minimal spec must state gap sentinel is not a stopping point — only VRO stops")

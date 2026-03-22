@@ -76,6 +76,10 @@ class TestMinimalGroundParts(unittest.TestCase):
             self.assertNotIn(mode, check_surface,
                 f"Named violation mode found in core rules: {mode!r}")
 
+    def test_vro_recurring_gap_returns_to_formal_notation(self):
+        self.assertIn("observed gap matches the prior cycle's gap", self.prompt,
+            "Minimal spec must state that a recurring gap requires return to formal notation")
+
     def test_vro_rung_stop_after_first_failure(self):
         self.assertIn("do not enumerate multiple failures", self.prompt,
             "Minimal spec must state VRO stops after first failure")

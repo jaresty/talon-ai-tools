@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 8500,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 8500")
+        self.assertLess(total, 10500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 10500 (raised after C1-C4 closures)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -234,6 +234,31 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)
+
+    # C4: run-before-label gate
+    def test_vro_rung_requires_tool_invocation_before_label(self):
+        self.assertIn("Before writing the validation run observation rung label", self.prompt,
+            "Ground must require tool invocation before writing the VRO rung label — prediction does not satisfy this gate")
+
+    # C3: criteria-only after gap
+    def test_gap_at_obs_rung_permits_only_criteria_label_next(self):
+        self.assertIn("only valid next token", self.prompt,
+            "Ground must state that after emitting Gap: at the observation rung, the only valid next token is the criteria rung label")
+
+    # C1: prose-in-cycle gate
+    def test_criteria_label_requires_prose_label_in_current_cycle(self):
+        self.assertIn("prose rung label for the current cycle", self.prompt,
+            "Ground must gate the criteria label on the prose rung label existing in the current cycle")
+
+    # C2: newly-produced check
+    def test_v_complete_requires_artifact_not_pre_existing(self):
+        self.assertIn("does this artifact exist in the repository at HEAD", self.prompt,
+            "Ground must require checking that the validation artifact does not pre-exist at HEAD before emitting V-complete")
+
+    # Attractor sentence
+    def test_attractor_sentence_rung_satisfied_only_by_tool_event(self):
+        self.assertIn("A rung is satisfied when and only when a tool-executed event", self.prompt,
+            "Ground must open with the attractor sentence: a rung is satisfied only by a tool-executed event, not inference or prediction")
 
 
 if __name__ == "__main__":

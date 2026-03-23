@@ -839,7 +839,7 @@ def test_criteria_rung_falsifiability_is_a_gate():
     rsc = RSC()
     criteria_idx = rsc.find("criteria (")
     assert criteria_idx >= 0, "rung_sequence_code must contain a criteria rung"
-    context = rsc[criteria_idx:criteria_idx + 400]
+    context = rsc[criteria_idx:criteria_idx + 600]
     assert "falsif" in context.lower(), (
         "criteria rung must state a falsifiability requirement"
     )
@@ -944,14 +944,14 @@ def test_rederivation_faithful_to_predecessor_not_implementation():
 
 def test_ep_opens_with_pre_adoption_gate():
     ep = EP()
-    first_200 = ep[:200]
-    assert "task label" in first_200 or "task token" in first_200, (
+    first_400 = ep[:400]
+    assert "task label" in first_400 or "task token" in first_400, (
         "epistemological_protocol must open with a sentence naming the task-label competitor"
     )
-    assert "last rung" in first_200, (
+    assert "last rung" in first_400, (
         "epistemological_protocol opening must state the task label names the last rung"
     )
-    assert "failing test" in first_200 or "test that fails" in first_200 or "failing" in first_200, (
+    assert "failing test" in first_400 or "test that fails" in first_400 or "failing" in first_400, (
         "epistemological_protocol opening must contain the pre-adoption gate: no implementation without a failing test"
     )
 

@@ -43,7 +43,7 @@ func RenderPlainText(result *BuildResult) string {
 	b.WriteString(sectionConstraints)
 	b.WriteString("\n")
 	if c := strings.TrimSpace(rk.Constraints); c != "" {
-		fmt.Fprintf(&b, "↓ [%s]\n", c)
+		fmt.Fprintf(&b, "[%s]\n", c)
 	}
 	if len(result.HydratedConstraints) == 0 {
 		b.WriteString("(none)\n\n")

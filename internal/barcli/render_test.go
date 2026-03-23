@@ -113,6 +113,34 @@ func TestRenderPlainTextConstraintsInlineContract(t *testing.T) {
 	}
 }
 
+// TestRenderPlainTextConstraintsSectionContractNoArrow specifies that the
+// CONSTRAINTS section-level contract has no ↓ arrow (it scopes the whole block),
+// while per-axis contracts do have ↓ arrows.
+func TestRenderPlainTextConstraintsSectionContractNoArrow(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "full", Description: "Thorough."},
+		},
+		ReferenceKey: ReferenceKeyContracts{
+			Constraints:     "SENTINEL_CONSTRAINTS_CONTRACT",
+			ConstraintsAxes: map[string]string{"completeness": "SENTINEL_COMPLETENESS_CONTRACT"},
+		},
+	}
+	output := RenderPlainText(result)
+	// Section-level contract: bare brackets, no ↓
+	if strings.Contains(output, "↓ [SENTINEL_CONSTRAINTS_CONTRACT]") {
+		t.Fatalf("CONSTRAINTS section-level contract must not have ↓ arrow (scopes whole block):\n%s", output)
+	}
+	if !strings.Contains(output, "[SENTINEL_CONSTRAINTS_CONTRACT]") {
+		t.Fatalf("CONSTRAINTS section-level contract must be present as [contract]:\n%s", output)
+	}
+	// Per-axis contract: must have ↓
+	if !strings.Contains(output, "↓ [SENTINEL_COMPLETENESS_CONTRACT]") {
+		t.Fatalf("per-axis contract must have ↓ arrow (governs next token group):\n%s", output)
+	}
+}
+
 // TestRenderPlainTextPerAxisContracts specifies that present axes in CONSTRAINTS
 // emit their per-axis contract before that axis's bullet(s) (ADR-0176).
 func TestRenderPlainTextPerAxisContracts(t *testing.T) {

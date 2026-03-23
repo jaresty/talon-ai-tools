@@ -185,6 +185,15 @@ describe('renderPrompt', () => {
 		expect(contractIdx).toBeLessThan(bodyIdx);
 	});
 
+	it('CONSTRAINTS section-level contract has no ↓ arrow; per-axis contracts do', () => {
+		const result = renderPrompt(grammar, { completeness: ['full'] }, 'x', '');
+		// Section-level: bare brackets
+		expect(result).not.toContain('↓ [SENTINEL_CONSTRAINTS_CONTRACT]');
+		expect(result).toContain('[SENTINEL_CONSTRAINTS_CONTRACT]');
+		// Per-axis: arrow prefix
+		expect(result).toContain('↓ [SENTINEL_COMPLETENESS_CONTRACT]');
+	});
+
 	it('includes EXECUTION REMINDER section', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
 		expect(result).toContain('=== EXECUTION REMINDER ===');

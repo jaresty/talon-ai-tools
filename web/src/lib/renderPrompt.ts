@@ -136,7 +136,7 @@ export function renderPrompt(
 	const constraintsSectionContract = grammar.reference_key.constraints ?? '';
 	parts.push(`=== CONSTRAINTS 制約 (GUARDRAILS) ===\n`);
 	if (constraintsSectionContract.trim()) {
-		parts.push(`↓ [${constraintsSectionContract.trim()}]\n`);
+		parts.push(`[${constraintsSectionContract.trim()}]\n`);
 	}
 	if (constraintLines.length === 0) {
 		parts.push('(none)\n\n');

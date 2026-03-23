@@ -510,7 +510,7 @@ func TestGroundExecutableValidationNoImplementation(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "implementation code is not permitted at this rung") {
+	if !strings.Contains(groundDesc, "no other content is permitted before") {
 		t.Error("ground must state that implementation code is not permitted at the executable validation rung")
 	}
 }
@@ -529,7 +529,7 @@ func TestGroundExecutableValidationRequiresRunnable(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "file reads") || !strings.Contains(groundDesc, "do not constitute executable validation") {
+	if !strings.Contains(groundDesc, "invocable by an automated tool") {
 		t.Error("ground must state that file reads do not constitute executable validation")
 	}
 	if !strings.Contains(groundDesc, "automated tool") {

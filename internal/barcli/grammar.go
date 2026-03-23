@@ -18,10 +18,24 @@ var (
 	slugHyphenCollapse = regexp.MustCompile(`-{2,}`)
 )
 
+// ReferenceKeyContracts holds per-section inline semantic contracts (ADR-0176).
+// Each field is a short interpretation contract emitted inline in the rendered
+// prompt immediately after the section header it describes. ConstraintsAxes
+// holds per-axis contracts keyed by axis name (completeness, scope, method,
+// form, channel, directional).
+type ReferenceKeyContracts struct {
+	Task            string            `json:"task"`
+	Addendum        string            `json:"addendum"`
+	Constraints     string            `json:"constraints"`
+	ConstraintsAxes map[string]string `json:"constraints_axes"`
+	Persona         string            `json:"persona"`
+	Subject         string            `json:"subject"`
+}
+
 // Grammar represents the portable prompt grammar payload exported from Python.
 type Grammar struct {
 	SchemaVersion              string
-	ReferenceKey               string
+	ReferenceKey               ReferenceKeyContracts
 	ExecutionReminder          string
 	MetaInterpretationGuidance string
 	Axes              AxisSection
@@ -155,7 +169,7 @@ type GrammarPattern struct {
 
 type rawGrammar struct {
 	SchemaVersion              string           `json:"schema_version"`
-	ReferenceKey               string           `json:"reference_key"`
+	ReferenceKey               ReferenceKeyContracts `json:"reference_key"`
 	ExecutionReminder          string           `json:"execution_reminder"`
 	MetaInterpretationGuidance string           `json:"meta_interpretation_guidance"`
 	Axes              rawAxisSection   `json:"axes"`

@@ -32,8 +32,39 @@ func TestLoadGrammarHasReferenceKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
-	if strings.TrimSpace(grammar.ReferenceKey) == "" {
-		t.Fatal("expected embedded grammar to provide a non-empty ReferenceKey (ADR-0131)")
+	if strings.TrimSpace(grammar.ReferenceKey.Task) == "" {
+		t.Fatal("expected embedded grammar to provide a non-empty ReferenceKey.Task (ADR-0131 / ADR-0176)")
+	}
+}
+
+// TestReferenceKeyContractsUnmarshal specifies that the grammar JSON
+// reference_key field is a dict (not a string) and unmarshals into
+// ReferenceKeyContracts with per-section and per-axis fields (ADR-0176).
+// This artifact was written for Thread 9 of the ADR-0176 ground cycle.
+func TestReferenceKeyContractsUnmarshal(t *testing.T) {
+	fixture := `{
+		"task": "SENTINEL_TASK",
+		"addendum": "SENTINEL_ADDENDUM",
+		"constraints": "SENTINEL_CONSTRAINTS",
+		"constraints_axes": {
+			"scope": "SENTINEL_SCOPE",
+			"method": "SENTINEL_METHOD"
+		},
+		"persona": "SENTINEL_PERSONA",
+		"subject": "SENTINEL_SUBJECT"
+	}`
+	var rk ReferenceKeyContracts
+	if err := json.Unmarshal([]byte(fixture), &rk); err != nil {
+		t.Fatalf("failed to unmarshal ReferenceKeyContracts: %v", err)
+	}
+	if rk.Task != "SENTINEL_TASK" {
+		t.Errorf("expected Task=SENTINEL_TASK, got %q", rk.Task)
+	}
+	if rk.ConstraintsAxes["scope"] != "SENTINEL_SCOPE" {
+		t.Errorf("expected ConstraintsAxes[scope]=SENTINEL_SCOPE, got %q", rk.ConstraintsAxes["scope"])
+	}
+	if rk.Subject != "SENTINEL_SUBJECT" {
+		t.Errorf("expected Subject=SENTINEL_SUBJECT, got %q", rk.Subject)
 	}
 }
 

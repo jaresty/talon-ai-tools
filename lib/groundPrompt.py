@@ -62,8 +62,11 @@ RUNG_SEQUENCE: list[dict] = [
 
 
 SENTINEL_TEMPLATES: dict[str, str] = {
+    "ground_entered":     "\u2705 Ground entered \u2014 prose rung begins",
+    "manifest_declared":  "\u2705 Manifest declared \u2014 N threads: [numbered list of behavioral gaps]",
     "exec_observed":      "\U0001F534 Execution observed: [verbatim tool output \u2014 triple-backtick delimited, complete, nothing omitted]",
     "gap":                "\U0001F534 Gap: [what the verbatim output reveals]",
+    "hard_stop":          "\U0001F6D1 HARD STOP",
     "impl_gate":          "\U0001F7E2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001F534 Execution observed]",
     "v_complete":         "\u2705 Validation artifact V complete",
     "thread_complete":    "\u2705 Thread N complete",
@@ -350,7 +353,11 @@ GROUND_PARTS: dict[str, str] = {
         "pre-existing artifacts not targeting the gap do not satisfy this rung) \u2192 "
         "validation run observation (only satisfied by an observed failure; a passing run is a gap signal \u2014 "
         "a build error or compile failure does not satisfy this rung; "
-        "emit \u2018\u2705 Validation artifact V complete\u2019 on its own line immediately after the gap is declared) \u2192 "
+        "emit \u2018\u2705 Validation artifact V complete\u2019 on its own line immediately after the gap is declared; "
+        "after declaring the gap emit \u2018\U0001F6D1 HARD STOP\u2019 on its own line; "
+        "no further content of any kind is permitted in this response after \U0001F6D1 HARD STOP; "
+        "implementation code, planning prose, or additional failures written after \U0001F6D1 HARD STOP are void; "
+        "the next response begins at the criteria rung) \u2192 "
         "executable implementation [stop and verify before producing any implementation artifact: "
         "you must be able to quote a \U0001F534 Execution observed sentinel with verbatim tool output "
         "from this conversation for this thread, and a \U0001F534 Gap must have been declared; "
@@ -407,6 +414,16 @@ GROUND_PARTS: dict[str, str] = {
         "any file creation or modification before the manifest-complete sentinel is a boundary violation; "
         "output \u2018\u2705 I-formation complete\u2019 on its own line after declaring I and before the rung manifest; "
         "the manifest may not appear before this sentinel; "
+        "first-rung gate: before any tool call, file read, search, or implementation action, "
+        "emit \u2018\u2705 Ground entered \u2014 prose rung begins\u2019 on its own line; "
+        "no content other than this sentinel may precede the prose rung artifact; "
+        "manifest gate: after the prose rung and before the criteria rung label, "
+        "emit \u2018\u2705 Manifest declared \u2014 N threads:\u2019 followed by a numbered list of every distinct "
+        "behavioral gap the declared intent requires; "
+        "this sentinel gates all subsequent rungs \u2014 the criteria rung label may not be written until it appears; "
+        "a thread not named in the manifest does not exist; "
+        "if a new behavior is discovered mid-cycle, return to the manifest, add it, re-emit the sentinel "
+        "with the updated count, then descend; "
         "exploration beyond what is needed to declare I belongs as the first rung of the manifest, not pre-manifest. "
         "I-formation ends at a gate prohibiting implementation intent \u2014 "
         "the manifest produced after I-formation may contain only behavioral gaps to be closed; "

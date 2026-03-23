@@ -12,7 +12,7 @@ from .personaConfig import (
     persona_key_to_kanji_map,
 )
 
-from .metaPromptConfig import META_INTERPRETATION_GUIDANCE, PROMPT_REFERENCE_KEY
+from .metaPromptConfig import META_INTERPRETATION_GUIDANCE, PROMPT_REFERENCE_KEY, prompt_reference_key_as_text
 from dataclasses import dataclass, field
 from typing import Any, List, Literal, TypedDict, Union
 
@@ -346,7 +346,7 @@ class GPTSystemPrompt:
 
         lines = [
             # Reference key explains how to interpret the structured tokens
-            PROMPT_REFERENCE_KEY.strip(),
+            prompt_reference_key_as_text(),
             "",
             # Persona axes (who is speaking and to whom)
             f"Voice: Act {_voice_phrase()}",

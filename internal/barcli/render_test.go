@@ -48,21 +48,172 @@ func TestRenderPlainTextSections(t *testing.T) {
 	}
 }
 
-// TestRenderPlainTextUsesResultReferenceKey specifies that RenderPlainText uses
-// result.ReferenceKey when it is non-empty, rather than the hardcoded constant
-// (ADR-0131, Loop 3). This is the specifying validation for the render.go change.
-func TestRenderPlainTextUsesResultReferenceKey(t *testing.T) {
-	customKey := "CUSTOM_REFERENCE_KEY_ADR0131_SENTINEL"
+// TestRenderPlainTextNoReferenceKeyBlock specifies that RenderPlainText no
+// longer emits a standalone === REFERENCE KEY === block (ADR-0176).
+func TestRenderPlainTextNoReferenceKeyBlock(t *testing.T) {
+	result := &BuildResult{Task: "make something"}
+	output := RenderPlainText(result)
+	if strings.Contains(output, sectionReference) {
+		t.Fatalf("expected RenderPlainText to omit REFERENCE KEY block, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainTextTaskInlineContract specifies that the TASK section emits
+// its inline contract immediately after the header and before the task body (ADR-0176).
+func TestRenderPlainTextTaskInlineContract(t *testing.T) {
 	result := &BuildResult{
 		Task:         "make something",
-		Constraints:  []string{},
-		ReferenceKey: customKey,
+		ReferenceKey: ReferenceKeyContracts{Task: "SENTINEL_TASK_CONTRACT"},
 	}
-
 	output := RenderPlainText(result)
+	if !strings.Contains(output, "SENTINEL_TASK_CONTRACT") {
+		t.Fatalf("expected TASK inline contract in output:\n%s", output)
+	}
+	taskIdx := strings.Index(output, sectionTask)
+	contractIdx := strings.Index(output, "SENTINEL_TASK_CONTRACT")
+	bodyIdx := strings.Index(output, "make something")
+	if contractIdx <= taskIdx || contractIdx >= bodyIdx {
+		t.Fatalf("expected TASK contract (pos %d) between header (pos %d) and body (pos %d):\n%s", contractIdx, taskIdx, bodyIdx, output)
+	}
+}
 
-	if !strings.Contains(output, customKey) {
-		t.Fatalf("expected RenderPlainText to use result.ReferenceKey %q, but output does not contain it:\n%s", customKey, output)
+// TestRenderPlainTextConstraintsInlineContract specifies that the CONSTRAINTS
+// section emits its section-level contract immediately after the header and
+// before the first constraint bullet (ADR-0176).
+func TestRenderPlainTextConstraintsInlineContract(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "full", Description: "Thorough."},
+		},
+		ReferenceKey: ReferenceKeyContracts{Constraints: "SENTINEL_CONSTRAINTS_CONTRACT"},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "SENTINEL_CONSTRAINTS_CONTRACT") {
+		t.Fatalf("expected CONSTRAINTS contract in output:\n%s", output)
+	}
+	headerIdx := strings.Index(output, sectionConstraints)
+	contractIdx := strings.Index(output, "SENTINEL_CONSTRAINTS_CONTRACT")
+	bulletIdx := strings.Index(output, "- Completeness")
+	if contractIdx <= headerIdx || contractIdx >= bulletIdx {
+		t.Fatalf("expected CONSTRAINTS contract (pos %d) between header (pos %d) and first bullet (pos %d):\n%s", contractIdx, headerIdx, bulletIdx, output)
+	}
+}
+
+// TestRenderPlainTextPerAxisContracts specifies that present axes in CONSTRAINTS
+// emit their per-axis contract before that axis's bullet(s) (ADR-0176).
+func TestRenderPlainTextPerAxisContracts(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "full", Description: "Thorough."},
+			{Axis: "scope", Token: "struct", Description: "Structural."},
+		},
+		ReferenceKey: ReferenceKeyContracts{
+			ConstraintsAxes: map[string]string{
+				"completeness": "SENTINEL_COMPLETENESS_CONTRACT",
+				"scope":        "SENTINEL_SCOPE_CONTRACT",
+			},
+		},
+	}
+	output := RenderPlainText(result)
+	for _, sentinel := range []string{"SENTINEL_COMPLETENESS_CONTRACT", "SENTINEL_SCOPE_CONTRACT"} {
+		if !strings.Contains(output, sentinel) {
+			t.Fatalf("expected per-axis contract %q in output:\n%s", sentinel, output)
+		}
+	}
+	completenessContractIdx := strings.Index(output, "SENTINEL_COMPLETENESS_CONTRACT")
+	scopeContractIdx := strings.Index(output, "SENTINEL_SCOPE_CONTRACT")
+	completenessBulletIdx := strings.Index(output, "- Completeness")
+	scopeBulletIdx := strings.Index(output, "- Scope")
+	if completenessContractIdx >= completenessBulletIdx {
+		t.Fatalf("expected completeness contract (pos %d) before completeness bullet (pos %d):\n%s", completenessContractIdx, completenessBulletIdx, output)
+	}
+	if scopeContractIdx >= scopeBulletIdx {
+		t.Fatalf("expected scope contract (pos %d) before scope bullet (pos %d):\n%s", scopeContractIdx, scopeBulletIdx, output)
+	}
+}
+
+// TestRenderPlainTextAbsentAxisNoContract specifies that axes not present in
+// the rendered CONSTRAINTS do not emit their per-axis contract (ADR-0176).
+func TestRenderPlainTextAbsentAxisNoContract(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "full", Description: "Thorough."},
+		},
+		ReferenceKey: ReferenceKeyContracts{
+			ConstraintsAxes: map[string]string{
+				"completeness": "SENTINEL_COMPLETENESS_CONTRACT",
+				"method":       "SENTINEL_METHOD_CONTRACT",
+			},
+		},
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "SENTINEL_METHOD_CONTRACT") {
+		t.Fatalf("expected absent axis contract to be omitted, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainTextSubjectInlineContract specifies that the SUBJECT section
+// emits its inline contract immediately after the header and before the body (ADR-0176).
+func TestRenderPlainTextSubjectInlineContract(t *testing.T) {
+	result := &BuildResult{
+		Task:         "make something",
+		Subject:      "my subject text",
+		ReferenceKey: ReferenceKeyContracts{Subject: "SENTINEL_SUBJECT_CONTRACT"},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "SENTINEL_SUBJECT_CONTRACT") {
+		t.Fatalf("expected SUBJECT contract in output:\n%s", output)
+	}
+	headerIdx := strings.Index(output, sectionSubject)
+	contractIdx := strings.Index(output, "SENTINEL_SUBJECT_CONTRACT")
+	bodyIdx := strings.Index(output, "my subject text")
+	if contractIdx <= headerIdx || contractIdx >= bodyIdx {
+		t.Fatalf("expected SUBJECT contract (pos %d) between header (pos %d) and body (pos %d):\n%s", contractIdx, headerIdx, bodyIdx, output)
+	}
+}
+
+// TestRenderPlainTextAddendumInlineContract specifies that the ADDENDUM section
+// emits its inline contract when addendum is present (ADR-0176).
+func TestRenderPlainTextAddendumInlineContract(t *testing.T) {
+	result := &BuildResult{
+		Task:         "make something",
+		Addendum:     "extra instructions",
+		ReferenceKey: ReferenceKeyContracts{Addendum: "SENTINEL_ADDENDUM_CONTRACT"},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "SENTINEL_ADDENDUM_CONTRACT") {
+		t.Fatalf("expected ADDENDUM contract in output:\n%s", output)
+	}
+	headerIdx := strings.Index(output, sectionAddendum)
+	contractIdx := strings.Index(output, "SENTINEL_ADDENDUM_CONTRACT")
+	bodyIdx := strings.Index(output, "extra instructions")
+	if contractIdx <= headerIdx || contractIdx >= bodyIdx {
+		t.Fatalf("expected ADDENDUM contract (pos %d) between header (pos %d) and body (pos %d):\n%s", contractIdx, headerIdx, bodyIdx, output)
+	}
+}
+
+// TestRenderPlainTextPersonaInlineContract specifies that the PERSONA section
+// emits its inline contract when a persona is present (ADR-0176).
+func TestRenderPlainTextPersonaInlineContract(t *testing.T) {
+	result := &BuildResult{
+		Task:    "make something",
+		Persona: PersonaResult{Voice: "as teacher"},
+		HydratedPersona: []HydratedPromptlet{
+			{Axis: "voice", Token: "as teacher", Description: "Teaches."},
+		},
+		ReferenceKey: ReferenceKeyContracts{Persona: "SENTINEL_PERSONA_CONTRACT"},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "SENTINEL_PERSONA_CONTRACT") {
+		t.Fatalf("expected PERSONA contract in output:\n%s", output)
+	}
+	headerIdx := strings.Index(output, sectionPersona)
+	contractIdx := strings.Index(output, "SENTINEL_PERSONA_CONTRACT")
+	if contractIdx <= headerIdx {
+		t.Fatalf("expected PERSONA contract (pos %d) after header (pos %d):\n%s", contractIdx, headerIdx, output)
 	}
 }
 

@@ -135,16 +135,16 @@ func TestBuildResultCarriesReferenceKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
-	if strings.TrimSpace(grammar.ReferenceKey) == "" {
-		t.Skip("embedded grammar has no ReferenceKey; run python3 -m prompts.export first")
+	if strings.TrimSpace(grammar.ReferenceKey.Task) == "" {
+		t.Skip("embedded grammar has no ReferenceKey; run make bar-grammar-update first")
 	}
 
 	result, cliErr := Build(grammar, []string{"make"})
 	if cliErr != nil {
 		t.Fatalf("Build returned error: %v", cliErr)
 	}
-	if result.ReferenceKey != grammar.ReferenceKey {
-		t.Fatalf("expected BuildResult.ReferenceKey == grammar.ReferenceKey, got %q", result.ReferenceKey)
+	if result.ReferenceKey.Task != grammar.ReferenceKey.Task {
+		t.Fatalf("expected BuildResult.ReferenceKey.Task == grammar.ReferenceKey.Task")
 	}
 }
 

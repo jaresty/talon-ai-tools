@@ -21,7 +21,7 @@ const (
 // BuildResult captures the structured output of `bar build`.
 type BuildResult struct {
 	SchemaVersion       string              `json:"schema_version"`
-	ReferenceKey               string              `json:"reference_key,omitempty"`
+	ReferenceKey               ReferenceKeyContracts `json:"reference_key,omitempty"`
 	ExecutionReminder          string              `json:"execution_reminder,omitempty"`
 	MetaInterpretationGuidance string              `json:"meta_interpretation_guidance,omitempty"`
 	Subject             string              `json:"subject"`

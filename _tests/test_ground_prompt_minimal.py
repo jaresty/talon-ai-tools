@@ -177,7 +177,7 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require return to gap rung when EV passes green on first run")
 
     def test_prose_reemitted_before_each_criteria_rung(self):
-        self.assertIn("re-emit the prose rung", self.prompt,
+        self.assertIn("emit it now before writing criteria", self.prompt,
             "Minimal spec must require prose to be re-emitted before criteria in every cycle after the first")
 
     def test_obs_rung_produces_only_tool_output(self):
@@ -227,6 +227,10 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_final_report_copies_not_claims(self):
         self.assertIn("no new behavioral claims", self.prompt,
             "Minimal spec must require final report copies existing artifacts, no new behavioral claims")
+
+    def test_prose_reemit_is_a_mechanical_check(self):
+        self.assertIn("if the prose rung has not been re-emitted in the current cycle", self.prompt,
+            "Minimal spec must frame prose re-emit as a mechanical check, not a soft reminder")
 
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)

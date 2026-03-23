@@ -288,6 +288,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertNotIn("declared intent", segment,
             "Thread N complete check must not reference 'declared intent' — use prose rung instead")
 
+    # C7 carve-out: tests are never valid at ORB rung
+    def test_c7_carveout_excludes_all_tests_not_just_gating_test(self):
+        orb_idx = self.prompt.index("Upon writing the observed running behavior label")
+        thread_complete_idx = self.prompt.index("\u2705 Thread N complete may not be emitted")
+        segment = self.prompt[orb_idx:thread_complete_idx]
+        self.assertIn("never a valid consumer at this rung", segment,
+            "C7 carve-out must exclude all tests at the ORB rung, not only the gating test")
+
     # C12: observed running behavior rung criterion re-emission
     def test_c12_criterion_reemitted_before_orb_invocation(self):
         orb_idx = self.prompt.index("Upon writing the observed running behavior label")

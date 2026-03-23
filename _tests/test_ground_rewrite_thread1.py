@@ -59,7 +59,7 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_ev_section_is_compact_gate_list(self):
-        """EV section must be rewritten as a compact gate list (≤ 1250 chars, ADR-0177 target ~1200)."""
+        """EV section must be ≤ 1450 chars (raised from 1250 after C20 red-run-before-edit gate ~+170)."""
         import sys
         sys.path.insert(0, '.')
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
@@ -68,8 +68,8 @@ class TestGroundRewrite(unittest.TestCase):
         ev_end = core.find("✅ Validation artifact V complete must be emitted at the executable validation rung")
         ev_section = core[ev_start:ev_end]
         self.assertLessEqual(
-            len(ev_section), 1250,
-            f"EV rung section is {len(ev_section)} chars; must be ≤ 1250 after compact gate list rewrite",
+            len(ev_section), 1450,
+            f"EV rung section is {len(ev_section)} chars; must be ≤ 1450 after C20 red-run-before-edit addition",
         )
 
 

@@ -15,9 +15,10 @@ class TestC14ManifestExhaustedRequiresThreadComplete(unittest.TestCase):
 
     def test_c14_positioned_near_manifest_exhausted(self):
         c14_idx = self.core.index("thread count before emitting")
-        manifest_ex_idx = self.core.index("Manifest exhausted")
+        gate_phrase = "Manifest exhausted \u2014 \u2705 Manifest exhausted may not be emitted"
+        manifest_ex_idx = self.core.index(gate_phrase)
         self.assertLess(abs(c14_idx - manifest_ex_idx), 300,
-            "C14: thread-count check must appear near the first Manifest exhausted usage")
+            "C14: thread-count check must appear near the Manifest exhausted gate instruction")
 
 
 class TestC15HardStopPositionalConstraint(unittest.TestCase):

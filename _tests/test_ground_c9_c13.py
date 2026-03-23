@@ -15,9 +15,9 @@ class TestC9FormalNotationArtifactType(unittest.TestCase):
 
     def test_c9_executable_code_prohibited(self):
         idx = self.core.index("type signatures, interfaces, pseudocode")
-        segment = self.core[idx:idx+300]
-        self.assertIn("not valid formal notation", segment,
-            "C9: formal notation must explicitly prohibit executable code / component bodies")
+        segment = self.core[idx:idx+500]
+        self.assertIn("cannot be directly compiled or executed without modification", segment,
+            "C9/C21: formal notation gate must use compilability test to prohibit implementation code")
 
     def test_c9_positioned_before_ev_rung(self):
         fn_idx = self.core.index("type signatures, interfaces, pseudocode")

@@ -103,8 +103,28 @@ Tests in `test_ground_rewrite_thread1.py` check behavioral markers (`"artifact t
 - 15 tests updated from exact-phrase assertions to behavioral-marker assertions
 - 5 new tests added (2 rung-type constraint, 2 ORB all-criteria, 1 growth guard)
 
-**Next step — deeper collapse (~12994 → ~7500 chars):**
-The redundancy removal pass eliminated restatements within clusters. The remaining ~5500 chars require more aggressive restructuring: collapsing entire paragraphs by rewriting them at higher abstraction, not just removing duplicate sentences. This will break more tests and requires the same cluster-by-cluster approach with test rewrites in parallel. The key constraint: every behavioral rule must retain a canonical marker phrase that a test can assert.
+**Next step — deeper collapse (~12994 → ~5850 chars):**
+
+The redundancy removal pass eliminated restatements within clusters. The next pass restructures at the paragraph level — replacing prose-based drift closures with compact gate statements.
+
+**Orbit insight:** The attractor shape is: *emit sentinel → produce artifact → check gate → advance*. Every rule is a gate definition, an artifact definition, or an escape closure. The current text mixes escape closures into gate definitions as inline prose; the minimal form is gate list + one example per escape closure per rung.
+
+**Drift risks to close structurally (not with more prose):**
+- EV rung: one-assertion-per-function rule is stated but no gate blocks V-complete if violated — make it a hard gate
+- Criteria rung: prose-derivability rule is stated but never gated — close with: "a criterion is valid only if stateable using only vocabulary in the prose rung"
+- OBS rung: "non-test consumer" fallback is under-specified — tighten to nearest observable output demonstrating the criterion
+
+**Prioritized rewrite sections (orbit + collapse analysis):**
+
+| Priority | Section | Current chars | Target | Approach |
+|---|---|---|---|---|
+| 1 | EV rung | ~3800 | ~1200 | Rewrite as compact gate list; collapse test-file/function rules |
+| 2 | OBS rung | ~2100 | ~800 | Unify 3 rules under rung-type constraint axiom |
+| 3 | VRO rung red-witness | ~1200 | ~600 | 4 sentences → 1: "prior red must show assertions failing, not a harness error" |
+| 4 | Criteria rung | ~1400 | ~700 | Replace implementation-detail enumeration with prose-vocabulary gate |
+| 5 | Reconciliation gate | ~600 | ~350 | 2 sentences → 1 compound |
+
+**Approach:** same cluster-by-cluster method — rewrite one section, run tests, update broken tests to new canonical markers, confirm green, advance. Each rewritten section must retain at least one behavioral marker phrase per behavioral rule so test coverage is maintained.
 
 **Deferred:**
 - Apply equivalent rules to `GROUND_PARTS` (the full 4-section dict) once the minimal version is validated

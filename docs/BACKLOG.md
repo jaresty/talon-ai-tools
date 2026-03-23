@@ -182,6 +182,41 @@ the "what have I built?" loop.
 **Shape**: Fixed bottom bar or side panel listing `axis=token` pairs; click to deselect; mirrors
 the bar command that would be generated.
 
+### Prompt structure: orbit analysis on section ordering and reference key placement
+
+**What**: Run an ADR-0113 orbit analysis on prompt layout, and use the results to evaluate two
+structural ideas that have emerged from using the system:
+
+1. **Inline reference key**: The reference key is currently a single monolithic block just before
+   SUBJECT. The question is whether embedding each section's semantic contract inline — immediately
+   below its header — would improve LLM adherence by delivering interpretation guidance at the
+   point of use rather than as a pre-SUBJECT lump.
+
+2. **Task last**: Currently TASK leads the prompt. The question is whether moving TASK to the end
+   (after SUBJECT, just before the final EXECUTION REMINDER) would improve compliance via recency
+   effects, or whether TASK-first is load-bearing because it frames how CONSTRAINTS and PERSONA
+   are interpreted as they're read.
+
+**Current order** (baseline, `internal/barcli/render.go`):
+```
+TASK → EXECUTION REMINDER → ADDENDUM → CONSTRAINTS → PERSONA → REFERENCE KEY → [framing] → SUBJECT → META → EXECUTION REMINDER
+```
+
+The orbit analysis is worth doing regardless — the current layout was arrived at iteratively and
+hasn't been systematically evaluated against alternatives. Even if neither structural idea wins,
+the orbit will establish a confirmed baseline score and may surface new gaps.
+
+**Shape**:
+- Define 3–4 layout variants as named configurations (current, inline-key, task-last, both).
+- Run ADR-0113 eval loop against each using the T01–T13 task set (or a fresh set targeting
+  cross-axis composition tasks where reference key framing matters most).
+- Score means per variant; any candidate must beat current by ≥0.25 to justify implementation.
+- Document results as an ADR regardless of outcome (baseline confirmation is a valid result).
+
+**Why Tier 2**: The current layout has deliberate injection-resistance rationale (see render.go
+comments on recency gating). Structural changes here need the same empirical discipline that
+produced the current layout. The orbit analysis de-risks the decision either way.
+
 ### SPA: Persona page layout reformat
 **What**: Redesign the persona section to give voice / audience / tone / intent (formerly "purpose",
 now `intent`) clear visual hierarchy — currently the four axes are rendered similarly with no
@@ -310,6 +345,40 @@ searching `heuristics[]`, `distinctions[]`, and `definition` fields across all a
 `--json` output. 4-tier ranking (exact heuristic > substring heuristic > distinction token name >
 definition text), AND logic across words, cap 10. 13 tests in `lookup_test.go`.
 **ADR**: docs/adr/0163-bar-lookup-subcommand.md (Accepted)
+
+### Grammar/CLI: Named workflow sequences — discoverable token cycles
+
+**What**: Encode directed multi-step token sequences as named patterns in the grammar (or a
+companion config), and expose them so bar autopilot and bar lookup can surface them.
+
+The motivating example: `form:prep` → run experiment → `form:vet` is a natural two-step cycle.
+The tokens already reference each other in `distinctions[]`, but distinctions encode pairwise
+contrast ("these two differ"), not sequence ("run this, then that"). A named sequence makes
+the *workflow role* of each step explicit and repeatable.
+
+Other natural sequences:
+- **probe → fix → check** — investigate root cause → repair → verify the fix
+- **sim → plan** — simulate a scenario → produce the action plan it implies
+- **pull → contextualise** — extract relevant subset → package it for downstream LLM
+
+**Mechanism sketch**:
+- Grammar: add an optional `sequences[]` block alongside token metadata — each entry is a
+  named sequence with an ordered `[{token, role, prompt_hint}]` list and a short `description`.
+  Sequences live close to the tokens they reference (e.g., alongside `form:prep`).
+- CLI: `bar sequence list` shows all named sequences; `bar sequence show <name>` renders each
+  step with its label, role, and prompt hint. `bar lookup` results include sequence membership
+  ("part of: experiment-cycle").
+- bar-autopilot skill: when the user has just run a sequence-member token, autopilot can detect
+  the step and suggest the next token in the sequence as the natural continuation.
+- TUI2: when a sequence-member token is selected, show a dim "next: vet (post-experiment review)"
+  hint line in the token detail panel.
+
+**Why Tier 2**: Distinctions already carry the pairwise signal; the gap is the *direction* and
+*iteration* semantics. Without this, autopilot must rediscover `prep→vet` from prose each session.
+With it, the cycle becomes a first-class primitive that all surfaces can exploit.
+
+**Precondition**: Define the sequence schema as part of the grammar-schema.md public contract
+(already a precondition for ADR-0169 user-defined token sets — the two share a milestone).
 
 ### User-defined token sets — decentralized token ownership (ADR-0169)
 **What**: A phased mechanism for users to bring their own token sets, merge them with the

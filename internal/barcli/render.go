@@ -43,7 +43,7 @@ func RenderPlainText(result *BuildResult) string {
 	b.WriteString(sectionConstraints)
 	b.WriteString("\n")
 	if c := strings.TrimSpace(rk.Constraints); c != "" {
-		fmt.Fprintf(&b, "%s\n", c)
+		fmt.Fprintf(&b, "↓ [%s]\n", c)
 	}
 	if len(result.HydratedConstraints) == 0 {
 		b.WriteString("(none)\n\n")
@@ -54,7 +54,7 @@ func RenderPlainText(result *BuildResult) string {
 			if axisKey != currentAxis {
 				currentAxis = axisKey
 				if contract, ok := rk.ConstraintsAxes[axisKey]; ok && strings.TrimSpace(contract) != "" {
-					fmt.Fprintf(&b, "%s\n", strings.TrimSpace(contract))
+					fmt.Fprintf(&b, "↓ [%s]\n", strings.TrimSpace(contract))
 				}
 			}
 			formatted := formatPromptlet(constraint)
@@ -112,7 +112,7 @@ func writeSectionWithContract(b *strings.Builder, heading string, contract strin
 	b.WriteString(heading)
 	b.WriteString("\n")
 	if c := strings.TrimSpace(contract); c != "" {
-		fmt.Fprintf(b, "%s\n", c)
+		fmt.Fprintf(b, "↓ [%s]\n", c)
 	}
 	if strings.TrimSpace(body) == "" {
 		b.WriteString("(none)\n\n")
@@ -144,7 +144,7 @@ func writePersonaSection(b *strings.Builder, persona PersonaResult, promptlets [
 	b.WriteString(sectionPersona)
 	b.WriteString("\n")
 	if c := strings.TrimSpace(contract); c != "" {
-		fmt.Fprintf(b, "%s\n", c)
+		fmt.Fprintf(b, "↓ [%s]\n", c)
 	}
 
 	if persona.Preset != "" {

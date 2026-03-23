@@ -60,26 +60,24 @@ class PromptGrammarCliTests(unittest.TestCase):
         self.assertEqual(data["schema_version"], "1.0")
         self.assertIn("checksums", data)
 
-        reference_key = data.get("reference_key", "")
-        self.assertIn(
-            "任務", reference_key, "reference_key should contain kanji for TASK"
+        reference_key = data.get("reference_key", {})
+        # ADR-0176: reference_key is now a dict of per-section inline contracts
+        self.assertIsInstance(reference_key, dict, "reference_key should be a dict (ADR-0176)")
+        for key in ("task", "addendum", "constraints", "constraints_axes", "persona", "subject"):
+            self.assertIn(key, reference_key, f"reference_key should have key '{key}'")
+        self.assertIsInstance(
+            reference_key.get("constraints_axes"), dict,
+            "reference_key.constraints_axes should be a dict"
         )
+        for axis in ("scope", "completeness", "method", "form", "channel", "directional"):
+            self.assertIn(
+                axis, reference_key["constraints_axes"],
+                f"reference_key.constraints_axes should have axis '{axis}'"
+            )
         self.assertIn(
-            "追加", reference_key, "reference_key should contain kanji for ADDENDUM"
-        )
-        self.assertIn(
-            "制約", reference_key, "reference_key should contain kanji for CONSTRAINTS"
-        )
-        self.assertIn(
-            "人格", reference_key, "reference_key should contain kanji for PERSONA"
-        )
-        self.assertIn(
-            "題材", reference_key, "reference_key should contain kanji for SUBJECT"
-        )
-        self.assertIn(
-            "Produce that output now before reading files, searching code, or planning",
-            reference_key,
-            "reference_key Method bullet must include imperative check for process methods",
+            "governs planning",
+            reference_key["constraints_axes"]["method"],
+            "method contract must include substantive behavioral guidance (not just a label)"
         )
 
         axes_kanji = data.get("axes", {}).get("kanji", {})

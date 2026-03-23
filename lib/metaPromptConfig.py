@@ -16,7 +16,7 @@ PROMPT_REFERENCE_KEY: dict = {
         "When a channel token is present, the channel governs output format and the task becomes a content lens."
     ),
     "addendum": (
-        "Modifies HOW to execute the task. "
+        "Task clarification that modifies HOW to execute the task. "
         "Not the content to work with — that belongs in SUBJECT."
     ),
     "constraints": (
@@ -94,8 +94,11 @@ _AXIS_FULL_TEXT = {
         "steps, not only to the final output. If the method requires a governing artifact or ordering "
         "requirement — a manifest, a plan, a validation artifact — that requirement is a hard "
         "precondition that gates everything that follows; it cannot be deferred in favor of reaching "
-        "the task faster. When multiple method tokens are present, combine them into a single "
-        "integrated analytic stance."
+        "the task faster. When a process method is present, before any other action, check: what "
+        "does the first step require as output? Produce that output now before reading files, "
+        "searching code, or planning. The steps of a process method may not be replaced by a "
+        "summary, paraphrase, or 'key principles' derived from them. When multiple method tokens "
+        "are present, combine them into a single integrated analytic stance."
     ),
     "directional": (
         "Execution modifier (adverbial): governs how the task is carried out, shaping sequencing, "

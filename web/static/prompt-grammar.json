@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "reference_key": {
     "task": "Primary action. Execute directly without inferring unstated goals. Takes precedence over all other sections. When a channel token is present, the channel governs output format and the task becomes a content lens.",
-    "addendum": "Modifies HOW to execute the task. Not the content to work with — that belongs in SUBJECT.",
+    "addendum": "Task clarification that modifies HOW to execute the task. Not the content to work with — that belongs in SUBJECT.",
     "constraints": "Jointly applied operating mode. Do not process as independent sequential passes — integrate into a single coherent analytic stance before producing output.",
     "constraints_axes": {
       "completeness": "Coverage depth within scope; does not expand scope.",

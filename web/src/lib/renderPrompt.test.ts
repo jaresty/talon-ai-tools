@@ -48,7 +48,14 @@ const grammar: Grammar = {
 		},
 		axes: { voice: [], audience: [], tone: [] }
 	},
-	reference_key: 'REFERENCE KEY TEXT',
+	reference_key: {
+		task: 'SENTINEL_TASK_CONTRACT',
+		addendum: 'SENTINEL_ADDENDUM_CONTRACT',
+		constraints: 'SENTINEL_CONSTRAINTS_CONTRACT',
+		constraints_axes: { completeness: 'SENTINEL_COMPLETENESS_CONTRACT', scope: 'SENTINEL_SCOPE_CONTRACT' },
+		persona: 'SENTINEL_PERSONA_CONTRACT',
+		subject: 'SENTINEL_SUBJECT_CONTRACT',
+	},
 	execution_reminder: 'EXECUTION REMINDER TEXT',
 	meta_interpretation_guidance: 'META INTERPRETATION GUIDANCE TEXT'
 };
@@ -163,10 +170,19 @@ describe('renderPrompt', () => {
 		expect(result).not.toContain('Intent:');
 	});
 
-	it('includes REFERENCE KEY section', () => {
+	it('does not include standalone REFERENCE KEY block (ADR-0176)', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
-		expect(result).toContain('=== REFERENCE KEY ===');
-		expect(result).toContain('REFERENCE KEY TEXT');
+		expect(result).not.toContain('=== REFERENCE KEY ===');
+	});
+
+	it('emits TASK inline contract bracket-wrapped before task body (ADR-0176)', () => {
+		const result = renderPrompt(grammar, { task: ['show'] }, 'x', '');
+		expect(result).toContain('↓ [SENTINEL_TASK_CONTRACT]');
+		const taskHeaderIdx = result.indexOf('=== TASK');
+		const contractIdx = result.indexOf('↓ [SENTINEL_TASK_CONTRACT]');
+		const bodyIdx = result.indexOf('Reveal the structure');
+		expect(contractIdx).toBeGreaterThan(taskHeaderIdx);
+		expect(contractIdx).toBeLessThan(bodyIdx);
 	});
 
 	it('includes EXECUTION REMINDER section', () => {

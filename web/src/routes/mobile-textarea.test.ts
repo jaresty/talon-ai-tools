@@ -19,7 +19,7 @@ vi.mock('$lib/grammar.js', () => ({
 		hierarchy: { axis_soft_caps: {} },
 		tokens: {},
 		persona_presets: [],
-		reference_key: '',
+		reference_key: { task: '', addendum: '', constraints: '', constraints_axes: {}, persona: '', subject: '' },
 		execution_reminder: '',
 		meta_interpretation_guidance: ''
 	}),

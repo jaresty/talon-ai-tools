@@ -52,7 +52,7 @@ vi.mock('$lib/grammar.js', () => ({
 			}
 		},
 		patterns: [],
-		reference_key: '',
+		reference_key: { task: '', addendum: '', constraints: '', constraints_axes: {}, persona: '', subject: '' },
 		execution_reminder: '',
 		meta_interpretation_guidance: ''
 	}),

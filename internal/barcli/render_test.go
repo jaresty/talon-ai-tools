@@ -58,6 +58,19 @@ func TestRenderPlainTextNoReferenceKeyBlock(t *testing.T) {
 	}
 }
 
+// TestRenderPlainTextContractBracketed specifies that inline contract lines are
+// wrapped in brackets to visually distinguish them from token descriptions.
+func TestRenderPlainTextContractBracketed(t *testing.T) {
+	result := &BuildResult{
+		Task:         "make something",
+		ReferenceKey: ReferenceKeyContracts{Task: "SENTINEL_TASK_CONTRACT"},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "↓ [SENTINEL_TASK_CONTRACT]") {
+		t.Fatalf("expected TASK inline contract to be bracket-wrapped as ↓ [SENTINEL_TASK_CONTRACT], got:\n%s", output)
+	}
+}
+
 // TestRenderPlainTextTaskInlineContract specifies that the TASK section emits
 // its inline contract immediately after the header and before the task body (ADR-0176).
 func TestRenderPlainTextTaskInlineContract(t *testing.T) {

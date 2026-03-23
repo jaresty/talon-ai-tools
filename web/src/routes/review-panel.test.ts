@@ -34,7 +34,7 @@ vi.mock('$lib/grammar.js', () => ({
 		tokens: { task: { tokens: ['probe', 'show'] }, channel: { tokens: ['shellscript', 'code'] } },
 		persona_presets: [],
 		persona: { use_when: {} },
-		reference_key: '',
+		reference_key: { task: '', addendum: '', constraints: '', constraints_axes: {}, persona: '', subject: '' },
 		execution_reminder: '',
 		meta_interpretation_guidance: '',
 		axes: {

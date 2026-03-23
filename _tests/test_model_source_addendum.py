@@ -86,31 +86,35 @@ if bootstrap is not None:
             )
 
         def test_prompt_reference_key_process_method_no_substitution(self) -> None:
-            """PROMPT_REFERENCE_KEY must state process method steps cannot be replaced by key principles."""
+            """prompt_reference_key_as_text() must state process method steps cannot be replaced."""
+            from talon_user.lib.metaPromptConfig import prompt_reference_key_as_text
+            text = prompt_reference_key_as_text()
             self.assertIn(
                 "steps of a process method may not be replaced",
-                PROMPT_REFERENCE_KEY,
-                "PROMPT_REFERENCE_KEY must close the substitution loophole for process methods",
+                text,
+                "prompt_reference_key_as_text() must close the substitution loophole for process methods",
             )
 
         def test_prompt_reference_key_process_method_imperative_check(self) -> None:
-            """PROMPT_REFERENCE_KEY must include imperative check for process methods."""
+            """prompt_reference_key_as_text() must include imperative check for process methods."""
+            from talon_user.lib.metaPromptConfig import prompt_reference_key_as_text
+            text = prompt_reference_key_as_text()
             self.assertIn(
                 "Produce that output now before reading files, searching code, or planning",
-                PROMPT_REFERENCE_KEY,
-                "PROMPT_REFERENCE_KEY Method bullet must include imperative check for process methods",
+                text,
+                "prompt_reference_key_as_text() Method bullet must include imperative check for process methods",
             )
 
         def test_prompt_reference_key_documents_addendum_section(self) -> None:
             """PROMPT_REFERENCE_KEY must describe the ADDENDUM section."""
             self.assertIn(
-                "ADDENDUM",
+                "addendum",
                 PROMPT_REFERENCE_KEY,
                 "PROMPT_REFERENCE_KEY must document the ADDENDUM section",
             )
             self.assertIn(
                 "clarification",
-                PROMPT_REFERENCE_KEY.lower(),
+                PROMPT_REFERENCE_KEY["addendum"].lower(),
                 "PROMPT_REFERENCE_KEY ADDENDUM entry should mention 'clarification'",
             )
 

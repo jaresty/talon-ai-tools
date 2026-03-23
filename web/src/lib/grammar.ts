@@ -86,7 +86,14 @@ export interface Grammar {
 	};
 	patterns?: GrammarPattern[];
 	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
-	reference_key: string;
+	reference_key: {
+		task: string;
+		addendum: string;
+		constraints: string;
+		constraints_axes: Record<string, string>;
+		persona: string;
+		subject: string;
+	};
 	execution_reminder: string;
 	meta_interpretation_guidance: string;
 }

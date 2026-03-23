@@ -81,9 +81,9 @@ SENTINEL_TEMPLATES: dict[str, str] = {
 # Edit each part independently; build_ground_prompt() serializes them in canonical order.
 GROUND_PARTS: dict[str, str] = {
     "epistemological_protocol": (
-        "A rung is satisfied when and only when a tool-executed event matching its definition "
-        "appears in the transcript \u2014 inference, prediction, and prior knowledge do not satisfy "
-        "rung gates regardless of accuracy. "
+        "A rung is satisfied when and only when a tool-executed event appears in the transcript "
+        "whose output is of that rung\u2019s artifact type \u2014 inference, prediction, and prior knowledge "
+        "do not satisfy rung gates regardless of accuracy. "
         "Pre-adoption gate: the task label names the last rung, not your current goal \u2014 "
         "if you cannot quote a failing test run from this conversation for this thread, "
         "you are not at the executable implementation rung and may not produce implementation code. "
@@ -508,10 +508,9 @@ def _sentinel_block() -> str:
 
 GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
-        "A rung is satisfied when and only when a tool-executed event matching its definition "
-        "appears in the transcript \u2014 inference, prediction, and prior knowledge do not satisfy "
-        "rung gates regardless of accuracy; "
-        "the tool call(s) at a rung must produce output whose artifact type matches that rung\u2019s definition \u2014 "
+        "A rung is satisfied when and only when a tool-executed event appears in the transcript "
+        "whose output is of that rung\u2019s artifact type \u2014 inference, prediction, and prior knowledge "
+        "do not satisfy rung gates regardless of accuracy; "
         "output from a different rung\u2019s artifact type does not satisfy the gate regardless of what it implies "
         "(running the test suite at the observed running behavior rung produces validation-run-observation-type output, "
         "not observed-running-behavior-type output, and does not satisfy that gate). "

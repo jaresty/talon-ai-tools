@@ -196,5 +196,28 @@ class TestGroundRewrite(unittest.TestCase):
         )
 
 
+    # Axiom collapse: artifact type is operative gate, "matching its definition" removed
+    def test_axiom_uses_artifact_type_not_matching_definition(self):
+        """Opening axiom must gate on artifact type, not the vague 'matching its definition'."""
+        prompt = build_ground_prompt(minimal=True)
+        self.assertNotIn(
+            "matching its definition",
+            prompt,
+            "Axiom must not use 'matching its definition' — artifact type is the operative gate test",
+        )
+
+    def test_axiom_artifact_type_present_in_opening(self):
+        """Opening axiom must make artifact type the operative gate condition."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        axiom_end = core.index("inference, prediction")
+        axiom = core[:axiom_end]
+        self.assertIn(
+            "artifact type",
+            axiom,
+            "Axiom must state artifact type as the gate condition before the inference exclusion",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

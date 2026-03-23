@@ -58,5 +58,72 @@ class TestGroundRewrite(unittest.TestCase):
         )
 
 
+    def test_ev_section_is_compact_gate_list(self):
+        """EV section must be rewritten as a compact gate list (≤ 1250 chars, ADR-0177 target ~1200)."""
+        import sys
+        sys.path.insert(0, '.')
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        ev_start = core.find("Only validation artifacts may be produced")
+        ev_end = core.find("✅ Validation artifact V complete must be emitted at the executable validation rung")
+        ev_section = core[ev_start:ev_end]
+        self.assertLessEqual(
+            len(ev_section), 1250,
+            f"EV rung section is {len(ev_section)} chars; must be ≤ 1250 after compact gate list rewrite",
+        )
+
+
+    def test_obs_section_is_compact(self):
+        """OBS rung section must be ≤ 850 chars (ADR-0177 target ~800)."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        obs_start = core.find("Upon writing the observed running behavior label")
+        obs_end = core.find("✅ Thread N complete may not be emitted unless")
+        obs_section = core[obs_start:obs_end]
+        self.assertLessEqual(
+            len(obs_section), 850,
+            f"OBS rung section is {len(obs_section)} chars; must be ≤ 850 after compact rewrite",
+        )
+
+
+    def test_vro_section_is_compact(self):
+        """VRO section must be ≤ 650 chars (ADR-0177 target ~600)."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        vro_start = core.find("Before writing the validation run observation rung label")
+        vro_end = core.find("At the validation run observation rung, run")
+        vro_section = core[vro_start:vro_end]
+        self.assertLessEqual(
+            len(vro_section), 650,
+            f"VRO section is {len(vro_section)} chars; must be ≤ 650 after compact rewrite",
+        )
+
+
+    def test_criteria_section_is_compact(self):
+        """Criteria rung section must be ≤ 750 chars (ADR-0177 target ~700)."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        crit_start = core.find("From the criteria rung onward")
+        crit_end = core.find("Formal notation encodes only")
+        crit_section = core[crit_start:crit_end]
+        self.assertLessEqual(
+            len(crit_section), 750,
+            f"Criteria section is {len(crit_section)} chars; must be ≤ 750 after compact rewrite",
+        )
+
+
+    def test_reconciliation_gate_is_compact(self):
+        """Reconciliation gate section must be ≤ 400 chars (ADR-0177 target ~350)."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        rec_start = core.find("Reconciliation gate:")
+        rec_end = core.find("Each completion sentinel is valid")
+        rec_section = core[rec_start:rec_end]
+        self.assertLessEqual(
+            len(rec_section), 400,
+            f"Reconciliation gate is {len(rec_section)} chars; must be ≤ 400 after compact rewrite",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

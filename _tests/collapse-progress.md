@@ -23,10 +23,28 @@ Target: ~7500 chars (from 14745)
 - chars before collapse: 14745
 - tests before collapse: 83 passing, 1 failing (test_total_chars_under_3000)
 
-## Final state
-- chars: 12994 (−1751 from 14745, ~12% reduction)
-- tests: 86 passing, 0 failing
+## Final state (pass 1 — cluster collapse)
+- chars: 12981 (−1764 from 14745, ~12% reduction)
+- tests: 87 passing, 0 failing
 - all 11 clusters complete
+
+## Pass 2 — paragraph-level rewrite (ADR-0177 deeper collapse)
+
+Started: 2026-03-23
+Target: ~5850 chars
+
+| Thread | Section | Before | After | Target |
+|--------|---------|--------|-------|--------|
+| 1 | EV rung | 2182 | 1162 | ~1200 |
+| 2 | OBS rung | 1550 | 846 | ~800 |
+| 3 | VRO red-witness | 694 | 558 | ~600 |
+| 4 | Criteria rung | 1019 | 746 | ~700 |
+| 5 | Reconciliation gate | 524 | 355 | ~350 |
+
+## Final state (pass 2 — paragraph rewrite)
+- chars: 10759 (−2222 from 12981, −3986 from 14745, ~27% total reduction)
+- tests: 91 passing, 0 failing
+- 5 section rewrites complete, 5 new size-gate tests added
 
 ## After cluster 1+2
 - chars: 14450 (−295)

@@ -66,7 +66,7 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "manifest_declared":  "\u2705 Manifest declared \u2014 N threads: [numbered list of behavioral gaps]",
     "exec_observed":      "\U0001F534 Execution observed: [verbatim tool output \u2014 triple-backtick delimited, complete, nothing omitted]",
     "gap":                "\U0001F534 Gap: [what the verbatim output reveals]",
-    "hard_stop":          "\U0001F6D1 HARD STOP",
+    "hard_stop":          "\U0001F6D1 HARD STOP \u2014 upward return to criteria rung",
     "impl_gate":          "\U0001F7E2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001F534 Execution observed]",
     "v_complete":         "\u2705 Validation artifact V complete",
     "thread_complete":    "\u2705 Thread N complete",
@@ -354,10 +354,10 @@ GROUND_PARTS: dict[str, str] = {
         "validation run observation (only satisfied by an observed failure; a passing run is a gap signal \u2014 "
         "a build error or compile failure does not satisfy this rung; "
         "emit \u2018\u2705 Validation artifact V complete\u2019 on its own line immediately after the gap is declared; "
-        "after declaring the gap emit \u2018\U0001F6D1 HARD STOP\u2019 on its own line; "
-        "no further content of any kind is permitted in this response after \U0001F6D1 HARD STOP; "
-        "implementation code, planning prose, or additional failures written after \U0001F6D1 HARD STOP are void; "
-        "the next response begins at the criteria rung) \u2192 "
+        "after declaring the gap emit \u2018\U0001F6D1 HARD STOP \u2014 upward return to criteria rung\u2019 on its own line; "
+        "this sentinel signals an upward return: the next response re-enters at the criteria rung "
+        "with the observed gap as its input; "
+        "implementation code written in the same response after \U0001F6D1 HARD STOP is void) \u2192 "
         "executable implementation [stop and verify before producing any implementation artifact: "
         "you must be able to quote a \U0001F534 Execution observed sentinel with verbatim tool output "
         "from this conversation for this thread, and a \U0001F534 Gap must have been declared; "

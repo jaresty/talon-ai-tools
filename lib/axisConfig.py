@@ -316,9 +316,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "coverage summaries, no suggestions may appear in the final report; then reconcile any documents (README, specs, ADRs) the implementation affects — this reconciliation is part "
         "of the final report, not a separate thread. Seven rungs in order: prose → criteria → formal notation → executable validation → validation run observation → executable "
         "implementation → observed running behavior. Sentinel formats — ✅ Ground entered — prose rung begins; ✅ Manifest declared — N threads: [numbered list of behavioral gaps]; 🔴 "
-        "Execution observed: [verbatim tool output — triple-backtick delimited, complete, nothing omitted]; 🔴 Gap: [what the verbatim output reveals]; 🛑 HARD STOP; 🟢 Implementation "
-        "gate cleared — gap cited: [verbatim from 🔴 Execution observed]; ✅ Validation artifact V complete; ✅ Thread N complete; ✅ Manifest exhausted — N/N threads complete; "
-        "Carry-forward: [list which original failures cover which current tests]; ✅ I-formation complete; ✅ Formal notation R2 audit complete — N/N criteria encoded.",
+        "Execution observed: [verbatim tool output — triple-backtick delimited, complete, nothing omitted]; 🔴 Gap: [what the verbatim output reveals]; 🛑 HARD STOP — upward return to "
+        "criteria rung; 🟢 Implementation gate cleared — gap cited: [verbatim from 🔴 Execution observed]; ✅ Validation artifact V complete; ✅ Thread N complete; ✅ Manifest exhausted — "
+        "N/N threads complete; Carry-forward: [list which original failures cover which current tests]; ✅ I-formation complete; ✅ Formal notation R2 audit complete — N/N criteria "
+        "encoded.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

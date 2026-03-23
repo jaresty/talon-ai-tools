@@ -28,3 +28,14 @@ def test_hard_stop_sentinel_present():
         "expected 'HARD STOP' in ground description — "
         "'stop there' prose is insufficient; must be a sentinel that blocks forward motion"
     )
+
+
+def test_hard_stop_signals_upward_return_not_termination():
+    """Thread 4: HARD STOP description does not say 'no further content' (termination language)."""
+    text = _full_text()
+    hard_stop_idx = text.index("HARD STOP")
+    nearby = text[hard_stop_idx:hard_stop_idx + 300]
+    assert "no further content" not in nearby, (
+        "expected HARD STOP to specify upward return to criteria, not response termination; "
+        "found 'no further content' language — remove it"
+    )

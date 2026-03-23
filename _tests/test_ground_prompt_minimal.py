@@ -141,7 +141,7 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require execution-observed after OBS label before thread-complete")
 
     def test_post_obs_completeness_check(self):
-        self.assertIn("behaviors not yet observed running", self.prompt,
+        self.assertIn("not yet covered by a completed gap cycle", self.prompt,
             "Minimal spec must require post-OBS check for unmet behaviors before thread-complete")
 
     def test_conjunction_ban_has_example(self):
@@ -272,6 +272,21 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertLess(doc_idx, final_report_idx,
             "Pre-existing document update must appear in the reconciliation gate, not only in the final report section")
 
+
+    # Thread N complete: prose rung reference (not declared intent)
+    def test_thread_complete_references_prose_rung(self):
+        idx = self.prompt.index("Before emitting \u2705 Thread N complete, check:")
+        end = self.prompt.index("Outputting a rung label is what begins that rung")
+        segment = self.prompt[idx:end]
+        self.assertIn("prose rung", segment,
+            "Thread N complete check must reference the prose rung, not declared intent")
+
+    def test_thread_complete_not_declared_intent(self):
+        idx = self.prompt.index("Before emitting \u2705 Thread N complete, check:")
+        end = self.prompt.index("Outputting a rung label is what begins that rung")
+        segment = self.prompt[idx:end]
+        self.assertNotIn("declared intent", segment,
+            "Thread N complete check must not reference 'declared intent' — use prose rung instead")
 
     # C12: observed running behavior rung criterion re-emission
     def test_c12_criterion_reemitted_before_orb_invocation(self):

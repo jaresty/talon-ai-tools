@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 12000,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 12000 (raised after C1-C11 closures)")
+        self.assertLess(total, 12500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 12500 (raised after C1-C12 closures)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -272,6 +272,21 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertLess(doc_idx, final_report_idx,
             "Pre-existing document update must appear in the reconciliation gate, not only in the final report section")
 
+
+    # C12: observed running behavior rung criterion re-emission
+    def test_c12_criterion_reemitted_before_orb_invocation(self):
+        orb_idx = self.prompt.index("Upon writing the observed running behavior label")
+        thread_complete_idx = self.prompt.index("\u2705 Thread N complete may not be emitted")
+        segment = self.prompt[orb_idx:thread_complete_idx]
+        self.assertIn("re-emit the criterion", segment,
+            "C12: ground must require re-emitting the criterion before ORB invocation")
+
+    def test_c12_process_state_does_not_satisfy_orb(self):
+        orb_idx = self.prompt.index("Upon writing the observed running behavior label")
+        thread_complete_idx = self.prompt.index("\u2705 Thread N complete may not be emitted")
+        segment = self.prompt[orb_idx:thread_complete_idx]
+        self.assertIn("process state", segment,
+            "C12: ground must state that process-state output does not satisfy the ORB rung")
 
     # C10: test derives from formal notation structural invariants
     def test_c10_reread_formal_notation_before_writing_test(self):

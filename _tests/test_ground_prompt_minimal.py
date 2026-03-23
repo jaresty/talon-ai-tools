@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 14000,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 14000 (raised after C1-C14 closures)")
+        self.assertLess(total, 14500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 14500 (raised after C1-C16 closures)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -385,6 +385,26 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_c14_directly_named_cycle_required(self):
         self.assertIn("directly names that behavior", self.prompt,
             "C14: ground must require a cycle whose criterion directly names the behavioral predicate")
+
+    # C15: impl-gate is a descent gate, not a completion gate
+    def test_c15_impl_gate_licenses_first_edit_not_thread_complete(self):
+        self.assertIn("licenses the first edit", self.prompt,
+            "C15: ground must state impl-gate licenses the first edit, not thread completion")
+
+    def test_c15_ei_and_obs_must_still_fire_after_impl_gate(self):
+        self.assertIn("does not complete the thread", self.prompt,
+            "C15: ground must state impl-gate does not complete the thread — EI and OBS must still fire")
+
+    # C16: mandatory forward pointer — next action after gate is an edit
+    def test_c16_next_required_action_after_impl_gate_is_edit(self):
+        self.assertIn("next required action after", self.prompt,
+            "C16: ground must name the next required action after impl-gate as an implementation edit")
+
+    def test_c16_thread_complete_may_not_appear_before_obs_fires(self):
+        gate_idx = self.prompt.index("licenses the first edit")
+        segment = self.prompt[gate_idx:gate_idx + 600]
+        self.assertIn("observed running behavior rung has fired", segment,
+            "C16: ground must require OBS rung to have fired before Thread N complete after impl-gate")
 
 
 if __name__ == "__main__":

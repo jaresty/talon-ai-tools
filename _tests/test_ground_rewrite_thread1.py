@@ -100,15 +100,15 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_criteria_section_is_compact(self):
-        """Criteria rung section must be ≤ 1050 chars (raised from 750 after F3 behavioral gate addition ~+257)."""
+        """Criteria rung section must be ≤ 1450 chars (raised from 1050 after C14+C17 additions ~+380)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         crit_start = core.find("From the criteria rung onward")
         crit_end = core.find("Formal notation encodes only")
         crit_section = core[crit_start:crit_end]
         self.assertLessEqual(
-            len(crit_section), 1050,
-            f"Criteria section is {len(crit_section)} chars; must be ≤ 1050 after F3 behavioral gate addition",
+            len(crit_section), 1450,
+            f"Criteria section is {len(crit_section)} chars; must be ≤ 1450 after C14+C17 gate additions",
         )
 
 

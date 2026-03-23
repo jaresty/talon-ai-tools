@@ -129,6 +129,7 @@
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "enter": "The response enhances the task by moving into the direction of an incoming force, argument, or structure — joining its momentum rather than opposing it — and redirecting the outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -333,6 +334,7 @@
         "domains",
         "drift",
         "effects",
+        "enter",
         "experimental",
         "field",
         "flow",
@@ -534,6 +536,7 @@
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
+        "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
@@ -730,6 +733,7 @@
         "domains": "領",
         "drift": "漂",
         "effects": "効",
+        "enter": "入",
         "experimental": "実",
         "field": "場",
         "flow": "流",
@@ -841,6 +845,7 @@
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
+        "enter": "Structural",
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
@@ -3322,6 +3327,36 @@
             "what follows downstream"
           ],
           "definition": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences."
+        },
+        "enter": {
+          "distinctions": [
+            {
+              "note": "meld = balance constraints between coexisting elements; enter = join an incoming structure's momentum and redirect it from within",
+              "token": "meld"
+            },
+            {
+              "note": "field = model the shared medium through which effects propagate; enter = move into an argument's direction and alter its outcome from within",
+              "token": "field"
+            },
+            {
+              "note": "adversarial = construct direct opposition to find weaknesses; enter = join the structure's own direction before redirecting",
+              "token": "adversarial"
+            }
+          ],
+          "heuristics": [
+            "don't oppose directly",
+            "work through the argument's own logic",
+            "use the claim's momentum",
+            "enter the position before redirecting it",
+            "join before transforming",
+            "redirect from within",
+            "don't block — follow and turn",
+            "what does this argument's own logic lead to",
+            "where does this structure take itself if followed to its conclusion",
+            "the claim has momentum — use it",
+            "engage rather than confront"
+          ],
+          "definition": "The response enhances the task by moving into the direction of an incoming force, argument, or structure — joining its momentum rather than opposing it — and redirecting the outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads."
         },
         "experimental": {
           "distinctions": [
@@ -7191,6 +7226,7 @@
         "domains": "domains",
         "drift": "drift",
         "effects": "effects",
+        "enter": "enter",
         "experimental": "experimental",
         "field": "field",
         "flow": "flow",
@@ -7423,6 +7459,7 @@
         "method=domains": "method-domains",
         "method=drift": "method-drift",
         "method=effects": "method-effects",
+        "method=enter": "method-enter",
         "method=experimental": "method-experimental",
         "method=field": "method-field",
         "method=flow": "method-flow",
@@ -7755,6 +7792,7 @@
       "draw": "draw",
       "drift": "drift",
       "effects": "effects",
+      "enter": "enter",
       "experimental": "experimental",
       "facilitate": "facilitate",
       "fail": "fail",
@@ -7880,6 +7918,7 @@
       "method=domains": "method-domains",
       "method=drift": "method-drift",
       "method=effects": "method-effects",
+      "method=enter": "method-enter",
       "method=experimental": "method-experimental",
       "method=field": "method-field",
       "method=flow": "method-flow",
@@ -8852,11 +8891,11 @@
     }
   ],
   "checksums": {
-    "axes": "dbb87ad104861ba6ea2196de315eadac5a7ed73e840d88987edbabbc1289adc0",
+    "axes": "47a1410923f19ca8a9171b1aeb52d9243e1490e4a1ebfa9164d16d0f6cfab0ac",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "2731e8c26518b1fe39363af4523458e0b0c9a9a637c15aee3c20e65b041c6b03",
+    "slugs": "9bb3d134e05a86d0d0dff073b50a8c54d2f1ae39e4ed83a0b3f887e18e40c54f",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

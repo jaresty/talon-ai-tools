@@ -408,7 +408,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 85 tokens (enforce/observe retired ADR-0162; triage moved to completeness, automate added; ladder/visual moved from form; behave added; survive added)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 86 tokens (enforce/observe retired ADR-0162; triage moved to completeness, automate added; ladder/visual moved from form; behave added; survive added; enter added)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -443,6 +443,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "drift",
         "automate",
         "effects",
+        "enter",
         "experimental",
         "field",
         "flow",

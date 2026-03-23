@@ -258,6 +258,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "enter": "The response enhances the task by moving into the direction of an incoming force, argument, or structure — joining its momentum rather than opposing it — and redirecting the "
+        "outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
@@ -558,6 +560,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
+        "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
@@ -756,6 +759,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "domains": "領",
         "drift": "漂",
         "effects": "効",
+        "enter": "入",
         "experimental": "実",
         "field": "場",
         "flow": "流",
@@ -934,6 +938,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
+        "enter": "Structural",
         "experimental": "Exploration",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
@@ -4221,6 +4226,35 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "unintended consequences",
                 "how does this propagate",
                 "what follows downstream",
+            ],
+        },
+        "enter": {
+            "distinctions": [
+                {
+                    "note": "meld = balance constraints between coexisting elements; enter = join an incoming structure's momentum and redirect it from within",
+                    "token": "meld",
+                },
+                {
+                    "note": "field = model the shared medium through which effects propagate; enter = move into an argument's direction and alter its outcome from within",
+                    "token": "field",
+                },
+                {
+                    "note": "adversarial = construct direct opposition to find weaknesses; enter = join the structure's own direction before redirecting",
+                    "token": "adversarial",
+                },
+            ],
+            "heuristics": [
+                "don't oppose directly",
+                "work through the argument's own logic",
+                "use the claim's momentum",
+                "enter the position before redirecting it",
+                "join before transforming",
+                "redirect from within",
+                "don't block — follow and turn",
+                "what does this argument's own logic lead to",
+                "where does this structure take itself if followed to its conclusion",
+                "the claim has momentum — use it",
+                "engage rather than confront",
             ],
         },
         "experimental": {

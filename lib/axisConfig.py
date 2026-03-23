@@ -242,6 +242,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "inconsistency or breakdown.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning "
         "of the items.",
+        "collapse": "The response enhances the task by identifying redundant or equivalent representations and unifying them into a minimal canonical form while preserving behavioral invariants, "
+        "reducing complexity while maintaining correctness.",
         "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision "
         "factors. Use when the user presents options and asks which to choose or how they differ.",
         "control": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
@@ -586,6 +588,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "cite": "Include sources and references",
         "clash": "Identify conflicting structures or rules",
         "cluster": "Group items by shared characteristics",
+        "collapse": "Reduce to minimal canonical form",
         "compare": "Compare alternatives against criteria",
         "control": "Focus on what is within agency",
         "converge": "Narrow from broad to focused",
@@ -785,6 +788,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "cite": "引",
         "clash": "衝",
         "cluster": "集",
+        "collapse": "縮",
         "compare": "較",
         "control": "掌",
         "converge": "収",
@@ -964,6 +968,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "cite": "Reasoning",
         "clash": "Diagnostic",
         "cluster": "Structural",
+        "collapse": "Structural",
         "compare": "Comparative",
         "control": "Conduct",
         "converge": "Comparative",
@@ -1176,6 +1181,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "cite": "Evidence/sources",
         "clash": "Structural conflicts",
         "cluster": "Group/categorize",
+        "collapse": "Minimize to canonical form",
         "compare": "Side-by-side comparison",
         "control": "Focus on what you control",
         "converge": "Narrow to recommendation",
@@ -4060,6 +4066,24 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "sort into buckets",
                 "group by similarity",
                 "classify these items",
+            ],
+        },
+        "collapse": {
+            "distinctions": [
+                {
+                    "note": "cluster = group items by shared characteristics without altering the items themselves; collapse = identify redundant or equivalent representations "
+                    "and unify them into a minimal form",
+                    "token": "cluster",
+                }
+            ],
+            "heuristics": [
+                "minimize redundant forms",
+                "collapse equivalent representations",
+                "reduce to canonical form",
+                "unify duplicate representations",
+                "remove structural redundancy",
+                "simplify while preserving behavior",
+                "optimize structure without changing behavior",
             ],
         },
         "compare": {

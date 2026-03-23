@@ -132,6 +132,7 @@
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global inconsistency or breakdown.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
+        "collapse": "The response enhances the task by identifying redundant or equivalent representations and unifying them into a minimal canonical form while preserving behavioral invariants, reducing complexity while maintaining correctness.",
         "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision factors. Use when the user presents options and asks which to choose or how they differ.",
         "control": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
         "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
@@ -337,6 +338,7 @@
         "cite",
         "clash",
         "cluster",
+        "collapse",
         "compare",
         "control",
         "converge",
@@ -539,6 +541,7 @@
         "cite": "Include sources and references",
         "clash": "Identify conflicting structures or rules",
         "cluster": "Group items by shared characteristics",
+        "collapse": "Reduce to minimal canonical form",
         "compare": "Compare alternatives against criteria",
         "control": "Focus on what is within agency",
         "converge": "Narrow from broad to focused",
@@ -736,6 +739,7 @@
         "cite": "引",
         "clash": "衝",
         "cluster": "集",
+        "collapse": "縮",
         "compare": "較",
         "control": "掌",
         "converge": "収",
@@ -848,6 +852,7 @@
         "cite": "Reasoning",
         "clash": "Diagnostic",
         "cluster": "Structural",
+        "collapse": "Structural",
         "compare": "Comparative",
         "control": "Conduct",
         "converge": "Comparative",
@@ -1050,6 +1055,7 @@
         "cite": "Evidence/sources",
         "clash": "Structural conflicts",
         "cluster": "Group/categorize",
+        "collapse": "Minimize to canonical form",
         "compare": "Side-by-side comparison",
         "control": "Focus on what you control",
         "converge": "Narrow to recommendation",
@@ -3124,6 +3130,24 @@
             "classify these items"
           ],
           "definition": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items."
+        },
+        "collapse": {
+          "distinctions": [
+            {
+              "note": "cluster = group items by shared characteristics without altering the items themselves; collapse = identify redundant or equivalent representations and unify them into a minimal form",
+              "token": "cluster"
+            }
+          ],
+          "heuristics": [
+            "minimize redundant forms",
+            "collapse equivalent representations",
+            "reduce to canonical form",
+            "unify duplicate representations",
+            "remove structural redundancy",
+            "simplify while preserving behavior",
+            "optimize structure without changing behavior"
+          ],
+          "definition": "The response enhances the task by identifying redundant or equivalent representations and unifying them into a minimal canonical form while preserving behavioral invariants, reducing complexity while maintaining correctness."
         },
         "compare": {
           "distinctions": [
@@ -7229,6 +7253,7 @@
         "cite": "cite",
         "clash": "clash",
         "cluster": "cluster",
+        "collapse": "collapse",
         "compare": "compare",
         "control": "control",
         "converge": "converge",
@@ -7462,6 +7487,7 @@
         "method=cite": "method-cite",
         "method=clash": "method-clash",
         "method=cluster": "method-cluster",
+        "method=collapse": "method-collapse",
         "method=compare": "method-compare",
         "method=control": "method-control",
         "method=converge": "method-converge",
@@ -7753,6 +7779,7 @@
       "cocreate": "cocreate",
       "code": "code",
       "codetour": "codetour",
+      "collapse": "collapse",
       "commit": "commit",
       "compare": "compare",
       "completeness=deep": "completeness-deep",
@@ -7921,6 +7948,7 @@
       "method=cite": "method-cite",
       "method=clash": "method-clash",
       "method=cluster": "method-cluster",
+      "method=collapse": "method-collapse",
       "method=compare": "method-compare",
       "method=control": "method-control",
       "method=converge": "method-converge",
@@ -8905,11 +8933,11 @@
     }
   ],
   "checksums": {
-    "axes": "b5f02d3bb83a50f88e72931c45978221a05ca738c9fad532d188cdce5ff819a2",
+    "axes": "df8bdade8226791fc7a4c2cd138bf5fa55250de215d263813610a8cff8d14f68",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "9bb3d134e05a86d0d0dff073b50a8c54d2f1ae39e4ed83a0b3f887e18e40c54f",
+    "slugs": "035ce9ad6b2e9ad5688b10c480ce9063071d05d1230875967129d4337bd9e58b",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

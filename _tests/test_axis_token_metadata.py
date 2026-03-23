@@ -7,6 +7,7 @@ Each block verifies coverage, schema conformance, and key distinctions.
 import unittest
 
 from lib.axisConfig import axis_token_metadata as _axis_token_metadata
+
 _AXIS_TOKEN_METADATA = _axis_token_metadata()
 
 
@@ -90,6 +91,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
     def test_triage_in_completeness_not_method(self):
         """triage must be a completeness token, not a method token (moved in ADR-0163)."""
         from lib.axisConfig import AXIS_KEY_TO_VALUE
+
         self.assertIn(
             "triage",
             AXIS_KEY_TO_VALUE.get("completeness", {}),
@@ -429,6 +431,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "calc",
         "cite",
         "clash",
+        "collapse",
         "cluster",
         "compare",
         "control",
@@ -584,9 +587,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "executable implementation",
             "observed running behavior",
         ]:
-            self.assertIn(
-                rung, definition, f"ground ladder must include rung: {rung}"
-            )
+            self.assertIn(rung, definition, f"ground ladder must include rung: {rung}")
 
 
 if __name__ == "__main__":

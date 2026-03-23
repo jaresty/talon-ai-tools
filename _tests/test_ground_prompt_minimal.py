@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 8000,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 8000")
+        self.assertLess(total, 8500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 8500")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -215,6 +215,18 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_final_report_reconciles_documents(self):
         self.assertIn("reconcile any documents", self.prompt,
             "Minimal spec must require document reconciliation in the final report")
+
+    def test_ev_rung_only_validation_artifact_permitted(self):
+        self.assertIn("no other content is permitted at the executable validation rung", self.prompt,
+            "Minimal spec must state only the validation artifact is permitted before V-complete sentinel")
+
+    def test_sentinel_placement_at_defining_rung_only(self):
+        self.assertIn("valid only at its defining rung", self.prompt,
+            "Minimal spec must state each completion sentinel is valid only at its defining rung")
+
+    def test_final_report_copies_not_claims(self):
+        self.assertIn("no new behavioral claims", self.prompt,
+            "Minimal spec must require final report copies existing artifacts, no new behavioral claims")
 
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)

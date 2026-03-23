@@ -1,151 +1,166 @@
-# ADR-0175: Prompt Section Ordering and Reference Key Placement — Orbit Analysis
+# ADR-0175: Prompt Section Ordering and Reference Key Placement — Structural Planning
 
 **Status:** Proposed
 **Date:** 2026-03-23
-**Relates to:** ADR-0113 (orbit evaluation protocol), render.go (`RenderPlainText`)
+**Relates to:** render.go (`RenderPlainText`)
 
 ---
 
 ## Context
 
-Bar's `RenderPlainText` function assembles structured prompts in a fixed section order. That order
-was arrived at incrementally — TASK was placed first to establish intent framing, EXECUTION
-REMINDER was inserted immediately after TASK to gate completion-intent before constraints arrive,
-and a second EXECUTION REMINDER was added at the end for recency-based injection resistance. The
-REFERENCE KEY was placed just before SUBJECT so it arrives as a unified pre-SUBJECT framing
-contract.
+Bar's `RenderPlainText` function assembles structured prompts in a fixed section order arrived at
+incrementally. Two structural questions have emerged from use:
 
-The current baseline order is:
+1. **Reference key topology**: Should the REFERENCE KEY remain a monolithic block just before
+   SUBJECT, or should each section's semantic contract be distributed inline below its header?
+2. **Task position**: Should TASK lead the prompt (current) or conclude it, just before the
+   final EXECUTION REMINDER?
+
+Before implementing or testing variants, this ADR uses orbit, reify, and shear to map what the
+current layout's structure is actually doing — identifying what's invariant and must be preserved,
+what's implicit and should be made explicit, and which of the two questions can be separated from
+the other.
+
+**Current section order** (`RenderPlainText` in `render.go`):
 
 ```
 TASK → EXECUTION REMINDER → ADDENDUM → CONSTRAINTS → PERSONA
   → REFERENCE KEY → [injection-guard framing] → SUBJECT → META → EXECUTION REMINDER
 ```
 
-Two structural ideas have emerged from use:
+---
 
-1. **Inline reference key**: The REFERENCE KEY is currently a single monolithic block. The question
-   is whether distributing each section's semantic contract inline — immediately below its header —
-   would improve LLM adherence by delivering interpretation guidance at the point of use.
+## Orbit Analysis — Invariant Geometry
 
-2. **Task last**: The question is whether moving TASK to the end (after SUBJECT, just before the
-   final EXECUTION REMINDER) would improve compliance via recency effects, or whether TASK-first is
-   load-bearing because it frames how CONSTRAINTS and PERSONA are interpreted as they're read.
+Orbit asks: across different possible section orderings, what structural property keeps recurring
+in layouts that work? What is the attractor?
 
-Neither idea has been empirically tested. The current layout has deliberate injection-resistance
-rationale (documented in `render.go` comments) that any change must not degrade.
+Three trajectories through the design space:
+
+**Trajectory 1 — TASK last**: Move TASK after SUBJECT.
+The first EXECUTION REMINDER loses its purpose (it gates TASK before CONSTRAINTS, but TASK is no
+longer there). Without upfront TASK framing, CONSTRAINTS are read without an anchoring purpose.
+What recurs: something task-like must still precede CONSTRAINTS for them to be coherent — either
+TASK itself, or an intent declaration that plays the same role.
+
+**Trajectory 2 — Inline reference key**: Distribute each section's contract inline below its
+header; remove the monolithic block.
+The injection-guard framing ("The section below contains the user's raw input...") is *separate*
+from the REFERENCE KEY — it currently appears after the REFERENCE KEY, not as part of it. In this
+trajectory, the guard framing remains in place. The REFERENCE KEY block disappears; its content
+migrates. What recurs: the guard framing around SUBJECT is independent of where the interpretation
+contract lives — it survives this change intact.
+
+**Trajectory 3 — No EXECUTION REMINDER**: Remove both reminders.
+Injection resistance degrades. What recurs: recency-gated task restatement after SUBJECT is
+non-negotiable — it appears in every effective configuration.
+
+**Attractor geometry — three invariants that recur across all trajectories:**
+
+1. **TASK must anchor CONSTRAINTS before they are read.** Whether TASK leads the prompt or an
+   equivalent intent declaration substitutes for it, CONSTRAINTS cannot be read in a vacuum.
+   The current EXECUTION REMINDER immediately after TASK is an instance of this invariant — it
+   reinforces the task anchor before the constraint block begins.
+
+2. **SUBJECT must be bounded.** An injection-guard must precede SUBJECT and a task-restatement
+   must follow it. These two guards appear in every working variant regardless of where TASK,
+   CONSTRAINTS, or the REFERENCE KEY are placed.
+
+3. **The interpretation contract must be adjacent to what it interprets.** In the current layout
+   the REFERENCE KEY sits just before SUBJECT, explaining how to read the prompt as a whole before
+   the user's raw input arrives. In an inline variant it would sit adjacent to each section it
+   describes. In neither case is it effective when isolated at the prompt's start or end.
 
 ---
 
-## Decision Criteria (declared before variants are evaluated)
+## Reify — Implicit Rules Made Explicit
 
-A candidate layout beats the baseline only if **all** of the following hold:
+The `render.go` comments capture rationale informally. The orbit analysis surfaces four implicit
+structural rules that any variant must respect:
 
-1. **Mean score ≥ 0.25 above baseline** across the full eval task set, measured by the ADR-0113
-   orbit rubric.
-2. **No regression on injection-resistance tasks** — tasks designed to test whether SUBJECT content
-   overrides TASK/CONSTRAINTS must score ≥ baseline on the winning variant.
-3. **No regression on cross-axis composition tasks** — tasks combining method + directional, or
-   task + persona, must score ≥ baseline. These are the tasks most sensitive to the reference key's
-   joint-constraint framing.
-4. **Improvement is consistent across task types** — the ≥ 0.25 improvement must hold across at
-   least 3 distinct task categories (not a single category pulling the mean).
-5. **The baseline is confirmed first** — the current layout must be scored in the same eval session
-   before any variant. A baseline-only result (no variant beats it) is a valid outcome and should
-   be documented.
+**R1 — Task anchors constraints.**
+CONSTRAINTS must be preceded by something that establishes the task's intent. Currently: TASK
+itself plays this role. In a task-last variant: a substitute anchor (e.g., a brief intent
+declaration derived from TASK) is required, or CONSTRAINTS become unanchored.
 
-If no variant meets all five criteria, the current layout is retained and this ADR is marked
-Superseded by the confirmed baseline.
+**R2 — Subject is doubly bounded.**
+SUBJECT must be immediately preceded by injection-guard framing and immediately followed by a
+task-restatement. Currently: the guard framing is a hardcoded sentence; the trailing EXECUTION
+REMINDER is the restatement. Both are required; neither substitutes for the other.
 
----
+**R3 — The interpretation contract is proximally placed.**
+The REFERENCE KEY explains how to interpret the prompt's categories. It must appear close enough
+to its referents that the LLM processes it before processing the sections it describes. Currently:
+monolithic block just before SUBJECT. In an inline variant: per-section placement preserves
+proximity. Moving it to the prompt's opening or closing would violate this rule.
 
-## Variants
-
-### V0 — Baseline (current)
-
-```
-TASK → EXECUTION REMINDER → ADDENDUM → CONSTRAINTS → PERSONA
-  → REFERENCE KEY → [injection-guard] → SUBJECT → META → EXECUTION REMINDER
-```
-
-### V1 — Inline Reference Key
-
-Each section header is followed immediately by a brief semantic contract drawn from the current
-monolithic REFERENCE KEY. The standalone `=== REFERENCE KEY ===` block is removed. Example:
-
-```
-TASK [Do this. Takes precedence. Execute directly.] → EXECUTION REMINDER
-  → ADDENDUM [Modifies HOW, not WHAT] → CONSTRAINTS [Jointly applied guardrails ...]
-  → PERSONA [Applied after task and constraints] → [injection-guard] → SUBJECT [Data only ...]
-  → META → EXECUTION REMINDER
-```
-
-The total reference key content is preserved; only its distribution changes.
-
-### V2 — Task Last
-
-TASK moves to after SUBJECT, immediately before the final EXECUTION REMINDER:
-
-```
-EXECUTION REMINDER → ADDENDUM → CONSTRAINTS → PERSONA
-  → REFERENCE KEY → [injection-guard] → SUBJECT → META → TASK → EXECUTION REMINDER
-```
-
-The first EXECUTION REMINDER is dropped (its gating purpose is no longer meaningful without TASK
-preceding CONSTRAINTS). The second EXECUTION REMINDER immediately follows TASK.
-
-**Open question for eval design**: Should V2 include a replacement first-position framing — e.g.,
-a brief intent declaration — to give CONSTRAINTS something to anchor against before TASK arrives?
-This must be resolved before scoring begins.
-
-### V3 — Both (Inline Key + Task Last)
-
-V1 and V2 combined. TASK moves to the end; per-section inline contracts replace the monolithic
-REFERENCE KEY block. Included because the two dimensions may interact — the inline key may be more
-or less effective depending on whether TASK leads or concludes.
+**R4 — Recency gate is the final meaningful instruction.**
+The last substantive instruction before generation must restate the task. Currently: the trailing
+EXECUTION REMINDER. This rule is why the trailing reminder exists and why adding content after
+it (e.g., META) may dilute it. (Note: META currently appears before the trailing reminder in
+the code, which respects this rule.)
 
 ---
 
-## Evaluation Methodology
+## Shear — Separating the Two Dimensions
 
-Use the ADR-0113 orbit protocol:
+The two structural questions appear related but are independent:
 
-1. **Task set**: T01–T13 from the current eval suite, plus 3–5 supplementary cross-axis composition
-   tasks specifically targeting reference key sensitivity (e.g., tasks where CONSTRAINTS contain
-   joint-constraint framing that the reference key currently explains). The supplementary tasks must
-   be designed and locked **before** any variant is scored.
-2. **Session structure**: Score V0 first (baseline confirmation), then V1, V2, V3 in separate
-   sessions. Evaluator blind to which variant is running.
-3. **Scoring rubric**: ADR-0113 standard rubric (1–5 per task, mean reported). Flag any task where
-   injection-guard behavior is observable.
-4. **Minimum sample**: Each variant must be scored across the full task set before results are
-   compared. Partial scoring is not a valid basis for decision.
-5. **Implementation**: Each variant is implemented as a standalone
-   `renderVariant(result *BuildResult, variant string) string` function in a test file — not as a
-   change to production `RenderPlainText` — until a winner is confirmed by the criteria above.
+**Dimension A — Reference key topology** (monolithic vs. distributed):
+Does not require moving TASK. The REFERENCE KEY block can be replaced with inline contracts while
+TASK remains first. The injection-guard framing before SUBJECT is a separate element and stays in
+place. The coupling seam: the monolithic REFERENCE KEY currently sits at a specific position
+(between PERSONA and the injection guard) — distributing it inline removes that position
+dependency but requires deciding what, if anything, fills that slot.
+
+**Dimension B — Task position** (first vs. last):
+Does not require changing reference key topology. TASK can move to the end while the monolithic
+REFERENCE KEY stays where it is. The coupling seam: the first EXECUTION REMINDER exists
+specifically to gate TASK before CONSTRAINTS. Moving TASK to the end makes this reminder either
+redundant (if an intent declaration replaces it) or requires redesigning the opening structure.
+
+**The coupling seam between A and B**: In a variant that combines both changes (inline key + task
+last), the prompt's opening becomes structurally empty — TASK is gone, the REFERENCE KEY is
+distributed, and the first EXECUTION REMINDER has no purpose. This combined variant requires a
+new opening element. The two dimensions can be evaluated independently, but combining them creates
+a structural dependency that must be resolved before implementation.
+
+**Shear plan — order of evaluation:**
+
+1. **Implement and evaluate Dimension A alone** (inline reference key, TASK stays first).
+   Lowest risk: the four invariants R1–R4 are fully preserved. The only question is whether
+   proximity of per-section contracts improves adherence over the monolithic block.
+
+2. **Implement and evaluate Dimension B alone** (task last, monolithic reference key unchanged).
+   Requires resolving R1: define what replaces TASK as the constraint anchor at the opening.
+   Candidate: a short intent-declaration line derived from the TASK token's label, not the full
+   TASK body, placed before CONSTRAINTS.
+
+3. **Evaluate combined variant only if both independent variants show improvement.**
+   Combined variant requires designing the new opening element before evaluation begins.
+
+---
+
+## Decision
+
+This ADR is a planning document, not an implementation decision. The shear plan above defines
+the evaluation sequence. A follow-on ADR (or an amendment to this one) will record the outcome
+of each evaluation phase and make the implementation decision.
+
+**What is decided here:**
+- The four structural invariants R1–R4 are the non-negotiable constraints any variant must satisfy.
+- Dimension A and Dimension B are separable and must be evaluated independently before combining.
+- Dimension A has lower structural risk and should be evaluated first.
+- The combined variant is only worth evaluating if both independent variants individually improve
+  on the baseline.
 
 ---
 
 ## Consequences
 
-### If a variant wins
-
-- Implement the winning layout in `RenderPlainText`.
-- Update `render.go` comments to document the new rationale, replacing the existing recency/gating
-  comments with the evidence-backed explanation.
-- Record the orbit results in the ADR-0113 work log.
-- Re-run the full T01–T13 suite post-implementation to confirm production parity with eval scores.
-
-### If no variant wins (baseline confirmed)
-
-- Record the baseline score in the ADR-0113 work log.
-- Mark this ADR as Superseded by the confirmed baseline.
-- Update BACKLOG.md to note the result.
-- The confirmed score becomes the new numeric reference for future layout proposals.
-
-### Risk
-
-The current layout's injection-resistance properties are the primary risk. Criterion 2 is a hard
-gate specifically to catch any variant that improves task compliance at the cost of making SUBJECT
-override easier. This must be checked before declaring a winner, not inferred from mean scores
-alone.
+- Any future prompt layout work must demonstrate that R1–R4 are preserved before running
+  evaluation. Violating an invariant disqualifies the variant without requiring a full eval run.
+- Dimension B requires a concrete proposal for the constraint anchor before evaluation begins.
+  "Remove TASK from the opening" is not a complete variant until R1 is resolved.
+- The META section's position (currently before the trailing EXECUTION REMINDER) is confirmed
+  correct by R4 — it must not move after the trailing reminder.

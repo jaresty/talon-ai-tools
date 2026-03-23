@@ -87,15 +87,15 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_vro_section_is_compact(self):
-        """VRO section must be ≤ 650 chars (ADR-0177 target ~600)."""
+        """VRO section must be ≤ 810 chars (raised from 650 after C11 harness-error gate addition ~+155)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         vro_start = core.find("Before writing the validation run observation rung label")
         vro_end = core.find("At the validation run observation rung, run")
         vro_section = core[vro_start:vro_end]
         self.assertLessEqual(
-            len(vro_section), 650,
-            f"VRO section is {len(vro_section)} chars; must be ≤ 650 after compact rewrite",
+            len(vro_section), 810,
+            f"VRO section is {len(vro_section)} chars; must be ≤ 810 after C11 harness-error gate addition",
         )
 
 

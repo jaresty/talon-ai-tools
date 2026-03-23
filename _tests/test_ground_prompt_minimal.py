@@ -141,8 +141,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require execution-observed after OBS label before thread-complete")
 
     def test_post_obs_completeness_check(self):
-        self.assertIn("directly names that behavior", self.prompt,
-            "Minimal spec must require post-OBS behavioral predicate coverage check before thread-complete")
+        self.assertIn("each distinct predicate requires a separate thread", self.prompt,
+            "Minimal spec must require each behavioral predicate to have a separate thread (manifest-time gate)")
 
     def test_conjunction_ban_has_example(self):
         self.assertIn("are two criteria, not one", self.prompt,
@@ -273,20 +273,20 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Pre-existing document update must appear in the reconciliation gate, not only in the final report section")
 
 
-    # Thread N complete: prose rung reference (not declared intent)
+    # Manifest declaration: behavioral predicate scan (C12 — moved from thread-complete)
     def test_thread_complete_references_prose_rung(self):
-        idx = self.prompt.index("For each sentence in the prose that contains a behavioral predicate")
+        idx = self.prompt.index("Before emitting \u2705 Manifest declared, scan every sentence in the prose")
         end = self.prompt.index("Outputting a rung label is what begins that rung")
         segment = self.prompt[idx:end]
         self.assertIn("prose", segment,
-            "Thread N complete check must reference the prose, not declared intent")
+            "Manifest declaration scan must reference the prose")
 
     def test_thread_complete_not_declared_intent(self):
-        idx = self.prompt.index("For each sentence in the prose that contains a behavioral predicate")
+        idx = self.prompt.index("Before emitting \u2705 Manifest declared, scan every sentence in the prose")
         end = self.prompt.index("Outputting a rung label is what begins that rung")
         segment = self.prompt[idx:end]
         self.assertNotIn("declared intent", segment,
-            "Thread N complete check must not reference 'declared intent' — use prose rung instead")
+            "Manifest declaration scan must not reference 'declared intent' — use prose rung instead")
 
     # C7 carve-out: tests are never valid at ORB rung
     def test_c7_carveout_excludes_all_tests_not_just_gating_test(self):
@@ -370,21 +370,21 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("its assertions must have run, and they must have failed", self.prompt,
             "C13: ground must require test assertions to have run and failed, not just a harness-level error")
 
-    # C14: prose behavioral-sentence coverage check before Thread N complete
+    # C14 → C12 (moved): behavioral predicate scan at manifest declaration, not thread-complete
     def test_c14_behavioral_predicate_coverage_check(self):
-        idx = self.prompt.index("For each sentence in the prose that contains a behavioral predicate")
+        idx = self.prompt.index("Before emitting \u2705 Manifest declared, scan every sentence in the prose")
         thread_end = self.prompt.index("Outputting a rung label is what begins that rung")
         segment = self.prompt[idx:thread_end]
         self.assertIn("behavioral predicate", segment,
-            "C14: Thread N complete check must scan prose for behavioral predicates")
+            "C14→C12: manifest declaration must scan prose for behavioral predicates")
 
     def test_c14_implicit_coverage_does_not_satisfy(self):
-        self.assertIn("implicit or incidental coverage does not satisfy", self.prompt,
-            "C14: ground must state that implicit coverage does not satisfy the behavioral-sentence check")
+        self.assertIn("each distinct predicate requires a separate thread", self.prompt,
+            "C14→C12: ground must require a separate thread for each distinct behavioral predicate")
 
     def test_c14_directly_named_cycle_required(self):
-        self.assertIn("directly names that behavior", self.prompt,
-            "C14: ground must require a cycle whose criterion directly names the behavioral predicate")
+        self.assertIn("each distinct predicate requires a separate thread", self.prompt,
+            "C14→C12: ground must require a thread directly covering each behavioral predicate")
 
     # C7-output-criterion: OBS output must be what a non-technical observer sees
     def test_c7_output_criterion_non_technical_observer(self):

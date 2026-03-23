@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 10500,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 10500 (raised after C1-C4 closures)")
+        self.assertLess(total, 11500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 11500 (raised after C1-C9 closures)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -173,8 +173,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must name the vacuous-test case and require rewriting the test")
 
     def test_ev_green_first_run_return_to_gap(self):
-        self.assertIn("if the artifact passes on its first run", self.prompt,
-            "Minimal spec must require return to gap rung when EV passes green on first run")
+        self.assertIn("if the artifact asserts runtime behavior, perturb the implementation", self.prompt,
+            "Minimal spec must require perturbation check for runtime-behavioral artifacts")
 
     def test_prose_reemitted_before_each_criteria_rung(self):
         self.assertIn("emit it now before writing criteria", self.prompt,
@@ -259,6 +259,31 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_attractor_sentence_rung_satisfied_only_by_tool_event(self):
         self.assertIn("A rung is satisfied when and only when a tool-executed event", self.prompt,
             "Ground must open with the attractor sentence: a rung is satisfied only by a tool-executed event, not inference or prediction")
+
+    # C5: pre-existing document update at reconciliation gate
+    def test_reconciliation_gate_covers_preexisting_documents(self):
+        gate_idx = self.prompt.index("Reconciliation gate:")
+        final_report_idx = self.prompt.index("After emitting \u2705 Manifest exhausted")
+        # The gate must mention updating pre-existing documents that record I
+        try:
+            doc_idx = self.prompt.index("records I", gate_idx)
+        except ValueError:
+            self.fail("Reconciliation gate must instruct updating pre-existing documents that record I when prose evolves on upward return")
+        self.assertLess(doc_idx, final_report_idx,
+            "Pre-existing document update must appear in the reconciliation gate, not only in the final report section")
+
+
+    # C9: validation artifact placement
+    def test_c9_prefer_existing_test_file(self):
+        ev_idx = self.prompt.index("Only validation artifacts may be produced")
+        v_complete_idx = self.prompt.index("\u2705 Validation artifact V complete must be emitted")
+        segment = self.prompt[ev_idx:v_complete_idx]
+        self.assertIn("existing test file", segment,
+            "C9: ground must require checking for an existing test file before creating a new one")
+
+    def test_c9_test_function_is_unit_of_production(self):
+        self.assertIn("test function", self.prompt,
+            "C9: ground must state that the test function, not the file, is the unit of production")
 
 
 if __name__ == "__main__":

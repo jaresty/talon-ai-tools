@@ -1,6 +1,6 @@
 # ADR-0176: Inline Reference Key — Per-Section Semantic Contracts
 
-**Status:** Proposed
+**Status:** Implemented
 **Date:** 2026-03-23
 **Relates to:** ADR-0175 (Dimension A), render.go, renderPrompt.ts, promptGrammar.py
 

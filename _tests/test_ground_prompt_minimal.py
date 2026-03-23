@@ -85,8 +85,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must state VRO stops after first failure")
 
     def test_ei_rung_pre_edit_check(self):
-        self.assertIn("Before each edit, check", self.prompt,
-            "Minimal spec must require a pre-edit check for Execution observed sentinel")
+        self.assertIn("One edit per re-run cycle", self.prompt,
+            "Minimal spec must require re-running validation after each edit")
 
     def test_ei_rung_one_edit_per_cycle(self):
         self.assertIn("One edit per re-run cycle", self.prompt,
@@ -141,8 +141,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require execution-observed after OBS label before thread-complete")
 
     def test_post_obs_completeness_check(self):
-        self.assertIn("not yet covered by a completed gap cycle", self.prompt,
-            "Minimal spec must require post-OBS check for unmet behaviors before thread-complete")
+        self.assertIn("directly names that behavior", self.prompt,
+            "Minimal spec must require post-OBS behavioral predicate coverage check before thread-complete")
 
     def test_conjunction_ban_has_example(self):
         self.assertIn("are two criteria, not one", self.prompt,
@@ -177,8 +177,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require perturbation check for runtime-behavioral artifacts")
 
     def test_prose_reemitted_before_each_criteria_rung(self):
-        self.assertIn("emit it now before writing criteria", self.prompt,
-            "Minimal spec must require prose to be re-emitted before criteria in every cycle after the first")
+        self.assertIn("re-emitting prose is not optional on upward returns", self.prompt,
+            "Minimal spec must require prose to be re-emitted before criteria in every cycle including upward returns")
 
     def test_obs_rung_produces_only_tool_output(self):
         self.assertIn("implementation edits, new files, and code changes are not permitted", self.prompt,
@@ -229,8 +229,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require final report copies existing artifacts, no new behavioral claims")
 
     def test_prose_reemit_is_a_mechanical_check(self):
-        self.assertIn("if the prose rung has not been re-emitted in the current cycle", self.prompt,
-            "Minimal spec must frame prose re-emit as a mechanical check, not a soft reminder")
+        self.assertIn("re-emitting prose is not optional on upward returns", self.prompt,
+            "Minimal spec must frame prose re-emit as a non-optional gate, not a soft reminder")
 
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)
@@ -247,7 +247,7 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C1: prose-in-cycle gate
     def test_criteria_label_requires_prose_label_in_current_cycle(self):
-        self.assertIn("prose rung label for the current cycle", self.prompt,
+        self.assertIn("criteria rung label is not valid until the prose rung label for that cycle", self.prompt,
             "Ground must gate the criteria label on the prose rung label existing in the current cycle")
 
     # C2: newly-produced check
@@ -275,14 +275,14 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # Thread N complete: prose rung reference (not declared intent)
     def test_thread_complete_references_prose_rung(self):
-        idx = self.prompt.index("Before emitting \u2705 Thread N complete, check:")
+        idx = self.prompt.index("For each sentence in the prose that contains a behavioral predicate")
         end = self.prompt.index("Outputting a rung label is what begins that rung")
         segment = self.prompt[idx:end]
-        self.assertIn("prose rung", segment,
-            "Thread N complete check must reference the prose rung, not declared intent")
+        self.assertIn("prose", segment,
+            "Thread N complete check must reference the prose, not declared intent")
 
     def test_thread_complete_not_declared_intent(self):
-        idx = self.prompt.index("Before emitting \u2705 Thread N complete, check:")
+        idx = self.prompt.index("For each sentence in the prose that contains a behavioral predicate")
         end = self.prompt.index("Outputting a rung label is what begins that rung")
         segment = self.prompt[idx:end]
         self.assertNotIn("declared intent", segment,
@@ -354,12 +354,12 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C4-prime: execution output must come from a tool-call result, not inline text
     def test_c4prime_execution_output_must_be_from_tool_call(self):
-        self.assertIn("quoted verbatim from the tool-call result", self.prompt,
-            "C4-prime: ground must require execution output to be quoted verbatim from a tool-call result")
+        self.assertIn("verbatim tool-call output", self.prompt,
+            "C4-prime: ground must require execution output to be verbatim tool-call output at any rung")
 
     def test_c4prime_inline_text_does_not_satisfy_gate(self):
-        self.assertIn("inline within the model", self.prompt,
-            "C4-prime: ground must state that inline model-generated text does not satisfy the VRO gate")
+        self.assertIn("model-generated text that resembles output", self.prompt,
+            "C4-prime: ground must state that model-generated text resembling output does not satisfy any rung")
 
     # C13: post-EI green requires prior red with test logic failing
     def test_c13_harness_error_is_not_red_run(self):
@@ -372,7 +372,7 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C14: prose behavioral-sentence coverage check before Thread N complete
     def test_c14_behavioral_predicate_coverage_check(self):
-        idx = self.prompt.index("Before emitting \u2705 Thread N complete, check:")
+        idx = self.prompt.index("For each sentence in the prose that contains a behavioral predicate")
         thread_end = self.prompt.index("Outputting a rung label is what begins that rung")
         segment = self.prompt[idx:thread_end]
         self.assertIn("behavioral predicate", segment,
@@ -385,6 +385,38 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_c14_directly_named_cycle_required(self):
         self.assertIn("directly names that behavior", self.prompt,
             "C14: ground must require a cycle whose criterion directly names the behavioral predicate")
+
+    # C7-output-criterion: OBS output must be what a non-technical observer sees
+    def test_c7_output_criterion_non_technical_observer(self):
+        self.assertIn("non-technical observer of the running system", self.prompt,
+            "C7-output-criterion: OBS output must be what a non-technical observer would see")
+
+    def test_c7_output_criterion_test_report_invalid(self):
+        self.assertIn("test pass/fail report is not valid OBS output", self.prompt,
+            "C7-output-criterion: ground must explicitly reject test pass/fail reports as OBS output")
+
+    def test_c7_output_must_speak_for_itself(self):
+        self.assertIn("speak for itself without requiring the reader to", self.prompt,
+            "C7-output-criterion: ground must require OBS output to speak for itself")
+
+    # C4-prime-obs: universal verbatim rule applies at every rung
+    def test_c4prime_obs_applies_at_any_rung(self):
+        self.assertIn("at any rung", self.prompt,
+            "C4-prime-obs: universal verbatim rule must explicitly apply at any rung, not just VRO")
+
+    # C17: criteria block is exactly one criterion
+    def test_c17_criteria_block_exactly_one_criterion(self):
+        self.assertIn("criteria rung artifact is exactly one criterion", self.prompt,
+            "C17: ground must state the criteria block contains exactly one criterion")
+
+    def test_c17_list_of_n_requires_n_cycles(self):
+        self.assertIn("list of N behavioral assertions requires N separate gap cycles", self.prompt,
+            "C17: ground must state a list of N assertions requires N separate cycles")
+
+    # C1-upward-return: prose re-emitted at start of every cycle including upward returns
+    def test_c1_universal_every_cycle_including_upward_returns(self):
+        self.assertIn("any cycle following an upward return", self.prompt,
+            "C1-upward-return: prose re-emission must be required on upward returns, not just first/subsequent cycles")
 
     # C15: impl-gate is a descent gate, not a completion gate
     def test_c15_impl_gate_licenses_first_edit_not_thread_complete(self):

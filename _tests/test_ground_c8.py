@@ -18,11 +18,11 @@ class TestC8StaticStateVacuousness(unittest.TestCase):
             "C8: ground must require running static-state artifacts against the pre-edit codebase")
 
     def test_c8_positioned_within_vacuousness_clause(self):
-        head_idx = self.core.index("git show HEAD")
+        ev_idx = self.core.index("Only validation artifacts may be produced")
         v_complete_idx = self.core.index("\u2705 Validation artifact V complete must be emitted")
-        static_idx = self.core.index("static", head_idx)
+        static_idx = self.core.index("static", ev_idx)
         self.assertLess(static_idx, v_complete_idx,
-            "C8: static-state check must appear within the vacuousness clause, before V-complete sentinel")
+            "C8: static-state check must appear within the EV rung section, before V-complete sentinel")
 
     def test_c8_passing_before_edit_is_vacuous(self):
         static_idx = self.core.index("static")

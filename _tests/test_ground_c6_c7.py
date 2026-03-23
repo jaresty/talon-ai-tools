@@ -10,20 +10,20 @@ class TestC6ArtifactLocationGate(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c6_tmp_prohibited(self):
-        self.assertIn("/tmp", self.core,
-            "C6: ground must explicitly prohibit writing validation artifacts to /tmp")
+        self.assertIn("version-controlled file tree", self.core,
+            "C6: ground must require validation artifacts to reside within the version-controlled file tree")
 
     def test_c6_positioned_after_head_check(self):
-        head_idx = self.core.index("git show HEAD")
-        tmp_idx = self.core.index("/tmp")
-        self.assertGreater(tmp_idx, head_idx,
-            "C6: /tmp prohibition must appear after the HEAD check clause")
+        preexist_idx = self.core.index("confirm via tool call that the artifact path does not pre-exist")
+        tree_idx = self.core.index("version-controlled file tree")
+        self.assertGreater(tree_idx, preexist_idx,
+            "C6: version-controlled tree requirement must appear after the pre-existence check clause")
 
     def test_c6_positioned_before_v_complete_sentinel(self):
-        tmp_idx = self.core.index("/tmp")
+        tree_idx = self.core.index("version-controlled file tree")
         v_complete_idx = self.core.index("\u2705 Validation artifact V complete must be emitted")
-        self.assertLess(tmp_idx, v_complete_idx,
-            "C6: /tmp prohibition must appear before the V-complete sentinel line")
+        self.assertLess(tree_idx, v_complete_idx,
+            "C6: version-controlled tree requirement must appear before the V-complete sentinel line")
 
 
 class TestC7ObservedRunningBehaviorType(unittest.TestCase):

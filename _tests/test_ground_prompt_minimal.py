@@ -97,8 +97,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must state formal notation encodes only declared criteria")
 
     def test_ev_rung_requires_prior_red_run(self):
-        self.assertIn("must fail before any implementation edit", self.prompt,
-            "Minimal spec must state that validation artifact must fail before any implementation edit")
+        self.assertIn("if it passes, the artifact is vacuous", self.prompt,
+            "Minimal spec must require that a passing-before-edit artifact is vacuous and must be rewritten")
 
     def test_preexisting_test_does_not_satisfy_ev_rung(self):
         self.assertIn("pre-existing test that happens to pass does not satisfy", self.prompt,
@@ -109,8 +109,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require a gap sentinel before specific rung label writes")
 
     def test_gap_names_behavior_not_artifact_absence(self):
-        self.assertIn("naming an absent artifact is not a valid gap", self.prompt,
-            "Minimal spec must state gap names a behavior not an absent artifact")
+        self.assertIn("need to implement a landing page", self.prompt,
+            "Minimal spec must give a counterexample showing gap must name absent behavior not an absent artifact")
 
     def test_gap_phrased_as_currently_false_assertion(self):
         self.assertIn("phrased as a currently-false assertion", self.prompt,
@@ -177,7 +177,7 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require perturbation check for runtime-behavioral artifacts")
 
     def test_prose_reemitted_before_each_criteria_rung(self):
-        self.assertIn("re-emitting prose is not optional on upward returns", self.prompt,
+        self.assertIn("prose rung must be re-emitted at the start of every cycle", self.prompt,
             "Minimal spec must require prose to be re-emitted before criteria in every cycle including upward returns")
 
     def test_obs_rung_produces_only_tool_output(self):
@@ -185,7 +185,7 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must forbid implementation edits at OBS rung")
 
     def test_upward_return_three_level_hierarchy(self):
-        self.assertIn("prose description is insufficient", self.prompt,
+        self.assertIn("observation cannot be produced is a prose-description failure", self.prompt,
             "Minimal spec must state three-level return hierarchy: EI loop / formal notation / prose")
 
     def test_prose_return_when_observation_impossible(self):
@@ -217,7 +217,7 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require document reconciliation in the final report")
 
     def test_ev_rung_only_validation_artifact_permitted(self):
-        self.assertIn("no other content is permitted at the executable validation rung", self.prompt,
+        self.assertIn("no other content is permitted before", self.prompt,
             "Minimal spec must state only the validation artifact is permitted before V-complete sentinel")
 
     def test_sentinel_placement_at_defining_rung_only(self):
@@ -229,8 +229,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require final report copies existing artifacts, no new behavioral claims")
 
     def test_prose_reemit_is_a_mechanical_check(self):
-        self.assertIn("re-emitting prose is not optional on upward returns", self.prompt,
-            "Minimal spec must frame prose re-emit as a non-optional gate, not a soft reminder")
+        self.assertIn("the criterion must be immediately derivable from the re-emitted prose", self.prompt,
+            "Minimal spec must frame prose re-emit as a non-optional gate — criterion must derive from re-emitted prose")
 
     def test_build_ground_prompt_returns_nonempty(self):
         self.assertGreater(len(self.prompt), 0)
@@ -247,13 +247,13 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C1: prose-in-cycle gate
     def test_criteria_label_requires_prose_label_in_current_cycle(self):
-        self.assertIn("criteria rung label is not valid until the prose rung label for that cycle", self.prompt,
-            "Ground must gate the criteria label on the prose rung label existing in the current cycle")
+        self.assertIn("prose rung must be re-emitted at the start of every cycle", self.prompt,
+            "Ground must gate the criteria label on prose being re-emitted in the current cycle")
 
     # C2: newly-produced check
     def test_v_complete_requires_artifact_not_pre_existing(self):
-        self.assertIn("read the artifact path via a tool call", self.prompt,
-            "Ground must require checking that the validation artifact does not pre-exist before emitting V-complete")
+        self.assertIn("confirm via tool call that the artifact path does not pre-exist", self.prompt,
+            "Ground must require checking via tool call that the validation artifact does not pre-exist before emitting V-complete")
 
     # Attractor sentence
     def test_attractor_sentence_rung_satisfied_only_by_tool_event(self):
@@ -293,8 +293,8 @@ class TestMinimalGroundParts(unittest.TestCase):
         orb_idx = self.prompt.index("Upon writing the observed running behavior label")
         thread_complete_idx = self.prompt.index("\u2705 Thread N complete may not be emitted")
         segment = self.prompt[orb_idx:thread_complete_idx]
-        self.assertIn("never a valid consumer at this rung", segment,
-            "C7 carve-out must exclude all tests at the ORB rung, not only the gating test")
+        self.assertIn("not the test suite", segment,
+            "C7 carve-out: OBS rung must exclude the test suite (axiom-level rung-type constraint covers all-tests rule)")
 
     # C12: observed running behavior rung criterion re-emission
     def test_c12_criterion_reemitted_before_orb_invocation(self):
@@ -345,12 +345,12 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C2-prime: pre-existence check must be a tool-executed event
     def test_c2prime_preexistence_check_requires_tool_call(self):
-        self.assertIn("read the artifact path via a tool call", self.prompt,
-            "C2-prime: ground must require reading the artifact path via a tool call, not a mental check")
+        self.assertIn("confirm via tool call that the artifact path does not pre-exist", self.prompt,
+            "C2-prime: ground must require confirming the artifact path via a tool call, not a mental check")
 
     def test_c2prime_v_complete_requires_tool_result_in_transcript(self):
-        self.assertIn("may not be emitted without this tool-executed result", self.prompt,
-            "C2-prime: ground must state V-complete may not be emitted without the tool-executed git show result")
+        self.assertIn("V-complete may not be emitted without this tool-executed result", self.prompt,
+            "C2-prime: ground must state V-complete may not be emitted without the tool-executed result")
 
     # C4-prime: execution output must come from a tool-call result, not inline text
     def test_c4prime_execution_output_must_be_from_tool_call(self):
@@ -392,12 +392,12 @@ class TestMinimalGroundParts(unittest.TestCase):
             "C7-output-criterion: OBS output must be what a non-technical observer would see")
 
     def test_c7_output_criterion_test_report_invalid(self):
-        self.assertIn("test pass/fail report is not valid OBS output", self.prompt,
-            "C7-output-criterion: ground must explicitly reject test pass/fail reports as OBS output")
+        self.assertIn("validation-run-observation-type output", self.prompt,
+            "C7-output-criterion: axiom-level rung-type constraint must name VRO as the type produced by running tests, covering OBS output rejection")
 
     def test_c7_output_must_speak_for_itself(self):
-        self.assertIn("speak for itself without requiring the reader to", self.prompt,
-            "C7-output-criterion: ground must require OBS output to speak for itself")
+        self.assertIn("directly demonstrate the specific behavior named in the criterion", self.prompt,
+            "C7-output-criterion: ground must require OBS output to directly demonstrate the criterion")
 
     # C4-prime-obs: universal verbatim rule applies at every rung
     def test_c4prime_obs_applies_at_any_rung(self):
@@ -406,12 +406,12 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C17: criteria block is exactly one criterion
     def test_c17_criteria_block_exactly_one_criterion(self):
-        self.assertIn("criteria rung artifact is exactly one criterion", self.prompt,
-            "C17: ground must state the criteria block contains exactly one criterion")
+        self.assertIn("if the criterion contains the word", self.prompt,
+            "C17: ground must enforce single-criterion rule via the 'and' check")
 
     def test_c17_list_of_n_requires_n_cycles(self):
-        self.assertIn("list of N behavioral assertions requires N separate gap cycles", self.prompt,
-            "C17: ground must state a list of N assertions requires N separate cycles")
+        self.assertIn("are two criteria, not one", self.prompt,
+            "C17: ground must give an example distinguishing two criteria from one")
 
     # C1-upward-return: prose re-emitted at start of every cycle including upward returns
     def test_c1_universal_every_cycle_including_upward_returns(self):

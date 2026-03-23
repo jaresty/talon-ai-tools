@@ -74,15 +74,15 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_obs_section_is_compact(self):
-        """OBS rung section must be ≤ 850 chars (ADR-0177 target ~800)."""
+        """OBS rung section must be ≤ 950 chars (raised from 850 after F4 UI artifact-type addition ~+90)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         obs_start = core.find("Upon writing the observed running behavior label")
         obs_end = core.find("✅ Thread N complete may not be emitted unless")
         obs_section = core[obs_start:obs_end]
         self.assertLessEqual(
-            len(obs_section), 850,
-            f"OBS rung section is {len(obs_section)} chars; must be ≤ 850 after compact rewrite",
+            len(obs_section), 950,
+            f"OBS rung section is {len(obs_section)} chars; must be ≤ 950 after F4 UI artifact-type addition",
         )
 
 
@@ -100,15 +100,15 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_criteria_section_is_compact(self):
-        """Criteria rung section must be ≤ 750 chars (ADR-0177 target ~700)."""
+        """Criteria rung section must be ≤ 1050 chars (raised from 750 after F3 behavioral gate addition ~+257)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         crit_start = core.find("From the criteria rung onward")
         crit_end = core.find("Formal notation encodes only")
         crit_section = core[crit_start:crit_end]
         self.assertLessEqual(
-            len(crit_section), 750,
-            f"Criteria section is {len(crit_section)} chars; must be ≤ 750 after compact rewrite",
+            len(crit_section), 1050,
+            f"Criteria section is {len(crit_section)} chars; must be ≤ 1050 after F3 behavioral gate addition",
         )
 
 
@@ -122,6 +122,77 @@ class TestGroundRewrite(unittest.TestCase):
         self.assertLessEqual(
             len(rec_section), 400,
             f"Reconciliation gate is {len(rec_section)} chars; must be ≤ 400 after compact rewrite",
+        )
+
+
+    # F1: Thread N complete cycle anchor
+    def test_f1_thread_complete_has_cycle_anchor(self):
+        """Thread N complete gate must anchor OBS to 'after the most recent 🟢 Implementation gate cleared'."""
+        self.assertIn(
+            "after the most recent",
+            build_ground_prompt(minimal=True),
+            "F1: Thread N complete gate must anchor OBS cycle to 'after the most recent 🟢 Implementation gate cleared in this thread'",
+        )
+
+
+    # F2: Red-witness cycle anchor
+    def test_f2_red_witness_has_cycle_anchor(self):
+        """Red-witness gate must anchor prior red to 'after the most recent 🟢 Implementation gate cleared'."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        vro_start = core.find("Before writing the validation run observation rung label")
+        vro_end = core.find("At the validation run observation rung, run")
+        vro_section = core[vro_start:vro_end]
+        self.assertIn(
+            "after the most recent",
+            vro_section,
+            "F2: red-witness gate must anchor prior red run to 'after the most recent 🟢 Implementation gate cleared for this thread'",
+        )
+
+
+    # F3: Behavioral-vs-structural criterion gate
+    def test_f3_structural_criterion_gate_present(self):
+        """Criteria rung must distinguish structural-presence assertions from behavioral assertions."""
+        prompt = build_ground_prompt(minimal=True)
+        self.assertIn(
+            "structural",
+            prompt,
+            "F3: criteria rung must name structural-presence assertions and require a behavioral assertion about content or effect",
+        )
+
+    def test_f3_structural_criterion_names_counterexample(self):
+        """Structural-vs-behavioral gate must name a concrete counterexample (column header)."""
+        prompt = build_ground_prompt(minimal=True)
+        self.assertIn(
+            "column header",
+            prompt,
+            "F3: structural-vs-behavioral gate must name 'column header' as the disallowed structural-only form",
+        )
+
+
+    # F4: OBS artifact type clarification for UI
+    def test_f4_obs_ui_artifact_type_named(self):
+        """OBS rung must name browser-visible text as the required form for UI components."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        obs_start = core.find("Upon writing the observed running behavior label")
+        obs_end = core.find("✅ Thread N complete may not be emitted unless")
+        obs_section = core[obs_start:obs_end]
+        self.assertIn(
+            "browser",
+            obs_section,
+            "F4: OBS rung must name browser-visible output as the required form for UI components, excluding test-runner DOM queries",
+        )
+
+
+    # F5: Per-criterion OBS demonstration — test pass excluded
+    def test_f5_thread_complete_demonstration_excludes_test_pass(self):
+        """Thread N complete gate must state that a test pass does not constitute demonstration."""
+        prompt = build_ground_prompt(minimal=True)
+        self.assertIn(
+            "test pass is not a demonstration",
+            prompt,
+            "F5: Thread N complete gate must state that a test pass does not constitute OBS demonstration of a criterion",
         )
 
 

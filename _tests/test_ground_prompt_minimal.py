@@ -201,8 +201,8 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require Manifest exhausted when no false behavior remains, not a fabricated gap")
 
     def test_thread_complete_requires_obs_label_written(self):
-        self.assertIn("observed running behavior label has been written in the current cycle", self.prompt,
-            "Minimal spec must require OBS label written before thread-complete")
+        self.assertIn("observed running behavior label has been written after the most recent", self.prompt,
+            "Minimal spec must require OBS label written after most recent impl-gate in this thread (cycle anchor)")
 
     def test_final_report_rung_by_rung(self):
         self.assertIn("final report", self.prompt,

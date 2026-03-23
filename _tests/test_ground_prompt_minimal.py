@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 12500,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 12500 (raised after C1-C12 closures)")
+        self.assertLess(total, 14000,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 14000 (raised after C1-C14 closures)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -252,8 +252,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C2: newly-produced check
     def test_v_complete_requires_artifact_not_pre_existing(self):
-        self.assertIn("does this artifact exist in the repository at HEAD", self.prompt,
-            "Ground must require checking that the validation artifact does not pre-exist at HEAD before emitting V-complete")
+        self.assertIn("read the artifact path via a tool call", self.prompt,
+            "Ground must require checking that the validation artifact does not pre-exist before emitting V-complete")
 
     # Attractor sentence
     def test_attractor_sentence_rung_satisfied_only_by_tool_event(self):
@@ -342,6 +342,49 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_c9_test_function_is_unit_of_production(self):
         self.assertIn("test function", self.prompt,
             "C9: ground must state that the test function, not the file, is the unit of production")
+
+    # C2-prime: pre-existence check must be a tool-executed event
+    def test_c2prime_preexistence_check_requires_tool_call(self):
+        self.assertIn("read the artifact path via a tool call", self.prompt,
+            "C2-prime: ground must require reading the artifact path via a tool call, not a mental check")
+
+    def test_c2prime_v_complete_requires_tool_result_in_transcript(self):
+        self.assertIn("may not be emitted without this tool-executed result", self.prompt,
+            "C2-prime: ground must state V-complete may not be emitted without the tool-executed git show result")
+
+    # C4-prime: execution output must come from a tool-call result, not inline text
+    def test_c4prime_execution_output_must_be_from_tool_call(self):
+        self.assertIn("quoted verbatim from the tool-call result", self.prompt,
+            "C4-prime: ground must require execution output to be quoted verbatim from a tool-call result")
+
+    def test_c4prime_inline_text_does_not_satisfy_gate(self):
+        self.assertIn("inline within the model", self.prompt,
+            "C4-prime: ground must state that inline model-generated text does not satisfy the VRO gate")
+
+    # C13: post-EI green requires prior red with test logic failing
+    def test_c13_harness_error_is_not_red_run(self):
+        self.assertIn("harness error (import failure, syntax error, missing file) is not a red run", self.prompt,
+            "C13: ground must state that a harness error is not a red run for the red-witness gate")
+
+    def test_c13_test_logic_must_have_run_and_failed(self):
+        self.assertIn("its assertions must have run, and they must have failed", self.prompt,
+            "C13: ground must require test assertions to have run and failed, not just a harness-level error")
+
+    # C14: prose behavioral-sentence coverage check before Thread N complete
+    def test_c14_behavioral_predicate_coverage_check(self):
+        idx = self.prompt.index("Before emitting \u2705 Thread N complete, check:")
+        thread_end = self.prompt.index("Outputting a rung label is what begins that rung")
+        segment = self.prompt[idx:thread_end]
+        self.assertIn("behavioral predicate", segment,
+            "C14: Thread N complete check must scan prose for behavioral predicates")
+
+    def test_c14_implicit_coverage_does_not_satisfy(self):
+        self.assertIn("implicit or incidental coverage does not satisfy", self.prompt,
+            "C14: ground must state that implicit coverage does not satisfy the behavioral-sentence check")
+
+    def test_c14_directly_named_cycle_required(self):
+        self.assertIn("directly names that behavior", self.prompt,
+            "C14: ground must require a cycle whose criterion directly names the behavioral predicate")
 
 
 if __name__ == "__main__":

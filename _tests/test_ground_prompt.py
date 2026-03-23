@@ -444,7 +444,7 @@ def test_manifest_thread_count_bounds_emissions():
         "reconciliation_and_completion must reference Thread N complete sentinels"
     )
     thread_idx = rc.find("Thread")
-    context = rc[max(0, thread_idx - 100):thread_idx + 400]
+    context = rc[max(0, thread_idx - 100):thread_idx + 800]
     assert "declared" in context or "count" in context or "exact" in context or "bound" in context, (
         "reconciliation_and_completion must bind thread emissions to declared count"
     )

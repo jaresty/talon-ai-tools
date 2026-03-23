@@ -42,8 +42,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 11500,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 11500 (raised after C1-C9 closures)")
+        self.assertLess(total, 12000,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 12000 (raised after C1-C11 closures)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:
@@ -272,6 +272,26 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertLess(doc_idx, final_report_idx,
             "Pre-existing document update must appear in the reconciliation gate, not only in the final report section")
 
+
+    # C10: test derives from formal notation structural invariants
+    def test_c10_reread_formal_notation_before_writing_test(self):
+        ev_idx = self.prompt.index("Only validation artifacts may be produced")
+        v_complete_idx = self.prompt.index("\u2705 Validation artifact V complete must be emitted")
+        segment = self.prompt[ev_idx:v_complete_idx]
+        self.assertIn("formal notation", segment,
+            "C10: ground must require consulting the formal notation before writing the test")
+
+    def test_c10_assert_each_structural_constraint(self):
+        ev_idx = self.prompt.index("Only validation artifacts may be produced")
+        v_complete_idx = self.prompt.index("\u2705 Validation artifact V complete must be emitted")
+        segment = self.prompt[ev_idx:v_complete_idx]
+        self.assertIn("each", segment,
+            "C10: ground must require asserting each structural constraint from the formal notation")
+
+    # C11: one assertion per test function
+    def test_c11_one_assertion_per_test_function(self):
+        self.assertIn("one assertion per test function", self.prompt,
+            "C11: ground must require one assertion per test function")
 
     # C9: validation artifact placement
     def test_c9_prefer_existing_test_file(self):

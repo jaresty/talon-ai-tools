@@ -54,9 +54,10 @@ def test_i_formation_sentinel():
 
 
 def test_self_check_before_advancing_executable_rung():
+    # ADR-0179 E4: "before advancing, verify both parts" replaced with content gate
     sr = SR()
-    assert "before advancing" in sr, (
-        "sentinel_rules must require explicit self-verification before advancing past an executable rung"
+    assert "content gate" in sr, (
+        "ADR-0179 E4: falsifying condition must be a content gate (no implementation internals), not a self-check"
     )
     assert "incomplete" in sr, (
         "sentinel_rules must state the rung is incomplete if self-check conditions are unmet"
@@ -160,7 +161,10 @@ def test_carry_forward_is_a_gate():
     assert "no implementation" in sr and ("carry-forward" in sr or "carry forward" in sr), (
         "sentinel_rules must state that no implementation artifact may appear until carry-forward is emitted"
     )
-    cf_idx = sr.find("carry-forward") if "carry-forward" in sr else sr.find("carry forward")
+    # Use the "modification without carry-forward" occurrence (gate rule), not the E1 read-gate occurrence
+    cf_idx = sr.find("modification without carry-forward")
+    if cf_idx < 0:
+        cf_idx = sr.find("carry-forward") if "carry-forward" in sr else sr.find("carry forward")
     cf_context = sr[max(0, cf_idx - 200):cf_idx + 600]
     assert "gate" in cf_context or "violation" in cf_context or "blocked" in cf_context or "no implementation" in cf_context, (
         "sentinel_rules must frame carry-forward as a gate/violation"

@@ -13,7 +13,7 @@ from lib.groundPrompt import build_ground_prompt
 
 ORIGINAL_CHARS = 14036
 # C22–C24 add ~820 chars; C25–C28 add ~883 chars; ADR-0178 D1-D7 add ~5191 chars (drift closures).
-MAX_CHARS = ORIGINAL_CHARS + 5500
+MAX_CHARS = ORIGINAL_CHARS + 6500  # ADR-0179: E1-E6 drift fixes add ~1117 chars net
 
 
 class TestGroundRewrite(unittest.TestCase):
@@ -67,8 +67,8 @@ class TestGroundRewrite(unittest.TestCase):
         ev_end = core.find("✅ Validation artifact V complete must be emitted at the executable validation rung")
         ev_section = core[ev_start:ev_end]
         self.assertLessEqual(
-            len(ev_section), 2600,
-            f"EV rung section is {len(ev_section)} chars; must be ≤ 2600 after ADR-0178 D6 carry-forward addition",
+            len(ev_section), 2900,
+            f"EV rung section is {len(ev_section)} chars; must be ≤ 2900 after ADR-0179 E1 carry-forward read gate",
         )
 
 
@@ -106,8 +106,8 @@ class TestGroundRewrite(unittest.TestCase):
         crit_end = core.find("Formal notation encodes only")
         crit_section = core[crit_start:crit_end]
         self.assertLessEqual(
-            len(crit_section), 2400,
-            f"Criteria section is {len(crit_section)} chars; must be ≤ 2400 after ADR-0178 D3/D5 additions",
+            len(crit_section), 2700,
+            f"Criteria section is {len(crit_section)} chars; must be ≤ 2700 after ADR-0179 E4/E5 additions",
         )
 
 

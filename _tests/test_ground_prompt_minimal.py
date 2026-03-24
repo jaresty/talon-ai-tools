@@ -43,8 +43,8 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 20000,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 20000 (raised after ADR-0178 D1-D7 closures)")
+        self.assertLess(total, 21500,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 21500 (raised after ADR-0179 E1-E6 drift fixes)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:

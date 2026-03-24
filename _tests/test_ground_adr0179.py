@@ -1,0 +1,103 @@
+"""ADR-0179: Ground prompt collapse + drift-fix closure — 11 behavioral-marker tests."""
+
+import unittest
+
+try:
+    from bootstrap import bootstrap
+except ModuleNotFoundError:
+    bootstrap = None
+else:
+    bootstrap()
+
+from lib.groundPrompt import build_ground_prompt
+
+
+class TestC1InferenceRestatementRemoved(unittest.TestCase):
+    def test_vro_prediction_restatement_absent(self):
+        self.assertNotIn(
+            "predicting what the run would show does not satisfy this gate regardless of accuracy",
+            build_ground_prompt(),
+            "C1: VRO per-rung inference restatement must be removed; opening axiom covers it",
+        )
+
+
+class TestC1VROInferenceRestatementRemoved(unittest.TestCase):
+    """C1 collapse: only VRO prediction restatement was legitimately redundant."""
+    def test_vro_prediction_restatement_absent(self):
+        self.assertNotIn(
+            "predicting what the run would show does not satisfy this gate regardless of accuracy",
+            build_ground_prompt(),
+            "C1: VRO per-rung inference restatement must be removed; opening axiom covers it",
+        )
+
+
+class TestE1CarryForwardReadGate(unittest.TestCase):
+    def test_carry_forward_read_gate_present(self):
+        self.assertIn(
+            "read the current test file",
+            build_ground_prompt(),
+            "E1: carry-forward must require a tool call reading the current test file before emitting rows",
+        )
+
+
+class TestE2OBRProvenanceTranscriptCheck(unittest.TestCase):
+    def test_provenance_transcript_check_present(self):
+        self.assertIn(
+            "rung label cannot be located",
+            build_ground_prompt(),
+            "E2: OBR provenance must gate on transcript-locatable rung label, not model recall",
+        )
+
+
+class TestE3ManifestDeclaredProseReadGate(unittest.TestCase):
+    def test_manifest_declared_prose_read_gate_present(self):
+        self.assertIn(
+            "re-read the prose rung output via a tool call",
+            build_ground_prompt(),
+            "E3: Manifest declared must be gated on a tool-call re-read of prose confirming all [T:] markers present",
+        )
+
+
+class TestE4FalsifyingConditionContentGate(unittest.TestCase):
+    def test_falsifying_condition_content_gate_present(self):
+        self.assertIn(
+            "content gate",
+            build_ground_prompt(),
+            "E4: falsifying condition must be a content gate (no implementation internals), not a self-check",
+        )
+
+    def test_falsifying_condition_self_check_replaced(self):
+        self.assertNotIn(
+            "before advancing, verify both parts are present",
+            build_ground_prompt(),
+            "E4: self-check phrasing must be replaced with the content gate",
+        )
+
+
+class TestE5CriteriaManifestQuoteGate(unittest.TestCase):
+    def test_criteria_manifest_quote_gate_present(self):
+        self.assertIn(
+            "quote the gap text for this thread verbatim",
+            build_ground_prompt(),
+            "E5: criteria rung must require quoting manifest gap text verbatim before writing criterion",
+        )
+
+
+class TestE6ThreadNCompleteSuiteGate(unittest.TestCase):
+    def test_suite_next_action_gate_present(self):
+        self.assertIn(
+            "only valid next action if no such result exists is the tool call that runs the suite",
+            build_ground_prompt(),
+            "E6: Thread N complete must gate on tool-executed suite result, naming the tool call as only valid next action",
+        )
+
+    def test_suite_self_check_replaced(self):
+        self.assertNotIn(
+            "before emitting ✅ Thread N complete or ✅ Manifest exhausted, run the full test suite",
+            build_ground_prompt(),
+            "E6: self-check phrasing must be replaced with the next-action gate",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -327,10 +327,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("each", segment,
             "C10: ground must require asserting each structural constraint from the formal notation")
 
-    # C11: one assertion per test function
+    # C11: one assertion per test function (with indivisible-check qualifier)
     def test_c11_one_assertion_per_test_function(self):
         self.assertIn("one assertion per test function", self.prompt,
             "C11: ground must require one assertion per test function")
+
+    def test_c11_indivisible_check_qualifier(self):
+        self.assertIn("indivisible", self.prompt,
+            "C11: ground must permit multiple assertions when they constitute a single indivisible check")
 
     # C9: validation artifact placement
     def test_c9_prefer_existing_test_file(self):

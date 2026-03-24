@@ -205,3 +205,12 @@ def test_ei_rung_vacuous_green_rearms_during_cycle():
         "Ground prompt must contain vacuous-green check: a test that passes without a prior "
         "recorded failure is vacuous"
     )
+
+
+def test_test_modification_requires_meta_test_rule():
+    sr = SR()
+    assert "meta-test" in sr or "meta_test" in sr or "test-under-modification" in sr or "test under modification" in sr, (
+        "Ground prompt must provide a rule for when the declared intent is to modify a test artifact, "
+        "naming the test-under-modification as the implementation artifact and requiring a meta-test "
+        "as the validation artifact"
+    )

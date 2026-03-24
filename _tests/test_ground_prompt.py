@@ -214,3 +214,11 @@ def test_test_modification_requires_meta_test_rule():
         "naming the test-under-modification as the implementation artifact and requiring a meta-test "
         "as the validation artifact"
     )
+
+
+def test_formal_notation_verbatim_restatement_permitted():
+    sr = SR()
+    assert "verbatim" in sr and ("no elaboration" in sr or "restate" in sr or "restatement" in sr), (
+        "Ground prompt must permit verbatim restatement of the criterion as the formal notation artifact "
+        "when the criterion is already a complete behavioral specification"
+    )

@@ -169,7 +169,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the audit section is separate and named; the rung is incomplete until all criteria are encoded. "
         "Only validation artifacts may be produced at the executable validation rung \u2014 "
         "no other content is permitted before \u2705 Validation artifact V complete; "
-        "each test function asserts exactly one behavioral property \u2014 one assertion per test function; "
+        "each test function asserts exactly one behavioral property \u2014 one behavioral property per test function; "
         "multiple assertions are permitted only when they jointly constitute a single indivisible check "
         "(e.g., asserting a value is both non-null and of the expected type); "
         "before writing the test, re-read the formal notation and assert each structural constraint it encodes; "

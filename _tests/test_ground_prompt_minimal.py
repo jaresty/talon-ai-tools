@@ -329,8 +329,10 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C11: one assertion per test function (with indivisible-check qualifier)
     def test_c11_one_assertion_per_test_function(self):
-        self.assertIn("one assertion per test function", self.prompt,
-            "C11: ground must require one assertion per test function")
+        self.assertIn("one behavioral property per test function", self.prompt,
+            "C11: ground must require one behavioral property per test function")
+        self.assertNotIn("one assertion per test function", self.prompt,
+            "C11: 'one assertion per test function' must be replaced with 'one behavioral property per test function'")
 
     def test_c11_indivisible_check_qualifier(self):
         self.assertIn("indivisible", self.prompt,

@@ -12,9 +12,9 @@ else:
 from lib.groundPrompt import build_ground_prompt
 
 ORIGINAL_CHARS = 14036
-# The two new rules (rung-type constraint + ORB all-criteria) add ~710 chars.
-# Redundancy removal should prevent unbounded growth — cap at original + 800.
-MAX_CHARS = ORIGINAL_CHARS + 800
+# C22–C24 add ~820 chars of new structural gates (build-output prohibition,
+# criterion-fidelity gate, V-complete red-run gate). Cap raised accordingly.
+MAX_CHARS = ORIGINAL_CHARS + 1700
 
 
 class TestGroundRewrite(unittest.TestCase):
@@ -59,7 +59,7 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_ev_section_is_compact_gate_list(self):
-        """EV section must be ≤ 1450 chars (raised from 1250 after C20 red-run-before-edit gate ~+170)."""
+        """EV section must be ≤ 1800 chars (raised from 1450 after C24 V-complete red-run gate ~+308)."""
         import sys
         sys.path.insert(0, '.')
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
@@ -68,21 +68,21 @@ class TestGroundRewrite(unittest.TestCase):
         ev_end = core.find("✅ Validation artifact V complete must be emitted at the executable validation rung")
         ev_section = core[ev_start:ev_end]
         self.assertLessEqual(
-            len(ev_section), 1450,
-            f"EV rung section is {len(ev_section)} chars; must be ≤ 1450 after C20 red-run-before-edit addition",
+            len(ev_section), 1800,
+            f"EV rung section is {len(ev_section)} chars; must be ≤ 1800 after C24 V-complete red-run gate",
         )
 
 
     def test_obs_section_is_compact(self):
-        """OBS rung section must be ≤ 950 chars (raised from 850 after F4 UI artifact-type addition ~+90)."""
+        """OBS rung section must be ≤ 1200 chars (raised from 950 after C22 build-output prohibition ~+198)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         obs_start = core.find("Upon writing the observed running behavior label")
         obs_end = core.find("✅ Thread N complete may not be emitted unless")
         obs_section = core[obs_start:obs_end]
         self.assertLessEqual(
-            len(obs_section), 950,
-            f"OBS rung section is {len(obs_section)} chars; must be ≤ 950 after F4 UI artifact-type addition",
+            len(obs_section), 1200,
+            f"OBS rung section is {len(obs_section)} chars; must be ≤ 1200 after C22 build-output prohibition",
         )
 
 
@@ -100,15 +100,15 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_criteria_section_is_compact(self):
-        """Criteria rung section must be ≤ 1450 chars (raised from 1050 after C14+C17 additions ~+380)."""
+        """Criteria rung section must be ≤ 1800 chars (raised from 1450 after C23 criterion-fidelity gate ~+331)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         crit_start = core.find("From the criteria rung onward")
         crit_end = core.find("Formal notation encodes only")
         crit_section = core[crit_start:crit_end]
         self.assertLessEqual(
-            len(crit_section), 1450,
-            f"Criteria section is {len(crit_section)} chars; must be ≤ 1450 after C14+C17 gate additions",
+            len(crit_section), 1800,
+            f"Criteria section is {len(crit_section)} chars; must be ≤ 1800 after C23 criterion-fidelity gate",
         )
 
 

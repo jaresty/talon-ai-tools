@@ -12,9 +12,9 @@ else:
 from lib.groundPrompt import build_ground_prompt
 
 ORIGINAL_CHARS = 14036
-# C22–C24 add ~820 chars of new structural gates (build-output prohibition,
-# criterion-fidelity gate, V-complete red-run gate). Cap raised accordingly.
-MAX_CHARS = ORIGINAL_CHARS + 1700
+# C22–C24 add ~820 chars; C25–C28 add ~883 chars (no-edit ban, blank OBS,
+# mock-endpoint gate, test-failure acknowledgment). Cap raised accordingly.
+MAX_CHARS = ORIGINAL_CHARS + 2600
 
 
 class TestGroundRewrite(unittest.TestCase):
@@ -74,15 +74,15 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_obs_section_is_compact(self):
-        """OBS rung section must be ≤ 1200 chars (raised from 950 after C22 build-output prohibition ~+198)."""
+        """OBS rung section must be ≤ 1800 chars (raised from 1200 after C26 blank-OBS + C27 mock-endpoint gates ~+465)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         obs_start = core.find("Upon writing the observed running behavior label")
         obs_end = core.find("✅ Thread N complete may not be emitted unless")
         obs_section = core[obs_start:obs_end]
         self.assertLessEqual(
-            len(obs_section), 1200,
-            f"OBS rung section is {len(obs_section)} chars; must be ≤ 1200 after C22 build-output prohibition",
+            len(obs_section), 1800,
+            f"OBS rung section is {len(obs_section)} chars; must be ≤ 1800 after C26/C27 additions",
         )
 
 

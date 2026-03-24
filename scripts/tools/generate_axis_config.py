@@ -88,10 +88,10 @@ def render_axis_config() -> str:
         axis: dict(sorted((axes.get(axis) or {}).items()))
         for axis in sorted(axes.keys())
     }
-    # ADR-0171: override ground with structured builder so GROUND_PARTS is the SSOT.
-    # ADR-0174: use minimal spec by default while iterating; set minimal=False to restore full.
+    # ADR-0171: override ground with structured builder so GROUND_PARTS_MINIMAL is the SSOT.
+    # ADR-0178: minimal spec is the only version; minimal param removed.
     if "method" in mapping and "ground" in mapping["method"]:
-        mapping["method"]["ground"] = _build_ground_prompt(minimal=True)
+        mapping["method"]["ground"] = _build_ground_prompt()
     labels = payload.get("axis_labels", {}) or {}
     label_mapping = {
         axis: dict(sorted((labels.get(axis) or {}).items()))
@@ -216,9 +216,9 @@ def render_axis_config() -> str:
         from dataclasses import dataclass, field
         from typing import Any, Dict, FrozenSet, List, TypedDict, Union
 
-        # ADR-0171: ground prompt SSOT is lib/groundPrompt.py (not generated).
-        # Edit GROUND_PARTS there and run `make axis-regenerate-apply` to propagate changes.
-        from lib.groundPrompt import GROUND_PARTS, build_ground_prompt  # noqa: F401
+        # ADR-0178: ground prompt SSOT is GROUND_PARTS_MINIMAL in lib/groundPrompt.py.
+        # Edit GROUND_PARTS_MINIMAL there and run `make axis-regenerate-apply` to propagate changes.
+        from lib.groundPrompt import build_ground_prompt  # noqa: F401
         """
     )
     dataclasses = textwrap.dedent(

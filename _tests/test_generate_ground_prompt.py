@@ -12,15 +12,15 @@ from lib.groundPrompt import build_ground_prompt
 
 def test_generated_output_contains_groundprompt_import():
     output = render_axis_config()
-    assert "from lib.groundPrompt import GROUND_PARTS, build_ground_prompt" in output, (
-        "Generated axisConfig.py does not import GROUND_PARTS and build_ground_prompt from lib.groundPrompt"
+    assert "from lib.groundPrompt import build_ground_prompt" in output, (
+        "Generated axisConfig.py does not import build_ground_prompt from lib.groundPrompt"
     )
 
 
 def test_generated_ground_value_matches_builder():
     output = render_axis_config()
     # ADR-0174: minimal spec is the current default; matches generate_axis_config.py minimal=True
-    expected = build_ground_prompt(minimal=True)
+    expected = build_ground_prompt()
     # pformat may wrap long strings into implicit concat segments; evaluate the
     # generated code to get the actual runtime value rather than raw text search.
     ns: dict = {}

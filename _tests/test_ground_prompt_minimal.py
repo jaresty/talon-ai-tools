@@ -27,7 +27,8 @@ ABSTRACT_RULES = [
 NAMED_VIOLATION_MODES = [
     "vacuous-green",
     "retroactive sentinel",
-    "carry-forward",
+    # "carry-forward" removed from ban list: ADR-0178 D6 introduced it as a
+    # legitimate process rule in the core prose (modification carry-forward).
     "I-formation",
     "R2 audit",
     "upward correction",
@@ -38,12 +39,12 @@ class TestMinimalGroundParts(unittest.TestCase):
     def setUp(self):
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         self.parts = GROUND_PARTS_MINIMAL
-        self.prompt = build_ground_prompt(minimal=True)
+        self.prompt = build_ground_prompt()
 
     def test_total_chars_under_3000(self):
         total = sum(len(v) for v in self.parts.values())
-        self.assertLess(total, 16100,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 16100 (raised after C25-C28 closures)")
+        self.assertLess(total, 20000,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 20000 (raised after ADR-0178 D1-D7 closures)")
 
     def test_three_abstract_rules_present(self):
         for rule_marker in ABSTRACT_RULES:

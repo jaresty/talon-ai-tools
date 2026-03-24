@@ -9,7 +9,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-from lib.groundPrompt import GROUND_PARTS, build_ground_prompt
+from lib.groundPrompt import build_ground_prompt
 
 
 class TestADR0178D1ElisionProhibition(unittest.TestCase):
@@ -32,7 +32,7 @@ class TestADR0178D2NextActionGate(unittest.TestCase):
     def test_immediately_before_retired(self):
         self.assertNotIn(
             "immediately before",
-            GROUND_PARTS["sentinel_rules"],
+            build_ground_prompt(),
             "D2: 'immediately before' proximity language must be replaced with next-action gate rule",
         )
 

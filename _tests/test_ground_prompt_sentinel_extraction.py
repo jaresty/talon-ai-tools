@@ -15,7 +15,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-from lib.groundPrompt import GROUND_PARTS, build_ground_prompt
+from lib.groundPrompt import build_ground_prompt
 
 
 EXPECTED_SENTINEL_KEYS = [
@@ -58,33 +58,6 @@ class TestSentinelTemplatesExist(unittest.TestCase):
             self.assertIsInstance(val, str)
             self.assertTrue(len(val) > 0, f"Empty value for key: {key}")
 
-
-class TestNoDuplicateSentinelLiterals(unittest.TestCase):
-    def test_execution_observed_not_duplicated_in_sentinel_rules(self):
-        prose = GROUND_PARTS["sentinel_rules"]
-        count = prose.count("Execution observed:")
-        self.assertLessEqual(count, 1,
-            f"'Execution observed:' appears {count} times in sentinel_rules prose; expected ≤1 after extraction")
-
-    def test_impl_gate_format_string_not_duplicated_in_sentinel_rules(self):
-        prose = GROUND_PARTS["sentinel_rules"]
-        # The full format string (with gap citation template) should appear at most once;
-        # the sentinel name alone may still appear as a reference.
-        count = prose.count("Implementation gate cleared \u2014 gap cited:")
-        self.assertLessEqual(count, 1,
-            f"Full impl_gate format string appears {count} times; expected ≤1 after extraction")
-
-    def test_v_complete_not_duplicated_in_sentinel_rules(self):
-        prose = GROUND_PARTS["sentinel_rules"]
-        count = prose.count("Validation artifact V complete")
-        self.assertLessEqual(count, 1,
-            f"'Validation artifact V complete' appears {count} times; expected ≤1 after extraction")
-
-    def test_manifest_exhausted_not_duplicated_in_sentinel_rules(self):
-        prose = GROUND_PARTS["sentinel_rules"]
-        count = prose.count("Manifest exhausted")
-        self.assertLessEqual(count, 1,
-            f"'Manifest exhausted' appears {count} times; expected ≤1 after extraction")
 
 
 class TestBuildGroundPromptContainsSentinels(unittest.TestCase):

@@ -1,10 +1,4 @@
-"""Tests for Thread 3: redundancy audit in groundPrompt.py.
-
-Validates that:
-- Identified emphasis-only repetitions are removed
-- build_ground_prompt() output still contains all sentinel strings and rung names
-- Total GROUND_PARTS character count is lower than pre-audit baseline
-"""
+"""Tests for ground prompt redundancy audit (ADR-0178: GROUND_PARTS removed; minimal is the only version)."""
 
 import unittest
 
@@ -15,11 +9,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-from lib.groundPrompt import GROUND_PARTS, build_ground_prompt
-
-# Measured total char count of all GROUND_PARTS strings before audit.
-# Sum of all four section strings as of Thread 2 completion.
-PRE_AUDIT_TOTAL_CHARS = sum(len(v) for v in GROUND_PARTS.values())
+from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 SENTINEL_SUBSTRINGS_MUST_REMAIN = [
     "Execution observed:",
@@ -39,27 +29,22 @@ RUNG_NAMES_MUST_REMAIN = [
     "observed running behavior",
 ]
 
-# Candidate A: "retroactive sentinels do not open gates; the tool must be re-run"
-# appears in sentinel_rules as a restatement of the immediately preceding sentence.
 CANDIDATE_A = "retroactive sentinels do not open gates"
-
-# Candidate C: "tool output that appeared before its sentinel is uncovered"
-# is a restatement of the preceding sentence in same vicinity.
 CANDIDATE_C = "tool output that appeared before its sentinel is uncovered"
 
 
 class TestEmphasisOnlyRepetitionsRemoved(unittest.TestCase):
     def test_candidate_a_not_duplicated(self):
-        prose = GROUND_PARTS["sentinel_rules"]
+        prose = GROUND_PARTS_MINIMAL["core"]
         count = prose.count(CANDIDATE_A)
         self.assertLessEqual(count, 1,
-            f"Candidate A appears {count} times; emphasis-only restatement should be reduced to ≤1")
+            f"Candidate A appears {count} times; emphasis-only restatement should be reduced to \u22641")
 
     def test_candidate_c_not_duplicated(self):
-        prose = GROUND_PARTS["sentinel_rules"]
+        prose = GROUND_PARTS_MINIMAL["core"]
         count = prose.count(CANDIDATE_C)
         self.assertLessEqual(count, 1,
-            f"Candidate C appears {count} times; emphasis-only restatement should be reduced to ≤1")
+            f"Candidate C appears {count} times; emphasis-only restatement should be reduced to \u22641")
 
 
 class TestOutputIntegrityAfterAudit(unittest.TestCase):
@@ -76,13 +61,12 @@ class TestOutputIntegrityAfterAudit(unittest.TestCase):
 
 
 class TestTotalCharCountDoesNotGrow(unittest.TestCase):
-    def test_total_ground_parts_chars_does_not_exceed_post_thread2_baseline(self):
-        # Thread 3 audit finding: most redundancy is load-bearing (different violation hooks).
-        # Criterion revised: ensure no text was added; total must not exceed post-Thread-2 baseline.
-        current = sum(len(v) for v in GROUND_PARTS.values())
-        POST_THREAD2_BASELINE = 34000  # updated after ADR-0178 (D1–D7 drift closures, +2411 chars)
-        self.assertLessEqual(current, POST_THREAD2_BASELINE,
-            f"Total GROUND_PARTS chars {current} exceeds post-Thread-2 baseline {POST_THREAD2_BASELINE}")
+    def test_total_ground_parts_minimal_chars_does_not_exceed_baseline(self):
+        current = len(GROUND_PARTS_MINIMAL["core"])
+        # ADR-0178: baseline after D1-D7 applied to minimal
+        BASELINE = 20000
+        self.assertLessEqual(current, BASELINE,
+            f"GROUND_PARTS_MINIMAL core chars {current} exceeds baseline {BASELINE}")
 
 
 if __name__ == "__main__":

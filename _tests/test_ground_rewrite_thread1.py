@@ -12,15 +12,14 @@ else:
 from lib.groundPrompt import build_ground_prompt
 
 ORIGINAL_CHARS = 14036
-# C22–C24 add ~820 chars; C25–C28 add ~883 chars (no-edit ban, blank OBS,
-# mock-endpoint gate, test-failure acknowledgment). Cap raised accordingly.
-MAX_CHARS = ORIGINAL_CHARS + 2600
+# C22–C24 add ~820 chars; C25–C28 add ~883 chars; ADR-0178 D1-D7 add ~5191 chars (drift closures).
+MAX_CHARS = ORIGINAL_CHARS + 5500
 
 
 class TestGroundRewrite(unittest.TestCase):
 
     def setUp(self):
-        self.prompt = build_ground_prompt(minimal=True)
+        self.prompt = build_ground_prompt()
 
     def test_prompt_does_not_grow_beyond_additions(self):
         self.assertLess(
@@ -59,7 +58,7 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_ev_section_is_compact_gate_list(self):
-        """EV section must be ≤ 1800 chars (raised from 1450 after C24 V-complete red-run gate ~+308)."""
+        """EV section must be ≤ 2600 chars (raised from 1800 after ADR-0178 D6 carry-forward addition)."""
         import sys
         sys.path.insert(0, '.')
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
@@ -68,21 +67,21 @@ class TestGroundRewrite(unittest.TestCase):
         ev_end = core.find("✅ Validation artifact V complete must be emitted at the executable validation rung")
         ev_section = core[ev_start:ev_end]
         self.assertLessEqual(
-            len(ev_section), 1800,
-            f"EV rung section is {len(ev_section)} chars; must be ≤ 1800 after C24 V-complete red-run gate",
+            len(ev_section), 2600,
+            f"EV rung section is {len(ev_section)} chars; must be ≤ 2600 after ADR-0178 D6 carry-forward addition",
         )
 
 
     def test_obs_section_is_compact(self):
-        """OBS rung section must be ≤ 1800 chars (raised from 1200 after C26 blank-OBS + C27 mock-endpoint gates ~+465)."""
+        """OBS rung section must be ≤ 2200 chars (raised from 1800 after ADR-0178 D7 provenance addition)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         obs_start = core.find("Upon writing the observed running behavior label")
         obs_end = core.find("✅ Thread N complete may not be emitted unless")
         obs_section = core[obs_start:obs_end]
         self.assertLessEqual(
-            len(obs_section), 1800,
-            f"OBS rung section is {len(obs_section)} chars; must be ≤ 1800 after C26/C27 additions",
+            len(obs_section), 2200,
+            f"OBS rung section is {len(obs_section)} chars; must be ≤ 2200 after ADR-0178 D7 provenance addition",
         )
 
 
@@ -100,15 +99,15 @@ class TestGroundRewrite(unittest.TestCase):
 
 
     def test_criteria_section_is_compact(self):
-        """Criteria rung section must be ≤ 1800 chars (raised from 1450 after C23 criterion-fidelity gate ~+331)."""
+        """Criteria rung section must be ≤ 2400 chars (raised from 1800 after ADR-0178 D3 falsifying-condition + D5 thread-markers)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
         core = GROUND_PARTS_MINIMAL["core"]
         crit_start = core.find("From the criteria rung onward")
         crit_end = core.find("Formal notation encodes only")
         crit_section = core[crit_start:crit_end]
         self.assertLessEqual(
-            len(crit_section), 1800,
-            f"Criteria section is {len(crit_section)} chars; must be ≤ 1800 after C23 criterion-fidelity gate",
+            len(crit_section), 2400,
+            f"Criteria section is {len(crit_section)} chars; must be ≤ 2400 after ADR-0178 D3/D5 additions",
         )
 
 
@@ -130,7 +129,7 @@ class TestGroundRewrite(unittest.TestCase):
         """Thread N complete gate must anchor OBS to 'after the most recent 🟢 Implementation gate cleared'."""
         self.assertIn(
             "after the most recent",
-            build_ground_prompt(minimal=True),
+            build_ground_prompt(),
             "F1: Thread N complete gate must anchor OBS cycle to 'after the most recent 🟢 Implementation gate cleared in this thread'",
         )
 
@@ -153,7 +152,7 @@ class TestGroundRewrite(unittest.TestCase):
     # F3: Behavioral-vs-structural criterion gate
     def test_f3_structural_criterion_gate_present(self):
         """Criteria rung must distinguish structural-presence assertions from behavioral assertions."""
-        prompt = build_ground_prompt(minimal=True)
+        prompt = build_ground_prompt()
         self.assertIn(
             "structural",
             prompt,
@@ -162,7 +161,7 @@ class TestGroundRewrite(unittest.TestCase):
 
     def test_f3_structural_criterion_names_counterexample(self):
         """Structural-vs-behavioral gate must name a concrete counterexample (column header)."""
-        prompt = build_ground_prompt(minimal=True)
+        prompt = build_ground_prompt()
         self.assertIn(
             "column header",
             prompt,
@@ -188,7 +187,7 @@ class TestGroundRewrite(unittest.TestCase):
     # F5: Per-criterion OBS demonstration — test pass excluded
     def test_f5_thread_complete_demonstration_excludes_test_pass(self):
         """Thread N complete gate must state that a test pass does not constitute demonstration."""
-        prompt = build_ground_prompt(minimal=True)
+        prompt = build_ground_prompt()
         self.assertIn(
             "test pass is not a demonstration",
             prompt,
@@ -199,7 +198,7 @@ class TestGroundRewrite(unittest.TestCase):
     # Axiom collapse: artifact type is operative gate, "matching its definition" removed
     def test_axiom_uses_artifact_type_not_matching_definition(self):
         """Opening axiom must gate on artifact type, not the vague 'matching its definition'."""
-        prompt = build_ground_prompt(minimal=True)
+        prompt = build_ground_prompt()
         self.assertNotIn(
             "matching its definition",
             prompt,

@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-from lib.groundPrompt import GROUND_PARTS, build_ground_prompt
+from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 CANONICAL_RUNG_NAMES = [
     "prose",
@@ -32,7 +32,7 @@ REQUIRED_RUNG_KEYS = {"name", "artifact", "gate", "voids_if"}
 
 # Baseline character count of rung_sequence_code before refactor (measured: 8679 chars).
 # Target: numbered list compressed to inline arrow sequence; reduction modest (~30+ chars).
-BASELINE_RUNG_SEQUENCE_CODE_CHARS = 13000  # updated after ADR-0178 (D3 falsifying-condition, D5 thread-markers, D7 provenance, +1004 chars)
+BASELINE_RUNG_SEQUENCE_CODE_CHARS = 20000  # ADR-0178 Phase 2: GROUND_PARTS removed; minimal core is now the measure (~19214 chars)
 
 
 class TestRungSequenceExists(unittest.TestCase):
@@ -73,9 +73,9 @@ class TestBuildGroundPromptContainsRungTable(unittest.TestCase):
 
 class TestRungSequenceCodeShorter(unittest.TestCase):
     def test_rung_sequence_code_shorter_than_baseline(self):
-        actual = len(GROUND_PARTS["rung_sequence_code"])
+        actual = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(actual, BASELINE_RUNG_SEQUENCE_CODE_CHARS,
-            f"rung_sequence_code is {actual} chars; expected < {BASELINE_RUNG_SEQUENCE_CODE_CHARS} after table extraction")
+            f"GROUND_PARTS_MINIMAL core is {actual} chars; expected < {BASELINE_RUNG_SEQUENCE_CODE_CHARS}")
 
 
 if __name__ == "__main__":

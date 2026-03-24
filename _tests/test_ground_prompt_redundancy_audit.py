@@ -80,7 +80,7 @@ class TestTotalCharCountDoesNotGrow(unittest.TestCase):
         # Thread 3 audit finding: most redundancy is load-bearing (different violation hooks).
         # Criterion revised: ensure no text was added; total must not exceed post-Thread-2 baseline.
         current = sum(len(v) for v in GROUND_PARTS.values())
-        POST_THREAD2_BASELINE = 31000  # updated after C15, C16 closures
+        POST_THREAD2_BASELINE = 34000  # updated after ADR-0178 (D1–D7 drift closures, +2411 chars)
         self.assertLessEqual(current, POST_THREAD2_BASELINE,
             f"Total GROUND_PARTS chars {current} exceeds post-Thread-2 baseline {POST_THREAD2_BASELINE}")
 

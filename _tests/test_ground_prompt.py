@@ -335,3 +335,23 @@ def test_thread_scanner_scoped_to_practitioner_prose():
         "The manifest-scanning sentence must scope 'the prose' to the practitioner's prose rung artifact, "
         "not to the ground prompt's rule text or other transcript content"
     )
+
+
+def test_formal_notation_rung_permits_prose_labels():
+    prompt = build_ground_prompt()
+    assert (
+        "Natural language may appear as section labels or introductions" in prompt
+        or "natural language" in prompt.lower() and "label" in prompt.lower()
+    ), (
+        "Formal notation rung must explicitly permit natural language as section labels or introductions"
+    )
+
+
+def test_formal_notation_prose_does_not_substitute_for_notation():
+    prompt = build_ground_prompt()
+    assert (
+        "may not substitute for encoding a constraint in notation" in prompt
+        or "must not substitute" in prompt
+    ), (
+        "Formal notation rung must state that prose may not substitute for encoding a constraint in notation"
+    )

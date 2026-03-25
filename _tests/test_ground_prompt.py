@@ -257,6 +257,18 @@ def test_sequential_thread_execution_required():
     )
 
 
+def test_sequential_thread_gate_covers_all_rungs():
+    sr = SR()
+    # The gate must block ALL output for thread N+1, not just the prose rung.
+    # Find the sequential-thread rule and check it doesn't say "prose rung" only.
+    idx = sr.find("at most one thread")
+    assert idx >= 0, "sequential thread rule must be present"
+    context = sr[idx:idx+300]
+    assert "prose rung" not in context or "no rung" in context or "any output" in context or "all rungs" in context, (
+        "Sequential thread gate must block all rungs of thread N+1, not only the prose rung"
+    )
+
+
 def test_immediate_descent_after_criteria():
     sr = SR()
     assert "enumerating remaining criteria" in sr or "planning future gap cycles" in sr, (

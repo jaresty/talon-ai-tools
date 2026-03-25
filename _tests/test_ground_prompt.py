@@ -277,6 +277,22 @@ def test_immediate_descent_after_criteria():
     )
 
 
+def test_manifest_entries_are_gap_labels_only():
+    sr = SR()
+    manifest_idx = sr.find("Manifest declared may be emitted")
+    assert manifest_idx >= 0, "manifest rule must be present"
+    # Search in a window around the manifest rule
+    window = sr[max(0, manifest_idx - 500) : manifest_idx + 500]
+    assert (
+        "label" in window or "noun phrase" in window or "short" in window
+    ) and (
+        "assertion" in window or "verb" in window or "first time" in window
+    ), (
+        "Ground prompt must state near the manifest rule that entries are gap labels only "
+        "(not behavioral assertions) and that the behavioral assertion is produced at the criteria rung"
+    )
+
+
 def test_criterion_emergence_gated_on_thread_complete():
     sr = SR()
     assert (

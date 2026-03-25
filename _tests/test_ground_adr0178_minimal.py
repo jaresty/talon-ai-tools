@@ -188,5 +188,33 @@ class TestADR0181Closures(unittest.TestCase):
         )
 
 
+class TestADR0182Closures(unittest.TestCase):
+    """ADR-0182: Three transcript drift closures — N5, N6, N7."""
+
+    def test_n5_exec_observed_prose_voids_sentinel(self):
+        """N5: exec-observed with no delimited block is void."""
+        self.assertIn(
+            "no delimited block",
+            _minimal(),
+            "N5: ground prompt must void exec-observed sentinel when not followed by triple-backtick block",
+        )
+
+    def test_n6_v_complete_required_before_obr(self):
+        """N6: OBR label requires V-complete in current cycle."""
+        self.assertIn(
+            "observed running behavior label is written without a",
+            _minimal(),
+            "N6: ground prompt must void OBR when V-complete absent for current cycle",
+        )
+
+    def test_n7_manifest_covers_all_t_tags(self):
+        """N7: manifest must contain one entry per [T:] tag in prose."""
+        self.assertIn(
+            "[T: gap-name] marker",
+            _minimal(),
+            "N7: ground prompt must require manifest to cover every [T:] tag in prose",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

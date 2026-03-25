@@ -108,5 +108,85 @@ class TestStructuralCleanup(unittest.TestCase):
         )
 
 
+class TestADR0180Closures(unittest.TestCase):
+    """ADR-0180: Five SWE drift closures — C5, C2, C1, C4, C3."""
+
+    def test_c5_obr_reinvoke_gate(self):
+        """C5: OBR test-runner output blocking gate must say re-invoke the implemented artifact directly."""
+        self.assertIn(
+            "re-invoke the implemented artifact directly",
+            _minimal(),
+            "C5: ground prompt must include explicit OBR blocking gate requiring re-invoke when test runner output observed",
+        )
+
+    def test_c2_manifest_exhaustion_count_anchor(self):
+        """C2: Manifest exhaustion must anchor count to declared N in Manifest declared sentinel."""
+        self.assertIn(
+            "locate the N in",
+            _minimal(),
+            "C2: ground prompt must instruct locating the N in Manifest declared before emitting Manifest exhausted",
+        )
+
+    def test_c1_hard_stop_ev_prohibition(self):
+        """C1: HARD STOP must be explicitly prohibited at the executable validation rung."""
+        self.assertIn(
+            "HARD STOP may not be emitted at the executable validation rung",
+            _minimal(),
+            "C1: ground prompt must explicitly prohibit HARD STOP at the EV rung",
+        )
+
+    def test_c4_vro_label_required_for_impl_gate(self):
+        """C4: VRO rung label must appear in transcript before Implementation gate cleared."""
+        self.assertIn(
+            "VRO rung label must appear in the transcript",
+            _minimal(),
+            "C4: ground prompt must require VRO rung label in transcript before impl gate",
+        )
+
+    def test_c3_formal_notation_const_prohibition(self):
+        """C3: Formal notation must explicitly prohibit const/let/var assignments."""
+        self.assertIn(
+            "constant declarations (const, let, var",
+            _minimal(),
+            "C3: ground prompt must explicitly prohibit constant declarations in formal notation",
+        )
+
+
+class TestADR0181Closures(unittest.TestCase):
+    """ADR-0181: Four OBR escape-route closures — N1, N2, N3, N4."""
+
+    def test_n1_obr_exec_observed_mandatory(self):
+        """N1: provenance statement does not replace 🔴 Execution observed at OBR."""
+        self.assertIn(
+            "provenance statement does not replace",
+            _minimal(),
+            "N1: ground prompt must state provenance statement does not replace the tool call / exec-observed",
+        )
+
+    def test_n2_ui_component_obr_mechanism(self):
+        """N2: OBR invocation for UI components must specify renderToStaticMarkup or container.innerHTML."""
+        self.assertIn(
+            "renderToStaticMarkup",
+            _minimal(),
+            "N2: ground prompt must name renderToStaticMarkup or container.innerHTML as valid UI OBR invocation",
+        )
+
+    def test_n3_criterion_reemission_gate(self):
+        """N3: criterion re-emission at OBR must be a blocking gate before Thread N complete."""
+        self.assertIn(
+            "criterion re-emission",
+            _minimal(),
+            "N3: ground prompt must name criterion re-emission as a gate before Thread N complete",
+        )
+
+    def test_n4_initial_criteria_one_criterion(self):
+        """N4: first criteria rung after manifest must emit exactly one criterion."""
+        self.assertIn(
+            "first criteria rung after",
+            _minimal(),
+            "N4: ground prompt must prohibit multi-criterion planning block at the first criteria rung",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

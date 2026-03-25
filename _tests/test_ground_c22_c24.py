@@ -11,13 +11,13 @@ class TestC22OBSBuildOutputProhibited(unittest.TestCase):
 
     def test_c22_build_output_never_satisfies(self):
         self.assertIn(
-            "build output, bundle manifest, or compilation result never satisfies this gate",
+            "build output or compilation result never satisfies this gate",
             self.core,
             "C22: OBS gate must explicitly prohibit build output as direct demonstration")
 
     def test_c22_positioned_in_obs_section(self):
         c22_idx = self.core.index(
-            "build output, bundle manifest, or compilation result never satisfies this gate")
+            "build output or compilation result never satisfies this gate")
         obs_idx = self.core.index("Upon writing the observed running behavior label")
         thread_complete_idx = self.core.index("\u2705 Thread N complete may not be emitted")
         self.assertGreater(c22_idx, obs_idx,

@@ -10,15 +10,17 @@ class TestC14ManifestExhaustedRequiresThreadComplete(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c14_thread_count_check(self):
-        self.assertIn("thread count before emitting", self.core,
-            "C14: Manifest exhausted must require checking thread count matches Thread N complete sentinels")
+        # ADR-0180 C2 supersedes the original vague "check the thread count" phrase with a
+        # specific anchor: locate the N in Manifest declared and compare against Thread N complete sentinels.
+        self.assertIn("locate the N in", self.core,
+            "C14/C2: Manifest exhausted must anchor count to declared N in Manifest declared sentinel")
 
     def test_c14_positioned_near_manifest_exhausted(self):
-        c14_idx = self.core.index("thread count before emitting")
+        c14_idx = self.core.index("locate the N in")
         gate_phrase = "Manifest exhausted \u2014 \u2705 Manifest exhausted may not be emitted"
         manifest_ex_idx = self.core.index(gate_phrase)
-        self.assertLess(abs(c14_idx - manifest_ex_idx), 300,
-            "C14: thread-count check must appear near the Manifest exhausted gate instruction")
+        self.assertLess(abs(c14_idx - manifest_ex_idx), 400,
+            "C14/C2: thread-count anchor must appear near the Manifest exhausted gate instruction")
 
 
 class TestC15HardStopPositionalConstraint(unittest.TestCase):

@@ -257,6 +257,31 @@ def test_sequential_thread_execution_required():
     )
 
 
+def test_immediate_descent_after_criteria():
+    sr = SR()
+    assert "enumerating remaining criteria" in sr or "planning future gap cycles" in sr, (
+        "Ground prompt must state that after emitting the criteria artifact the model must immediately "
+        "proceed to formal notation without enumerating remaining criteria or planning future cycles"
+    )
+
+
+def test_formal_notation_must_encode_all_constraints():
+    sr = SR()
+    fn_idx = sr.find("Formal notation encodes only the criteria")
+    ev_idx = sr.find("Only validation artifacts may be produced")
+    assert fn_idx >= 0 and ev_idx > fn_idx, "formal notation section must be present before EV rung"
+    fn_section = sr[fn_idx:ev_idx]
+    assert (
+        "every structural constraint" in fn_section
+        or "all structural constraints" in fn_section
+        or "each constraint" in fn_section
+        or "all constraints" in fn_section
+    ), (
+        "Formal notation section must state that the artifact must encode all structural constraints "
+        "the criterion implies, not just a subset of permitted forms"
+    )
+
+
 def test_thread_scanner_scoped_to_practitioner_prose():
     sr = SR()
     # The manifest-scanning sentence must explicitly reference the prose rung artifact,

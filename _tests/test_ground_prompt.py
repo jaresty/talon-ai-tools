@@ -222,3 +222,49 @@ def test_formal_notation_verbatim_restatement_permitted():
         "Ground prompt must permit verbatim restatement of the criterion as the formal notation artifact "
         "when the criterion is already a complete behavioral specification"
     )
+
+
+def test_continuous_rung_traversal_required():
+    sr = SR()
+    assert "without pausing" in sr or "continuously" in sr or "do not pause" in sr or "without stopping" in sr, (
+        "Ground prompt must state that rung traversal is continuous and the model must not pause "
+        "for user confirmation between rungs"
+    )
+
+
+def test_formal_notation_prohibits_implementation_shaped_content():
+    sr = SR()
+    assert (
+        "function bod" in sr or "function body" in sr or "function bodies" in sr
+    ) and (
+        "pseudocode" in sr
+    ), (
+        "Ground prompt must explicitly prohibit complete function bodies at the formal notation rung "
+        "and must clarify that labeling content as pseudocode does not exempt it from the prohibition"
+    )
+
+
+def test_sequential_thread_execution_required():
+    sr = SR()
+    assert (
+        "before beginning the next thread" in sr
+        or "before starting the next thread" in sr
+        or "before thread" in sr
+        or "at most one thread" in sr
+        or "one thread at a time" in sr
+    ), (
+        "Ground prompt must state that thread N must reach Thread N complete before thread N+1 begins"
+    )
+
+
+def test_thread_scanner_scoped_to_practitioner_prose():
+    sr = SR()
+    # The manifest-scanning sentence must explicitly reference the prose rung artifact,
+    # not just "the prose" (which is ambiguous and could include the ground prompt itself).
+    scan_idx = sr.find("scan every sentence in the prose")
+    assert scan_idx >= 0, "manifest scanning sentence must be present"
+    context = sr[scan_idx:scan_idx + 300]
+    assert "prose rung" in context or "prose rung artifact" in context or "practitioner" in context, (
+        "The manifest-scanning sentence must scope 'the prose' to the practitioner's prose rung artifact, "
+        "not to the ground prompt's rule text or other transcript content"
+    )

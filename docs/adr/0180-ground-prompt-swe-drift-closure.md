@@ -1,6 +1,6 @@
 # ADR-0180: Ground Prompt SWE Drift Closure
 
-**Status**: Proposed
+**Status**: Implemented
 **Date**: 2026-03-24
 **Supersedes**: Portions of ADR-0179
 

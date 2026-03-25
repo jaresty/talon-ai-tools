@@ -25,7 +25,7 @@
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "draw": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2.",
-        "formal": "The response consists solely of formal notation as the complete output: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral constraints expressed in non-executable specification form, with no surrounding prose or explanation. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`) and when paired with `rog` or `fig` directionals that emphasize structural reasoning.",
+        "formal": "The response uses formal notation as the primary medium: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral constraints expressed in non-executable specification form. Natural language may appear alongside notation to introduce, label, or clarify what is being specified — prose serves as context for the notation, not as a substitute for it. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`) and when paired with `rog` or `fig` directionals that emphasize structural reasoning.",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
         "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose or explanation.",
@@ -439,7 +439,7 @@
         "codetour": "VS Code CodeTour JSON file",
         "diagram": "Mermaid diagram only",
         "draw": "Spatial ASCII prose layout",
-        "formal": "Formal notation only, no prose",
+        "formal": "Formal notation with optional clarifying prose",
         "gherkin": "Gherkin scenario format",
         "html": "Semantic HTML only, no prose",
         "jira": "Jira markup formatting",
@@ -1277,7 +1277,7 @@
             "protocol definition",
             "structural invariants"
           ],
-          "definition": "The response consists solely of formal notation as the complete output: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral constraints expressed in non-executable specification form, with no surrounding prose or explanation. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`) and when paired with `rog` or `fig` directionals that emphasize structural reasoning."
+          "definition": "The response uses formal notation as the primary medium: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral constraints expressed in non-executable specification form. Natural language may appear alongside notation to introduce, label, or clarify what is being specified — prose serves as context for the notation, not as a substitute for it. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`) and when paired with `rog` or `fig` directionals that emphasize structural reasoning."
         },
         "gherkin": {
           "distinctions": [],
@@ -8995,7 +8995,7 @@
     }
   ],
   "checksums": {
-    "axes": "4ad971d92d8a8b93961008f0ec5b5da5dd1109d640fc90a0a02843eed5be943f",
+    "axes": "4d9a072292e6b4a3d9f307587311514e31b8caac94e720f15254581948a3905e",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

@@ -113,7 +113,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
 
 
 class ChannelAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-4: channel axis has structured metadata for all 19 tokens."""
+    """ADR-0155 T-4: channel axis has structured metadata for all 20 tokens."""
 
     AXIS = "channel"
     EXPECTED_TOKENS = {
@@ -122,6 +122,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "codetour",
         "diagram",
         "draw",
+        "formal",
         "gherkin",
         "html",
         "image",

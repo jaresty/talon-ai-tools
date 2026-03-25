@@ -57,6 +57,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "draw": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not "
         "machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2.",
+        "formal": "The response consists solely of formal notation as the complete output: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral "
+        "constraints expressed in non-executable specification form, with no surrounding prose or explanation. The notation describes what must be true rather than how to implement it "
+        "— permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function "
+        "implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if "
+        "appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, "
+        "`make`, `ground`) and when paired with `rog` or `fig` directionals that emphasize structural reasoning.",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram "
         "channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
@@ -529,6 +535,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "codetour": "VS Code CodeTour JSON file",
         "diagram": "Mermaid diagram only",
         "draw": "Spatial ASCII prose layout",
+        "formal": "Formal notation only, no prose",
         "gherkin": "Gherkin scenario format",
         "html": "Semantic HTML only, no prose",
         "jira": "Jira markup formatting",
@@ -738,6 +745,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "codetour": "観",
         "diagram": "図",
         "draw": "枠",
+        "formal": "式",
         "gherkin": "瓜",
         "html": "標",
         "image": "像",
@@ -1119,6 +1127,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "codetour": "VS Code tour",
         "diagram": "Mermaid diagram",
         "draw": "ASCII spatial layout",
+        "formal": "Formal notation specification",
         "gherkin": "Gherkin scenarios",
         "html": "HTML output",
         "image": "Image output",
@@ -1414,6 +1423,24 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "to-managers": "inaccessible to a non-technical audience; use plain instead",
                     "to-stakeholders": "inaccessible to a non-technical audience; use plain or presenterm instead",
                     "to-team": "accessible only to technical members of a mixed audience",
+                },
+            },
+        },
+        "formal": {
+            "task": {"natural": ["probe", "make", "ground"]},
+            "audience": {
+                "natural": [
+                    "to-programmer",
+                    "to-principal-engineer",
+                    "to-platform-team",
+                    "to-llm",
+                ],
+                "cautionary": {
+                    "to-ceo": "formal notation is highly technical; inaccessible to non-technical audiences; use plain or presenterm instead",
+                    "to-managers": "formal notation requires technical expertise; use plain instead",
+                    "to-stakeholders": "formal notation is technical specification; use plain or presenterm instead",
+                    "to-team": "accessible only to technical members; consider plain for mixed audiences",
+                    "to-junior-engineer": "formal notation may be too abstract without context; consider plain with examples",
                 },
             },
         },
@@ -2318,6 +2345,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "text-based visual",
                 "ASCII art",
                 "prose diagram",
+            ],
+        },
+        "formal": {
+            "distinctions": [
+                {
+                    "note": "code = executable implementation; formal = non-executable specification describing what must be true",
+                    "token": "code",
+                },
+                {
+                    "note": "diagram = visual representation (Mermaid/D2); formal = textual notation (type signatures, invariants, constraints)",
+                    "token": "diagram",
+                },
+                {
+                    "note": "sketch = D2 visual diagram; formal = textual specification notation",
+                    "token": "sketch",
+                },
+            ],
+            "heuristics": [
+                "formal notation",
+                "type signatures",
+                "interface specification",
+                "what are the invariants",
+                "formal specification",
+                "preconditions and postconditions",
+                "behavioral constraints",
+                "type-level specification",
+                "protocol definition",
+                "structural invariants",
             ],
         },
         "gherkin": {

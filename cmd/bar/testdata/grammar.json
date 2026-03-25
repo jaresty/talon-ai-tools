@@ -25,6 +25,7 @@
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "draw": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2.",
+        "formal": "The response consists solely of formal notation as the complete output: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral constraints expressed in non-executable specification form, with no surrounding prose or explanation. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`) and when paired with `rog` or `fig` directionals that emphasize structural reasoning.",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
         "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose or explanation.",
@@ -231,6 +232,7 @@
         "codetour",
         "diagram",
         "draw",
+        "formal",
         "gherkin",
         "html",
         "image",
@@ -437,6 +439,7 @@
         "codetour": "VS Code CodeTour JSON file",
         "diagram": "Mermaid diagram only",
         "draw": "Spatial ASCII prose layout",
+        "formal": "Formal notation only, no prose",
         "gherkin": "Gherkin scenario format",
         "html": "Semantic HTML only, no prose",
         "jira": "Jira markup formatting",
@@ -640,6 +643,7 @@
         "codetour": "観",
         "diagram": "図",
         "draw": "枠",
+        "formal": "式",
         "gherkin": "瓜",
         "html": "標",
         "image": "像",
@@ -948,6 +952,7 @@
         "codetour": "VS Code tour",
         "diagram": "Mermaid diagram",
         "draw": "ASCII spatial layout",
+        "formal": "Formal notation specification",
         "gherkin": "Gherkin scenarios",
         "html": "HTML output",
         "image": "Image output",
@@ -1244,6 +1249,35 @@
             "prose diagram"
           ],
           "definition": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2."
+        },
+        "formal": {
+          "distinctions": [
+            {
+              "note": "code = executable implementation; formal = non-executable specification describing what must be true",
+              "token": "code"
+            },
+            {
+              "note": "diagram = visual representation (Mermaid/D2); formal = textual notation (type signatures, invariants, constraints)",
+              "token": "diagram"
+            },
+            {
+              "note": "sketch = D2 visual diagram; formal = textual specification notation",
+              "token": "sketch"
+            }
+          ],
+          "heuristics": [
+            "formal notation",
+            "type signatures",
+            "interface specification",
+            "what are the invariants",
+            "formal specification",
+            "preconditions and postconditions",
+            "behavioral constraints",
+            "type-level specification",
+            "protocol definition",
+            "structural invariants"
+          ],
+          "definition": "The response consists solely of formal notation as the complete output: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral constraints expressed in non-executable specification form, with no surrounding prose or explanation. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`) and when paired with `rog` or `fig` directionals that emphasize structural reasoning."
         },
         "gherkin": {
           "distinctions": [],
@@ -5055,6 +5089,30 @@
             }
           }
         },
+        "formal": {
+          "task": {
+            "natural": [
+              "probe",
+              "make",
+              "ground"
+            ]
+          },
+          "audience": {
+            "natural": [
+              "to-programmer",
+              "to-principal-engineer",
+              "to-platform-team",
+              "to-llm"
+            ],
+            "cautionary": {
+              "to-ceo": "formal notation is highly technical; inaccessible to non-technical audiences; use plain or presenterm instead",
+              "to-managers": "formal notation requires technical expertise; use plain instead",
+              "to-stakeholders": "formal notation is technical specification; use plain or presenterm instead",
+              "to-team": "accessible only to technical members; consider plain for mixed audiences",
+              "to-junior-engineer": "formal notation may be too abstract without context; consider plain with examples"
+            }
+          }
+        },
         "gherkin": {
           "task": {
             "natural": [
@@ -7146,6 +7204,7 @@
         "codetour": "codetour",
         "diagram": "diagram",
         "draw": "draw",
+        "formal": "formal",
         "gherkin": "gherkin",
         "html": "html",
         "image": "image",
@@ -7608,6 +7667,7 @@
         "channel=codetour": "channel-codetour",
         "channel=diagram": "channel-diagram",
         "channel=draw": "channel-draw",
+        "channel=formal": "channel-formal",
         "channel=gherkin": "channel-gherkin",
         "channel=html": "channel-html",
         "channel=image": "channel-image",
@@ -7755,6 +7815,7 @@
       "channel=codetour": "channel-codetour",
       "channel=diagram": "channel-diagram",
       "channel=draw": "channel-draw",
+      "channel=formal": "channel-formal",
       "channel=gherkin": "channel-gherkin",
       "channel=html": "channel-html",
       "channel=image": "channel-image",
@@ -7888,6 +7949,7 @@
       "form=walkthrough": "form-walkthrough",
       "form=wardley": "form-wardley",
       "form=wasinawa": "form-wasinawa",
+      "formal": "formal",
       "formally": "formally",
       "formats": "formats",
       "fourfold": "fourfold",
@@ -8933,11 +8995,11 @@
     }
   ],
   "checksums": {
-    "axes": "53eb50e5ff73b8d2cf19988c1541df6246c99b316c81fd3f7b2dfed8a654a47a",
+    "axes": "89a42b2c4e26ad14af46d8178875d2787119bdec677506bda739b758763b00a4",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "035ce9ad6b2e9ad5688b10c480ce9063071d05d1230875967129d4337bd9e58b",
+    "slugs": "1370b97fec87c4a539181ab38d5d1afceb19bc98618ad25ad1c8ce55a9e2b8c1",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

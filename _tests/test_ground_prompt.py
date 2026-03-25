@@ -265,6 +265,20 @@ def test_immediate_descent_after_criteria():
     )
 
 
+def test_criterion_emergence_gated_on_thread_complete():
+    sr = SR()
+    assert (
+        "next criterion" in sr and "thread" in sr[sr.find("next criterion") - 200 : sr.find("next criterion") + 200].lower()
+    ) or (
+        "criterion may not be named" in sr
+    ) or (
+        "subsequent criteria emerge only after" in sr and "complete" in sr[sr.find("subsequent criteria emerge only after") : sr.find("subsequent criteria emerge only after") + 100]
+    ), (
+        "Ground prompt must state that the next criterion may not be named until "
+        "Thread N complete has been emitted for the prior criterion's cycle"
+    )
+
+
 def test_formal_notation_must_encode_all_constraints():
     sr = SR()
     fn_idx = sr.find("Formal notation encodes only the criteria")

@@ -189,11 +189,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an "
         "output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
-        "rubric": "The response structures the output as a rubric: rows are criteria or dimensions, columns are performance levels (e.g. not yet / developing / proficient / exemplary), and each "
-        "cell contains a behavioral descriptor defining what that level looks like for that criterion.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
+        "scorecard": "The response structures the output as a scorecard: a set of quantitative metrics each with a baseline, target, current value, and RAG (red/amber/green) status — suitable for "
+        "tracking and reporting progress to stakeholders over time.",
         "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from "
         "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full "
@@ -606,8 +606,8 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
-        "rubric": "Criteria × performance-level grid",
         "scaffold": "First-principles scaffolded explanation",
+        "scorecard": "KPI scorecard with targets and RAG status",
         "snap": "State snapshot for resumption or handoff",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
@@ -810,8 +810,8 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "questions": "問",
         "quiz": "試",
         "recipe": "法",
-        "rubric": "評",
         "scaffold": "足",
+        "scorecard": "績",
         "snap": "残",
         "socratic": "導",
         "spike": "査",
@@ -1206,8 +1206,8 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "questions": "Probing questions",
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
-        "rubric": "Criteria and performance levels",
         "scaffold": "Building understanding",
+        "scorecard": "KPI metrics with targets and status",
         "snap": "State snapshot for resumption",
         "socratic": "Question-led inquiry",
         "spike": "Research spike",
@@ -3514,31 +3514,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "repeating pattern I can express as a formula",
             ],
         },
-        "rubric": {
-            "distinctions": [
-                {
-                    "note": "rubric = criteria × performance-level grid with behavioral descriptors; table = generic columnar grid",
-                    "token": "table",
-                },
-                {
-                    "note": "rubric = structured scoring grid across levels; checklist = flat list of pass/fail items",
-                    "token": "checklist",
-                },
-            ],
-            "heuristics": [
-                "rubric",
-                "scoring rubric",
-                "performance levels",
-                "criteria and levels",
-                "what does good look like",
-                "rate against criteria",
-                "not yet developing proficient",
-                "assessment criteria",
-                "grading rubric",
-                "evaluation framework",
-                "how to score",
-            ],
-        },
         "scaffold": {
             "distinctions": [
                 {
@@ -3552,6 +3527,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "teach me this",
                 "start from first principles",
                 "build up my understanding",
+            ],
+        },
+        "scorecard": {
+            "distinctions": [
+                {
+                    "note": "scorecard = quantitative metrics with baseline/target/RAG; table = generic columnar grid",
+                    "token": "table",
+                },
+                {
+                    "note": "scorecard = data-driven metrics with targets and status; checklist = qualitative pass/fail items",
+                    "token": "checklist",
+                },
+            ],
+            "heuristics": [
+                "scorecard",
+                "KPI",
+                "metrics dashboard",
+                "baseline and target",
+                "RAG status",
+                "red amber green",
+                "progress metrics",
+                "stakeholder reporting",
+                "what to measure",
+                "track progress",
+                "balanced scorecard",
+                "metrics with targets",
             ],
         },
         "snap": {
@@ -3640,8 +3641,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "cards",
                 },
                 {
-                    "note": "table = generic grid; rubric = criteria × performance-level grid with behavioral descriptors in each cell",
-                    "token": "rubric",
+                    "note": "table = generic grid; scorecard = quantitative metrics with baseline/target/RAG status",
+                    "token": "scorecard",
                 },
             ],
             "heuristics": [

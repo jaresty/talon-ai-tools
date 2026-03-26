@@ -112,11 +112,12 @@ class TestADR0180Closures(unittest.TestCase):
     """ADR-0180: Five SWE drift closures — C5, C2, C1, C4, C3."""
 
     def test_c5_obr_reinvoke_gate(self):
-        """C5: OBR test-runner output blocking gate must say re-invoke the implemented artifact directly."""
+        """C5: OBR test-runner output blocking gate — ADR-0181: attractor 6 subsumed by rung-entry gate."""
+        # "re-invoke the implemented artifact directly" removed; gate part (c)/(d) enforces OBR type check.
         self.assertIn(
-            "re-invoke the implemented artifact directly",
+            "Rung-entry gate",
             _minimal(),
-            "C5: ground prompt must include explicit OBR blocking gate requiring re-invoke when test runner output observed",
+            "C5: rung-entry gate (ADR-0181) subsumes OBR test-runner blocking — gate must be present",
         )
 
     def test_c2_manifest_exhaustion_count_anchor(self):

@@ -48,14 +48,18 @@ class TestC16FinalReportVerbatimCopy(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c16_verbatim_transcript_check(self):
-        self.assertIn("cannot be found verbatim in the transcript", self.core,
-            "C16: Final Report must require each artifact to be locatable verbatim in the prior transcript")
+        # ADR-0181: attractor 7 (final-report transcript gate) removed — subsumed by rung-entry gate.
+        # C16 enforcement now fires at rung entry via gate part (b): the current gap as a
+        # currently-false assertion must be stateable from the current-cycle transcript.
+        self.assertIn("Rung-entry gate", self.core,
+            "C16: rung-entry gate (ADR-0181) subsumes final-report transcript check — gate must be present")
 
     def test_c16_positioned_near_final_report_section(self):
-        c16_idx = self.core.index("cannot be found verbatim in the transcript")
+        # ADR-0181: removed phrase no longer anchors position; verify gate precedes final report.
+        gate_idx = self.core.index("Rung-entry gate")
         final_idx = self.core.index("After emitting \u2705 Manifest exhausted, produce a final report")
-        self.assertLess(abs(c16_idx - final_idx), 500,
-            "C16: verbatim-copy constraint must appear near the Final Report instruction")
+        self.assertLess(gate_idx, final_idx,
+            "C16: rung-entry gate must appear before the Final Report instruction")
 
 
 class TestC17ImplicitConjunctionBan(unittest.TestCase):
@@ -67,10 +71,12 @@ class TestC17ImplicitConjunctionBan(unittest.TestCase):
             "C17: conjunction ban must cover implicit form: naming a structural element and its data source")
 
     def test_c17_positioned_near_existing_conjunction_ban(self):
+        # ADR-0181: enforcement wrapper "it is invalid" removed; definition retained as
+        # "if the criterion contains the word 'and' it is a conjunction"
         c17_idx = self.core.index("names both a structural element and its data source is a conjunction")
-        ban_idx = self.core.index("if the criterion contains the word \u2018and\u2019 it is invalid")
+        ban_idx = self.core.index("if the criterion contains the word \u2018and\u2019 it is a conjunction")
         self.assertLess(abs(c17_idx - ban_idx), 400,
-            "C17: implicit conjunction clause must appear near the existing explicit conjunction ban")
+            "C17: implicit conjunction clause must appear near the explicit conjunction definition")
 
 
 if __name__ == "__main__":

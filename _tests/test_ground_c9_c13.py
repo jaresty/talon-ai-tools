@@ -20,8 +20,10 @@ class TestC9FormalNotationArtifactType(unittest.TestCase):
             "C9/C21: formal notation gate must use compilability test to prohibit implementation code")
 
     def test_c9_positioned_before_ev_rung(self):
+        # ADR-0181: "Only validation artifacts may be produced" removed (attractor 1 subsumed by gate).
+        # EV rung now opens with "each test function asserts exactly one behavioral property".
         fn_idx = self.core.index("type signatures, interfaces, pseudocode")
-        ev_idx = self.core.index("Only validation artifacts may be produced")
+        ev_idx = self.core.index("each test function asserts exactly one behavioral property")
         self.assertLess(fn_idx, ev_idx,
             "C9: formal notation gate must appear before the EV rung section")
 

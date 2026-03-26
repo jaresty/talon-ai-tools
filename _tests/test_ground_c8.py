@@ -18,7 +18,9 @@ class TestC8StaticStateVacuousness(unittest.TestCase):
             "C8: ground must require running static-state artifacts against the pre-edit codebase")
 
     def test_c8_positioned_within_vacuousness_clause(self):
-        ev_idx = self.core.index("Only validation artifacts may be produced")
+        # ADR-0181: "Only validation artifacts may be produced" removed (attractor 1 subsumed by gate).
+        # EV rung now opens with "each test function asserts exactly one behavioral property".
+        ev_idx = self.core.index("each test function asserts exactly one behavioral property")
         v_complete_idx = self.core.index("\u2705 Validation artifact V complete must be emitted")
         static_idx = self.core.index("static", ev_idx)
         self.assertLess(static_idx, v_complete_idx,

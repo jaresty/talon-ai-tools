@@ -48,8 +48,10 @@ class TestC20RedRunBeforeImplementation(unittest.TestCase):
             "C20: ground must gate implementation edits on a red run existing in the transcript")
 
     def test_c20_positioned_in_ev_rung(self):
+        # ADR-0181: "Only validation artifacts may be produced" removed (attractor 1 subsumed by gate).
+        # EV rung now opens with "each test function asserts exactly one behavioral property".
         c20_idx = self.core.index("implementation edits may not begin until a red run exists")
-        ev_idx = self.core.index("Only validation artifacts may be produced")
+        ev_idx = self.core.index("each test function asserts exactly one behavioral property")
         v_complete_idx = self.core.index("\u2705 Validation artifact V complete must be emitted")
         self.assertGreater(c20_idx, ev_idx,
             "C20: red-run-before-edit gate must appear after the EV rung start")

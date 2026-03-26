@@ -148,7 +148,10 @@ def test_retroactive_sentinel_does_not_open_gate():
 
 def test_r3_positive_definition_for_code_contexts():
     rsc = RSC()
-    assert "rendered" in rsc or "DOM" in rsc or "api response" in rsc.lower() or "response body" in rsc, (
+    assert (
+        "rendered" in rsc or "DOM" in rsc or "api response" in rsc.lower()
+        or "response body" in rsc or "HTML fragment" in rsc or "render utility" in rsc
+    ), (
         "rung_sequence_code must give a positive definition of what satisfies R3 in code contexts"
     )
     assert "direct" in rsc or "directly" in rsc or "demonstrates" in rsc, (
@@ -182,6 +185,8 @@ def test_composed_prose_body_always_invalid():
 
 
 def test_pre_action_rung_self_check():
+    # ADR-0181: rung-entry gate is the pre-action check. It says "before producing content at any rung"
+    # and requires stating rung name, gap, artifact type, and exec_observed check.
     sr = SR()
     assert "before producing" in sr or "before any artifact" in sr or "before each artifact" in sr, (
         "sentinel_rules must define a pre-action self-check that fires before producing any artifact"
@@ -192,7 +197,9 @@ def test_pre_action_rung_self_check():
     assert "rung" in context, (
         "sentinel_rules pre-action check must require identifying the current rung"
     )
-    assert "prose" in context or "criteria" in context or "non-executable" in context or "all artifact" in context or "every artifact" in context, (
+    # "any rung" covers all rungs including prose, criteria, and non-executable rungs
+    assert ("any rung" in context or "prose" in context or "criteria" in context
+            or "non-executable" in context or "all artifact" in context or "every artifact" in context), (
         "sentinel_rules pre-action check must explicitly apply to non-executable rungs"
     )
 
@@ -245,6 +252,9 @@ def test_formal_notation_prohibits_implementation_shaped_content():
 
 
 def test_sequential_thread_execution_required():
+    # ADR-0181: "at most one thread" removed (attractor 4 subsumed by rung-entry gate).
+    # Gate part (b) — singular current gap — enforces serialization: a model producing thread N+1
+    # content cannot state a singular current gap without contradiction.
     sr = SR()
     assert (
         "before beginning the next thread" in sr
@@ -252,20 +262,21 @@ def test_sequential_thread_execution_required():
         or "before thread" in sr
         or "at most one thread" in sr
         or "one thread at a time" in sr
+        or "Rung-entry gate" in sr
     ), (
-        "Ground prompt must state that thread N must reach Thread N complete before thread N+1 begins"
+        "Ground prompt must enforce sequential thread execution — via explicit gate or rung-entry gate"
     )
 
 
 def test_sequential_thread_gate_covers_all_rungs():
+    # ADR-0181: "at most one thread" clause removed; rung-entry gate covers all rungs by design.
     sr = SR()
-    # The gate must block ALL output for thread N+1, not just the prose rung.
-    # Find the sequential-thread rule and check it doesn't say "prose rung" only.
-    idx = sr.find("at most one thread")
-    assert idx >= 0, "sequential thread rule must be present"
-    context = sr[idx:idx+300]
-    assert "prose rung" not in context or "no rung" in context or "any output" in context or "all rungs" in context, (
-        "Sequential thread gate must block all rungs of thread N+1, not only the prose rung"
+    # Gate says "before producing content at any rung" — covers all rungs, not just prose.
+    assert "Rung-entry gate" in sr, "rung-entry gate must be present to enforce all-rung thread serialization"
+    gate_idx = sr.find("Rung-entry gate")
+    context = sr[gate_idx:gate_idx + 300]
+    assert "any rung" in context, (
+        "Rung-entry gate must apply to 'any rung' — not limited to the prose rung"
     )
 
 
@@ -308,9 +319,11 @@ def test_criterion_emergence_gated_on_thread_complete():
 
 
 def test_formal_notation_must_encode_all_constraints():
+    # ADR-0181: "Only validation artifacts may be produced" removed (attractor 1 subsumed by gate).
+    # EV rung now opens with "each test function asserts exactly one behavioral property".
     sr = SR()
     fn_idx = sr.find("Formal notation encodes only the criteria")
-    ev_idx = sr.find("Only validation artifacts may be produced")
+    ev_idx = sr.find("each test function asserts exactly one behavioral property")
     assert fn_idx >= 0 and ev_idx > fn_idx, "formal notation section must be present before EV rung"
     fn_section = sr[fn_idx:ev_idx]
     assert (

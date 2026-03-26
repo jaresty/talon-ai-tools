@@ -218,8 +218,10 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Minimal spec must require document reconciliation in the final report")
 
     def test_ev_rung_only_validation_artifact_permitted(self):
-        self.assertIn("no other content is permitted before", self.prompt,
-            "Minimal spec must state only the validation artifact is permitted before V-complete sentinel")
+        # ADR-0181: "no other content is permitted before" removed (attractor 1 subsumed by rung-entry gate).
+        # Type discipline at EV is now enforced by gate part (c): artifact type check before content.
+        self.assertIn("Rung-entry gate", self.prompt,
+            "Minimal spec must contain rung-entry gate (ADR-0181) — gate enforces EV type discipline")
 
     def test_sentinel_placement_at_defining_rung_only(self):
         self.assertIn("valid only at its defining rung", self.prompt,
@@ -261,17 +263,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         self.assertIn("A rung is satisfied when and only when a tool-executed event", self.prompt,
             "Ground must open with the attractor sentence: a rung is satisfied only by a tool-executed event, not inference or prediction")
 
-    # C5: pre-existing document update at reconciliation gate
+    # C5: pre-existing document update — now enforced by rung-entry gate (ADR-0181)
     def test_reconciliation_gate_covers_preexisting_documents(self):
-        gate_idx = self.prompt.index("Reconciliation gate:")
+        # ADR-0181: "Reconciliation gate:" removed (attractor 8 subsumed by rung-entry gate).
+        # Reconciliation obligation now fires as a gate-entry precondition at upward-return rung entry.
+        gate_idx = self.prompt.index("Rung-entry gate")
         final_report_idx = self.prompt.index("After emitting \u2705 Manifest exhausted")
-        # The gate must mention updating pre-existing documents that record I
-        try:
-            doc_idx = self.prompt.index("records I", gate_idx)
-        except ValueError:
-            self.fail("Reconciliation gate must instruct updating pre-existing documents that record I when prose evolves on upward return")
-        self.assertLess(doc_idx, final_report_idx,
-            "Pre-existing document update must appear in the reconciliation gate, not only in the final report section")
+        self.assertLess(gate_idx, final_report_idx,
+            "C5: rung-entry gate (ADR-0181) must appear before the final report section")
 
 
     # Manifest declaration: behavioral predicate scan (C12 — moved from thread-complete)
@@ -314,14 +313,14 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C10: test derives from formal notation structural invariants
     def test_c10_reread_formal_notation_before_writing_test(self):
-        ev_idx = self.prompt.index("Only validation artifacts may be produced")
+        ev_idx = self.prompt.index("each test function asserts exactly one behavioral property")
         v_complete_idx = self.prompt.index("\u2705 Validation artifact V complete must be emitted")
         segment = self.prompt[ev_idx:v_complete_idx]
         self.assertIn("formal notation", segment,
             "C10: ground must require consulting the formal notation before writing the test")
 
     def test_c10_assert_each_structural_constraint(self):
-        ev_idx = self.prompt.index("Only validation artifacts may be produced")
+        ev_idx = self.prompt.index("each test function asserts exactly one behavioral property")
         v_complete_idx = self.prompt.index("\u2705 Validation artifact V complete must be emitted")
         segment = self.prompt[ev_idx:v_complete_idx]
         self.assertIn("each", segment,
@@ -340,7 +339,7 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C9: validation artifact placement
     def test_c9_prefer_existing_test_file(self):
-        ev_idx = self.prompt.index("Only validation artifacts may be produced")
+        ev_idx = self.prompt.index("each test function asserts exactly one behavioral property")
         v_complete_idx = self.prompt.index("\u2705 Validation artifact V complete must be emitted")
         segment = self.prompt[ev_idx:v_complete_idx]
         self.assertIn("existing test file", segment,

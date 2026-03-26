@@ -57,13 +57,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "draw": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not "
         "machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2.",
-        "formal": "The response uses formal notation as the primary medium: type signatures, interfaces, structural invariants, preconditions, postconditions, and behavioral constraints "
-        "expressed in non-executable specification form. Natural language may appear alongside notation to introduce, label, or clarify what is being specified — prose serves as "
-        "context for the notation, not as a substitute for it. The notation describes what must be true rather than how to implement it — permitted forms include type signatures "
-        "without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working "
-        "code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations "
-        "and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`) and when paired with `rog` or `fig` directionals "
-        "that emphasize structural reasoning.",
+        "formal": "The response separates behavioral specification from explanation. Formal notation (type signatures, interfaces, invariants, pre/postconditions) encodes what must be true — "
+        "the executable or testable part. Natural language labels, introduces, and explains the specification — prose adds context but does not substitute for formal encoding where "
+        "precision matters. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, "
+        "protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When "
+        "domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint "
+        "statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`).",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram "
         "channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",

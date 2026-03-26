@@ -189,6 +189,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an "
         "output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+        "rubric": "The response structures the output as a rubric: rows are criteria or dimensions, columns are performance levels (e.g. not yet / developing / proficient / exemplary), and each "
+        "cell contains a behavioral descriptor defining what that level looks like for that criterion.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
@@ -604,6 +606,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
+        "rubric": "Criteria × performance-level grid",
         "scaffold": "First-principles scaffolded explanation",
         "snap": "State snapshot for resumption or handoff",
         "socratic": "Question-led Socratic dialogue",
@@ -807,6 +810,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "questions": "問",
         "quiz": "試",
         "recipe": "法",
+        "rubric": "評",
         "scaffold": "足",
         "snap": "残",
         "socratic": "導",
@@ -1202,6 +1206,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "questions": "Probing questions",
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
+        "rubric": "Criteria and performance levels",
         "scaffold": "Building understanding",
         "snap": "State snapshot for resumption",
         "socratic": "Question-led inquiry",
@@ -3509,6 +3514,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "repeating pattern I can express as a formula",
             ],
         },
+        "rubric": {
+            "distinctions": [
+                {
+                    "note": "rubric = criteria × performance-level grid with behavioral descriptors; table = generic columnar grid",
+                    "token": "table",
+                },
+                {
+                    "note": "rubric = structured scoring grid across levels; checklist = flat list of pass/fail items",
+                    "token": "checklist",
+                },
+            ],
+            "heuristics": [
+                "rubric",
+                "scoring rubric",
+                "performance levels",
+                "criteria and levels",
+                "what does good look like",
+                "rate against criteria",
+                "not yet developing proficient",
+                "assessment criteria",
+                "grading rubric",
+                "evaluation framework",
+                "how to score",
+            ],
+        },
         "scaffold": {
             "distinctions": [
                 {
@@ -3608,7 +3638,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "cards = discrete headed items; table = columnar grid layout",
                     "token": "cards",
-                }
+                },
+                {
+                    "note": "table = generic grid; rubric = criteria × performance-level grid with behavioral descriptors in each cell",
+                    "token": "rubric",
+                },
             ],
             "heuristics": [
                 "table format",

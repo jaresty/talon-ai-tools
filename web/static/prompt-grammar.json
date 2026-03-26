@@ -96,6 +96,7 @@
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
         "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+        "rubric": "The response structures the output as a rubric: rows are criteria or dimensions, columns are performance levels (e.g. not yet / developing / proficient / exemplary), and each cell contains a behavioral descriptor defining what that level looks like for that criterion.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas where first-principles exposition contradicts assumed expertise.",
         "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
         "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
@@ -304,6 +305,7 @@
         "questions",
         "quiz",
         "recipe",
+        "rubric",
         "scaffold",
         "snap",
         "socratic",
@@ -509,6 +511,7 @@
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
+        "rubric": "Criteria × performance-level grid",
         "scaffold": "First-principles scaffolded explanation",
         "snap": "State snapshot for resumption or handoff",
         "socratic": "Question-led Socratic dialogue",
@@ -710,6 +713,7 @@
         "questions": "問",
         "quiz": "試",
         "recipe": "法",
+        "rubric": "評",
         "scaffold": "足",
         "snap": "残",
         "socratic": "導",
@@ -1028,6 +1032,7 @@
         "questions": "Probing questions",
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
+        "rubric": "Criteria and performance levels",
         "scaffold": "Building understanding",
         "snap": "State snapshot for resumption",
         "socratic": "Question-led inquiry",
@@ -2475,6 +2480,32 @@
           ],
           "definition": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it."
         },
+        "rubric": {
+          "distinctions": [
+            {
+              "note": "rubric = criteria × performance-level grid with behavioral descriptors; table = generic columnar grid",
+              "token": "table"
+            },
+            {
+              "note": "rubric = structured scoring grid across levels; checklist = flat list of pass/fail items",
+              "token": "checklist"
+            }
+          ],
+          "heuristics": [
+            "rubric",
+            "scoring rubric",
+            "performance levels",
+            "criteria and levels",
+            "what does good look like",
+            "rate against criteria",
+            "not yet developing proficient",
+            "assessment criteria",
+            "grading rubric",
+            "evaluation framework",
+            "how to score"
+          ],
+          "definition": "The response structures the output as a rubric: rows are criteria or dimensions, columns are performance levels (e.g. not yet / developing / proficient / exemplary), and each cell contains a behavioral descriptor defining what that level looks like for that criterion."
+        },
         "scaffold": {
           "distinctions": [
             {
@@ -2579,6 +2610,10 @@
             {
               "note": "cards = discrete headed items; table = columnar grid layout",
               "token": "cards"
+            },
+            {
+              "note": "table = generic grid; rubric = criteria × performance-level grid with behavioral descriptors in each cell",
+              "token": "rubric"
             }
           ],
           "heuristics": [
@@ -7314,6 +7349,7 @@
         "questions": "questions",
         "quiz": "quiz",
         "recipe": "recipe",
+        "rubric": "rubric",
         "scaffold": "scaffold",
         "snap": "snap",
         "socratic": "socratic",
@@ -7685,6 +7721,7 @@
         "form=questions": "form-questions",
         "form=quiz": "form-quiz",
         "form=recipe": "form-recipe",
+        "form=rubric": "form-rubric",
         "form=scaffold": "form-scaffold",
         "form=snap": "form-snap",
         "form=socratic": "form-socratic",
@@ -7974,6 +8011,7 @@
       "form=questions": "form-questions",
       "form=quiz": "form-quiz",
       "form=recipe": "form-recipe",
+      "form=rubric": "form-rubric",
       "form=scaffold": "form-scaffold",
       "form=snap": "form-snap",
       "form=socratic": "form-socratic",
@@ -8176,6 +8214,7 @@
       "robust": "robust",
       "rog": "rog",
       "root": "root",
+      "rubric": "rubric",
       "scaffold": "scaffold",
       "scope=act": "scope-act",
       "scope=agent": "scope-agent",
@@ -9038,11 +9077,11 @@
     }
   ],
   "checksums": {
-    "axes": "d7dc487be5016de97d15bfcd05ebe63156e6c54e5fe41b62b6bac23218e798ad",
+    "axes": "e20dea867f82fca4865ed1affc81b1f34a447e1b3af3b84cc95913095dfb4a00",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",
-    "slugs": "d9b14b52041357e8d90d6bf78390475a46ad7c4399bedd19e3cc3369e5ef55cf",
+    "slugs": "072b39ace7498d36b8dedaf543a611ca278eadc97e50685cb2ab25fe9c69d7e1",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "ce2ef8abf0d342e2947793f29e6d7e39059703c255003f3e29491b8c993ce926"
   }

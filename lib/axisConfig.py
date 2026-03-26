@@ -1060,7 +1060,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "models": "Generative",
         "objectivity": "Reasoning",
         "operations": "Temporal/Dynamic",
-        "orbit": "Exploration",
+        "orbit": "Temporal/Dynamic",
         "order": "Structural",
         "origin": "Structural",
         "perturb": "Diagnostic",

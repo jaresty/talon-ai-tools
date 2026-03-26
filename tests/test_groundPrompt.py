@@ -34,6 +34,95 @@ def test_axiom_a1_present():
     )
 
 
+def test_rung_entry_gate_present():
+    """ADR-0181: rendered prompt contains rung-entry gate text."""
+    text = build_ground_prompt()
+    assert "Rung-entry gate" in text, (
+        "expected 'Rung-entry gate' in rendered ground prompt — "
+        "ADR-0181 requires a rung-entry gate before any rung-specific enforcement text"
+    )
+
+
+def test_rung_entry_gate_precedes_exec_observed_rule():
+    """ADR-0181: rung-entry gate appears before the exec_observed verbatim rule."""
+    text = build_ground_prompt()
+    gate_idx = text.index("Rung-entry gate")
+    exec_rule_idx = text.index("Every \U0001F534 Execution observed: sentinel")
+    assert gate_idx < exec_rule_idx, (
+        "rung-entry gate must appear before the exec_observed verbatim rule — "
+        "gate fires at rung entry, before any rung-specific content rule"
+    )
+
+
+def test_rung_entry_gate_follows_r2_block():
+    """ADR-0181: rung-entry gate appears after the R2 axiom block."""
+    text = build_ground_prompt()
+    r2_anchor = "each artifact addresses only the gap declared by the prior rung"
+    r2_idx = text.index(r2_anchor)
+    gate_idx = text.index("Rung-entry gate")
+    assert r2_idx < gate_idx, (
+        "rung-entry gate must follow the R2 axiom block — "
+        "ADR-0181 specifies placement immediately after A1-A3-R2"
+    )
+
+
+def test_attractor1_vro_stop_removed():
+    """ADR-0181: attractor 1 (VRO-only stop) removed — subsumed by rung-entry gate."""
+    text = build_ground_prompt()
+    assert "Only validation artifacts may be produced at the executable validation rung" not in text, (
+        "attractor 1 enforcement clause must be removed — rung-entry gate subsumes it"
+    )
+
+
+def test_attractor4_thread_serialization_removed():
+    """ADR-0181: attractor 4 (thread serialization gate) removed — subsumed by rung-entry gate."""
+    text = build_ground_prompt()
+    assert "at most one thread is in progress at a time" not in text, (
+        "attractor 4 enforcement clause must be removed — rung-entry gate subsumes it"
+    )
+
+
+def test_attractor6_obr_testrunner_removed():
+    """ADR-0181: attractor 6 (OBR test-runner prohibition) removed — subsumed by rung-entry gate."""
+    text = build_ground_prompt()
+    assert "it does not satisfy the OBR gate \u2014 re-invoke the implemented artifact directly" not in text, (
+        "attractor 6 enforcement clause must be removed — rung-entry gate subsumes it"
+    )
+
+
+def test_attractor7_final_report_transcript_gate_removed():
+    """ADR-0181: attractor 7 (final report transcript gate) removed — subsumed by rung-entry gate."""
+    text = build_ground_prompt()
+    assert "before writing each section, locate the artifact in the prior transcript" not in text, (
+        "attractor 7 enforcement clause must be removed — rung-entry gate subsumes it"
+    )
+
+
+def test_attractor8_reconciliation_gate_removed():
+    """ADR-0181: attractor 8 (reconciliation loop) removed — subsumed by rung-entry gate."""
+    text = build_ground_prompt()
+    assert "Reconciliation gate:" not in text, (
+        "attractor 8 enforcement clause must be removed — rung-entry gate subsumes it"
+    )
+
+
+def test_attractor5_enforcement_wrapper_removed():
+    """ADR-0181: attractor 5 enforcement wrapper removed — definitional content retained."""
+    text = build_ground_prompt()
+    assert "it is invalid \u2014 split it before continuing" not in text, (
+        "attractor 5 enforcement wrapper must be removed — only definitional content is kept"
+    )
+
+
+def test_attractor5_conjunction_definition_retained():
+    """ADR-0181: attractor 5 conjunction definition retained after enforcement wrapper removed."""
+    text = build_ground_prompt()
+    assert "conjunction" in text, (
+        "conjunction definitional content must be retained — "
+        "the model needs it to execute the rung-entry gate correctly"
+    )
+
+
 def test_axiom_r2_present():
     """ADR-0179: rendered prompt states R2 as a named axiom (not only in sentinel text)."""
     text = build_ground_prompt()

@@ -370,7 +370,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "observed: is a protocol violation; implementation edits, new files, and code changes are not permitted at this rung. ✅ Thread N complete may not be emitted unless the observed "
         "running behavior label has been written after the most recent 🟢 Implementation gate cleared in this thread and a 🔴 Execution observed: sentinel appears immediately after it "
         "that directly demonstrates the criterion — a test pass is not a demonstration; if the 🔴 Execution observed: output does not directly demonstrate the criterion, emit 🔴 Gap: "
-        "naming what is undemonstrated and return to the executable implementation rung — ✅ Thread N complete may not be emitted after an OBR 🔴 Execution observed: that does not "
+        "naming what is undemonstrated and apply the upward-return failure-class rules — ✅ Thread N complete may not be emitted after an OBR 🔴 Execution observed: that does not "
         "directly demonstrate the criterion; if the 🔴 Execution observed: at the observed running behavior rung contains test runner output (pass counts, test names, duration summary), "
         "it does not satisfy the OBR gate — re-invoke the implemented artifact directly before continuing; ✅ Thread N complete may not be emitted after an OBR 🔴 Execution observed: "
         "that shows test runner output; no implementation file was created or modified for this thread’s gap in this cycle means the gap was already closed (return to criteria) or the "

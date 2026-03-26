@@ -306,7 +306,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "and a \U0001F534 Execution observed: sentinel appears immediately after it that directly demonstrates "
         "the criterion \u2014 a test pass is not a demonstration; "
         "if the \U0001F534 Execution observed: output does not directly demonstrate the criterion, "
-        "emit \U0001F534 Gap: naming what is undemonstrated and return to the executable implementation rung \u2014 "
+        "emit \U0001F534 Gap: naming what is undemonstrated and apply the upward-return failure-class rules \u2014 "
         "\u2705 Thread N complete may not be emitted after an OBR \U0001F534 Execution observed: "
         "that does not directly demonstrate the criterion; "
         "if the \U0001F534 Execution observed: at the observed running behavior rung contains "

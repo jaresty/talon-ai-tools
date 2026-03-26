@@ -72,6 +72,26 @@ class TestGroundRewrite(unittest.TestCase):
         )
 
 
+    def test_obr_realism_hierarchy(self):
+        """OBR rung must name dev server / CLI as preferred over in-process rendering."""
+        from lib.groundPrompt import GROUND_PARTS_MINIMAL
+        core = GROUND_PARTS_MINIMAL["core"]
+        self.assertIn(
+            "dev server",
+            core,
+            "OBR realism hierarchy: dev server must be named as preferred invocation for web UI",
+        )
+        self.assertIn(
+            "HTML response body",
+            core,
+            "OBR realism hierarchy: HTML response body must be named as expected OBR output for web UI",
+        )
+        self.assertIn(
+            "only when no runnable artifact exists",
+            core,
+            "OBR realism hierarchy: in-process rendering must be gated on no runnable artifact existing",
+        )
+
     def test_obs_section_is_compact(self):
         """OBS rung section must be ≤ 2200 chars (raised from 1800 after ADR-0178 D7 provenance addition)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL

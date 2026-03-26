@@ -71,12 +71,36 @@ class TestC17ImplicitConjunctionBan(unittest.TestCase):
             "C17: conjunction ban must cover implicit form: naming a structural element and its data source")
 
     def test_c17_positioned_near_existing_conjunction_ban(self):
-        # ADR-0181: enforcement wrapper "it is invalid" removed; definition retained as
-        # "if the criterion contains the word 'and' it is a conjunction"
         c17_idx = self.core.index("names both a structural element and its data source is a conjunction")
         ban_idx = self.core.index("if the criterion contains the word \u2018and\u2019 it is a conjunction")
         self.assertLess(abs(c17_idx - ban_idx), 400,
             "C17: implicit conjunction clause must appear near the explicit conjunction definition")
+
+    def test_conjunction_explicit_has_split_action(self):
+        # Regression: ADR-0181 removed "split before continuing" from the explicit conjunction clause.
+        # Without the action verb the model identifies the conjunction but is not gated from continuing.
+        self.assertIn(
+            "it is a conjunction \u2014 split before continuing",
+            self.core,
+            "Explicit conjunction clause must prescribe 'split before continuing' not just identify the pattern",
+        )
+
+    def test_conjunction_implicit_has_split_action(self):
+        # Regression: ADR-0181 removed "split before continuing" from the implicit (structural+data) conjunction clause.
+        self.assertIn(
+            "data source is a conjunction \u2014 split before continuing",
+            self.core,
+            "Implicit conjunction clause must also prescribe 'split before continuing'",
+        )
+
+    def test_obr_test_runner_output_blocks_thread_complete(self):
+        # Regression: ADR-0181 removed the OBR test-runner-output sentinel block.
+        # Without it the model can satisfy OBR with test runner output and emit Thread N complete.
+        self.assertIn(
+            "it does not satisfy the OBR gate \u2014 re-invoke the implemented artifact directly",
+            self.core,
+            "OBR gate must block Thread N complete when exec_observed contains test runner output",
+        )
 
 
 if __name__ == "__main__":

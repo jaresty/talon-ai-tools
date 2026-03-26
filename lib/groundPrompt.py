@@ -62,20 +62,19 @@ RUNG_SEQUENCE: list[dict] = [
 
 
 SENTINEL_TEMPLATES: dict[str, str] = {
-    "ground_entered":     "\u2705 Ground entered \u2014 prose rung begins",
-    "manifest_declared":  "\u2705 Manifest declared \u2014 N threads: [numbered list of behavioral gaps]",
-    "exec_observed":      "\U0001F534 Execution observed: [verbatim tool output \u2014 triple-backtick delimited, complete, nothing omitted]",
-    "gap":                "\U0001F534 Gap: [what the verbatim output reveals]",
-    "hard_stop":          "\U0001F6D1 HARD STOP \u2014 upward return to criteria rung",
-    "impl_gate":          "\U0001F7E2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001F534 Execution observed]",
-    "v_complete":         "\u2705 Validation artifact V complete",
-    "thread_complete":    "\u2705 Thread N complete",
+    "ground_entered": "\u2705 Ground entered \u2014 prose rung begins",
+    "manifest_declared": "\u2705 Manifest declared \u2014 N threads: [numbered list of behavioral gaps]",
+    "exec_observed": "\U0001f534 Execution observed: [verbatim tool output \u2014 triple-backtick delimited, complete, nothing omitted]",
+    "gap": "\U0001f534 Gap: [what the verbatim output reveals]",
+    "hard_stop": "\U0001f6d1 HARD STOP \u2014 upward return to criteria rung",
+    "impl_gate": "\U0001f7e2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001f534 Execution observed]",
+    "v_complete": "\u2705 Validation artifact V complete",
+    "thread_complete": "\u2705 Thread N complete",
     "manifest_exhausted": "\u2705 Manifest exhausted \u2014 N/N threads complete",
-    "carry_forward":      "Carry-forward: [list which original failures cover which current tests]",
-    "i_formation":        "\u2705 I-formation complete",
-    "r2_audit":           "\u2705 Formal notation R2 audit complete \u2014 N/N criteria encoded",
+    "carry_forward": "Carry-forward: [list which original failures cover which current tests]",
+    "i_formation": "\u2705 I-formation complete",
+    "r2_audit": "\u2705 Formal notation R2 audit complete \u2014 N/N criteria encoded",
 }
-
 
 
 def _rung_names_sentence() -> str:
@@ -119,7 +118,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         # ADR-0181: rung-entry gate — generative A2 enforcement point before any rung content
         "Rung-entry gate: before producing content at any rung, state (a) the rung name, "
         "(b) the current gap as a currently-false behavioral assertion, (c) the artifact type "
-        "this rung requires, and (d) whether a \U0001F534 Execution observed: sentinel exists in "
+        "this rung requires, and (d) whether a \U0001f534 Execution observed: sentinel exists in "
         "the current cycle and, if so, whether its output is of type (c) \u2014 "
         "if no exec_observed exists yet in this cycle, state that explicitly rather than "
         "treating prior-cycle output as satisfying this check; "
@@ -128,13 +127,13 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         # A1 consequences: exec_observed verbatim rule
         "A rung is satisfied when and only when a tool-executed event appears in the transcript "
         "whose output is of that rung\u2019s artifact type. "
-        "Every \U0001F534 Execution observed: sentinel at any rung must contain verbatim tool-call output, "
+        "Every \U0001f534 Execution observed: sentinel at any rung must contain verbatim tool-call output, "
         "triple-backtick delimited, complete, nothing omitted \u2014 "
         "prose descriptions, inline summaries, model-generated text that resembles output, "
         "elision markers (\u2026, [truncated], [output continues]), "
         "reformatted text, and paraphrase are prohibited inside the block; "
         "if tool output is too long, the block ends at the last character the tool produced \u2014 no editorial closing; "
-        "the only valid sequence is: tool call \u2192 \U0001F534 Execution observed: \u2192 triple-backtick block \u2014 "
+        "the only valid sequence is: tool call \u2192 \U0001f534 Execution observed: \u2192 triple-backtick block \u2014 "
         "the sentinel may not be written before the tool call exists in the transcript; "
         "a sentinel with prose content or no delimited block is void \u2014 "
         "fix by invoking the tool and re-emitting. "
@@ -183,6 +182,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "emitting criteria for multiple threads at the first criteria rung is a protocol violation; "
         "the manifest declared the thread list; the criteria rung instantiates the first thread\u2019s "
         "gap assertion only. "
+        "The formal notation rung separates behavioral specification from explanation. "
+        "Formal notation (type signatures, interfaces, invariants, pre/postconditions) encodes what must be true \u2014 "
+        "the executable or testable part. Natural language labels, introduces, and explains the specification \u2014 "
+        "prose adds context but does not substitute for formal encoding where precision matters. "
         "Formal notation encodes only the criteria declared at the criteria rung \u2014 "
         "no additional invariants, no anticipated cases; "
         "it must encode all structural constraints the criterion implies \u2014 "
@@ -221,8 +224,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "before writing the test, check for an existing test file covering the same module \u2014 add there if so; "
         "when the artifact is modified, invoke a tool call to read the current test file before emitting carry-forward rows \u2014 "
         "carry-forward format: \u2018Carry-forward: prior failure [verbatim test name as it appeared in "
-        "a \U0001F534 Execution observed sentinel] covers current test [verbatim test name as written in the artifact]\u2019 \u2014 "
-        "each prior-failure name must be quotable verbatim from a \U0001F534 Execution observed sentinel; "
+        "a \U0001f534 Execution observed sentinel] covers current test [verbatim test name as written in the artifact]\u2019 \u2014 "
+        "each prior-failure name must be quotable verbatim from a \U0001f534 Execution observed sentinel; "
         "modification without carry-forward is a traversal violation; "
         "no implementation artifact may appear after modification until carry-forward has been emitted. "
         "before emitting \u2705 Validation artifact V complete, confirm via tool call that the artifact path "
@@ -234,7 +237,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "if the artifact asserts runtime behavior, perturb the implementation to force a red run \u2014 "
         "if it still passes after perturbation, the test is vacuous and must be rewritten; "
         "implementation edits may not begin until a red run exists in the transcript for the current cycle; "
-        "\u2705 Validation artifact V complete may not be emitted unless a \U0001F534 Execution observed: "
+        "\u2705 Validation artifact V complete may not be emitted unless a \U0001f534 Execution observed: "
         "showing the test failing exists in the transcript for the current cycle; "
         "emitting V-complete before seeing a red run is a protocol violation "
         "regardless of whether perturbation was attempted. "
@@ -250,15 +253,15 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "a harness error (import failure, syntax error, missing file) is not a red run \u2014 "
         "the test must have been loadable, its assertions must have run, and they must have failed; "
         "fix the harness error before treating any run as a red witness; "
-        "a green \U0001F534 Execution observed: is only valid as the post-implementation green "
-        "if a prior \U0001F534 Execution observed: for the same artifact appeared after the most recent "
-        "\U0001F7E2 Implementation gate cleared showing the test logic failing. "
+        "a green \U0001f534 Execution observed: is only valid as the post-implementation green "
+        "if a prior \U0001f534 Execution observed: for the same artifact appeared after the most recent "
+        "\U0001f7e2 Implementation gate cleared showing the test logic failing. "
         "At the validation run observation rung, run the validation artifact; "
-        "emit \U0001F534 Execution observed: with verbatim output then \U0001F534 Gap: naming the first failure; "
+        "emit \U0001f534 Execution observed: with verbatim output then \U0001f534 Gap: naming the first failure; "
         "stop there \u2014 do not enumerate multiple failures or plan fixes; "
-        "after emitting \U0001F534 Gap: at the observation rung, the criteria rung label is the only valid next token; "
-        "\U0001F6D1 HARD STOP \u2014 upward return to criteria rung is valid only after a "
-        "\U0001F534 Execution observed: and \U0001F534 Gap: have been emitted "
+        "after emitting \U0001f534 Gap: at the observation rung, the criteria rung label is the only valid next token; "
+        "\U0001f6d1 HARD STOP \u2014 upward return to criteria rung is valid only after a "
+        "\U0001f534 Execution observed: and \U0001f534 Gap: have been emitted "
         "at the validation run observation rung in the current cycle \u2014 "
         "emitting it at any other position is a protocol violation; "
         "HARD STOP may not be emitted at the executable validation rung \u2014 "
@@ -275,7 +278,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "\u2705 Thread N complete may not appear until a tool call exists in the transcript "
         "after the observed running behavior label in the current cycle; "
         "then immediately invoke the implemented artifact via a tool call and emit "
-        "\U0001F534 Execution observed: with its verbatim output \u2014 "
+        "\U0001f534 Execution observed: with its verbatim output \u2014 "
         "the verbatim output must directly demonstrate the specific behavior named in the criterion; "
         "it must be what a non-technical observer of the running system would see \u2014 "
         "not the test suite, not process state unless the criterion is specifically about process state; "
@@ -287,7 +290,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "is acceptable only when no runnable artifact exists; "
         "if the implementation has no directly invocable artifact, invoke any non-test consumer "
         "of the changed artifact that demonstrates the declared behavior; "
-        "a \U0001F534 Execution observed: block that is empty or blank, or contains only static-analysis output "
+        "a \U0001f534 Execution observed: block that is empty or blank, or contains only static-analysis output "
         "(file reads, grep results, directory listings), does not satisfy this gate at any rung \u2014 "
         "the block must contain output produced by running the artifact; "
         "if the declared gap names a real network endpoint, the OBS must include verbatim output showing "
@@ -296,40 +299,40 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "\u2018Invoking [artifact] produced at [rung name] in this thread\u2019 \u2014 "
         "if the rung label cannot be located in the transcript, the tool call is prohibited; "
         "the provenance statement does not replace the tool call \u2014 the tool call must follow it in the same response; "
-        "\u2705 Thread N complete may not be emitted unless a \U0001F534 Execution observed: "
+        "\u2705 Thread N complete may not be emitted unless a \U0001f534 Execution observed: "
         "with non-empty verbatim output appears in the transcript after the observed running behavior label "
-        "in the current cycle \u2014 a provenance statement with no following \U0001F534 Execution observed: "
+        "in the current cycle \u2014 a provenance statement with no following \U0001f534 Execution observed: "
         "is a protocol violation; "
         "implementation edits, new files, and code changes are not permitted at this rung. "
         "\u2705 Thread N complete may not be emitted unless the observed running behavior label "
-        "has been written after the most recent \U0001F7E2 Implementation gate cleared in this thread "
-        "and a \U0001F534 Execution observed: sentinel appears immediately after it that directly demonstrates "
+        "has been written after the most recent \U0001f7e2 Implementation gate cleared in this thread "
+        "and a \U0001f534 Execution observed: sentinel appears immediately after it that directly demonstrates "
         "the criterion \u2014 a test pass is not a demonstration; "
-        "if the \U0001F534 Execution observed: output does not directly demonstrate the criterion, "
-        "emit \U0001F534 Gap: naming what is undemonstrated and apply the upward-return failure-class rules \u2014 "
-        "\u2705 Thread N complete may not be emitted after an OBR \U0001F534 Execution observed: "
+        "if the \U0001f534 Execution observed: output does not directly demonstrate the criterion, "
+        "emit \U0001f534 Gap: naming what is undemonstrated and apply the upward-return failure-class rules \u2014 "
+        "\u2705 Thread N complete may not be emitted after an OBR \U0001f534 Execution observed: "
         "that does not directly demonstrate the criterion; "
-        "if the \U0001F534 Execution observed: at the observed running behavior rung contains "
+        "if the \U0001f534 Execution observed: at the observed running behavior rung contains "
         "test runner output (pass counts, test names, duration summary), "
         "it does not satisfy the OBR gate \u2014 re-invoke the implemented artifact directly "
         "before continuing; \u2705 Thread N complete may not be emitted after an OBR "
-        "\U0001F534 Execution observed: that shows test runner output; "
+        "\U0001f534 Execution observed: that shows test runner output; "
         "no implementation file was created or modified for this thread\u2019s gap in this cycle "
         "means the gap was already closed (return to criteria) or the test is vacuous (rewrite it); "
         "every failing test must be fixed or explicitly acknowledged in the transcript with a written reason \u2014 "
         "dismissing a failing test as unrelated without an explicit written acknowledgment is a protocol violation; "
-        "\u2705 Thread N complete may not be emitted unless a \U0001F534 Execution observed: "
+        "\u2705 Thread N complete may not be emitted unless a \U0001f534 Execution observed: "
         "from a full test suite run exists in the transcript after the most recent OBR tool call in this thread \u2014 "
         "the only valid next action if no such result exists is the tool call that runs the suite; "
         "once \u2705 Thread N complete is emitted no further output in that cycle is valid; "
         "Before writing the criteria, formal notation, executable validation, executable implementation, "
-        "or observed running behavior label, emit \U0001F534 Gap: naming the declared gap \u2014 "
+        "or observed running behavior label, emit \U0001f534 Gap: naming the declared gap \u2014 "
         "what the prior rung\u2019s artifact leaves unresolved; immediately produce the rung artifact \u2014 "
         "only the validation run observation rung stops after naming the gap. "
-        "\U0001F7E2 Implementation gate cleared licenses the first edit \u2014 it does not complete the thread; "
+        "\U0001f7e2 Implementation gate cleared licenses the first edit \u2014 it does not complete the thread; "
         "after emitting it, the executable implementation rung, the observed running behavior rung, "
         "and their required tool-executed events must still fire before \u2705 Thread N complete is valid; "
-        "the next required action after \U0001F7E2 is a tool call that creates or modifies an implementation file; "
+        "the next required action after \U0001f7e2 is a tool call that creates or modifies an implementation file; "
         "\u2705 Thread N complete may not appear until the observed running behavior rung has fired for this thread. "
         "Each sentence in the prose containing a behavioral predicate \u2014 any action verb attributing "
         "behavior to the system \u2014 must be followed inline by a bracketed thread marker: [T: gap-name]; "
@@ -340,7 +343,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "The prose rung must be re-emitted at the start of every cycle \u2014 the first cycle, "
         "any subsequent cycle, and any cycle following an upward return; "
         "the criterion must be immediately derivable from the re-emitted prose. "
-        "\U0001F7E2 Implementation gate cleared requires a \U0001F534 Execution observed: "
+        "\U0001f7e2 Implementation gate cleared requires a \U0001f534 Execution observed: "
         "from the current cycle\u2019s validation run observation rung \u2014 not from a prior cycle \u2014 "
         "to exist in output; "
         "the VRO rung label must appear in the transcript for the current cycle \u2014 "
@@ -364,7 +367,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "completeness governs rung depth, not rung existence; "
         "each rung may not be skipped or combined with another, "
         "including the observed running behavior rung \u2014 it is required in every cycle; "
-        "the only protocol-defined stop is at the validation run observation rung after emitting \U0001F534 Gap:; "
+        "the only protocol-defined stop is at the validation run observation rung after emitting \U0001f534 Gap:; "
         "all other rung transitions are continuous within the same response. "
         "When beginning mid-ladder, locate the highest already-instantiated rung, update it, then descend; "
         "every descent through executable implementation requires executable validation "
@@ -378,7 +381,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "After every upward return, a new \u2705 Validation artifact V complete must be emitted "
         "for the current cycle\u2019s gap \u2014 an artifact written in a prior cycle does not satisfy this gate. "
         "Before producing the final report, invoke the delivered system end-to-end via a tool call "
-        "and emit \U0001F534 Execution observed: showing the primary behavioral intent is satisfied \u2014 "
+        "and emit \U0001f534 Execution observed: showing the primary behavioral intent is satisfied \u2014 "
         "this is the post-delivery integration observation; "
         "if it fails, open a new gap cycle before producing the final report. "
         "After emitting \u2705 Manifest exhausted, produce a final report containing "

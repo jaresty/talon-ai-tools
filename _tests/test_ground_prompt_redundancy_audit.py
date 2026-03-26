@@ -37,14 +37,20 @@ class TestEmphasisOnlyRepetitionsRemoved(unittest.TestCase):
     def test_candidate_a_not_duplicated(self):
         prose = GROUND_PARTS_MINIMAL["core"]
         count = prose.count(CANDIDATE_A)
-        self.assertLessEqual(count, 1,
-            f"Candidate A appears {count} times; emphasis-only restatement should be reduced to \u22641")
+        self.assertLessEqual(
+            count,
+            1,
+            f"Candidate A appears {count} times; emphasis-only restatement should be reduced to \u22641",
+        )
 
     def test_candidate_c_not_duplicated(self):
         prose = GROUND_PARTS_MINIMAL["core"]
         count = prose.count(CANDIDATE_C)
-        self.assertLessEqual(count, 1,
-            f"Candidate C appears {count} times; emphasis-only restatement should be reduced to \u22641")
+        self.assertLessEqual(
+            count,
+            1,
+            f"Candidate C appears {count} times; emphasis-only restatement should be reduced to \u22641",
+        )
 
 
 class TestOutputIntegrityAfterAudit(unittest.TestCase):
@@ -64,9 +70,12 @@ class TestTotalCharCountDoesNotGrow(unittest.TestCase):
     def test_total_ground_parts_minimal_chars_does_not_exceed_baseline(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         # ADR-0178: baseline after D1-D7 applied to minimal
-        BASELINE = 22300  # OBR partial-demonstration gate adds ~255 chars
-        self.assertLessEqual(current, BASELINE,
-            f"GROUND_PARTS_MINIMAL core chars {current} exceeds baseline {BASELINE}")
+        BASELINE = 22700  # ADR-0182 N5-N7 drift fixes + formal notation separation clarification
+        self.assertLessEqual(
+            current,
+            BASELINE,
+            f"GROUND_PARTS_MINIMAL core chars {current} exceeds baseline {BASELINE}",
+        )
 
 
 if __name__ == "__main__":

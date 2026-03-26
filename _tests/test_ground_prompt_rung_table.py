@@ -32,32 +32,40 @@ REQUIRED_RUNG_KEYS = {"name", "artifact", "gate", "voids_if"}
 
 # Baseline character count of rung_sequence_code before refactor (measured: 8679 chars).
 # Target: numbered list compressed to inline arrow sequence; reduction modest (~30+ chars).
-BASELINE_RUNG_SEQUENCE_CODE_CHARS = 22500  # ADR-0179: ~1117; ADR-0180: ~500; ADR-0181: ~900; ADR-0182: ~770
+BASELINE_RUNG_SEQUENCE_CODE_CHARS = 22900  # ADR-0179: ~1117; ADR-0180: ~500; ADR-0181: ~900; ADR-0182: ~770; formal notation separation
 
 
 class TestRungSequenceExists(unittest.TestCase):
     def test_rung_sequence_dict_exists(self):
         from lib.groundPrompt import RUNG_SEQUENCE
+
         self.assertIsInstance(RUNG_SEQUENCE, list)
 
     def test_rung_sequence_has_seven_entries(self):
         from lib.groundPrompt import RUNG_SEQUENCE
+
         self.assertEqual(len(RUNG_SEQUENCE), 7)
 
     def test_each_entry_has_required_keys(self):
         from lib.groundPrompt import RUNG_SEQUENCE
+
         for entry in RUNG_SEQUENCE:
-            self.assertEqual(set(entry.keys()), REQUIRED_RUNG_KEYS,
-                f"Entry {entry.get('name', '?')} missing required keys")
+            self.assertEqual(
+                set(entry.keys()),
+                REQUIRED_RUNG_KEYS,
+                f"Entry {entry.get('name', '?')} missing required keys",
+            )
 
     def test_all_canonical_rung_names_present(self):
         from lib.groundPrompt import RUNG_SEQUENCE
+
         names = [entry["name"] for entry in RUNG_SEQUENCE]
         for canonical in CANONICAL_RUNG_NAMES:
             self.assertIn(canonical, names, f"Canonical rung name missing: {canonical}")
 
     def test_rung_order_matches_canonical(self):
         from lib.groundPrompt import RUNG_SEQUENCE
+
         names = [entry["name"] for entry in RUNG_SEQUENCE]
         self.assertEqual(names, CANONICAL_RUNG_NAMES)
 
@@ -74,8 +82,11 @@ class TestBuildGroundPromptContainsRungTable(unittest.TestCase):
 class TestRungSequenceCodeShorter(unittest.TestCase):
     def test_rung_sequence_code_shorter_than_baseline(self):
         actual = len(GROUND_PARTS_MINIMAL["core"])
-        self.assertLess(actual, BASELINE_RUNG_SEQUENCE_CODE_CHARS,
-            f"GROUND_PARTS_MINIMAL core is {actual} chars; expected < {BASELINE_RUNG_SEQUENCE_CODE_CHARS}")
+        self.assertLess(
+            actual,
+            BASELINE_RUNG_SEQUENCE_CODE_CHARS,
+            f"GROUND_PARTS_MINIMAL core is {actual} chars; expected < {BASELINE_RUNG_SEQUENCE_CODE_CHARS}",
+        )
 
 
 if __name__ == "__main__":

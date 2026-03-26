@@ -13,11 +13,12 @@ from lib.groundPrompt import build_ground_prompt
 
 ORIGINAL_CHARS = 14036
 # C22–C24 add ~820 chars; C25–C28 add ~883 chars; ADR-0178 D1-D7 add ~5191 chars (drift closures).
-MAX_CHARS = ORIGINAL_CHARS + 8300  # ADR-0179: E1-E6 add ~1117; ADR-0180: C1-C5 add ~500; ADR-0181: N1-N4 add ~900; ADR-0182: N5-N7 add ~770
+MAX_CHARS = (
+    ORIGINAL_CHARS + 8700
+)  # ADR-0179: E1-E6 add ~1117; ADR-0180: C1-C5 add ~500; ADR-0181: N1-N4 add ~900; ADR-0182: N5-N7 add ~770; formal notation separation
 
 
 class TestGroundRewrite(unittest.TestCase):
-
     def setUp(self):
         self.prompt = build_ground_prompt()
 
@@ -56,25 +57,29 @@ class TestGroundRewrite(unittest.TestCase):
             "Restatement of rung-type constraint must be removed; axiom-level statement covers this",
         )
 
-
     def test_ev_section_is_compact_gate_list(self):
         """EV section must be ≤ 2600 chars (raised from 1800 after ADR-0178 D6 carry-forward addition)."""
         import sys
-        sys.path.insert(0, '.')
+
+        sys.path.insert(0, ".")
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
         ev_start = core.find("Only validation artifacts may be produced")
-        ev_end = core.find("✅ Validation artifact V complete must be emitted at the executable validation rung")
+        ev_end = core.find(
+            "✅ Validation artifact V complete must be emitted at the executable validation rung"
+        )
         ev_section = core[ev_start:ev_end]
         self.assertLessEqual(
-            len(ev_section), 2900,
+            len(ev_section),
+            2900,
             f"EV rung section is {len(ev_section)} chars; must be ≤ 2900 after ADR-0179 E1 carry-forward read gate",
         )
-
 
     def test_obr_realism_hierarchy(self):
         """OBR rung must name dev server / CLI as preferred over in-process rendering."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
         self.assertIn(
             "dev server",
@@ -95,54 +100,60 @@ class TestGroundRewrite(unittest.TestCase):
     def test_obs_section_is_compact(self):
         """OBS rung section must be ≤ 2200 chars (raised from 1800 after ADR-0178 D7 provenance addition)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
         obs_start = core.find("Upon writing the observed running behavior label")
         obs_end = core.find("✅ Thread N complete may not be emitted unless")
         obs_section = core[obs_start:obs_end]
         self.assertLessEqual(
-            len(obs_section), 2200,
+            len(obs_section),
+            2200,
             f"OBS rung section is {len(obs_section)} chars; must be ≤ 2200 after ADR-0178 D7 provenance addition",
         )
-
 
     def test_vro_section_is_compact(self):
         """VRO section must be ≤ 810 chars (raised from 650 after C11 harness-error gate addition ~+155)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
-        vro_start = core.find("Before writing the validation run observation rung label")
+        vro_start = core.find(
+            "Before writing the validation run observation rung label"
+        )
         vro_end = core.find("At the validation run observation rung, run")
         vro_section = core[vro_start:vro_end]
         self.assertLessEqual(
-            len(vro_section), 810,
+            len(vro_section),
+            810,
             f"VRO section is {len(vro_section)} chars; must be ≤ 810 after C11 harness-error gate addition",
         )
-
 
     def test_criteria_section_is_compact(self):
         """Criteria rung section must be ≤ 2400 chars (raised from 1800 after ADR-0178 D3 falsifying-condition + D5 thread-markers)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
         crit_start = core.find("From the criteria rung onward")
         crit_end = core.find("Formal notation encodes only")
         crit_section = core[crit_start:crit_end]
         self.assertLessEqual(
-            len(crit_section), 2700,
+            len(crit_section),
+            2700,
             f"Criteria section is {len(crit_section)} chars; must be ≤ 2700 after ADR-0179 E4/E5 additions",
         )
-
 
     def test_reconciliation_gate_is_compact(self):
         """Reconciliation gate section must be ≤ 400 chars (ADR-0177 target ~350)."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
         rec_start = core.find("Reconciliation gate:")
         rec_end = core.find("Each completion sentinel is valid")
         rec_section = core[rec_start:rec_end]
         self.assertLessEqual(
-            len(rec_section), 400,
+            len(rec_section),
+            400,
             f"Reconciliation gate is {len(rec_section)} chars; must be ≤ 400 after compact rewrite",
         )
-
 
     # F1: Thread N complete cycle anchor
     def test_f1_thread_complete_has_cycle_anchor(self):
@@ -153,13 +164,15 @@ class TestGroundRewrite(unittest.TestCase):
             "F1: Thread N complete gate must anchor OBS cycle to 'after the most recent 🟢 Implementation gate cleared in this thread'",
         )
 
-
     # F2: Red-witness cycle anchor
     def test_f2_red_witness_has_cycle_anchor(self):
         """Red-witness gate must anchor prior red to 'after the most recent 🟢 Implementation gate cleared'."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
-        vro_start = core.find("Before writing the validation run observation rung label")
+        vro_start = core.find(
+            "Before writing the validation run observation rung label"
+        )
         vro_end = core.find("At the validation run observation rung, run")
         vro_section = core[vro_start:vro_end]
         self.assertIn(
@@ -167,7 +180,6 @@ class TestGroundRewrite(unittest.TestCase):
             vro_section,
             "F2: red-witness gate must anchor prior red run to 'after the most recent 🟢 Implementation gate cleared for this thread'",
         )
-
 
     # F3: Behavioral-vs-structural criterion gate
     def test_f3_structural_criterion_gate_present(self):
@@ -188,11 +200,11 @@ class TestGroundRewrite(unittest.TestCase):
             "F3: structural-vs-behavioral gate must name 'column header' as the disallowed structural-only form",
         )
 
-
     # F4: OBS artifact type clarification for UI
     def test_f4_obs_ui_artifact_type_named(self):
         """OBS rung must name browser-visible text as the required form for UI components."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
         obs_start = core.find("Upon writing the observed running behavior label")
         obs_end = core.find("✅ Thread N complete may not be emitted unless")
@@ -203,7 +215,6 @@ class TestGroundRewrite(unittest.TestCase):
             "F4: OBS rung must name browser-visible output as the required form for UI components, excluding test-runner DOM queries",
         )
 
-
     # F5: Per-criterion OBS demonstration — test pass excluded
     def test_f5_thread_complete_demonstration_excludes_test_pass(self):
         """Thread N complete gate must state that a test pass does not constitute demonstration."""
@@ -213,7 +224,6 @@ class TestGroundRewrite(unittest.TestCase):
             prompt,
             "F5: Thread N complete gate must state that a test pass does not constitute OBS demonstration of a criterion",
         )
-
 
     # Axiom collapse: artifact type is operative gate, "matching its definition" removed
     def test_axiom_uses_artifact_type_not_matching_definition(self):
@@ -228,6 +238,7 @@ class TestGroundRewrite(unittest.TestCase):
     def test_axiom_artifact_type_present_in_opening(self):
         """Opening axiom must make artifact type the operative gate condition."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
+
         core = GROUND_PARTS_MINIMAL["core"]
         axiom_end = core.index("inference, prediction")
         axiom = core[:axiom_end]

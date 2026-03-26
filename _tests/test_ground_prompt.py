@@ -1,12 +1,13 @@
 """Ground prompt behavioral tests (ADR-0178: GROUND_PARTS removed; minimal is the only version)."""
+
 import pytest
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 # All section aliases now return the full prompt — behavioral tests below are stable.
-EP  = lambda: build_ground_prompt()   # Rule 0, primitives, scope discipline
-SR  = lambda: build_ground_prompt()   # Gate mechanics, sentinels, carry-forward
-RSC = lambda: build_ground_prompt()   # R4 sequence, rung-level rules
-RC  = lambda: build_ground_prompt()   # Reconciliation and completion
+EP = lambda: build_ground_prompt()  # Rule 0, primitives, scope discipline
+SR = lambda: build_ground_prompt()  # Gate mechanics, sentinels, carry-forward
+RSC = lambda: build_ground_prompt()  # R4 sequence, rung-level rules
+RC = lambda: build_ground_prompt()  # Reconciliation and completion
 
 
 def test_build_ground_prompt_is_nonempty():
@@ -16,7 +17,9 @@ def test_build_ground_prompt_is_nonempty():
 
 def test_build_ground_prompt_starts_with_response():
     result = build_ground_prompt()
-    assert result.startswith("The response "), "build_ground_prompt() must start with 'The response '"
+    assert result.startswith("The response "), (
+        "build_ground_prompt() must start with 'The response '"
+    )
 
 
 def test_derivation_structure_content():
@@ -28,7 +31,9 @@ def test_observed_running_behavior_requires_traceability():
     assert "traceable" in rsc or "traceability" in rsc or "behavioral gap" in rsc, (
         "rung_sequence_code must require observed running behavior to be traceable to the declared gap"
     )
-    assert "server response" in rsc or "HTTP" in rsc or "URL" in rsc or "rendering" in rsc, (
+    assert (
+        "server response" in rsc or "HTTP" in rsc or "URL" in rsc or "rendering" in rsc
+    ), (
         "rung_sequence_code must name domain-specific anti-patterns for observed running behavior"
     )
 
@@ -86,10 +91,16 @@ def test_sentinel_causal_chain():
 
 def test_v_complete_requires_green_gate_before_implementation():
     sr = SR()
-    assert "both" in sr or ("then" in sr.lower() and "Implementation gate cleared" in sr), (
+    assert "both" in sr or (
+        "then" in sr.lower() and "Implementation gate cleared" in sr
+    ), (
         "sentinel_rules must state both V-complete and 🟢 are required in order before implementation"
     )
-    assert "does not open" in sr or "insufficient" in sr or ("alone" in sr and "gate" in sr), (
+    assert (
+        "does not open" in sr
+        or "insufficient" in sr
+        or ("alone" in sr and "gate" in sr)
+    ), (
         "sentinel_rules must state V-complete alone does not open the implementation gate"
     )
 
@@ -109,10 +120,16 @@ def test_r2_audit_separate_section():
 
 def test_execution_observed_block_delimiter():
     sr = SR()
-    assert "complete" in sr and ("block" in sr or "```" in sr or "triple" in sr or "delimit" in sr), (
+    assert "complete" in sr and (
+        "block" in sr or "```" in sr or "triple" in sr or "delimit" in sr
+    ), (
         "sentinel_rules must require 🔴 Execution observed to contain a complete delimited block"
     )
-    assert "nothing omitted" in sr or "complete output" in sr or "complete tool output" in sr, (
+    assert (
+        "nothing omitted" in sr
+        or "complete output" in sr
+        or "complete tool output" in sr
+    ), (
         "sentinel_rules must state the block contains the complete tool output — nothing omitted"
     )
 
@@ -140,7 +157,7 @@ def test_retroactive_sentinel_does_not_open_gate():
         "sentinel_rules must state that a retroactive sentinel leaves the gate closed and the tool must be re-run"
     )
     retro_idx = sr.find("retroact") if "retroact" in sr else sr.find("re-run")
-    context = sr[max(0, retro_idx - 50):retro_idx + 350]
+    context = sr[max(0, retro_idx - 50) : retro_idx + 350]
     assert "gate" in context or "re-run" in context or "closed" in context, (
         "sentinel_rules must state the gate consequence of retroactive sentinel — gate does not open"
     )
@@ -149,8 +166,12 @@ def test_retroactive_sentinel_does_not_open_gate():
 def test_r3_positive_definition_for_code_contexts():
     rsc = RSC()
     assert (
-        "rendered" in rsc or "DOM" in rsc or "api response" in rsc.lower()
-        or "response body" in rsc or "HTML fragment" in rsc or "render utility" in rsc
+        "rendered" in rsc
+        or "DOM" in rsc
+        or "api response" in rsc.lower()
+        or "response body" in rsc
+        or "HTML fragment" in rsc
+        or "render utility" in rsc
     ), (
         "rung_sequence_code must give a positive definition of what satisfies R3 in code contexts"
     )
@@ -161,25 +182,42 @@ def test_r3_positive_definition_for_code_contexts():
 
 def test_carry_forward_is_a_gate():
     sr = SR()
-    assert "no implementation" in sr and ("carry-forward" in sr or "carry forward" in sr), (
+    assert "no implementation" in sr and (
+        "carry-forward" in sr or "carry forward" in sr
+    ), (
         "sentinel_rules must state that no implementation artifact may appear until carry-forward is emitted"
     )
     # Use the "modification without carry-forward" occurrence (gate rule), not the E1 read-gate occurrence
     cf_idx = sr.find("modification without carry-forward")
     if cf_idx < 0:
-        cf_idx = sr.find("carry-forward") if "carry-forward" in sr else sr.find("carry forward")
-    cf_context = sr[max(0, cf_idx - 200):cf_idx + 600]
-    assert "gate" in cf_context or "violation" in cf_context or "blocked" in cf_context or "no implementation" in cf_context, (
-        "sentinel_rules must frame carry-forward as a gate/violation"
-    )
+        cf_idx = (
+            sr.find("carry-forward")
+            if "carry-forward" in sr
+            else sr.find("carry forward")
+        )
+    cf_context = sr[max(0, cf_idx - 200) : cf_idx + 600]
+    assert (
+        "gate" in cf_context
+        or "violation" in cf_context
+        or "blocked" in cf_context
+        or "no implementation" in cf_context
+    ), "sentinel_rules must frame carry-forward as a gate/violation"
 
 
 def test_composed_prose_body_always_invalid():
     sr = SR()
-    assert "characterization" in sr or "description of tool output" in sr or "prose description" in sr, (
+    assert (
+        "characterization" in sr
+        or "description of tool output" in sr
+        or "prose description" in sr
+    ), (
         "sentinel_rules must state that a prose description of tool output is always composed content"
     )
-    assert "even if accurate" in sr or "regardless of whether" in sr or "even accurate" in sr, (
+    assert (
+        "even if accurate" in sr
+        or "regardless of whether" in sr
+        or "even accurate" in sr
+    ), (
         "sentinel_rules must state the rule is not conditioned on accuracy of the description"
     )
 
@@ -188,20 +226,32 @@ def test_pre_action_rung_self_check():
     # ADR-0181: rung-entry gate is the pre-action check. It says "before producing content at any rung"
     # and requires stating rung name, gap, artifact type, and exec_observed check.
     sr = SR()
-    assert "before producing" in sr or "before any artifact" in sr or "before each artifact" in sr, (
+    assert (
+        "before producing" in sr
+        or "before any artifact" in sr
+        or "before each artifact" in sr
+    ), (
         "sentinel_rules must define a pre-action self-check that fires before producing any artifact"
     )
-    pre_idx = sr.find("before producing") if "before producing" in sr else sr.find("before any artifact")
+    pre_idx = (
+        sr.find("before producing")
+        if "before producing" in sr
+        else sr.find("before any artifact")
+    )
     assert pre_idx >= 0
-    context = sr[max(0, pre_idx - 50):pre_idx + 500]
+    context = sr[max(0, pre_idx - 50) : pre_idx + 500]
     assert "rung" in context, (
         "sentinel_rules pre-action check must require identifying the current rung"
     )
     # "any rung" covers all rungs including prose, criteria, and non-executable rungs
-    assert ("any rung" in context or "prose" in context or "criteria" in context
-            or "non-executable" in context or "all artifact" in context or "every artifact" in context), (
-        "sentinel_rules pre-action check must explicitly apply to non-executable rungs"
-    )
+    assert (
+        "any rung" in context
+        or "prose" in context
+        or "criteria" in context
+        or "non-executable" in context
+        or "all artifact" in context
+        or "every artifact" in context
+    ), "sentinel_rules pre-action check must explicitly apply to non-executable rungs"
 
 
 def test_ei_rung_vacuous_green_rearms_during_cycle():
@@ -216,7 +266,12 @@ def test_ei_rung_vacuous_green_rearms_during_cycle():
 
 def test_test_modification_requires_meta_test_rule():
     sr = SR()
-    assert "meta-test" in sr or "meta_test" in sr or "test-under-modification" in sr or "test under modification" in sr, (
+    assert (
+        "meta-test" in sr
+        or "meta_test" in sr
+        or "test-under-modification" in sr
+        or "test under modification" in sr
+    ), (
         "Ground prompt must provide a rule for when the declared intent is to modify a test artifact, "
         "naming the test-under-modification as the implementation artifact and requiring a meta-test "
         "as the validation artifact"
@@ -225,7 +280,9 @@ def test_test_modification_requires_meta_test_rule():
 
 def test_formal_notation_verbatim_restatement_permitted():
     sr = SR()
-    assert "verbatim" in sr and ("no elaboration" in sr or "restate" in sr or "restatement" in sr), (
+    assert "verbatim" in sr and (
+        "no elaboration" in sr or "restate" in sr or "restatement" in sr
+    ), (
         "Ground prompt must permit verbatim restatement of the criterion as the formal notation artifact "
         "when the criterion is already a complete behavioral specification"
     )
@@ -233,7 +290,12 @@ def test_formal_notation_verbatim_restatement_permitted():
 
 def test_continuous_rung_traversal_required():
     sr = SR()
-    assert "without pausing" in sr or "continuously" in sr or "do not pause" in sr or "without stopping" in sr, (
+    assert (
+        "without pausing" in sr
+        or "continuously" in sr
+        or "do not pause" in sr
+        or "without stopping" in sr
+    ), (
         "Ground prompt must state that rung traversal is continuous and the model must not pause "
         "for user confirmation between rungs"
     )
@@ -243,9 +305,7 @@ def test_formal_notation_prohibits_implementation_shaped_content():
     sr = SR()
     assert (
         "function bod" in sr or "function body" in sr or "function bodies" in sr
-    ) and (
-        "pseudocode" in sr
-    ), (
+    ) and ("pseudocode" in sr), (
         "Ground prompt must explicitly prohibit complete function bodies at the formal notation rung "
         "and must clarify that labeling content as pseudocode does not exempt it from the prohibition"
     )
@@ -272,9 +332,11 @@ def test_sequential_thread_gate_covers_all_rungs():
     # ADR-0181: "at most one thread" clause removed; rung-entry gate covers all rungs by design.
     sr = SR()
     # Gate says "before producing content at any rung" — covers all rungs, not just prose.
-    assert "Rung-entry gate" in sr, "rung-entry gate must be present to enforce all-rung thread serialization"
+    assert "Rung-entry gate" in sr, (
+        "rung-entry gate must be present to enforce all-rung thread serialization"
+    )
     gate_idx = sr.find("Rung-entry gate")
-    context = sr[gate_idx:gate_idx + 300]
+    context = sr[gate_idx : gate_idx + 300]
     assert "any rung" in context, (
         "Rung-entry gate must apply to 'any rung' — not limited to the prose rung"
     )
@@ -282,7 +344,9 @@ def test_sequential_thread_gate_covers_all_rungs():
 
 def test_immediate_descent_after_criteria():
     sr = SR()
-    assert "enumerating remaining criteria" in sr or "planning future gap cycles" in sr, (
+    assert (
+        "enumerating remaining criteria" in sr or "planning future gap cycles" in sr
+    ), (
         "Ground prompt must state that after emitting the criteria artifact the model must immediately "
         "proceed to formal notation without enumerating remaining criteria or planning future cycles"
     )
@@ -294,9 +358,7 @@ def test_manifest_entries_are_gap_labels_only():
     assert manifest_idx >= 0, "manifest rule must be present"
     # Search in a window around the manifest rule
     window = sr[max(0, manifest_idx - 500) : manifest_idx + 500]
-    assert (
-        "label" in window or "noun phrase" in window or "short" in window
-    ) and (
+    assert ("label" in window or "noun phrase" in window or "short" in window) and (
         "assertion" in window or "verb" in window or "first time" in window
     ), (
         "Ground prompt must state near the manifest rule that entries are gap labels only "
@@ -307,11 +369,24 @@ def test_manifest_entries_are_gap_labels_only():
 def test_criterion_emergence_gated_on_thread_complete():
     sr = SR()
     assert (
-        "next criterion" in sr and "thread" in sr[sr.find("next criterion") - 200 : sr.find("next criterion") + 200].lower()
-    ) or (
-        "criterion may not be named" in sr
-    ) or (
-        "subsequent criteria emerge only after" in sr and "complete" in sr[sr.find("subsequent criteria emerge only after") : sr.find("subsequent criteria emerge only after") + 100]
+        (
+            "next criterion" in sr
+            and "thread"
+            in sr[
+                sr.find("next criterion") - 200 : sr.find("next criterion") + 200
+            ].lower()
+        )
+        or ("criterion may not be named" in sr)
+        or (
+            "subsequent criteria emerge only after" in sr
+            and "complete"
+            in sr[
+                sr.find("subsequent criteria emerge only after") : sr.find(
+                    "subsequent criteria emerge only after"
+                )
+                + 100
+            ]
+        )
     ), (
         "Ground prompt must state that the next criterion may not be named until "
         "Thread N complete has been emitted for the prior criterion's cycle"
@@ -324,7 +399,9 @@ def test_formal_notation_must_encode_all_constraints():
     sr = SR()
     fn_idx = sr.find("Formal notation encodes only the criteria")
     ev_idx = sr.find("each test function asserts exactly one behavioral property")
-    assert fn_idx >= 0 and ev_idx > fn_idx, "formal notation section must be present before EV rung"
+    assert fn_idx >= 0 and ev_idx > fn_idx, (
+        "formal notation section must be present before EV rung"
+    )
     fn_section = sr[fn_idx:ev_idx]
     assert (
         "every structural constraint" in fn_section
@@ -343,8 +420,12 @@ def test_thread_scanner_scoped_to_practitioner_prose():
     # not just "the prose" (which is ambiguous and could include the ground prompt itself).
     scan_idx = sr.find("scan every sentence in the prose")
     assert scan_idx >= 0, "manifest scanning sentence must be present"
-    context = sr[scan_idx:scan_idx + 300]
-    assert "prose rung" in context or "prose rung artifact" in context or "practitioner" in context, (
+    context = sr[scan_idx : scan_idx + 300]
+    assert (
+        "prose rung" in context
+        or "prose rung artifact" in context
+        or "practitioner" in context
+    ), (
         "The manifest-scanning sentence must scope 'the prose' to the practitioner's prose rung artifact, "
         "not to the ground prompt's rule text or other transcript content"
     )
@@ -354,9 +435,41 @@ def test_formal_notation_rung_permits_prose_labels():
     prompt = build_ground_prompt()
     assert (
         "Natural language may appear as section labels or introductions" in prompt
-        or "natural language" in prompt.lower() and "label" in prompt.lower()
+        or "natural language" in prompt.lower()
+        and "label" in prompt.lower()
     ), (
         "Formal notation rung must explicitly permit natural language as section labels or introductions"
+    )
+
+
+def test_formal_notation_separates_behavioral_from_explanation():
+    prompt = build_ground_prompt()
+    assert (
+        "separates behavioral specification from explanation" in prompt.lower()
+        or "separate" in prompt.lower()
+        and "behavioral" in prompt.lower()
+        and "explanation" in prompt.lower()
+    ), (
+        "Formal notation rung must explicitly state it separates behavioral specification from explanation"
+    )
+    assert "encodes what must be true" in prompt.lower(), (
+        "Formal notation rung must state that formal notation encodes what must be true"
+    )
+    assert "executable or testable" in prompt.lower(), (
+        "Formal notation rung must describe the encoded content as executable/testable"
+    )
+    assert (
+        "explains the specification" in prompt.lower()
+        or "prose adds context" in prompt.lower()
+    ), (
+        "Formal notation rung must describe prose as explaining/adding context, not as the deliverable"
+    )
+    assert (
+        "explains" in prompt.lower()
+        or "context" in prompt.lower()
+        or "introduces" in prompt.lower()
+    ) and ("prose" in prompt.lower() or "natural language" in prompt.lower()), (
+        "Formal notation rung must state that prose explains or provides context, not the deliverable itself"
     )
 
 

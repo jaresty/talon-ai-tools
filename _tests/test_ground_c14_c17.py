@@ -93,6 +93,24 @@ class TestC17ImplicitConjunctionBan(unittest.TestCase):
             "Implicit conjunction clause must also prescribe 'split before continuing'",
         )
 
+    def test_obr_tool_call_is_only_valid_next_action(self):
+        # Regression: OBR has a completion gate (exec_observed must precede Thread N complete)
+        # but no sequencing gate — the model can skip the tool call and emit Thread N complete by inference.
+        # This test checks that the prompt names a tool call as the only valid next action after criterion re-emission.
+        self.assertIn(
+            "the tool call is the only valid next action after criterion re-emission",
+            self.core,
+            "OBR sequencing gate: tool call must be named as the only valid next action after criterion re-emission",
+        )
+
+    def test_obr_thread_complete_requires_tool_call_in_transcript(self):
+        # The completion gate must reference a tool call in the transcript, not just an exec_observed sentinel.
+        self.assertIn(
+            "Thread N complete may not appear until a tool call exists in the transcript",
+            self.core,
+            "OBR gate must block Thread N complete until a tool call exists after the OBR label in the current cycle",
+        )
+
     def test_obr_test_runner_output_blocks_thread_complete(self):
         # Regression: ADR-0181 removed the OBR test-runner-output sentinel block.
         # Without it the model can satisfy OBR with test runner output and emit Thread N complete.

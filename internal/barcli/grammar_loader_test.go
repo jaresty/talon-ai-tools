@@ -510,8 +510,8 @@ func TestGroundExecutableValidationNoImplementation(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "no other content is permitted before") {
-		t.Error("ground must state that implementation code is not permitted at the executable validation rung")
+	if !strings.Contains(groundDesc, "Rung-entry gate") {
+		t.Error("ground must contain rung-entry gate (ADR-0181) — gate enforces type discipline at every rung including executable validation")
 	}
 }
 

@@ -121,5 +121,21 @@ class TestC17ImplicitConjunctionBan(unittest.TestCase):
         )
 
 
+    def test_obr_partial_demonstration_requires_gap_and_return(self):
+        # If OBR exec_observed does not directly demonstrate the criterion, the model must
+        # emit Gap: naming what is undemonstrated and return to the implementation rung.
+        # Without this gate the model can rationalize partial evidence as sufficient.
+        self.assertIn(
+            "does not directly demonstrate the criterion",
+            self.core,
+            "OBR partial-demonstration gate: prompt must name the failure path when exec_observed is insufficient",
+        )
+        self.assertIn(
+            "return to the executable implementation rung",
+            self.core,
+            "OBR partial-demonstration gate: failure path must return to executable implementation, not loop at OBR",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

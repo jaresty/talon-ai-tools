@@ -505,6 +505,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting "
         "perspective.",
+        "lever": "The response focuses on intervention points—places in the system where applied force shifts equilibrium; identifying feedback loops, constraints, delays, rules, or parameters "
+        "whose change propagates to alter which stable states the system settles into.",
         "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical "
         "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
@@ -721,6 +723,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "dam": "Containment boundaries and limits",
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
+        "lever": "Intervention points that shift equilibrium",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
         "stable": "Stability and persistence of states",
@@ -972,6 +975,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "dam": "圏",
         "fail": "敗",
         "good": "良",
+        "lever": "梃",
         "mean": "意",
         "motifs": "紋",
         "stable": "安",
@@ -1316,6 +1320,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "dam": "Containment and boundaries",
         "fail": "Failure modes",
         "good": "Quality/criteria",
+        "lever": "Intervention/leverage points",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
         "stable": "Invariants/stable states",
@@ -5790,6 +5795,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what does success look like",
             ],
         },
+        "lever": {
+            "distinctions": [
+                {
+                    "note": "lever = where to intervene to change what persists; stable = map of what currently persists (often paired)",
+                    "token": "stable",
+                },
+                {
+                    "note": "lever = structural intervention points in the system; agent = who has authority to act",
+                    "token": "agent",
+                },
+                {
+                    "note": "lever = identifies where force produces change; control (method) = separates what is within agency from what is not",
+                    "token": "control",
+                },
+            ],
+            "heuristics": [
+                "leverage point",
+                "where to intervene",
+                "how to change the system",
+                "shift the equilibrium",
+                "break the feedback loop",
+                "change the stable state",
+                "intervention point",
+                "where to apply force",
+                "high-leverage",
+                "what to change",
+            ],
+        },
         "mean": {
             "distinctions": [
                 {
@@ -5837,6 +5870,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "stable = descriptive (what already persists or is invariant); storage = prescriptive (what must be made durable)",
                     "token": "storage",
+                },
+                {
+                    "note": "stable = map the current attractor landscape; lever = find where to push to shift it (often paired)",
+                    "token": "lever",
                 },
             ],
             "heuristics": [

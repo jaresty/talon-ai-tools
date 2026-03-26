@@ -254,7 +254,7 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
 
 
 class ScopeAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-6: scope axis has structured metadata for all 15 tokens (storage added)."""
+    """ADR-0155 T-6: scope axis has structured metadata for all 16 tokens (lever added)."""
 
     AXIS = "scope"
     EXPECTED_TOKENS = {
@@ -269,6 +269,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         "motifs",
         "storage",
         "stable",
+        "lever",
         "struct",
         "thing",
         "time",

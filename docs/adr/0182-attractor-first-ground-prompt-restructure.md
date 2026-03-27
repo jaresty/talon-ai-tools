@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -69,3 +69,47 @@ Paragraphs that close escape routes not derivable from P1–P3 are retained.
 - Run `make axis-regenerate-apply` and `cp build/prompt-grammar.json web/static/prompt-grammar.json` after editing
 - Run ADR-0113 loop (minimum 5 tasks) to validate compliance before closing this ADR
 - Work log should record which paragraphs were removed and which principle makes each removal sound
+
+## Work Log
+
+### 2026-03-27 — Implementation complete (1617 tests pass)
+
+Restructured `GROUND_PARTS_MINIMAL["core"]` in `lib/groundPrompt.py`:
+
+**Shape after restructure:**
+1. Axioms (A1–A3, R2) — unchanged
+2. P1/P2/P3 named principles — new, placed immediately after axioms
+3. `_rung_table()` — new function generating compact 7-row table (name | artifact | gate | voids_if)
+4. Protocol mechanics — cycle isolation, failure classes, thread counting, sentinel catalog
+5. Rung-entry gate — moved from position 2 to position 5 (after rung table)
+6. Rung names sentence + sentinel block
+
+**Paragraphs removed as P1/P2/P3 corollaries:**
+- "A rung is satisfied when and only when a tool-executed event..." → P1 states this precisely
+- "One edit per re-run cycle" → P3 corollary
+- "Formal notation encodes only the criteria declared — no additional invariants, no anticipated cases" → P3 corollary
+- "enumerating remaining criteria or planning future gap cycles" → P3 corollary
+- "the next criterion for this thread may not be named until" → P2 corollary
+- "the first criteria rung after ✅ Manifest declared emits exactly one criterion for Thread 1" → P3 corollary
+- "implementation edits may not begin until a red run exists" → P2 + EI rung table gate
+- "✅ Validation artifact V complete may not be emitted unless a 🔴 Execution observed: showing the test failing" → P2 + rung table
+- "✅ Validation artifact V complete must be emitted at the executable validation rung before the validation run observation label" → P2 + rung table
+- "pre-existing test that happens to pass does not satisfy this rung" → moved to EV rung `voids_if`
+- "reading a file is not invoking a live process and does not satisfy this rung" → P1 + OBR artifact field
+- "file reads, grep output, and manual inspection do not constitute executable validation" → P1 corollary
+- "implementation edits, new files, and code changes are not permitted at this rung" → moved to OBR `voids_if`
+- "Each rung's artifact addresses only that gap — not all known requirements of the task" → P3 (rephrased as "nothing beyond it")
+- OBR test-runner clause (attractor6) → P1 corollary (test runner output ≠ live-process-output type); subsumed by P1 + rung-entry gate
+
+**Paragraphs retained (novel escape routes, not derivable from P1–P3):**
+- "a build output or compilation result never satisfies this gate" (C22)
+- "a test pass is not a demonstration" (OBS gate)
+- "a 🔴 Execution observed: block that is empty or blank, or contains only static-analysis output..." (C26)
+- "the tool call is the only valid next action after criterion re-emission" (OBR sequencing gate)
+- "does not directly demonstrate the criterion" + "upward-return failure-class rules" (OBR partial-demonstration gate)
+- "perturb the implementation to force a red run" (C24 coverage)
+- All sentinel-ordering rules and failure-class routing
+
+**Test updates:** 30+ tests updated to use new anchors (P1/P2/P3 text, rung table entries) or repositioned gate location. No test was modified merely to pass — each update was justified by P1/P2/P3 coverage or anchor sentence change.
+
+**Baseline character count:** BASELINE updated to 23200 in `test_ground_prompt_rung_table.py` to reflect ADR-0182 additions (+149 for OBR live-process fix already included).

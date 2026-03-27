@@ -42,21 +42,23 @@ class TestC20RedRunBeforeImplementation(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c20_red_run_required_before_implementation(self):
+        # ADR-0182: "implementation edits may not begin until a red run exists" removed as P2 corollary.
+        # P2 + rung table EI gate ("exec_observed + gap declared; impl_gate sentinel emitted") subsume it.
+        from lib.groundPrompt import RUNG_SEQUENCE
+        ei_entry = next(e for e in RUNG_SEQUENCE if e["name"] == "executable implementation")
         self.assertIn(
-            "implementation edits may not begin until a red run exists",
-            self.core,
-            "C20: ground must gate implementation edits on a red run existing in the transcript")
+            "exec_observed + gap declared",
+            ei_entry["gate"],
+            "C20: EI rung table gate must require exec_observed + gap — P2 + rung table subsume red-run-before-edit")
 
     def test_c20_positioned_in_ev_rung(self):
-        # ADR-0181: "Only validation artifacts may be produced" removed (attractor 1 subsumed by gate).
-        # EV rung now opens with "each test function asserts exactly one behavioral property".
-        c20_idx = self.core.index("implementation edits may not begin until a red run exists")
-        ev_idx = self.core.index("each test function asserts exactly one behavioral property")
-        v_complete_idx = self.core.index("\u2705 Validation artifact V complete must be emitted")
-        self.assertGreater(c20_idx, ev_idx,
-            "C20: red-run-before-edit gate must appear after the EV rung start")
-        self.assertLess(c20_idx, v_complete_idx + 200,
-            "C20: red-run-before-edit gate must appear before the V-complete sentinel line")
+        # ADR-0182: anchor sentence removed; verify EI gate in rung table covers the C20 requirement.
+        from lib.groundPrompt import RUNG_SEQUENCE
+        ei_entry = next(e for e in RUNG_SEQUENCE if e["name"] == "executable implementation")
+        self.assertIn(
+            "exec_observed",
+            ei_entry["gate"],
+            "C20: EI rung table gate must include exec_observed as precondition (subsumes red-run-before-edit)")
 
 
 class TestC21FormalNotationNonCompilable(unittest.TestCase):
@@ -70,9 +72,11 @@ class TestC21FormalNotationNonCompilable(unittest.TestCase):
             "C21: formal notation validity must be defined by non-compilability, not a prohibition list")
 
     def test_c21_positioned_in_formal_notation_section(self):
+        # ADR-0182: "Formal notation encodes only" anchor removed as P3 corollary.
+        # Anchor updated to retained sentence "The formal notation rung separates behavioral specification".
         c21_idx = self.core.index("cannot be directly compiled or executed without modification")
-        fn_idx = self.core.index("Formal notation encodes only")
-        self.assertLess(abs(c21_idx - fn_idx), 600,
+        fn_idx = self.core.index("The formal notation rung separates behavioral specification")
+        self.assertLess(abs(c21_idx - fn_idx), 900,
             "C21: compilability test must appear in the formal notation rung section")
 
 

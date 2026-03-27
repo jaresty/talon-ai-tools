@@ -126,10 +126,14 @@ class TestOBRInvocationPhraseRequiresLiveProcess(unittest.TestCase):
         )
 
     def test_obr_invocation_excludes_file_reads(self):
+        # ADR-0182: "reading a file is not invoking a live process" removed as P1 corollary
+        # P1 states file reads don't satisfy any gate; OBR artifact field names the type explicitly
+        from lib.groundPrompt import RUNG_SEQUENCE
+        obr_entry = next(e for e in RUNG_SEQUENCE if e["name"] == "observed running behavior")
         self.assertIn(
-            "reading a file is not invoking a live process",
-            self.prompt,
-            "OBR invocation must state that reading a file does not satisfy the rung",
+            "reading any file does not satisfy this type",
+            obr_entry["artifact"],
+            "OBR artifact definition must state reading any file does not satisfy the live-process-output type",
         )
 
 

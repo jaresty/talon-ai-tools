@@ -55,11 +55,12 @@ class TestC16FinalReportVerbatimCopy(unittest.TestCase):
             "C16: rung-entry gate (ADR-0181) subsumes final-report transcript check — gate must be present")
 
     def test_c16_positioned_near_final_report_section(self):
-        # ADR-0181: removed phrase no longer anchors position; verify gate precedes final report.
+        # ADR-0182: rung-entry gate moved to position 5 (after protocol mechanics including final report).
+        # Gate now appears after the rung table; position is verified relative to the rung table.
         gate_idx = self.core.index("Rung-entry gate")
-        final_idx = self.core.index("After emitting \u2705 Manifest exhausted, produce a final report")
-        self.assertLess(gate_idx, final_idx,
-            "C16: rung-entry gate must appear before the Final Report instruction")
+        rung_table_idx = self.core.index("Rung table")
+        self.assertGreater(gate_idx, rung_table_idx,
+            "C16: rung-entry gate must appear after the rung table (ADR-0182 position 5)")
 
 
 class TestC17ImplicitConjunctionBan(unittest.TestCase):
@@ -112,12 +113,19 @@ class TestC17ImplicitConjunctionBan(unittest.TestCase):
         )
 
     def test_obr_test_runner_output_blocks_thread_complete(self):
-        # Regression: ADR-0181 removed the OBR test-runner-output sentinel block.
-        # Without it the model can satisfy OBR with test runner output and emit Thread N complete.
+        # ADR-0182: OBR test-runner clause removed — subsumed by rung-entry gate + P1.
+        # P1 names test runner output as not satisfying any gate; rung-entry gate part (d) checks
+        # whether exec_observed output is of the required artifact type (live-process output).
+        # Both together prevent test runner output from satisfying the OBR gate.
         self.assertIn(
-            "it does not satisfy the OBR gate \u2014 re-invoke the implemented artifact directly",
+            "P1 (Evidential boundary)",
             self.core,
-            "OBR gate must block Thread N complete when exec_observed contains test runner output",
+            "OBR test-runner prohibition subsumed by P1 (test runner output is not live-process output type)",
+        )
+        self.assertIn(
+            "Rung-entry gate",
+            self.core,
+            "Rung-entry gate part (d) checks artifact type match, preventing test-runner output from satisfying OBR",
         )
 
 

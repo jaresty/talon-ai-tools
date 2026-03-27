@@ -43,14 +43,14 @@ def test_rung_entry_gate_present():
     )
 
 
-def test_rung_entry_gate_precedes_exec_observed_rule():
-    """ADR-0181: rung-entry gate appears before the exec_observed verbatim rule."""
+def test_rung_entry_gate_follows_rung_table():
+    """ADR-0182: rung-entry gate is repositioned to after protocol mechanics (after rung table)."""
     text = build_ground_prompt()
     gate_idx = text.index("Rung-entry gate")
-    exec_rule_idx = text.index("Every \U0001F534 Execution observed: sentinel")
-    assert gate_idx < exec_rule_idx, (
-        "rung-entry gate must appear before the exec_observed verbatim rule — "
-        "gate fires at rung entry, before any rung-specific content rule"
+    rung_table_idx = text.index("Rung table")
+    assert rung_table_idx < gate_idx, (
+        "rung-entry gate must appear after the rung table — "
+        "ADR-0182 restructure places gate at position 5 (after protocol mechanics)"
     )
 
 

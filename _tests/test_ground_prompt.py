@@ -343,12 +343,12 @@ def test_sequential_thread_gate_covers_all_rungs():
 
 
 def test_immediate_descent_after_criteria():
+    # ADR-0182: "enumerating remaining criteria or planning future gap cycles" removed as P3 corollary
+    # P3 states "no anticipation of future gaps" which subsumes this prohibition
     sr = SR()
-    assert (
-        "enumerating remaining criteria" in sr or "planning future gap cycles" in sr
-    ), (
-        "Ground prompt must state that after emitting the criteria artifact the model must immediately "
-        "proceed to formal notation without enumerating remaining criteria or planning future cycles"
+    assert "no anticipation of future gaps" in sr, (
+        "Ground prompt must state P3 scope discipline: no anticipation of future gaps — "
+        "subsumes the specific prohibition on enumerating criteria after the criteria artifact"
     )
 
 
@@ -367,40 +367,23 @@ def test_manifest_entries_are_gap_labels_only():
 
 
 def test_criterion_emergence_gated_on_thread_complete():
+    # ADR-0182: "the next criterion for this thread may not be named until ✅ Thread N complete"
+    # removed as P2 corollary. P3 states "one criterion per thread per cycle" which subsumes it.
     sr = SR()
-    assert (
-        (
-            "next criterion" in sr
-            and "thread"
-            in sr[
-                sr.find("next criterion") - 200 : sr.find("next criterion") + 200
-            ].lower()
-        )
-        or ("criterion may not be named" in sr)
-        or (
-            "subsequent criteria emerge only after" in sr
-            and "complete"
-            in sr[
-                sr.find("subsequent criteria emerge only after") : sr.find(
-                    "subsequent criteria emerge only after"
-                )
-                + 100
-            ]
-        )
-    ), (
-        "Ground prompt must state that the next criterion may not be named until "
-        "Thread N complete has been emitted for the prior criterion's cycle"
+    assert "one criterion per thread per cycle" in sr, (
+        "Ground prompt must state P3 scope discipline: one criterion per thread per cycle — "
+        "subsumes the specific criterion-emergence gate"
     )
 
 
 def test_formal_notation_must_encode_all_constraints():
-    # ADR-0181: "Only validation artifacts may be produced" removed (attractor 1 subsumed by gate).
-    # EV rung now opens with "each test function asserts exactly one behavioral property".
+    # ADR-0182: "Formal notation encodes only the criteria declared" removed as P3 corollary.
+    # Anchor updated to the retained "it must encode all structural constraints" sentence.
     sr = SR()
-    fn_idx = sr.find("Formal notation encodes only the criteria")
+    fn_idx = sr.find("it must encode all structural constraints the criterion implies")
     ev_idx = sr.find("each test function asserts exactly one behavioral property")
     assert fn_idx >= 0 and ev_idx > fn_idx, (
-        "formal notation section must be present before EV rung"
+        "formal notation 'encode all structural constraints' rule must appear before EV rung"
     )
     fn_section = sr[fn_idx:ev_idx]
     assert (

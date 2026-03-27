@@ -181,11 +181,11 @@ class TestADR0181Closures(unittest.TestCase):
         )
 
     def test_n4_initial_criteria_one_criterion(self):
-        """N4: first criteria rung after manifest must emit exactly one criterion."""
+        """N4: one-criterion-per-thread-per-cycle discipline is encoded (ADR-0182: now via P3)."""
         self.assertIn(
-            "first criteria rung after",
+            "one criterion per thread per cycle",
             _minimal(),
-            "N4: ground prompt must prohibit multi-criterion planning block at the first criteria rung",
+            "N4: ground prompt must state one criterion per thread per cycle — now encoded in P3 (Scope discipline)",
         )
 
 
@@ -201,11 +201,11 @@ class TestADR0182Closures(unittest.TestCase):
         )
 
     def test_n6_v_complete_required_before_obr(self):
-        """N6: OBR label requires V-complete in current cycle."""
+        """N6: OBR gate requires EV artifact to have run — encoded via rung table + P2 (ADR-0182)."""
         self.assertIn(
-            "observed running behavior label is written without a",
+            "executable validation artifact runs",
             _minimal(),
-            "N6: ground prompt must void OBR when V-complete absent for current cycle",
+            "N6: VRO gate 'executable validation artifact runs' must appear in rung table — P2 + rung table subsume V-complete-before-OBR",
         )
 
     def test_n7_manifest_covers_all_t_tags(self):

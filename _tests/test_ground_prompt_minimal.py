@@ -76,12 +76,15 @@ class TestMinimalGroundParts(unittest.TestCase):
     def test_no_named_violation_modes_in_core_rules(self):
         # Check only the core prose rules, not the sentinel format strings
         # (sentinels legitimately contain terms like "I-formation complete")
+        # ADR-0182: also exclude the rung table, which legitimately names audit procedures
+        from lib.groundPrompt import _rung_table
         sentinel_values = set(SENTINEL_TEMPLATES.values())
         core = self.parts.get("core", "")
-        # Strip sentinel format strings from the check surface
+        # Strip sentinel format strings and rung table from the check surface
         check_surface = core
         for sv in sentinel_values:
             check_surface = check_surface.replace(sv, "")
+        check_surface = check_surface.replace(_rung_table(), "")
         for mode in NAMED_VIOLATION_MODES:
             self.assertNotIn(
                 mode,
@@ -104,24 +107,28 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_ei_rung_pre_edit_check(self):
+        # ADR-0182: "One edit per re-run cycle" removed as P3 corollary; P3 and rung table encode it
         self.assertIn(
-            "One edit per re-run cycle",
+            "one edit per re-run",
             self.prompt,
-            "Minimal spec must require re-running validation after each edit",
+            "Minimal spec must state one-edit-per-re-run discipline — now encoded in P3 and EI rung table artifact",
         )
 
     def test_ei_rung_one_edit_per_cycle(self):
+        # ADR-0182: "One edit per re-run cycle" standalone sentence removed as P3 corollary
         self.assertIn(
-            "One edit per re-run cycle",
+            "one edit per re-run",
             self.prompt,
-            "Minimal spec must state one edit per re-run cycle at EI rung",
+            "Minimal spec must state one edit per re-run — now encoded in P3 (Scope discipline) and EI rung table",
         )
 
     def test_formal_notation_encodes_only_declared_criteria(self):
+        # ADR-0182: "Formal notation encodes only the criteria declared" removed as P3 corollary
+        # P3 states "no additional invariants, no coverage beyond the declared gap"
         self.assertIn(
-            "Formal notation encodes only the criteria declared",
+            "no additional invariants",
             self.prompt,
-            "Minimal spec must state formal notation encodes only declared criteria",
+            "Minimal spec must state no-additional-invariants discipline — now encoded in P3 (Scope discipline)",
         )
 
     def test_ev_rung_requires_prior_red_run(self):
@@ -132,10 +139,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_preexisting_test_does_not_satisfy_ev_rung(self):
+        # ADR-0182: "pre-existing test that happens to pass does not satisfy this rung" removed as P1+A3 corollary
+        # P1 requires current-cycle tool-executed events; EV rung table voids_if "pre-existing artifact"
+        from lib.groundPrompt import RUNG_SEQUENCE
+        ev_entry = next(e for e in RUNG_SEQUENCE if e["name"] == "executable validation")
         self.assertIn(
-            "pre-existing test that happens to pass does not satisfy",
-            self.prompt,
-            "Minimal spec must clarify that pre-existing passing tests do not satisfy the EV rung",
+            "pre-existing artifact",
+            ev_entry["voids_if"],
+            "EV rung table voids_if must name pre-existing artifact — P1+A3 subsume the enforcement sentence",
         )
 
     def test_every_rung_requires_gap_sentinel(self):
@@ -181,10 +192,12 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_ev_sentinel_dependency(self):
+        # ADR-0182: "Validation artifact V complete must be emitted at the executable validation rung"
+        # removed as P2 corollary — P2 + rung table VRO gate subsumes it
         self.assertIn(
-            "Validation artifact V complete must be emitted at the executable validation rung",
+            "executable validation artifact runs",
             self.prompt,
-            "Minimal spec must require V-complete sentinel before VRO label as sentinel dependency",
+            "VRO gate in rung table must state 'executable validation artifact runs' — P2 + rung table subsume V-complete-before-VRO",
         )
 
     def test_impl_gate_current_cycle_only(self):
@@ -223,10 +236,12 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_every_rung_addresses_only_declared_gap(self):
+        # ADR-0182: "not all known requirements of the task" removed as P3 corollary
+        # P3 states "each rung artifact addresses exactly the gap declared by the prior rung — nothing beyond it"
         self.assertIn(
-            "not all known requirements of the task",
+            "nothing beyond it",
             self.prompt,
-            "Minimal spec must state each rung addresses only declared gap, not all requirements",
+            "Minimal spec must state scope discipline: artifact addresses only the declared gap, nothing beyond it (P3)",
         )
 
     def test_criterion_derivable_from_prose_only(self):
@@ -272,10 +287,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_obs_rung_produces_only_tool_output(self):
+        # ADR-0182: "implementation edits, new files, and code changes are not permitted" removed as P3 corollary
+        # OBR rung table voids_if "new files created" and artifact type (live-process output) subsume it
+        from lib.groundPrompt import RUNG_SEQUENCE
+        obr_entry = next(e for e in RUNG_SEQUENCE if e["name"] == "observed running behavior")
         self.assertIn(
-            "implementation edits, new files, and code changes are not permitted",
-            self.prompt,
-            "Minimal spec must forbid implementation edits at OBS rung",
+            "new files created",
+            obr_entry["voids_if"],
+            "OBR rung table voids_if must name 'new files created' — P3 + rung table subsume impl-edits prohibition",
         )
 
     def test_upward_return_three_level_hierarchy(self):
@@ -401,22 +420,24 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # Attractor sentence
     def test_attractor_sentence_rung_satisfied_only_by_tool_event(self):
+        # ADR-0182: standalone attractor sentence removed as P1 corollary — P1 states this explicitly
         self.assertIn(
-            "A rung is satisfied when and only when a tool-executed event",
+            "P1 (Evidential boundary)",
             self.prompt,
-            "Ground must open with the attractor sentence: a rung is satisfied only by a tool-executed event, not inference or prediction",
+            "Ground must state P1 (Evidential boundary): a rung gate is satisfied only by a tool-executed event of the correct artifact type",
         )
 
     # C5: pre-existing document update — now enforced by rung-entry gate (ADR-0181)
     def test_reconciliation_gate_covers_preexisting_documents(self):
-        # ADR-0181: "Reconciliation gate:" removed (attractor 8 subsumed by rung-entry gate).
-        # Reconciliation obligation now fires as a gate-entry precondition at upward-return rung entry.
+        # ADR-0182: rung-entry gate moved to position 5 (after protocol mechanics) — it now follows
+        # the rung table and protocol mechanics including the final report section.
+        # Gate still governs all rungs including the final-report rung via its position as a summary gate.
         gate_idx = self.prompt.index("Rung-entry gate")
-        final_report_idx = self.prompt.index("After emitting \u2705 Manifest exhausted")
-        self.assertLess(
+        rung_table_idx = self.prompt.index("Rung table")
+        self.assertGreater(
             gate_idx,
-            final_report_idx,
-            "C5: rung-entry gate (ADR-0181) must appear before the final report section",
+            rung_table_idx,
+            "C5: rung-entry gate must appear after the rung table (ADR-0182 position 5)",
         )
 
     # Manifest declaration: behavioral predicate scan (C12 — moved from thread-complete)

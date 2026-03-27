@@ -1,16 +1,18 @@
-"""Ground method prompt — structured parts (ADR-0172).
+"""Ground method prompt — structured parts (ADR-0172, ADR-0182).
 
 This is the SSOT for the ground method's prompt injection text.
 It is NOT generated; edit directly here, then run `make axis-regenerate-apply`
 to propagate changes through to axisConfig.py and downstream grammar files.
 
-The four parts correspond to: the epistemological protocol (Rule 0 + four
-generative primitives + scope discipline), sentinel enforcement mechanics,
-the code-domain rung sequence, and reconciliation/completion.
-
 ADR-0172: principle-derived reformulation — Rule 0 and four primitives replace
 the prior enumerative violation-listing structure. The epistemological protocol
 is separated from the code-domain rung catalog as a clean shear.
+
+ADR-0182: attractor-first restructure — three named principles (P1–P3) derived
+from axioms replace the prior enumerative enforcement paragraphs. A compact rung
+table (name, artifact type, gate, void condition) is inserted between named
+principles and protocol mechanics. The rung-entry gate moves to after the
+protocol mechanics section. Corollary enforcement paragraphs removed.
 """
 
 # Canonical sentinel format strings — SSOT for all format literals used in sentinel_rules.
@@ -90,18 +92,28 @@ def _sentinel_block() -> str:
     return "Sentinel formats \u2014 " + lines + "."
 
 
+def _rung_table() -> str:
+    """Generate a compact rung table (name | artifact type | gate | void condition)."""
+    header = "Rung table \u2014 name | artifact type | gate condition | void condition: "
+    rows = "; ".join(
+        f"{e['name']}: artifact=\u201c{e['artifact']}\u201d, gate=\u201c{e['gate']}\u201d, voids_if=\u201c{e['voids_if']}\u201d"
+        for e in RUNG_SEQUENCE
+    )
+    return header + rows + ". "
+
+
 GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
         # ADR-0179: axiom-first formulation. Four axioms govern all rules below.
         # A1 (epistemic authority): only tool-executed events have evidential standing;
         #   model recall, inference, and prediction have none, regardless of accuracy.
         # A2 (type discipline): each rung defines an artifact type; a tool-executed event
-        #   satisfies a rung gate only if its output is of that rung\u2019s artifact type;
+        #   satisfies a rung gate only if its output is of that rung's artifact type;
         #   cross-type output does not satisfy the gate regardless of correctness.
         # A3 (cycle isolation): each descent through the ladder is a new evidential context;
         #   artifacts from prior cycles have no standing in the current cycle.
         # R2 (minimal derivation): each artifact is the minimal transformation of the prior
-        #   artifact that satisfies the current rung\u2019s type \u2014 form changes, intent does not.
+        #   artifact that satisfies the current rung's type — form changes, intent does not.
         "A1: only tool-executed events have evidential standing; each rung defines an artifact type "
         "and a gate is satisfied only by a tool-executed event of that rung\u2019s artifact type \u2014 "
         "inference, prediction, and model recall have none regardless of accuracy. "
@@ -115,18 +127,26 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "R2: each artifact derives from the prior rung \u2014 form changes, intent does not; "
         "a skipped rung voids all artifacts below it; "
         "each artifact addresses only the gap declared by the prior rung, nothing beyond it. "
-        # ADR-0181: rung-entry gate — generative A2 enforcement point before any rung content
-        "Rung-entry gate: before producing content at any rung, state (a) the rung name, "
-        "(b) the current gap as a currently-false behavioral assertion, (c) the artifact type "
-        "this rung requires, and (d) whether a \U0001f534 Execution observed: sentinel exists in "
-        "the current cycle and, if so, whether its output is of type (c) \u2014 "
-        "if no exec_observed exists yet in this cycle, state that explicitly rather than "
-        "treating prior-cycle output as satisfying this check; "
-        "if any of (a)\u2013(d) cannot be stated from the current-cycle transcript, "
-        "produce it before any other content at this rung. "
+        # ADR-0182: named principles derived from axioms.
+        # P1 (Evidential boundary): derived from A1 + A2.
+        # P2 (Forward-only discipline): derived from A2 + R2.
+        # P3 (Scope discipline): derived from R2.
+        "P1 (Evidential boundary): a rung gate is satisfied if and only if a tool-executed event "
+        "appears in the current-cycle transcript whose output is classified as that rung\u2019s artifact type; "
+        "no other event \u2014 inference, file read, test runner output, static analysis, prior-cycle output \u2014 "
+        "satisfies any gate regardless of its content or accuracy. "
+        "P2 (Forward-only discipline): a rung label may not be emitted until all preconditions "
+        "for that rung are present in the current-cycle transcript; "
+        "the precondition list for each rung is the rung table\u2019s gate column; "
+        "no content at a rung is valid before the label; no label is valid before its gate conditions. "
+        "P3 (Scope discipline): each rung artifact addresses exactly the gap declared by the prior rung \u2014 "
+        "nothing beyond it; one gap per cycle; one criterion per thread per cycle; one edit per re-run; "
+        "no anticipation of future gaps, no additional invariants, no coverage beyond the declared gap. "
+        # Rung table — seven rows: name, artifact type, gate condition, void condition
+        + _rung_table()
+        # Protocol mechanics
         # A1 consequences: exec_observed verbatim rule
-        "A rung is satisfied when and only when a tool-executed event appears in the transcript "
-        "whose output is of that rung\u2019s artifact type. "
+        + (
         "Every \U0001f534 Execution observed: sentinel at any rung must contain verbatim tool-call output, "
         "triple-backtick delimited, complete, nothing omitted \u2014 "
         "prose descriptions, inline summaries, model-generated text that resembles output, "
@@ -134,7 +154,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "reformatted text, and paraphrase are prohibited inside the block; "
         "if tool output is too long, the block ends at the last character the tool produced \u2014 no editorial closing; "
         "the only valid sequence is: tool call \u2192 \U0001f534 Execution observed: \u2192 triple-backtick block \u2014 "
-        "the sentinel may not be written before the tool call exists in the transcript; "
+        "the sentinel may not be written before the tool call exists in the transcript \u2014 "
+        "a sentinel written before its tool call records anticipated rather than observed state, and is void regardless of accuracy; "
         "a sentinel with prose content or no delimited block is void \u2014 "
         "fix by invoking the tool and re-emitting. "
         # Session persistence
@@ -153,11 +174,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "before emitting \u2705 Manifest exhausted, locate the N in the \u2705 Manifest declared sentinel "
         "and count \u2705 Thread N complete sentinels \u2014 "
         "if the count does not equal the declared N, the manifest is not exhausted. "
-        "From the criteria rung onward, the gap names a specific behavior currently absent or wrong, "
-        "phrased as a currently-false assertion \u2014 "
-        "\u201cthe attributes table does not render\u201d is valid; \u201cneed to implement a landing page\u201d is not. "
-        "Each rung\u2019s artifact addresses only that gap \u2014 not all known requirements of the task \u2014 "
-        "and is minimal: one independently testable behavior derived from the prose alone \u2014 "
+        "one independently testable behavior derived from the prose alone \u2014 "
         "if stating it requires names or structures not in the prose, it belongs in formal notation instead; "
         "if the criterion contains the word \u2018and\u2019 it is a conjunction \u2014 split before continuing "
         "(\u2018the table renders Display Name\u2019 and \u2018the search bar filters results\u2019 are two criteria, not one); "
@@ -172,22 +189,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "each criterion must state (a) observable behavior and (b) a falsifying condition statable without source files, "
         "function names, or variable names \u2014 if part (b) references implementation internals, "
         "the criterion is structural and must be rewritten before this rung closes; "
-        "this is a content gate, not a self-check; "
-        "after emitting the criteria artifact, proceed immediately to formal notation \u2014 "
-        "enumerating remaining criteria or planning future gap cycles before the current cycle completes "
-        "is a protocol violation; "
-        "the next criterion for this thread may not be named until \u2705 Thread N complete has been emitted "
-        "for the current criterion\u2019s cycle \u2014 \u2705 Thread N complete is the criterion-emergence gate; "
-        "the first criteria rung after \u2705 Manifest declared emits exactly one criterion for Thread 1 \u2014 "
-        "emitting criteria for multiple threads at the first criteria rung is a protocol violation; "
-        "the manifest declared the thread list; the criteria rung instantiates the first thread\u2019s "
-        "gap assertion only. "
+        "this is a content gate, not a self-check. "
         "The formal notation rung separates behavioral specification from explanation. "
         "Formal notation (type signatures, interfaces, invariants, pre/postconditions) encodes what must be true \u2014 "
         "the executable or testable part. Natural language labels, introduces, and explains the specification \u2014 "
         "prose adds context but the behavioral constraints must still be encoded in notation."
-        "Formal notation encodes only the criteria declared at the criteria rung \u2014 "
-        "no additional invariants, no anticipated cases; "
         "it must encode all structural constraints the criterion implies \u2014 "
         "the permitted forms (type signatures, interfaces, pseudocode, structural invariants) "
         "describe what notation looks like, not what it may omit; "
@@ -215,12 +221,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "multiple assertions are permitted only when they jointly constitute a single indivisible check "
         "(e.g., asserting a value is both non-null and of the expected type); "
         "before writing the test, re-read the formal notation and assert each structural constraint it encodes; "
-        "a pre-existing test that happens to pass does not satisfy this rung; "
-        "file reads, grep output, and manual inspection do not constitute executable validation \u2014 "
-        "the artifact must be invocable by an automated tool; "
-        "when the declared intent is to modify a test artifact, the test-under-modification is the implementation artifact "
-        "for this cycle and the validation artifact must be a meta-test \u2014 an executable artifact that fails "
-        "when the test-under-modification does not exhibit the criterion; "
         "before writing the test, check for an existing test file covering the same module \u2014 add there if so; "
         "when the artifact is modified, invoke a tool call to read the current test file before emitting carry-forward rows \u2014 "
         "carry-forward format: \u2018Carry-forward: prior failure [verbatim test name as it appeared in "
@@ -228,6 +228,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "each prior-failure name must be quotable verbatim from a \U0001f534 Execution observed sentinel; "
         "modification without carry-forward is a traversal violation; "
         "no implementation artifact may appear after modification until carry-forward has been emitted. "
+        "when the declared intent is to modify a test artifact, the test-under-modification is the implementation artifact "
+        "for this cycle and the validation artifact must be a meta-test \u2014 an executable artifact that fails "
+        "when the test-under-modification does not exhibit the criterion; "
         "before emitting \u2705 Validation artifact V complete, confirm via tool call that the artifact path "
         "does not pre-exist or is already failing \u2014 V-complete may not be emitted without this "
         "tool-executed result in the transcript; "
@@ -235,21 +238,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "if the artifact asserts static state, run it before any edit \u2014 "
         "if it passes, the artifact is vacuous and must be rewritten; "
         "if the artifact asserts runtime behavior, perturb the implementation to force a red run \u2014 "
-        "if it still passes after perturbation, the test is vacuous and must be rewritten; "
-        "implementation edits may not begin until a red run exists in the transcript for the current cycle; "
-        "\u2705 Validation artifact V complete may not be emitted unless a \U0001f534 Execution observed: "
-        "showing the test failing exists in the transcript for the current cycle; "
-        "emitting V-complete before seeing a red run is a protocol violation "
-        "regardless of whether perturbation was attempted. "
-        "\u2705 Validation artifact V complete must be emitted at the executable validation rung "
-        "before the validation run observation label is written; "
-        "if the observed running behavior label is written without a "
-        "\u2705 Validation artifact V complete appearing in the transcript for the current cycle, "
-        "the OBR rung is void \u2014 return to the executable validation rung and produce the artifact. "
-        "Before writing the validation run observation rung label, "
-        "invoke the validation artifact via a test runner \u2014 "
-        "file reads, grep, directory listings, and static analysis produce static-analysis-type output, "
-        "not validation-run-observation-type output, and do not satisfy this gate; "
+        "if it still passes after perturbation, the test is vacuous and must be rewritten. "
+        "Before writing the validation run observation rung label, invoke the validation artifact via a test runner; "
         "a harness error (import failure, syntax error, missing file) is not a red run \u2014 "
         "the test must have been loadable, its assertions must have run, and they must have failed; "
         "fix the harness error before treating any run as a red witness; "
@@ -279,7 +269,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "after the observed running behavior label in the current cycle; "
         "then immediately start or query the implemented artifact as a live running process via a tool call and emit "
         "\U0001f534 Execution observed: with its verbatim output \u2014 "
-        "reading a file is not invoking a live process and does not satisfy this rung regardless of the file's content; "
         "the verbatim output must directly demonstrate the specific behavior named in the criterion; "
         "it must be what a non-technical observer of the running system would see \u2014 "
         "not the test suite, not process state unless the criterion is specifically about process state; "
@@ -295,33 +284,28 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "regardless of what the file contains; "
         "if no live process can be started or queried, open a new gap cycle to make the artifact "
         "directly invocable before continuing; "
-        "a \U0001f534 Execution observed: block that is empty or blank, or contains only static-analysis output "
-        "(file reads, grep results, directory listings), does not satisfy this gate at any rung \u2014 "
-        "the block must contain output produced by running the artifact; "
         "if the declared gap names a real network endpoint, the OBS must include verbatim output showing "
         "a real HTTP request or response \u2014 a test run whose network calls are mocked does not satisfy this gate; "
         "before any tool call touching the filesystem at this rung, emit a provenance statement: "
         "\u2018Invoking [artifact] produced at [rung name] in this thread\u2019 \u2014 "
         "if the rung label cannot be located in the transcript, the tool call is prohibited; "
         "the provenance statement does not replace the tool call \u2014 the tool call must follow it in the same response; "
+        "a \U0001f534 Execution observed: block that is empty or blank, or contains only static-analysis output "
+        "(file reads, grep results, directory listings), does not satisfy this gate at any rung \u2014 "
+        "the block must contain output produced by running the artifact; "
         "\u2705 Thread N complete may not be emitted unless a \U0001f534 Execution observed: "
         "with non-empty verbatim output appears in the transcript after the observed running behavior label "
         "in the current cycle \u2014 a provenance statement with no following \U0001f534 Execution observed: "
-        "is a protocol violation; "
-        "implementation edits, new files, and code changes are not permitted at this rung. "
+        "is a protocol violation. "
         "\u2705 Thread N complete may not be emitted unless the observed running behavior label "
         "has been written after the most recent \U0001f7e2 Implementation gate cleared in this thread "
         "and a \U0001f534 Execution observed: sentinel appears immediately after it that directly demonstrates "
-        "the criterion \u2014 a test pass is not a demonstration; "
+        "the criterion \u2014 "
         "if the \U0001f534 Execution observed: output does not directly demonstrate the criterion, "
         "emit \U0001f534 Gap: naming what is undemonstrated and apply the upward-return failure-class rules \u2014 "
         "\u2705 Thread N complete may not be emitted after an OBR \U0001f534 Execution observed: "
         "that does not directly demonstrate the criterion; "
-        "if the \U0001f534 Execution observed: at the observed running behavior rung contains "
-        "test runner output (pass counts, test names, duration summary), "
-        "it does not satisfy the OBR gate \u2014 re-invoke the implemented artifact directly "
-        "before continuing; \u2705 Thread N complete may not be emitted after an OBR "
-        "\U0001f534 Execution observed: that shows test runner output; "
+        "a test pass is not a demonstration; "
         "no implementation file was created or modified for this thread\u2019s gap in this cycle "
         "means the gap was already closed (return to criteria) or the test is vacuous (rewrite it); "
         "every failing test must be fixed or explicitly acknowledged in the transcript with a written reason \u2014 "
@@ -377,7 +361,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "When beginning mid-ladder, locate the highest already-instantiated rung, update it, then descend; "
         "every descent through executable implementation requires executable validation "
         "and validation run observation to have fired for the current gap, including after an upward return. "
-        "One edit per re-run cycle; after each edit re-run the validation artifact before any further edit. "
         "Upward returns follow the failure class: "
         "if the implementation did not close the gap, loop within executable implementation; "
         "if the spec did not model the criterion, return to formal notation; "
@@ -393,6 +376,16 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "prose, criteria, and formal notation for each thread in order \u2014 "
         "no new behavioral claims, no coverage summaries, no suggestions; "
         "then reconcile any documents the implementation affects. "
+        # ADR-0181: rung-entry gate — moved here after protocol mechanics (ADR-0182)
+        "Rung-entry gate: before producing content at any rung, state (a) the rung name, "
+        "(b) the current gap as a currently-false behavioral assertion, (c) the artifact type "
+        "this rung requires, and (d) whether a \U0001f534 Execution observed: sentinel exists in "
+        "the current cycle and, if so, whether its output is of type (c) \u2014 "
+        "if no exec_observed exists yet in this cycle, state that explicitly rather than "
+        "treating prior-cycle output as satisfying this check; "
+        "if any of (a)\u2013(d) cannot be stated from the current-cycle transcript, "
+        "produce it before any other content at this rung. "
+        )
         + _rung_names_sentence()
         + " "
         + _sentinel_block()

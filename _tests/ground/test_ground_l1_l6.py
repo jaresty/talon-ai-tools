@@ -13,16 +13,16 @@ class TestL1ExecObservedPrecondition(unittest.TestCase):
 
     def test_l1_tool_call_must_precede_sentinel(self):
         self.assertIn(
-            "tool call must exist in the current response before",
+            "preceding tool call in this response",
             self.core,
-            "L1: exec_observed paragraph must require a tool call to exist in the current response before the sentinel is emitted",
+            "L1: exec_observed paragraph must require a preceding tool call in this response (ADR-0184: condensed form)",
         )
 
     def test_l1_sentinel_without_tool_call_is_void(self):
         self.assertIn(
-            "sentinel emitted without a preceding tool call in the current response is void",
+            "Any deviation voids the sentinel",
             self.core,
-            "L1: must state that a sentinel emitted without a preceding tool call in the current response is void",
+            "L1: must state that any deviation voids the sentinel (ADR-0184: condensed form replacing explicit void clause)",
         )
 
 

@@ -118,6 +118,33 @@ if bootstrap is not None:
                 "PROMPT_REFERENCE_KEY ADDENDUM entry should mention 'clarification'",
             )
 
+        def test_meta_interpretation_guidance_suggestion_gate_requires_definition(self) -> None:
+            """META_INTERPRETATION_GUIDANCE must require reading a token definition, not name-recognition."""
+            from talon_user.lib.metaPromptConfig import META_INTERPRETATION_GUIDANCE
+            self.assertIn(
+                "definition",
+                META_INTERPRETATION_GUIDANCE.lower(),
+                "META_INTERPRETATION_GUIDANCE Suggestion gate must require reading the token's definition",
+            )
+
+        def test_meta_interpretation_guidance_suggestion_gate_requires_heuristics(self) -> None:
+            """META_INTERPRETATION_GUIDANCE must prefer heuristics over name-recognition."""
+            from talon_user.lib.metaPromptConfig import META_INTERPRETATION_GUIDANCE
+            self.assertIn(
+                "heuristic",
+                META_INTERPRETATION_GUIDANCE.lower(),
+                "META_INTERPRETATION_GUIDANCE Suggestion gate must reference heuristics",
+            )
+
+        def test_meta_interpretation_guidance_suggestion_gate_requires_distinctions(self) -> None:
+            """META_INTERPRETATION_GUIDANCE must require checking distinctions."""
+            from talon_user.lib.metaPromptConfig import META_INTERPRETATION_GUIDANCE
+            self.assertIn(
+                "distinction",
+                META_INTERPRETATION_GUIDANCE.lower(),
+                "META_INTERPRETATION_GUIDANCE Suggestion gate must reference distinctions",
+            )
+
 else:
     if not TYPE_CHECKING:
 

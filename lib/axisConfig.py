@@ -516,7 +516,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting "
         "perspective.",
         "lever": "The response focuses on intervention points—places in the system where applied force shifts equilibrium; identifying feedback loops, constraints, delays, rules, or parameters "
-        "whose change propagates to alter which stable states the system settles into.",
+        "whose change propagates to alter which stable states the system settles into. Includes load-bearing elements whose change disproportionately alters the outcome, even before any "
+        "deliberate intervention.",
         "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical "
         "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
@@ -5864,6 +5865,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where to apply force",
                 "high-leverage",
                 "what to change",
+                "turning point",
+                "what does everything hinge on",
+                "pivot point",
+                "load-bearing assumption",
+                "what would change everything",
             ],
         },
         "mean": {

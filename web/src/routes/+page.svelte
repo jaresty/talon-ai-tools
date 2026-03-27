@@ -8,6 +8,7 @@
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 	import { parseCommand } from '$lib/parseCommand.js';
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
+	import { encodeState, decodeState } from '$lib/stateCodec.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -39,22 +40,19 @@
 
 	// Serialize/deserialize prompt state
 	function serialize(): string {
-		return btoa(JSON.stringify({ selected, subject, addendum, persona }));
+		return encodeState({ selected, subject, addendum, persona });
 	}
 
 	function deserialize(raw: string): void {
-		try {
-			const parsed = JSON.parse(atob(raw));
-			if (parsed && typeof parsed === 'object') {
-				if (parsed.selected) selected = { ...selected, ...parsed.selected };
-				if (typeof parsed.subject === 'string') subject = parsed.subject;
-				if (typeof parsed.addendum === 'string') addendum = parsed.addendum;
-				if (parsed.persona && typeof parsed.persona === 'object') {
-					persona = { preset: '', voice: '', audience: '', tone: '', ...parsed.persona };
-				}
+		const parsed = decodeState(raw);
+		if (parsed && typeof parsed === 'object') {
+			const p = parsed as Record<string, unknown>;
+			if (p.selected) selected = { ...selected, ...(p.selected as Record<string, string[]>) };
+			if (typeof p.subject === 'string') subject = p.subject;
+			if (typeof p.addendum === 'string') addendum = p.addendum;
+			if (p.persona && typeof p.persona === 'object') {
+				persona = { preset: '', voice: '', audience: '', tone: '', ...(p.persona as PersonaState) };
 			}
-		} catch {
-			// ignore malformed state
 		}
 	}
 

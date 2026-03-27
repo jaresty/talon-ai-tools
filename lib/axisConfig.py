@@ -280,6 +280,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
+        "grain": "The response enhances the task by identifying which directions in the system are already structurally determined — the modes that will dominate under repeated pressure "
+        "regardless of apparent flexibility — distinguishing real optionality from illusory optionality. The response does not invent structure; it reads the latent grain of what is "
+        "already there and uses it to identify which choices are genuinely open and which are already foreclosed.",
         "ground": "The response A1: only tool-executed events have evidential standing; each rung defines an artifact type and a gate is satisfied only by a tool-executed event of that rung’s "
         "artifact type — inference, prediction, and model recall have none regardless of accuracy. A2: each rung defines an artifact type; a tool-executed event satisfies a rung gate "
         "only if its output is of that rung’s artifact type — cross-type output does not satisfy the gate regardless of correctness (a test-suite run at the observed running behavior "
@@ -669,6 +672,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "flow": "Linear stage sequencing",
         "fourfold": "Exhaust logical stance space before closure",
         "gap": "Implicit-to-explicit gap analysis",
+        "grain": "Find latent structural direction; distinguish real from illusory optionality",
         "ground": "Intent-governed validation pipeline",
         "grove": "Accumulation and rate-of-change effects",
         "induce": "Generalize patterns from examples",
@@ -873,6 +877,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "flow": "流",
         "fourfold": "四",
         "gap": "隙",
+        "grain": "纹",
         "ground": "地",
         "grove": "蓄",
         "induce": "帰",
@@ -1054,6 +1059,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "flow": "Temporal/Dynamic",
         "fourfold": "Reasoning",
         "gap": "Structural",
+        "grain": "Diagnostic",
         "ground": "Process",
         "grove": "Generative",
         "induce": "Reasoning",
@@ -1268,6 +1274,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "flow": "Step-by-step flow",
         "fourfold": "Exhaust stance space",
         "gap": "Implicit gaps",
+        "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Intent-governed validation pipeline",
         "grove": "Compounding effects",
         "induce": "Generalise from examples",
@@ -4562,6 +4569,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what's taken for granted",
                 "gap between stated and actual",
                 "two people assumed different things about this rule",
+            ],
+        },
+        "grain": {
+            "distinctions": [
+                {
+                    "note": "preserve = maintain compatibility with existing structures; grain = identify which directions are already structurally determined before choosing",
+                    "token": "preserve",
+                },
+                {
+                    "note": "robust = select options that survive across uncertain futures; grain = find which options are already foreclosed by the system's dominant modes",
+                    "token": "robust",
+                },
+                {
+                    "note": "yield = allow natural resolution with minimal intervention; grain = actively diagnose the latent structural direction before acting",
+                    "token": "yield",
+                },
+            ],
+            "heuristics": [
+                "what's the grain of this system",
+                "which of these options is already foreclosed",
+                "what will dominate under repeated pressure",
+                "where is the real optionality here",
+                "which choices are genuinely open",
+                "what does the structure want to do",
+                "find the path of least structural resistance",
+                "which commitments are already latent",
+                "what's illusory flexibility",
+                "work with the grain",
             ],
         },
         "ground": {

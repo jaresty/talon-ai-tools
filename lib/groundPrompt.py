@@ -145,6 +145,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "no criteria for other threads, no planning narration, no other content. "
         "No criterion for Thread N+1 may appear until \u2705 Thread N complete has been emitted "
         "for Thread N\u2019s current cycle. "
+        "no rung content of any type for Thread N+1 may appear before \u2705 Thread N complete \u2014 "
+        "the sequential constraint covers all seven rungs, not only criteria. "
         "no anticipation of future gaps, no additional invariants, no coverage beyond the declared gap; "
         "one edit means exactly one tool call that creates or modifies a file \u2014 "
         "narrating a change without a file-write tool call is not an edit. "

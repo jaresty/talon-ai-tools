@@ -298,7 +298,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "of intent and constraints”, gate=“I declared”, voids_if=“skipped”; criteria: artifact=“falsifiable behavioral acceptance conditions”, gate=“prose complete”, "
         "voids_if=“criterion is structural/implementation rather than behavioral”; formal notation: artifact=“non-executable specification with behavioral invariants + R2 audit”, "
         "gate=“criteria complete; R2 audit 0 UNENCODED entries”, voids_if=“UNENCODED entries remain; audit not a separate named section”; executable validation: artifact=“test file "
-        "invocable by automated runner, within project tree”, gate=“formal notation R2 audit complete”, voids_if=“implementation code included; outside project tree; pre-existing "
+        "invocable by an automated tool, within project tree”, gate=“formal notation R2 audit complete”, voids_if=“implementation code included; outside project tree; pre-existing "
         "artifact”; validation run observation: artifact=“exec_observed sentinel with verbatim failure naming declared gap”, gate=“executable validation artifact runs”, "
         "voids_if=“build/compile error; green run without prior failure; infrastructure-only output”; executable implementation: artifact=“implementation source edits; one edit per "
         "re-run cycle”, gate=“exec_observed + gap declared; impl_gate sentinel emitted”, voids_if=“multiple edits without intervening re-run; newly-passing test has no prior failure”; "

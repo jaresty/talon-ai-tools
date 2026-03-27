@@ -38,7 +38,7 @@ RUNG_SEQUENCE: list[dict] = [
     },
     {
         "name": "executable validation",
-        "artifact": "test file invocable by automated runner, within project tree",
+        "artifact": "test file invocable by an automated tool, within project tree",
         "gate": "formal notation R2 audit complete",
         "voids_if": "implementation code included; outside project tree; pre-existing artifact",
     },

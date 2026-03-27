@@ -70,7 +70,7 @@ class TestTotalCharCountDoesNotGrow(unittest.TestCase):
     def test_total_ground_parts_minimal_chars_does_not_exceed_baseline(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         # ADR-0178: baseline after D1-D7 applied to minimal
-        BASELINE = 23200  # ADR-0182 N5-N7 drift fixes + formal notation separation clarification; OBR live-process fix: +149
+        BASELINE = 23800  # ADR-0182 N5-N7 drift fixes + formal notation separation clarification; OBR live-process fix: +149; L1-L6 drift closures: +578
         self.assertLessEqual(
             current,
             BASELINE,

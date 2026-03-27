@@ -141,7 +141,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "no content at a rung is valid before the label; no label is valid before its gate conditions. "
         "P3 (Scope discipline): each rung artifact addresses exactly the gap declared by the prior rung \u2014 "
         "nothing beyond it; one gap per cycle; one criterion per thread per cycle; one edit per re-run; "
-        "no anticipation of future gaps, no additional invariants, no coverage beyond the declared gap. "
+        "no anticipation of future gaps, no additional invariants, no coverage beyond the declared gap; "
+        "one edit means exactly one tool call that creates or modifies a file \u2014 "
+        "narrating a change without a file-write tool call is not an edit. "
         # Rung table — seven rows: name, artifact type, gate condition, void condition
         + _rung_table()
         # Protocol mechanics
@@ -157,7 +159,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the sentinel may not be written before the tool call exists in the transcript \u2014 "
         "a sentinel written before its tool call records anticipated rather than observed state, and is void regardless of accuracy; "
         "a sentinel with prose content or no delimited block is void \u2014 "
-        "fix by invoking the tool and re-emitting. "
+        "fix by invoking the tool and re-emitting; "
+        "a tool call must exist in the current response before the sentinel is emitted \u2014 "
+        "sentinel emitted without a preceding tool call in the current response is void regardless of content. "
         # Session persistence
         "Once \u2705 Ground entered has been emitted in this session, "
         "every subsequent response must begin by identifying the current rung and the current gap "
@@ -234,6 +238,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "before emitting \u2705 Validation artifact V complete, confirm via tool call that the artifact path "
         "does not pre-exist or is already failing \u2014 V-complete may not be emitted without this "
         "tool-executed result in the transcript; "
+        "asserting confirmation without showing the exec_observed block does not satisfy this gate \u2014 "
+        "the exec_observed block must appear in the current response; "
         "the validation artifact must reside within the project\u2019s version-controlled file tree; "
         "if the artifact asserts static state, run it before any edit \u2014 "
         "if it passes, the artifact is vacuous and must be rewritten; "
@@ -254,6 +260,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "\U0001f534 Execution observed: and \U0001f534 Gap: have been emitted "
         "at the validation run observation rung in the current cycle \u2014 "
         "emitting it at any other position is a protocol violation; "
+        "prose-only exec_observed sentinel does not satisfy this gate \u2014 "
+        "the exec_observed block must contain non-empty verbatim tool output in a triple-backtick block; "
         "HARD STOP may not be emitted at the executable validation rung \u2014 "
         "a harness error at EV requires fixing the harness, not an upward return; "
         "if the observed gap matches the prior cycle's gap, the edit did not address it \u2014 "
@@ -265,6 +273,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "criterion re-emission is required: emitting the OBR label without immediately "
         "following it with the criterion text is a protocol violation; "
         "the tool call is the only valid next action after criterion re-emission; "
+        "planning statements, diagnostic narration, and commentary between criterion re-emission and the tool call are protocol violations; "
         "\u2705 Thread N complete may not appear until a tool call exists in the transcript "
         "after the observed running behavior label in the current cycle; "
         "then immediately start or query the implemented artifact as a live running process via a tool call and emit "
@@ -384,7 +393,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "if no exec_observed exists yet in this cycle, state that explicitly rather than "
         "treating prior-cycle output as satisfying this check; "
         "if any of (a)\u2013(d) cannot be stated from the current-cycle transcript, "
-        "produce it before any other content at this rung. "
+        "produce it before any other content at this rung; "
+        "if (d) reveals that no valid exec_observed exists in the current cycle, the only permitted next token is a tool call \u2014 "
+        "producing any other content when (d) is false is a protocol violation. "
         )
         + _rung_names_sentence()
         + " "

@@ -14,8 +14,8 @@ from lib.groundPrompt import build_ground_prompt
 ORIGINAL_CHARS = 14036
 # C22–C24 add ~820 chars; C25–C28 add ~883 chars; ADR-0178 D1-D7 add ~5191 chars (drift closures).
 MAX_CHARS = (
-    ORIGINAL_CHARS + 9700
-)  # ADR-0179: E1-E6 add ~1117; ADR-0180: C1-C5 add ~500; ADR-0181: N1-N4 add ~900; ADR-0182: N5-N7 add ~770; formal notation separation; OBR live-process fix: +326; L1-L6 drift closures: +578
+    ORIGINAL_CHARS + 11800
+)  # ADR-0179: E1-E6 add ~1117; ADR-0180: C1-C5 add ~500; ADR-0181: N1-N4 add ~900; ADR-0182: N5-N7 add ~770; formal notation separation; OBR live-process fix: +326; L1-L6 drift closures: +578; ADR-0183 L7-L12 forward-gate closures: +~1940
 
 
 class TestGroundRewrite(unittest.TestCase):
@@ -107,8 +107,8 @@ class TestGroundRewrite(unittest.TestCase):
         obs_section = core[obs_start:obs_end]
         self.assertLessEqual(
             len(obs_section),
-            2700,
-            f"OBS rung section is {len(obs_section)} chars; must be ≤ 2700 after OBR live-process fix",
+            3200,
+            f"OBS rung section is {len(obs_section)} chars; must be ≤ 3200 after ADR-0183 L8 gate addition",
         )
 
     def test_vro_section_is_compact(self):

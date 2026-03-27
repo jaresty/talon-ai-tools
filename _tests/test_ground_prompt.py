@@ -234,9 +234,11 @@ def test_pre_action_rung_self_check():
         "sentinel_rules must define a pre-action self-check that fires before producing any artifact"
     )
     pre_idx = (
-        sr.find("before producing")
-        if "before producing" in sr
+        sr.find("before producing content at any rung")
+        if "before producing content at any rung" in sr
         else sr.find("before any artifact")
+        if "before any artifact" in sr
+        else sr.find("before producing")
     )
     assert pre_idx >= 0
     context = sr[max(0, pre_idx - 50) : pre_idx + 500]

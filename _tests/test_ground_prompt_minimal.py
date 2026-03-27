@@ -46,8 +46,8 @@ class TestMinimalGroundParts(unittest.TestCase):
         total = sum(len(v) for v in self.parts.values())
         self.assertLess(
             total,
-            23800,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 23800 (raised after L1-L6 drift closures: +578 chars)",
+            26000,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 26000 (raised after ADR-0183 L7-L12 forward-gate closures: +~1940 chars)",
         )
 
     def test_three_abstract_rules_present(self):
@@ -702,9 +702,9 @@ class TestMinimalGroundParts(unittest.TestCase):
     # C15: impl-gate is a descent gate, not a completion gate
     def test_c15_impl_gate_licenses_first_edit_not_thread_complete(self):
         self.assertIn(
-            "licenses the first edit",
+            "is the first token of the executable implementation rung",
             self.prompt,
-            "C15: ground must state impl-gate licenses the first edit, not thread completion",
+            "C15: ground must state impl-gate is the first token of the EI rung (ADR-0183 L11)",
         )
 
     def test_c15_ei_and_obs_must_still_fire_after_impl_gate(self):
@@ -723,8 +723,8 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_c16_thread_complete_may_not_appear_before_obs_fires(self):
-        gate_idx = self.prompt.index("licenses the first edit")
-        segment = self.prompt[gate_idx : gate_idx + 600]
+        gate_idx = self.prompt.index("is the first token of the executable implementation rung")
+        segment = self.prompt[gate_idx : gate_idx + 900]
         self.assertIn(
             "observed running behavior rung has fired",
             segment,

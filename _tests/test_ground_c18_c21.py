@@ -33,7 +33,7 @@ class TestC19PostDeliveryIntegration(unittest.TestCase):
     def test_c19_positioned_before_final_report(self):
         c19_idx = self.core.index("post-delivery integration observation")
         final_idx = self.core.index("After emitting \u2705 Manifest exhausted, produce a final report")
-        self.assertLess(abs(c19_idx - final_idx), 400,
+        self.assertLess(abs(c19_idx - final_idx), 800,
             "C19: post-delivery integration gate must appear near the final report instruction")
 
 

@@ -54,9 +54,9 @@ RUNG_SEQUENCE: list[dict] = [
     },
     {
         "name": "observed running behavior",
-        "artifact": "tool output demonstrating declared behavioral intent (not infrastructure state)",
+        "artifact": "live-process output — output produced by a tool call that starts or queries a running process; reading any file does not satisfy this type regardless of content",
         "gate": "implementation complete; exec_observed + gap for behavior from I",
-        "voids_if": "new files created; output names only infrastructure state",
+        "voids_if": "new files created; output names only infrastructure state; file read used as evidence",
     },
 ]
 
@@ -277,8 +277,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the tool call is the only valid next action after criterion re-emission; "
         "\u2705 Thread N complete may not appear until a tool call exists in the transcript "
         "after the observed running behavior label in the current cycle; "
-        "then immediately invoke the implemented artifact via a tool call and emit "
+        "then immediately start or query the implemented artifact as a live running process via a tool call and emit "
         "\U0001f534 Execution observed: with its verbatim output \u2014 "
+        "reading a file is not invoking a live process and does not satisfy this rung regardless of the file's content; "
         "the verbatim output must directly demonstrate the specific behavior named in the criterion; "
         "it must be what a non-technical observer of the running system would see \u2014 "
         "not the test suite, not process state unless the criterion is specifically about process state; "
@@ -289,7 +290,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "in-process rendering (renderToStaticMarkup, test-framework render) "
         "is acceptable only when no runnable artifact exists; "
         "if the implementation has no directly invocable artifact, invoke any non-test consumer "
-        "of the changed artifact that demonstrates the declared behavior; "
+        "that starts or queries a live process and demonstrates the declared behavior \u2014 "
+        "reading build artifacts, compiled output, generated HTML, or any static file is not a valid fallback "
+        "regardless of what the file contains; "
+        "if no live process can be started or queried, open a new gap cycle to make the artifact "
+        "directly invocable before continuing; "
         "a \U0001f534 Execution observed: block that is empty or blank, or contains only static-analysis output "
         "(file reads, grep results, directory listings), does not satisfy this gate at any rung \u2014 "
         "the block must contain output produced by running the artifact; "

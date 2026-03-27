@@ -32,7 +32,7 @@ REQUIRED_RUNG_KEYS = {"name", "artifact", "gate", "voids_if"}
 
 # Baseline character count of rung_sequence_code before refactor (measured: 8679 chars).
 # Target: numbered list compressed to inline arrow sequence; reduction modest (~30+ chars).
-BASELINE_RUNG_SEQUENCE_CODE_CHARS = 22900  # ADR-0179: ~1117; ADR-0180: ~500; ADR-0181: ~900; ADR-0182: ~770; formal notation separation
+BASELINE_RUNG_SEQUENCE_CODE_CHARS = 23200  # ADR-0179: ~1117; ADR-0180: ~500; ADR-0181: ~900; ADR-0182: ~770; formal notation separation; OBR live-process fix: +149
 
 
 class TestRungSequenceExists(unittest.TestCase):
@@ -87,6 +87,74 @@ class TestRungSequenceCodeShorter(unittest.TestCase):
             BASELINE_RUNG_SEQUENCE_CODE_CHARS,
             f"GROUND_PARTS_MINIMAL core is {actual} chars; expected < {BASELINE_RUNG_SEQUENCE_CODE_CHARS}",
         )
+
+
+class TestOBRHierarchyFallbackClosesStaticFiles(unittest.TestCase):
+    """Thread 3: hierarchy-fallback-gap — realism hierarchy must not permit static file reads."""
+
+    def setUp(self):
+        from lib.groundPrompt import build_ground_prompt
+        self.prompt = build_ground_prompt()
+
+    def test_fallback_excludes_static_files(self):
+        self.assertIn(
+            "static file",
+            self.prompt,
+            "OBR fallback must explicitly exclude static files",
+        )
+
+    def test_fallback_requires_new_gap_cycle(self):
+        self.assertIn(
+            "new gap cycle",
+            self.prompt,
+            "OBR fallback must require opening a new gap cycle when no live process can be started",
+        )
+
+
+class TestOBRInvocationPhraseRequiresLiveProcess(unittest.TestCase):
+    """Thread 2: invoke-phrase-gap — OBR invocation instruction must require a live process."""
+
+    def setUp(self):
+        from lib.groundPrompt import build_ground_prompt
+        self.prompt = build_ground_prompt()
+
+    def test_obr_invocation_names_live_process(self):
+        self.assertIn(
+            "start or query",
+            self.prompt,
+            "OBR invocation must say 'start or query' a live process",
+        )
+
+    def test_obr_invocation_excludes_file_reads(self):
+        self.assertIn(
+            "reading a file is not invoking a live process",
+            self.prompt,
+            "OBR invocation must state that reading a file does not satisfy the rung",
+        )
+
+
+class TestOBRArtifactTypeMechanismDefined(unittest.TestCase):
+    """Thread 1: artifact-type-gap — OBR artifact field must be mechanism-defined."""
+
+    def _obr_entry(self):
+        from lib.groundPrompt import RUNG_SEQUENCE
+        return next(e for e in RUNG_SEQUENCE if e["name"] == "observed running behavior")
+
+    def test_obr_artifact_names_live_process(self):
+        entry = self._obr_entry()
+        self.assertIn("live", entry["artifact"], "OBR artifact must specify live-process mechanism")
+
+    def test_obr_artifact_names_running_process(self):
+        entry = self._obr_entry()
+        self.assertIn("process", entry["artifact"], "OBR artifact must name 'process'")
+
+    def test_obr_artifact_excludes_file_reads(self):
+        entry = self._obr_entry()
+        self.assertIn("file", entry["artifact"], "OBR artifact must explicitly exclude file reads")
+
+    def test_obr_voids_if_includes_file_read(self):
+        entry = self._obr_entry()
+        self.assertIn("file", entry["voids_if"], "OBR voids_if must name file read as voiding condition")
 
 
 if __name__ == "__main__":

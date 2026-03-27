@@ -77,19 +77,15 @@ class TestGroundRewrite(unittest.TestCase):
         )
 
     def test_obr_realism_hierarchy(self):
-        """OBR rung must name dev server / CLI as preferred over in-process rendering."""
+        """OBR rung must require live running process; in-process rendering gated on no runnable artifact."""
+        # ADR-0184: dev server / HTML enumeration removed by Thread B; live-process invariant is the gate.
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
 
         core = GROUND_PARTS_MINIMAL["core"]
         self.assertIn(
-            "dev server",
+            "live running process",
             core,
-            "OBR realism hierarchy: dev server must be named as preferred invocation for web UI",
-        )
-        self.assertIn(
-            "HTML response body",
-            core,
-            "OBR realism hierarchy: HTML response body must be named as expected OBR output for web UI",
+            "OBR realism hierarchy: live running process must be named as the required invocation form",
         )
         self.assertIn(
             "only when no runnable artifact exists",
@@ -200,9 +196,10 @@ class TestGroundRewrite(unittest.TestCase):
             "F3: structural-vs-behavioral gate must name 'column header' as the disallowed structural-only form",
         )
 
-    # F4: OBS artifact type clarification for UI
+    # F4: OBS artifact type — output must directly demonstrate criterion behavior
     def test_f4_obs_ui_artifact_type_named(self):
-        """OBS rung must name browser-visible text as the required form for UI components."""
+        """OBS output must directly demonstrate the specific behavior named in the criterion."""
+        # ADR-0184: "browser"-specific enumeration removed by Thread B; "directly demonstrate" covers it.
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
 
         core = GROUND_PARTS_MINIMAL["core"]
@@ -210,19 +207,20 @@ class TestGroundRewrite(unittest.TestCase):
         obs_end = core.find("✅ Thread N complete may not be emitted unless")
         obs_section = core[obs_start:obs_end]
         self.assertIn(
-            "browser",
+            "directly demonstrate the specific behavior named in the criterion",
             obs_section,
-            "F4: OBS rung must name browser-visible output as the required form for UI components, excluding test-runner DOM queries",
+            "F4: OBR output must directly demonstrate the specific behavior named in the criterion",
         )
 
-    # F5: Per-criterion OBS demonstration — test pass excluded
+    # F5: Per-criterion OBS demonstration — test output is VRO-type not OBR-type (A2 axiom)
     def test_f5_thread_complete_demonstration_excludes_test_pass(self):
-        """Thread N complete gate must state that a test pass does not constitute demonstration."""
+        """A2 axiom must state test-suite output is VRO-type, not OBR-type."""
+        # ADR-0184: "test pass is not a demonstration" removed; A2 covers this globally at axiom level.
         prompt = build_ground_prompt()
         self.assertIn(
-            "test pass is not a demonstration",
+            "validation-run-observation-type output, not observed-running-behavior-type output",
             prompt,
-            "F5: Thread N complete gate must state that a test pass does not constitute OBS demonstration of a criterion",
+            "F5: A2 axiom must state that test-suite output is VRO-type not OBR-type",
         )
 
     # Axiom collapse: artifact type is operative gate, "matching its definition" removed

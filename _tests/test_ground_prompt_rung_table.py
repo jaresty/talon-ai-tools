@@ -96,11 +96,13 @@ class TestOBRHierarchyFallbackClosesStaticFiles(unittest.TestCase):
         from lib.groundPrompt import build_ground_prompt
         self.prompt = build_ground_prompt()
 
-    def test_fallback_excludes_static_files(self):
+    def test_fallback_opens_gap_cycle(self):
+        # ADR-0184: Thread B condensed fallback language; "static file" removed.
+        # Current form: "If no invocable process exists, open a gap cycle to make the artifact directly invocable."
         self.assertIn(
-            "static file",
+            "open a gap cycle to make the artifact directly invocable",
             self.prompt,
-            "OBR fallback must explicitly exclude static files",
+            "OBR fallback must require opening a gap cycle when no invocable process exists",
         )
 
     def test_fallback_requires_new_gap_cycle(self):
@@ -119,10 +121,11 @@ class TestOBRInvocationPhraseRequiresLiveProcess(unittest.TestCase):
         self.prompt = build_ground_prompt()
 
     def test_obr_invocation_names_live_process(self):
+        # ADR-0184: "start or query" was in old enumeration; condensed to "live running process".
         self.assertIn(
-            "start or query",
+            "live running process",
             self.prompt,
-            "OBR invocation must say 'start or query' a live process",
+            "OBR invocation must require invoking a live running process",
         )
 
     def test_obr_invocation_excludes_file_reads(self):

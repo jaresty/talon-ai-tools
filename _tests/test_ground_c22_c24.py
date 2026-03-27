@@ -5,26 +5,6 @@ sys.path.insert(0, '.')
 from lib.groundPrompt import GROUND_PARTS_MINIMAL
 
 
-class TestC22OBSBuildOutputProhibited(unittest.TestCase):
-    def setUp(self):
-        self.core = GROUND_PARTS_MINIMAL["core"]
-
-    def test_c22_build_output_never_satisfies(self):
-        self.assertIn(
-            "build output or compilation result never satisfies this gate",
-            self.core,
-            "C22: OBS gate must explicitly prohibit build output as direct demonstration")
-
-    def test_c22_positioned_in_obs_section(self):
-        c22_idx = self.core.index(
-            "build output or compilation result never satisfies this gate")
-        obs_idx = self.core.index("Upon writing the observed running behavior label")
-        thread_complete_idx = self.core.index("\u2705 Thread N complete may not be emitted")
-        self.assertGreater(c22_idx, obs_idx,
-            "C22: build-output prohibition must appear after the OBS rung label")
-        self.assertLess(c22_idx, thread_complete_idx,
-            "C22: build-output prohibition must appear before the Thread N complete gate")
-
 
 class TestC23CriterionMatchesManifestGap(unittest.TestCase):
     def setUp(self):

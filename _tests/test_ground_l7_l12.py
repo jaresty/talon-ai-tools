@@ -41,9 +41,9 @@ class TestL8OBRProcessStartQueryGate(unittest.TestCase):
 
     def test_l8_sentinel_not_emitted_until_both_calls_complete(self):
         self.assertIn(
-            "sentinel may not be emitted until both tool calls have completed",
+            "sentinel may not be emitted until both complete",
             self.core,
-            "L8: OBR paragraph must state exec_observed sentinel may not be emitted until both tool calls have completed",
+            "L8: OBR paragraph must state exec_observed sentinel may not be emitted until both calls complete",
         )
 
 

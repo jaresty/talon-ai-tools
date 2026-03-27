@@ -79,15 +79,6 @@ def test_build_error_excluded_from_gate():
     )
 
 
-def test_sentinel_causal_chain():
-    sr = SR()
-    assert "anticipated" in sr, (
-        "sentinel_rules must explain that a composed sentinel records anticipated rather than observed state"
-    )
-    assert "regardless" in sr and ("correct" in sr or "accuracy" in sr), (
-        "sentinel_rules must state that artifacts from a composed sentinel are invalid regardless of correctness"
-    )
-
 
 def test_v_complete_requires_green_gate_before_implementation():
     sr = SR()
@@ -142,12 +133,13 @@ def test_r3_behavioral_specificity():
 
 
 def test_validation_artifact_freeze():
+    # ADR-0184: "mock/simplif/weaken" vocabulary removed; perturbation check + vacuous-test rule cover this.
     ep = EP()
     assert "modif" in ep or "frozen" in ep, (
         "epistemological_protocol must state that post-declaration modification of the validation artifact requires upward correction"
     )
-    assert "mock" in ep or "simplif" in ep or "weaken" in ep, (
-        "epistemological_protocol must name mock weakening or simplification as a prohibited modification form"
+    assert "perturb" in ep or "vacuous" in ep, (
+        "epistemological_protocol must describe vacuous-test detection via perturbation"
     )
 
 
@@ -164,17 +156,9 @@ def test_retroactive_sentinel_does_not_open_gate():
 
 
 def test_r3_positive_definition_for_code_contexts():
+    # ADR-0184: per-artifact-type web UI enumeration (DOM, HTML fragment, etc.) removed by Thread B.
+    # "directly demonstrate the specific behavior named in the criterion" covers the invariant.
     rsc = RSC()
-    assert (
-        "rendered" in rsc
-        or "DOM" in rsc
-        or "api response" in rsc.lower()
-        or "response body" in rsc
-        or "HTML fragment" in rsc
-        or "render utility" in rsc
-    ), (
-        "rung_sequence_code must give a positive definition of what satisfies R3 in code contexts"
-    )
     assert "direct" in rsc or "directly" in rsc or "demonstrates" in rsc, (
         "rung_sequence_code must require the R3 output to directly demonstrate the declared feature"
     )
@@ -203,23 +187,6 @@ def test_carry_forward_is_a_gate():
         or "no implementation" in cf_context
     ), "sentinel_rules must frame carry-forward as a gate/violation"
 
-
-def test_composed_prose_body_always_invalid():
-    sr = SR()
-    assert (
-        "characterization" in sr
-        or "description of tool output" in sr
-        or "prose description" in sr
-    ), (
-        "sentinel_rules must state that a prose description of tool output is always composed content"
-    )
-    assert (
-        "even if accurate" in sr
-        or "regardless of whether" in sr
-        or "even accurate" in sr
-    ), (
-        "sentinel_rules must state the rule is not conditioned on accuracy of the description"
-    )
 
 
 def test_pre_action_rung_self_check():

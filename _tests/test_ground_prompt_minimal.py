@@ -463,17 +463,13 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Manifest declaration scan must not reference 'declared intent' — use prose rung instead",
         )
 
-    # C7 carve-out: tests are never valid at ORB rung
+    # C7 carve-out: tests are never valid at ORB rung — now covered by A2 axiom
     def test_c7_carveout_excludes_all_tests_not_just_gating_test(self):
-        orb_idx = self.prompt.index("Upon writing the observed running behavior label")
-        thread_complete_idx = self.prompt.index(
-            "\u2705 Thread N complete may not be emitted"
-        )
-        segment = self.prompt[orb_idx:thread_complete_idx]
+        # ADR-0184: OBR enumeration condensed; A2 axiom carries the all-tests exclusion at protocol level.
         self.assertIn(
-            "not the test suite",
-            segment,
-            "C7 carve-out: OBS rung must exclude the test suite (axiom-level rung-type constraint covers all-tests rule)",
+            "validation-run-observation-type output, not observed-running-behavior-type output",
+            self.prompt,
+            "C7 carve-out: A2 axiom must state test output is VRO-type not OBR-type",
         )
 
     # C12: observed running behavior rung criterion re-emission
@@ -490,15 +486,14 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_c12_process_state_does_not_satisfy_orb(self):
-        orb_idx = self.prompt.index("Upon writing the observed running behavior label")
-        thread_complete_idx = self.prompt.index(
-            "\u2705 Thread N complete may not be emitted"
-        )
-        segment = self.prompt[orb_idx:thread_complete_idx]
+        # ADR-0184: "process state" removed from OBR section; rung table voids_if covers
+        # "output names only infrastructure state" which subsumes process-state output.
+        from lib.groundPrompt import RUNG_SEQUENCE
+        obr_entry = next(e for e in RUNG_SEQUENCE if e["name"] == "observed running behavior")
         self.assertIn(
-            "process state",
-            segment,
-            "C12: ground must state that process-state output does not satisfy the ORB rung",
+            "infrastructure state",
+            obr_entry["voids_if"],
+            "C12: OBR rung table voids_if must exclude infrastructure-state-only output",
         )
 
     # C10: test derives from formal notation structural invariants
@@ -589,17 +584,20 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C4-prime: execution output must come from a tool-call result, not inline text
     def test_c4prime_execution_output_must_be_from_tool_call(self):
+        # ADR-0184: "verbatim tool-call output" condensed to "verbatim tool output"
         self.assertIn(
-            "verbatim tool-call output",
+            "verbatim tool output",
             self.prompt,
-            "C4-prime: ground must require execution output to be verbatim tool-call output at any rung",
+            "C4-prime: ground must require verbatim tool output (from a tool call) at any rung",
         )
 
     def test_c4prime_inline_text_does_not_satisfy_gate(self):
+        # ADR-0184: "model-generated text that resembles output" removed;
+        # "Any deviation voids the sentinel" covers the inline-text case.
         self.assertIn(
-            "model-generated text that resembles output",
+            "Any deviation voids the sentinel",
             self.prompt,
-            "C4-prime: ground must state that model-generated text resembling output does not satisfy any rung",
+            "C4-prime: any deviation from verbatim tool output voids the sentinel",
         )
 
     # C13: post-EI green requires prior red with test logic failing
@@ -646,12 +644,14 @@ class TestMinimalGroundParts(unittest.TestCase):
             "C14→C12: ground must require a thread directly covering each behavioral predicate",
         )
 
-    # C7-output-criterion: OBS output must be what a non-technical observer sees
+    # C7-output-criterion: OBS output must directly demonstrate the criterion behavior
     def test_c7_output_criterion_non_technical_observer(self):
+        # ADR-0184: "non-technical observer" phrase removed; "directly demonstrate the specific behavior
+        # named in the criterion" covers the invariant more precisely.
         self.assertIn(
-            "non-technical observer of the running system",
+            "directly demonstrate the specific behavior named in the criterion",
             self.prompt,
-            "C7-output-criterion: OBS output must be what a non-technical observer would see",
+            "C7-output-criterion: OBS output must directly demonstrate the specific behavior named in the criterion",
         )
 
     def test_c7_output_criterion_test_report_invalid(self):

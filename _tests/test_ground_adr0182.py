@@ -42,7 +42,7 @@ def test_principles_appear_after_axioms():
 def test_principles_appear_before_exec_observed_block():
     result = _result()
     p3_pos = result.index("P3 (Scope discipline)")
-    mech_start = result.index("Every \U0001f534 Execution observed")
+    mech_start = result.index("\U0001f534 Execution observed: requires")
     assert p3_pos < mech_start, "P3 must appear before the exec_observed verbatim rule"
 
 
@@ -65,7 +65,7 @@ def test_rung_table_contains_all_rung_names():
     ]
     table_start = result.index("Rung table")
     # All rung names must appear in the table section (before protocol mechanics)
-    mech_start = result.index("Every \U0001f534 Execution observed")
+    mech_start = result.index("\U0001f534 Execution observed: requires")
     table_section = result[table_start:mech_start]
     for name in rung_names:
         assert name in table_section, f"Rung '{name}' missing from rung table section"

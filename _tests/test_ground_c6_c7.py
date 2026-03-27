@@ -31,11 +31,12 @@ class TestC7ObservedRunningBehaviorType(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c7_distinguishes_implemented_artifact_from_tests(self):
-        orb_idx = self.core.index("Upon writing the observed running behavior label")
-        thread_complete_idx = self.core.index("\u2705 Thread N complete may not be emitted")
-        segment = self.core[orb_idx:thread_complete_idx]
-        self.assertIn("not the", segment,
-            "C7: observed running behavior rung must explicitly distinguish implemented artifact from test suite")
+        # ADR-0184: OBR enumeration condensed; A2 axiom now carries the artifact-type constraint at protocol level.
+        # A2 states test-suite output is VRO-type, not OBR-type — covers C7 globally.
+        self.assertIn(
+            "validation-run-observation-type output, not observed-running-behavior-type output",
+            self.core,
+            "C7: A2 axiom must distinguish test-suite output (VRO-type) from OBR-type output")
 
     def test_c7_prohibits_running_tests_at_orb_rung(self):
         orb_idx = self.core.index("Upon writing the observed running behavior label")
@@ -46,11 +47,12 @@ class TestC7ObservedRunningBehaviorType(unittest.TestCase):
             "C7: ground must state that running tests does not satisfy the observed running behavior rung")
 
     def test_c7_carveout_for_non_invocable_artifacts(self):
+        # ADR-0184: phrase changed from "no directly invocable artifact" to "no runnable artifact exists"
         orb_idx = self.core.index("Upon writing the observed running behavior label")
         thread_complete_idx = self.core.index("\u2705 Thread N complete may not be emitted")
         segment = self.core[orb_idx:thread_complete_idx]
-        self.assertIn("no directly invocable artifact", segment,
-            "C7: ground must include a carve-out for implementations with no directly invocable artifact")
+        self.assertIn("no runnable artifact exists", segment,
+            "C7: OBR section must include a carve-out for implementations with no runnable artifact")
 
 
 if __name__ == "__main__":

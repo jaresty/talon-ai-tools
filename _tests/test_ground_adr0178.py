@@ -12,14 +12,6 @@ else:
 from lib.groundPrompt import build_ground_prompt
 
 
-class TestADR0178D1ElisionProhibition(unittest.TestCase):
-    def test_elision_marker_prohibition_present(self):
-        self.assertIn(
-            "elision",
-            build_ground_prompt(),
-            "D1: sentinel_rules must prohibit elision markers inside the triple-backtick block",
-        )
-
 
 class TestADR0178D2NextActionGate(unittest.TestCase):
     def test_next_action_gate_present(self):

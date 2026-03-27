@@ -40,14 +40,6 @@ class TestE1CarryForwardReadGate(unittest.TestCase):
         )
 
 
-class TestE2OBRProvenanceTranscriptCheck(unittest.TestCase):
-    def test_provenance_transcript_check_present(self):
-        self.assertIn(
-            "rung label cannot be located",
-            build_ground_prompt(),
-            "E2: OBR provenance must gate on transcript-locatable rung label, not model recall",
-        )
-
 
 class TestE3ManifestDeclaredProseReadGate(unittest.TestCase):
     def test_manifest_declared_prose_read_gate_present(self):

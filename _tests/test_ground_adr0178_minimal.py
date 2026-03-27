@@ -16,14 +16,6 @@ def _minimal():
     return build_ground_prompt()
 
 
-class TestD1ElisionMinimal(unittest.TestCase):
-    def test_elision_prohibition_in_minimal(self):
-        self.assertIn(
-            "elision",
-            _minimal(),
-            "D1: minimal must prohibit elision markers inside the triple-backtick block",
-        )
-
 
 class TestD2NextActionGateMinimal(unittest.TestCase):
     def test_next_action_gate_in_minimal(self):
@@ -193,11 +185,11 @@ class TestADR0182Closures(unittest.TestCase):
     """ADR-0182: Three transcript drift closures — N5, N6, N7."""
 
     def test_n5_exec_observed_prose_voids_sentinel(self):
-        """N5: exec-observed with no delimited block is void."""
+        """N5: exec-observed with no delimited block is void (ADR-0184: condensed form)."""
         self.assertIn(
-            "no delimited block",
+            "Any deviation voids the sentinel",
             _minimal(),
-            "N5: ground prompt must void exec-observed sentinel when not followed by triple-backtick block",
+            "N5: ground prompt must void exec-observed sentinel on any deviation (ADR-0184: condensed form)",
         )
 
     def test_n6_v_complete_required_before_obr(self):

@@ -185,7 +185,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "The formal notation rung separates behavioral specification from explanation. "
         "Formal notation (type signatures, interfaces, invariants, pre/postconditions) encodes what must be true \u2014 "
         "the executable or testable part. Natural language labels, introduces, and explains the specification \u2014 "
-        "prose adds context but does not substitute for formal encoding where precision matters. "
+        "prose adds context but the behavioral constraints must still be encoded in notation."
         "Formal notation encodes only the criteria declared at the criteria rung \u2014 "
         "no additional invariants, no anticipated cases; "
         "it must encode all structural constraints the criterion implies \u2014 "

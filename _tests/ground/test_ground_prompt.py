@@ -377,6 +377,7 @@ def test_thread_scanner_scoped_to_practitioner_prose():
         "prose rung" in context
         or "prose rung artifact" in context
         or "practitioner" in context
+        or "you just wrote" in context
     ), (
         "The manifest-scanning sentence must scope 'the prose' to the practitioner's prose rung artifact, "
         "not to the ground prompt's rule text or other transcript content"

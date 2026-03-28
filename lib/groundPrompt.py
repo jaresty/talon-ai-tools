@@ -365,7 +365,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "Before emitting \u2705 Manifest declared, scan every sentence in the prose for behavioral predicates "
         "(fetches, requires, displays, filters, renders, validates, authenticates, loads, saves, or similar) \u2014 "
         "each distinct predicate requires a separate thread; "
-        "re-read the prose rung output via a tool call to confirm every predicate is covered; "
+        "count the [T: gap-name] markers in the prose you just wrote to confirm every predicate is covered; "
         "each manifest entry is a short gap label \u2014 a noun phrase naming the gap, not a behavioral assertion; "
         "a manifest entry containing a verb or phrased as a currently-false assertion is malformed; "
         "the behavioral assertion for a gap is produced for the first time at the criteria rung, not the manifest; "

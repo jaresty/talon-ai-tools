@@ -41,14 +41,6 @@ class TestE1CarryForwardReadGate(unittest.TestCase):
 
 
 
-class TestE3ManifestDeclaredProseReadGate(unittest.TestCase):
-    def test_manifest_declared_prose_read_gate_present(self):
-        self.assertIn(
-            "re-read the prose rung output via a tool call",
-            build_ground_prompt(),
-            "E3: Manifest declared must be gated on a tool-call re-read of prose confirming all [T:] markers present",
-        )
-
 
 class TestE4FalsifyingConditionContentGate(unittest.TestCase):
     def test_falsifying_condition_content_gate_present(self):

@@ -142,12 +142,23 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         #   artifacts from prior cycles have no standing in the current cycle.
         # R2 (minimal derivation): each artifact is the minimal transformation of the prior
         #   artifact that satisfies the current rung's type — form changes, intent does not.
+        "This protocol exists because a model\u2019s description of completed work is indistinguishable from actually completing it \u2014 "
+        "every gate enforces the distinction by requiring a piece of reality before any claim about reality. "
+        "Every rung gate exists to prevent one class of error: claiming evidence without producing it. "
+        "A sentinel is not a summary of what you believe happened \u2014 "
+        "it is a claim that a specific tool-executed event exists in this transcript; "
+        "if that event is absent, the sentinel is false regardless of prediction or prior knowledge. "
         "A3: each descent through the ladder is a new evidential context \u2014 "
         "the evidential context resets at every re-emission of the prose rung label. "
         "R2: each artifact derives from the prior rung \u2014 form changes, intent does not; "
         "a skipped rung voids all artifacts below it; "
         "if the prior rung\u2019s artifact is absent or void, no artifact below it is valid regardless of content; "
         "each artifact addresses only the gap declared by the prior rung, nothing beyond it. "
+        "Each artifact must be derived from the prior rung\u2019s actual content \u2014 "
+        "not from the original intent reconstructed from memory \u2014 "
+        "because divergence from intent is only visible at the rung where the prior artifact\u2019s specificity is insufficient; "
+        "this is why R2 (form changes, intent does not) is load-bearing: "
+        "it ensures the chain of derivation is unbroken and misalignment surfaces at the earliest possible rung. "
         # ADR-0182: named principles derived from axioms.
         # P1 (Evidential boundary): derived from A1 + A2.
         # P2 (Forward-only discipline): derived from A2 + R2.
@@ -241,6 +252,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "\U0001f534 Gap: must be the first content after the criteria rung label \u2014 "
         "the criterion sentence may not precede the Gap declaration; "
         "writing the criterion before \U0001f534 Gap: is a protocol violation; "
+        "the Gap names the currently-false assertion that the criterion will make true; "
+        "writing the criterion first proposes a repair before naming what is broken; "
         "before writing the criteria artifact, locate \u2705 Manifest declared in the transcript "
         "and quote the gap text for this thread verbatim \u2014 "
         "a criterion written without a citable manifest excerpt is unanchored; "
@@ -260,7 +273,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "writing criteria for Thread 2 or any subsequent thread before \u2705 Thread 1 complete is emitted "
         "is a protocol violation regardless of whether they share a criteria rung label; "
         "batch-collecting criteria for multiple threads under one criteria label bypasses sequential descent "
-        "and is a protocol violation. "
+        "and is a protocol violation; "
+        "each thread\u2019s criterion is only valid in the context of that thread\u2019s descent \u2014 "
+        "writing criteria for all threads before descending any treats the rung as a planning step, which it is not. "
         "The formal notation rung separates behavioral specification from explanation. "
         "Formal notation (type signatures, interfaces, invariants, pre/postconditions) encodes what must be true \u2014 "
         "the executable or testable part. Natural language labels, introduces, and explains the specification \u2014 "
@@ -285,6 +300,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "this is not a skipped rung; the artifact must appear in the transcript and the audit section still applies; "
         "the audit section is separate and named and must appear before the completion sentinel \u2014 "
         "the sentinel closes the audit section; it does not constitute it; "
+        "emitting it before the audit section inverts causality \u2014 "
+        "you are claiming completion before the evidence exists; "
         "the rung is incomplete until all criteria are encoded. "
         "Natural language may appear as section labels or introductions "
         "(e.g., \u2018This invariant captures the rendering constraint:\u2019) "
@@ -466,6 +483,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "no new behavioral claims, no coverage summaries, no suggestions; "
         "then reconcile any documents the implementation affects. "
         )
+        + "Each rung forces a kind of specificity the prior rung cannot enforce: "
+        "prose makes intent legible, criteria makes it falsifiable, formal notation makes it precise, "
+        "EV makes it executable, VRO confirms it fails, EI produces the fix, OBR confirms it runs; "
+        "skipping a rung leaves open the escape route that rung closes. "
         + _rung_names_sentence()
         + " "
         + _sentinel_block()

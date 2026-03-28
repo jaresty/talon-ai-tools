@@ -1,6 +1,6 @@
 # ADR-0196: Why-Framing — Purpose Statements to Reduce Meta-Ambiguity
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-03-28
 
 ---

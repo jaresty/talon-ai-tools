@@ -335,6 +335,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "\u2705 Thread N complete may not appear until the observed running behavior rung has fired for this thread. "
         "Each sentence in the prose containing a behavioral predicate \u2014 any action verb attributing "
         "behavior to the system \u2014 must be followed inline by a bracketed thread marker: [T: gap-name]; "
+        "[T: gap-name] markers are valid only in the prose rung \u2014 "
+        "their presence in any other rung artifact is a protocol violation; "
         "before emitting \u2705 Manifest declared, count every [T: gap-name] marker in the prose \u2014 "
         "the manifest thread list must contain exactly one entry per distinct gap-name; "
         "a [T: gap-name] marker in the prose with no corresponding manifest entry is a protocol violation. "

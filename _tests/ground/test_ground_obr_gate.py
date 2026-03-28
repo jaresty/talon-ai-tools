@@ -10,54 +10,43 @@ class TestOBRLiveProcessForwardGate(unittest.TestCase):
         self.prompt = build_ground_prompt()
 
     def test_obr_gate_blocks_thread_complete_if_only_test_runner(self):
-        """Thread N complete must be explicitly blocked when OBR has only test-runner output."""
-        # Requires a specific forward gate sentence — OR-fallback via P4 once prose is deleted
-        has_gate = (
-            "if the most recent tool call at this rung is a test runner" in self.prompt
-            or "if the most recent OBR tool call is a test runner" in self.prompt
-            or (
-                "P4 (Rung action discipline)" in self.prompt
-                and "live-process invocation" in self.prompt
-                and "OBR" in self.prompt
-                and "blocked" in self.prompt
-            )
+        # ADR-0187: "if the most recent tool call at this rung is a test runner" deleted.
+        # Guarantee carried by: rung table void condition (test-runner output voids OBR rung) +
+        # P4 Clause B (live-process invocation is step 3; test suite is step 5 — wrong type at step 3).
+        self.assertNotIn(
+            "if the most recent tool call at this rung is a test runner",
+            self.prompt,
+            "ADR-0187: OBR explicit forward gate phrase must be absent — subsumed by rung table + P4 Clause B",
         )
-        self.assertTrue(
-            has_gate,
-            "OBR must have an explicit forward gate: if most recent OBR tool call is a test runner, "
-            "Thread N complete is blocked",
+        self.assertIn(
+            "test runner output — a test-suite pass is validation-run-observation-type output",
+            self.prompt,
+            "OBR rung table void condition must carry the test-runner blocking guarantee",
         )
 
     def test_obr_forward_gate_names_only_valid_next_action(self):
-        """The OBR forward gate must name 'only valid next action' as live-process invocation."""
-        # Check that 'only valid next action' appears near the OBR test-runner block
-        idx = self.prompt.find("if the most recent tool call at this rung is a test runner")
-        if idx == -1:
-            idx = self.prompt.find("if the most recent OBR tool call is a test runner")
-        self.assertGreater(
-            idx, -1,
-            "OBR explicit forward gate sentence must be present",
+        # ADR-0187: explicit gate deleted; P4 Clause A carries "no content other than the next step".
+        self.assertNotIn(
+            "if the most recent OBR tool call is a test runner",
+            self.prompt,
+            "ADR-0187: OBR forward gate phrase must be absent",
         )
-        segment = self.prompt[idx:idx+250]
-        self.assertTrue(
-            "only valid next action" in segment or "only valid next token" in segment,
-            "OBR forward gate must name 'only valid next action' within 250 chars of gate trigger",
+        self.assertIn(
+            "no content other than the next step in the sequence may appear between steps",
+            self.prompt,
+            "P4 Clause A must carry the sequencing constraint between OBR steps",
         )
 
     def test_condition5_cannot_be_satisfied_before_live_process(self):
-        """Condition (5) test suite requirement must be ordered after live-process invocation."""
-        # The gate sentence must appear BEFORE condition (5) in the prompt
-        gate_idx = self.prompt.find("if the most recent tool call at this rung is a test runner")
-        if gate_idx == -1:
-            gate_idx = self.prompt.find("if the most recent OBR tool call is a test runner")
-        cond5_idx = self.prompt.find(
-            "a full test suite run result exists after the most recent OBR tool call"
-        )
-        self.assertGreater(gate_idx, -1, "OBR forward gate must be present")
-        self.assertGreater(cond5_idx, -1, "Condition (5) test suite requirement must be present")
+        # ADR-0187: explicit "most recent tool call" gate deleted.
+        # P4 Clause B ordering: live-process is step (3), test suite is step (5) — ordering enforced.
+        live_idx = self.prompt.find("live-process invocation of the implementation artifact")
+        suite_idx = self.prompt.find("(5) test suite run")
+        self.assertGreater(live_idx, -1, "P4 Clause B live-process invocation must be present")
+        self.assertGreater(suite_idx, -1, "P4 Clause B test suite step must be present")
         self.assertLess(
-            gate_idx, cond5_idx,
-            "OBR forward gate must appear before condition (5) test suite requirement",
+            live_idx, suite_idx,
+            "P4 Clause B must order live-process invocation (step 3) before test suite run (step 5)",
         )
 
 

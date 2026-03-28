@@ -38,17 +38,31 @@ class TestL8OBRProcessStartQueryGate(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_l8_two_tool_calls_required_in_sequence(self):
-        self.assertIn(
+        # ADR-0187: "two tool calls are required in sequence" phrase deleted from OBR prose block.
+        # P4 Clause B names "process-start followed by query, both tool calls required".
+        self.assertNotIn(
             "two tool calls are required in sequence",
             self.core,
-            "L8: OBR paragraph must require two tool calls in sequence (process-start then query)",
+            "ADR-0187: L8 phrase must be absent — subsumed by P4 Clause B process-start+query requirement",
+        )
+        self.assertIn(
+            "process-start followed by query, both tool calls required",
+            self.core,
+            "P4 Clause B must name process-start + query as the two required calls",
         )
 
     def test_l8_sentinel_not_emitted_until_both_calls_complete(self):
-        self.assertIn(
+        # ADR-0187: "sentinel may not be emitted until both complete" deleted.
+        # P4 Clause A (sequence binding) carries: no completion sentinel until full sequence executes.
+        self.assertNotIn(
             "sentinel may not be emitted until both complete",
             self.core,
-            "L8: OBR paragraph must state exec_observed sentinel may not be emitted until both calls complete",
+            "ADR-0187: L8 phrase must be absent — subsumed by P4 Clause A sequence binding",
+        )
+        self.assertIn(
+            "no completion sentinel for the rung may be emitted until the full sequence has been executed in order",
+            self.core,
+            "P4 Clause A must carry the sentinel-not-before-full-sequence guarantee",
         )
 
 

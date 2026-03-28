@@ -53,8 +53,13 @@ def test_i_formation_sentinel():
     assert "I-formation complete" in rsc, (
         "rung_sequence_code must define a sentinel for I-formation completion"
     )
-    assert "manifest may not appear" in rsc or "before the" in rsc, (
-        "rung_sequence_code must state the manifest may not appear before the I-formation sentinel"
+    # ADR-0187: "manifest may not appear" / "before the" phrases deleted.
+    # Manifest declared gate now states: if no [T: gap-name] markers in prose, Manifest declared is blocked.
+    assert "I-formation complete" in rsc, (
+        "rung_sequence_code must define the I-formation complete sentinel"
+    )
+    assert "[T: gap-name]" in rsc or "Manifest declared is blocked" in rsc, (
+        "rung_sequence_code must state Manifest declared requires I-formation markers"
     )
 
 
@@ -190,37 +195,19 @@ def test_carry_forward_is_a_gate():
 
 
 def test_pre_action_rung_self_check():
-    # ADR-0181: rung-entry gate is the pre-action check. It says "before producing content at any rung"
-    # and requires stating rung name, gap, artifact type, and exec_observed check.
+    # ADR-0187: "before producing content at any rung" rung-entry gate deleted (P1 procedural restatement).
+    # Pre-action rung discipline is now carried by P4 (Rung action discipline) — closed action set per rung.
     sr = SR()
-    assert (
-        "before producing" in sr
-        or "before any artifact" in sr
-        or "before each artifact" in sr
-    ), (
-        "sentinel_rules must define a pre-action self-check that fires before producing any artifact"
+    assert "P4 (Rung action discipline)" in sr, (
+        "P4 must be present to carry the pre-action rung discipline guarantee"
     )
-    pre_idx = (
-        sr.find("before producing content at any rung")
-        if "before producing content at any rung" in sr
-        else sr.find("before any artifact")
-        if "before any artifact" in sr
-        else sr.find("before producing")
+    assert "closed action set" in sr or "gate condition for each rung is the rung table" in sr, (
+        "P4 or rung table must state the pre-action rung action constraint"
     )
-    assert pre_idx >= 0
-    context = sr[max(0, pre_idx - 50) : pre_idx + 500]
-    assert "rung" in context, (
-        "sentinel_rules pre-action check must require identifying the current rung"
+    # Coverage includes prose, criteria, formal notation rungs (no tool calls)
+    assert "prose, criteria, and formal notation rungs: no tool calls" in sr, (
+        "P4 must explicitly state no tool calls at prose/criteria/formal notation rungs"
     )
-    # "any rung" covers all rungs including prose, criteria, and non-executable rungs
-    assert (
-        "any rung" in context
-        or "prose" in context
-        or "criteria" in context
-        or "non-executable" in context
-        or "all artifact" in context
-        or "every artifact" in context
-    ), "sentinel_rules pre-action check must explicitly apply to non-executable rungs"
 
 
 def test_ei_rung_vacuous_green_rearms_during_cycle():
@@ -281,33 +268,22 @@ def test_formal_notation_prohibits_implementation_shaped_content():
 
 
 def test_sequential_thread_execution_required():
-    # ADR-0181: "at most one thread" removed (attractor 4 subsumed by rung-entry gate).
-    # Gate part (b) — singular current gap — enforces serialization: a model producing thread N+1
-    # content cannot state a singular current gap without contradiction.
+    # ADR-0187: "Rung-entry gate" deleted. Thread serialization now carried by P3:
+    # "all seven rungs for Thread N must complete before any content for Thread N+1 may appear"
     sr = SR()
-    assert (
-        "before beginning the next thread" in sr
-        or "before starting the next thread" in sr
-        or "before thread" in sr
-        or "at most one thread" in sr
-        or "one thread at a time" in sr
-        or "Rung-entry gate" in sr
-    ), (
-        "Ground prompt must enforce sequential thread execution — via explicit gate or rung-entry gate"
+    assert "all seven rungs for Thread N must complete before any content for Thread N+1 may appear" in sr, (
+        "P3 must enforce sequential thread execution: all 7 rungs for Thread N before Thread N+1"
     )
 
 
 def test_sequential_thread_gate_covers_all_rungs():
-    # ADR-0181: "at most one thread" clause removed; rung-entry gate covers all rungs by design.
+    # ADR-0187: "Rung-entry gate" deleted. All-rung coverage now carried by P3 thread-sequential rule.
     sr = SR()
-    # Gate says "before producing content at any rung" — covers all rungs, not just prose.
-    assert "Rung-entry gate" in sr, (
-        "rung-entry gate must be present to enforce all-rung thread serialization"
+    assert "all seven rungs for Thread N must complete before any content for Thread N+1 may appear" in sr, (
+        "P3 must cover all rungs for thread serialization — not just prose"
     )
-    gate_idx = sr.find("Rung-entry gate")
-    context = sr[gate_idx : gate_idx + 300]
-    assert "any rung" in context, (
-        "Rung-entry gate must apply to 'any rung' — not limited to the prose rung"
+    assert "Rung-entry gate" not in sr, (
+        "ADR-0187: Rung-entry gate must be absent — deleted as P1 procedural restatement"
     )
 
 

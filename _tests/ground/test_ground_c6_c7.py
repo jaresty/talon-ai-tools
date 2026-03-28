@@ -14,10 +14,13 @@ class TestC6ArtifactLocationGate(unittest.TestCase):
             "C6: ground must require validation artifacts to reside within the version-controlled file tree")
 
     def test_c6_positioned_after_head_check(self):
-        preexist_idx = self.core.index("confirm via tool call that the artifact path does not pre-exist")
+        # ADR-0187: "confirm via tool call that the artifact path does not pre-exist" deleted (L31 forward gate).
+        # Pre-existence check is now carried by P4 EV sequence step (1).
+        # Position test updated: version-controlled tree requirement must appear after the P4 EV sequence.
+        p4_ev_idx = self.core.index("EV rung: (1) pre-existence or pre-failure check")
         tree_idx = self.core.index("version-controlled file tree")
-        self.assertGreater(tree_idx, preexist_idx,
-            "C6: version-controlled tree requirement must appear after the pre-existence check clause")
+        self.assertGreater(tree_idx, p4_ev_idx,
+            "C6: version-controlled tree requirement must appear after the P4 EV sequence (ADR-0187: L31 phrase deleted)")
 
     def test_c6_positioned_before_v_complete_sentinel(self):
         tree_idx = self.core.index("version-controlled file tree")
@@ -39,20 +42,18 @@ class TestC7ObservedRunningBehaviorType(unittest.TestCase):
             "C7: A2 axiom must distinguish test-suite output (VRO-type) from OBR-type output")
 
     def test_c7_prohibits_running_tests_at_orb_rung(self):
-        orb_idx = self.core.index("Upon writing the observed running behavior label")
-        thread_complete_idx = self.core.index("\u2705 Thread N complete may not be emitted")
-        segment = self.core[orb_idx:thread_complete_idx]
-        self.assertTrue(
-            "test" in segment.lower() and "not" in segment.lower(),
-            "C7: ground must state that running tests does not satisfy the observed running behavior rung")
+        # ADR-0187: "Upon writing the observed running behavior label" deleted.
+        # Behavioral guarantee carried by OBR rung table void condition.
+        self.assertIn(
+            "test runner output — a test-suite pass is validation-run-observation-type output",
+            self.core,
+            "C7: OBR rung table void condition must state test-runner output voids the rung")
 
     def test_c7_carveout_for_non_invocable_artifacts(self):
-        # ADR-0184: phrase changed from "no directly invocable artifact" to "no runnable artifact exists"
-        orb_idx = self.core.index("Upon writing the observed running behavior label")
-        thread_complete_idx = self.core.index("\u2705 Thread N complete may not be emitted")
-        segment = self.core[orb_idx:thread_complete_idx]
-        self.assertIn("no runnable artifact exists", segment,
-            "C7: OBR section must include a carve-out for implementations with no runnable artifact")
+        # ADR-0187: "Upon writing the observed running behavior label" deleted (criterion re-emission rule).
+        # Test updated to check the carve-out phrase is present globally (not bounded by deleted section marker).
+        self.assertIn("no runnable artifact exists", self.core,
+            "C7: ground must include a carve-out for implementations with no runnable artifact")
 
 
 if __name__ == "__main__":

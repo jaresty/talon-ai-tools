@@ -48,19 +48,17 @@ class TestC16FinalReportVerbatimCopy(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c16_verbatim_transcript_check(self):
-        # ADR-0181: attractor 7 (final-report transcript gate) removed — subsumed by rung-entry gate.
-        # C16 enforcement now fires at rung entry via gate part (b): the current gap as a
-        # currently-false assertion must be stateable from the current-cycle transcript.
-        self.assertIn("Rung-entry gate", self.core,
-            "C16: rung-entry gate (ADR-0181) subsumes final-report transcript check — gate must be present")
+        # ADR-0187: rung-entry gate block deleted entirely (P1 procedural restatement).
+        # C16 behavioral guarantee now carried by P1 evidential boundary.
+        self.assertNotIn("Rung-entry gate", self.core,
+            "C16: rung-entry gate must be absent (ADR-0187: deleted as P1 procedural restatement)")
+        self.assertIn("P1 (Evidential boundary)", self.core,
+            "C16: P1 must be present to carry the rung-entry guarantee")
 
     def test_c16_positioned_near_final_report_section(self):
-        # ADR-0182: rung-entry gate moved to position 5 (after protocol mechanics including final report).
-        # Gate now appears after the rung table; position is verified relative to the rung table.
-        gate_idx = self.core.index("Rung-entry gate")
-        rung_table_idx = self.core.index("Rung table")
-        self.assertGreater(gate_idx, rung_table_idx,
-            "C16: rung-entry gate must appear after the rung table (ADR-0182 position 5)")
+        # ADR-0187: rung-entry gate block deleted — position test replaced by absence assertion.
+        self.assertNotIn("Rung-entry gate", self.core,
+            "C16: rung-entry gate must be absent (ADR-0187)")
 
 
 class TestC17ImplicitConjunctionBan(unittest.TestCase):
@@ -95,37 +93,53 @@ class TestC17ImplicitConjunctionBan(unittest.TestCase):
         )
 
     def test_obr_tool_call_is_only_valid_next_action(self):
-        # Regression: OBR has a completion gate (exec_observed must precede Thread N complete)
-        # but no sequencing gate — the model can skip the tool call and emit Thread N complete by inference.
-        # This test checks that the prompt names a tool call as the only valid next action after criterion re-emission.
-        self.assertIn(
+        # ADR-0187: "the tool call is the only valid next action after criterion re-emission" deleted.
+        # Incompatible with new P4 Clause B: provenance statement (step 2) is now required between
+        # criterion re-emission (step 1) and live-process invocation (step 3).
+        # P4 Clause A ("no content other than the next step") carries the sequencing guarantee.
+        self.assertNotIn(
             "the tool call is the only valid next action after criterion re-emission",
             self.core,
-            "OBR sequencing gate: tool call must be named as the only valid next action after criterion re-emission",
+            "ADR-0187: this phrase must be absent — incompatible with P4 Clause B provenance statement step",
+        )
+        self.assertIn(
+            "no content other than the next step in the sequence may appear between steps",
+            self.core,
+            "P4 Clause A must carry the OBR sequencing guarantee",
         )
 
     def test_obr_thread_complete_requires_tool_call_in_transcript(self):
-        # The completion gate must reference a tool call in the transcript, not just an exec_observed sentinel.
-        self.assertIn(
+        # ADR-0187: condition (1) preamble deleted — derivable from P4 Clause B step (3) + Clause A sequence binding.
+        # P4 Clause B names live-process invocation (tool call) as step (3); Clause A requires the full sequence.
+        self.assertNotIn(
             "Thread N complete may not appear until a tool call exists in the transcript",
             self.core,
-            "OBR gate must block Thread N complete until a tool call exists after the OBR label in the current cycle",
+            "ADR-0187: condition (1) preamble must be absent — derivable from P4 Clause A+B",
+        )
+        self.assertIn(
+            "live-process invocation",
+            self.core,
+            "P4 Clause B must name live-process invocation (tool call) as a required OBR step",
         )
 
     def test_obr_test_runner_output_blocks_thread_complete(self):
-        # ADR-0182: OBR test-runner clause removed — subsumed by rung-entry gate + P1.
-        # P1 names test runner output as not satisfying any gate; rung-entry gate part (d) checks
-        # whether exec_observed output is of the required artifact type (live-process output).
-        # Both together prevent test runner output from satisfying the OBR gate.
+        # ADR-0187: rung-entry gate deleted (P1 procedural restatement).
+        # OBR test-runner blocking now carried by: P1 (test runner output is not live-process output type)
+        # + OBR rung table void condition + P4 Clause B (test suite is step 5, after live-process step 3).
         self.assertIn(
             "P1 (Evidential boundary)",
             self.core,
-            "OBR test-runner prohibition subsumed by P1 (test runner output is not live-process output type)",
+            "OBR test-runner prohibition carried by P1 (test runner output is not live-process output type)",
         )
-        self.assertIn(
+        self.assertNotIn(
             "Rung-entry gate",
             self.core,
-            "Rung-entry gate part (d) checks artifact type match, preventing test-runner output from satisfying OBR",
+            "ADR-0187: rung-entry gate must be absent — deleted as P1 procedural restatement",
+        )
+        self.assertIn(
+            "test runner output — a test-suite pass is validation-run-observation-type output",
+            self.core,
+            "OBR rung table void condition must name test-runner output as voiding the rung",
         )
 
 

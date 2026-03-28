@@ -98,15 +98,8 @@ def test_corollary_v_complete_before_red_run_removed():
 
 # ── Thread 4: gate-repositioned ──────────────────────────────────────────────
 
-def test_rung_entry_gate_appears_after_p3():
+def test_rung_entry_gate_deleted():
+    # ADR-0187: rung-entry gate block deleted as P1 procedural restatement.
+    # Position tests replaced by absence assertion; ADR-0187 deletion guard is the canonical check.
     result = _result()
-    p3_pos = result.index("P3 (Scope discipline)")
-    gate_pos = result.index("Rung-entry gate:")
-    assert p3_pos < gate_pos, "Rung-entry gate must appear after P3 principle"
-
-
-def test_rung_entry_gate_appears_after_rung_table():
-    result = _result()
-    table_pos = result.index("Rung table")
-    gate_pos = result.index("Rung-entry gate:")
-    assert table_pos < gate_pos, "Rung-entry gate must appear after rung table"
+    assert "Rung-entry gate:" not in result, "ADR-0187: rung-entry gate block must be absent"

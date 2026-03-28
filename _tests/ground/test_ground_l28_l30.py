@@ -53,20 +53,26 @@ class TestL29ThreadCompleteOrdering(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_l29_thread_complete_follows_obr(self):
-        self.assertIn(
+        # ADR-0187: "immediately follows" phrase deleted from OBR prose block.
+        # P4 Clause A (sequence binding) carries: no completion sentinel until full sequence executes.
+        self.assertNotIn(
             "immediately follows",
             self.core,
-            "L29: must state Thread N complete immediately follows Execution observed at OBR rung",
+            "ADR-0187: 'immediately follows' phrase must be absent — subsumed by P4 Clause A sequence binding",
+        )
+        self.assertIn(
+            "no completion sentinel for the rung may be emitted until the full sequence has been executed in order",
+            self.core,
+            "P4 Clause A must carry the Thread-complete ordering guarantee",
         )
 
     def test_l29_thread_complete_not_before_obr(self):
-        idx = self.core.find("immediately follows")
-        self.assertGreater(idx, -1, "L29 gate must be present")
-        segment = self.core[idx:idx+300]
+        # ADR-0187: "immediately follows" deleted; guarantee now in P4 Clause A.
+        # Once Thread N complete is emitted, no further output is valid (condition 4 retained).
         self.assertIn(
-            "not before",
-            segment,
-            "L29: must state Thread complete may not appear before OBR",
+            "Once \u2705 Thread N complete is emitted no further output in that cycle is valid",
+            self.core,
+            "Condition (4) must remain: no further output after Thread N complete",
         )
 
 

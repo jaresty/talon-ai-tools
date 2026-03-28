@@ -91,17 +91,20 @@ class TestBOBRInvocation(unittest.TestCase):
         )
 
     def test_b_live_process_invariant_survives(self):
+        # ADR-0187: "live running process" prose deleted; concept now in P4 Clause B as "live-process invocation".
         self.assertIn(
-            "live running process",
+            "live-process invocation",
             _core(),
-            "B: live-running-process invariant must survive",
+            "B: live-process invocation must appear in P4 OBR sequence (ADR-0187: replaces 'live running process' prose)",
         )
 
     def test_b_file_read_exclusion_survives(self):
+        # ADR-0187: "A file read never satisfies" prose deleted (duplicate of rung table void condition).
+        # Behavioral guarantee carried by OBR rung table voids_if: "file read used as evidence".
         self.assertIn(
-            "A file read never satisfies",
+            "file read used as evidence",
             _core(),
-            "B: file-read exclusion must survive as a concise declarative statement",
+            "B: file-read exclusion must be present in OBR rung table void condition",
         )
 
     def test_b_renderToStaticMarkup_survives(self):
@@ -113,12 +116,14 @@ class TestBOBRInvocation(unittest.TestCase):
         )
 
     def test_b_provenance_statement_survives(self):
-        # N1 regression guard
-        self.assertIn(
-            "provenance statement does not replace",
-            _core(),
-            "B: provenance statement clause must survive (N1 regression guard)",
-        )
+        # N1 regression guard — ADR-0187: "provenance statement does not replace" prose deleted.
+        # Guarantee now carried by P4 Clause B: provenance statement (step 2) and live-process invocation (step 3) are both in the binding sequence.
+        prompt = _core()
+        prov_pos = prompt.find("provenance statement")
+        lp_pos = prompt.find("live-process invocation")
+        assert prov_pos != -1, "B: provenance statement must appear in P4 OBR sequence"
+        assert lp_pos != -1, "B: live-process invocation must appear in P4 OBR sequence"
+        assert prov_pos < lp_pos, "B: provenance statement (step 2) must precede live-process invocation (step 3) — N1 regression guard"
 
 
 # ---------------------------------------------------------------------------
@@ -164,51 +169,54 @@ class TestCCriteriaPartial(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestDThreadNCompleteGateList(unittest.TestCase):
-    """D: five scattered Thread-N-complete precondition sentences replaced by unified gate list."""
+    """D: ADR-0187: gate list preamble and conditions (1)-(4) deleted (derivable from P4 Clause A+B); condition (5) kept."""
 
-    def test_d_gate_list_opener_survives(self):
-        self.assertIn(
+    def test_d_gate_list_opener_deleted(self):
+        # ADR-0187: preamble "Thread N complete may not be emitted unless" deleted — derivable from P4 Clause A.
+        self.assertNotIn(
             "Thread N complete may not be emitted unless",
             _core(),
-            "D: gate list must open with 'Thread N complete may not be emitted unless'",
+            "D: gate list opener must be absent (ADR-0187: derivable from P4 Clause A sequence binding)",
         )
 
-    def test_d_tool_call_in_transcript_anchor_survives(self):
-        self.assertIn(
+    def test_d_tool_call_in_transcript_anchor_deleted(self):
+        # ADR-0187: condition (1) deleted — derivable from P4 Clause B step (3) live-process invocation.
+        self.assertNotIn(
             "a tool call exists in the transcript after the observed running behavior label",
             _core(),
-            "D: tool-call-in-transcript precondition must survive in gate list",
+            "D: condition (1) must be absent (ADR-0187: derivable from P4 Clause B step 3)",
         )
 
-    def test_d_obs_label_written_anchor_survives(self):
-        self.assertIn(
+    def test_d_obs_label_written_anchor_deleted(self):
+        # ADR-0187: condition (2) deleted — derivable from P4 Clause A sequence binding.
+        self.assertNotIn(
             "observed running behavior label has been written after the most recent",
             _core(),
-            "D: OBS-label-written precondition must survive in gate list",
+            "D: condition (2) must be absent (ADR-0187: derivable from P4 Clause A)",
         )
 
     def test_d_suite_next_action_anchor_survives(self):
-        # E6 regression guard phrase
+        # E6 regression guard phrase — condition (5) kept (genuine content gate, no principle path).
         self.assertIn(
             "only valid next action if no such result exists is the tool call that runs the suite",
             _core(),
-            "D: suite next-action gate must survive in gate list (E6 anchor)",
+            "D: suite next-action gate must survive (condition 5, kept per ADR-0187)",
         )
 
-    def test_d_non_empty_verbatim_anchor_survives(self):
-        self.assertIn(
+    def test_d_non_empty_verbatim_anchor_deleted(self):
+        # ADR-0187: condition (3) deleted — derivable from P4 Clause A + exec_observed sentinel definition.
+        self.assertNotIn(
             "non-empty verbatim output appears in the transcript after the observed running behavior label",
             _core(),
-            "D: non-empty verbatim output precondition must survive in gate list",
+            "D: condition (3) must be absent (ADR-0187: derivable from P4 Clause A + sentinel def)",
         )
 
-    def test_d_scattered_repetition_removed(self):
-        # Old form repeated "✅ Thread N complete may not be emitted unless" 5 separate times
-        # Unified gate list should have it once as opener + items
-        count = _core().count("Thread N complete may not be emitted unless")
-        self.assertEqual(
-            count, 1,
-            f"D: 'Thread N complete may not be emitted unless' should appear exactly once as gate-list opener, found {count}",
+    def test_d_p4_sequence_binding_present(self):
+        # P4 Clause A now carries the behavioral guarantee that formerly required the gate list.
+        self.assertIn(
+            "no completion sentinel for the rung may be emitted until the full sequence has been executed in order",
+            _core(),
+            "D: P4 Clause A sequence binding must be present to carry the deleted gate list guarantees",
         )
 
 

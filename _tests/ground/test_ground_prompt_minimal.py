@@ -208,10 +208,17 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_thread_complete_sentinel_dependency(self):
-        self.assertIn(
+        # ADR-0187: "Thread N complete may not be emitted unless" preamble deleted (conditions 1-4 derivable).
+        # Thread N complete blocking now stated in impl-gate block and P4 Clause A.
+        self.assertNotIn(
             "Thread N complete may not be emitted unless",
             self.prompt,
-            "Minimal spec must require execution-observed after OBS label before thread-complete",
+            "ADR-0187: Thread N complete conditions preamble must be absent — subsumed by P4 Clause A",
+        )
+        self.assertIn(
+            "\u2705 Thread N complete may not appear until the observed running behavior rung has fired",
+            self.prompt,
+            "Thread N complete must be blocked until OBR rung has fired",
         )
 
     def test_post_obs_completeness_check(self):
@@ -326,10 +333,17 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_thread_complete_requires_obs_label_written(self):
-        self.assertIn(
+        # ADR-0187: "observed running behavior label has been written after the most recent" deleted.
+        # P4 Clause A (sequence binding) and OBR gate condition carry this constraint.
+        self.assertNotIn(
             "observed running behavior label has been written after the most recent",
             self.prompt,
-            "Minimal spec must require OBS label written after most recent impl-gate in this thread (cycle anchor)",
+            "ADR-0187: this phrase must be absent — subsumed by P4 Clause A + OBR gate condition",
+        )
+        self.assertIn(
+            "\u2705 Thread N complete may not appear until the observed running behavior rung has fired",
+            self.prompt,
+            "Thread N complete must be blocked until OBR rung has fired for this thread",
         )
 
     def test_final_report_rung_by_rung(self):
@@ -354,12 +368,17 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_ev_rung_only_validation_artifact_permitted(self):
-        # ADR-0181: "no other content is permitted before" removed (attractor 1 subsumed by rung-entry gate).
-        # Type discipline at EV is now enforced by gate part (c): artifact type check before content.
-        self.assertIn(
+        # ADR-0187: "Rung-entry gate" deleted as P1 procedural restatement.
+        # EV type discipline now carried by P4 EV rung sequence: file-writes only, no implementation files.
+        self.assertNotIn(
             "Rung-entry gate",
             self.prompt,
-            "Minimal spec must contain rung-entry gate (ADR-0181) — gate enforces EV type discipline",
+            "ADR-0187: Rung-entry gate must be absent — deleted as P1 restatement",
+        )
+        self.assertIn(
+            "writing implementation files at the EV rung is a protocol violation",
+            self.prompt,
+            "P4 EV sequence must explicitly prohibit implementation files at EV rung",
         )
 
     def test_sentinel_placement_at_defining_rung_only(self):
@@ -412,10 +431,17 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C2: newly-produced check
     def test_v_complete_requires_artifact_not_pre_existing(self):
-        self.assertIn(
+        # ADR-0187: "confirm via tool call that the artifact path does not pre-exist" deleted (L31 gate).
+        # P4 EV step (1): pre-existence or pre-failure check carries this guarantee.
+        self.assertNotIn(
             "confirm via tool call that the artifact path does not pre-exist",
             self.prompt,
-            "Ground must require checking via tool call that the validation artifact does not pre-exist before emitting V-complete",
+            "ADR-0187: L31 phrase must be absent — subsumed by P4 EV step (1)",
+        )
+        self.assertIn(
+            "EV rung: (1) pre-existence or pre-failure check",
+            self.prompt,
+            "P4 EV sequence must carry the pre-existence check requirement",
         )
 
     # Attractor sentence
@@ -427,17 +453,19 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Ground must state P1 (Evidential boundary): a rung gate is satisfied only by a tool-executed event of the correct artifact type",
         )
 
-    # C5: pre-existing document update — now enforced by rung-entry gate (ADR-0181)
+    # C5: pre-existing document update — now enforced by final-report reconciliation rule
     def test_reconciliation_gate_covers_preexisting_documents(self):
-        # ADR-0182: rung-entry gate moved to position 5 (after protocol mechanics) — it now follows
-        # the rung table and protocol mechanics including the final report section.
-        # Gate still governs all rungs including the final-report rung via its position as a summary gate.
-        gate_idx = self.prompt.index("Rung-entry gate")
-        rung_table_idx = self.prompt.index("Rung table")
-        self.assertGreater(
-            gate_idx,
-            rung_table_idx,
-            "C5: rung-entry gate must appear after the rung table (ADR-0182 position 5)",
+        # ADR-0187: "Rung-entry gate" deleted. C5 reconciliation guarantee now carried by
+        # the final-report rule: "reconcile any documents the implementation affects".
+        self.assertNotIn(
+            "Rung-entry gate",
+            self.prompt,
+            "ADR-0187: Rung-entry gate must be absent — deleted as P1 restatement",
+        )
+        self.assertIn(
+            "reconcile any documents the implementation affects",
+            self.prompt,
+            "C5: final-report must require reconciling affected documents",
         )
 
     # Manifest declaration: behavioral predicate scan (C12 — moved from thread-complete)
@@ -474,15 +502,12 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C12: observed running behavior rung criterion re-emission
     def test_c12_criterion_reemitted_before_orb_invocation(self):
-        orb_idx = self.prompt.index("Upon writing the observed running behavior label")
-        thread_complete_idx = self.prompt.index(
-            "\u2705 Thread N complete may not be emitted"
-        )
-        segment = self.prompt[orb_idx:thread_complete_idx]
+        # ADR-0187: "Upon writing the observed running behavior label" deleted.
+        # Criterion re-emission is now P4 Clause B step (1): first step of OBR sequence.
         self.assertIn(
-            "re-emit the criterion",
-            segment,
-            "C12: ground must require re-emitting the criterion before ORB invocation",
+            "OBR rung: (1) criterion re-emission",
+            self.prompt,
+            "C12: P4 Clause B must name criterion re-emission as step (1) of OBR sequence",
         )
 
     def test_c12_process_state_does_not_satisfy_orb(self):
@@ -569,17 +594,31 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C2-prime: pre-existence check must be a tool-executed event
     def test_c2prime_preexistence_check_requires_tool_call(self):
-        self.assertIn(
+        # ADR-0187: "confirm via tool call that the artifact path does not pre-exist" deleted (L31 gate).
+        # Guarantee carried by P4 EV rung sequence step (1): pre-existence or pre-failure check.
+        self.assertNotIn(
             "confirm via tool call that the artifact path does not pre-exist",
             self.prompt,
-            "C2-prime: ground must require confirming the artifact path via a tool call, not a mental check",
+            "ADR-0187: L31 gate phrase must be absent — subsumed by P4 EV step (1)",
+        )
+        self.assertIn(
+            "EV rung: (1) pre-existence or pre-failure check",
+            self.prompt,
+            "P4 EV sequence must carry the pre-existence tool-call requirement",
         )
 
     def test_c2prime_v_complete_requires_tool_result_in_transcript(self):
-        self.assertIn(
+        # ADR-0187: "V-complete may not be emitted without this tool-executed result" deleted (L31 gate).
+        # P4 Clause A sequence binding carries: no EV completion without full sequence.
+        self.assertNotIn(
             "V-complete may not be emitted without this tool-executed result",
             self.prompt,
-            "C2-prime: ground must state V-complete may not be emitted without the tool-executed result",
+            "ADR-0187: L31 gate phrase must be absent — subsumed by P4 Clause A",
+        )
+        self.assertIn(
+            "no completion sentinel for the rung may be emitted until the full sequence has been executed in order",
+            self.prompt,
+            "P4 Clause A must carry the V-complete sequencing guarantee",
         )
 
     # C4-prime: execution output must come from a tool-call result, not inline text
@@ -646,12 +685,17 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C7-output-criterion: OBS output must directly demonstrate the criterion behavior
     def test_c7_output_criterion_non_technical_observer(self):
-        # ADR-0184: "non-technical observer" phrase removed; "directly demonstrate the specific behavior
-        # named in the criterion" covers the invariant more precisely.
-        self.assertIn(
+        # ADR-0187: "directly demonstrate the specific behavior named in the criterion" deleted from OBR prose.
+        # Guarantee now in OBR rung table artifact definition and partial-demonstration gate.
+        self.assertNotIn(
             "directly demonstrate the specific behavior named in the criterion",
             self.prompt,
-            "C7-output-criterion: OBS output must directly demonstrate the specific behavior named in the criterion",
+            "ADR-0187: OBR direct-demonstration phrase must be absent — moved to rung table artifact definition",
+        )
+        self.assertIn(
+            "directly demonstrating all criteria declared for this thread",
+            self.prompt,
+            "OBR rung table artifact must require direct demonstration of all criteria",
         )
 
     def test_c7_output_criterion_test_report_invalid(self):
@@ -662,18 +706,27 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_c7_output_must_speak_for_itself(self):
+        # ADR-0187: "directly demonstrate the specific behavior named in the criterion" deleted.
+        # Partial-demonstration gate ("does not directly demonstrate the criterion") carries the guarantee.
         self.assertIn(
-            "directly demonstrate the specific behavior named in the criterion",
+            "does not directly demonstrate the criterion",
             self.prompt,
-            "C7-output-criterion: ground must require OBS output to directly demonstrate the criterion",
+            "OBR partial-demonstration gate must require direct demonstration of the criterion",
         )
 
     # C4-prime-obs: universal verbatim rule applies at every rung
     def test_c4prime_obs_applies_at_any_rung(self):
-        self.assertIn(
+        # ADR-0187: "at any rung" phrase was part of the rung-entry gate — deleted as P1 restatement.
+        # P1 (Evidential boundary) carries the universal verbatim rule: gate satisfied only by tool-executed event.
+        self.assertNotIn(
             "at any rung",
             self.prompt,
-            "C4-prime-obs: universal verbatim rule must explicitly apply at any rung, not just VRO",
+            "ADR-0187: 'at any rung' phrase must be absent — rung-entry gate deleted as P1 restatement",
+        )
+        self.assertIn(
+            "P1 (Evidential boundary)",
+            self.prompt,
+            "P1 must be present to carry the universal verbatim/evidential rule",
         )
 
     # C17: criteria block is exactly one criterion

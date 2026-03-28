@@ -77,15 +77,20 @@ class TestGroundRewrite(unittest.TestCase):
         )
 
     def test_obr_realism_hierarchy(self):
-        """OBR rung must require live running process; in-process rendering gated on no runnable artifact."""
-        # ADR-0184: dev server / HTML enumeration removed by Thread B; live-process invariant is the gate.
+        """OBR rung must require live-process invocation; in-process rendering gated on no runnable artifact."""
+        # ADR-0187: "live running process" replaced by "live-process invocation" in P4 Clause B.
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
 
         core = GROUND_PARTS_MINIMAL["core"]
-        self.assertIn(
+        self.assertNotIn(
             "live running process",
             core,
-            "OBR realism hierarchy: live running process must be named as the required invocation form",
+            "ADR-0187: 'live running process' must be absent — replaced by 'live-process invocation'",
+        )
+        self.assertIn(
+            "live-process invocation",
+            core,
+            "OBR realism hierarchy: live-process invocation must be named as the required invocation form",
         )
         self.assertIn(
             "only when no runnable artifact exists",
@@ -198,18 +203,22 @@ class TestGroundRewrite(unittest.TestCase):
 
     # F4: OBS artifact type — output must directly demonstrate criterion behavior
     def test_f4_obs_ui_artifact_type_named(self):
-        """OBS output must directly demonstrate the specific behavior named in the criterion."""
-        # ADR-0184: "browser"-specific enumeration removed by Thread B; "directly demonstrate" covers it.
+        """OBS output must directly demonstrate the criterion — P4 Clause B + rung table artifact."""
+        # ADR-0187: "Upon writing the observed running behavior label" and "Thread N complete may not be emitted unless"
+        # section anchors deleted. "directly demonstrate the specific behavior named in the criterion" phrase also deleted.
+        # Guarantee now in OBR rung table artifact: "directly demonstrating all criteria declared for this thread".
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
 
         core = GROUND_PARTS_MINIMAL["core"]
-        obs_start = core.find("Upon writing the observed running behavior label")
-        obs_end = core.find("✅ Thread N complete may not be emitted unless")
-        obs_section = core[obs_start:obs_end]
         self.assertIn(
-            "directly demonstrate the specific behavior named in the criterion",
-            obs_section,
-            "F4: OBR output must directly demonstrate the specific behavior named in the criterion",
+            "directly demonstrating all criteria declared for this thread",
+            core,
+            "F4: OBR rung table artifact must require direct demonstration of all criteria",
+        )
+        self.assertIn(
+            "does not directly demonstrate the criterion",
+            core,
+            "F4: OBR partial-demonstration gate must name the failure path",
         )
 
     # F5: Per-criterion OBS demonstration — test output is VRO-type not OBR-type (A2 axiom)

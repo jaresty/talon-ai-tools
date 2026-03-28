@@ -81,11 +81,18 @@ class TestRungEntryGateTrimmed(unittest.TestCase):
         )
 
     def test_exec_observed_type_check_survives(self):
-        """Item (d) exec_observed type check must survive."""
-        self.assertIn(
+        """ADR-0187: rung-entry gate deleted entirely (P1 procedural restatement). Item (d) phrase absent; P1 carries the guarantee."""
+        # ADR-0187: entire rung-entry gate block deleted. "no valid exec_observed exists in the current cycle" is absent.
+        # The behavioral guarantee (exec_observed type check gates rung content) is carried by P1 evidential boundary.
+        self.assertNotIn(
             "no valid exec_observed exists in the current cycle",
             self.core,
-            "Rung-entry gate item (d) exec_observed check must survive",
+            "ADR-0187: rung-entry gate item (d) must be absent — entire gate block deleted as P1 restatement",
+        )
+        self.assertIn(
+            "P1 (Evidential boundary)",
+            self.core,
+            "P1 must be present to carry the rung-entry gate guarantee",
         )
 
 

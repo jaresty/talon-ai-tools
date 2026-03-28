@@ -104,12 +104,14 @@ class TestADR0180Closures(unittest.TestCase):
     """ADR-0180: Five SWE drift closures — C5, C2, C1, C4, C3."""
 
     def test_c5_obr_reinvoke_gate(self):
-        """C5: OBR test-runner output blocking gate — ADR-0181: attractor 6 subsumed by rung-entry gate."""
-        # "re-invoke the implemented artifact directly" removed; gate part (c)/(d) enforces OBR type check.
+        """C5: OBR test-runner output blocking gate — ADR-0187: rung-entry gate deleted; behavioral guarantee carried by P1 + OBR rung table void condition."""
+        # ADR-0187 deleted the rung-entry gate block (P1 procedural restatement).
+        # The behavioral guarantee — test-runner output cannot satisfy the OBR rung — is
+        # now carried by the OBR rung table void condition in RUNG_SEQUENCE.
         self.assertIn(
-            "Rung-entry gate",
+            "test runner output — a test-suite pass is validation-run-observation-type output",
             _minimal(),
-            "C5: rung-entry gate (ADR-0181) subsumes OBR test-runner blocking — gate must be present",
+            "C5: OBR rung table void condition must name test-runner output as voiding the rung",
         )
 
     def test_c2_manifest_exhaustion_count_anchor(self):
@@ -149,12 +151,16 @@ class TestADR0181Closures(unittest.TestCase):
     """ADR-0181: Four OBR escape-route closures — N1, N2, N3, N4."""
 
     def test_n1_obr_exec_observed_mandatory(self):
-        """N1: provenance statement does not replace 🔴 Execution observed at OBR."""
-        self.assertIn(
-            "provenance statement does not replace",
-            _minimal(),
-            "N1: ground prompt must state provenance statement does not replace the tool call / exec-observed",
-        )
+        """N1: provenance statement precedes live-process invocation in P4 OBR sequence — ADR-0187: explicit prose deleted; guarantee carried by P4 Clause B ordering."""
+        # ADR-0187: "provenance statement does not replace" prose deleted (derivable from P4 Clause B step 2 + step 3 + Clause A).
+        # Behavioral guarantee: P4 lists provenance statement as step (2) and live-process invocation as step (3),
+        # with Clause A binding both. Neither can substitute for the other.
+        prompt = _minimal()
+        prov_pos = prompt.find("provenance statement")
+        lp_pos = prompt.find("live-process invocation")
+        self.assertNotEqual(prov_pos, -1, "N1: provenance statement must appear in P4 OBR sequence")
+        self.assertNotEqual(lp_pos, -1, "N1: live-process invocation must appear in P4 OBR sequence")
+        self.assertLess(prov_pos, lp_pos, "N1: provenance statement (step 2) must precede live-process invocation (step 3)")
 
     def test_n2_ui_component_obr_mechanism(self):
         """N2: OBR invocation for UI components must specify renderToStaticMarkup or container.innerHTML."""

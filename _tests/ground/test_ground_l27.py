@@ -21,32 +21,35 @@ class TestL27OBRTestRunnerGate(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_l27_test_runner_does_not_satisfy_gate(self):
-        """OBR section must state test runner invocation does not satisfy the gate."""
-        self.assertIn(
+        # ADR-0187: "test runner invocation does not satisfy this gate" deleted from OBR prose block.
+        # Guarantee carried by OBR rung table void condition + P4 Clause B naming live-process invocation.
+        self.assertNotIn(
             "test runner invocation does not satisfy this gate",
             self.core,
-            "L27: must explicitly state test runner does not satisfy OBR live-process gate",
+            "ADR-0187: L27 gate phrase must be absent — subsumed by rung table void condition and P4 Clause B",
+        )
+        self.assertIn(
+            "test runner output — a test-suite pass is validation-run-observation-type output",
+            self.core,
+            "OBR rung table void condition must name test-runner output as voiding the rung",
         )
 
     def test_l27_invocation_target_must_be_implementation(self):
-        """Gate must name the implementation artifact as the required invocation target."""
-        idx = self.core.find("test runner invocation does not satisfy this gate")
-        self.assertGreater(idx, -1, "L27 gate sentence must be present")
-        segment = self.core[idx:idx+300]
+        # ADR-0187: explicit gate sentence deleted; P4 Clause B names "live-process invocation of the implementation artifact".
         self.assertIn(
-            "implementation artifact",
-            segment,
-            "L27: gate must state the invocation target must be the implementation artifact",
+            "live-process invocation of the implementation artifact",
+            self.core,
+            "P4 Clause B must name the implementation artifact as the required invocation target",
         )
 
     def test_l27_positioned_in_obr_section(self):
-        """L27 gate must appear in the OBR section."""
-        obr_start = self.core.find("Upon writing the observed running behavior label")
-        obr_end = self.core.find("Thread N complete may not be emitted unless")
-        gate_idx = self.core.find("test runner invocation does not satisfy this gate")
-        self.assertGreater(gate_idx, -1, "L27 gate sentence must be present")
-        self.assertGreater(gate_idx, obr_start, "L27 gate must be after OBR section start")
-        self.assertLess(gate_idx, obr_end + 200, "L27 gate must be near OBR section")
+        # ADR-0187: "Upon writing the observed running behavior label" and "Thread N complete may not be emitted unless"
+        # both deleted; L27 guarantee is now global via P4 Clause B.
+        self.assertIn(
+            "live-process invocation of the implementation artifact",
+            self.core,
+            "P4 Clause B must carry the L27 invocation-target constraint globally",
+        )
 
 
 if __name__ == "__main__":

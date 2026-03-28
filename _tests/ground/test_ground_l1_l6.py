@@ -47,10 +47,17 @@ class TestL3RungEntryForcedStop(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_l3_false_d_forces_tool_call_only(self):
-        self.assertIn(
+        # ADR-0187: rung-entry gate item (d) deleted — entire gate block removed as P1 procedural restatement.
+        # P1 (Evidential boundary) carries the guarantee: exec_observed type check gates rung content.
+        self.assertNotIn(
             "if (d) reveals that no valid exec_observed exists in the current cycle, the only permitted next token is a tool call",
             self.core,
-            "L3: rung-entry gate must force a tool-call-only next token when (d) is false",
+            "ADR-0187: rung-entry gate item (d) must be absent — deleted as P1 procedural restatement",
+        )
+        self.assertIn(
+            "P1 (Evidential boundary)",
+            self.core,
+            "P1 must be present to carry the rung-entry forced-stop guarantee",
         )
 
 
@@ -61,10 +68,17 @@ class TestL4OBRProseProhibition(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_l4_prose_planning_prohibited_after_criterion_reemission(self):
-        self.assertIn(
+        # ADR-0187: "planning statements, diagnostic narration..." phrase deleted from OBR prose block.
+        # P4 Clause A ("no content other than the next step in the sequence may appear between steps") carries the guarantee.
+        self.assertNotIn(
             "planning statements, diagnostic narration, and commentary between criterion re-emission and the tool call are protocol violations",
             self.core,
-            "L4: OBR paragraph must explicitly prohibit prose planning between criterion re-emission and tool call",
+            "ADR-0187: explicit prose-planning prohibition phrase must be absent — subsumed by P4 Clause A",
+        )
+        self.assertIn(
+            "no content other than the next step in the sequence may appear between steps",
+            self.core,
+            "P4 Clause A must carry the no-prose-between-steps guarantee",
         )
 
 
@@ -75,10 +89,18 @@ class TestL5VCompleteResultInTranscript(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_l5_v_complete_requires_exec_observed_block(self):
-        self.assertIn(
+        # ADR-0187: "asserting confirmation without showing the exec_observed block does not satisfy this gate"
+        # was part of the L31 forward gate, deleted as derivable from P4 EV sequence.
+        # P4 EV step (1) pre-existence check + P4 sequence binding (Clause A) carry the guarantee.
+        self.assertNotIn(
             "asserting confirmation without showing the exec_observed block does not satisfy this gate",
             self.core,
-            "L5: V-complete paragraph must require the exec_observed block to appear in the transcript, not just assert confirmation",
+            "ADR-0187: L31 forward gate phrase must be absent — subsumed by P4 Clause A + EV sequence",
+        )
+        self.assertIn(
+            "EV rung: (1) pre-existence or pre-failure check",
+            self.core,
+            "P4 EV sequence must be present to carry the V-complete exec_observed guarantee",
         )
 
 

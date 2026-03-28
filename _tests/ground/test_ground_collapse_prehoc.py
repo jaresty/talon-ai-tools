@@ -24,21 +24,27 @@ class TestOBRInvocationTargetPrehoc(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_provenance_statement_gates_target(self):
-        """Provenance statement must name invocation target; test runner stops emission."""
-        self.assertIn(
+        # ADR-0187: "if the target is a test runner, stop" deleted — derivable from P4 Clause B: step (3)
+        # is live-process invocation; a test runner is the wrong type (P4 closed action set).
+        self.assertNotIn(
             "if the target is a test runner, stop",
             self.core,
-            "OBR pre-hoc gate: provenance statement must gate on target type before tool call",
+            "ADR-0187: this phrase must be absent — derivable from P4 OBR sequence type constraints",
+        )
+        # Guarantee carried by P4: live-process invocation as step (3) — test runner is wrong type.
+        self.assertIn(
+            "live-process invocation of the implementation artifact",
+            self.core,
+            "P4 Clause B must name live-process invocation of the implementation artifact as step (3)",
         )
 
     def test_obr_invocation_target_must_be_artifact(self):
-        idx = self.core.find("if the target is a test runner, stop")
-        self.assertGreater(idx, -1, "OBR pre-hoc gate must be present")
-        segment = self.core[idx:idx+200]
+        # ADR-0187: "if the target is a test runner, stop" phrase deleted.
+        # P4 Clause B explicitly names "live-process invocation of the implementation artifact" as step (3).
         self.assertIn(
-            "implementation artifact itself",
-            segment,
-            "OBR pre-hoc gate: must name implementation artifact as required target",
+            "live-process invocation of the implementation artifact",
+            self.core,
+            "P4 Clause B must name implementation artifact as the required invocation target",
         )
 
 

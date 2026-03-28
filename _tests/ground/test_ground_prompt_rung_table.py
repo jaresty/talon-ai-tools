@@ -121,11 +121,16 @@ class TestOBRInvocationPhraseRequiresLiveProcess(unittest.TestCase):
         self.prompt = build_ground_prompt()
 
     def test_obr_invocation_names_live_process(self):
-        # ADR-0184: "start or query" was in old enumeration; condensed to "live running process".
-        self.assertIn(
+        # ADR-0187: "live running process" replaced by "live-process invocation" in P4 Clause B.
+        self.assertNotIn(
             "live running process",
             self.prompt,
-            "OBR invocation must require invoking a live running process",
+            "ADR-0187: 'live running process' phrase must be absent — replaced by 'live-process invocation'",
+        )
+        self.assertIn(
+            "live-process invocation",
+            self.prompt,
+            "P4 Clause B must use 'live-process invocation' terminology",
         )
 
     def test_obr_invocation_excludes_file_reads(self):

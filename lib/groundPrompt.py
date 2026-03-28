@@ -58,7 +58,7 @@ RUNG_SEQUENCE: list[dict] = [
         "name": "observed running behavior",
         "artifact": "live-process output — output produced by a tool call that starts or queries a running process; reading any file does not satisfy this type regardless of content",
         "gate": "implementation complete; exec_observed + gap for behavior from I",
-        "voids_if": "new files created; output names only infrastructure state; file read used as evidence",
+        "voids_if": "new files created; output names only infrastructure state; file read used as evidence; test runner output — a test-suite pass is validation-run-observation-type output, not observed-running-behavior-type output, and voids this rung",
     },
 ]
 
@@ -257,6 +257,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "At the validation run observation rung, run the validation artifact; "
         "emit \U0001f534 Execution observed: with verbatim output then \U0001f534 Gap: naming the first failure; "
         "stop there \u2014 do not enumerate multiple failures or plan fixes; "
+        "after a red VRO that is not a harness error, the criterion re-statement is an anchor only \u2014 "
+        "re-running VRO without an implementation edit is a protocol violation; "
+        "re-writing formal notation or the EV artifact without an intervening implementation edit is also a protocol violation; "
+        "after the criterion re-statement, \U0001f7e2 Implementation gate cleared is the next valid token; "
         "a green exec_observed at the VRO rung means there is no failing assertion \u2014 "
         "\U0001f534 Gap: may not be emitted after a green exec_observed; "
         "a green exec_observed without a prior red run means the test is vacuous \u2014 "

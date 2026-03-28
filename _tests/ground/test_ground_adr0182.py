@@ -25,7 +25,8 @@ def test_p1_label_present():
 
 
 def test_p2_label_present():
-    assert "P2 (Forward-only discipline)" in _result()
+    # P2 removed (ADR-0184 lean rewrite) — forward-only rule folded into P1 gate column sentence
+    assert "gate condition for each rung is the rung table" in _result()
 
 
 def test_p3_label_present():

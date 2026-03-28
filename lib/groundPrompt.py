@@ -114,14 +114,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         #   artifacts from prior cycles have no standing in the current cycle.
         # R2 (minimal derivation): each artifact is the minimal transformation of the prior
         #   artifact that satisfies the current rung's type — form changes, intent does not.
-        "A1: only tool-executed events have evidential standing; each rung defines an artifact type "
-        "and a gate is satisfied only by a tool-executed event of that rung\u2019s artifact type \u2014 "
-        "inference, prediction, and model recall have none regardless of accuracy. "
-        "A2: each rung defines an artifact type; a tool-executed event satisfies a rung gate "
-        "only if its output is of that rung\u2019s artifact type \u2014 "
-        "cross-type output does not satisfy the gate regardless of correctness "
-        "(a test-suite run at the observed running behavior rung produces validation-run-observation-type output, "
-        "not observed-running-behavior-type output, and does not satisfy that gate). "
         "A3: each descent through the ladder is a new evidential context \u2014 "
         "artifacts, test results, and artifact names from prior cycles have no standing in the current cycle. "
         "R2: each artifact derives from the prior rung \u2014 form changes, intent does not; "
@@ -133,12 +125,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         # P3 (Scope discipline): derived from R2.
         "P1 (Evidential boundary): a rung gate is satisfied if and only if a tool-executed event "
         "appears in the current-cycle transcript whose output is classified as that rung\u2019s artifact type; "
-        "no other event \u2014 inference, file read, test runner output, static analysis, prior-cycle output \u2014 "
-        "satisfies any gate regardless of its content or accuracy. "
-        "P2 (Forward-only discipline): a rung label may not be emitted until all preconditions "
-        "for that rung are present in the current-cycle transcript; "
-        "the precondition list for each rung is the rung table\u2019s gate column; "
-        "no content at a rung is valid before the label; no label is valid before its gate conditions. "
+        "no other event \u2014 inference, prediction, model recall, file read, test runner output, "
+        "static analysis, prior-cycle output \u2014 satisfies any gate regardless of accuracy. "
+        "a rung label may not be emitted until its gate conditions are met; "
+        "the gate condition for each rung is the rung table\u2019s gate column. "
         "P3 (Scope discipline): each rung artifact addresses exactly the gap declared by the prior rung \u2014 "
         "nothing beyond it; one gap per cycle; one criterion per thread per cycle; one edit per re-run; "
         "After \u2705 Manifest declared, the only valid next token is the criteria rung label for Thread 1 \u2014 "
@@ -422,15 +412,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "prose, criteria, and formal notation for each thread in order \u2014 "
         "no new behavioral claims, no coverage summaries, no suggestions; "
         "then reconcile any documents the implementation affects. "
-        # ADR-0181: rung-entry gate — moved here after protocol mechanics (ADR-0182)
-        "Rung-entry gate: before producing content at any rung, state (a) the rung name, "
-        "(b) the current gap as a currently-false behavioral assertion, (c) the artifact type "
-        "this rung requires, and (d) whether a \U0001f534 Execution observed: sentinel exists in "
-        "the current cycle and, if so, whether its output is of type (c) \u2014 "
-        "if no exec_observed exists yet in this cycle, state that explicitly rather than "
-        "treating prior-cycle output as satisfying this check; "
-        "if any of (a)\u2013(d) cannot be stated from the current-cycle transcript, "
-        "produce it before any other content at this rung; "
+        # ADR-0181/0184: rung-entry gate — trimmed to exec_observed type check only
+        "Rung-entry gate: before producing content at any rung, verify that a valid "
+        "\U0001f534 Execution observed: sentinel exists in the current cycle whose output "
+        "matches the rung\u2019s artifact type \u2014 "
         "if (d) reveals that no valid exec_observed exists in the current cycle, the only permitted next token is a tool call \u2014 "
         "producing any other content when (d) is false is a protocol violation. "
         )

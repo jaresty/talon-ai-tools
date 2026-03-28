@@ -142,6 +142,17 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "no anticipation of future gaps, no additional invariants, no coverage beyond the declared gap; "
         "one edit means exactly one tool call that creates or modifies a file \u2014 "
         "narrating a change without a file-write tool call is not an edit. "
+        "P4 (Rung action discipline): each rung has a closed action set \u2014 "
+        "any tool call outside it is a protocol violation regardless of outcome; "
+        "the constraint is type, not count \u2014 multiple writes are permitted when all targets are the correct type; "
+        "prose, criteria, and formal notation rungs: no tool calls; "
+        "EV rung: (1) pre-existence or pre-failure check, (2) validation artifact file-writes, (3) test runner \u2014 in that order \u2014 "
+        "writing implementation files at the EV rung is a protocol violation; "
+        "VRO rung: test runner only; "
+        "EI rung: implementation file-writes only \u2014 "
+        "writing a file that served as the EV artifact in any prior cycle of this thread is a protocol violation "
+        "unless the meta-test pattern is in effect; "
+        "OBR rung: read-only tool calls only, no writes. "
         # Rung table — seven rows: name, artifact type, gate condition, void condition
         + _rung_table()
         # Protocol mechanics

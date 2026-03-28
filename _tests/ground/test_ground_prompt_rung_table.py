@@ -32,7 +32,7 @@ REQUIRED_RUNG_KEYS = {"name", "artifact", "gate", "voids_if"}
 
 # Baseline character count of rung_sequence_code before refactor (measured: 8679 chars).
 # Target: numbered list compressed to inline arrow sequence; reduction modest (~30+ chars).
-BASELINE_RUNG_SEQUENCE_CODE_CHARS = 27200  # ADR-0179: ~1117; ADR-0180: ~500; ADR-0181: ~900; ADR-0182: ~770; formal notation separation; OBR live-process fix: +149; L1-L6 drift closures: +578; ADR-0183 L7-L12 forward-gate closures: +~1940; L13-L24 escape-route closures: +~800; L25-L27 escape-route closures: +~350
+BASELINE_RUNG_SEQUENCE_CODE_CHARS = 27400  # ADR-0179: ~1117; ADR-0180: ~500; ADR-0181: ~900; ADR-0182: ~770; formal notation separation; OBR live-process fix: +149; L1-L6 drift closures: +578; ADR-0183 L7-L12 forward-gate closures: +~1940; L13-L24 escape-route closures: +~800; L25-L27 escape-route closures: +~350; ADR-0186 P4 + L35/meta-test deletion net: +118
 
 
 class TestRungSequenceExists(unittest.TestCase):

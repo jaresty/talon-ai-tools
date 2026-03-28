@@ -37,17 +37,24 @@ class TestL31VCompleteForwardGate(unittest.TestCase):
 
     def test_l31_gate_names_tool_call_as_only_valid_action(self):
         """The gate must name the pre-existence/failing check tool call as the only valid action."""
-        # Find V-complete section and check that "only valid next action" or equivalent appears near it
+        # P4-derivative: explicit L31 sentence OR P4 EV action-set ordering covers this
+        explicit_gate = False
         idx = self.prompt.find("confirm via tool call that the artifact path does not pre-exist")
-        self.assertGreater(idx, -1, "Pre-existence check sentence must be present")
-        segment = self.prompt[idx:idx+300]
-        has_forward_gate = (
-            "only valid next action is" in segment
-            or "only valid next token is" in segment
+        if idx != -1:
+            segment = self.prompt[idx:idx+300]
+            explicit_gate = (
+                "only valid next action is" in segment
+                or "only valid next token is" in segment
+            )
+        p4_gate = (
+            "P4 (Rung action discipline)" in self.prompt
+            and "pre-existence" in self.prompt
+            and "EV rung" in self.prompt
+            and "in that order" in self.prompt
         )
         self.assertTrue(
-            has_forward_gate,
-            "L31: pre-existence check must be followed by 'only valid next action is' forward gate",
+            explicit_gate or p4_gate,
+            "L31: pre-existence check forward gate must be present via explicit rule or P4 EV action set",
         )
 
 

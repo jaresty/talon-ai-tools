@@ -373,6 +373,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "each rung may not be skipped or combined with another, "
         "including the observed running behavior rung \u2014 it is required in every cycle; "
         "the only protocol-defined stop is at the validation run observation rung after emitting \U0001f534 Gap:; "
+        "stopping between rungs at any other point is a protocol violation \u2014 "
+        "waiting for user confirmation between rungs is a protocol violation; "
         "all other rung transitions are continuous within the same response. "
         "When beginning mid-ladder, locate the highest already-instantiated rung, update it, then descend; "
         "every descent through executable implementation requires executable validation "

@@ -14,8 +14,8 @@ from lib.groundPrompt import build_ground_prompt
 ORIGINAL_CHARS = 14036
 # C22–C24 add ~820 chars; C25–C28 add ~883 chars; ADR-0178 D1-D7 add ~5191 chars (drift closures).
 MAX_CHARS = (
-    ORIGINAL_CHARS + 15600
-)  # ADR-0196: why-framing additions: +1711 chars (total budget increased to cover all additions)
+    ORIGINAL_CHARS + 15900
+)  # ADR-0197: OBR why-sentence addition: +220 chars
 
 
 class TestGroundRewrite(unittest.TestCase):

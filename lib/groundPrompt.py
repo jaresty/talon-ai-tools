@@ -463,7 +463,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "if the most recent \U0001f534 Execution observed: in the current cycle shows any test failure, "
         "\u2705 Thread N complete is blocked \u2014 "
         "no intervening prose, reasoning, or cross-thread argument lifts this block; "
-        "only a subsequent passing test run does. "
+        "only a subsequent passing test run does; "
+        "this block does not apply when the most recent exec_observed is a harness error "
+        "(import failure, syntax error, missing file) \u2014 "
+        "repair the harness and re-run; the block re-evaluates against the subsequent run. "
         "Once \u2705 Thread N complete is emitted no further output in that cycle is valid. "
         # Rung transitions and protocol flow
         "Before writing the criteria, formal notation, executable validation, executable implementation, "

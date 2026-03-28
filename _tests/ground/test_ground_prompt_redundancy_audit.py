@@ -70,7 +70,7 @@ class TestTotalCharCountDoesNotGrow(unittest.TestCase):
     def test_total_ground_parts_minimal_chars_does_not_exceed_baseline(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         # ADR-0178: baseline after D1-D7 applied to minimal
-        BASELINE = 31500  # ADR-0203: five escape-route closures added (~31393 chars)
+        BASELINE = 31700  # ADR-0204: harness-error exemption added (~31602 chars)
         self.assertLessEqual(
             current,
             BASELINE,

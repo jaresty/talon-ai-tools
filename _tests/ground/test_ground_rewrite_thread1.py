@@ -14,7 +14,7 @@ from lib.groundPrompt import build_ground_prompt
 ORIGINAL_CHARS = 14036
 # C22–C24 add ~820 chars; C25–C28 add ~883 chars; ADR-0178 D1-D7 add ~5191 chars (drift closures).
 MAX_CHARS = (
-    ORIGINAL_CHARS + 17500
+    ORIGINAL_CHARS + 17700
 )  # ADR-0203: four escape-route closures: +1100 chars
 
 

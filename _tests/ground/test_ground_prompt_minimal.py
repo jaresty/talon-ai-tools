@@ -46,8 +46,8 @@ class TestMinimalGroundParts(unittest.TestCase):
         total = sum(len(v) for v in self.parts.values())
         self.assertLess(
             total,
-            31700,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 31700 (raised after ADR-0204 harness-error exemption)",
+            33100,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 33100 (raised after ADR-0205 three clash closures)",
         )
 
     def test_three_abstract_rules_present(self):
@@ -290,9 +290,9 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_prose_reemitted_before_each_criteria_rung(self):
         self.assertIn(
-            "prose rung must be re-emitted at the start of every cycle",
+            "prose rung must be re-emitted at the start of every new cycle",
             self.prompt,
-            "Minimal spec must require prose to be re-emitted before criteria in every cycle including upward returns",
+            "Minimal spec must require prose to be re-emitted at the start of every new cycle (ADR-0205: HARD STOP is not a new cycle)",
         )
 
     def test_obs_rung_produces_only_tool_output(self):
@@ -399,9 +399,9 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     def test_prose_reemit_is_a_mechanical_check(self):
         self.assertIn(
-            "the criterion must be immediately derivable from the re-emitted prose",
+            "the criterion must be immediately derivable from the prose that opened the current cycle",
             self.prompt,
-            "Minimal spec must frame prose re-emit as a non-optional gate — criterion must derive from re-emitted prose",
+            "Minimal spec must frame prose re-emit as a non-optional gate — criterion must derive from cycle-opening prose",
         )
 
     def test_build_ground_prompt_returns_nonempty(self):
@@ -426,9 +426,9 @@ class TestMinimalGroundParts(unittest.TestCase):
     # C1: prose-in-cycle gate
     def test_criteria_label_requires_prose_label_in_current_cycle(self):
         self.assertIn(
-            "prose rung must be re-emitted at the start of every cycle",
+            "prose rung must be re-emitted at the start of every new cycle",
             self.prompt,
-            "Ground must gate the criteria label on prose being re-emitted in the current cycle",
+            "Ground must gate the criteria label on prose being re-emitted at the start of each new cycle",
         )
 
     # C2: newly-produced check
@@ -750,10 +750,12 @@ class TestMinimalGroundParts(unittest.TestCase):
 
     # C1-upward-return: prose re-emitted at start of every cycle including upward returns
     def test_c1_universal_every_cycle_including_upward_returns(self):
+        # ADR-0205: HARD STOP is not a new cycle — prose re-emission is scoped to new cycles only.
+        # The rule now states HARD STOP does not require prose re-emission.
         self.assertIn(
-            "any cycle following an upward return",
+            "HARD STOP upward return is not a new cycle",
             self.prompt,
-            "C1-upward-return: prose re-emission must be required on upward returns, not just first/subsequent cycles",
+            "C1-ADR-0205: HARD STOP must be explicitly identified as not a new cycle to resolve clash",
         )
 
     # C15: impl-gate is a descent gate, not a completion gate

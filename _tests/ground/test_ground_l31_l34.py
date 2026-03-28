@@ -100,15 +100,15 @@ class TestL32HardStopHarnessClassificationGate(unittest.TestCase):
 
     def test_l32_gate_precedes_hard_stop_definition(self):
         """The harness-classification gate must appear before (or at) the HARD STOP definition."""
-        hard_stop_def_idx = self.prompt.find("HARD STOP \u2014 upward return to criteria rung is valid only after")
+        hard_stop_def_idx = self.prompt.find("HARD STOP \u2014 upward return to criteria rung is valid in exactly one case")
         harness_block_idx = self.prompt.find("HARD STOP may not be emitted at the executable validation rung")
         self.assertGreater(hard_stop_def_idx, -1, "HARD STOP validity condition must be present")
         self.assertGreater(harness_block_idx, -1, "Harness-error block must be present")
         # The harness block should appear near the HARD STOP definition (within 600 chars)
         self.assertLess(
             abs(hard_stop_def_idx - harness_block_idx),
-            800,
-            "L32: harness-classification gate must be co-located with HARD STOP validity definition",
+            1200,
+            "L32: harness-classification gate must be co-located with HARD STOP validity definition (ADR-0205: positive gate text added ~200 chars)",
         )
 
 

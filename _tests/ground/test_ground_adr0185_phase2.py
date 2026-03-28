@@ -126,15 +126,15 @@ class TestA3CycleIsolation(unittest.TestCase):
         self.assertTrue(has_rule, "Prior cycle non-satisfaction must be stated")
 
     def test_prose_reemission_at_every_cycle(self):
-        """A3: prose rung must be re-emitted at the start of every cycle."""
+        """A3: prose rung must be re-emitted at the start of every new cycle (ADR-0205: HARD STOP is not a new cycle)."""
         has_rule = (
-            "prose rung must be re-emitted at the start of every cycle" in self.prompt
+            "prose rung must be re-emitted at the start of every new cycle" in self.prompt
             or (
                 "re-emitted" in self.prompt
-                and "every cycle" in self.prompt
+                and "every new cycle" in self.prompt
             )
         )
-        self.assertTrue(has_rule, "Prose re-emission every cycle must be stated")
+        self.assertTrue(has_rule, "Prose re-emission every new cycle must be stated")
 
     def test_criterion_derivable_from_reemitted_prose(self):
         """A3: criterion must be immediately derivable from the re-emitted prose."""

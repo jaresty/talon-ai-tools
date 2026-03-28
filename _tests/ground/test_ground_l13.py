@@ -25,26 +25,26 @@ class TestL13ThreadSequentialGate(unittest.TestCase):
         """The gate must state that no rung content of any type for Thread N+1
         may appear before Thread N complete — not just criteria."""
         self.assertIn(
-            "no rung content of any type for Thread N+1 may appear",
+            "all seven rungs must complete for Thread N before any rung content for Thread N+1 may appear",
             self.core,
             "L13: P3 must gate all rung types for Thread N+1, not only criteria",
         )
 
     def test_l13_gate_references_thread_n_complete(self):
         """The gate must name Thread N complete as the condition that opens Thread N+1."""
-        idx = self.core.find("no rung content of any type for Thread N+1 may appear")
+        idx = self.core.find("all seven rungs must complete for Thread N")
         self.assertGreater(idx, -1, "L13 gate sentence must be present")
         segment = self.core[idx:idx+200]
         self.assertIn(
-            "Thread N complete",
+            "Thread N+1",
             segment,
-            "L13: all-rung gate must name Thread N complete as the opening condition",
+            "L13: all-rung gate must reference Thread N+1 as the blocked party",
         )
 
     def test_l13_gate_positioned_in_p3(self):
         """The gate must appear in the P3 scope discipline section."""
         p3_idx = self.core.index("P3 (Scope discipline)")
-        gate_idx = self.core.find("no rung content of any type for Thread N+1 may appear")
+        gate_idx = self.core.find("all seven rungs must complete for Thread N")
         self.assertGreater(gate_idx, p3_idx,
             "L13: all-rung gate must appear after the P3 label")
         # Must appear before the rung table

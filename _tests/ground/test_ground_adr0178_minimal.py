@@ -115,7 +115,7 @@ class TestADR0180Closures(unittest.TestCase):
     def test_c2_manifest_exhaustion_count_anchor(self):
         """C2: Manifest exhaustion must anchor count to declared N in Manifest declared sentinel."""
         self.assertIn(
-            "locate the N in",
+            "Manifest exhausted may not be emitted unless the count of",
             _minimal(),
             "C2: ground prompt must instruct locating the N in Manifest declared before emitting Manifest exhausted",
         )

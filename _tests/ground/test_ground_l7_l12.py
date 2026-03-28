@@ -20,7 +20,7 @@ class TestL7ManifestDeclaredForwardGate(unittest.TestCase):
 
     def test_l7_thread_n_criterion_blocked_until_thread_n_complete(self):
         self.assertIn(
-            "No criterion for Thread N+1 may appear until \u2705 Thread N complete has been emitted",
+            "all seven rungs must complete for Thread N before any rung content for Thread N+1 may appear",
             self.core,
             "L7: criteria paragraph must block Thread N+1 criteria until Thread N complete has been emitted",
         )
@@ -118,9 +118,9 @@ class TestL12FinalReportContentTypeGate(unittest.TestCase):
 
     def test_l12_such_prose_blocked_until_manifest_exhausted(self):
         self.assertIn(
-            "Such prose may not appear until \u2705 Manifest exhausted exists in the transcript for this invocation",
+            "a final report may not appear unless \u2705 Manifest exhausted immediately precedes it",
             self.core,
-            "L12: must state such prose may not appear until Manifest exhausted exists in the transcript",
+            "L12: must state final report may not appear unless Manifest exhausted immediately precedes it",
         )
 
 

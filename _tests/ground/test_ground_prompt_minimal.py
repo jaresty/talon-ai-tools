@@ -46,8 +46,8 @@ class TestMinimalGroundParts(unittest.TestCase):
         total = sum(len(v) for v in self.parts.values())
         self.assertLess(
             total,
-            27400,
-            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 27400 (raised after ADR-0186 P4 + L35/meta-test deletion net: +118 chars)",
+            27900,
+            f"GROUND_PARTS_MINIMAL total {total} chars; expected < 27900 (raised after OBR forward gate + all-criteria rule: +528 chars)",
         )
 
     def test_three_abstract_rules_present(self):

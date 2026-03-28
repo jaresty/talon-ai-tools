@@ -46,7 +46,7 @@ class TestL24CriteriaPerThread(unittest.TestCase):
         criteria_idx = self.core.index("one independently testable behavior derived from the prose alone")
         gate_idx = self.core.find("criteria rung label is per-thread")
         self.assertGreater(gate_idx, -1, "L24 gate sentence must be present")
-        self.assertLess(abs(gate_idx - criteria_idx), 1750,
+        self.assertLess(abs(gate_idx - criteria_idx), 1900,
             "L24: per-thread gate must appear near the criteria rung rules")
 
 

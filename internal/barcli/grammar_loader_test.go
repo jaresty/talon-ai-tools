@@ -473,7 +473,7 @@ func TestGroundMotivationalReframe(t *testing.T) {
 	// ADR-0174: minimal spec experiment — motivational framing ("shortest path",
 	// "primary failure mode") is intentionally absent; these are framing, not rules.
 	// Re-tighten if experiment restores full spec.
-	if !strings.Contains(groundDesc, "derives from") {
+	if !strings.Contains(groundDesc, "derived from") {
 		t.Error("ground must state the faithful derivation rule")
 	}
 }

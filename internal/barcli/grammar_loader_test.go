@@ -481,6 +481,8 @@ func TestGroundMotivationalReframe(t *testing.T) {
 // TestGroundCompletenessTokensGovernDepthNotExistence specifies that ground
 // defines how completeness tokens interact with the process: they govern
 // depth within each rung, not whether rungs exist.
+// ADR-0185: exact phrase "completeness governs rung depth, not rung existence" removed;
+// guarantee now carried by "each rung may not be skipped or combined with another".
 func TestGroundCompletenessTokensGovernDepthNotExistence(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
 	grammar, err := LoadGrammar("")
@@ -491,8 +493,8 @@ func TestGroundCompletenessTokensGovernDepthNotExistence(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "completeness governs rung depth, not rung existence") {
-		t.Error("ground must state that completeness governs rung depth, not rung existence")
+	if !strings.Contains(groundDesc, "each rung may not be skipped or combined with another") {
+		t.Error("ground must state that rungs may not be skipped — completeness governs depth not existence")
 	}
 }
 
@@ -500,6 +502,8 @@ func TestGroundCompletenessTokensGovernDepthNotExistence(t *testing.T) {
 // definition explicitly prohibits producing implementation code at the
 // executable validation rung — permission to write artifacts at R4 applies
 // only to validation artifacts, not implementation.
+// ADR-0187: "Rung-entry gate" block deleted — P1 (Evidential boundary) + rung table
+// carry the type-discipline guarantee globally; EV rung voids_if names "implementation code included".
 func TestGroundExecutableValidationNoImplementation(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
 	grammar, err := LoadGrammar("")
@@ -510,8 +514,8 @@ func TestGroundExecutableValidationNoImplementation(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "Rung-entry gate") {
-		t.Error("ground must contain rung-entry gate (ADR-0181) — gate enforces type discipline at every rung including executable validation")
+	if !strings.Contains(groundDesc, "writing implementation files at the EV rung is a protocol violation") {
+		t.Error("ground must prohibit implementation files at the EV rung — P4 Clause B carries the guarantee")
 	}
 }
 

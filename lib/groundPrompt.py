@@ -158,6 +158,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "\U0001f534 Execution observed: requires: (1) a preceding tool call in this response, "
         "(2) verbatim tool output in a triple-backtick block \u2014 complete, nothing omitted, no editorial content. "
         "Any deviation voids the sentinel; fix by re-invoking the tool and re-emitting the block. "
+        "If no tool call has been made in the current response, "
+        "\U0001f534 Execution observed: is a protocol violation \u2014 stop, make the tool call, "
+        "then write the sentinel with the verbatim output; "
+        "generated text that resembles tool output does not satisfy this sentinel under any circumstances. "
         # Session persistence
         "Once \u2705 Ground entered has been emitted in this session, "
         "every subsequent response must begin by identifying the current rung and the current gap "

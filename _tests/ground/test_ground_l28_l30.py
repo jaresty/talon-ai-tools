@@ -29,9 +29,12 @@ class TestL28ManifestClosedWorld(unittest.TestCase):
         )
 
     def test_l28_new_gap_handling(self):
-        idx = self.core.find("creating a thread not in the manifest is a protocol violation")
-        self.assertGreater(idx, -1, "L28 gate must be present")
-        segment = self.core[idx:idx+400]
+        # ADR-0188 Fix 2: "return to prose" now appears in the revision semantics block
+        # that precedes "creating a thread not in the manifest is a protocol violation".
+        gate_idx = self.core.find("creating a thread not in the manifest is a protocol violation")
+        self.assertGreater(gate_idx, -1, "L28 gate must be present")
+        # Search in a wider window that includes the preceding revision semantics block.
+        segment = self.core[max(0, gate_idx - 400):gate_idx + 200]
         self.assertIn(
             "return to prose",
             segment,
@@ -39,11 +42,13 @@ class TestL28ManifestClosedWorld(unittest.TestCase):
         )
 
     def test_l28_positioned_near_manifest(self):
-        anchor_idx = self.core.find("Manifest declared may be emitted exactly once per invocation")
+        # ADR-0188 Fix 2: "exactly once" replaced with revision semantics; new anchor is revision opener.
+        anchor_idx = self.core.find("Manifest declared opens the thread manifest for the session")
         gate_idx = self.core.find("creating a thread not in the manifest is a protocol violation")
         self.assertGreater(gate_idx, -1, "L28 gate must be present")
-        self.assertLess(abs(gate_idx - anchor_idx), 300,
-            "L28 gate must appear immediately after 'Manifest declared may be emitted exactly once'")
+        self.assertGreater(anchor_idx, -1, "Manifest revision opener must be present")
+        self.assertLess(abs(gate_idx - anchor_idx), 600,
+            "L28 gate must appear near manifest revision semantics rule")
 
 
 class TestL29ThreadCompleteOrdering(unittest.TestCase):

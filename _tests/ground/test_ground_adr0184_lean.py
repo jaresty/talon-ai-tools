@@ -58,11 +58,12 @@ class TestA2Removed(unittest.TestCase):
         )
 
     def test_cross_type_example_survives_in_obr(self):
-        """The test-suite-at-OBR example must survive in the OBR voids_if."""
+        """ADR-0188 Fix 1: OBR void condition scoped — test runner used as live-process evidence voids;
+        step-5 test runner output does not void. Cross-type distinction is preserved in scoped form."""
         self.assertIn(
-            "validation-run-observation-type output, not observed-running-behavior-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.core,
-            "Cross-type example must survive in OBR voids_if or A2 gate sentence",
+            "Cross-type example must survive in OBR voids_if (scoped form per ADR-0188 Fix 1)",
         )
 
 

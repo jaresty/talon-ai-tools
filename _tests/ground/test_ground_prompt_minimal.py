@@ -201,10 +201,12 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_impl_gate_current_cycle_only(self):
+        # ADR-0188: explicit impl_gate prior-cycle clause deleted — derivable from A4 (Provenance).
+        # A4 states evidence from a prior cycle does not satisfy any gate regardless of type match.
         self.assertIn(
-            "from the current cycle",
+            "A4 (Provenance)",
             self.prompt,
-            "Minimal spec must require execution-observed from current cycle not prior cycle for impl-gate",
+            "Minimal spec must include A4 (Provenance) which derives the impl-gate current-cycle requirement",
         )
 
     def test_thread_complete_sentinel_dependency(self):
@@ -491,13 +493,13 @@ class TestMinimalGroundParts(unittest.TestCase):
             "Manifest declaration scan must not reference 'declared intent' — use prose rung instead",
         )
 
-    # C7 carve-out: tests are never valid at ORB rung — now covered by A2 axiom
+    # C7 carve-out: tests are never valid at OBR rung as live-process evidence — Fix 1 scoped void condition
     def test_c7_carveout_excludes_all_tests_not_just_gating_test(self):
-        # ADR-0184: OBR enumeration condensed; A2 axiom carries the all-tests exclusion at protocol level.
+        # ADR-0188 Fix 1: OBR void condition scoped; cross-type exclusion expressed as scoped void condition.
         self.assertIn(
-            "validation-run-observation-type output, not observed-running-behavior-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.prompt,
-            "C7 carve-out: A2 axiom must state test output is VRO-type not OBR-type",
+            "C7 carve-out: OBR void condition must exclude test runner output used as live-process evidence (ADR-0188 Fix 1)",
         )
 
     # C12: observed running behavior rung criterion re-emission
@@ -699,10 +701,11 @@ class TestMinimalGroundParts(unittest.TestCase):
         )
 
     def test_c7_output_criterion_test_report_invalid(self):
+        # ADR-0188 Fix 1: scoped void condition replaces old "validation-run-observation-type" verbatim.
         self.assertIn(
-            "validation-run-observation-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.prompt,
-            "C7-output-criterion: axiom-level rung-type constraint must name VRO as the type produced by running tests, covering OBS output rejection",
+            "C7-output-criterion: OBR void condition must reject test runner output used as live-process evidence",
         )
 
     def test_c7_output_must_speak_for_itself(self):

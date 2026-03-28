@@ -134,20 +134,21 @@ class TestL33UnchangedCriterionTrap(unittest.TestCase):
         )
 
     def test_l33_names_correct_alternative_action(self):
-        """The rule must name what to do instead: return to formal notation or loop within impl."""
-        idx = self.prompt.find("textually identical")
-        if idx == -1:
-            idx = self.prompt.find("unchanged")
-        self.assertGreater(idx, -1, "L33 rule must be present")
+        """ADR-0188 P5: 'textually identical' block deleted; P5 owns the convergence exit.
+        P5 states: criterion has not changed → return to criteria rung (mandatory)."""
+        # P5 uses "has not changed" (not "textually identical" or "unchanged")
+        idx = self.prompt.find("has not changed")
+        self.assertGreater(idx, -1, "L33/P5 rule must be present — 'has not changed' triggers convergence exit")
         segment = self.prompt[max(0, idx-50):idx+400]
         has_alternative = (
-            "formal notation" in segment
+            "criteria rung" in segment
+            or "formal notation" in segment
             or "executable implementation" in segment
             or "loop within" in segment
         )
         self.assertTrue(
             has_alternative,
-            "L33: unchanged-criterion rule must name the correct alternative (formal notation or impl loop)",
+            "L33/P5: criterion-unchanged rule must name the correct exit (criteria rung, formal notation, or impl loop)",
         )
 
 

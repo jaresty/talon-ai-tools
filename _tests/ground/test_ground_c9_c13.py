@@ -80,14 +80,18 @@ class TestC13ManifestOnce(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c13_exactly_once_stated(self):
-        self.assertIn("exactly once per invocation", self.core,
-            "C13: ground must prohibit re-declaring the manifest — exactly once per invocation")
+        # ADR-0188 Fix 2: "exactly once per invocation" replaced with revision semantics.
+        # The behavioral guarantee (manifests have defined lifecycle) is now expressed as revision semantics:
+        # completed threads are closed and may not be re-opened; N reflects incomplete thread count.
+        self.assertIn("Completed threads are closed", self.core,
+            "C13: ground must state manifest revision lifecycle — completed threads closed, N reflects incomplete count")
 
     def test_c13_positioned_near_manifest_gate(self):
-        c13_idx = self.core.index("exactly once per invocation")
+        # ADR-0188 Fix 2: anchor phrase changed to revision semantics opener.
+        c13_idx = self.core.index("Completed threads are closed")
         predicate_idx = self.core.index("each distinct predicate requires a separate thread")
-        self.assertLess(abs(c13_idx - predicate_idx), 600,
-            "C13: once-per-invocation prohibition must appear near manifest coverage gate")
+        self.assertLess(abs(c13_idx - predicate_idx), 800,
+            "C13: manifest lifecycle rule must appear near manifest coverage gate")
 
 
 if __name__ == "__main__":

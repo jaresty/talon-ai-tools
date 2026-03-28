@@ -18,10 +18,11 @@ class TestOBRLiveProcessForwardGate(unittest.TestCase):
             self.prompt,
             "ADR-0187: OBR explicit forward gate phrase must be absent — subsumed by rung table + P4 Clause B",
         )
+        # ADR-0188 Fix 1: void condition scoped.
         self.assertIn(
-            "test runner output — a test-suite pass is validation-run-observation-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.prompt,
-            "OBR rung table void condition must carry the test-runner blocking guarantee",
+            "OBR rung table void condition must carry the test-runner blocking guarantee (scoped, ADR-0188 Fix 1)",
         )
 
     def test_obr_forward_gate_names_only_valid_next_action(self):

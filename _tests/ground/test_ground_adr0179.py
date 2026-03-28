@@ -33,10 +33,13 @@ class TestC1VROInferenceRestatementRemoved(unittest.TestCase):
 
 class TestE1CarryForwardReadGate(unittest.TestCase):
     def test_carry_forward_read_gate_present(self):
+        # ADR-0188: explicit "read the current test file" rule deleted — derivable from A4 (Provenance).
+        # A4 requires provenance establishment for carry-forward; the specific read mechanism
+        # is a consequence of A4 + P4 EV step 1, not a standalone rule.
         self.assertIn(
-            "read the current test file",
+            "A4 (Provenance)",
             build_ground_prompt(),
-            "E1: carry-forward must require a tool call reading the current test file before emitting rows",
+            "E1: carry-forward provenance requirement is now owned by A4 (Provenance axiom)",
         )
 
 

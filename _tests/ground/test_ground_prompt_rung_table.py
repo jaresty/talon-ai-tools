@@ -28,7 +28,7 @@ CANONICAL_RUNG_NAMES = [
     "observed running behavior",
 ]
 
-REQUIRED_RUNG_KEYS = {"name", "artifact", "gate", "voids_if"}
+REQUIRED_RUNG_KEYS = {"name", "type_label", "artifact", "gate", "voids_if"}
 
 # Baseline character count of rung_sequence_code before refactor (measured: 8679 chars).
 # Target: numbered list compressed to inline arrow sequence; reduction modest (~30+ chars).

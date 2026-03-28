@@ -221,15 +221,15 @@ class TestGroundRewrite(unittest.TestCase):
             "F4: OBR partial-demonstration gate must name the failure path",
         )
 
-    # F5: Per-criterion OBS demonstration — test output is VRO-type not OBR-type (A2 axiom)
+    # F5: Per-criterion OBS demonstration — test runner as live-process evidence voids OBR rung (Fix 1)
     def test_f5_thread_complete_demonstration_excludes_test_pass(self):
-        """A2 axiom must state test-suite output is VRO-type, not OBR-type."""
-        # ADR-0184: "test pass is not a demonstration" removed; A2 covers this globally at axiom level.
+        """ADR-0188 Fix 1: OBR void condition scoped; test runner output used as live-process evidence voids the rung."""
+        # ADR-0188 Fix 1: replaces old "validation-run-observation-type output, not OBR-type" verbatim.
         prompt = build_ground_prompt()
         self.assertIn(
-            "validation-run-observation-type output, not observed-running-behavior-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             prompt,
-            "F5: A2 axiom must state that test-suite output is VRO-type not OBR-type",
+            "F5: OBR void condition must exclude test runner output used as live-process evidence (ADR-0188 Fix 1)",
         )
 
     # Axiom collapse: artifact type is operative gate, "matching its definition" removed

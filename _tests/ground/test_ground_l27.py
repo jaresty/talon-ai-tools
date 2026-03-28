@@ -28,10 +28,11 @@ class TestL27OBRTestRunnerGate(unittest.TestCase):
             self.core,
             "ADR-0187: L27 gate phrase must be absent — subsumed by rung table void condition and P4 Clause B",
         )
+        # ADR-0188 Fix 1: void condition scoped.
         self.assertIn(
-            "test runner output — a test-suite pass is validation-run-observation-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.core,
-            "OBR rung table void condition must name test-runner output as voiding the rung",
+            "OBR rung table void condition must name test-runner output as voiding the rung (scoped, ADR-0188 Fix 1)",
         )
 
     def test_l27_invocation_target_must_be_implementation(self):

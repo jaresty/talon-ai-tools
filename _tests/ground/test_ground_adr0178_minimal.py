@@ -104,14 +104,20 @@ class TestADR0180Closures(unittest.TestCase):
     """ADR-0180: Five SWE drift closures — C5, C2, C1, C4, C3."""
 
     def test_c5_obr_reinvoke_gate(self):
-        """C5: OBR test-runner output blocking gate — ADR-0187: rung-entry gate deleted; behavioral guarantee carried by P1 + OBR rung table void condition."""
-        # ADR-0187 deleted the rung-entry gate block (P1 procedural restatement).
-        # The behavioral guarantee — test-runner output cannot satisfy the OBR rung — is
-        # now carried by the OBR rung table void condition in RUNG_SEQUENCE.
+        """C5: OBR test-runner output blocking gate — ADR-0188 Fix 1: void condition scoped so
+        test runner output used as live-process evidence voids the rung, but step-5 run does not."""
+        # ADR-0188 Fix 1 scopes the void condition: test runner output used as OBR live-process
+        # evidence voids the rung; test runner output at OBR step 5 does not void this rung.
+        p = _minimal()
         self.assertIn(
-            "test runner output — a test-suite pass is validation-run-observation-type output",
-            _minimal(),
-            "C5: OBR rung table void condition must name test-runner output as voiding the rung",
+            "test runner output used as OBR live-process evidence voids this rung",
+            p,
+            "C5: OBR void condition must name test-runner output as voiding the rung when used as live-process evidence",
+        )
+        self.assertIn(
+            "test runner output at OBR step 5 does not void this rung",
+            p,
+            "C5: OBR void condition must exempt step-5 test runner output from voiding the rung",
         )
 
     def test_c2_manifest_exhaustion_count_anchor(self):

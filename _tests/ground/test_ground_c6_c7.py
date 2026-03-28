@@ -34,20 +34,19 @@ class TestC7ObservedRunningBehaviorType(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_c7_distinguishes_implemented_artifact_from_tests(self):
-        # ADR-0184: OBR enumeration condensed; A2 axiom now carries the artifact-type constraint at protocol level.
-        # A2 states test-suite output is VRO-type, not OBR-type — covers C7 globally.
+        # ADR-0188 Fix 1: OBR void condition scoped; the cross-type distinction is now expressed as
+        # "test runner output used as OBR live-process evidence voids this rung".
         self.assertIn(
-            "validation-run-observation-type output, not observed-running-behavior-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.core,
-            "C7: A2 axiom must distinguish test-suite output (VRO-type) from OBR-type output")
+            "C7: OBR rung table void condition must distinguish live-process evidence from test runner output")
 
     def test_c7_prohibits_running_tests_at_orb_rung(self):
-        # ADR-0187: "Upon writing the observed running behavior label" deleted.
-        # Behavioral guarantee carried by OBR rung table void condition.
+        # ADR-0188 Fix 1: void condition scoped; step-5 run is permitted, live-process-evidence use is not.
         self.assertIn(
-            "test runner output — a test-suite pass is validation-run-observation-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.core,
-            "C7: OBR rung table void condition must state test-runner output voids the rung")
+            "C7: OBR rung table void condition must state test-runner output voids the rung when used as live-process evidence")
 
     def test_c7_carveout_for_non_invocable_artifacts(self):
         # ADR-0187: "Upon writing the observed running behavior label" deleted (criterion re-emission rule).

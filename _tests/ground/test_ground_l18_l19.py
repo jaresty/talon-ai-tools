@@ -62,11 +62,12 @@ class TestL19OBRTestRunnerVoid(unittest.TestCase):
         )
 
     def test_l19_voids_if_references_vro_type(self):
-        """OBR voids_if must explain that test runner output is VRO-type, not OBR-type."""
+        """ADR-0188 Fix 1: OBR voids_if scoped — test runner as live-process evidence voids;
+        step-5 run exempt. Type distinction now expressed via scoped void condition."""
         self.assertIn(
-            "validation-run-observation",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.obr["voids_if"],
-            "L19: OBR voids_if must reference that test runner output is VRO-type",
+            "L19: OBR voids_if must state that test runner output used as live-process evidence voids the rung",
         )
 
 

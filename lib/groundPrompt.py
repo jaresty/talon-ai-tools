@@ -20,45 +20,52 @@ protocol mechanics section. Corollary enforcement paragraphs removed.
 RUNG_SEQUENCE: list[dict] = [
     {
         "name": "prose",
+        "type_label": "prose-type",
         "artifact": "natural language description of intent and constraints",
         "gate": "I declared",
         "voids_if": "skipped",
     },
     {
         "name": "criteria",
+        "type_label": "criteria-type",
         "artifact": "falsifiable behavioral acceptance conditions",
         "gate": "prose complete",
         "voids_if": "criterion is structural/implementation rather than behavioral",
     },
     {
         "name": "formal notation",
+        "type_label": "notation-type",
         "artifact": "non-executable specification with behavioral invariants + R2 audit",
         "gate": "criteria complete; R2 audit 0 UNENCODED entries",
         "voids_if": "UNENCODED entries remain; audit not a separate named section",
     },
     {
         "name": "executable validation",
+        "type_label": "EV-type",
         "artifact": "test file invocable by an automated tool, within project tree",
         "gate": "formal notation R2 audit complete",
         "voids_if": "implementation code included; outside project tree; pre-existing artifact",
     },
     {
         "name": "validation run observation",
+        "type_label": "VRO-type",
         "artifact": "exec_observed sentinel with verbatim failure naming declared gap",
         "gate": "executable validation artifact runs",
         "voids_if": "build/compile error; green run without prior failure; infrastructure-only output",
     },
     {
         "name": "executable implementation",
+        "type_label": "EI-type",
         "artifact": "implementation source edits; one edit per re-run cycle",
         "gate": "exec_observed + gap declared; impl_gate sentinel emitted",
         "voids_if": "multiple edits without intervening re-run; newly-passing test has no prior failure",
     },
     {
         "name": "observed running behavior",
+        "type_label": "OBR-type",
         "artifact": "live-process output — output produced by a tool call that starts or queries a running process, directly demonstrating all criteria declared for this thread; reading any file does not satisfy this type regardless of content",
         "gate": "implementation complete; exec_observed + gap for behavior from I",
-        "voids_if": "new files created; output names only infrastructure state; file read used as evidence; test runner output — a test-suite pass is validation-run-observation-type output, not observed-running-behavior-type output, and voids this rung",
+        "voids_if": "new files created; output names only infrastructure state; file read used as evidence; test runner output used as OBR live-process evidence voids this rung; test runner output at OBR step 5 does not void this rung",
     },
 ]
 
@@ -93,13 +100,34 @@ def _sentinel_block() -> str:
 
 
 def _rung_table() -> str:
-    """Generate a compact rung table (name | artifact type | gate | void condition)."""
-    header = "Rung table \u2014 name | artifact type | gate condition | void condition: "
+    """Generate a compact rung table (name | type_label | artifact | gate | void condition)."""
+    header = "Rung table \u2014 name | type | artifact type | gate condition | void condition: "
     rows = "; ".join(
-        f"{e['name']}: artifact=\u201c{e['artifact']}\u201d, gate=\u201c{e['gate']}\u201d, voids_if=\u201c{e['voids_if']}\u201d"
+        f"{e['name']} [{e['type_label']}]: artifact=\u201c{e['artifact']}\u201d, gate=\u201c{e['gate']}\u201d, voids_if=\u201c{e['voids_if']}\u201d"
         for e in RUNG_SEQUENCE
     )
     return header + rows + ". "
+
+
+def _type_taxonomy_block() -> str:
+    """Generate the artifact type classification section (ADR-0189: Attractor B closure)."""
+    header = "Artifact type classification \u2014 each rung produces exactly one type; " \
+             "output is classified by its production method, not its content: "
+    rules = "; ".join(
+        f"{e['type_label']}: output of the {e['name']} rung"
+        for e in RUNG_SEQUENCE
+    )
+    notes = (
+        "VRO-type is produced by running a test suite \u2014 "
+        "any test runner invocation produces VRO-type output regardless of pass/fail; "
+        "OBR-type is produced by a tool call that performs live-process invocation \u2014 "
+        "reading a file, running tests, or static analysis never produces OBR-type output; "
+        "EI-type is produced by file-write tool calls modifying implementation source \u2014 "
+        "file-write tool calls at the EV rung produce EV-type, not EI-type; "
+        "when A4 requires an artifact of the correct type, classify by production method first \u2014 "
+        "content that resembles a different type does not change the classification."
+    )
+    return header + rules + ". " + notes + " "
 
 
 GROUND_PARTS_MINIMAL: dict[str, str] = {
@@ -115,7 +143,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         # R2 (minimal derivation): each artifact is the minimal transformation of the prior
         #   artifact that satisfies the current rung's type — form changes, intent does not.
         "A3: each descent through the ladder is a new evidential context \u2014 "
-        "artifacts, test results, and artifact names from prior cycles have no standing in the current cycle; "
         "the evidential context resets at every re-emission of the prose rung label. "
         "R2: each artifact derives from the prior rung \u2014 form changes, intent does not; "
         "a skipped rung voids all artifacts below it; "
@@ -125,6 +152,18 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         # P1 (Evidential boundary): derived from A1 + A2.
         # P2 (Forward-only discipline): derived from A2 + R2.
         # P3 (Scope discipline): derived from R2.
+        "A4 (Provenance): an artifact satisfies a rung gate only if it was produced by a tool call "
+        "made in direct response to the gap declared at the immediately prior rung in the current cycle; "
+        "evidence from a prior cycle, a different thread, or a different gap does not satisfy any gate "
+        "regardless of type match. "
+        "A5 (Cycle identity): a cycle for a thread is the interval bounded by the prose rung emission "
+        "that opens it and either \u2705 Thread N complete or an upward return that closes it; "
+        "the current cycle is the interval opened by the most recent prose emission for the current thread; "
+        "prose re-emission for one thread does not affect the cycle identity of any other thread. "
+        "P5 (Convergence): a thread converges only when its gap closes; "
+        "if EI has executed without gap closure and the criterion has not changed since the most recent "
+        "prior HARD STOP cycle for this thread, the criterion is underspecified \u2014 return to the criteria rung; "
+        "this is mandatory, not optional. "
         "P1 (Evidential boundary): a rung gate is satisfied if and only if a tool-executed event "
         "appears in the current-cycle transcript whose output is classified as that rung\u2019s artifact type; "
         "no other event \u2014 inference, prediction, model recall, file read, test runner output, "
@@ -161,8 +200,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "process-start followed by query, both tool calls required \u2014 "
         "(4) exec_observed sentinel with verbatim output, "
         "(5) test suite run \u2014 in that order \u2014 read-only only, no writes. "
-        # Rung table — seven rows: name, artifact type, gate condition, void condition
+        # Rung table — seven rows: name, type_label, artifact type, gate condition, void condition
         + _rung_table()
+        # Type taxonomy — closed classification rules (ADR-0189: Attractor B)
+        + _type_taxonomy_block()
         # Protocol mechanics
         # A1 consequences: exec_observed verbatim rule
         + (
@@ -249,7 +290,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "if the criteria artifact is identical to a prior cycle\u2019s criteria artifact, "
         "the criterion has not changed \u2014 return to the prose rung and re-emit with an updated gap before descending again; "
         "before writing the test, check for an existing test file covering the same module \u2014 add there if so; "
-        "when the artifact is modified, invoke a tool call to read the current test file before emitting carry-forward rows \u2014 "
         "carry-forward format: \u2018Carry-forward: prior failure [verbatim test name as it appeared in "
         "a \U0001f534 Execution observed sentinel] covers current test [verbatim test name as written in the artifact]\u2019 \u2014 "
         "each prior-failure name must be quotable verbatim from a \U0001f534 Execution observed sentinel; "
@@ -302,11 +342,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the only valid next token is a tool call that repairs the harness \u2014 "
         "not a gap statement, not HARD STOP, not a rung label; "
         "HARD STOP may not appear in the same response as a harness-error exec_observed at the EV rung. "
-        "Before emitting \U0001f6d1 HARD STOP, locate the criterion written in the most recent prior HARD STOP cycle "
-        "for this thread \u2014 if it is textually identical to the current criterion, HARD STOP is a protocol violation: "
-        "an identical criterion means the upward return accomplished nothing; "
-        "if the implementation did not close the gap, loop within executable implementation; "
-        "if the spec did not model the criterion, return to formal notation before issuing HARD STOP. "
         "if the observed gap matches the prior cycle's gap, the edit did not address it \u2014 "
         "return to formal notation before any further edit. "
         "HARD STOP does not restart the session \u2014 \u2705 Ground entered and \u2705 Manifest declared "
@@ -344,9 +379,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "The prose rung must be re-emitted at the start of every cycle \u2014 the first cycle, "
         "any subsequent cycle, and any cycle following an upward return; "
         "the criterion must be immediately derivable from the re-emitted prose. "
-        "\U0001f7e2 Implementation gate cleared requires a \U0001f534 Execution observed: "
-        "from the current cycle\u2019s validation run observation rung \u2014 not from a prior cycle \u2014 "
-        "to exist in output; "
         "the VRO rung label must appear in the transcript for the current cycle \u2014 "
         "a run at the EV rung does not satisfy the VRO gate regardless of whether it produced a failure. "
         "Before emitting \u2705 Manifest declared, count the thread entries in the list \u2014 "
@@ -356,17 +388,22 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "\u2705 Manifest declared is blocked \u2014 re-emit the prose with [T: gap-name] markers "
         "added inline after each behavioral predicate before proceeding. "
         "Before emitting \u2705 Manifest declared, scan every sentence in the prose for behavioral predicates "
-        "(fetches, requires, displays, filters, renders, validates, authenticates, loads, saves, or similar) \u2014 "
+        "(fetches, requires, displays, filters, renders, validates, authenticates, loads, saves, "
+        "or any finite verb where the subject is the system and the object is a data entity, "
+        "user action, or external system) \u2014 "
         "each distinct predicate requires a separate thread; "
         "count the [T: gap-name] markers in the prose you just wrote to confirm every predicate is covered; "
         "each manifest entry is a short gap label \u2014 a noun phrase naming the gap, not a behavioral assertion; "
         "a manifest entry containing a verb or phrased as a currently-false assertion is malformed; "
         "the behavioral assertion for a gap is produced for the first time at the criteria rung, not the manifest; "
-        "\u2705 Manifest declared may be emitted exactly once per invocation. "
+        "\u2705 Manifest declared opens the thread manifest for the session. "
+        "A revised manifest may be emitted when a new gap is discovered mid-run \u2014 "
+        "return to prose, re-emit prose for all incomplete threads with the new gap included, "
+        "then emit \u2705 Manifest declared with the revised thread list. "
+        "Completed threads are closed and may not be re-opened by a revision. "
+        "The N in \u2705 Manifest declared must reflect the current incomplete thread count at the time of emission. "
         "only threads declared in \u2705 Manifest declared may be addressed \u2014 "
-        "creating a thread not in the manifest is a protocol violation; "
-        "when a new gap is discovered mid-run, return to prose and re-emit a revised manifest \u2014 "
-        "do not create an undeclared thread. "
+        "creating a thread not in the manifest is a protocol violation. "
         "Outputting a rung label is what begins that rung \u2014 it is not a heading or annotation; "
         "a rung whose label has not been output has not begun and no artifact for it may exist. "
         # R2 consequences: minimal derivation, self-sufficiency, upward returns, reconciliation

@@ -136,10 +136,12 @@ class TestC17ImplicitConjunctionBan(unittest.TestCase):
             self.core,
             "ADR-0187: rung-entry gate must be absent — deleted as P1 procedural restatement",
         )
+        # ADR-0188 Fix 1: void condition scoped — test runner as live-process evidence voids;
+        # step-5 test runner run does not void.
         self.assertIn(
-            "test runner output — a test-suite pass is validation-run-observation-type output",
+            "test runner output used as OBR live-process evidence voids this rung",
             self.core,
-            "OBR rung table void condition must name test-runner output as voiding the rung",
+            "OBR rung table void condition must name test-runner output as voiding the rung (scoped, ADR-0188 Fix 1)",
         )
 
 

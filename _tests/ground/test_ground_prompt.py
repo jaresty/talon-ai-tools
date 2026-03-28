@@ -299,8 +299,9 @@ def test_immediate_descent_after_criteria():
 
 def test_manifest_entries_are_gap_labels_only():
     sr = SR()
-    manifest_idx = sr.find("Manifest declared may be emitted")
-    assert manifest_idx >= 0, "manifest rule must be present"
+    # ADR-0188 Fix 2: "Manifest declared may be emitted exactly once" replaced by revision semantics.
+    manifest_idx = sr.find("Manifest declared opens the thread manifest")
+    assert manifest_idx >= 0, "manifest revision semantics rule must be present"
     # Search in a window around the manifest rule
     window = sr[max(0, manifest_idx - 500) : manifest_idx + 500]
     assert ("label" in window or "noun phrase" in window or "short" in window) and (
@@ -348,7 +349,7 @@ def test_thread_scanner_scoped_to_practitioner_prose():
     # not just "the prose" (which is ambiguous and could include the ground prompt itself).
     scan_idx = sr.find("scan every sentence in the prose")
     assert scan_idx >= 0, "manifest scanning sentence must be present"
-    context = sr[scan_idx : scan_idx + 300]
+    context = sr[scan_idx : scan_idx + 600]
     assert (
         "prose rung" in context
         or "prose rung artifact" in context

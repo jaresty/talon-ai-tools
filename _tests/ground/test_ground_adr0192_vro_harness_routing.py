@@ -21,5 +21,6 @@ def test_hard_stop_blocked_at_vro_for_harness_error():
     # Specifically at VRO context -- check there's a VRO-specific harness rule
     idx_vro_harness = p.find("harness error at the VRO")
     idx_vro_harness2 = p.find("harness error at VRO")
-    assert idx_vro_harness != -1 or idx_vro_harness2 != -1, \
+    idx_vro_harness3 = p.find("VRO exec_observed is a harness error")
+    assert idx_vro_harness != -1 or idx_vro_harness2 != -1 or idx_vro_harness3 != -1, \
         "No VRO-specific harness error rule found"

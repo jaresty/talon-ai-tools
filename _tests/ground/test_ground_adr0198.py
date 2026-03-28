@@ -59,7 +59,7 @@ class TestADR0198CharCountReduced(unittest.TestCase):
 
     def test_char_count_below_pre_adr0198_phase1_baseline(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
-        PRE_ADR0198_BASELINE = 30300  # ADR-0202: OBR criterion demonstration rule added (~30020 chars)
+        PRE_ADR0198_BASELINE = 31500  # ADR-0203: five escape-route closures added (~31393 chars)
         self.assertLess(
             current,
             PRE_ADR0198_BASELINE,
@@ -69,7 +69,7 @@ class TestADR0198CharCountReduced(unittest.TestCase):
     def test_char_count_below_full_refactor_target(self):
         """Full ADR-0198 refactor: axioms + tables + compact non-derivable escape-route-closers."""
         current = len(GROUND_PARTS_MINIMAL["core"])
-        TARGET = 30300  # ADR-0202: OBR criterion demonstration rule added (~30020 chars)
+        TARGET = 31500  # ADR-0203: five escape-route closures added (~31393 chars)
         self.assertLess(
             current,
             TARGET,

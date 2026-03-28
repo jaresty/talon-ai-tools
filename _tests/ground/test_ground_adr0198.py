@@ -69,7 +69,7 @@ class TestADR0198CharCountReduced(unittest.TestCase):
     def test_char_count_below_full_refactor_target(self):
         """Full ADR-0198 refactor: axioms + tables + compact non-derivable escape-route-closers."""
         current = len(GROUND_PARTS_MINIMAL["core"])
-        TARGET = 27000  # after full rewrite: ~26300 chars (down from 29564 pre-ADR-0198)
+        TARGET = 29200  # ADR-0199: OBR UI why-sentence added (~28960 chars final)
         self.assertLess(
             current,
             TARGET,

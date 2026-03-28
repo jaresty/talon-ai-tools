@@ -32,7 +32,7 @@ REQUIRED_RUNG_KEYS = {"name", "type_label", "artifact", "gate", "voids_if"}
 
 # Baseline character count of rung_sequence_code before refactor (measured: 8679 chars).
 # Target: numbered list compressed to inline arrow sequence; reduction modest (~30+ chars).
-BASELINE_RUNG_SEQUENCE_CODE_CHARS = 27000  # ADR-0198: full refactor — compact non-derivable rules only (~26300 chars)
+BASELINE_RUNG_SEQUENCE_CODE_CHARS = 29200  # ADR-0199: OBR UI why-sentence added (~28960 chars final)
 
 
 class TestRungSequenceExists(unittest.TestCase):

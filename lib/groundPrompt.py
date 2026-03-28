@@ -248,6 +248,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "this is a content gate, not a self-check; "
         "after the criterion is written, the only valid next token is the formal notation rung label \u2014 "
         "no confirmation, no pause, no additional content between them is valid; "
+        "the criteria rung artifact is exactly one criterion for the current thread only \u2014 "
+        "not one criterion per thread, not criteria for all threads collected under one label; "
         "exactly one criterion may be written per thread per cycle \u2014 "
         "a second criterion for the same thread is a protocol violation \u2014 "
         "stop, return to the prose rung, and split the thread before descending again; "

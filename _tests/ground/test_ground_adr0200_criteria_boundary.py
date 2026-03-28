@@ -1,4 +1,4 @@
-"""Criteria rung must prohibit formal notation content before the notation rung label (ADR-0200)."""
+"""Criteria rung content-type discipline: notation content requires notation rung label first (ADR-0200/0201)."""
 import unittest
 import sys
 sys.path.insert(0, '.')
@@ -10,20 +10,20 @@ class TestCriteriaBoundary(unittest.TestCase):
         self.prompt = build_ground_prompt()
 
     def test_notation_content_requires_rung_label_first(self):
-        # After the criterion is written, no notation content may appear
-        # until the formal notation rung label has been emitted.
+        # Each rung label opens a content-type context; notation-type content
+        # belongs to the formal notation rung, not the criteria rung.
         self.assertIn(
-            "no formal notation content may appear until the formal notation rung label has been emitted",
+            "each rung label opens a content-type context",
             self.prompt,
-            "Protocol must prohibit notation content before the notation rung label",
+            "Protocol must state that each rung label opens a content-type context",
         )
 
     def test_criteria_rung_stops_after_criterion(self):
-        # The criteria rung artifact is exactly the criterion — nothing beyond it.
+        # Emitting content of a different rung's type before its label is an A2 violation.
         self.assertIn(
-            "emitting notation content before the formal notation rung label is a protocol violation",
+            "type violation under A2",
             self.prompt,
-            "Protocol must explicitly call this a protocol violation",
+            "Protocol must classify wrong-type content as a type violation under A2",
         )
 
 

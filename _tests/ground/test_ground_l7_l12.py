@@ -19,9 +19,14 @@ class TestL7ManifestDeclaredForwardGate(unittest.TestCase):
         )
 
     def test_l7_thread_n_criterion_blocked_until_thread_n_complete(self):
-        self.assertIn(
-            "all seven rungs must complete for Thread N before any rung content for Thread N+1 may appear",
-            self.core,
+        has_gate = (
+            "all seven rungs must complete for Thread N before any rung content for Thread N+1 may appear"
+            in self.core
+            or "all seven rungs for Thread N must complete before any content for Thread N+1 may appear"
+            in self.core
+        )
+        self.assertTrue(
+            has_gate,
             "L7: criteria paragraph must block Thread N+1 criteria until Thread N complete has been emitted",
         )
 

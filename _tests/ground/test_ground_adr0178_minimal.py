@@ -187,7 +187,7 @@ class TestADR0182Closures(unittest.TestCase):
     def test_n5_exec_observed_prose_voids_sentinel(self):
         """N5: exec-observed with no delimited block is void (ADR-0184: condensed form)."""
         self.assertIn(
-            "Any deviation voids the sentinel",
+            "deviation voids the sentinel",
             _minimal(),
             "N5: ground prompt must void exec-observed sentinel on any deviation (ADR-0184: condensed form)",
         )

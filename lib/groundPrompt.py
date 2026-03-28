@@ -156,8 +156,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         # A1 consequences: exec_observed verbatim rule
         + (
         "\U0001f534 Execution observed: requires: (1) a preceding tool call in this response, "
-        "(2) verbatim tool output in a triple-backtick block \u2014 complete, nothing omitted, no editorial content. "
-        "Any deviation voids the sentinel; fix by re-invoking the tool and re-emitting the block. "
+        "(2) verbatim tool output in a triple-backtick block \u2014 no editorial content, no paraphrasing. "
+        "If the output is long, include the first failure and the final summary line, "
+        "then insert exactly one '[... N lines omitted ...]' marker with the actual count \u2014 "
+        "omitting content without a count marker voids the sentinel. "
+        "Any other deviation voids the sentinel; fix by re-invoking the tool and re-emitting the block. "
         "If no tool call has been made in the current response, "
         "\U0001f534 Execution observed: is a protocol violation \u2014 stop, make the tool call, "
         "then write the sentinel with the verbatim output; "

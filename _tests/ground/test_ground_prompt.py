@@ -117,11 +117,11 @@ def test_execution_observed_block_delimiter():
         "sentinel_rules must require 🔴 Execution observed to contain a complete delimited block"
     )
     assert (
-        "nothing omitted" in sr
-        or "complete output" in sr
-        or "complete tool output" in sr
+        "no paraphrasing" in sr
+        or "nothing omitted" in sr
+        or "omitted" in sr
     ), (
-        "sentinel_rules must state the block contains the complete tool output — nothing omitted"
+        "sentinel_rules must state verbatim output rule — no paraphrasing or explicit omission count"
     )
 
 

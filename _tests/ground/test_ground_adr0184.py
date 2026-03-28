@@ -39,9 +39,9 @@ class TestAExecObservedVerbatim(unittest.TestCase):
 
     def test_a_verbatim_invariant_survives(self):
         self.assertIn(
-            "nothing omitted",
+            "no paraphrasing",
             _core(),
-            "A: 'nothing omitted' invariant must survive the condensation",
+            "A: verbatim/no-paraphrasing invariant must survive the condensation",
         )
 
     def test_a_triple_backtick_survives(self):

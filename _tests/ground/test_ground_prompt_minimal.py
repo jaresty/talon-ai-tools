@@ -595,7 +595,7 @@ class TestMinimalGroundParts(unittest.TestCase):
         # ADR-0184: "model-generated text that resembles output" removed;
         # "Any deviation voids the sentinel" covers the inline-text case.
         self.assertIn(
-            "Any deviation voids the sentinel",
+            "deviation voids the sentinel",
             self.prompt,
             "C4-prime: any deviation from verbatim tool output voids the sentinel",
         )

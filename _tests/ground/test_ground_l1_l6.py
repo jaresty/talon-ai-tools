@@ -20,7 +20,7 @@ class TestL1ExecObservedPrecondition(unittest.TestCase):
 
     def test_l1_sentinel_without_tool_call_is_void(self):
         self.assertIn(
-            "Any deviation voids the sentinel",
+            "deviation voids the sentinel",
             self.core,
             "L1: must state that any deviation voids the sentinel (ADR-0184: condensed form replacing explicit void clause)",
         )

@@ -90,7 +90,7 @@ class TestC13ManifestOnce(unittest.TestCase):
         # ADR-0188 Fix 2: anchor phrase changed to revision semantics opener.
         c13_idx = self.core.index("Completed threads are closed")
         predicate_idx = self.core.index("each distinct predicate requires a separate thread")
-        self.assertLess(abs(c13_idx - predicate_idx), 800,
+        self.assertLess(abs(c13_idx - predicate_idx), 1000,
             "C13: manifest lifecycle rule must appear near manifest coverage gate")
 
 

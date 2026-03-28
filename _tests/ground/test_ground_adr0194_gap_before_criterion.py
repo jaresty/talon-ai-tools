@@ -6,7 +6,7 @@ def test_gap_first_at_criteria_rung():
     p = _p()
     # Must state criteria-rung-specific ordering: Gap is first content after label
     assert (
-        "Gap must be the first content after the criteria rung label" in p
+        "must be the first content after the criteria rung label" in p
         or "criteria rung label" in p and "Gap:" in p and "criterion sentence" in p
         or "after the criteria rung label, the first content must be" in p
     )

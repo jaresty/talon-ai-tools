@@ -15,9 +15,9 @@ CANONICAL_RUNG_NAMES = [e["name"] for e in RUNG_SEQUENCE]
 
 ABSTRACT_RULES = [
     "tool-executed",  # Rule 1: claim only tool events
-    "derives from",  # Rule 2: faithful derivation
+    "derived from",  # Rule 2: faithful derivation
     "declared gap",  # Rule 3: stop at the gap
-    "only the gap declared",  # Rule 2b: gap-locality
+    "exactly the gap declared",  # Rule 2b: gap-locality
     "reconcile",  # Reconciliation gate
     "without consulting I",  # V self-sufficiency
     "declared intent",  # I precedes its representations
@@ -485,7 +485,8 @@ class TestMinimalGroundParts(unittest.TestCase):
         idx = self.prompt.index(
             "Before emitting \u2705 Manifest declared, scan every sentence in the prose"
         )
-        end = self.prompt.index("Outputting a rung label is what begins that rung")
+        # Scope to just the manifest scan section, ending before the criteria rung
+        end = self.prompt.index("The formal notation rung separates behavioral specification")
         segment = self.prompt[idx:end]
         self.assertNotIn(
             "declared intent",

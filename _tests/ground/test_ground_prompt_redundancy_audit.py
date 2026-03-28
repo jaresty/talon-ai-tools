@@ -70,7 +70,7 @@ class TestTotalCharCountDoesNotGrow(unittest.TestCase):
     def test_total_ground_parts_minimal_chars_does_not_exceed_baseline(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         # ADR-0178: baseline after D1-D7 applied to minimal
-        BASELINE = 30100  # ADR-0197: OBR why-sentence addition: +220 chars
+        BASELINE = 27000  # ADR-0198: full refactor — compact non-derivable rules only (~26300 chars)
         self.assertLessEqual(
             current,
             BASELINE,

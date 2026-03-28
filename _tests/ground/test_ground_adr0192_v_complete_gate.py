@@ -17,9 +17,10 @@ def test_v_complete_requires_pre_existence_tool_call():
 def test_v_complete_gate_not_file_write_alone():
     p = _p()
     # A file-write alone (without a pre-existence check result) must not satisfy the gate
-    idx = p.find("Validation artifact V complete")
+    # Find the occurrence in the EV rules section (the one with "before emitting")
+    idx = p.find("before emitting \u2705 Validation artifact V complete")
     assert idx != -1
-    # Check there's a rule near the sentinel about pre-existence check
-    window = p[max(0, idx-500):idx+500]
+    # Check there's a rule near that sentence about pre-existence check
+    window = p[max(0, idx-200):idx+500]
     assert "pre-exist" in window or "does not pre-exist" in window, \
         "No pre-existence rule found near V-complete sentinel rule"

@@ -243,16 +243,17 @@ class TestGroundRewrite(unittest.TestCase):
         )
 
     def test_axiom_artifact_type_present_in_opening(self):
-        """Opening axiom must make artifact type the operative gate condition."""
+        """Opening axiom block must include artifact type as the operative gate condition."""
         from lib.groundPrompt import GROUND_PARTS_MINIMAL
 
         core = GROUND_PARTS_MINIMAL["core"]
-        axiom_end = core.index("inference, prediction")
+        # Axiom block ends at P1; artifact type appears in A2 which is in the axiom block
+        axiom_end = core.index("P1 (Evidential boundary)")
         axiom = core[:axiom_end]
         self.assertIn(
             "artifact type",
             axiom,
-            "Axiom must state artifact type as the gate condition before the inference exclusion",
+            "Axiom block must state artifact type as the gate condition",
         )
 
 

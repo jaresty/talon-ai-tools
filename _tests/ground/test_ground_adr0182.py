@@ -35,7 +35,7 @@ def test_p3_label_present():
 
 def test_principles_appear_after_axioms():
     result = _result()
-    ax_end = result.index("R2:") + len("R2:")
+    ax_end = result.index("R2 (Minimal derivation)") + len("R2 (Minimal derivation)")
     p1_pos = result.index("P1 (Evidential boundary)")
     assert ax_end < p1_pos, "P1 must appear after the R2 axiom text"
 

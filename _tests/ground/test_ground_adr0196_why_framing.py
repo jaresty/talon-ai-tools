@@ -77,7 +77,7 @@ class TestADR0196ProgressiveRefinement(unittest.TestCase):
         )
 
     def test_progressive_refinement_near_r2(self):
-        r2_pos = self.prompt.find("R2: each artifact derives from the prior rung")
+        r2_pos = self.prompt.find("R2 (Minimal derivation)")
         pr_pos = self.prompt.find(
             "Each artifact must be derived from the prior rung\u2019s actual content"
         )

@@ -21,7 +21,7 @@ def test_criteria_gap_criterion_must_follow():
 # ── Thread 2: length override ─────────────────────────────────────────────────
 
 def test_length_override_present():
-    assert "response length" in _p()
+    assert "Response length" in _p()
 
 
 def test_length_override_names_continuation():

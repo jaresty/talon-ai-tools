@@ -36,7 +36,7 @@ class TestPrecisionClauses(unittest.TestCase):
     def test_r2_void_propagation_clause(self):
         """R2 must state that if the prior rung's artifact is absent or void, no artifact below it is valid."""
         self.assertIn(
-            "absent or void",
+            "a skipped rung voids all artifacts below it",
             self.prompt,
             "R2 must include void-propagation clause",
         )

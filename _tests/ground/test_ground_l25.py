@@ -40,8 +40,8 @@ class TestL25EVArtifactVisible(unittest.TestCase):
         )
 
     def test_l25_positioned_near_ev_sentinel(self):
-        """L25 gate must appear near the V-complete sentinel sentence."""
-        sentinel_idx = self.core.find("Validation artifact V complete")
+        """L25 gate must appear near the V-complete sentinel sentence in the EV rules section."""
+        sentinel_idx = self.core.find("before emitting \u2705 Validation artifact V complete")
         gate_idx = self.core.find("artifact content must appear in the current response")
         self.assertGreater(gate_idx, -1, "L25 gate sentence must be present")
         self.assertLess(

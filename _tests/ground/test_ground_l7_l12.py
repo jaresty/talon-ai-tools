@@ -74,7 +74,7 @@ class TestL9EVHarnessErrorForwardGate(unittest.TestCase):
 
     def test_l9_only_valid_next_token_is_harness_repair(self):
         self.assertIn(
-            "the only valid next token is a tool call that repairs the harness",
+            "the only valid next token is a tool call that repairs the test file at the EV rung",
             self.core,
             "L9: HARD STOP paragraph must state that after EV harness error the only valid next token is a harness-repair tool call",
         )

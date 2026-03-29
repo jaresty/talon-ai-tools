@@ -514,9 +514,9 @@ func TestGroundExecutableValidationNoImplementation(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	// ADR-0214: P4 prose replaced by rung table voids_if; EV rung voids_if names "implementation code included"
-	if !strings.Contains(groundDesc, "implementation code included") {
-		t.Error("ground must prohibit implementation files at the EV rung — EV rung table voids_if carries the guarantee")
+	// ADR-0217: rung table is derived; guarantee carried by P6 (artifact type discipline)
+	if !strings.Contains(groundDesc, "dedicated rung for that artifact type") {
+		t.Error("ground must prohibit implementation files at the EV rung — P6 artifact type discipline carries the guarantee")
 	}
 }
 

@@ -280,9 +280,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "grain": "The response enhances the task by identifying which directions in the system are already structurally determined — the modes that will dominate under repeated pressure "
-        "regardless of apparent flexibility — distinguishing real optionality from illusory optionality. The response does not invent structure; it reads the latent grain of what is "
-        "already there and uses it to identify which choices are genuinely open and which are already foreclosed.",
+        "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
+        "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
+        "directional guidance, and structural prediction are all derivable from this reading.",
         "ground": "The response This protocol exists because a model’s description of completed work is indistinguishable from actually completing it — every gate enforces the distinction by "
         "requiring a piece of reality before any claim about reality. P1 (Intent primacy): intent exists; everything produced in a session is derivative of that intent; whenever new "
         "information changes the understanding of intent, every rung whose definition has changed must be refined starting with the highest affected rung and propagating downward; "

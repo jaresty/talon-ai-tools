@@ -97,25 +97,18 @@ class TestADR0196LocalWhySentences(unittest.TestCase):
     def setUp(self):
         self.prompt = build_ground_prompt()
 
-    def test_criteria_batch_collect_why_present(self):
-        self.assertIn(
+    def test_criteria_batch_collect_why_absent(self):
+        # ADR-0215: batch-collect paragraph removed (thread sequencing already in axiom block)
+        self.assertNotIn(
             "each thread\u2019s criterion is only valid in the context of that thread\u2019s descent",
             self.prompt,
         )
 
-    def test_criteria_batch_collect_why_near_batch_rule(self):
-        why_pos = self.prompt.find(
-            "each thread\u2019s criterion is only valid in the context of that thread\u2019s descent"
-        )
-        batch_pos = self.prompt.find(
-            "batch-collecting criteria for multiple threads under one criteria label"
-        )
-        self.assertGreater(why_pos, -1, "Criteria batch-collect why-sentence absent")
-        self.assertGreater(batch_pos, -1, "Batch-collect rule absent")
-        self.assertLess(
-            abs(why_pos - batch_pos),
-            500,
-            "Criteria batch-collect why-sentence must be near batch rule",
+    def test_criteria_batch_collect_rule_absent(self):
+        # ADR-0215: batch-collect rule removed (derivable from axiom block thread sequencing)
+        self.assertNotIn(
+            "batch-collecting criteria for multiple threads under one criteria label",
+            self.prompt,
         )
 
     def test_r2_audit_sentinel_why_present(self):

@@ -73,10 +73,11 @@ class TestL9EVHarnessErrorForwardGate(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_l9_only_valid_next_token_is_harness_repair(self):
-        self.assertIn(
-            "the only valid next token is a tool call that repairs the test file at the EV rung",
-            self.core,
-            "L9: HARD STOP paragraph must state that after EV harness error the only valid next token is a harness-repair tool call",
+        # ADR-0215: compact routing table routes test-file-error → EV repair
+        self.assertTrue(
+            "test-file-error" in self.core and "EV repair" in self.core
+            or "the only valid next token is a tool call that repairs the test file at the EV rung" in self.core,
+            "L9: protocol must route test-file-error to EV repair",
         )
 
     def test_l9_hard_stop_may_not_appear_with_harness_error(self):

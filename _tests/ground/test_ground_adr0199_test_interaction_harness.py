@@ -24,10 +24,11 @@ class TestInteractionHarnessClass(unittest.TestCase):
         )
 
     def test_test_interaction_failure_valid_next_token(self):
+        # ADR-0215: compact routing table routes test-interaction-failure → EV repair
         self.assertIn(
-            "repairs the component",
+            "EV repair",
             self.prompt,
-            "Protocol must specify that the valid next action is repairing the component accessibility",
+            "Protocol must route test-interaction-failure to EV repair",
         )
 
 

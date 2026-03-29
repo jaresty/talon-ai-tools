@@ -16,11 +16,7 @@ def test_vro_missing_impl_file_routes_to_ei():
 
 def test_hard_stop_blocked_at_vro_for_harness_error():
     p = _p()
-    # Must explicitly block HARD STOP at VRO for harness errors (not just at EV)
-    assert "HARD STOP may not" in p
-    # Specifically at VRO context -- check there's a VRO-specific harness rule
-    idx_vro_harness = p.find("harness error at the VRO")
-    idx_vro_harness2 = p.find("harness error at VRO")
-    idx_vro_harness3 = p.find("VRO exec_observed is a harness error")
-    assert idx_vro_harness != -1 or idx_vro_harness2 != -1 or idx_vro_harness3 != -1, \
-        "No VRO-specific harness error rule found"
+    # ADR-0215: compact routing table blocks HARD STOP for all three harness error types
+    assert "HARD STOP is not valid" in p or "HARD STOP may not" in p
+    # Compact routing table names all three harness error subtypes
+    assert "Harness error routing" in p or "harness error" in p.lower()

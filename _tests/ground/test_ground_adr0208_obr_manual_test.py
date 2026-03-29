@@ -4,10 +4,10 @@ def get_prompt():
 
 
 def test_obr_requires_manual_test():
-    """OBR rung must require a manual test — a live-process invocation."""
+    """OBR rung must require a live-process invocation (ADR-0215: 'manual' removed, 'live-process' retained)."""
     prompt = get_prompt()
-    assert "manual" in prompt, \
-        "OBR rung must name the required artifact as a manual test"
+    assert "live-process invocation" in prompt, \
+        "OBR rung must require a live-process invocation"
 
 
 def test_obr_browser_test_runner_forbidden():

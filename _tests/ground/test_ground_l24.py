@@ -22,32 +22,29 @@ class TestL24CriteriaPerThread(unittest.TestCase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
-    def test_l24_criteria_label_is_per_thread(self):
-        """The criteria rung label is per-thread, not shared across all threads."""
-        self.assertIn(
+    def test_l24_criteria_label_per_thread_prose_absent(self):
+        # ADR-0215: batch-collect paragraph removed (thread sequencing in axiom block covers it)
+        self.assertNotIn(
             "criteria rung label is per-thread",
             self.core,
-            "L24: must state that the criteria rung label applies to one thread at a time",
+            "ADR-0215: per-thread criteria rung label prose must be absent",
         )
 
-    def test_l24_batch_criteria_is_violation(self):
-        """Writing criteria for multiple threads under one label is a protocol violation."""
-        idx = self.core.find("criteria rung label is per-thread")
-        self.assertGreater(idx, -1, "L24 gate sentence must be present")
-        segment = self.core[idx:idx+400]
-        self.assertIn(
-            "protocol violation",
-            segment,
-            "L24: batch-collecting criteria for multiple threads must be named a protocol violation",
+    def test_l24_batch_criteria_prose_absent(self):
+        # ADR-0215: batch-collect rule removed (derivable from axiom block)
+        self.assertNotIn(
+            "batch-collecting criteria for multiple threads under one criteria label",
+            self.core,
+            "ADR-0215: batch-collect criteria prose must be absent",
         )
 
-    def test_l24_positioned_near_criteria_rules(self):
-        """L24 gate must appear near the criteria rung rules."""
-        criteria_idx = self.core.index("one independently testable behavior derived from the prose alone")
-        gate_idx = self.core.find("criteria rung label is per-thread")
-        self.assertGreater(gate_idx, -1, "L24 gate sentence must be present")
-        self.assertLess(abs(gate_idx - criteria_idx), 2200,
-            "L24: per-thread gate must appear near the criteria rung rules")
+    def test_l24_thread_sequencing_still_in_axiom_block(self):
+        """Thread sequencing policy remains in axiom block (where L24 prose was derivable from)."""
+        self.assertTrue(
+            "all seven rungs for Thread N must complete before any content for Thread N+1 may appear" in self.core
+            or "all seven rungs must complete for Thread N before any rung content for Thread N+1 may appear" in self.core,
+            "Thread sequencing policy must remain in axiom block",
+        )
 
 
 if __name__ == "__main__":

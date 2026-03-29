@@ -9,25 +9,28 @@ class TestRungContentTypeDiscipline(unittest.TestCase):
     def setUp(self):
         self.prompt = build_ground_prompt()
 
-    def test_each_rung_has_fixed_content_type(self):
-        self.assertIn(
+    def test_each_rung_has_fixed_content_type_prose_absent(self):
+        # ADR-0215: per-rung A2 restatement removed (gate formula states A2 globally)
+        self.assertNotIn(
             "each rung label opens a content-type context",
             self.prompt,
-            "Protocol must state that each rung label opens a fixed content-type context",
+            "ADR-0215: per-rung content-type context prose must be absent",
         )
 
-    def test_wrong_type_content_is_a2_violation(self):
-        self.assertIn(
+    def test_wrong_type_content_prose_absent(self):
+        # ADR-0215: "type violation under A2" per-rung restatement removed
+        self.assertNotIn(
             "type violation under A2",
             self.prompt,
-            "Protocol must classify wrong-type content as a type violation under A2",
+            "ADR-0215: per-rung A2 type violation restatement must be absent",
         )
 
-    def test_eventually_follows_does_not_satisfy(self):
-        self.assertIn(
+    def test_eventually_follows_prose_absent(self):
+        # ADR-0215: "eventually follows" clause removed with A2 restatement
+        self.assertNotIn(
             "eventually follows",
             self.prompt,
-            "Protocol must state that the correct label eventually following does not satisfy the gate",
+            "ADR-0215: 'eventually follows' clause must be absent",
         )
 
 

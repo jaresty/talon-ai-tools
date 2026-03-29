@@ -9,21 +9,20 @@ class TestCriteriaBoundary(unittest.TestCase):
     def setUp(self):
         self.prompt = build_ground_prompt()
 
-    def test_notation_content_requires_rung_label_first(self):
-        # Each rung label opens a content-type context; notation-type content
-        # belongs to the formal notation rung, not the criteria rung.
-        self.assertIn(
+    def test_notation_content_requires_rung_label_first_prose_absent(self):
+        # ADR-0215: A2 type-context prose at criteria rung removed (derivable from gate formula)
+        self.assertNotIn(
             "each rung label opens a content-type context",
             self.prompt,
-            "Protocol must state that each rung label opens a content-type context",
+            "ADR-0215: per-rung A2 restatement must be absent",
         )
 
-    def test_criteria_rung_stops_after_criterion(self):
-        # Emitting content of a different rung's type before its label is an A2 violation.
-        self.assertIn(
+    def test_criteria_rung_stops_after_criterion_prose_absent(self):
+        # ADR-0215: "type violation under A2" per-rung restatement removed
+        self.assertNotIn(
             "type violation under A2",
             self.prompt,
-            "Protocol must classify wrong-type content as a type violation under A2",
+            "ADR-0215: per-rung A2 type violation restatement must be absent",
         )
 
 

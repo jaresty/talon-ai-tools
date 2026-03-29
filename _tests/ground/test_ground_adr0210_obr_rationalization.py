@@ -14,14 +14,15 @@ def test_passing_tests_do_not_satisfy_obr():
 
 def test_functional_completeness_does_not_satisfy_obr():
     """Functional completeness must not substitute for OBR live-process invocation."""
+    # ADR-0215: compressed to why-sentence; "complete implementation" replaces "functionally complete"
     prompt = get_prompt()
-    assert "functionally complete" in prompt or "appears complete" in prompt, \
-        "Protocol must name functional completeness as an insufficient reason to skip OBR"
+    assert "complete implementation" in prompt or "functionally complete" in prompt or "appears complete" in prompt, \
+        "Protocol must name complete implementation as insufficient to satisfy the OBR gate"
 
 
 def test_prior_precedent_does_not_satisfy_obr():
-    """Prior work stopping at EI must not justify skipping OBR."""
+    """Prior cycles must not justify skipping OBR."""
+    # ADR-0215: compressed to why-sentence; "prior cycles" replaces "prior work stopped at EI, or precedent"
     prompt = get_prompt()
-    assert "prior work" in prompt or "stopped at EI" in prompt or \
-           "prior cycles stopped" in prompt or "precedent" in prompt, \
-        "Protocol must name prior precedent (prior work stopping at EI) as insufficient to skip OBR"
+    assert "prior cycles" in prompt or "prior work" in prompt or "precedent" in prompt, \
+        "Protocol must name prior cycles as insufficient to satisfy the OBR gate"

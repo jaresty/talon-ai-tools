@@ -6,16 +6,17 @@ from lib.groundPrompt import GROUND_PARTS_MINIMAL
 
 
 class TestVROSectionCompactBaseline(unittest.TestCase):
-    def test_vro_section_exceeds_old_guard(self):
+    def test_vro_section_below_adr0199_guard(self):
+        # ADR-0215: compact routing table reduces VRO section below ADR-0199 guard of 1120
         core = GROUND_PARTS_MINIMAL["core"]
         vro_start = core.find("Before writing the validation run observation rung label")
         vro_end = core.find("At the validation run observation rung, run")
         vro_section = core[vro_start:vro_end]
-        OLD_GUARD = 1120
-        self.assertGreater(
+        ADR0199_GUARD = 1120
+        self.assertLess(
             len(vro_section),
-            OLD_GUARD,
-            "ADR-0199 test-interaction harness rule must push VRO section past old guard",
+            ADR0199_GUARD,
+            "ADR-0215: compact routing table must reduce VRO section below ADR-0199 guard of 1120",
         )
 
 

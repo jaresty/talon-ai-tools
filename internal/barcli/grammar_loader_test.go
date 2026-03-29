@@ -514,8 +514,9 @@ func TestGroundExecutableValidationNoImplementation(t *testing.T) {
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}
-	if !strings.Contains(groundDesc, "writing implementation files at the EV rung is a protocol violation") {
-		t.Error("ground must prohibit implementation files at the EV rung — P4 Clause B carries the guarantee")
+	// ADR-0214: P4 prose replaced by rung table voids_if; EV rung voids_if names "implementation code included"
+	if !strings.Contains(groundDesc, "implementation code included") {
+		t.Error("ground must prohibit implementation files at the EV rung — EV rung table voids_if carries the guarantee")
 	}
 }
 

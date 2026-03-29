@@ -15,7 +15,12 @@ PROMPT = build_ground_prompt()
 
 def test_import_gate_pass_required_before_2b():
     """The prompt must state the import check must pass before (2b) begins."""
-    assert "must pass before step (2b)" in PROMPT or "import check must pass before" in PROMPT
+    # ADR-0214: phrasing changed to 'advancing to (2b) while the import check is failing is a protocol violation'
+    assert (
+        "must pass before step (2b)" in PROMPT
+        or "import check must pass before" in PROMPT
+        or "advancing to (2b) while the import check is failing" in PROMPT
+    )
 
 
 def test_advancing_to_2b_with_failing_import_is_violation():

@@ -377,10 +377,12 @@ class TestMinimalGroundParts(unittest.TestCase):
             self.prompt,
             "ADR-0187: Rung-entry gate must be absent — deleted as P1 restatement",
         )
-        self.assertIn(
+        # ADR-0214: 'writing implementation files at the EV rung is a protocol violation' removed
+        # as derivable from EV closed action set (EV sequence only permits test file writes).
+        self.assertNotIn(
             "writing implementation files at the EV rung is a protocol violation",
             self.prompt,
-            "P4 EV sequence must explicitly prohibit implementation files at EV rung",
+            "ADR-0214: this phrase must be absent; EV sequence table's closed action set makes it derivable",
         )
 
     def test_sentinel_placement_at_defining_rung_only(self):

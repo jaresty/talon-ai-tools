@@ -25,9 +25,15 @@ def test_stub_forbids_non_empty_function_bodies():
 
 
 def test_non_stub_behavior_at_ev_is_violation():
-    """Writing non-stub behavior at EV step (2a) must be a protocol violation."""
+    """Writing non-stub behavior at EV step (2a) must be a protocol violation.
+    ADR-0214: 'writing implementation files at the EV rung is a protocol violation' removed as
+    derivable from EV closed action set. Presence of stub constraints + 'advancing to (2b)' gate
+    is sufficient to close this escape route via type discipline.
+    """
     prompt = get_prompt()
     assert "stub" in prompt and "protocol violation" in prompt and (
-        "non-stub" in prompt or "implementation files at the EV rung" in prompt
+        "non-stub" in prompt
+        or "implementation files at the EV rung" in prompt
+        or ("EV rung" in prompt and "stub" in prompt and "advancing to (2b)" in prompt)
     ), \
         "Protocol must state that writing non-stub behavior at EV step (2a) is a protocol violation"

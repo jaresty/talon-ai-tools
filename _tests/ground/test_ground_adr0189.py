@@ -38,7 +38,10 @@ def test_type_taxonomy_labels_are_unique():
 
 
 def test_type_taxonomy_section_in_prompt():
-    assert "Artifact type classification" in _p()
+    # ADR-0214: "Artifact type classification" header removed; type definitions folded into rung table
+    # and OBR sequence section. The header itself was derivable boilerplate.
+    assert "Artifact type classification" not in _p(), \
+        "ADR-0214: taxonomy header must be absent; type definitions now in rung table"
 
 
 def test_type_taxonomy_all_labels_named_in_prompt():

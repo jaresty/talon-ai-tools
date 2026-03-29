@@ -46,15 +46,15 @@ class TestL31VCompleteForwardGate(unittest.TestCase):
                 "only valid next action is" in segment
                 or "only valid next token is" in segment
             )
-        p4_gate = (
-            "P4 (Rung action discipline)" in self.prompt
-            and "pre-existence" in self.prompt
+        # ADR-0214: P4 named principle removed; sequence table covers EV ordered action set.
+        sequence_table_gate = (
+            "pre-existence" in self.prompt
             and "EV rung" in self.prompt
-            and "in that order" in self.prompt
+            and "in order" in self.prompt
         )
         self.assertTrue(
-            explicit_gate or p4_gate,
-            "L31: pre-existence check forward gate must be present via explicit rule or P4 EV action set",
+            explicit_gate or sequence_table_gate,
+            "L31: pre-existence check forward gate must be present via explicit rule or EV sequence table",
         )
 
 

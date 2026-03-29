@@ -196,17 +196,18 @@ def test_carry_forward_is_a_gate():
 
 def test_pre_action_rung_self_check():
     # ADR-0187: "before producing content at any rung" rung-entry gate deleted (P1 procedural restatement).
-    # Pre-action rung discipline is now carried by P4 (Rung action discipline) — closed action set per rung.
+    # ADR-0214: P4 named principle removed; closed action sets expressed via sequence table.
     sr = SR()
-    assert "P4 (Rung action discipline)" in sr, (
-        "P4 must be present to carry the pre-action rung discipline guarantee"
+    # P4 named header removed; sequence table carries closed action sets
+    assert "P4 (Rung action discipline)" not in sr, (
+        "ADR-0214: P4 named principle header must be absent"
     )
     assert "closed action set" in sr or "gate condition for each rung is the rung table" in sr, (
-        "P4 or rung table must state the pre-action rung action constraint"
+        "Sequence table or rung table must state the pre-action rung action constraint"
     )
     # Coverage includes prose, criteria, formal notation rungs (no tool calls)
     assert "prose, criteria, and formal notation rungs: no tool calls" in sr, (
-        "P4 must explicitly state no tool calls at prose/criteria/formal notation rungs"
+        "Sequence table must explicitly state no tool calls at prose/criteria/formal notation rungs"
     )
 
 

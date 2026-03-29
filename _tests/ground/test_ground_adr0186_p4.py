@@ -16,10 +16,11 @@ class TestP4Named(unittest.TestCase):
         self.prompt = build_ground_prompt()
 
     def test_p4_named(self):
-        self.assertIn(
+        # ADR-0214: P4 named principle header removed; closed action sets expressed via sequence table.
+        self.assertNotIn(
             "P4 (Rung action discipline)",
             self.prompt,
-            "P4 must be a named principle",
+            "ADR-0214: P4 named principle header must be absent; sequence table carries closed action sets",
         )
 
     def test_p4_closed_action_set_stated(self):

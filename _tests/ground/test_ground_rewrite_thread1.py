@@ -14,8 +14,8 @@ from lib.groundPrompt import build_ground_prompt
 ORIGINAL_CHARS = 14036
 # C22–C24 add ~820 chars; C25–C28 add ~883 chars; ADR-0178 D1-D7 add ~5191 chars (drift closures).
 MAX_CHARS = (
-    ORIGINAL_CHARS + 19100
-)  # ADR-0203: four escape-route closures: +1100 chars
+    ORIGINAL_CHARS + 19270
+)  # ADR-0212: EV import-check gate: +170 chars
 
 
 class TestGroundRewrite(unittest.TestCase):

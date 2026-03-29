@@ -32,7 +32,7 @@ REQUIRED_RUNG_KEYS = {"name", "type_label", "artifact", "gate", "voids_if"}
 
 # Baseline character count of rung_sequence_code before refactor (measured: 8679 chars).
 # Target: numbered list compressed to inline arrow sequence; reduction modest (~30+ chars).
-BASELINE_RUNG_SEQUENCE_CODE_CHARS = 33100  # ADR-0205: three clash closures added (~33022 chars)
+BASELINE_RUNG_SEQUENCE_CODE_CHARS = 33300  # ADR-0212: EV import-check gate added (~169 chars)
 
 
 class TestRungSequenceExists(unittest.TestCase):

@@ -406,9 +406,11 @@ def test_formal_notation_separates_behavioral_from_explanation():
 
 def test_formal_notation_prose_does_not_substitute_for_notation():
     prompt = build_ground_prompt()
+    # ADR-0216: post-audit restatement removed; lines 315-317 still carry the prohibition
     assert (
-        "may not substitute for encoding a constraint in notation" in prompt
+        "may not substitute for notation" in prompt
+        or "may not substitute for encoding a constraint in notation" in prompt
         or "must not substitute" in prompt
     ), (
-        "Formal notation rung must state that prose may not substitute for encoding a constraint in notation"
+        "Formal notation rung must state that prose may not substitute for notation"
     )

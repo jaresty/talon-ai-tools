@@ -88,14 +88,16 @@ class TestL32HardStopHarnessClassificationGate(unittest.TestCase):
         idx = self.prompt.find("HARD STOP may not be emitted at the executable validation rung")
         self.assertGreater(idx, -1, "L32 base prohibition must be present")
         segment = self.prompt[idx:idx+500]
-        # Must state the only valid next token when harness error exists
+        # ADR-0216: "only valid next action" clause removed (derivable from "harness error requires fixing the harness")
+        # Verify the base prohibition + harness-requires-fix clause remain
         has_gate = (
-            "only valid next token is a tool call that repairs the harness" in segment
+            "harness error at EV requires fixing the harness" in segment
+            or "only valid next token is a tool call that repairs the harness" in segment
             or "only valid next action" in segment
         )
         self.assertTrue(
             has_gate,
-            "L32: when EV exec_observed is a harness error, must name repair tool call as only valid action",
+            "L32: when EV exec_observed is a harness error, must state harness requires fixing",
         )
 
     def test_l32_gate_precedes_hard_stop_definition(self):

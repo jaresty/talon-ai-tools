@@ -11,7 +11,7 @@ class TestInteractionHarnessClass(unittest.TestCase):
 
     def test_test_interaction_failure_is_harness_error(self):
         self.assertIn(
-            "test-interaction failure",
+            "test-interaction-failure",
             self.prompt,
             "Protocol must classify test-interaction failure as a harness error class",
         )

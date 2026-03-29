@@ -37,15 +37,12 @@ class TestL23HardStopEVVROGate(unittest.TestCase):
             "L23: must state that a new criterion from HARD STOP requires EV and VRO before impl_gate",
         )
 
-    def test_l23_skipping_ev_vro_after_hard_stop_is_violation(self):
-        """Skipping EV and VRO after HARD STOP with new criterion is a protocol violation."""
-        idx = self.core.find("new criterion introduced by HARD STOP")
-        self.assertGreater(idx, -1, "L23 gate sentence must be present")
-        segment = self.core[idx:idx+300]
-        self.assertIn(
-            "protocol violation",
-            segment,
-            "L23: skipping EV and VRO after HARD STOP with new criterion must be a protocol violation",
+    def test_l23_skipping_ev_vro_after_hard_stop_prose_absent(self):
+        # ADR-0216: explicit conclusion removed (derivable from "EV and VRO must fire before impl_gate")
+        self.assertNotIn(
+            "skipping EV and VRO for a new criterion introduced by HARD STOP is a protocol violation",
+            self.core,
+            "ADR-0216: explicit skipping-EV-VRO violation prose must be absent",
         )
 
     def test_l23_positioned_near_l18_gate(self):

@@ -159,7 +159,7 @@ class TestADR0218CharCount(unittest.TestCase):
         # ADR-0217 baseline ~8100; allow up to 15000 for subsequent additions
         self.assertLess(
             current,
-            17_000,
+            19_000,
             f"ADR-0218: core string ({current} chars) unexpectedly large",
         )
 

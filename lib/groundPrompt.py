@@ -25,6 +25,7 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "i_formation": "\u2705 I-formation complete",
     "r2_audit": "\u2705 Formal notation R2 audit complete \u2014 N/N criteria encoded",
     "ground_complete": "\u2705 Ground complete \u2014 intent achieved: [what the observation shows]",
+    "write_authorized": "\U0001f535 Write authorized \u2014 rung: [rung name] | artifact type: [type] | file: [path]",
 }
 
 # Per-sentinel gate conditions — emitted inline in the sentinel block so the gate
@@ -44,6 +45,7 @@ _SENTINEL_GATES: dict[str, str] = {
     "i_formation": "gate: observation of current state complete before manifest",
     "r2_audit": "gate: every criterion encoded in notation; audit section named and separate",
     "ground_complete": "gate: meta exec_observed shows no gap between observed running behavior and declared intent; all manifest threads complete",
+    "write_authorized": "gate: currently open rung (most recently emitted rung label with no completion sentinel yet) has this file's artifact type in its permitted-tool-calls column; no open rung → gate unsatisfied; artifact type mismatch → gate unsatisfied; a file write without a preceding \U0001f535 Write authorized voids the write and the rung in which it appears; a \U0001f535 Write authorized whose cited rung is not currently open or whose artifact type does not match the open rung's permitted-tool-calls column is a fabrication that voids the write and the rung; this sentinel must appear immediately before the file-write tool call — intervening content between this sentinel and the tool call voids both",
 }
 
 
@@ -181,6 +183,12 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "each gap is a thread; all rungs for Thread N must complete before any content for Thread N+1 may appear; "
         "threads not declared in the manifest may not be created mid-session; "
         "a thread is complete only when all its rungs have fired in the current cycle and a completion sentinel has been emitted. "
+        "P20 (Write authorization): every tool call that writes a file to disk must be immediately preceded by "
+        "\U0001f535 Write authorized citing the open rung name, artifact type, and file path; "
+        "a file write without a preceding \U0001f535 Write authorized is a protocol violation that voids the rung in which it appears; "
+        "a \U0001f535 Write authorized whose cited rung is not currently open, or whose artifact type does not match "
+        "the open rung\u2019s permitted-tool-calls column, is a fabrication that voids the write and the rung; "
+        "this sentinel exists so that every file write is auditable inline without reconstructing rung state from context. "
         "Ladder derivation rung: before descending, derive the rung table for this session by applying P1\u2013P19 to the declared intent; "
         "produce a table with columns: rung name | artifact type | gate condition (what tool-executed event satisfies the gate) | "
         "void condition (what invalidates the artifact) | faithfulness test (what a reviewer needs from only this artifact to evaluate the next rung) | "

@@ -368,14 +368,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "sentinel and the rung regardless of whether the open rung permits that type; a file write without a preceding 🔵 Write authorized voids the write and the rung in which it "
         "appears; a 🔵 Write authorized whose cited rung is not currently open is a fabrication that voids the write and the rung; this sentinel must appear immediately before the "
         "file-write tool call — intervening content between this sentinel and the tool call voids both]; 🔵 Intent logged — target: [assertion name] | evidence: [verbatim red output "
-        "showing failure] [gate: this sentinel must appear immediately before each file-write tool call to implementation code; the target assertion name must be specific and the "
-        "evidence must be verbatim output showing that assertion failing in the current state; emitting this sentinel without a preceding exec_observed showing the target assertion "
-        "failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual tool execution) voids the sentinel and the rung; for "
-        "backfill cases where tests already pass and cannot be seen red, perturb the implementation (introduce a controlled fault) to observe the test fail, then fix the perturbation]; "
-        "🔵 Intent achieved — target: [assertion name] | evidence: [verbatim green output showing passing] [gate: this sentinel must appear after each file-write tool call to "
-        "implementation code; the target assertion name must match the target from impl_intent and the evidence must be verbatim output showing that assertion passing in the current "
-        "state; emitting this sentinel without a matching impl_intent in the same response voids the intent; fabrication of green evidence (output that does not come from actual tool "
-        "execution) voids the sentinel and the rung].",
+        "showing failure] [gate: this sentinel must appear immediately before each file-write tool call to implementation code; the target must be a specific test assertion name and "
+        "the evidence must be verbatim output from running the validation file showing that test assertion failing in the current state; emitting this sentinel without a preceding "
+        "exec_observed showing the target test assertion failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual test "
+        "execution) voids the sentinel and the rung; for backfill cases where tests already pass and cannot be seen red, perturb the implementation (introduce a controlled fault) to "
+        "observe the test fail, then fix the perturbation]; 🔵 Intent achieved — target: [assertion name] | evidence: [verbatim green output showing passing] [gate: this sentinel must "
+        "appear after each file-write tool call to implementation code; the target test assertion name must match the target from impl_intent and the evidence must be verbatim output "
+        "from running the validation file showing that test assertion passing in the current state; emitting this sentinel without a matching impl_intent in the same response voids the "
+        "intent; fabrication of green evidence (output that does not come from actual test execution) voids the sentinel and the rung].",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

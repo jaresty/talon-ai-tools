@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from lib.groundPrompt import SENTINEL_TEMPLATES, build_ground_prompt
+from lib.groundPrompt import SENTINEL_TEMPLATES, _SENTINEL_GATES, build_ground_prompt
 
 
 def test_intention_logging_sentinel_exists():
@@ -69,4 +69,17 @@ def test_intent_achieved_sentinel_exists():
     # Must have a distinct sentinel for showing green state AFTER file write
     assert "impl_intent_achieved" in SENTINEL_TEMPLATES, (
         "Ground prompt must have a separate impl_intent_achieved sentinel to show green state after file write"
+    )
+
+
+def test_impl_intent_requires_test_assertion():
+    """impl_intent must require evidence from an actual test assertion, not just any failure.
+
+    The evidence must come from running the test/validation file, not from arbitrary tool output.
+    """
+    gate = _SENTINEL_GATES.get("impl_intent", "")
+
+    # Must explicitly require test assertion - not just "assertion" generically
+    assert "test assertion" in gate.lower(), (
+        "impl_intent gate must explicitly require evidence from a test assertion (not generic assertion)"
     )

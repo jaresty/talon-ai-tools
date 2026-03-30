@@ -124,6 +124,35 @@ def test_impl_intent_includes_file_path():
     )
 
 
+def test_impl_intent_includes_unique_id():
+    """impl_intent and impl_intent_achieved should include unique ID for pairing."""
+    impl_intent = SENTINEL_TEMPLATES.get("impl_intent", "")
+    assert "id:" in impl_intent.lower(), (
+        "impl_intent template should include id: field for pairing"
+    )
+
+    impl_intent_achieved = SENTINEL_TEMPLATES.get("impl_intent_achieved", "")
+    assert "id:" in impl_intent_achieved.lower(), (
+        "impl_intent_achieved template should include id: field for pairing"
+    )
+
+    impl_intent_achieved = SENTINEL_TEMPLATES.get("impl_intent_achieved", "")
+    assert (
+        "id:" in impl_intent_achieved.lower()
+        or "unique" in impl_intent_achieved.lower()
+    ), "impl_intent_achieved template should include unique ID"
+
+
+def test_impl_intent_achieved_requires_matching_id():
+    """impl_intent_achieved must require matching unique ID from impl_intent."""
+    gate = _SENTINEL_GATES.get("impl_intent_achieved", "")
+
+    # Must require matching ID
+    assert "match" in gate.lower() and "id" in gate.lower(), (
+        "impl_intent_achieved gate must require matching unique ID from impl_intent"
+    )
+
+
 def test_impl_intent_achieved_requires_tool_call():
     """impl_intent_achieved must require actual tool call output, not rationalization."""
     gate = _SENTINEL_GATES.get("impl_intent_achieved", "")

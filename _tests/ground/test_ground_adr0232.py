@@ -23,7 +23,7 @@ class TestThread1_ClosingObservationSentinel(unittest.TestCase):
         self.assertIn("Closing observation", SENTINEL_TEMPLATES["closing_observation"])
 
     def test_gate_requires_tool_call_before(self):
-        self.assertIn("tool call made in this response immediately before this sentinel", self.gate)
+        self.assertIn("directly invoke the behavior named in the session intent", self.gate)
 
     def test_gate_requires_after_manifest_exhausted(self):
         self.assertIn("Manifest exhausted", self.gate)

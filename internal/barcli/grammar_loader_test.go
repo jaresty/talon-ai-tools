@@ -423,9 +423,10 @@ func TestADR0162GroundConsolidation(t *testing.T) {
 	for _, phrase := range []string{
 		"prose",
 		"executable validation",
-		"validation run observation",
 		"executable implementation",
-		"observed running behavior",
+		// VRO merged into EV per ADR-0226 (P5 strengthening); OBR is now the session
+		// observation loop outside the ladder, not a rung in the standard derivation
+		"Session observation loop",
 		"every feasible rung",
 	} {
 		if !strings.Contains(groundDesc, phrase) {

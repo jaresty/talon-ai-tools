@@ -42,13 +42,9 @@ class TestThread1_SentinelGatesNoAbbreviations(unittest.TestCase):
             self.prompt,
         )
 
-    def test_thread_complete_gate_uses_artifact_type_description(self):
+    def test_thread_complete_gate_uses_meta_observation(self):
         self.assertIn(
-            "exec_observed at the rung whose artifact type is observed running behavior",
-            self.prompt,
-        )
-        self.assertIn(
-            "valid only at the rung whose artifact type is observed running behavior",
+            "meta exec_observed after executable implementation",
             self.prompt,
         )
 
@@ -77,7 +73,7 @@ class TestADR0221CharCount(unittest.TestCase):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(
             current,
-            16_000,
+            17_000,
             f"ADR-0221: core string ({current} chars) unexpectedly large",
         )
 

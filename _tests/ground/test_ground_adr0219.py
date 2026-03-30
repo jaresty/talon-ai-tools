@@ -32,7 +32,7 @@ class TestThread1_SentinelInlineGates(unittest.TestCase):
 
     def test_thread_complete_gate_inline(self):
         self.assertIn(
-            "exec_observed at the rung whose artifact type is observed running behavior directly demonstrating criterion in current cycle",
+            "meta exec_observed after executable implementation shows the gap declared for this thread is no longer present",
             self.prompt,
         )
 

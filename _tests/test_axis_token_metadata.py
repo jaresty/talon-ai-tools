@@ -587,11 +587,12 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "criteria",
             "formal notation",
             "executable validation",
-            "validation run observation",
             "executable implementation",
-            "observed running behavior",
         ]:
             self.assertIn(rung, definition, f"ground ladder must include rung: {rung}")
+        # VRO merged into EV (P5); OBR is the session observation loop, not a rung
+        self.assertNotIn("validation run observation", definition)
+        self.assertIn("Session observation loop", definition)
 
 
 if __name__ == "__main__":

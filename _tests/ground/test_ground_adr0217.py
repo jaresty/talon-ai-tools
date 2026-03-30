@@ -84,8 +84,7 @@ class TestADR0217LadderDerivationPresent(unittest.TestCase):
 
     def test_standard_rung_names_example_present(self):
         self.assertIn(
-            "prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 "
-            "validation run observation \u2192 executable implementation \u2192 observed running behavior",
+            "prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 executable implementation",
             self.core,
         )
 

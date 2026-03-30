@@ -24,6 +24,7 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "carry_forward": "Carry-forward: [list which original failures cover which current tests]",
     "i_formation": "\u2705 I-formation complete",
     "r2_audit": "\u2705 Formal notation R2 audit complete \u2014 N/N criteria encoded",
+    "ground_complete": "\u2705 Ground complete \u2014 intent achieved: [what the observation shows]",
 }
 
 # Per-sentinel gate conditions — emitted inline in the sentinel block so the gate
@@ -37,11 +38,12 @@ _SENTINEL_GATES: dict[str, str] = {
     "impl_gate": "gate: exec_observed showing test suite failure + gap in current cycle; valid only at the rung whose artifact type is executable implementation",
     "criteria_complete": "gate: exactly one criterion in this rung's artifact; criterion contains no conjunction; formal notation rung label may not be emitted until this sentinel has been emitted",
     "v_complete": "gate: pre-existence check tool call result present; tool call in this response wrote the file to disk",
-    "thread_complete": "gate: exec_observed at the rung whose artifact type is observed running behavior directly demonstrating criterion in current cycle; passing validation suite run after that tool call; valid only at the rung whose artifact type is observed running behavior",
+    "thread_complete": "gate: meta exec_observed after executable implementation shows the gap declared for this thread is no longer present in running behavior",
     "manifest_exhausted": "gate: count of Thread N complete sentinels equals N in Manifest declared",
     "carry_forward": "gate: prior failure name quotable verbatim from a prior exec_observed sentinel",
     "i_formation": "gate: observation of current state complete before manifest",
     "r2_audit": "gate: every criterion encoded in notation; audit section named and separate",
+    "ground_complete": "gate: meta exec_observed shows no gap between observed running behavior and declared intent; all manifest threads complete",
 }
 
 
@@ -79,7 +81,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "static analysis, type checking, and linting do not satisfy this \u2014 the automation must have run and failed; "
         "\u201crun and failed\u201d means a tool call invoking the automation appears in the current-cycle transcript "
         "and its verbatim output shows failure \u2014 "
-        "a model\u2019s prose description of why the automation would fail does not satisfy this principle regardless of accuracy. "
+        "a model\u2019s prose description of why the automation would fail does not satisfy this principle regardless of accuracy; "
+        "the observation of failing state is produced by running the automation immediately after writing it \u2014 "
+        "it is part of the verification artifact, not a separate rung; "
+        "a reviewer cannot determine from the test file alone what the implementation must do \u2014 "
+        "the failure output is required for the verification artifact to satisfy P8. "
         "P6 (Artifact type discipline): executable artifacts may only be changed at a dedicated rung for that artifact type; "
         "a rung that produces artifacts of more than one type is a protocol violation \u2014 each artifact type has exactly one rung; "
         "each protocol sentinel has an artifact type determined by the rung at which it was defined \u2014 "
@@ -186,12 +192,15 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the required emission order is: rung table, then \u2705 Manifest declared; "
         "a manifest emitted without a preceding rung table is a protocol violation; "
         "the rung table is the gate on all subsequent rung activity. "
-        "For software behavioral change, the standard derivation produces: "
-        "observed running behavior (baseline) \u2192 prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 validation run observation \u2192 executable implementation \u2192 observed running behavior (confirmation). "
+        "Session observation loop: before beginning a ladder descent, observe current running behavior via tool call \u2014 "
+        "if the observation reveals a gap between running behavior and declared intent, declare the gap and descend the ladder; "
+        "if no gap remains, emit \u2705 Ground complete \u2014 the session ends; "
+        "this observation is not a rung in the derived ladder and must not appear in the rung table; "
+        "the ladder handles only the declared gap; "
+        "after manifest exhaustion, the observation loop recurs to check whether intent is fully achieved. "
+        "For software behavioral change, the standard ladder for each gap-closing cycle produces: "
+        "prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 executable implementation. "
         "A derived ladder that omits any of these rungs for a software behavioral change task must cite which principle makes that rung unnecessary. "
-        "Each cycle begins with an observed-running-behavior rung \u2014 the gap for that cycle is declared from that observation\u2019s output; "
-        "each cycle ends with an observed-running-behavior rung confirming the gap is closed; "
-        "if the closing observation shows the gap is still present, a new cycle begins from prose (or issues a HARD STOP if the criterion is unchanged from the prior cycle). "
         "The criterion is exercised only when the automated validation suite runs to completion and individual assertions fail; "
         "execution halted before reaching the assertions (by infrastructure failure, import error, or any other cause) does not exercise the criterion \u2014 "
         "the executable-implementation artifact for such a halt resolves only the infrastructure gap (minimum change sufficient to allow the suite to reach the assertions); "

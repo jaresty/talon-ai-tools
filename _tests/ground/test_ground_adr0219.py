@@ -26,13 +26,13 @@ class TestThread1_SentinelInlineGates(unittest.TestCase):
 
     def test_impl_gate_gate_inline(self):
         self.assertIn(
-            "valid only at the EI rung",
+            "valid only at the executable-implementation rung",
             self.prompt,
         )
 
     def test_thread_complete_gate_inline(self):
         self.assertIn(
-            "OBR exec_observed directly demonstrating criterion in current cycle",
+            "exec_observed at the observed-running-behavior rung directly demonstrating criterion in current cycle",
             self.prompt,
         )
 

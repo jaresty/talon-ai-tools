@@ -33,11 +33,11 @@ _SENTINEL_GATES: dict[str, str] = {
     "manifest_declared": "gate: rung table produced in current response; rung table precedes this sentinel",
     "exec_observed": "gate: tool call made in the current response immediately before this sentinel; verbatim output in triple-backtick block follows",
     "gap": "gate: exec_observed with non-empty failing output precedes this token in current response; gap text is a currently-false behavioral assertion",
-    "hard_stop": "gate: exec_observed + gap at VRO rung in current cycle; criterion identical to prior cycle criterion for this thread",
-    "impl_gate": "gate: exec_observed + gap at VRO rung in current cycle; valid only at the EI rung",
+    "hard_stop": "gate: exec_observed + gap at the validation-run-observation rung in current cycle; criterion identical to prior cycle criterion for this thread",
+    "impl_gate": "gate: exec_observed + gap at the validation-run-observation rung in current cycle; valid only at the executable-implementation rung",
     "criteria_complete": "gate: exactly one criterion in this rung's artifact; criterion contains no conjunction; formal notation rung label may not be emitted until this sentinel has been emitted",
     "v_complete": "gate: test file written via tool call in current response; pre-existence check tool call result present",
-    "thread_complete": "gate: OBR exec_observed directly demonstrating criterion in current cycle; passing test suite run after OBR tool call; valid only at OBR rung",
+    "thread_complete": "gate: exec_observed at the observed-running-behavior rung directly demonstrating criterion in current cycle; passing test suite run after that tool call; valid only at the observed-running-behavior rung",
     "manifest_exhausted": "gate: count of Thread N complete sentinels equals N in Manifest declared",
     "carry_forward": "gate: prior failure name quotable verbatim from a prior exec_observed sentinel",
     "i_formation": "gate: observation of current state complete before manifest",
@@ -113,7 +113,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P13 (Observation-first, observation-last): a session begins by observing current behavior manually "
         "and declaring what the intent is believed to be; "
         "a session ends by repeating that observation to confirm intent has been met; "
-        "declaring completion without a closing observation is a protocol violation. "
+        "declaring completion without a closing observation is a protocol violation; "
+        "the opening observation must be tool-executed \u2014 "
+        "the intent declaration must be derivable from that tool-executed output; "
+        "intent declared without a tool-executed opening observation is an evidential violation under P14. "
         "P14 (Evidential authority): only tool-executed events have evidential standing; "
         "inference, prediction, prior-cycle output, and model-generated descriptions of tool output have none, regardless of accuracy; "
         "a rung gate is satisfied if and only if a tool-executed event appears in the current-cycle transcript "
@@ -123,14 +126,22 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "while the gate is unsatisfied; "
         "before emitting a completion sentinel or the next rung label, verify the gate condition is met \u2014 "
         "emitting either before the gate condition is met is a protocol violation that voids the rung; "
+        "a completion sentinel is a closing marker \u2014 it appears after the rung\u2019s artifact is complete and its gate condition is verified; "
+        "emitting a completion sentinel before the artifact it closes is a protocol violation that voids both the sentinel and the rung; "
+        "after a rung label is emitted, the only valid content before the completion sentinel is the rung\u2019s artifact \u2014 "
+        "prose commentary, planning text, debugging narration, and content of any other artifact type "
+        "between the rung label and its completion sentinel is a protocol violation that voids the rung; "
         "\U0001f534 Execution observed: is only valid when a tool call was made in the current response immediately before it \u2014 "
         "a sentinel emitted without a preceding tool call is a fabrication \u2014 it voids the rung in which it appears "
         "regardless of whether its text resembles tool output. "
         "P15 (Cycle identity): evidence is valid only within the cycle in which it was produced; "
-        "a cycle opens at the prose rung emission for a given thread and closes at Thread N complete or an upward return; "
+        "a cycle opens when \u2705 Ground entered is emitted for a given thread and closes at Thread N complete or an upward return; "
         "evidence from a prior cycle, a different thread, or a different gap does not satisfy any gate in the current cycle "
         "regardless of type match; "
-        "prose re-emission for one thread does not affect the cycle identity of any other thread. "
+        "re-emitting \u2705 Ground entered for one thread does not affect the cycle identity of any other thread; "
+        "an upward return is valid only when a prior cycle for the current thread exists in the current session \u2014 "
+        "a comparison gate requires a prior cycle artifact to compare against; "
+        "invoking an upward return in a thread\u2019s first cycle is a protocol violation. "
         "P16 (Provenance): a gate is satisfied only by a tool call made in direct response to the gap declared at the immediately prior rung "
         "in the current cycle; a tool call made for a different purpose, targeting a different gap, or produced in a prior cycle "
         "does not satisfy any gate regardless of type match. "
@@ -139,7 +150,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "a skipped rung voids all artifacts below it; "
         "form changes between rungs, intent does not; "
         "divergence from intent is only detectable at the rung where the prior artifact\u2019s specificity was insufficient \u2014 "
-        "breaking the chain makes that detection impossible. "
+        "breaking the chain makes that detection impossible; "
+        "an artifact at any rung addresses only the gap declared by the prior rung \u2014 scope does not expand between rungs; "
+        "an artifact that addresses behaviors beyond the declared gap is a derivation violation that voids the rung. "
         "P18 (Continuous descent): once descent begins, advance through every feasible rung without pausing for user confirmation; "
         "each rung may not be skipped or combined with another; "
         "all rung transitions are continuous within the same response "
@@ -156,11 +169,13 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "void condition (what invalidates the artifact) | faithfulness test (what a reviewer needs from only this artifact to evaluate the next rung); "
         "verify the table satisfies P8 minimality \u2014 remove any rung that does not; "
         "descent begins immediately after the table is produced without pausing for confirmation; "
-        "\u2705 Manifest declared is blocked until the rung table artifact has been produced in the current response \u2014 "
+        "\u2705 Manifest declared is the closing sentinel of the ladder derivation rung \u2014 "
+        "the required emission order is: rung table, then \u2705 Manifest declared; "
         "a manifest emitted without a preceding rung table is a protocol violation; "
         "the rung table is the gate on all subsequent rung activity. "
-        "For software behavioral change, the standard derivation produces: "
-        "prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 validation run observation \u2192 executable implementation \u2192 observed running behavior. "
+        "For software behavioral change, the standard derivation begins with a tool-executed observation of current behavior "
+        "from which intent is declared, then produces: "
+        "observed running behavior (baseline) \u2192 prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 validation run observation \u2192 executable implementation \u2192 observed running behavior (confirmation). "
         "A derived ladder that omits any of these rungs for a software behavioral change task must cite which principle makes that rung unnecessary. "
         "Outputting a rung label is what begins that rung \u2014 it is not a heading or annotation; "
         "a rung whose label has not been output has not begun. "

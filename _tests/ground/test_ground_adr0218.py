@@ -140,7 +140,7 @@ class TestThread7_LadderManifestGate(unittest.TestCase):
 
     def test_manifest_blocked_until_rung_table(self):
         self.assertIn(
-            "\u2705 Manifest declared is blocked until the rung table artifact has been produced in the current response",
+            "\u2705 Manifest declared is the closing sentinel of the ladder derivation rung",
             self.core,
         )
 
@@ -156,10 +156,10 @@ class TestADR0218CharCount(unittest.TestCase):
 
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
-        # ADR-0217 baseline ~8100; allow up to 13000 for the six additions + ADR-0219 sentinel gates
+        # ADR-0217 baseline ~8100; allow up to 15000 for subsequent additions
         self.assertLess(
             current,
-            13_000,
+            15_000,
             f"ADR-0218: core string ({current} chars) unexpectedly large",
         )
 

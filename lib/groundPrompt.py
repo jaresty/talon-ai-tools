@@ -17,6 +17,7 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "gap": "\U0001f534 Gap: [what the verbatim output reveals]",
     "hard_stop": "\U0001f6d1 HARD STOP \u2014 upward return to criteria rung",
     "impl_gate": "\U0001f7e2 Implementation gate cleared \u2014 gap cited: [verbatim from \U0001f534 Execution observed]",
+    "criteria_complete": "\u2705 Criteria complete \u2014 1 criterion: [gap-name]",
     "v_complete": "\u2705 Validation artifact V complete",
     "thread_complete": "\u2705 Thread N complete",
     "manifest_exhausted": "\u2705 Manifest exhausted \u2014 N/N threads complete",
@@ -25,10 +26,31 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "r2_audit": "\u2705 Formal notation R2 audit complete \u2014 N/N criteria encoded",
 }
 
+# Per-sentinel gate conditions — emitted inline in the sentinel block so the gate
+# requirement is visible at the exact point of emission.
+_SENTINEL_GATES: dict[str, str] = {
+    "ground_entered": "gate: first token after user invokes ground",
+    "manifest_declared": "gate: rung table produced in current response; rung table precedes this sentinel",
+    "exec_observed": "gate: tool call made in the current response immediately before this sentinel; verbatim output in triple-backtick block follows",
+    "gap": "gate: exec_observed with non-empty failing output precedes this token in current response; gap text is a currently-false behavioral assertion",
+    "hard_stop": "gate: exec_observed + gap at VRO rung in current cycle; criterion identical to prior cycle criterion for this thread",
+    "impl_gate": "gate: exec_observed + gap at VRO rung in current cycle; valid only at the EI rung",
+    "criteria_complete": "gate: exactly one criterion in this rung's artifact; criterion contains no conjunction; formal notation rung label may not be emitted until this sentinel has been emitted",
+    "v_complete": "gate: test file written via tool call in current response; pre-existence check tool call result present",
+    "thread_complete": "gate: OBR exec_observed directly demonstrating criterion in current cycle; passing test suite run after OBR tool call; valid only at OBR rung",
+    "manifest_exhausted": "gate: count of Thread N complete sentinels equals N in Manifest declared",
+    "carry_forward": "gate: prior failure name quotable verbatim from a prior exec_observed sentinel",
+    "i_formation": "gate: observation of current state complete before manifest",
+    "r2_audit": "gate: every criterion encoded in notation; audit section named and separate",
+}
+
 
 def _sentinel_block() -> str:
-    lines = "; ".join(SENTINEL_TEMPLATES.values())
-    return "Sentinel formats \u2014 " + lines + "."
+    entries = []
+    for key, fmt in SENTINEL_TEMPLATES.items():
+        gate = _SENTINEL_GATES.get(key, "")
+        entries.append(f"{fmt} [{gate}]" if gate else fmt)
+    return "Sentinel formats \u2014 " + "; ".join(entries) + "."
 
 
 GROUND_PARTS_MINIMAL: dict[str, str] = {

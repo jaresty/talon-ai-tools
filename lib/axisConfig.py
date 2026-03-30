@@ -340,10 +340,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "derivation produces: prose → criteria → formal notation → executable validation → validation run observation → executable implementation → observed running behavior. A derived "
         "ladder that omits any of these rungs for a software behavioral change task must cite which principle makes that rung unnecessary. Outputting a rung label is what begins that "
         "rung — it is not a heading or annotation; a rung whose label has not been output has not begun. When beginning mid-ladder, locate the highest already-instantiated rung, update "
-        "it, then descend. Sentinel formats — ✅ Ground entered — prose rung begins; ✅ Manifest declared — N threads: [numbered list of behavioral gaps]; 🔴 Execution observed: [verbatim "
-        "tool output — triple-backtick delimited, complete, nothing omitted]; 🔴 Gap: [what the verbatim output reveals]; 🛑 HARD STOP — upward return to criteria rung; 🟢 Implementation "
-        "gate cleared — gap cited: [verbatim from 🔴 Execution observed]; ✅ Validation artifact V complete; ✅ Thread N complete; ✅ Manifest exhausted — N/N threads complete; "
-        "Carry-forward: [list which original failures cover which current tests]; ✅ I-formation complete; ✅ Formal notation R2 audit complete — N/N criteria encoded.",
+        "it, then descend. Sentinel formats — ✅ Ground entered — prose rung begins [gate: first token after user invokes ground]; ✅ Manifest declared — N threads: [numbered list of "
+        "behavioral gaps] [gate: rung table produced in current response; rung table precedes this sentinel]; 🔴 Execution observed: [verbatim tool output — triple-backtick delimited, "
+        "complete, nothing omitted] [gate: tool call made in the current response immediately before this sentinel; verbatim output in triple-backtick block follows]; 🔴 Gap: [what the "
+        "verbatim output reveals] [gate: exec_observed with non-empty failing output precedes this token in current response; gap text is a currently-false behavioral assertion]; 🛑 "
+        "HARD STOP — upward return to criteria rung [gate: exec_observed + gap at VRO rung in current cycle; criterion identical to prior cycle criterion for this thread]; 🟢 "
+        "Implementation gate cleared — gap cited: [verbatim from 🔴 Execution observed] [gate: exec_observed + gap at VRO rung in current cycle; valid only at the EI rung]; ✅ Criteria "
+        "complete — 1 criterion: [gap-name] [gate: exactly one criterion in this rung's artifact; criterion contains no conjunction; formal notation rung label may not be emitted until "
+        "this sentinel has been emitted]; ✅ Validation artifact V complete [gate: test file written via tool call in current response; pre-existence check tool call result present]; ✅ "
+        "Thread N complete [gate: OBR exec_observed directly demonstrating criterion in current cycle; passing test suite run after OBR tool call; valid only at OBR rung]; ✅ Manifest "
+        "exhausted — N/N threads complete [gate: count of Thread N complete sentinels equals N in Manifest declared]; Carry-forward: [list which original failures cover which current "
+        "tests] [gate: prior failure name quotable verbatim from a prior exec_observed sentinel]; ✅ I-formation complete [gate: observation of current state complete before manifest]; "
+        "✅ Formal notation R2 audit complete — N/N criteria encoded [gate: every criterion encoded in notation; audit section named and separate].",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

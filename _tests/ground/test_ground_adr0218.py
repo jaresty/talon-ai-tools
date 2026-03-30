@@ -156,10 +156,10 @@ class TestADR0218CharCount(unittest.TestCase):
 
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
-        # ADR-0217 baseline ~8100; allow up to 11000 for the six additions
+        # ADR-0217 baseline ~8100; allow up to 13000 for the six additions + ADR-0219 sentinel gates
         self.assertLess(
             current,
-            11_000,
+            13_000,
             f"ADR-0218: core string ({current} chars) unexpectedly large",
         )
 

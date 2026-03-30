@@ -101,7 +101,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "difficulty, failure, or constraint pressure from any lower rung is not a valid trigger; "
         "returning upward because a lower rung\u2019s artifact was hard to produce is a faithfulness violation that voids the revised rung and all rungs below it; "
         "the trigger for an upward return must originate at the rung being revised or above it; "
-        "when returning upward, the revised rung must be re-derived from its input rung\u2019s artifact and descent resumes downward. "
+        "when returning upward, the revised rung must be re-derived from its input rung\u2019s artifact and descent resumes downward; "
+        "the rung label must be re-emitted before any revised artifact content \u2014 "
+        "re-entering a rung without re-emitting its label is a protocol violation that voids the revised artifact and all rungs below it. "
         "Returning to the session observation loop is valid when a tool-executed observation reveals the declared gap is incorrect; "
         "the entire current ladder is void on such return; a new observation must be made before any new gap may be declared. "
         "Ladder derivation rung: before descending, before emitting the first rung label, derive the rung table for this session by applying P1\u2013P19 to the declared intent; "
@@ -129,7 +131,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the executable-implementation artifact for such a halt resolves only the infrastructure gap (minimum change sufficient to allow the suite to reach the assertions); "
         "the criterion has not been exercised until individual assertions fail in a subsequent cycle. "
         "Outputting a rung label is what begins that rung \u2014 it is not a heading or annotation; "
-        "a rung whose label has not been output has not begun. "
+        "a rung whose label has not been output has not begun; "
+        "the rung label must be emitted before any artifact content for that rung \u2014 "
+        "producing artifact content before the rung label is a protocol violation that voids that artifact and all rungs below it. "
         "When beginning mid-ladder, locate the highest already-instantiated rung, update it, then descend. "
         + _sentinel_block()
     ),

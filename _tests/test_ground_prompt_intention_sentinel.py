@@ -83,3 +83,42 @@ def test_impl_intent_requires_test_assertion():
     assert "test assertion" in gate.lower(), (
         "impl_intent gate must explicitly require evidence from a test assertion (not generic assertion)"
     )
+
+
+def test_impl_intent_supersedes_write_authorized():
+    """impl_intent + impl_intent_achieved should sandwich implementation file writes.
+
+    write_authorized should not be used as a substitute for impl_intent.
+    The intent logging sentinels are required for implementation code edits.
+    """
+    # impl_intent must exist and have strong gate
+    assert "impl_intent" in SENTINEL_TEMPLATES
+    impl_gate = _SENTINEL_GATES.get("impl_intent", "")
+    assert "file-write" in impl_gate.lower() or "file write" in impl_gate.lower()
+
+    # impl_intent_achieved must exist and have strong gate
+    assert "impl_intent_achieved" in SENTINEL_TEMPLATES
+    achieved_gate = _SENTINEL_GATES.get("impl_intent_achieved", "")
+    assert (
+        "file-write" in achieved_gate.lower() or "file write" in achieved_gate.lower()
+    )
+
+    # write_authorized should be removed - impl_intent sandwiches replace it
+    assert "write_authorized" not in SENTINEL_TEMPLATES, (
+        "write_authorized should be removed - impl_intent/impl_intent_achieved now sandwich implementation edits"
+    )
+
+
+def test_impl_intent_includes_file_path():
+    """impl_intent and impl_intent_achieved should include file path for auditing."""
+    # impl_intent template should include file path
+    impl_intent = SENTINEL_TEMPLATES.get("impl_intent", "")
+    assert "file" in impl_intent.lower(), (
+        "impl_intent template should include file path for auditing"
+    )
+
+    # impl_intent_achieved template should include file path
+    impl_intent_achieved = SENTINEL_TEMPLATES.get("impl_intent_achieved", "")
+    assert "file" in impl_intent_achieved.lower(), (
+        "impl_intent_achieved template should include file path for auditing"
+    )

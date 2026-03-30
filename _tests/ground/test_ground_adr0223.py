@@ -7,10 +7,12 @@ T4 rung table tool-call constraints column.
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_ArtifactTypeFreeze(unittest.TestCase):
+class TestThread1_ArtifactTypeFreeze(GroundADRTestBase):
     """P6: artifact type frozen after its completion sentinel."""
 
     def setUp(self):
@@ -29,7 +31,7 @@ class TestThread1_ArtifactTypeFreeze(unittest.TestCase):
         )
 
 
-class TestThread2_FormalNotationScope(unittest.TestCase):
+class TestThread2_FormalNotationScope(GroundADRTestBase):
     """P17: formal notation derives only from criteria — vagueness not remedied by reaching back."""
 
     def setUp(self):
@@ -48,7 +50,7 @@ class TestThread2_FormalNotationScope(unittest.TestCase):
         )
 
 
-class TestThread3_StructuralFailureAtVRO(unittest.TestCase):
+class TestThread3_StructuralFailureAtVRO(GroundADRTestBase):
     """VRO: import/compilation failure is not criterion exercise."""
 
     def setUp(self):
@@ -79,7 +81,7 @@ class TestThread3_StructuralFailureAtVRO(unittest.TestCase):
         )
 
 
-class TestThread4_RungTableToolCallConstraints(unittest.TestCase):
+class TestThread4_RungTableToolCallConstraints(GroundADRTestBase):
     """Rung table derivation instruction must include a permitted tool calls column."""
 
     def setUp(self):
@@ -104,7 +106,7 @@ class TestThread4_RungTableToolCallConstraints(unittest.TestCase):
         )
 
 
-class TestADR0223CharCount(unittest.TestCase):
+class TestADR0223CharCount(GroundADRTestBase):
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(

@@ -7,10 +7,12 @@ T1 rung-label-re-emission-on-upward-return: when returning upward to a rung,
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_RungLabelReEmissionOnUpwardReturn(unittest.TestCase):
+class TestThread1_RungLabelReEmissionOnUpwardReturn(GroundADRTestBase):
     """Rung label must be re-emitted when returning upward to a rung."""
 
     def setUp(self):

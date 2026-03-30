@@ -10,86 +10,88 @@ Asserts:
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestADR0217PrinciplesPresent(unittest.TestCase):
+class TestADR0217PrinciplesPresent(GroundADRTestBase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_p1_present(self):
-        self.assertIn("P1 (Intent primacy)", self.core)
+        self.assertDetects("P1 (Intent primacy)", self.core)
 
     def test_p2_present(self):
-        self.assertIn("P2 (Behavioral change isolation)", self.core)
+        self.assertDetects("P2 (Behavioral change isolation)", self.core)
 
     def test_p3_present(self):
-        self.assertIn("P3 (Observable evidence required)", self.core)
+        self.assertDetects("P3 (Observable evidence required)", self.core)
 
     def test_p4_present(self):
-        self.assertIn("P4 (Enforced and persistent)", self.core)
+        self.assertDetects("P4 (Enforced and persistent)", self.core)
 
     def test_p5_present(self):
-        self.assertIn("P5 (Automation quality verified)", self.core)
+        self.assertDetects("P5 (Automation quality verified)", self.core)
 
     def test_p6_present(self):
-        self.assertIn("P6 (Artifact type discipline)", self.core)
+        self.assertDetects("P6 (Artifact type discipline)", self.core)
 
     def test_p7_present(self):
-        self.assertIn("P7 (Upward faithfulness)", self.core)
+        self.assertDetects("P7 (Upward faithfulness)", self.core)
 
     def test_p8_present(self):
-        self.assertIn("P8 (Rung validity test)", self.core)
+        self.assertDetects("P8 (Rung validity test)", self.core)
 
     def test_p9_present(self):
-        self.assertIn("P9 (Information density preservation)", self.core)
+        self.assertDetects("P9 (Information density preservation)", self.core)
 
     def test_p10_present(self):
-        self.assertIn("P10 (Three-part completeness)", self.core)
+        self.assertDetects("P10 (Three-part completeness)", self.core)
 
     def test_p11_present(self):
-        self.assertIn("P11 (Immediate lowest-rung observation)", self.core)
+        self.assertDetects("P11 (Immediate lowest-rung observation)", self.core)
 
     def test_p12_present(self):
-        self.assertIn("P12 (Completeness slice)", self.core)
+        self.assertDetects("P12 (Completeness slice)", self.core)
 
     def test_p13_present(self):
-        self.assertIn("P13 (Observation-first, observation-last)", self.core)
+        self.assertDetects("P13 (Observation-first, observation-last)", self.core)
 
     def test_p14_present(self):
-        self.assertIn("P14 (Evidential authority)", self.core)
+        self.assertDetects("P14 (Evidential authority)", self.core)
 
     def test_p15_present(self):
-        self.assertIn("P15 (Derivation chain)", self.core)
+        self.assertDetects("P15 (Derivation chain)", self.core)
 
     def test_p16_present(self):
-        self.assertIn("P16 (Continuous descent)", self.core)
+        self.assertDetects("P16 (Continuous descent)", self.core)
 
     def test_p17_present(self):
-        self.assertIn("P17 (Thread sequencing)", self.core)
+        self.assertDetects("P17 (Thread sequencing)", self.core)
 
     def test_p18_present(self):
-        self.assertIn("P18 (Write authorization)", self.core)
+        self.assertDetects("P18 (Write authorization)", self.core)
 
     def test_p19_present(self):
-        self.assertIn("P19 (Upward return)", self.core)
+        self.assertDetects("P19 (Upward return)", self.core)
 
 
-class TestADR0217LadderDerivationPresent(unittest.TestCase):
+class TestADR0217LadderDerivationPresent(GroundADRTestBase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_ladder_derivation_rung_instruction_present(self):
-        self.assertIn("Ladder derivation rung:", self.core)
+        self.assertDetects("Ladder derivation rung:", self.core)
 
     def test_standard_rung_names_example_present(self):
-        self.assertIn(
+        self.assertDetects(
             "prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 executable implementation",
             self.core,
         )
 
 
-class TestADR0217SentinelBlockPresent(unittest.TestCase):
+class TestADR0217SentinelBlockPresent(GroundADRTestBase):
     def setUp(self):
         self.prompt = build_ground_prompt()
 
@@ -97,16 +99,16 @@ class TestADR0217SentinelBlockPresent(unittest.TestCase):
         self.assertIn("Sentinel formats \u2014", self.prompt)
 
     def test_exec_observed_sentinel_present(self):
-        self.assertIn("Execution observed:", self.prompt)
+        self.assertDetects("Execution observed:", self.prompt)
 
     def test_impl_gate_sentinel_present(self):
-        self.assertIn("Implementation gate cleared", self.prompt)
+        self.assertDetects("Implementation gate cleared", self.prompt)
 
     def test_thread_complete_sentinel_present(self):
-        self.assertIn("Thread N complete", self.prompt)
+        self.assertDetects("Thread N complete", self.prompt)
 
 
-class TestADR0217RemovedPhrasesAbsent(unittest.TestCase):
+class TestADR0217RemovedPhrasesAbsent(GroundADRTestBase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
@@ -146,7 +148,7 @@ class TestADR0217RemovedPhrasesAbsent(unittest.TestCase):
         )
 
 
-class TestADR0217CharCount(unittest.TestCase):
+class TestADR0217CharCount(GroundADRTestBase):
     def test_char_count_below_adr0216_baseline(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         ADR0216_BASELINE = 29_990

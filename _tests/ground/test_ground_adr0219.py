@@ -5,15 +5,17 @@ Thread 2: criteria-complete sentinel exists with single-criterion gate.
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt, SENTINEL_TEMPLATES
 
 
-class TestThread1_SentinelInlineGates(unittest.TestCase):
+class TestThread1_SentinelInlineGates(GroundADRTestBase):
     def setUp(self):
         self.prompt = build_ground_prompt()
 
     def test_exec_observed_gate_inline(self):
-        self.assertIn(
+        self.assertDetects(
             "tool call made in the current response immediately before this sentinel",
             self.prompt,
         )
@@ -67,7 +69,7 @@ class TestThread1_SentinelInlineGates(unittest.TestCase):
         )
 
 
-class TestThread2_CriteriaCompleteSentinel(unittest.TestCase):
+class TestThread2_CriteriaCompleteSentinel(GroundADRTestBase):
     def setUp(self):
         self.prompt = build_ground_prompt()
         self.core = GROUND_PARTS_MINIMAL["core"]

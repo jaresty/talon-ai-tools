@@ -5,10 +5,12 @@ T1 closing-observation-positive-gate: gate requires the tool call to directly in
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import _SENTINEL_GATES, build_ground_prompt
 
 
-class TestThread1_ClosingObservationPositiveGate(unittest.TestCase):
+class TestThread1_ClosingObservationPositiveGate(GroundADRTestBase):
     """closing_observation gate states positively what the tool call must be."""
 
     def setUp(self):
@@ -16,7 +18,7 @@ class TestThread1_ClosingObservationPositiveGate(unittest.TestCase):
         self.prompt = build_ground_prompt()
 
     def test_gate_requires_direct_invocation_of_intent(self):
-        self.assertIn("directly invoke the behavior named in the session intent", self.gate)
+        self.assertDetects("directly invoke the behavior named in the session intent", self.gate)
 
     def test_gate_requires_output_shows_behavior_present(self):
         self.assertIn("output must show that behavior is present", self.gate)

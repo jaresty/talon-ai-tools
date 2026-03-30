@@ -5,10 +5,12 @@ T1 observation-requires-live-execution: tool call must execute live running code
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_ObservationRequiresLiveExecution(unittest.TestCase):
+class TestThread1_ObservationRequiresLiveExecution(GroundADRTestBase):
     """Observation must execute live running code; static reads excluded."""
 
     def setUp(self):

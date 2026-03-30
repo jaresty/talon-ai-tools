@@ -9,10 +9,12 @@ T6 manifest-ordering: rung table appears before Manifest declared in ladder rung
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_SentinelClosingMarker(unittest.TestCase):
+class TestThread1_SentinelClosingMarker(GroundADRTestBase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
@@ -29,7 +31,7 @@ class TestThread1_SentinelClosingMarker(unittest.TestCase):
         )
 
 
-class TestThread2_RungArtifactExclusivity(unittest.TestCase):
+class TestThread2_RungArtifactExclusivity(GroundADRTestBase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
@@ -46,7 +48,7 @@ class TestThread2_RungArtifactExclusivity(unittest.TestCase):
         )
 
 
-class TestThread3_ScopeDoesNotExpand(unittest.TestCase):
+class TestThread3_ScopeDoesNotExpand(GroundADRTestBase):
     """P17: artifacts address only the declared gap — scope does not expand between rungs."""
 
     def setUp(self):
@@ -65,7 +67,7 @@ class TestThread3_ScopeDoesNotExpand(unittest.TestCase):
         )
 
 
-class TestThread4_UpwardReturnRequiresPriorCycle(unittest.TestCase):
+class TestThread4_UpwardReturnRequiresPriorCycle(GroundADRTestBase):
     """General upward-return principle: comparison gate requires prior cycle to exist."""
 
     def setUp(self):
@@ -84,7 +86,7 @@ class TestThread4_UpwardReturnRequiresPriorCycle(unittest.TestCase):
         )
 
 
-class TestThread5_ToolExecutedOpeningObservation(unittest.TestCase):
+class TestThread5_ToolExecutedOpeningObservation(GroundADRTestBase):
     """P13 strengthened: opening observation must be tool-executed; intent derivable from it."""
 
     def setUp(self):
@@ -110,7 +112,7 @@ class TestThread5_ToolExecutedOpeningObservation(unittest.TestCase):
         )
 
 
-class TestThread6_ManifestOrdering(unittest.TestCase):
+class TestThread6_ManifestOrdering(GroundADRTestBase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 

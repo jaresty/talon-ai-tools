@@ -6,10 +6,12 @@ The ladder handles only the declared gap; observation determines whether to desc
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_ObservationOutsideLadder(unittest.TestCase):
+class TestThread1_ObservationOutsideLadder(GroundADRTestBase):
     """Observation is not a rung — it is the session meta-loop control mechanism."""
 
     def setUp(self):
@@ -39,7 +41,7 @@ class TestThread1_ObservationOutsideLadder(unittest.TestCase):
         )
 
 
-class TestADR0225CharCount(unittest.TestCase):
+class TestADR0225CharCount(GroundADRTestBase):
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(

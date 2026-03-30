@@ -5,10 +5,12 @@ T1 impl-gate-assertion-level: impl_gate gate condition requires assertion-level 
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import _SENTINEL_GATES, build_ground_prompt
 
 
-class TestThread1_ImplGateAssertionLevel(unittest.TestCase):
+class TestThread1_ImplGateAssertionLevel(GroundADRTestBase):
     """impl_gate gate requires assertion-level failure strings in verbatim output."""
 
     def setUp(self):
@@ -16,7 +18,7 @@ class TestThread1_ImplGateAssertionLevel(unittest.TestCase):
         self.prompt = build_ground_prompt()
 
     def test_assertion_level_failure_required(self):
-        self.assertIn("assertion-level failure", self.gate)
+        self.assertDetects("assertion-level failure", self.gate)
 
     def test_example_assertion_strings_cited(self):
         self.assertIn("AssertionError", self.gate)

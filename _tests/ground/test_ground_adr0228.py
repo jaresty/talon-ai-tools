@@ -5,10 +5,12 @@ T1 write-authorized-sentinel: sentinel template and gate exist and propagate to 
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import SENTINEL_TEMPLATES, _SENTINEL_GATES, build_ground_prompt
 
 
-class TestThread1_WriteAuthorizedSentinel(unittest.TestCase):
+class TestThread1_WriteAuthorizedSentinel(GroundADRTestBase):
     """write_authorized sentinel template, gate, and P20 present in prompt."""
 
     def setUp(self):
@@ -43,10 +45,10 @@ class TestThread1_WriteAuthorizedSentinel(unittest.TestCase):
         self.assertIn("P18 (Write authorization)", self.prompt)
 
     def test_p20_requires_write_authorized_before_file_write(self):
-        self.assertIn("Every file write immediately preceded by", self.prompt)
+        self.assertDetects("Every file write immediately preceded by", self.prompt)
 
     def test_write_authorized_propagated_to_prompt(self):
-        self.assertIn("Write authorized", self.prompt)
+        self.assertDetects("Write authorized", self.prompt)
 
 
 if __name__ == "__main__":

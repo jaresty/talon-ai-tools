@@ -7,10 +7,12 @@ T1 artifact-type-definitions: executable validation defined as asserting behavio
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_ArtifactTypeDefinitions(unittest.TestCase):
+class TestThread1_ArtifactTypeDefinitions(GroundADRTestBase):
     """Executable validation and implementation types are mutually exclusive by definition."""
 
     def setUp(self):

@@ -5,10 +5,12 @@ ladder derivation rung based on transcript violation analysis.
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_P14GateBlocksSentinel(unittest.TestCase):
+class TestThread1_P14GateBlocksSentinel(GroundADRTestBase):
     """P14: unsatisfied gates block sentinels and subsequent rung labels."""
 
     def setUp(self):
@@ -27,7 +29,7 @@ class TestThread1_P14GateBlocksSentinel(unittest.TestCase):
         )
 
 
-class TestThread2_P14ExecObservedToolCall(unittest.TestCase):
+class TestThread2_P14ExecObservedToolCall(GroundADRTestBase):
     """P14: exec_observed requires a preceding tool call in the current response."""
 
     def setUp(self):
@@ -46,7 +48,7 @@ class TestThread2_P14ExecObservedToolCall(unittest.TestCase):
         )
 
 
-class TestThread3_P5RunMeansToolInvocation(unittest.TestCase):
+class TestThread3_P5RunMeansToolInvocation(GroundADRTestBase):
     """P5: 'run and failed' means tool-executed invocation with verbatim output."""
 
     def setUp(self):
@@ -65,7 +67,7 @@ class TestThread3_P5RunMeansToolInvocation(unittest.TestCase):
         )
 
 
-class TestThread4_P3CriterionSpecificity(unittest.TestCase):
+class TestThread4_P3CriterionSpecificity(GroundADRTestBase):
     """P3: OBR observation must directly demonstrate the specific criterion."""
 
     def setUp(self):
@@ -88,7 +90,7 @@ class TestThread4_P3CriterionSpecificity(unittest.TestCase):
         )
 
 
-class TestThread5_P6SentinelTypeDiscipline(unittest.TestCase):
+class TestThread5_P6SentinelTypeDiscipline(GroundADRTestBase):
     """P6: sentinels are typed to their defining rung."""
 
     def setUp(self):
@@ -107,7 +109,7 @@ class TestThread5_P6SentinelTypeDiscipline(unittest.TestCase):
         )
 
 
-class TestThread6_P12SingularSlice(unittest.TestCase):
+class TestThread6_P12SingularSlice(GroundADRTestBase):
     """P12: criteria rung must assert exactly one independently testable behavior."""
 
     def setUp(self):
@@ -132,7 +134,7 @@ class TestThread6_P12SingularSlice(unittest.TestCase):
         )
 
 
-class TestThread7_LadderManifestGate(unittest.TestCase):
+class TestThread7_LadderManifestGate(GroundADRTestBase):
     """Ladder derivation rung gates Manifest declared on rung table existence."""
 
     def setUp(self):
@@ -151,7 +153,7 @@ class TestThread7_LadderManifestGate(unittest.TestCase):
         )
 
 
-class TestADR0218CharCount(unittest.TestCase):
+class TestADR0218CharCount(GroundADRTestBase):
     """Core string must stay below a reasonable ceiling after additions."""
 
     def test_char_count_below_ceiling(self):

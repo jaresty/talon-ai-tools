@@ -7,17 +7,19 @@ T3 ground-complete-sentinel: ✅ Ground complete emitted when meta-observation f
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, SENTINEL_TEMPLATES, build_ground_prompt
 
 
-class TestThread1_ObservationIsMetaLoop(unittest.TestCase):
+class TestThread1_ObservationIsMetaLoop(GroundADRTestBase):
     """Observation is the session control mechanism, not a ladder rung."""
 
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_session_observation_loop_described(self):
-        self.assertIn(
+        self.assertDetects(
             "Session observation loop",
             self.core,
         )
@@ -47,7 +49,7 @@ class TestThread1_ObservationIsMetaLoop(unittest.TestCase):
         )
 
 
-class TestThread2_FailingObservationInEV(unittest.TestCase):
+class TestThread2_FailingObservationInEV(GroundADRTestBase):
     """P5: failing-state observation is part of the verification artifact, not a separate rung."""
 
     def setUp(self):
@@ -72,7 +74,7 @@ class TestThread2_FailingObservationInEV(unittest.TestCase):
         )
 
 
-class TestThread3_GroundCompleteSentinel(unittest.TestCase):
+class TestThread3_GroundCompleteSentinel(GroundADRTestBase):
     """✅ Ground complete sentinel exists with correct gate."""
 
     def setUp(self):
@@ -91,7 +93,7 @@ class TestThread3_GroundCompleteSentinel(unittest.TestCase):
         )
 
 
-class TestADR0226CharCount(unittest.TestCase):
+class TestADR0226CharCount(GroundADRTestBase):
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(

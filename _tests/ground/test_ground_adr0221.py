@@ -7,10 +7,12 @@ replaced with sentinel reference (✅ Ground entered).
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_SentinelGatesNoAbbreviations(unittest.TestCase):
+class TestThread1_SentinelGatesNoAbbreviations(GroundADRTestBase):
     """Sentinel gates must not use rung abbreviations (VRO, EI, OBR)."""
 
     def setUp(self):
@@ -31,7 +33,7 @@ class TestThread1_SentinelGatesNoAbbreviations(unittest.TestCase):
         self.assertNotIn("validation-run-observation rung", self.prompt)
 
     def test_hard_stop_gate_uses_behavioral_description(self):
-        self.assertIn(
+        self.assertDetects(
             "exec_observed showing test suite failure",
             self.prompt,
         )
@@ -49,7 +51,7 @@ class TestThread1_SentinelGatesNoAbbreviations(unittest.TestCase):
         )
 
 
-class TestThread2_P15NoProseRungName(unittest.TestCase):
+class TestThread2_P15NoProseRungName(GroundADRTestBase):
     """P15 must not reference 'prose rung' — cycle identity expressed via sentinel."""
 
     def setUp(self):
@@ -68,7 +70,7 @@ class TestThread2_P15NoProseRungName(unittest.TestCase):
         )
 
 
-class TestADR0221CharCount(unittest.TestCase):
+class TestADR0221CharCount(GroundADRTestBase):
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(

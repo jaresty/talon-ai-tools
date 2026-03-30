@@ -6,10 +6,12 @@ T1 observation-definition: observing running behavior means direct invocation
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_ObservationDefinition(unittest.TestCase):
+class TestThread1_ObservationDefinition(GroundADRTestBase):
     """Session observation loop defines what qualifies as observing running behavior."""
 
     def setUp(self):

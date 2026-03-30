@@ -5,10 +5,12 @@ T1 closing-observation-sentinel: sentinel exists with tool-call gate; ground_com
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import SENTINEL_TEMPLATES, _SENTINEL_GATES, build_ground_prompt
 
 
-class TestThread1_ClosingObservationSentinel(unittest.TestCase):
+class TestThread1_ClosingObservationSentinel(GroundADRTestBase):
     """closing_observation sentinel present with correct gate."""
 
     def setUp(self):

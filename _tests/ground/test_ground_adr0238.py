@@ -6,10 +6,12 @@ T1 rung-label-before-artifact: emitting artifact content for a rung before
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_RungLabelBeforeArtifact(unittest.TestCase):
+class TestThread1_RungLabelBeforeArtifact(GroundADRTestBase):
     """Rung label must precede artifact content."""
 
     def setUp(self):

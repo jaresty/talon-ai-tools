@@ -6,10 +6,12 @@ production before Ground entered. This ADR closes that gap.
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_PreEntryEnforcement(unittest.TestCase):
+class TestThread1_PreEntryEnforcement(GroundADRTestBase):
     """✅ Ground entered must be the first emitted content; preceding content voids the session."""
 
     def setUp(self):
@@ -34,7 +36,7 @@ class TestThread1_PreEntryEnforcement(unittest.TestCase):
         )
 
 
-class TestThread1_SentinelGateStrengthened(unittest.TestCase):
+class TestThread1_SentinelGateStrengthened(GroundADRTestBase):
     """ground_entered sentinel gate annotation must state the pre-entry constraint."""
 
     def setUp(self):
@@ -53,7 +55,7 @@ class TestThread1_SentinelGateStrengthened(unittest.TestCase):
         )
 
 
-class TestADR0222CharCount(unittest.TestCase):
+class TestADR0222CharCount(GroundADRTestBase):
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(

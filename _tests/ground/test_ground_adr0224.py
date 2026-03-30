@@ -6,10 +6,12 @@ T3 V complete gate: file must not pre-exist AND must be written by a tool call i
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_TextArtifactRungsResponseOnly(unittest.TestCase):
+class TestThread1_TextArtifactRungsResponseOnly(GroundADRTestBase):
     """P6: text artifact types (prose, criteria, formal notation) produce response content only."""
 
     def setUp(self):
@@ -34,7 +36,7 @@ class TestThread1_TextArtifactRungsResponseOnly(unittest.TestCase):
         )
 
 
-class TestThread2_CriterionFalsifiability(unittest.TestCase):
+class TestThread2_CriterionFalsifiability(GroundADRTestBase):
     """P12: criterion must be a falsifiable behavioral assertion."""
 
     def setUp(self):
@@ -59,7 +61,7 @@ class TestThread2_CriterionFalsifiability(unittest.TestCase):
         )
 
 
-class TestThread3_VCompleteGate(unittest.TestCase):
+class TestThread3_VCompleteGate(GroundADRTestBase):
     """V complete gate: pre-existence check + tool call write both required."""
 
     def setUp(self):
@@ -78,7 +80,7 @@ class TestThread3_VCompleteGate(unittest.TestCase):
         )
 
 
-class TestADR0224CharCount(unittest.TestCase):
+class TestADR0224CharCount(GroundADRTestBase):
     def test_char_count_below_ceiling(self):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(

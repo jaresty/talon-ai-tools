@@ -5,10 +5,12 @@ T1 observation-loop-terminates-ground: Ground complete may only be emitted as th
 """
 import unittest
 
+from _tests.ground.ground_test_base import GroundADRTestBase
+
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-class TestThread1_ObservationLoopTerminatesGround(unittest.TestCase):
+class TestThread1_ObservationLoopTerminatesGround(GroundADRTestBase):
     """Observation loop is the sole valid termination path for Ground complete."""
 
     def setUp(self):

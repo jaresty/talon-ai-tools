@@ -96,7 +96,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P15 (Derivation chain): Artifacts derive from prior rung\u2019s actual content, not memory; scope does not expand between rungs; a skipped rung voids all artifacts below it. "
         "P16 (Continuous descent): No pausing between rungs; response length is not a valid stop reason; continue from current rung in next response if descent cannot fit in one. "
         "P17 (Thread sequencing): Manifest declares gaps; all rungs for Thread N before N+1; ladder derivation occurs once when ground begins \u2014 not per thread. "
-        "P18 (Intent logging): Every file edit requires \U0001f535 Intent logged + \U0001f535 Intent achieved pair with matching ids \u2014 "
+        "P18 (Intent logging): Every file edit follows protocol rules: every file edit requires the impl_intent + impl_intent_achieved pair with matching ids \u2014 "
         "the intent pair provides auditability inline without reconstructing rung state from context. "
         "P19 (Upward return): Return to revise when derivation error discovered at or above the revised rung \u2014 "
         "difficulty, failure, or constraint pressure from any lower rung is not a valid trigger; "

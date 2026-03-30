@@ -14,7 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from lib.groundPrompt import GROUND_PARTS_MINIMAL, _SENTINEL_GATES, build_ground_prompt
+from lib.groundPrompt import (
+    GROUND_PARTS_MINIMAL,
+    _SENTINEL_GATES,
+    SENTINEL_TEMPLATES,
+    build_ground_prompt,
+)
 
 
 def test_p18_no_longer_mentions_write_authorized():
@@ -81,3 +86,55 @@ def test_impl_intent_references_rung_table_for_artifact_type():
     assert "rung table" in impl_intent_gate.lower(), (
         "impl_intent gate should reference rung table for artifact type authority"
     )
+
+
+def test_v_complete_must_come_after_file_write():
+    """v_complete must be emitted AFTER the file write tool call, not before.
+
+    The issue is model emitting v_complete before writing the file.
+    Gate should clearly require file write TOOL CALL before v_complete sentinel.
+    """
+    v_complete_gate = _SENTINEL_GATES.get("v_complete", "")
+
+    # Gate should require tool call that WRITES the file, not just "file written"
+    assert (
+        "tool call" in v_complete_gate.lower() and "wrote" in v_complete_gate.lower()
+    ), (
+        "v_complete gate should require a tool call that writes the file before the sentinel"
+    )
+
+
+def test_impl_intent_required_regardless_of_v_complete():
+    """impl_intent is required for every file edit, regardless of v_complete.
+
+    v_complete marks the rung complete, but impl_intent is still required
+    for each file edit. These are separate requirements.
+    """
+    impl_intent_gate = _SENTINEL_GATES.get("impl_intent", "")
+
+    # impl_intent should be required for every file write, period
+    assert "every file-write" in impl_intent_gate.lower(), (
+        "impl_intent should be required for every file-write, regardless of other sentinels"
+    )
+
+
+def test_principle_about_file_edit_protocol_adherence():
+    """There should be a principle stating every file edit must follow protocol rules.
+
+    This makes it clear that file edits can't bypass protocol requirements.
+    Should be a standalone principle about following protocol rules for file edits,
+    not just the specific impl_intent requirement.
+    """
+    core = GROUND_PARTS_MINIMAL["core"]
+
+    # Should have explicit statement about following protocol rules for file edits
+    # This is different from just saying impl_intent is required
+    idx = core.lower().find("every file edit")
+    if idx != -1:
+        context = core[idx : idx + 200].lower()
+        # The principle should mention "protocol" or "rules" near "every file edit"
+        assert "protocol" in context or "rules" in context, (
+            "Every file edit statement should mention following protocol/rules"
+        )
+    else:
+        assert False, "Should have 'every file edit' statement"

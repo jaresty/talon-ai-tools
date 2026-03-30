@@ -4,6 +4,7 @@ T1 text-artifact rungs: prose/criteria/formal-notation produce response content 
 T2 criterion falsifiability: criterion must be a falsifiable behavioral assertion, not a feature name.
 T3 V complete gate: file must not pre-exist AND must be written by a tool call in current response.
 """
+
 import unittest
 
 from _tests.ground.ground_test_base import GroundADRTestBase
@@ -67,15 +68,21 @@ class TestThread3_VCompleteGate(GroundADRTestBase):
     def setUp(self):
         self.prompt = build_ground_prompt()
 
-    def test_pre_existence_check_required(self):
+    def test_v_complete_gate_requires_tool_call(self):
         self.assertIn(
-            "pre-existence check tool call result present",
+            "tool call in this response has written",
             self.prompt,
         )
 
     def test_tool_call_wrote_file(self):
         self.assertIn(
-            "tool call in this response wrote the file to disk",
+            "written the validation file to disk",
+            self.prompt,
+        )
+
+    def test_emitting_without_write_voids(self):
+        self.assertIn(
+            "without a preceding tool call that wrote the file",
             self.prompt,
         )
 

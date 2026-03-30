@@ -3,11 +3,16 @@
 Thread 1: each sentinel in the sentinel block carries its gate condition inline.
 Thread 2: criteria-complete sentinel exists with single-criterion gate.
 """
+
 import unittest
 
 from _tests.ground.ground_test_base import GroundADRTestBase
 
-from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt, SENTINEL_TEMPLATES
+from lib.groundPrompt import (
+    GROUND_PARTS_MINIMAL,
+    build_ground_prompt,
+    SENTINEL_TEMPLATES,
+)
 
 
 class TestThread1_SentinelInlineGates(GroundADRTestBase):
@@ -52,7 +57,7 @@ class TestThread1_SentinelInlineGates(GroundADRTestBase):
 
     def test_v_complete_gate_inline(self):
         self.assertIn(
-            "tool call in this response wrote the file to disk",
+            "written the validation file to disk",
             self.prompt,
         )
 

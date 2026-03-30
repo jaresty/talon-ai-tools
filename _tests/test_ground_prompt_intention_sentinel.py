@@ -122,3 +122,28 @@ def test_impl_intent_includes_file_path():
     assert "file" in impl_intent_achieved.lower(), (
         "impl_intent_achieved template should include file path for auditing"
     )
+
+
+def test_impl_intent_achieved_requires_tool_call():
+    """impl_intent_achieved must require actual tool call output, not rationalization."""
+    gate = _SENTINEL_GATES.get("impl_intent_achieved", "")
+
+    # Must require preceding tool call that runs validation
+    assert "preceding tool call" in gate.lower(), (
+        "impl_intent_achieved must require a tool call that runs the validation file"
+    )
+
+    # Must void if no tool call
+    assert "without a preceding tool call" in gate.lower(), (
+        "impl_intent_achieved must void if no tool call precedes it"
+    )
+
+
+def test_impl_intent_achieved_required_for_each_edit():
+    """Each implementation file edit requires its own impl_intent + impl_intent_achieved pair."""
+    gate = _SENTINEL_GATES.get("impl_intent_achieved", "")
+
+    # Must require the pair for each file write
+    assert "each file-write" in gate.lower() or "pair" in gate.lower(), (
+        "impl_intent_achieved must require the pair for each file write"
+    )

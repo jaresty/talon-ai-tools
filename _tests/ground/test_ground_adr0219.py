@@ -26,7 +26,7 @@ class TestThread1_SentinelInlineGates(unittest.TestCase):
 
     def test_impl_gate_gate_inline(self):
         self.assertIn(
-            "valid only at the executable-implementation rung",
+            "valid only at the rung whose artifact type is executable implementation",
             self.prompt,
         )
 

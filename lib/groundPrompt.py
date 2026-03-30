@@ -33,8 +33,8 @@ _SENTINEL_GATES: dict[str, str] = {
     "manifest_declared": "gate: rung table produced in current response; rung table precedes this sentinel",
     "exec_observed": "gate: tool call made in the current response immediately before this sentinel; verbatim output in triple-backtick block follows",
     "gap": "gate: exec_observed with non-empty failing output precedes this token in current response; gap text is a currently-false behavioral assertion",
-    "hard_stop": "gate: exec_observed + gap at the validation-run-observation rung in current cycle; criterion identical to prior cycle criterion for this thread",
-    "impl_gate": "gate: exec_observed + gap at the validation-run-observation rung in current cycle; valid only at the executable-implementation rung",
+    "hard_stop": "gate: exec_observed showing test suite failure + gap in current cycle; criterion identical to prior cycle criterion for this thread",
+    "impl_gate": "gate: exec_observed showing test suite failure + gap in current cycle; valid only at the rung whose artifact type is executable implementation",
     "criteria_complete": "gate: exactly one criterion in this rung's artifact; criterion contains no conjunction; formal notation rung label may not be emitted until this sentinel has been emitted",
     "v_complete": "gate: test file written via tool call in current response; pre-existence check tool call result present",
     "thread_complete": "gate: exec_observed at the observed-running-behavior rung directly demonstrating criterion in current cycle; passing test suite run after that tool call; valid only at the observed-running-behavior rung",
@@ -186,10 +186,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "from which intent is declared, then produces: "
         "observed running behavior (baseline) \u2192 prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 validation run observation \u2192 executable implementation \u2192 observed running behavior (confirmation). "
         "A derived ladder that omits any of these rungs for a software behavioral change task must cite which principle makes that rung unnecessary. "
-        "A structural failure (import error, compilation error, missing module) at the validation-run-observation rung is not evidence the criterion is unmet \u2014 "
-        "it is a gap in test infrastructure; "
-        "the executable-implementation artifact for a structural failure resolves only the structural gap (minimum stub sufficient to allow the suite to run); "
-        "the criterion has not been exercised until individual test assertions fail in a subsequent cycle. "
+        "The criterion is exercised only when the automated validation suite runs to completion and individual assertions fail; "
+        "execution halted before reaching the assertions (by infrastructure failure, import error, or any other cause) does not exercise the criterion \u2014 "
+        "the executable-implementation artifact for such a halt resolves only the infrastructure gap (minimum change sufficient to allow the suite to reach the assertions); "
+        "the criterion has not been exercised until individual assertions fail in a subsequent cycle. "
         "Outputting a rung label is what begins that rung \u2014 it is not a heading or annotation; "
         "a rung whose label has not been output has not begun. "
         "When beginning mid-ladder, locate the highest already-instantiated rung, update it, then descend. "

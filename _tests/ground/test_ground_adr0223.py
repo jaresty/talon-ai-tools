@@ -54,21 +54,27 @@ class TestThread3_StructuralFailureAtVRO(unittest.TestCase):
     def setUp(self):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
-    def test_structural_failure_not_criterion_exercise(self):
+    def test_criterion_exercised_only_when_assertions_fail(self):
         self.assertIn(
-            "structural failure (import error, compilation error, missing module) at the validation-run-observation rung is not evidence the criterion is unmet",
+            "criterion is exercised only when the automated validation suite runs to completion and individual assertions fail",
             self.core,
         )
 
-    def test_ei_resolves_only_structural_gap(self):
+    def test_halted_execution_does_not_exercise_criterion(self):
         self.assertIn(
-            "the executable-implementation artifact for a structural failure resolves only the structural gap",
+            "execution halted before reaching the assertions",
+            self.core,
+        )
+
+    def test_ei_resolves_only_infrastructure_gap(self):
+        self.assertIn(
+            "the executable-implementation artifact for such a halt resolves only the infrastructure gap",
             self.core,
         )
 
     def test_new_cycle_required_before_criterion_exercised(self):
         self.assertIn(
-            "the criterion has not been exercised until individual test assertions fail in a subsequent cycle",
+            "the criterion has not been exercised until individual assertions fail in a subsequent cycle",
             self.core,
         )
 

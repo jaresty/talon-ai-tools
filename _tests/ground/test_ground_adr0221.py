@@ -27,15 +27,18 @@ class TestThread1_SentinelGatesNoAbbreviations(unittest.TestCase):
         self.assertNotIn("OBR exec_observed", self.prompt)
         self.assertNotIn("OBR tool call", self.prompt)
 
-    def test_hard_stop_gate_uses_full_name(self):
+    def test_no_validation_run_observation_rung_name(self):
+        self.assertNotIn("validation-run-observation rung", self.prompt)
+
+    def test_hard_stop_gate_uses_behavioral_description(self):
         self.assertIn(
-            "the validation-run-observation rung",
+            "exec_observed showing test suite failure",
             self.prompt,
         )
 
-    def test_impl_gate_uses_full_name(self):
+    def test_impl_gate_uses_behavioral_description(self):
         self.assertIn(
-            "the executable-implementation rung",
+            "rung whose artifact type is executable implementation",
             self.prompt,
         )
 
@@ -74,7 +77,7 @@ class TestADR0221CharCount(unittest.TestCase):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(
             current,
-            15_000,
+            16_000,
             f"ADR-0221: core string ({current} chars) unexpectedly large",
         )
 

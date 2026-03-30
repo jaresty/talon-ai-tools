@@ -57,3 +57,16 @@ def test_perturb_guidance_for_backfill():
     ) and "test" in prompt.lower(), (
         "Ground prompt must connect perturb to the backfill scenario (existing code, can't see tests red)"
     )
+
+
+def test_intent_achieved_sentinel_exists():
+    """Ground prompt must include a sentinel for demonstrating intent achieved after implementation.
+
+    After each file write, we need to show that the validation passes (green state).
+    This demonstrates that the targeted assertion now passes. This is distinct from
+    impl_intent which logs BEFORE the write - we need a SEPARATE sentinel for AFTER.
+    """
+    # Must have a distinct sentinel for showing green state AFTER file write
+    assert "impl_intent_achieved" in SENTINEL_TEMPLATES, (
+        "Ground prompt must have a separate impl_intent_achieved sentinel to show green state after file write"
+    )

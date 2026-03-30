@@ -371,7 +371,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "showing failure] [gate: this sentinel must appear immediately before each file-write tool call to implementation code; the target assertion name must be specific and the "
         "evidence must be verbatim output showing that assertion failing in the current state; emitting this sentinel without a preceding exec_observed showing the target assertion "
         "failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual tool execution) voids the sentinel and the rung; for "
-        "backfill cases where tests already pass and cannot be seen red, perturb the implementation (introduce a controlled fault) to observe the test fail, then fix the perturbation].",
+        "backfill cases where tests already pass and cannot be seen red, perturb the implementation (introduce a controlled fault) to observe the test fail, then fix the perturbation]; "
+        "🔵 Intent achieved — target: [assertion name] | evidence: [verbatim green output showing passing] [gate: this sentinel must appear after each file-write tool call to "
+        "implementation code; the target assertion name must match the target from impl_intent and the evidence must be verbatim output showing that assertion passing in the current "
+        "state; emitting this sentinel without a matching impl_intent in the same response voids the intent; fabrication of green evidence (output that does not come from actual tool "
+        "execution) voids the sentinel and the rung].",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

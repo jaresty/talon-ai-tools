@@ -25,6 +25,7 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "i_formation": "\u2705 I-formation complete",
     "r2_audit": "\u2705 Formal notation R2 audit complete \u2014 N/N criteria encoded",
     "ground_complete": "\u2705 Ground complete \u2014 intent achieved: [what the observation shows]",
+    "closing_observation": "\U0001f535 Closing observation \u2014 [what the tool-executed observation shows]",
     "write_authorized": "\U0001f535 Write authorized \u2014 rung: [rung name] | artifact type: [type] | file: [path]",
 }
 
@@ -44,7 +45,8 @@ _SENTINEL_GATES: dict[str, str] = {
     "carry_forward": "gate: prior failure name quotable verbatim from a prior exec_observed sentinel",
     "i_formation": "gate: observation of current state complete before manifest",
     "r2_audit": "gate: every criterion encoded in notation; audit section named and separate",
-    "ground_complete": "gate: meta exec_observed shows no gap between observed running behavior and declared intent; all manifest threads complete",
+    "ground_complete": "gate: \U0001f535 Closing observation must appear in the current response before this sentinel; meta exec_observed shows no gap between observed running behavior and declared intent; all manifest threads complete",
+    "closing_observation": "gate: tool call made in this response immediately before this sentinel; this sentinel must appear after \u2705 Manifest exhausted and before \u2705 Ground complete in the same response; emitting \u2705 Ground complete without a preceding \U0001f535 Closing observation in the current response is a protocol violation",
     "write_authorized": "gate: currently open rung (most recently emitted rung label with no completion sentinel yet) has this file's artifact type in its permitted-tool-calls column; no open rung → gate unsatisfied; artifact type mismatch → gate unsatisfied; the cited artifact type must match the artifact type of the named file as determined by the rung table's artifact-type column — a cited artifact type that does not match the file being written is a fabrication that voids the sentinel and the rung regardless of whether the open rung permits that type; a file write without a preceding \U0001f535 Write authorized voids the write and the rung in which it appears; a \U0001f535 Write authorized whose cited rung is not currently open is a fabrication that voids the write and the rung; this sentinel must appear immediately before the file-write tool call — intervening content between this sentinel and the tool call voids both",
 }
 

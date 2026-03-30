@@ -390,13 +390,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "[gate: count of Thread N complete sentinels equals N in Manifest declared]; Carry-forward: [list which original failures cover which current tests] [gate: prior failure name "
         "quotable verbatim from a prior exec_observed sentinel]; ✅ I-formation complete [gate: observation of current state complete before manifest]; ✅ Formal notation R2 audit "
         "complete — N/N criteria encoded [gate: every criterion encoded in notation; audit section named and separate]; ✅ Ground complete — intent achieved: [what the observation "
-        "shows] [gate: meta exec_observed shows no gap between observed running behavior and declared intent; all manifest threads complete]; 🔵 Write authorized — rung: [rung name] | "
-        "artifact type: [type] | file: [path] [gate: currently open rung (most recently emitted rung label with no completion sentinel yet) has this file's artifact type in its "
-        "permitted-tool-calls column; no open rung → gate unsatisfied; artifact type mismatch → gate unsatisfied; the cited artifact type must match the artifact type of the named file "
-        "as determined by the rung table's artifact-type column — a cited artifact type that does not match the file being written is a fabrication that voids the sentinel and the rung "
-        "regardless of whether the open rung permits that type; a file write without a preceding 🔵 Write authorized voids the write and the rung in which it appears; a 🔵 Write "
-        "authorized whose cited rung is not currently open is a fabrication that voids the write and the rung; this sentinel must appear immediately before the file-write tool call — "
-        "intervening content between this sentinel and the tool call voids both].",
+        "shows] [gate: 🔵 Closing observation must appear in the current response before this sentinel; meta exec_observed shows no gap between observed running behavior and declared "
+        "intent; all manifest threads complete]; 🔵 Closing observation — [what the tool-executed observation shows] [gate: tool call made in this response immediately before this "
+        "sentinel; this sentinel must appear after ✅ Manifest exhausted and before ✅ Ground complete in the same response; emitting ✅ Ground complete without a preceding 🔵 Closing "
+        "observation in the current response is a protocol violation]; 🔵 Write authorized — rung: [rung name] | artifact type: [type] | file: [path] [gate: currently open rung (most "
+        "recently emitted rung label with no completion sentinel yet) has this file's artifact type in its permitted-tool-calls column; no open rung → gate unsatisfied; artifact type "
+        "mismatch → gate unsatisfied; the cited artifact type must match the artifact type of the named file as determined by the rung table's artifact-type column — a cited artifact "
+        "type that does not match the file being written is a fabrication that voids the sentinel and the rung regardless of whether the open rung permits that type; a file write "
+        "without a preceding 🔵 Write authorized voids the write and the rung in which it appears; a 🔵 Write authorized whose cited rung is not currently open is a fabrication that "
+        "voids the write and the rung; this sentinel must appear immediately before the file-write tool call — intervening content between this sentinel and the tool call voids both].",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

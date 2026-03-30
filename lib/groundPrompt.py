@@ -214,6 +214,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the rung table is the gate on all subsequent rung activity. "
         "Session observation loop: observing running behavior means invoking the system directly in a manner that exercises the behavior named in the intent \u2014 "
         "the output must be produced by the behavior itself, not by a test framework asserting properties of it; "
+        "the tool call must execute live running code \u2014 reading files, grepping source, "
+        "or inspecting static artifacts does not satisfy this requirement regardless of what the output shows; "
         "a test suite run does not satisfy this requirement regardless of whether the tests pass. "
         "Before beginning a ladder descent, observe current running behavior via tool call \u2014 "
         "if the observation reveals a gap between running behavior and declared intent, declare the gap and descend the ladder; "

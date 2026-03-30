@@ -147,3 +147,17 @@ def test_impl_intent_achieved_required_for_each_edit():
     assert "each file-write" in gate.lower() or "pair" in gate.lower(), (
         "impl_intent_achieved must require the pair for each file write"
     )
+
+
+def test_impl_intent_requires_correct_rung_for_file_type():
+    """impl_intent should only be used for files matching current rung's artifact type.
+
+    If writing a test file, should not be at implementation rung - should return
+    to validation rung first.
+    """
+    gate = _SENTINEL_GATES.get("impl_intent", "")
+
+    # Must require correct artifact type for current rung - not for implementation files at wrong rung
+    assert "current rung" in gate.lower() or "artifact type" in gate.lower(), (
+        "impl_intent gate should require file matches current rung's artifact type"
+    )

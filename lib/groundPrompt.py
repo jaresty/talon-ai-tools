@@ -27,6 +27,7 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "ground_complete": "\u2705 Ground complete \u2014 intent achieved: [what the observation shows]",
     "closing_observation": "\U0001f535 Closing observation \u2014 [what the tool-executed observation shows]",
     "write_authorized": "\U0001f535 Write authorized \u2014 rung: [rung name] | artifact type: [type] | file: [path]",
+    "impl_intent": "\U0001f535 Intent logged \u2014 target: [assertion name] | evidence: [verbatim red output showing failure]",
 }
 
 # Per-sentinel gate conditions — emitted inline in the sentinel block so the gate
@@ -48,6 +49,7 @@ _SENTINEL_GATES: dict[str, str] = {
     "ground_complete": "gate: \U0001f535 Closing observation must appear in the current response before this sentinel; meta exec_observed shows no gap between observed running behavior and declared intent; all manifest threads complete",
     "closing_observation": "gate: the tool call immediately before this sentinel must directly invoke the behavior named in the session intent and its output must show that behavior is present; this sentinel must appear after \u2705 Manifest exhausted and before \u2705 Ground complete in the same response; emitting \u2705 Ground complete without a preceding \U0001f535 Closing observation in the current response is a protocol violation",
     "write_authorized": "gate: currently open rung (most recently emitted rung label with no completion sentinel yet) has this file's artifact type in its permitted-tool-calls column; no open rung → gate unsatisfied; artifact type mismatch → gate unsatisfied; the cited artifact type must match the artifact type of the named file as determined by the rung table's artifact-type column — a cited artifact type that does not match the file being written is a fabrication that voids the sentinel and the rung regardless of whether the open rung permits that type; a file write without a preceding \U0001f535 Write authorized voids the write and the rung in which it appears; a \U0001f535 Write authorized whose cited rung is not currently open is a fabrication that voids the write and the rung; this sentinel must appear immediately before the file-write tool call — intervening content between this sentinel and the tool call voids both",
+    "impl_intent": "gate: this sentinel must appear immediately before any file-write tool call to implementation code; the target assertion name must be specific and the evidence must be verbatim output showing that assertion failing in the current state; emitting this sentinel without a preceding exec_observed showing the target assertion failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual tool execution) voids the sentinel and the rung",
 }
 
 
@@ -134,6 +136,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "after the change, verify the target assertion is green and confirm no other assertions flipped unexpectedly — "
         "if more than that assertion flips from red to green, revert and try a different approach. "
         "Test code is not subject to this requirement. "
+        "For backfill cases (adding tests to code that already works): if the test cannot be seen red because the implementation already passes, "
+        "perturb the implementation (introduce a controlled fault) to observe the test fail, then fix the perturbation after the test passes. "
         "Outputting a rung label is what begins that rung \u2014 it is not a heading or annotation; "
         "a rung whose label has not been output has not begun; "
         "the rung label must be emitted before any artifact content for that rung \u2014 "

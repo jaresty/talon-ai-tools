@@ -338,11 +338,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "principle makes that rung unnecessary. The criterion is exercised only when the automated validation suite runs to completion and individual assertions fail; execution halted "
         "before reaching the assertions (by infrastructure failure, import error, or any other cause) does not exercise the criterion — the executable-implementation artifact for such "
         "a halt resolves only the infrastructure gap (minimum change sufficient to allow the suite to reach the assertions); the criterion has not been exercised until individual "
-        "assertions fail in a subsequent cycle. For implementation code: before each file write, log the intention (target one specific assertion) and include the red observation "
-        "showing that assertion currently fails; after the change, verify the target assertion is green and confirm no other assertions flipped unexpectedly — if more than that "
-        "assertion flips from red to green, revert and try a different approach. Test code is not subject to this requirement. For backfill cases (adding tests to code that already "
-        "works): if the test cannot be seen red because the implementation already passes, perturb the implementation (introduce a controlled fault) to observe the test fail, then fix "
-        "the perturbation after the test passes. Outputting a rung label is what begins that rung — it is not a heading or annotation; a rung whose label has not been output has not "
+        "assertions fail in a subsequent cycle. Outputting a rung label is what begins that rung — it is not a heading or annotation; a rung whose label has not been output has not "
         "begun; the rung label must be emitted before any artifact content for that rung — producing artifact content before the rung label is a protocol violation that voids that "
         "artifact and all rungs below it. When beginning mid-ladder, locate the highest already-instantiated rung, update it, then descend. Sentinel formats — ✅ Ground entered — prose "
         "rung begins [gate: first content emitted in this response; no artifact, code, prose, or reasoning may precede this sentinel — preceding content voids the session]; ✅ Manifest "
@@ -374,7 +370,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "file-write tool call — intervening content between this sentinel and the tool call voids both]; 🔵 Intent logged — target: [assertion name] | evidence: [verbatim red output "
         "showing failure] [gate: this sentinel must appear immediately before any file-write tool call to implementation code; the target assertion name must be specific and the "
         "evidence must be verbatim output showing that assertion failing in the current state; emitting this sentinel without a preceding exec_observed showing the target assertion "
-        "failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual tool execution) voids the sentinel and the rung].",
+        "failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual tool execution) voids the sentinel and the rung; for "
+        "backfill cases where tests already pass and cannot be seen red, perturb the implementation (introduce a controlled fault) to observe the test fail, then fix the perturbation].",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

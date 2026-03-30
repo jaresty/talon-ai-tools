@@ -42,13 +42,13 @@ class TestThread1_SentinelGatesNoAbbreviations(unittest.TestCase):
             self.prompt,
         )
 
-    def test_thread_complete_gate_uses_full_name(self):
+    def test_thread_complete_gate_uses_artifact_type_description(self):
         self.assertIn(
-            "exec_observed at the observed-running-behavior rung",
+            "exec_observed at the rung whose artifact type is observed running behavior",
             self.prompt,
         )
         self.assertIn(
-            "valid only at the observed-running-behavior rung",
+            "valid only at the rung whose artifact type is observed running behavior",
             self.prompt,
         )
 

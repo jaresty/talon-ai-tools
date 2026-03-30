@@ -32,7 +32,7 @@ class TestThread1_SentinelInlineGates(unittest.TestCase):
 
     def test_thread_complete_gate_inline(self):
         self.assertIn(
-            "exec_observed at the observed-running-behavior rung directly demonstrating criterion in current cycle",
+            "exec_observed at the rung whose artifact type is observed running behavior directly demonstrating criterion in current cycle",
             self.prompt,
         )
 
@@ -50,7 +50,7 @@ class TestThread1_SentinelInlineGates(unittest.TestCase):
 
     def test_v_complete_gate_inline(self):
         self.assertIn(
-            "test file written via tool call in current response",
+            "tool call in this response wrote the file to disk",
             self.prompt,
         )
 

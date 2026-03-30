@@ -36,8 +36,8 @@ _SENTINEL_GATES: dict[str, str] = {
     "hard_stop": "gate: exec_observed showing test suite failure + gap in current cycle; criterion identical to prior cycle criterion for this thread",
     "impl_gate": "gate: exec_observed showing test suite failure + gap in current cycle; valid only at the rung whose artifact type is executable implementation",
     "criteria_complete": "gate: exactly one criterion in this rung's artifact; criterion contains no conjunction; formal notation rung label may not be emitted until this sentinel has been emitted",
-    "v_complete": "gate: test file written via tool call in current response; pre-existence check tool call result present",
-    "thread_complete": "gate: exec_observed at the observed-running-behavior rung directly demonstrating criterion in current cycle; passing test suite run after that tool call; valid only at the observed-running-behavior rung",
+    "v_complete": "gate: pre-existence check tool call result present; tool call in this response wrote the file to disk",
+    "thread_complete": "gate: exec_observed at the rung whose artifact type is observed running behavior directly demonstrating criterion in current cycle; passing validation suite run after that tool call; valid only at the rung whose artifact type is observed running behavior",
     "manifest_exhausted": "gate: count of Thread N complete sentinels equals N in Manifest declared",
     "carry_forward": "gate: prior failure name quotable verbatim from a prior exec_observed sentinel",
     "i_formation": "gate: observation of current state complete before manifest",
@@ -86,7 +86,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "emitting a sentinel outside its defining rung is a type-discipline violation; "
         "the sentinel is void and the rung in which it appears is voided by the cross-type emission; "
         "once a rung\u2019s completion sentinel has been emitted, the artifact type produced at that rung is frozen for the current thread and cycle \u2014 "
-        "modifying a frozen artifact at any subsequent rung is a type-discipline violation that voids the rung in which the modification appears. "
+        "modifying a frozen artifact at any subsequent rung is a type-discipline violation that voids the rung in which the modification appears; "
+        "text artifact types (prose, criteria, formal notation) produce response content only \u2014 they have no file representation; "
+        "writing any file to disk during a text-artifact rung is a type-discipline violation regardless of what the rung table\u2019s permitted-tool-calls column says. "
         "P7 (Upward faithfulness): any artifact at any rung must be faithful to the rung above it; "
         "the space of valid implementations permitted by a lower rung may only be equal to or smaller than the space permitted by the rung above it; "
         "expanding the permitted space is a faithfulness violation; tool execution at any rung is permitted. "
@@ -111,7 +113,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the slice is exactly one independently testable behavior per thread per cycle \u2014 "
         "a criteria artifact asserting more than one behavior is a conjunction and is a protocol violation; "
         "a criterion containing the word \u201cand\u201d is presumptively a conjunction unless both halves jointly constitute "
-        "a single indivisible observable state. "
+        "a single indivisible observable state; "
+        "a criterion is a falsifiable behavioral assertion \u2014 given a specific action, a specific observable outcome either occurs or it does not; "
+        "a feature name or capability description is not a criterion \u2014 it cannot be directly observed to pass or fail. "
         "P13 (Observation-first, observation-last): a session begins by observing current behavior manually "
         "and declaring what the intent is believed to be; "
         "a session ends by repeating that observation to confirm intent has been met; "
@@ -182,10 +186,12 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the required emission order is: rung table, then \u2705 Manifest declared; "
         "a manifest emitted without a preceding rung table is a protocol violation; "
         "the rung table is the gate on all subsequent rung activity. "
-        "For software behavioral change, the standard derivation begins with a tool-executed observation of current behavior "
-        "from which intent is declared, then produces: "
+        "For software behavioral change, the standard derivation produces: "
         "observed running behavior (baseline) \u2192 prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 validation run observation \u2192 executable implementation \u2192 observed running behavior (confirmation). "
         "A derived ladder that omits any of these rungs for a software behavioral change task must cite which principle makes that rung unnecessary. "
+        "Each cycle begins with an observed-running-behavior rung \u2014 the gap for that cycle is declared from that observation\u2019s output; "
+        "each cycle ends with an observed-running-behavior rung confirming the gap is closed; "
+        "if the closing observation shows the gap is still present, a new cycle begins from prose (or issues a HARD STOP if the criterion is unchanged from the prior cycle). "
         "The criterion is exercised only when the automated validation suite runs to completion and individual assertions fail; "
         "execution halted before reaching the assertions (by infrastructure failure, import error, or any other cause) does not exercise the criterion \u2014 "
         "the executable-implementation artifact for such a halt resolves only the infrastructure gap (minimum change sufficient to allow the suite to reach the assertions); "

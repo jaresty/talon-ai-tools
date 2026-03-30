@@ -29,7 +29,7 @@ SENTINEL_TEMPLATES: dict[str, str] = {
 # Per-sentinel gate conditions — emitted inline in the sentinel block so the gate
 # requirement is visible at the exact point of emission.
 _SENTINEL_GATES: dict[str, str] = {
-    "ground_entered": "gate: first token after user invokes ground",
+    "ground_entered": "gate: first content emitted in this response; no artifact, code, prose, or reasoning may precede this sentinel — preceding content voids the session",
     "manifest_declared": "gate: rung table produced in current response; rung table precedes this sentinel",
     "exec_observed": "gate: tool call made in the current response immediately before this sentinel; verbatim output in triple-backtick block follows",
     "gap": "gate: exec_observed with non-empty failing output precedes this token in current response; gap text is a currently-false behavioral assertion",
@@ -133,7 +133,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "between the rung label and its completion sentinel is a protocol violation that voids the rung; "
         "\U0001f534 Execution observed: is only valid when a tool call was made in the current response immediately before it \u2014 "
         "a sentinel emitted without a preceding tool call is a fabrication \u2014 it voids the rung in which it appears "
-        "regardless of whether its text resembles tool output. "
+        "regardless of whether its text resembles tool output; "
+        "\u2705 Ground entered must be the first emitted content of any response that begins a ground session \u2014 "
+        "any artifact, reasoning, or content of any type produced before \u2705 Ground entered is a pre-entry violation \u2014 "
+        "it voids the sentinel and all work that follows in that response. "
         "P15 (Cycle identity): evidence is valid only within the cycle in which it was produced; "
         "a cycle opens when \u2705 Ground entered is emitted for a given thread and closes at Thread N complete or an upward return; "
         "evidence from a prior cycle, a different thread, or a different gap does not satisfy any gate in the current cycle "

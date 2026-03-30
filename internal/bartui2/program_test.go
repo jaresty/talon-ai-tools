@@ -1853,6 +1853,45 @@ func TestHotkeyBarShowsPipelineShortcut(t *testing.T) {
 	}
 }
 
+func TestCtrlShiftVPastesFromClipboard(t *testing.T) {
+	clipboardContent := "clipboard content here"
+	runCmd := func(ctx context.Context, cmd string, stdin string) (string, string, error) {
+		return clipboardContent, "", nil
+	}
+
+	m := newModel(Options{
+		TokenCategories: testCategories(),
+		Preview: func(subject string, addendum string, tokens []string) (string, error) {
+			return "Preview with subject: " + subject, nil
+		},
+		RunCommand:    runCmd,
+		InitialWidth:  80,
+		InitialHeight: 24,
+	})
+	m.ready = true
+
+	// Open subject modal
+	m.showSubjectModal = true
+	m.subjectInput.Focus()
+
+	// Press Ctrl+Shift+V to paste (Modifiers: Ctrl+Shift, Code: 'v')
+	updated, _ := m.Update(tea.KeyPressMsg{Code: 'v', Mod: tea.ModCtrl | tea.ModShift})
+	m2 := updated.(model)
+
+	// Subject input should have clipboard content appended
+	if !strings.Contains(m2.subjectInput.Value(), clipboardContent) {
+		t.Errorf("expected clipboard content in subject input, got %q", m2.subjectInput.Value())
+	}
+
+	// Should show toast confirmation
+	if m2.toastMessage == "" {
+		t.Error("expected toast message after paste")
+	}
+	if !strings.Contains(m2.toastMessage, "clipboard") && !strings.Contains(m2.toastMessage, "paste") {
+		t.Errorf("expected toast to mention clipboard/paste, got %q", m2.toastMessage)
+	}
+}
+
 func TestCompletionListScrolling(t *testing.T) {
 	// Create categories with many options to test scrolling
 	var options []TokenOption

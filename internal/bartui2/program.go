@@ -6,6 +6,7 @@ package bartui2
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -601,6 +602,16 @@ func (m model) updateSubjectModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "ctrl+shift+v":
+			// Paste from clipboard
+			var errMsg string
+			m.subjectInput, errMsg, _ = pasteFromClipboard(m.subjectInput, m.runCommand)
+			if errMsg != "" {
+				m.toastMessage = errMsg
+			} else {
+				m.toastMessage = "Pasted from clipboard"
+			}
+			return m, nil
 		case "esc":
 			// Close modal without saving
 			m.showSubjectModal = false
@@ -632,6 +643,16 @@ func (m model) updateAddendumModal(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "ctrl+shift+v":
+			// Paste from clipboard
+			var errMsg string
+			m.addendumInput, errMsg, _ = pasteFromClipboard(m.addendumInput, m.runCommand)
+			if errMsg != "" {
+				m.toastMessage = errMsg
+			} else {
+				m.toastMessage = "Pasted from clipboard"
+			}
+			return m, nil
 		case "esc":
 			// Close modal without saving
 			m.showAddendumModal = false
@@ -711,6 +732,53 @@ func (m *model) copyResultToClipboard() {
 		return
 	}
 	m.toastMessage = "Result copied to clipboard!"
+}
+
+// getClipboardReadCommand returns the command and args to read from the system clipboard.
+func getClipboardReadCommand() (string, []string) {
+	switch runtime.GOOS {
+	case "darwin":
+		return "pbpaste", nil
+	case "linux":
+		return "xclip", []string{"-selection", "clipboard", "-o"}
+	default:
+		return "pbpaste", nil
+	}
+}
+
+// pasteFromClipboard reads from the system clipboard and inserts into the given textarea.
+// Returns the updated textarea and any error message.
+func pasteFromClipboard(ta textarea.Model, runCmd func(ctx context.Context, cmd string, stdin string) (string, string, error)) (textarea.Model, string, error) {
+	if runCmd == nil {
+		return ta, "", fmt.Errorf("command execution not available")
+	}
+
+	cmd, args := getClipboardReadCommand()
+	var fullCmd string
+	if args != nil {
+		fullCmd = cmd + " " + strings.Join(args, " ")
+	} else {
+		fullCmd = cmd
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	stdout, stderr, err := runCmd(ctx, fullCmd, "")
+	if err != nil {
+		if stderr != "" {
+			return ta, "", fmt.Errorf("clipboard error: %s", stderr)
+		}
+		return ta, "", fmt.Errorf("clipboard error: %v", err)
+	}
+
+	if stdout == "" {
+		return ta, "Clipboard is empty", nil
+	}
+
+	newValue := ta.Value() + stdout
+	ta.SetValue(newValue)
+	return ta, "", nil
 }
 
 // pipelineResultToSubject loads the command result into the subject field.
@@ -2263,7 +2331,7 @@ func (m model) renderSubjectModal() string {
 		content.WriteString("\n")
 	}
 
-	content.WriteString(dimStyle.Render("Ctrl+S: save | Esc: cancel"))
+	content.WriteString(dimStyle.Render("Ctrl+S: save | Ctrl+Shift+V: paste | Esc: cancel"))
 
 	return modalStyle.Width(width).Render(content.String())
 }
@@ -2286,7 +2354,7 @@ func (m model) renderAddendumModal() string {
 		content.WriteString("\n")
 	}
 
-	content.WriteString(dimStyle.Render("Ctrl+S: save | Esc: cancel"))
+	content.WriteString(dimStyle.Render("Ctrl+S: save | Ctrl+Shift+V: paste | Esc: cancel"))
 
 	return modalStyle.Width(width).Render(content.String())
 }

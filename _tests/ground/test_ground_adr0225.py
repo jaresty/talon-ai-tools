@@ -44,7 +44,7 @@ class TestADR0225CharCount(unittest.TestCase):
         current = len(GROUND_PARTS_MINIMAL["core"])
         self.assertLess(
             current,
-            18_500,
+            19_500,
             f"ADR-0225: core string ({current} chars) unexpectedly large",
         )
 

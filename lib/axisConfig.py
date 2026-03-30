@@ -386,10 +386,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "complete — N/N criteria encoded [gate: every criterion encoded in notation; audit section named and separate]; ✅ Ground complete — intent achieved: [what the observation "
         "shows] [gate: meta exec_observed shows no gap between observed running behavior and declared intent; all manifest threads complete]; 🔵 Write authorized — rung: [rung name] | "
         "artifact type: [type] | file: [path] [gate: currently open rung (most recently emitted rung label with no completion sentinel yet) has this file's artifact type in its "
-        "permitted-tool-calls column; no open rung → gate unsatisfied; artifact type mismatch → gate unsatisfied; a file write without a preceding 🔵 Write authorized voids the write "
-        "and the rung in which it appears; a 🔵 Write authorized whose cited rung is not currently open or whose artifact type does not match the open rung's permitted-tool-calls column "
-        "is a fabrication that voids the write and the rung; this sentinel must appear immediately before the file-write tool call — intervening content between this sentinel and the "
-        "tool call voids both].",
+        "permitted-tool-calls column; no open rung → gate unsatisfied; artifact type mismatch → gate unsatisfied; the cited artifact type must match the artifact type of the named file "
+        "as determined by the rung table's artifact-type column — a cited artifact type that does not match the file being written is a fabrication that voids the sentinel and the rung "
+        "regardless of whether the open rung permits that type; a file write without a preceding 🔵 Write authorized voids the write and the rung in which it appears; a 🔵 Write "
+        "authorized whose cited rung is not currently open is a fabrication that voids the write and the rung; this sentinel must appear immediately before the file-write tool call — "
+        "intervening content between this sentinel and the tool call voids both].",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

@@ -368,7 +368,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "sentinel and the rung regardless of whether the open rung permits that type; a file write without a preceding 🔵 Write authorized voids the write and the rung in which it "
         "appears; a 🔵 Write authorized whose cited rung is not currently open is a fabrication that voids the write and the rung; this sentinel must appear immediately before the "
         "file-write tool call — intervening content between this sentinel and the tool call voids both]; 🔵 Intent logged — target: [assertion name] | evidence: [verbatim red output "
-        "showing failure] [gate: this sentinel must appear immediately before any file-write tool call to implementation code; the target assertion name must be specific and the "
+        "showing failure] [gate: this sentinel must appear immediately before each file-write tool call to implementation code; the target assertion name must be specific and the "
         "evidence must be verbatim output showing that assertion failing in the current state; emitting this sentinel without a preceding exec_observed showing the target assertion "
         "failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual tool execution) voids the sentinel and the rung; for "
         "backfill cases where tests already pass and cannot be seen red, perturb the implementation (introduce a controlled fault) to observe the test fail, then fix the perturbation].",

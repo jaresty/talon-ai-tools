@@ -8,6 +8,7 @@ Asserts:
 - Key removed phrases are absent
 - Core char count is below the ADR-0216 baseline (29,990)
 """
+
 import unittest
 
 from _tests.ground.ground_test_base import GroundADRTestBase
@@ -71,7 +72,7 @@ class TestADR0217PrinciplesPresent(GroundADRTestBase):
         self.assertDetects("P17 (Thread sequencing)", self.core)
 
     def test_p18_present(self):
-        self.assertDetects("P18 (Write authorization)", self.core)
+        self.assertDetects("P18 (Intent logging)", self.core)
 
     def test_p19_present(self):
         self.assertDetects("P19 (Upward return)", self.core)

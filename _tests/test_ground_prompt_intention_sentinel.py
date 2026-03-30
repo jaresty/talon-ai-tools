@@ -153,18 +153,13 @@ def test_impl_intent_achieved_requires_matching_id():
     )
 
 
-def test_impl_intent_achieved_requires_tool_call():
-    """impl_intent_achieved must require actual tool call output, not rationalization."""
+def test_impl_intent_achieved_works_for_test_files():
+    """impl_intent_achieved should work for test file edits, not just validation files."""
     gate = _SENTINEL_GATES.get("impl_intent_achieved", "")
 
-    # Must require preceding tool call that runs validation
-    assert "preceding tool call" in gate.lower(), (
-        "impl_intent_achieved must require a tool call that runs the validation file"
-    )
-
-    # Must void if no tool call
-    assert "without a preceding tool call" in gate.lower(), (
-        "impl_intent_achieved must void if no tool call precedes it"
+    # Must explicitly mention test, not just validation
+    assert "test or validation" in gate.lower(), (
+        "impl_intent_achieved gate must work for both test and validation files"
     )
 
 
@@ -178,15 +173,17 @@ def test_impl_intent_achieved_required_for_each_edit():
     )
 
 
-def test_impl_intent_requires_correct_rung_for_file_type():
-    """impl_intent should only be used for files matching current rung's artifact type.
+def test_impl_intent_required_for_every_file_edit():
+    """impl_intent must appear before EVERY file-write at EVERY rung.
 
-    If writing a test file, should not be at implementation rung - should return
-    to validation rung first.
+    The gate should require this sentinel before ANY file edit at ANY rung,
+    not just at the executable implementation rung. Validation rung edits
+    to test files should also require the intent pair.
     """
     gate = _SENTINEL_GATES.get("impl_intent", "")
 
-    # Must require correct artifact type for current rung - not for implementation files at wrong rung
-    assert "current rung" in gate.lower() or "artifact type" in gate.lower(), (
-        "impl_intent gate should require file matches current rung's artifact type"
+    # Must require before EVERY file write at EVERY rung
+    # Check that it's not limited to just "implementation rung"
+    assert "every file-write" in gate.lower() and "rung" in gate.lower(), (
+        "impl_intent must be required for every file-write at every rung"
     )

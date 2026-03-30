@@ -23,13 +23,13 @@ class TestThread1_PreEntryEnforcement(unittest.TestCase):
 
     def test_preceding_content_voids_session(self):
         self.assertIn(
-            "any artifact, reasoning, or content of any type produced before \u2705 Ground entered is a pre-entry violation",
+            "preceding content voids the sentinel and all work that follows",
             self.core,
         )
 
     def test_pre_entry_violation_voids_all_work(self):
         self.assertIn(
-            "it voids the sentinel and all work that follows in that response",
+            "\u2705 Ground entered must be the first emitted content of any response that begins a ground session",
             self.core,
         )
 

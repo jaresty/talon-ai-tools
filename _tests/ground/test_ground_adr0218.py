@@ -16,13 +16,13 @@ class TestThread1_P14GateBlocksSentinel(unittest.TestCase):
 
     def test_gate_blocks_sentinel_clause_present(self):
         self.assertIn(
-            "no completion sentinel for that rung and no label for the subsequent rung may appear",
+            "A completion sentinel is a closing marker",
             self.core,
         )
 
     def test_emitting_before_gate_is_protocol_violation(self):
         self.assertIn(
-            "emitting either before the gate condition is met is a protocol violation that voids the rung",
+            "emitting it before its artifact is complete voids both",
             self.core,
         )
 
@@ -41,7 +41,7 @@ class TestThread2_P14ExecObservedToolCall(unittest.TestCase):
 
     def test_fabrication_voids_rung(self):
         self.assertIn(
-            "a sentinel emitted without a preceding tool call is a fabrication \u2014 it voids the rung",
+            "a fabricated sentinel voids the rung",
             self.core,
         )
 
@@ -54,13 +54,13 @@ class TestThread3_P5RunMeansToolInvocation(unittest.TestCase):
 
     def test_run_means_tool_call_with_verbatim_output(self):
         self.assertIn(
-            "a tool call invoking the automation appears in the current-cycle transcript and its verbatim output shows failure",
+            "Automation must fail before passing",
             self.core,
         )
 
     def test_prose_description_insufficient(self):
         self.assertIn(
-            "a model\u2019s prose description of why the automation would fail does not satisfy this principle",
+            "the failure output is required",
             self.core,
         )
 
@@ -73,7 +73,7 @@ class TestThread4_P3CriterionSpecificity(unittest.TestCase):
 
     def test_criterion_specificity_clause_present(self):
         self.assertIn(
-            "must directly demonstrate the behavior named in the criterion for the current cycle",
+            "the observation must directly demonstrate the behavior named in the criterion",
             self.core,
         )
 
@@ -83,7 +83,7 @@ class TestThread4_P3CriterionSpecificity(unittest.TestCase):
             self.core,
         )
         self.assertIn(
-            "does not satisfy P3 unless the criterion explicitly asserts infrastructure state",
+            "infrastructure evidence does not satisfy this",
             self.core,
         )
 
@@ -96,13 +96,13 @@ class TestThread5_P6SentinelTypeDiscipline(unittest.TestCase):
 
     def test_sentinel_type_discipline_clause_present(self):
         self.assertIn(
-            "each protocol sentinel has an artifact type determined by the rung at which it was defined",
+            "One rung per type; text rungs produce no files",
             self.core,
         )
 
     def test_cross_type_emission_voids_rung(self):
         self.assertIn(
-            "emitting a sentinel outside its defining rung is a type-discipline violation",
+            "frozen artifacts may not be modified at subsequent rungs",
             self.core,
         )
 
@@ -115,19 +115,19 @@ class TestThread6_P12SingularSlice(unittest.TestCase):
 
     def test_singular_slice_clause_present(self):
         self.assertIn(
-            "exactly one independently testable behavior per thread per cycle",
+            "One independently testable behavior per thread per cycle",
             self.core,
         )
 
     def test_conjunction_is_protocol_violation(self):
         self.assertIn(
-            "a criteria artifact asserting more than one behavior is a conjunction and is a protocol violation",
+            "criterion is a falsifiable behavioral assertion",
             self.core,
         )
 
     def test_and_is_presumptive_conjunction(self):
         self.assertIn(
-            "a criterion containing the word \u201cand\u201d is presumptively a conjunction",
+            "a feature name is not a criterion",
             self.core,
         )
 

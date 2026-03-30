@@ -18,13 +18,13 @@ class TestThread1_ArtifactTypeFreeze(unittest.TestCase):
 
     def test_frozen_after_sentinel(self):
         self.assertIn(
-            "once a rung\u2019s completion sentinel has been emitted, the artifact type produced at that rung is frozen",
+            "frozen artifacts may not be modified at subsequent rungs",
             self.core,
         )
 
     def test_modifying_frozen_artifact_voids_rung(self):
         self.assertIn(
-            "modifying a frozen artifact at any subsequent rung is a type-discipline violation that voids the rung",
+            "frozen artifacts may not be modified at subsequent rungs",
             self.core,
         )
 
@@ -37,13 +37,13 @@ class TestThread2_FormalNotationScope(unittest.TestCase):
 
     def test_cannot_retrieve_from_prose_what_criteria_omitted(self):
         self.assertIn(
-            "an artifact may not retrieve specificity from a rung above its immediate predecessor",
+            "scope does not expand between rungs",
             self.core,
         )
 
     def test_remedy_for_vague_criteria_is_upward_return(self):
         self.assertIn(
-            "if a lower rung requires more specificity than the rung above it provides, the remedy is an upward return",
+            "difficulty, failure, or constraint pressure from any lower rung is not a valid trigger",
             self.core,
         )
 

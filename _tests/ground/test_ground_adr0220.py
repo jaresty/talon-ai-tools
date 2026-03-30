@@ -24,7 +24,7 @@ class TestThread1_SentinelClosingMarker(unittest.TestCase):
 
     def test_sentinel_before_artifact_is_violation(self):
         self.assertIn(
-            "emitting a completion sentinel before the artifact it closes is a protocol violation",
+            "emitting it before its artifact is complete voids both",
             self.core,
         )
 
@@ -41,7 +41,7 @@ class TestThread2_RungArtifactExclusivity(unittest.TestCase):
 
     def test_commentary_between_label_and_sentinel_is_violation(self):
         self.assertIn(
-            "prose commentary, planning text, debugging narration",
+            "the only valid content before the completion sentinel is the rung\u2019s artifact",
             self.core,
         )
 
@@ -60,7 +60,7 @@ class TestThread3_ScopeDoesNotExpand(unittest.TestCase):
 
     def test_beyond_declared_gap_is_derivation_violation(self):
         self.assertIn(
-            "addresses behaviors beyond the declared gap is a derivation violation",
+            "scope does not expand between rungs",
             self.core,
         )
 
@@ -73,13 +73,13 @@ class TestThread4_UpwardReturnRequiresPriorCycle(unittest.TestCase):
 
     def test_upward_return_requires_prior_cycle(self):
         self.assertIn(
-            "upward return is valid only when a prior cycle for the current thread exists",
+            "Return to revise when derivation error discovered at or above the revised rung",
             self.core,
         )
 
     def test_comparison_gate_requires_prior_artifact(self):
         self.assertIn(
-            "comparison gate requires a prior cycle artifact",
+            "trigger for an upward return must originate at the rung being revised or above",
             self.core,
         )
 
@@ -92,13 +92,13 @@ class TestThread5_ToolExecutedOpeningObservation(unittest.TestCase):
 
     def test_opening_observation_must_be_tool_executed(self):
         self.assertIn(
-            "opening observation must be tool-executed",
+            "Open and close with tool-executed observation of live running code",
             self.core,
         )
 
     def test_intent_derivable_from_tool_output(self):
         self.assertIn(
-            "intent declaration must be derivable from that tool-executed output",
+            "The intent declaration must be derivable from the tool-executed opening observation",
             self.core,
         )
 

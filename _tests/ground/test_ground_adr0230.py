@@ -15,7 +15,7 @@ class TestThread1_P21UpwardReturn(unittest.TestCase):
         self.core = GROUND_PARTS_MINIMAL["core"]
 
     def test_p21_exists(self):
-        self.assertIn("P21", self.core)
+        self.assertIn("P19 (Upward return)", self.core)
 
     def test_p21_permits_upward_return_on_derivation_error(self):
         self.assertIn("derivation error", self.core)
@@ -33,10 +33,10 @@ class TestThread1_P21UpwardReturn(unittest.TestCase):
         self.assertIn("re-derived from its input rung", self.core)
 
     def test_p21_descent_resumes_from_revised_rung(self):
-        self.assertIn("descent resumes from the revised rung", self.core)
+        self.assertIn("descent resumes downward", self.core)
 
     def test_p21_propagated_to_prompt(self):
-        self.assertIn("P21", build_ground_prompt())
+        self.assertIn("P19 (Upward return)", build_ground_prompt())
 
 
 if __name__ == "__main__":

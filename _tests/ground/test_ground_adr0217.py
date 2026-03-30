@@ -60,19 +60,19 @@ class TestADR0217PrinciplesPresent(unittest.TestCase):
         self.assertIn("P14 (Evidential authority)", self.core)
 
     def test_p15_present(self):
-        self.assertIn("P15 (Cycle identity)", self.core)
+        self.assertIn("P15 (Derivation chain)", self.core)
 
     def test_p16_present(self):
-        self.assertIn("P16 (Provenance)", self.core)
+        self.assertIn("P16 (Continuous descent)", self.core)
 
     def test_p17_present(self):
-        self.assertIn("P17 (Derivation chain)", self.core)
+        self.assertIn("P17 (Thread sequencing)", self.core)
 
     def test_p18_present(self):
-        self.assertIn("P18 (Continuous descent)", self.core)
+        self.assertIn("P18 (Write authorization)", self.core)
 
     def test_p19_present(self):
-        self.assertIn("P19 (Thread sequencing)", self.core)
+        self.assertIn("P19 (Upward return)", self.core)
 
 
 class TestADR0217LadderDerivationPresent(unittest.TestCase):

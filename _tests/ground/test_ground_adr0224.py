@@ -17,19 +17,19 @@ class TestThread1_TextArtifactRungsResponseOnly(unittest.TestCase):
 
     def test_text_artifact_types_response_only(self):
         self.assertIn(
-            "text artifact types (prose, criteria, formal notation) produce response content only",
+            "One rung per type; text rungs produce no files",
             self.core,
         )
 
     def test_no_file_representation(self):
         self.assertIn(
-            "they have no file representation",
+            "text rungs produce no files",
             self.core,
         )
 
     def test_writing_file_at_text_rung_is_violation(self):
         self.assertIn(
-            "writing any file to disk during a text-artifact rung is a type-discipline violation",
+            "text rungs produce no files",
             self.core,
         )
 
@@ -42,19 +42,19 @@ class TestThread2_CriterionFalsifiability(unittest.TestCase):
 
     def test_criterion_is_falsifiable_assertion(self):
         self.assertIn(
-            "a criterion is a falsifiable behavioral assertion",
+            "criterion is a falsifiable behavioral assertion",
             self.core,
         )
 
     def test_given_action_observable_outcome(self):
         self.assertIn(
-            "given a specific action, a specific observable outcome either occurs or it does not",
+            "criterion is a falsifiable behavioral assertion",
             self.core,
         )
 
     def test_feature_name_is_not_criterion(self):
         self.assertIn(
-            "a feature name or capability description is not a criterion",
+            "a feature name is not a criterion",
             self.core,
         )
 

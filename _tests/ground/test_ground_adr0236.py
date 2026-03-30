@@ -17,7 +17,7 @@ class TestThread1_ObservationDefinition(unittest.TestCase):
 
     def test_observation_means_direct_invocation(self):
         self.assertIn(
-            "observing running behavior means invoking the system directly",
+            "Observing running behavior means invoking the system directly",
             self.core,
         )
 
@@ -41,7 +41,7 @@ class TestThread1_ObservationDefinition(unittest.TestCase):
 
     def test_propagated_to_prompt(self):
         self.assertIn(
-            "observing running behavior means invoking the system directly",
+            "Observing running behavior means invoking the system directly",
             build_ground_prompt(),
         )
 

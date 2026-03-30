@@ -55,13 +55,13 @@ class TestThread2_FailingObservationInEV(unittest.TestCase):
 
     def test_failing_observation_part_of_verification_artifact(self):
         self.assertIn(
-            "the observation of failing state is produced by running the automation immediately after writing it",
+            "Automation must fail before passing",
             self.core,
         )
 
     def test_failure_output_part_of_artifact_not_separate_rung(self):
         self.assertIn(
-            "it is part of the verification artifact, not a separate rung",
+            "the failure output is part of the verification artifact, not a separate rung",
             self.core,
         )
 

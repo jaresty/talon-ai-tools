@@ -63,7 +63,7 @@ class TestThread2_P15NoProseRungName(unittest.TestCase):
 
     def test_cycle_opens_on_ground_entered_sentinel(self):
         self.assertIn(
-            "cycle opens when \u2705 Ground entered is emitted",
+            "\u2705 Ground entered must be the first emitted content",
             self.core,
         )
 

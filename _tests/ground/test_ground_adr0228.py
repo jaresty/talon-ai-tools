@@ -40,10 +40,10 @@ class TestThread1_WriteAuthorizedSentinel(unittest.TestCase):
         self.assertIn("voids", self.gate)
 
     def test_p20_in_prompt(self):
-        self.assertIn("P20", self.prompt)
+        self.assertIn("P18 (Write authorization)", self.prompt)
 
     def test_p20_requires_write_authorized_before_file_write(self):
-        self.assertIn("every tool call that writes a file to disk must be immediately preceded", self.prompt)
+        self.assertIn("Every file write immediately preceded by", self.prompt)
 
     def test_write_authorized_propagated_to_prompt(self):
         self.assertIn("Write authorized", self.prompt)

@@ -22,7 +22,7 @@ class TestThread1_ObservationLoopTerminatesGround(unittest.TestCase):
 
     def test_emitting_outside_loop_is_violation(self):
         self.assertIn(
-            "emitting it outside the observation loop is a protocol violation",
+            "emitting it outside the loop is a protocol violation",
             self.core,
         )
 

@@ -118,23 +118,19 @@ def test_impl_intent_required_regardless_of_v_complete():
     )
 
 
-def test_principle_about_file_edit_protocol_adherence():
-    """There should be a principle stating every file edit must follow protocol rules.
+def test_file_edit_discipline_principle_early():
+    """There should be a principle about file edit discipline early in the protocol (before P1).
 
-    This makes it clear that file edits can't bypass protocol requirements.
-    Should be a standalone principle about following protocol rules for file edits,
-    not just the specific impl_intent requirement.
+    File edit discipline is fundamental - it should appear early, not buried in P18.
     """
     core = GROUND_PARTS_MINIMAL["core"]
 
-    # Should have explicit statement about following protocol rules for file edits
-    # This is different from just saying impl_intent is required
-    idx = core.lower().find("every file edit")
-    if idx != -1:
-        context = core[idx : idx + 200].lower()
-        # The principle should mention "protocol" or "rules" near "every file edit"
-        assert "protocol" in context or "rules" in context, (
-            "Every file edit statement should mention following protocol/rules"
-        )
-    else:
-        assert False, "Should have 'every file edit' statement"
+    # Find position of file edit discipline - should be before P1
+    p0_pos = core.lower().find("p0") if "p0" in core.lower() else -1
+    p1_pos = core.lower().find("p1 (")
+
+    # Should have P0 for file edit discipline
+    assert p0_pos != -1, "Should have P0 principle for file edit discipline"
+
+    # P0 should come before P1
+    assert p0_pos < p1_pos, "P0 (file edit discipline) should come before P1"

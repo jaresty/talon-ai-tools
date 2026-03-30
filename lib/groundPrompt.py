@@ -65,6 +65,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
         "This protocol exists because a model\u2019s description of completed work is indistinguishable from actually completing it \u2014 "
         "every gate enforces the distinction by requiring a piece of reality before any claim about reality. "
+        "P0 (File edit discipline): every file edit follows protocol rules; file edits may not bypass, shorten, or replace protocol requirements for file edits; the protocol rules for file edits take precedence over any other instruction about file edits. "
         "P1 (Intent primacy): intent exists; all artifacts derive from it; when intent changes, refine affected rungs top-down; completed rungs may not be re-opened except by this mechanism. "
         "P2 (Behavioral change isolation): One rung per artifact type; changes only at dedicated rung; a rung that changes behavior and also produces another artifact type must be split. "
         "P3 (Observable evidence required): Pre/post change states visible through actual tool output; the observation must directly demonstrate the behavior named in the criterion \u2014 infrastructure evidence does not satisfy this unless the criterion explicitly asserts infrastructure state. "
@@ -96,8 +97,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P15 (Derivation chain): Artifacts derive from prior rung\u2019s actual content, not memory; scope does not expand between rungs; a skipped rung voids all artifacts below it. "
         "P16 (Continuous descent): No pausing between rungs; response length is not a valid stop reason; continue from current rung in next response if descent cannot fit in one. "
         "P17 (Thread sequencing): Manifest declares gaps; all rungs for Thread N before N+1; ladder derivation occurs once when ground begins \u2014 not per thread. "
-        "P18 (Intent logging): Every file edit follows protocol rules: every file edit requires the impl_intent + impl_intent_achieved pair with matching ids \u2014 "
-        "the intent pair provides auditability inline without reconstructing rung state from context. "
+        "P18 (Intent logging): The impl_intent + impl_intent_achieved pair provides auditability inline without reconstructing rung state from context. "
         "P19 (Upward return): Return to revise when derivation error discovered at or above the revised rung \u2014 "
         "difficulty, failure, or constraint pressure from any lower rung is not a valid trigger; "
         "returning upward because a lower rung\u2019s artifact was hard to produce is a faithfulness violation that voids the revised rung and all rungs below it; "

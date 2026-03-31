@@ -79,7 +79,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "derive: Session observation loop (when to observe vs descend, what observation means vs does NOT mean), "
         "ladder derivation format (table columns, columns meaning), "
         "rung-specific behaviors (when to emit each sentinel, gate blocks sentinel emission until gate satisfied), "
-        "rung transitions (emit rung label when beginning each rung; emit completion sentinel when finishing each rung; you are at rung N until you emit completion sentinel for rung N), "
+        "rung transitions (emit rung label when beginning each rung; emit completion sentinel when finishing each rung; emit rung label when returning upward to a prior rung; you are at rung N until you emit completion sentinel for rung N or return upward), "
         "rung completion order (each rung must produce its artifact before emitting completion sentinel; sequential descent through prose → criteria → formal notation → validation → implementation; skipping a rung is a protocol violation), "
         "P5 implies sequential descent (since each artifact derives from prior artifact per P5, you must produce them in order — treating the ladder as a planning document rather than strict sequence violates derivation), "
         "ladder is strict execution sequence (emit rung label, produce artifact, emit completion sentinel — repeat for each rung in order; you may return upward freely, but only when higher rung artifact is discovered to be malformed — NOT to make lower rung implementation easier; difficulty, failure, or constraint pressure at a lower rung is not a valid upward return trigger), "

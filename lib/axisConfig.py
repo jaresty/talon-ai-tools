@@ -322,13 +322,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "emitting before derivation is complete voids the session; Ladder derived must be emitted AFTER producing the rung table — emitting before rung table is complete voids the "
         "session; No ladder descent (prose, criteria, etc.) is permitted before Protocol derived and Ladder derived sentinels — these are gates on all subsequent work; ground complete "
         "may only be emitted as the outcome of the observation loop — emitting it outside the loop is a protocol violation. Rung validity test: a rung is valid iff a human reviewer "
-        "with only that rung's artifact can evaluate the next rung. Standard ladder for software behavioral change: prose → criteria → formal notation → executable validation → "
-        "executable implementation — each rung must be completed in this order; emit the rung label before producing its artifact; emit completion sentinel after artifact is produced "
-        "and gate is satisfied. EV rung: edits only validation files. EI rung: edits only implementation files. An executable validation artifact is a file whose sole purpose is to "
-        "assert behavioral properties of another artifact — it contains no behavior of its own; it must be invocable by an automated tool; validation files may not be imported by "
-        "implementation files. An executable implementation artifact is a file that produces behavior directly — it contains no assertions about other artifacts; implementation files "
-        "may not contain assertions. A file that both asserts and implements is a type-discipline violation that voids the rung; classification is determined by file content, not file "
-        "path or naming convention — path and naming are evidence, not authority. ",
+        "with only that rung's artifact can evaluate the next rung. Standard ladder for software behavioral change: prose → criteria → formal notation → validation → assertion → "
+        "implementation — each rung must be completed in this order; the assertion rung verifies each individual assertion red → green; emit the rung label before producing its "
+        "artifact; emit completion sentinel after artifact is produced and gate is satisfied. EV rung: edits only validation files. EI rung: edits only implementation files. An "
+        "executable validation artifact is a file whose sole purpose is to assert behavioral properties of another artifact — it contains no behavior of its own; it must be invocable "
+        "by an automated tool; validation files may not be imported by implementation files. An executable implementation artifact is a file that produces behavior directly — it "
+        "contains no assertions about other artifacts; implementation files may not contain assertions. A file that both asserts and implements is a type-discipline violation that "
+        "voids the rung; classification is determined by file content, not file path or naming convention — path and naming are evidence, not authority. ",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

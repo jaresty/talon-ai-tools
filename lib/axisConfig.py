@@ -314,6 +314,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "already-instantiated rung, update it if needed, then descend; you may return upward freely, but only when higher rung artifact is discovered to be malformed — NOT to make "
         "lower rung implementation easier; difficulty, failure, or constraint pressure at a lower rung is not a valid upward return trigger), upward gap scan (after completing the "
         "final rung (implementation), if gaps remain, scan upward to find the nearest rung above that still has a gap to close; return to that rung rather than restarting from the top; "
+        "when returning upward, FIRST emit completion sentinel for current rung, THEN emit the rung label for the rung you are returning to — you cannot be at two rungs at once; "
         "continue descending from that rung to close the remaining gap; after all gaps are closed, return to the observation loop above the ladder to verify closure and emit Ground "
         "complete), observation loop corollary (if opening observation shows no gap exists, emit Ground complete immediately — no ladder descent needed), upward return conditions (what "
         "triggers return, what does NOT trigger return and why excluded), evidential scoping (evidence is scoped to current cycle and gap, not prior cycles), scope preservation (scope "

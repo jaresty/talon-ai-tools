@@ -27,7 +27,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P6 (Thread sequencing): to maintain coherent gap closure; minimal complete vertical slice — one independently testable behavior per thread per cycle; manifest declares gaps; I-formation — observation of current state complete before manifest; all rungs for Thread N before N+1; ladder derivation occurs once at session start. "
         "Protocol derivation: before ladder derivation, derive the complete protocol rules by applying P1-P6 — observe at every feasible rung before proceeding; "
         "Protocol derivation checklist: AFTER deriving rules from P1-P6, BEFORE proceeding, MAKE VISIBLE in the conversation: "
-        "[ ] How to handle files: what creates vs edits vs justifies at each rung "
+        "[ ] How to handle files: what creates at validation, what edits at assertion/implementation, how to JUSTIFY each file change "
         "[ ] How to handle the ladder: what each rung does and when to move to next "
         "[ ] How to verify gap closure: when to check and when to emit completion "
         "This checklist must appear BEFORE the first ladder rung begins. The derivation results must be in the chat, not just in your head. "

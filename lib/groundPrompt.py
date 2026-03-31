@@ -30,6 +30,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "[ ] How to handle files: what creates at validation, what edits at assertion/implementation, how to JUSTIFY each file change "
         "[ ] How to handle the ladder: what each rung does and when to move to next "
         "[ ] How to verify gap closure: when to check and when to emit completion "
+        "[ ] Gap cycle: derive from P1 (intent primacy), P3 (evidence required), P5 (derivation chain) — why must each gap have its own assertion→implementation cycle; what goes wrong if you batch multiple gaps in one implementation; how the sentinels enforce one gap at a time "
         "This checklist must appear BEFORE the first ladder rung begins. The derivation results must be in the chat, not just in your head. "
         "derive: Sentinels from recursive intent structure (declare intent → derive micro-intents → verify with evidence → emit completion sentinel; this applies at session, thread, rung, and file-edit levels), "
         "Derive file-edit justification: every file edit must serve the intent of its rung; explain how each file satisfies the current rung's requirements; make the reasoning VISIBLE in the conversation as evidence of derivation from intent (P1), not arbitrary action; justification is evidence, not just documentation; if you cannot explain why a file change satisfies the current rung, do NOT make that change. "

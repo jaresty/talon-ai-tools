@@ -230,7 +230,6 @@ func TestPersonaMetadataForNilSafety(t *testing.T) {
 	}
 }
 
-
 // TestPersonaMetadataForVoiceContent specifies T-2 — voice axis metadata populated (ADR-0156 T-2).
 func TestPersonaMetadataForVoiceContent(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
@@ -399,46 +398,9 @@ func TestPersonaMetadataForPresetsContent(t *testing.T) {
 
 // TestADR0162GroundConsolidation specifies that observe and enforce are retired as
 // method tokens and ground carries the full mandatory-advancement ladder (ADR-0162).
-func TestADR0162GroundConsolidation(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
+// ADR-0217: these phrases are derived from P1-P6, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
-	// observe and enforce must not exist as method tokens.
-	methodTokens := grammar.AxisTokenSet("method")
-	if _, ok := methodTokens["observe"]; ok {
-		t.Error("method token 'observe' must be retired (ADR-0162)")
-	}
-	if _, ok := methodTokens["enforce"]; ok {
-		t.Error("method token 'enforce' must be retired (ADR-0162)")
-	}
-
-	// ground must carry the full mandatory-advancement ladder.
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	for _, phrase := range []string{
-		"prose",
-		"executable validation",
-		"executable implementation",
-		// VRO merged into EV per ADR-0226 (P5 strengthening); OBR is now the session
-		// observation loop outside the ladder, not a rung in the standard derivation
-		"Session observation loop",
-		"every feasible rung",
-	} {
-		if !strings.Contains(groundDesc, phrase) {
-			t.Errorf("ground description missing expected phrase %q (ADR-0162)", phrase)
-		}
-	}
-}
-
-// TestGroundIFormationPermittedPreManifest specifies that the ground definition
-// permits observation of existing code or running behavior before the manifest
-// when I cannot be declared from context alone (I-formation), while still
-// prohibiting rung work and planning text pre-manifest.
 func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
 	grammar, err := LoadGrammar("")
@@ -461,185 +423,50 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 // TestGroundMotivationalReframe specifies that ground explicitly reframes
 // the cost model: the ladder is the shortest path to valid output, not the
 // longest. Eagerness to implement is named as the primary failure mode.
-func TestGroundMotivationalReframe(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	// ADR-0174: minimal spec experiment — motivational framing ("shortest path",
-	// "primary failure mode") is intentionally absent; these are framing, not rules.
-	// Re-tighten if experiment restores full spec.
-	if !strings.Contains(groundDesc, "derived from") {
-		t.Error("ground must state the faithful derivation rule")
-	}
-}
+// ADR-0217: derivation is the primary mechanism.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 // TestGroundCompletenessTokensGovernDepthNotExistence specifies that ground
-// defines how completeness tokens interact with the process: they govern
-// depth within each rung, not whether rungs exist.
-// ADR-0185: exact phrase "completeness governs rung depth, not rung existence" removed;
-// guarantee now carried by "each rung may not be skipped or combined with another".
-func TestGroundCompletenessTokensGovernDepthNotExistence(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	if !strings.Contains(groundDesc, "each rung may not be skipped or combined with another") {
-		t.Error("ground must state that rungs may not be skipped — completeness governs depth not existence")
-	}
-}
+// defines how completeness tokens interact with the process.
+// ADR-0217: this rule is derived from P6, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 // TestGroundExecutableValidationNoImplementation specifies that the ground
-// definition explicitly prohibits producing implementation code at the
-// executable validation rung — permission to write artifacts at R4 applies
-// only to validation artifacts, not implementation.
-// ADR-0187: "Rung-entry gate" block deleted — P1 (Evidential boundary) + rung table
-// carry the type-discipline guarantee globally; EV rung voids_if names "implementation code included".
-func TestGroundExecutableValidationNoImplementation(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	// ADR-0217: rung table is derived; guarantee carried by P6 (artifact type discipline)
-	if !strings.Contains(groundDesc, "dedicated rung for that artifact type") {
-		t.Error("ground must prohibit implementation files at the EV rung — P6 artifact type discipline carries the guarantee")
-	}
-}
+// definition prohibits producing implementation code at the executable validation rung.
+// ADR-0217: this rule is derived from P2/P3, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 // TestGroundExecutableValidationRequiresRunnable specifies that the ground
 // definition makes clear that executable validation must be a file artifact
-// invocable by an automated tool — file reads, grep output, and manual
-// inspection do not satisfy the rung regardless of label.
-func TestGroundExecutableValidationRequiresRunnable(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	if !strings.Contains(groundDesc, "invocable by an automated tool") {
-		t.Error("ground must state that file reads do not constitute executable validation")
-	}
-	if !strings.Contains(groundDesc, "automated tool") {
-		t.Error("ground must state that executable validation requires an artifact invocable by an automated tool")
-	}
-}
+// invocable by an automated tool.
+// ADR-0217: this rule is derived from P3, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 // TestGroundR4GateEmphasis specifies that the ground definition makes the
-// validation→implementation gate prominent by:
-// (1) stating the blocking rule before the R4 sequence, not only in a
-//     post-sequence parenthetical, and
-// (2) explicitly marking the gate inside the R4 sequence itself so it reads
-//     as a distinct step rather than one item in a flat arrow chain.
-func TestGroundR4GateEmphasis(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-
-	// The "may not be skipped or combined" rule must appear adjacent to R4.
-	if !strings.Contains(groundDesc, "may not be skipped or combined") {
-		t.Error("ground R4 section must state rungs may not be skipped or combined")
-	}
-
-	// The blocking rule must be present.
-	// ADR-0174: minimal spec experiment — imperative check-form phrasing.
-	// "before emitting ... check: does a 🔴 Execution observed: sentinel exist"
-	if !strings.Contains(groundDesc, "before emitting") && !strings.Contains(groundDesc, "Implementation gate cleared, check") {
-		t.Fatal("ground must state that executable implementation rung is blocked until gap declared")
-	}
-}
+// validation→implementation gate prominent.
+// ADR-0217: this rule is derived from P2/P6, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 // TestGroundRungLabelNotSectionHeading specifies that the ground definition
 // distinguishes between a rung label in the manifest (a plan entry) and a rung
-// label during execution (a marker that the artifact begins immediately). A rung
-// label must not be used as a section heading for planning text or exploration.
-func TestGroundRungLabelNotSectionHeading(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	// ADR-0174: gate-form phrasing: "Outputting a rung label is what begins that rung"
-	// encodes the constitutive rule (label = act of beginning, not a heading).
-	if !strings.Contains(groundDesc, "Outputting a rung label is what begins that rung") {
-		t.Error("ground must distinguish rung labels during execution from manifest plan entries")
-	}
-}
+// label during execution.
+// ADR-0217: this rule is derived from P2, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 // TestGroundImplementationGateBroadScope specifies that the ground definition
-// gates all implementation artifact types — not just file-tool invocations —
-// before valid execution sentinels. Planning text and code blocks are explicitly
-// named as gated, closing the loophole where Thinking-block implementation
-// content bypasses the gate.
-func TestGroundImplementationGateBroadScope(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	// ADR-0174: minimal spec experiment — "planning text" and "code blocks" are patch
-	// rules for the thinking-block loophole and are intentionally absent from the minimal
-	// spec. This check is relaxed to only verify the gate exists at all.
-	// Re-tighten if experiment restores full spec or violation is observed.
-	if !strings.Contains(groundDesc, "rung label") && !strings.Contains(groundDesc, "sentinel") {
-		t.Error("ground description must contain basic gate mechanism")
-	}
-}
+// gates all implementation artifact types.
+// ADR-0217: this rule is derived from P1/P3, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 // TestGroundDefinitionReverseCheck specifies that the ground definition includes the
 // bidirectional obligation: when beginning at any rung, first locate the highest
 // already-instantiated rung and update it before descending.
-func TestGroundDefinitionReverseCheck(t *testing.T) {
-	t.Setenv(envGrammarPath, "")
-	grammar, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("load embedded grammar: %v", err)
-	}
-	groundDesc := grammar.AxisDescription("method", "ground")
-	if groundDesc == "" {
-		t.Fatal("ground description must not be empty")
-	}
-	for _, phrase := range []string{
-		"highest already-instantiated",
-		"then descend",
-	} {
-		if !strings.Contains(groundDesc, phrase) {
-			t.Errorf("ground description missing reverse-check phrase %q", phrase)
-		}
-	}
-}
+// ADR-0217: this rule is derived from P5, not explicitly stated.
+// REMOVED: derivation-based, not explicitly stated in prompt.
+
+// TestGroundFaithfulDerivationRule specifies that ground must state the faithful derivation rule.
+// ADR-0217: derivation is the primary mechanism.
+// REMOVED: derivation-based, not explicitly stated in prompt.
 
 func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "missing.json")

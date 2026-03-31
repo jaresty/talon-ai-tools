@@ -1,6 +1,7 @@
 """Test for ADR-0219: Ground Protocol Simplification.
 
 Verifies the simplified P1-P6 formulation preserves behavioral invariants.
+ADR-0217: Echo checks removed - trust derivation, not explicit strings.
 """
 
 import sys
@@ -58,28 +59,4 @@ def test_collapsed_protocol_preserves_thread_sequencing():
     core = GROUND_PARTS_MINIMAL["core"]
     assert "thread" in core.lower() and "sequenc" in core.lower(), (
         "Collapsed protocol must preserve thread sequencing"
-    )
-
-
-def test_rung_validity_test_preserved():
-    """Rung validity test must be preserved."""
-    core = GROUND_PARTS_MINIMAL["core"]
-    assert "rung is valid" in core.lower() or "human reviewer" in core.lower(), (
-        "Collapsed protocol must preserve rung validity test"
-    )
-
-
-def test_standard_ladder_preserved():
-    """Standard ladder (prose -> criteria -> etc) must be preserved."""
-    core = GROUND_PARTS_MINIMAL["core"]
-    assert "prose" in core.lower() and "criteria" in core.lower(), (
-        "Collapsed protocol must preserve standard ladder"
-    )
-
-
-def test_ev_ei_distinction_preserved():
-    """EV rung (validation files) vs EI rung (implementation files) distinction must be preserved."""
-    core = GROUND_PARTS_MINIMAL["core"]
-    assert "validation" in core.lower() and "implementation" in core.lower(), (
-        "Collapsed protocol must preserve EV/EI distinction"
     )

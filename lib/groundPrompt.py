@@ -90,6 +90,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "scope preservation (scope does not expand between rungs), "
         "derivation reasoning (explain WHY each rule follows from P1-P6, not just WHAT the rule is); "
         "evidence over theory (a model's description of what it would do is indistinguishable from having done it — only visible execution output counts as evidence; every behavioral change and execution must be observable in the log, not just described; trust evidence not theory), "
+        "recursive intent structure (P1 intent primacy implies: declare intent → derive more specific micro-intents → verify each micro-intent with evidence → emit completion sentinel; this pattern applies at session level, thread level, and rung level; every boundary between intent scopes requires a sentinel), "
         "each derived rule must cite its source principle(s) from P1-P6; rules that cannot be derived are protocol violations; "
         "emit Protocol derived after deriving all rules; "
         "emit Ladder derived after producing the rung table; "

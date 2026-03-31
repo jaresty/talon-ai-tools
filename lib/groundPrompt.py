@@ -74,7 +74,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P3 (Observable evidence required): a model's description is indistinguishable from completion; every claim requires tool execution showing reality; pre/post change states visible through actual traces. "
         "P4 (File edit protocol): to prevent bypassing protocol requirements; every file edit follows protocol rules; only EV rung edits validation files, only EI rung edits implementation files; impl_intent + impl_intent_achieved pair required for each edit. "
         "P5 (Derivation chain): memory is unreliable; artifacts derive from prior rung's actual content, not memory; scope does not expand. "
-        "P6 (Thread sequencing): to maintain coherent gap closure; one independently testable behavior per thread per cycle; manifest declares gaps; all rungs for Thread N before N+1; ladder derivation occurs once at session start. "
+        "P6 (Thread sequencing): to maintain coherent gap closure; minimal complete vertical slice — one independently testable behavior per thread per cycle; manifest declares gaps; all rungs for Thread N before N+1; ladder derivation occurs once at session start. "
         "Protocol derivation: before ladder derivation, derive the complete protocol rules by applying P1-P6 — "
         "derive: Session observation loop (when to observe vs descend, what observation means vs does NOT mean), "
         "ladder derivation format (table columns, columns meaning), "

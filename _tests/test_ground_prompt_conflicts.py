@@ -119,18 +119,19 @@ def test_impl_intent_required_regardless_of_v_complete():
 
 
 def test_file_edit_discipline_principle_early():
-    """There should be a principle about file edit discipline early in the protocol (before P1).
+    """There should be a principle about file edit discipline early in the protocol (within P1-P6).
 
-    File edit discipline is fundamental - it should appear early, not buried in P18.
+    File edit discipline is fundamental - it should appear early, not buried in later principles.
+    In collapsed P1-P6, P4 covers file edit protocol.
     """
     core = GROUND_PARTS_MINIMAL["core"]
 
-    # Find position of file edit discipline - should be before P1
-    p0_pos = core.lower().find("p0") if "p0" in core.lower() else -1
-    p1_pos = core.lower().find("p1 (")
+    # P4 covers file edit discipline
+    p4_pos = core.lower().find("p4")
+    p6_pos = core.lower().find("p6")
 
-    # Should have P0 for file edit discipline
-    assert p0_pos != -1, "Should have P0 principle for file edit discipline"
+    # Should have P4 for file edit discipline
+    assert p4_pos != -1, "Should have P4 principle for file edit discipline"
 
-    # P0 should come before P1
-    assert p0_pos < p1_pos, "P0 (file edit discipline) should come before P1"
+    # P4 should come before P6
+    assert p4_pos < p6_pos, "P4 (file edit protocol) should come before P6"

@@ -324,14 +324,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "— make the connection visible, not implicit [ ] No contradiction in completion: derive from P3,P5 — why claiming complete while acknowledging gaps is a direct violation; what "
         "GOES WRONG if you write 'complete' in same message as 'gaps', 'caveats', 'needs', 'remaining': claim is void, contradiction visible to any reviewer, protocol becomes theater; "
         "RULE: if you write 'Ground complete' or 'Thread N complete' in a message that also contains 'gaps', 'caveats', 'needs', 'remaining', 'not yet', or 'still to do' — the "
-        "completion is INVALID — return to upward scan and close actual gaps before claiming completion This checklist must appear BEFORE the first ladder rung begins. The derivation "
-        "results must be in the chat, not just in your head. Before starting each rung, re-emit key rules from your derivation relevant to that rung. BEFORE transitioning to next rung, "
-        "verify and declare: [current rung artifact completed?], [evidence visible?], [gaps remaining?], [next rung requires?], [files permitted?]. If gaps remain, do NOT proceed "
-        "downward — return upward or close gap first. Protocol derived MUST be emitted as: 🔵 Protocol derived — AFTER deriving all rules from P1-P6. Ladder derived MUST be emitted as: "
-        "🔵 Ladder derived — AFTER producing the rung table with columns: rung name | artifact type | gate condition | void condition | faithfulness test | permitted tool calls. No "
-        "ladder descent before both 🔵 Protocol derived and 🔵 Ladder derived sentinels — these are gates on all subsequent work. Emit rung labels to begin each rung; emit completion "
-        "sentinels (✅ [Rung] complete) to finish each rung. Evidence before claims: for every claim about code being correct, there must be tool execution output proving it. Ground "
-        "complete may only be emitted after upward scan confirms all gaps closed. ",
+        "completion is INVALID — return to upward scan and close actual gaps before claiming completion; BEFORE emitting 'Ground complete', scan ENTIRE message including Model "
+        "interpretation/summary section for any 'gaps', 'caveats', 'not implemented', 'missing', 'needs' — if found anywhere, completion is INVALID, fix the message first This "
+        "checklist must appear BEFORE the first ladder rung begins. The derivation results must be in the chat, not just in your head. Before starting each rung, re-emit key rules from "
+        "your derivation relevant to that rung. BEFORE transitioning to next rung, verify and declare: [current rung artifact completed?], [evidence visible?], [gaps remaining?], [next "
+        "rung requires?], [files permitted?]. If gaps remain, do NOT proceed downward — return upward or close gap first. Protocol derived MUST be emitted as: 🔵 Protocol derived — "
+        "AFTER deriving all rules from P1-P6. Ladder derived MUST be emitted as: 🔵 Ladder derived — AFTER producing the rung table with columns: rung name | artifact type | gate "
+        "condition | void condition | faithfulness test | permitted tool calls. No ladder descent before both 🔵 Protocol derived and 🔵 Ladder derived sentinels — these are gates on all "
+        "subsequent work. Emit rung labels to begin each rung; emit completion sentinels (✅ [Rung] complete) to finish each rung. Evidence before claims: for every claim about code "
+        "being correct, there must be tool execution output proving it. Ground complete may only be emitted after upward scan confirms all gaps closed. ",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

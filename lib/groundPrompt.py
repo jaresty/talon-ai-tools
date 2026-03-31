@@ -28,6 +28,8 @@ SENTINEL_TEMPLATES: dict[str, str] = {
     "closing_observation": "\U0001f535 Closing observation \u2014 [what the tool-executed observation shows]",
     "impl_intent": "\U0001f535 Intent logged \u2014 id: [unique id] | file: [path] | target: [assertion name] | evidence: [verbatim red output showing failure]",
     "impl_intent_achieved": "\U0001f535 Intent achieved \u2014 id: [unique id] | file: [path] | target: [assertion name] | evidence: [verbatim green output showing passing]",
+    "protocol_derived": "\U0001f7e2 Protocol derived",
+    "ladder_derived": "\U0001f7e2 Ladder derived",
 }
 
 # Per-sentinel gate conditions — emitted inline in the sentinel block so the gate
@@ -50,6 +52,8 @@ _SENTINEL_GATES: dict[str, str] = {
     "closing_observation": "gate: the tool call immediately before this sentinel must directly invoke the behavior named in the session intent and its output must show that behavior is present; this sentinel must appear after \u2705 Manifest exhausted and before \u2705 Ground complete in the same response; emitting \u2705 Ground complete without a preceding \U0001f535 Closing observation in the current response is a protocol violation",
     "impl_intent": "gate: this sentinel must appear immediately before every file-write tool call at every rung; include a unique id for this edit that will be matched by impl_intent_achieved; every file edit requires impl_intent + impl_intent_achieved pair - editing any file without this pair is a protocol violation; the artifact type is determined by the rung table - the file must be of the artifact type permitted at the current rung as determined by the rung table; if a file of a different artifact type needs editing, emit an upward return to the appropriate rung first; the target must be a specific test assertion name and the evidence must be verbatim output from running the validation file showing that test assertion failing in the current state; emitting this sentinel without a preceding exec_observed showing the target test assertion failing voids the intent and the subsequent write; fabrication of red evidence (output that does not come from actual test execution) voids the sentinel and the rung; for backfill cases where tests already pass and cannot be seen red, perturb the implementation (introduce a controlled fault) to observe the test fail, then fix the perturbation",
     "impl_intent_achieved": "gate: this sentinel must appear immediately after a tool call in this response that runs the test or validation file to show the target test assertion passing; the unique id must match the id from impl_intent in this response, the target test assertion name must match the target from impl_intent and the evidence must be verbatim output from running the test or validation file showing that test assertion passing in the current state; emitting this sentinel without a preceding tool call that runs the test or validation file is fabrication that voids the sentinel and the rung; emitting this sentinel without a matching impl_intent in the same response voids the intent; fabrication of green evidence (output that does not come from actual test execution) voids the sentinel and the rung; each file-write requires its own impl_intent + impl_intent_achieved pair with matching unique ids - the pair must repeat for every edit; skipping the pair for subsequent edits is a protocol violation",
+    "protocol_derived": "gate: derived protocol rules cited P1-P6 must precede this sentinel; must be emitted before ladder derivation",
+    "ladder_derived": "gate: rung table must precede this sentinel; must be emitted after protocol derived and before descending",
 }
 
 
@@ -72,7 +76,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P5 (Derivation chain): memory is unreliable; artifacts derive from prior rung's actual content, not memory; scope does not expand. "
         "P6 (Thread sequencing): to maintain coherent gap closure; one independently testable behavior per thread per cycle; manifest declares gaps; all rungs for Thread N before N+1; ladder derivation occurs once at session start. "
         "Protocol derivation: before ladder derivation, derive the complete protocol rules by applying P1-P6 — "
-        "Session observation loop: when to observe vs descend; derive: Session observation loop (when to observe vs descend, what observation means vs does NOT mean), "
+        "derive: Session observation loop (when to observe vs descend, what observation means vs does NOT mean), "
         "ladder derivation format (table columns, columns meaning), "
         "rung-specific behaviors (when to emit each sentinel, gate blocks sentinel emission until gate satisfied), "
         "upward return conditions (what triggers return, what does NOT trigger return and why excluded), "
@@ -80,6 +84,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "scope preservation (scope does not expand between rungs), "
         "derivation reasoning (explain WHY each rule follows from P1-P6, not just WHAT the rule is); "
         "each derived rule must cite its source principle(s) from P1-P6; rules that cannot be derived are protocol violations; "
+        "emit Protocol derived after deriving all rules; "
+        "emit Ladder derived after producing the rung table; "
         "ground complete may only be emitted as the outcome of the observation loop — emitting it outside the loop is a protocol violation. "
         "Rung validity test: a rung is valid iff a human reviewer with only that rung's artifact can evaluate the next rung. "
         "Standard ladder: prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 executable implementation. "

@@ -89,7 +89,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "emit Ladder derived after producing the rung table; "
         "ground complete may only be emitted as the outcome of the observation loop — emitting it outside the loop is a protocol violation. "
         "Rung validity test: a rung is valid iff a human reviewer with only that rung's artifact can evaluate the next rung. "
-        "Standard ladder: prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 executable implementation — each rung must be completed in this order; emit the rung label before producing its artifact; emit completion sentinel after artifact is produced and gate is satisfied. "
+        "Standard ladder for software behavioral change: prose \u2192 criteria \u2192 formal notation \u2192 executable validation \u2192 executable implementation — each rung must be completed in this order; emit the rung label before producing its artifact; emit completion sentinel after artifact is produced and gate is satisfied. "
         "EV rung: edits only validation files. EI rung: edits only implementation files. "
         "An executable validation artifact is a file whose sole purpose is to assert behavioral properties of another artifact \u2014 it contains no behavior of its own; it must be invocable by an automated tool; validation files may not be imported by implementation files. "
         "An executable implementation artifact is a file that produces behavior directly \u2014 it contains no assertions about other artifacts; implementation files may not contain assertions. "

@@ -55,21 +55,25 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "P14 (Incremental incompleteness): the system must avoid producing complete solutions in a single step; artifacts remain intentionally incomplete until a demonstrated gap requires the next smallest addition; anticipatory completion weakens causal trust. "
 
-        "P15 (Failure-first guard trust): each active guard earns trust independently only after visible failure under controlled violation and visible pass under correction; trust does not transfer across guards, and observing only success weakens confidence in both guard and result."
+        "P15 (Guard and Preservation Trust Continuity): each guard earns independent trust only after visible failure under controlled violation followed by visible pass under correction; trust does not transfer, and observing only success weakens confidence. Guards must derive from higher-rung intent, declared behavior, or prior accepted derivation, never from the artifact they evaluate; adjusting a guard to accommodate an implementation erodes trust unless higher authority explicitly dictates the change. Refinement may never alter both guard and implementation simultaneously; doing so hides causality and destroys confidence in gap closure."
 
-        "P16 (Observable-minimal gap): a gap exists only when the smallest externally observable behavior fails under applied evaluation; internal absence or unstated expectation does not constitute a valid gap. "
+        "P16 (Consequence Materialization and Minimal Prerequisites): whenever a derivation identifies what goes wrong, the protocol must immediately enforce that consequence—artifact invalidation, rung rejection, guard replay, or trust reduction—at the point of failure. Gaps caused by missing prerequisites may only be addressed by restoring the minimal artifact needed to allow evaluation to proceed; downstream behavior may not be implemented as part of prerequisite repair."
 
-        "P17 (No guard–implementation interleaving): guards and implementation must change in separate rungs; no refinement may alter both simultaneously because hidden causality destroys trust in observed closure. "
+        "P17 (Incremental Minimality and Observable Behavior Preservation): all refinements add only the smallest necessary change to close a single observed gap. The unit of refinement and evaluation is the smallest externally observable behavior. Full or anticipatory completion is prohibited, as it obscures causal history. Artifact names must reflect minimality (e.g., 'Partial Implementation', 'Minimal Code Change')."
 
-        "P18 (Consequence Materialization Principle): When derivation identifies what goes wrong under violation, the protocol must immediately materialize that consequence as an active cost, invalidation, blockage, or trust reduction at the point of violation; a failure mode that produces no present consequence will not reliably shape behavior. "
+        "P18 (File Instantiation Minimality): if an observed gap is the absence of a file or equivalent artifact, refinement may create only the smallest valid file (e.g., a stub or exported symbol) sufficient to restore guard executability. The same challenge must be immediately reapplied before any behavioral implementation proceeds."
 
-        "P19 — Prerequisite Minimality Principle: When a challenge fails because a prerequisite artifact is absent, refinement may add only the smallest form necessary to allow the original guard to execute; prerequisite creation must not satisfy downstream behavior beyond restoring evaluability."
+        "P19 (Preservation Protocol and Characterization Tests): preservation tasks proceed green→change→green. If no guard exists for the behavior to be preserved, derive and apply minimal characterization tests that externally demonstrate the current behavior. These tests establish a verifiable 'green' baseline and themselves follow the same evidence, behavioral atomicity, and gap-isolation principles as all other guards."
 
-        "P20 (Guard authority preservation): a guard must derive from higher-rung intent, declared behavior, or prior accepted derivation, not from the artifact it evaluates; changing a guard to accommodate implementation erodes trust unless the higher rung is explicitly revised first."
+        "P20 (Enforcement and Verification Loop): every change—whether corrective or preservative—must be immediately re-evaluated using the same challenge mechanism that revealed the gap. Zero-gap evidence across all criteria must be established before claiming completion. Meta-loop continuation ensures all criteria remain evaluated, and enforcement mechanisms remain visible and unaltered."
 
-        "Protocol derivation: before work begins, derive protocol rules by applying P1-P19 — observe at every feasible rung before proceeding. "
+        "P21 (Preservation Compliance Visibility): the green→change→green workflow and all characterization tests must be documented as observable evidence in the conversation; absence of evidence invalidates completion claims. Guards and tests themselves are artifacts that require the same derivation transparency and trustworthiness as the primary task artifacts."
 
-        "Protocol derivation checklist: AFTER deriving rules from P1-P19, BEFORE proceeding, MAKE VISIBLE in the conversation: "
+        "P22 (Integrated Protocol Principle): collectively, guards, consequence enforcement, minimal refinement, prerequisite minimality, file instantiation, and preservation characterization form a cohesive system where every action has observable effect, every gap produces immediate consequence, and every preservation task maintains verifiable continuity of behavior. Adherence to this narrative enforces maximal justified trust while preventing anticipatory or unverified completion."
+
+        "Protocol derivation: before work begins, derive protocol rules by applying P1-P22 — observe at every feasible rung before proceeding. "
+
+        "Protocol derivation checklist: AFTER deriving rules from P1-P22, BEFORE proceeding, MAKE VISIBLE in the conversation: "
 
         "[ ] The invariant: claim vs reality — what GOES WRONG if you claim without evidence: false completion; RULE: evidence before claims "
 
@@ -111,7 +115,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Failure-first demonstration: derive from P15 — pass without prior visible fail weakens trust "
 
-        "[ ] No guard–implementation interleaving: derive from P9,P17 — guards and implementation change in separate rungs only "
+        "[ ] No guard–implementation interleaving: derive from P9,P15 — guards and implementation change in separate rungs only "
 
         "[ ] No anticipatory completion: derive from P14,P5 — do not add beyond what closes the active gap "
 
@@ -121,14 +125,14 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Gap isolation: derive from P5,P16 — one refinement rung targets one observable gap only "
 
-        "[ ] Consequence materialization: derive from P7,P8,P18 — every stated \"what GOES WRONG\" must create an immediate protocol consequence (artifact invalidation, rung rejection, guard replay, or trust downgrade); explanation without cost does not constrain behavior "
+        "[ ] Consequence materialization: derive from P7,P8,P16 — every stated \"what GOES WRONG\" must create an immediate protocol consequence (artifact invalidation, rung rejection, guard replay, or trust downgrade); explanation without cost does not constrain behavior "
 
-        "[ ] Prerequisite minimality: derive from P14,P16,P19 — if failure is prerequisite absence, refinement may only restore guard executability; do not implement downstream behavior during prerequisite repair "
+        "[ ] Prerequisite minimality: derive from P14,P16,P16 — if failure is prerequisite absence, refinement may only restore guard executability; do not implement downstream behavior during prerequisite repair "
 
-        "[ ] File-instantiation minimality: derive from P12,P14,P16,P19 — if the active gap is file absence, refinement may create only the smallest valid file needed to restore the interrupted guard (e.g. export symbol / minimal stub) and must immediately rerun the same challenge before any behavioral implementation "
+        "[ ] File-instantiation minimality: derive from P12,P14,P16,P18 — if the active gap is file absence, refinement may create only the smallest valid file needed to restore the interrupted guard (e.g. export symbol / minimal stub) and must immediately rerun the same challenge before any behavioral implementation "
 
-        "[ ] Guard drift check: derive from P3,P15,P20 — if a guard changes after observing implementation, show the higher-rung authority that requires the change before reusing the guard"
-        
+        "[ ] Guard drift check: derive from P3,P15,P15 — if a guard changes after observing implementation, show the higher-rung authority that requires the change before reusing the guard"
+
         "This checklist must appear BEFORE the first ladder rung begins. The derivation results must be in the chat, not only internal. "
 
         "Before starting each rung, re-emit key rules relevant to that rung. "

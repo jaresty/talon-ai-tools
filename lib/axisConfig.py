@@ -298,8 +298,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "derive from P1,P3 — solution organization must precede gap detection; what GOES WRONG if you skip structure: unclear what to evaluate; RULE: structure before challenge [ ] "
         "Criteria before structure: derive from P1 — success conditions before organization; what GOES WRONG if you organize without criteria: no way to evaluate; RULE: criteria before "
         "structure [ ] Intent before criteria: derive from P1 — outcome before success conditions; what GOES WRONG if you define success without outcome: criteria irrelevant; RULE: "
-        "intent before criteria [ ] Evidence at proximity: derive from P3 — evidence must be temporally close to action; what GOES WRONG if delayed: proof weakens; RULE: evidence "
-        "immediately after action [ ] Evidence echoed: derive from P3,P4 — explain how evidence proves rules satisfied; what GOES WRONG if unexplained: description indistinguishable "
+        "intent before criteria [ ] Evidence at proximity: derive from P3 — evidence must be temporally close to result; what GOES WRONG if delayed: proof weakens; RULE: evidence "
+        "immediately after result[ ] Evidence echoed: derive from P3,P4 — explain how evidence proves rules satisfied; what GOES WRONG if unexplained: description indistinguishable "
         "from compliance; RULE: explain evidence connection [ ] No contradiction in completion: derive from P3,P5 — claiming complete while acknowledging gaps is void; what GOES WRONG "
         "if you write 'complete' with 'gaps', 'caveats', 'needs': claim invalid; RULE: scan ENTIRE message for contradiction before 'complete' [ ] Rule citation at action: derive from "
         "P1,P3,P4 — cite specific derived rule before each action; what GOES WRONG if uncited: protocol compliance invisible; RULE: cite rule before action This checklist must appear "
@@ -311,8 +311,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "complete) to finish each rung. Evidence before claims: for every claim about completion, there must be evidence proving it. Ground complete may only be emitted after "
         "verification confirms no gaps remain. Domain adaptation: for tasks where verification is possible, derive evaluation from criteria before producing solution — evaluation "
         "defined after solution is vacuous (Texas sharpshooter). Challenge exposes gaps; Refinement adds only enough to satisfy each; Verification confirms completion.for writing "
-        "tasks, it maps to intent→criteria→outline→draft→review→revision→final; for decision-making, it maps to intent→criteria→analysis→option→stakeholder "
-        "review→recommendation→decision. The model should derive the appropriate ladder for the task domain. ",
+        "tasks, it maps to intent→criteria→structure→challenge→refinement→verification; for decision-making, it maps to intent→criteria→analysis→challenge→refinement→verification. The "
+        "model should derive the appropriate ladder for the task domain. ",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

@@ -21,7 +21,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "every gate enforces the distinction by requiring a piece of reality before any claim about reality. "
         "The protocol is a discipline against self-deception: it prevents 'I think it works' from replacing 'I proved it works.' "
         "This is domain-independent — it applies to any task, not just software. "
-        "P1 (Intent primacy): intent is an abstract goal outside the system; all artifacts derive from it; form changes, intent does not; without intent, no way to evaluate artifacts. "
+        "P1 (Intent primacy): intent is an abstract goal outside the system, declared intent; all artifacts derive from it; form changes, intent does not; without intent, no way to evaluate artifacts. "
         "P2 (One artifact per type): each rung produces exactly one artifact type; dedicated rung for each type. "
         "P3 (Observable evidence required): every claim requires externalized evidence; pre/post states must be visible. "
         "P4 (Derivation chain): artifacts derive from prior rung's actual content, not memory; each artifact must cite its source. "

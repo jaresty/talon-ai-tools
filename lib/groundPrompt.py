@@ -57,6 +57,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "IMPORTANT: Baseline establishes evaluation framework at Baseline. Challenge adds NEW criteria to the SAME framework - creating NEW test files or NEW evaluation structures at Challenge is SCOPE EXPANSION, not valid Challenge. Challenge must extend existing evaluation, not create new ones. "
         "IMPORTANT: Baseline evaluation must be SELF-CONTAINED. If it FAILS for ANY reason, that's a broken framework, not evidence of gaps. Fix the framework to make it work - do not rationalize why failure is acceptable. Only NEW criteria added at Challenge can expose gaps in the solution. "
         "5. Challenge — What evidence proves gaps exist? Derivation: from Baseline, add NEW evaluation criteria that FAIL against the solution. Evidence: failing output from NEW criteria proves gaps exist, NOT failing because framework is broken. "
+        "IMPORTANT: Challenge must use SAME evaluation framework from Baseline - creating new evaluation at Challenge is scope expansion, not valid Challenge. "
         "IMPORTANT: Work on the smallest verifiable thing at a time — each check must be satisfied before the next. "
         "6. Refinement — How is the artifact improved? Derivation: from Challenge, address the SPECIFIC gaps that were OBSERVED. Evidence: changes target the exact gaps proven to exist. "
         "IMPORTANT: Refinement must address OBSERVED gaps only - gaps seen in Challenge output. Addressing unobserved gaps wastes effort and may miss real issues. "

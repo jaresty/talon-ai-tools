@@ -9,7 +9,7 @@ The model derives its own ladder from the principles on each session.
 """
 
 # Derived sentinels — model derives sentinels from principles (recursive intent structure).
-# Template: declare intent → derive criteria → structure → baseline → challenge → refine → verify.
+# Template: declare intent → derive criteria → structure → challenge → refine → verify.
 # Levels: session, thread, rung, artifact-edit.
 
 SENTINEL_TEMPLATES: dict[str, str] = {}

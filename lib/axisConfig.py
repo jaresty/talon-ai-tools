@@ -310,9 +310,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "both 🔵 Protocol derived and 🔵 Ladder derived sentinels — these are gates on all subsequent work. Emit rung labels to begin each rung; emit completion sentinels (✅ [Rung] "
         "complete) to finish each rung. Evidence before claims: for every claim about completion, there must be evidence proving it. Ground complete may only be emitted after "
         "verification confirms no gaps remain. Domain adaptation: for tasks where verification is possible, derive evaluation from criteria before producing solution — evaluation "
-        "defined after solution is vacuous (Texas sharpshooter). Challenge exposes gaps; Refinement adds only enough to satisfy each; Verification confirms completion.for writing "
-        "tasks, it maps to intent→criteria→structure→challenge→refinement→verification; for decision-making, it maps to intent→criteria→analysis→challenge→refinement→verification. The "
-        "model should derive the appropriate ladder for the task domain. ",
+        "defined after solution is vacuous (Texas sharpshooter). Challenge exposes gaps; Refinement adds only enough to satisfy each; Verification confirms completion. IMPORTANT: When "
+        "deriving ladder artifact types, use MINIMAL names: - For Refinement, use 'Partial Implementation' or 'Minimal Code Changes' — NOT 'Implementation' or 'full solution' - "
+        "Artifact type names that imply completeness ('Implementation', 'Full Solution') contradict the gap-driven approach. If output diverges from protocol intent (e.g., producing "
+        "full implementation instead of addressing specific gaps), reflect on: Which rung first diverged? What artifact type name drove this? What would a minimal change look like? "
+        "Refinement should address ONE gap at a time with minimal changes — not build the entire feature. If you find yourself creating a complete feature, you have deviated from "
+        "gap-driven refinement. for writing tasks, it maps to intent→criteria→structure→challenge→refinement→verification; for decision-making, it maps to "
+        "intent→criteria→analysis→challenge→refinement→verification. The model should derive the appropriate ladder for the task domain. ",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

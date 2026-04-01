@@ -55,7 +55,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "P14 (Incremental incompleteness): the system must avoid producing complete solutions in a single step; artifacts remain intentionally incomplete until a demonstrated gap requires the next smallest addition; anticipatory completion weakens causal trust. "
 
-        "P15 (Failure-first guard trust): a guard is not trusted until it has visibly failed under a controlled violation and then visibly passed under correction; observing only success weakens confidence in both guard and result. "
+        "P15 (Failure-first guard trust): each guard earns trust independently only after it has visibly failed under a controlled violation while active, then visibly passed under correction; failure/pass evidence for one guard does not transfer to adjacent guards, and observing only success weakens confidence in both guard and result."
 
         "P16 (Observable-minimal gap): a gap exists only when the smallest externally observable behavior fails under applied evaluation; internal absence or unstated expectation does not constitute a valid gap. "
 

@@ -166,7 +166,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Ladder derivation by domain: Derive from P1-P22 — for each domain (writing, decision-making, etc.), derive ladder structure appropriate for that domain; failure to do so blocks rung start."
 
-        "[ ] Refinement minimal behavior: derive from P12,P16 — implement only the smallest externally observable behavior that closes the active gap identified by Challenge; the Challenge test indicates failure but is not the target; BEFORE and AFTER evidence of the behavior must be visible in the transcript; over-reaching (implementing full test pass beyond minimal gap) triggers rung invalidation, immediate replay, and trust downgrade; WHAT GOES WRONG if ignored: refinement becomes unconstrained, meta-loop may falsely succeed, gaps masked, trust eroded."
+        "[ ] Failure-frontier rule: derive from P3,P5,P12,P16 — one refinement artifact may change the active failing observation only once; the artifact may leave the check failing, but must stop immediately after producing a new observable failure state or a pass; WHAT GOES WRONG if absent: multiple hidden fixes accumulate inside one rung, stubs silently become implementations, gap boundaries disappear; CONSEQUENCE: additional changes beyond the first new failure state are surplus and invalid."
 
         "[ ] Validation linkage: derive from P3,P5,P12 — each implementation artifact must produce at least one observable check/validation artifact that directly drives the active gap; WHAT GOES WRONG if ignored: gaps remain untested, meta-loop falsely succeeds, refinement unconstrained; CONSEQUENCE: immediate rung rejection, artifact invalidation, and meta-loop replay with visible evidence."
 

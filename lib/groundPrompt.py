@@ -26,6 +26,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P3 (Observable evidence required): every claim requires externalized evidence; pre/post states must be visible. "
         "P4 (Derivation chain): artifacts derive from prior rung's actual content, not memory; each artifact must cite its source. "
         "P5 (Gap-driven iteration): gaps are exposed one at a time; work on the smallest verifiable thing at a time; refinement addresses specific gaps one at a time. "
+        "P6 (Independent meta-task): every task must derive a separate meta-task whose artifact is evaluation of task-to-intent alignment. The meta-task must operate before first domain action to verify the task matches intent, and must remain active across every rung to detect drift. The task artifact cannot certify itself; alignment evidence must come from the independent meta-task."
         "Protocol derivation: before work begins, derive the protocol rules by applying P1-P5 — observe at every feasible rung before proceeding. "
         "Protocol derivation checklist: AFTER deriving rules from P1-P5, BEFORE proceeding, MAKE VISIBLE in the conversation: "
         "[ ] The invariant: claim vs reality — what GOES WRONG if you claim without evidence: fool yourself, completion is false; RULE: evidence before claims "

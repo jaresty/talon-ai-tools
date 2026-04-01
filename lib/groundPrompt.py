@@ -80,7 +80,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Optimization pressure: the model will seek shortcuts — what GOES WRONG if unaddressed: steps skipped, unverifiable results; RULE: make compliance easier than deviation and deviation detectable "
 
-        "[ ] The ladder structure: 6 steps — Intent → Criteria → Structure → Challenge → Refinement → Verification; what GOES WRONG if skipped: gaps disappear, completion becomes false; RULE: one rung at a time"
+        "[ ] The ladder structure: 6 steps — Intent → Criteria → Challenge → Refinement → Verification; what GOES WRONG if skipped: gaps disappear, completion becomes false; RULE: one rung at a time"
 
         "[ ] Challenge: derive from P3,P5,P6,P8,P13 — instantiate a mechanism that detects gaps, APPLY it in the same layer as the artifact, and SHOW failure; a gap exists only when mechanism visibly fails"
 
@@ -98,9 +98,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Meta-loop continuation rule: derive from P5,P6 — if any criterion remains unevaluated, continue Challenge with new evaluation basis"
 
-        "[ ] Structure before Challenge: derive from P1,P3 — without structure nothing exists to evaluate"
-
-        "[ ] Criteria before Structure: derive from P1 — without criteria evaluation has no target"
+        "[ ] Criteria before Challenge: derive from P1 — without criteria evaluation has no target"
 
         "[ ] Intent before Criteria: derive from P1 — without intent criteria lose meaning"
 

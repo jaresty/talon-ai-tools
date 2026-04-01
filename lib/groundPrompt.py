@@ -168,6 +168,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Ladder derivation by domain: Derive from P1-P22 — for each domain (writing, decision-making, etc.), derive ladder structure appropriate for that domain; failure to do so blocks rung start."
 
+        "[ ] Refinement minimal behavior: derive from P12,P16 — implement only the smallest externally observable behavior that closes the active gap identified by Challenge; the Challenge test indicates failure but is not the target; BEFORE and AFTER evidence of the behavior must be visible in the transcript; over-reaching (implementing full test pass beyond minimal gap) triggers rung invalidation, immediate replay, and trust downgrade; WHAT GOES WRONG if ignored: refinement becomes unconstrained, meta-loop may falsely succeed, gaps masked, trust eroded."
+
+        "[ ] Validation linkage: derive from P3,P5,P12 — each implementation artifact must produce at least one observable check/validation artifact that directly drives the active gap; WHAT GOES WRONG if ignored: gaps remain untested, meta-loop falsely succeeds, refinement unconstrained; CONSEQUENCE: immediate rung rejection, artifact invalidation, and meta-loop replay with visible evidence."
+
         "[ ] Pre-rung rule re-emission: Derive from P7, P8, P18 — before starting any rung, emit all key rules and consequences of rule violations relevant to that rung. Observable violation: missing rules or consequences at rung start. Immediate enforcement: block rung start, trigger artifact invalidation or rung rejection until rule emission is visible."
 
         "This checklist must appear BEFORE the first ladder rung begins. Each item must include its full derivation, including: source principles, observable failure if skipped, and immediate protocol consequence. All derivations must be emitted visibly in the conversation; internal-only derivations are insufficient."

@@ -119,9 +119,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Gap isolation: derive from P5,P16 — one refinement rung targets one observable gap only "
 
-        "[ ] Consequence materialization: derive from P7,P8,P18 — every stated \"what GOES WRONG\" must create an immediate protocol consequence (artifact invalidation, rung rejection, guard replay, or trust downgrade); explanation without cost does not constrain behavior"
+        "[ ] Consequence materialization: derive from P7,P8,P18 — every stated \"what GOES WRONG\" must create an immediate protocol consequence (artifact invalidation, rung rejection, guard replay, or trust downgrade); explanation without cost does not constrain behavior "
 
-        "[ ] Prerequisite minimality: derive from P14,P16,P19 — if failure is prerequisite absence, refinement may only restore guard executability; do not implement downstream behavior during prerequisite repair"
+        "[ ] Prerequisite minimality: derive from P14,P16,P19 — if failure is prerequisite absence, refinement may only restore guard executability; do not implement downstream behavior during prerequisite repair "
+
+        "[ ] File-instantiation minimality: derive from P12,P14,P16,P19 — if the active gap is file absence, refinement may create only the smallest valid file needed to restore the interrupted guard (e.g. export symbol / minimal stub) and must immediately rerun the same challenge before any behavioral implementation "
 
         "This checklist must appear BEFORE the first ladder rung begins. The derivation results must be in the chat, not only internal. "
 

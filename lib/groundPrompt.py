@@ -174,6 +174,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] Pre-rung rule re-emission: Derive from P7, P8, P18 — before starting any rung, emit all key rules and consequences of rule violations relevant to that rung. Observable violation: missing rules or consequences at rung start. Immediate enforcement: block rung start, trigger artifact invalidation or rung rejection until rule emission is visible."
 
+        "[ ] Gap authorization: derive from P3,P5,P9,P17 — no implementation artifact may begin until a failing check/validation artifact already exists in transcript and that exact artifact names the active gap; WHAT GOES WRONG if absent: implementation is inferred from described intent rather than forced by observed failure, structure leaks ahead of proof, guards become retrospective; CONSEQUENCE: immediate rung rejection, artifact invalidation, and replay from Challenge using the failing artifact as the sole authorization source."
+
         "This checklist must appear BEFORE the first ladder rung begins. Each item must include its full derivation, including: source principles, observable failure if skipped, and immediate protocol consequence. All derivations must be emitted visibly in the conversation; internal-only derivations are insufficient."
         "⚠️ HARD GATE: Do not start the ladder until every checklist item above has been fully emitted with derivation. Skipping or partially emitting any derivation triggers immediate rung rejection and blocks progress."
 

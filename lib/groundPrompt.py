@@ -55,7 +55,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "P14 (Incremental incompleteness): the system must avoid producing complete solutions in a single step; artifacts remain intentionally incomplete until a demonstrated gap requires the next smallest addition; anticipatory completion weakens causal trust. "
 
-        "P15 (Failure-first guard trust): each guard earns trust independently only after it has visibly failed under a controlled violation while active, then visibly passed under correction; failure/pass evidence for one guard does not transfer to adjacent guards, and observing only success weakens confidence in both guard and result."
+        "P15 (Failure-first guard trust): each active guard earns trust independently only after visible failure under controlled violation and visible pass under correction; trust does not transfer across guards, and observing only success weakens confidence in both guard and result."
 
         "P16 (Observable-minimal gap): a gap exists only when the smallest externally observable behavior fails under applied evaluation; internal absence or unstated expectation does not constitute a valid gap. "
 
@@ -64,6 +64,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "P18 (Consequence Materialization Principle): When derivation identifies what goes wrong under violation, the protocol must immediately materialize that consequence as an active cost, invalidation, blockage, or trust reduction at the point of violation; a failure mode that produces no present consequence will not reliably shape behavior. "
 
         "P19 — Prerequisite Minimality Principle: When a challenge fails because a prerequisite artifact is absent, refinement may add only the smallest form necessary to allow the original guard to execute; prerequisite creation must not satisfy downstream behavior beyond restoring evaluability."
+
+        "P20 (Guard authority preservation): a guard must derive from higher-rung intent, declared behavior, or prior accepted derivation, not from the artifact it evaluates; changing a guard to accommodate implementation erodes trust unless the higher rung is explicitly revised first."
 
         "Protocol derivation: before work begins, derive protocol rules by applying P1-P19 — observe at every feasible rung before proceeding. "
 
@@ -125,6 +127,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "[ ] File-instantiation minimality: derive from P12,P14,P16,P19 — if the active gap is file absence, refinement may create only the smallest valid file needed to restore the interrupted guard (e.g. export symbol / minimal stub) and must immediately rerun the same challenge before any behavioral implementation "
 
+        "[ ] Guard drift check: derive from P3,P15,P20 — if a guard changes after observing implementation, show the higher-rung authority that requires the change before reusing the guard"
+        
         "This checklist must appear BEFORE the first ladder rung begins. The derivation results must be in the chat, not only internal. "
 
         "Before starting each rung, re-emit key rules relevant to that rung. "

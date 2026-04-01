@@ -1,7 +1,6 @@
-"""Test for ADR-0219: Ground Protocol Simplification.
+"""Test for ADR-0220: Generalized Ground Protocol.
 
-Verifies the simplified P1-P6 formulation preserves behavioral invariants.
-ADR-0217: Echo checks removed - trust derivation, not explicit strings.
+Verifies the generalized protocol preserves behavioral invariants across domains.
 """
 
 import sys
@@ -14,49 +13,58 @@ if str(ROOT) not in sys.path:
 from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
-def test_collapsed_protocol_preserves_intent_primacy():
-    """P1 intent primacy must be preserved in collapsed version."""
+def test_generalized_protocol_preserves_intent_primacy():
+    """P1 intent primacy must be preserved."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "intent primacy" in core.lower() or "intent exists" in core.lower(), (
-        "Collapsed protocol must preserve intent primacy"
+    assert "intent" in core.lower() and "derive" in core.lower(), (
+        "Generalized protocol must preserve intent derivation"
     )
 
 
-def test_collapsed_protocol_preserves_artifact_type_discipline():
+def test_generalized_protocol_preserves_artifact_type_discipline():
     """P2 one artifact per type must be preserved."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "artifact type" in core.lower() and "one rung" in core.lower(), (
-        "Collapsed protocol must preserve artifact type discipline"
+    assert "artifact type" in core.lower() or "one artifact" in core.lower(), (
+        "Generalized protocol must preserve artifact type discipline"
     )
 
 
-def test_collapsed_protocol_preserves_observable_evidence():
+def test_generalized_protocol_preserves_observable_evidence():
     """P3 observable evidence must be preserved."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "observable evidence" in core.lower() or "tool execution" in core.lower(), (
-        "Collapsed protocol must preserve observable evidence requirement"
+    assert "evidence" in core.lower() or "external" in core.lower(), (
+        "Generalized protocol must preserve observable evidence requirement"
     )
 
 
-def test_collapsed_protocol_preserves_file_edit_protocol():
-    """P4 file edit protocol must be preserved including EV/EI distinction."""
+def test_generalized_protocol_preserves_derivation_chain():
+    """P4 derivation chain must be preserved."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "file edit" in core.lower() and "protocol" in core.lower(), (
-        "Collapsed protocol must preserve file edit protocol"
+    assert "derivation" in core.lower() or "cite" in core.lower(), (
+        "Generalized protocol must preserve derivation chain"
     )
 
 
-def test_collapsed_protocol_preserves_derivation_chain():
-    """P5 derivation chain must be preserved."""
+def test_generalized_protocol_preserves_gap_driven_iteration():
+    """P5 gap-driven iteration must be preserved."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "derivation" in core.lower() or "derive" in core.lower(), (
-        "Collapsed protocol must preserve derivation chain"
+    assert "gap" in core.lower() and (
+        "challenge" in core.lower() or "refine" in core.lower()
+    ), "Generalized protocol must preserve gap-driven iteration"
+
+
+def test_generalized_protocol_is_domain_independent():
+    """Protocol must be domain-independent."""
+    core = GROUND_PARTS_MINIMAL["core"]
+    assert "domain" in core.lower() or "software" in core.lower(), (
+        "Generalized protocol must mention domain independence"
     )
 
 
-def test_collapsed_protocol_preserves_thread_sequencing():
-    """P6 thread sequencing must be preserved."""
+def test_generalized_protocol_has_seven_rungs():
+    """Protocol must have the 7-rung ladder."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "thread" in core.lower() and "sequenc" in core.lower(), (
-        "Collapsed protocol must preserve thread sequencing"
+    rung_count = core.lower().count("rung")
+    assert rung_count >= 7, (
+        f"Generalized protocol must define 7 rungs, found {rung_count}"
     )

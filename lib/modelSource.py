@@ -65,15 +65,16 @@ def format_source_messages(
     ]
     current_request += source_messages
     # Planning directive: replaces second EXECUTION REMINDER with explicit
-    # planning instruction - LLM must explain how it will apply prompt tokens
-    # to solve the task, followed by a divider. This maintains recency defense
-    # while adding transparent planning output.
+    # planning instruction - LLM must cite each prompt token by name and
+    # explain how it shapes the response, then include a divider.
     current_request.append(
         format_message(
             "\n\n=== PLANNING DIRECTIVE ===\n"
-            "Begin your response by explaining how you will apply the prompt tokens "
-            "(TASK, CONSTRAINTS, PERSONA) to solve this task. Then include a divider "
-            "before your response.\n"
+            "Begin your response by explaining how you will apply each token — "
+            "for TASK, cite the token name and how it shapes your approach; "
+            "for each CONSTRAINTS token, cite its name and how it shapes your constraints; "
+            "for PERSONA, cite each element (voice, audience, tone, intent) by name "
+            "and how it shapes your communication. Then include a divider before your response.\n"
         )
     )
     return additional_source_messages + current_request

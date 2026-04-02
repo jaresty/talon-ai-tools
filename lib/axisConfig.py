@@ -309,12 +309,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "verification — pre/post characterization tests; RULE: green→change→green required - Hard gate — no rung until sentinels visible; RULE: sentinels required before descent - "
         "Proximal enforcement — rules and consequences re-emitted at each rung; WHAT GOES WRONG: rules forgotten, enforcement distant; RULE: re-emit relevant rules at each rung start - "
         "Self-referential derivation — when deriving gaps from this protocol itself, you MUST cite the governing rule, show the mechanism that would detect failure, and demonstrate why "
-        "the gap would cause the protocol to fail; WHAT GOES WRONG: gap claims without evidence; RULE: claims require visible mechanism failure ⚠️ HARD GATE: Do not start the ladder "
-        "until derivation is complete with consequences and enforcement rules visible for each rule. TRANSITION CHECKPOINT: Before next rung, verify: [artifact completed?], [evidence "
-        "visible?], [gaps remaining?], [intent aligned?], [guards unchanged?], [next rung requires?]. If any fails, do NOT proceed. DOMAIN ADAPTATION: - Writing: Intent → Criteria → "
-        "Challenge → Minimal Artifact → Verification → Meta-loop - Decision-making: Intent → Criteria → Analysis → Challenge → Minimal Artifact → Verification → Meta-loop - The model "
-        "must derive the appropriate ladder for the domain. SENTINEL DERIVATION: The model derives sentinels from principles on each session. Template: declare intent → derive criteria "
-        "→ structure → challenge → refine → verify.",
+        "the gap would cause the protocol to fail; WHAT GOES WRONG: gap claims without evidence; RULE: claims require visible mechanism failure - Challenge commensurability — the "
+        "verification challenge must match the automatable strength of the gap claim; if gap claims an executable artifact, challenge must require executable verification; if gap "
+        "claims text, challenge must require text verification (criteria sheet, derivation template); WHAT GOES WRONG: weak verification (grep) for automatable claim; RULE: "
+        "verification automatable strength >= claim automatable strength ⚠️ HARD GATE: Do not start the ladder until derivation is complete with consequences and enforcement rules "
+        "visible for each rule. TRANSITION CHECKPOINT: Before next rung, verify: [artifact completed?], [evidence visible?], [gaps remaining?], [intent aligned?], [guards unchanged?], "
+        "[next rung requires?]. If any fails, do NOT proceed. DOMAIN ADAPTATION: - Writing: Intent → Criteria → Challenge → Minimal Artifact → Verification → Meta-loop - "
+        "Decision-making: Intent → Criteria → Analysis → Challenge → Minimal Artifact → Verification → Meta-loop - The model must derive the appropriate ladder for the domain. SENTINEL "
+        "DERIVATION: The model derives sentinels from principles on each session. Template: declare intent → derive criteria → structure → challenge → refine → verify.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

@@ -110,21 +110,21 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "form changes, intent does not" appears in method:ground definition (R2) but not heuristics/distinctions.
+	// "form changes, intent does not" appears in task:ground definition (R2) but not heuristics/distinctions.
 	// ADR-0185: "faithful derivation" phrase removed; R2 now expressed as "form changes, intent does not".
-	results := LookupTokens("form changes intent does not", grammar, "method")
+	results := LookupTokens("form changes intent does not", grammar, "task")
 	if len(results) == 0 {
 		t.Fatal("expected results for 'form changes intent does not', got none")
 	}
 	var found *LookupResult
 	for i := range results {
-		if results[i].Axis == "method" && results[i].Token == "ground" {
+		if results[i].Axis == "task" && results[i].Token == "ground" {
 			found = &results[i]
 			break
 		}
 	}
 	if found == nil {
-		t.Fatalf("expected method:ground in results for 'form changes intent does not', got %v", results)
+		t.Fatalf("expected task:ground in results for 'form changes intent does not', got %v", results)
 	}
 	if found.Tier != 0 {
 		t.Errorf("expected tier 0 for definition-only match, got %d", found.Tier)

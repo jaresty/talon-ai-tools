@@ -165,7 +165,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			for _, d := range meta.Distinctions {
 				dists = append(dists, d.Token)
 			}
-			tryToken("task", taskName, g.TaskLabel(taskName), meta.Definition, meta.Heuristics, dists)
+			tryToken("task", taskName, g.TaskLabel(taskName), g.TaskDescription(taskName), meta.Heuristics, dists)
 		}
 	}
 

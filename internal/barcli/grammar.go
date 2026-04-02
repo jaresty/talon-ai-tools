@@ -838,6 +838,18 @@ func (g *Grammar) NormalizeTokensWithSource(tokens []string) []NormalizedToken {
 func (g *Grammar) AxisTokenSet(axis string) map[string]struct{} {
 	axisKey := normalizeAxis(axis)
 	set := make(map[string]struct{})
+	
+	// Special handling for task axis - tasks are stored in Static.Descriptions
+	if axisKey == "task" {
+		for token := range g.Static.Descriptions {
+			canonical := normalizeToken(token)
+			if canonical != "" {
+				set[canonical] = struct{}{}
+			}
+		}
+		return set
+	}
+	
 	for token := range g.axisTokens[axisKey] {
 		set[token] = struct{}{}
 	}
@@ -869,6 +881,12 @@ func (g *Grammar) AxisDescription(axis, token string) string {
 	if axisKey == "" || tokenKey == "" {
 		return ""
 	}
+	
+	// Special handling for task axis - use TaskDescription
+	if axisKey == "task" {
+		return g.TaskDescription(tokenKey)
+	}
+	
 	docs := g.axisDocs[axisKey]
 	if docs == nil {
 		return ""

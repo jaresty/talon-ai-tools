@@ -201,4 +201,4 @@ def build_ground_prompt() -> str:
 
     This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"].
     """
-    return "Derive and then follow this protocol: " + GROUND_PARTS_MINIMAL["core"]
+    return "Derive this protocol, ladder, and checklist in your own words and then follow it: " + GROUND_PARTS_MINIMAL["core"]

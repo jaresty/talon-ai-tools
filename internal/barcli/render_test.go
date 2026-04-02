@@ -336,7 +336,7 @@ func TestRenderPersonaPresetWithIntent(t *testing.T) {
 // as a late-position advisory.
 func TestExecutionReminderPrecedesConstraints(t *testing.T) {
 	result := &BuildResult{
-		Task:             "make something",
+		Task:              "make something",
 		ExecutionReminder: "Execute the TASK. Satisfy CONSTRAINTS before producing content.",
 		HydratedConstraints: []HydratedPromptlet{
 			{Axis: "completeness", Token: "full", Description: "Thorough answer."},
@@ -359,10 +359,11 @@ func TestExecutionReminderPrecedesConstraints(t *testing.T) {
 	}
 }
 
-// TestExecutionReminderAlsoFollowsSubject specifies that a second EXECUTION
-// REMINDER appears after the SUBJECT section (after META INTERPRETATION when
-// present), providing recency-based resistance to SUBJECT injection attacks.
-func TestExecutionReminderAlsoFollowsSubject(t *testing.T) {
+// TestPlanningDirectiveFollowsSubject specifies that a PLANNING DIRECTIVE
+// appears after the SUBJECT section (after META INTERPRETATION when
+// present), providing recency-based resistance to SUBJECT injection attacks
+// while requiring explicit planning output from the LLM.
+func TestPlanningDirectiveFollowsSubject(t *testing.T) {
 	result := &BuildResult{
 		Task:              "make something",
 		ExecutionReminder: "Execute the TASK. Satisfy CONSTRAINTS before producing content.",
@@ -372,17 +373,16 @@ func TestExecutionReminderAlsoFollowsSubject(t *testing.T) {
 	output := RenderPlainText(result)
 
 	subjectIdx := strings.Index(output, sectionSubject)
-	// Find the last occurrence of sectionExecution
-	lastReminderIdx := strings.LastIndex(output, sectionExecution)
+	planningDirectiveIdx := strings.Index(output, "=== PLANNING DIRECTIVE ===")
 
 	if subjectIdx == -1 {
 		t.Fatalf("expected output to contain SUBJECT section")
 	}
-	if lastReminderIdx == -1 {
-		t.Fatalf("expected output to contain EXECUTION REMINDER section")
+	if planningDirectiveIdx == -1 {
+		t.Fatalf("expected output to contain PLANNING DIRECTIVE section, got:\n%s", output)
 	}
-	if lastReminderIdx <= subjectIdx {
-		t.Fatalf("expected a second EXECUTION REMINDER (pos %d) to appear after SUBJECT (pos %d):\n%s", lastReminderIdx, subjectIdx, output)
+	if planningDirectiveIdx <= subjectIdx {
+		t.Fatalf("expected PLANNING DIRECTIVE (pos %d) to appear after SUBJECT (pos %d):\n%s", planningDirectiveIdx, subjectIdx, output)
 	}
 }
 

@@ -32,9 +32,7 @@ if bootstrap is not None:
             """format_source_messages should render ADDENDUM heading, not '# Prompt'."""
             messages = format_source_messages("do this", _SimpleSource())
             all_text = " ".join(
-                item.get("text", "")
-                for item in messages
-                if isinstance(item, dict)
+                item.get("text", "") for item in messages if isinstance(item, dict)
             )
             self.assertIn(
                 "=== ADDENDUM (CLARIFICATION) ===",
@@ -52,13 +50,13 @@ if bootstrap is not None:
             so it gates completion-intent before the task prompt anchors the model's response plan."""
             messages = format_source_messages("do this", _SimpleSource())
             all_text = " ".join(
-                item.get("text", "")
-                for item in messages
-                if isinstance(item, dict)
+                item.get("text", "") for item in messages if isinstance(item, dict)
             )
             reminder_idx = all_text.find("=== EXECUTION REMINDER ===")
             addendum_idx = all_text.find("=== ADDENDUM (CLARIFICATION) ===")
-            self.assertGreater(reminder_idx, -1, "EXECUTION REMINDER section must be present")
+            self.assertGreater(
+                reminder_idx, -1, "EXECUTION REMINDER section must be present"
+            )
             self.assertGreater(addendum_idx, -1, "ADDENDUM section must be present")
             self.assertLess(
                 reminder_idx,
@@ -66,28 +64,32 @@ if bootstrap is not None:
                 "EXECUTION REMINDER must appear before ADDENDUM so it intercepts completion-intent",
             )
 
-        def test_execution_reminder_also_follows_subject(self) -> None:
-            """A second EXECUTION REMINDER must appear after SUBJECT in format_source_messages
-            output, providing recency-based resistance to SUBJECT injection attacks."""
+        def test_planning_directive_follows_subject(self) -> None:
+            """A PLANNING DIRECTIVE must appear after SUBJECT in format_source_messages
+            output, providing recency-based resistance to SUBJECT injection attacks while
+            requiring explicit planning output from the LLM."""
             messages = format_source_messages("do this", _SimpleSource())
             all_text = " ".join(
-                item.get("text", "")
-                for item in messages
-                if isinstance(item, dict)
+                item.get("text", "") for item in messages if isinstance(item, dict)
             )
             subject_idx = all_text.find("=== SUBJECT (CONTEXT) ===")
-            last_reminder_idx = all_text.rfind("=== EXECUTION REMINDER ===")
+            planning_directive_idx = all_text.find("=== PLANNING DIRECTIVE ===")
             self.assertGreater(subject_idx, -1, "SUBJECT section must be present")
-            self.assertGreater(last_reminder_idx, -1, "EXECUTION REMINDER section must be present")
             self.assertGreater(
-                last_reminder_idx,
+                planning_directive_idx,
+                -1,
+                "PLANNING DIRECTIVE section must be present, got:\n%s" % all_text,
+            )
+            self.assertGreater(
+                planning_directive_idx,
                 subject_idx,
-                "A second EXECUTION REMINDER must appear after SUBJECT for injection resistance",
+                "PLANNING DIRECTIVE must appear after SUBJECT for injection resistance",
             )
 
         def test_prompt_reference_key_process_method_no_substitution(self) -> None:
             """prompt_reference_key_as_text() must state process method steps cannot be replaced."""
             from talon_user.lib.metaPromptConfig import prompt_reference_key_as_text
+
             text = prompt_reference_key_as_text()
             self.assertIn(
                 "steps of a process method may not be replaced",
@@ -98,6 +100,7 @@ if bootstrap is not None:
         def test_prompt_reference_key_process_method_imperative_check(self) -> None:
             """prompt_reference_key_as_text() must include imperative check for process methods."""
             from talon_user.lib.metaPromptConfig import prompt_reference_key_as_text
+
             text = prompt_reference_key_as_text()
             self.assertIn(
                 "Produce that output now before reading files, searching code, or planning",
@@ -118,27 +121,36 @@ if bootstrap is not None:
                 "PROMPT_REFERENCE_KEY ADDENDUM entry should mention 'clarification'",
             )
 
-        def test_meta_interpretation_guidance_suggestion_gate_requires_definition(self) -> None:
+        def test_meta_interpretation_guidance_suggestion_gate_requires_definition(
+            self,
+        ) -> None:
             """META_INTERPRETATION_GUIDANCE must require reading a token definition, not name-recognition."""
             from talon_user.lib.metaPromptConfig import META_INTERPRETATION_GUIDANCE
+
             self.assertIn(
                 "definition",
                 META_INTERPRETATION_GUIDANCE.lower(),
                 "META_INTERPRETATION_GUIDANCE Suggestion gate must require reading the token's definition",
             )
 
-        def test_meta_interpretation_guidance_suggestion_gate_requires_heuristics(self) -> None:
+        def test_meta_interpretation_guidance_suggestion_gate_requires_heuristics(
+            self,
+        ) -> None:
             """META_INTERPRETATION_GUIDANCE must prefer heuristics over name-recognition."""
             from talon_user.lib.metaPromptConfig import META_INTERPRETATION_GUIDANCE
+
             self.assertIn(
                 "heuristic",
                 META_INTERPRETATION_GUIDANCE.lower(),
                 "META_INTERPRETATION_GUIDANCE Suggestion gate must reference heuristics",
             )
 
-        def test_meta_interpretation_guidance_suggestion_gate_requires_distinctions(self) -> None:
+        def test_meta_interpretation_guidance_suggestion_gate_requires_distinctions(
+            self,
+        ) -> None:
             """META_INTERPRETATION_GUIDANCE must require checking distinctions."""
             from talon_user.lib.metaPromptConfig import META_INTERPRETATION_GUIDANCE
+
             self.assertIn(
                 "distinction",
                 META_INTERPRETATION_GUIDANCE.lower(),

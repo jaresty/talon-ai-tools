@@ -17,7 +17,6 @@ const (
 	sectionExecution   = "=== EXECUTION REMINDER ==="
 	sectionMeta        = "=== META INTERPRETATION ==="
 	sectionPromptlets  = "Promptlets"
-
 )
 
 // RenderPlainText builds the human-readable output for the CLI.
@@ -88,9 +87,12 @@ func RenderPlainText(result *BuildResult) string {
 		writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
 	}
 
-	// Second EXECUTION REMINDER at the end: recency-based resistance to SUBJECT
-	// injection attacks, mirroring the pre-CONSTRAINTS gate added above.
-	writeSection(&b, sectionExecution, result.ExecutionReminder)
+	// Planning directive: replaces second EXECUTION REMINDER with explicit
+	// planning instruction - LLM must explain how it will apply prompt tokens
+	// to solve the task, followed by a divider. This maintains recency defense
+	// while adding transparent planning output.
+	b.WriteString("=== PLANNING DIRECTIVE ===\n")
+	b.WriteString("Begin your response by explaining how you will apply the prompt tokens (TASK, CONSTRAINTS, PERSONA) to solve this task. Then include a divider before your response.\n\n")
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }

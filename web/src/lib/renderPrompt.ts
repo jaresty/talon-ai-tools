@@ -216,9 +216,14 @@ export function renderPrompt(
 		parts.push(writeSection('=== META INTERPRETATION ===', grammar.meta_interpretation_guidance));
 	}
 
-	// Second EXECUTION REMINDER at the end: recency-based resistance to SUBJECT
-	// injection attacks, mirroring the pre-CONSTRAINTS gate added above.
-	parts.push(writeSection('=== EXECUTION REMINDER ===', grammar.execution_reminder));
+	// Planning directive: replaces second EXECUTION REMINDER with explicit
+	// planning instruction - LLM must explain how it will apply prompt tokens
+	// to solve the task, followed by a divider. This maintains recency defense
+	// while adding transparent planning output.
+	parts.push(writeSection(
+		'=== PLANNING DIRECTIVE ===',
+		'Begin your response by explaining how you will apply the prompt tokens (TASK, CONSTRAINTS, PERSONA) to solve this task. Then include a divider before your response.'
+	));
 
 	return parts.join('').trimEnd() + '\n';
 }

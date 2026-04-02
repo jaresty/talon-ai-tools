@@ -412,11 +412,12 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 		t.Fatal("ground description must not be empty")
 	}
 	// ADR-0174: minimal spec experiment — I-formation detail ("observation of existing code")
-	// is a patch rule and intentionally absent. Only verify the general pre-manifest
-	// observation concept survives in some form.
+	// is a patch rule and intentionally absent. Ground validates against an external
+	// intent that cannot be represented exactly, only derived. Verify this boundary
+	// concept survives in some form.
 	// Re-tighten if experiment restores full spec or violation is observed.
-	if !strings.Contains(groundDesc, "declared intent") {
-		t.Error("ground boundary clause must reference I as the declared intent")
+	if !strings.Contains(groundDesc, "derived") && !strings.Contains(groundDesc, "derivation") {
+		t.Error("ground boundary clause must reference intent as derived/external, not exact")
 	}
 }
 

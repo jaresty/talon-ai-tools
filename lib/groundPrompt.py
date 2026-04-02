@@ -52,6 +52,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "3. THE ENFORCEMENT — how the protocol catches/blocks violation "
         "The model must derive at minimum: "
         "- The invariant (claim vs reality) — what GOES WRONG: false completion; RULE: evidence before claims "
+        "- Form changes, intent does not — the ladder may change form/structure but must preserve the original intent; WHAT GOES WRONG: form changes but intent drifts; RULE: validate form changes preserve original intent "
         "- Optimization pressure — what GOES WRONG: steps skipped, unverifiable results; RULE: make compliance easier than deviation "
         "- Ladder structure — what GOES WRONG: gaps disappear, completion becomes false; RULE: one rung at a time "
         "- Evidence at proximity — evidence must appear IMMEDIATELY after result; WHAT GOES WRONG: gaps hidden, traceability lost; RULE: cite source immediately after "

@@ -17,6 +17,7 @@ _SENTINEL_GATES: dict[str, str] = {}
 
 GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
+        "modifies the task by specifying HOW to complete work correctly, not WHAT to build — it changes 'just do it' to 'prove it works through enforced evidence'. "
         "This protocol exists because a model's description of completed work is "
         "indistinguishable from actually completing it — every gate enforces the "
         "distinction by requiring a piece of reality before any claim about reality. "
@@ -52,7 +53,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "3. THE ENFORCEMENT — how the protocol catches/blocks violation "
         "The model must derive at minimum: "
         "- The invariant (claim vs reality) — what GOES WRONG: false completion; RULE: evidence before claims "
-        "- Form changes, intent does not — the ladder may change form/structure but must preserve the original intent; WHAT GOES WRONG: form changes but intent drifts; RULE: validate form changes preserve original intent "
         "- Optimization pressure — what GOES WRONG: steps skipped, unverifiable results; RULE: make compliance easier than deviation "
         "- Ladder structure — what GOES WRONG: gaps disappear, completion becomes false; RULE: one rung at a time "
         "- Evidence at proximity — evidence must appear IMMEDIATELY after result; WHAT GOES WRONG: gaps hidden, traceability lost; RULE: cite source immediately after "
@@ -73,6 +73,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "- Self-referential derivation — when deriving gaps from this protocol itself, you MUST cite the governing rule, show the mechanism that would detect failure, and demonstrate why the gap would cause the protocol to fail; WHAT GOES WRONG: gap claims without evidence; RULE: claims require visible mechanism failure "
         "- Challenge commensurability — the verification challenge must match the automatable strength of the gap claim; if gap claims an executable artifact, challenge must REQUIRE EXECUTABLE VERIFICATION (tests, scripts, runtime checks); if gap claims text, challenge must require text verification (criteria sheet, derivation template); WHAT GOES WRONG: weak verification (grep) for automatable claim; RULE: verification automatable strength >= claim automatable strength; WHEN IMPLEMENTATION MODIFIES BEHAVIOR, ONLY EXECUTABLE VALIDATION COUNTS — no amount of code inspection satisfies the challenge "
         "- Demonstrated failure — verification must SHOW the specific behavior that fails via EXECUTION; capture and cite the actual failing test output, runtime error, or observable misbehavior as evidence; WHAT GOES WRONG: running verification without showing what fails; RULE: cite actual failing execution output before proceeding; FOR BEHAVIORAL GAPS, VERIFICATION MUST EXECUTE — assertions without running code are insufficient "
+        "- Rung execution — after deriving ladder, you MUST execute each rung in order; emit rung label BEFORE each rung's work, emit completion sentinel AFTER each rung; skipping a rung or merging rungs violates the protocol; WHAT GOES WRONG: deriving ladder but not following it; RULE: derive THEN execute each rung sequentially "
+        "- Derivation must be visible — BEFORE emitting 🔵 Protocol derived, you MUST show your derivation of each rule in YOUR OWN WORDS (not copy the prompt); for each rule state: the rule, why it matters to YOU, how you'd detect violation; copying from the prompt does not satisfy this; WHAT GOES WRONG: deriving without internalizing; RULE: echo derivation in your own voice before sentinel "
+        "- Ladder execution must be visible — BEFORE emitting 🔵 Ladder derived, you MUST show your ladder derivation in YOUR OWN WORDS; for each rung state: what the rung does, why it's needed, what artifact it produces; copying does not satisfy this; WHAT GOES WRONG: deriving without executing; RULE: echo ladder in your own voice before sentinel "
         "⚠️ HARD GATE: Protocol derivation is MANDATORY FIRST STEP — you MUST derive all protocol rules with their consequences and enforcement mechanisms BEFORE emitting 🔵 Protocol derived. For EACH rule, you MUST explicitly state: (1) THE RULE — what must be done, (2) WHAT GOES WRONG NOW — the immediate consequence of violation (not vague future harm, but what breaks NOW), (3) THE ENFORCEMENT — what mechanism catches the violation. Do NOT emit the sentinel until every rule has this three-part derivation. The ladder cannot begin until this derivation is complete and the sentinel is visible. "
         "TRANSITION CHECKPOINT: Before next rung, verify: [artifact completed?], [evidence visible?], "
         "[gaps remaining?], [intent aligned?], [guards unchanged?], [next rung requires?]. "

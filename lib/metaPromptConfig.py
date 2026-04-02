@@ -13,7 +13,8 @@ PROMPT_REFERENCE_KEY: dict = {
     "task": (
         "Primary action. Execute directly without inferring unstated goals. "
         "Takes precedence over all other sections. "
-        "When a channel token is present, the channel governs output format and the task becomes a content lens."
+        "When a channel token is present, the channel governs output format and the task becomes a content lens. "
+        "APPLY all other specified tokens (constraints, persona, scope, method, form, channel) which can be found further down in this message EXPLICITLY in the response as modifications to the task and before responding TELL the user how you are applying them."
     ),
     "addendum": (
         "Task clarification that modifies HOW to execute the task. "

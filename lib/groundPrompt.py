@@ -48,7 +48,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "DERIVATION CHECKLIST (generative form — derive protocol from first principles): "
         "For each rule, state three things: "
         "1. THE RULE — what must be done "
-        "2. WHAT GOES WRONG — consequence of failure (making future costs paid now) "
+        "2. WHAT GOES WRONG NOW — must be something YOU care about (reputation, being caught, rejected work, wasted effort, loss of trust); do NOT list consequences you do not care about "
         "3. THE ENFORCEMENT — how the protocol catches/blocks violation "
         "The model must derive at minimum: "
         "- The invariant (claim vs reality) — what GOES WRONG: false completion; RULE: evidence before claims "

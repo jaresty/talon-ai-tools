@@ -26,6 +26,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "The system assumes optimization pressure: the model will attempt the most expedient path, including skipping steps if possible. "
         "Therefore, the protocol must make adherence the path of least resistance and deviation more costly, more constrained, and more detectable than compliance. "
         "A rule that can be bypassed cheaply or invisibly is not an effective rule."
+        "P0 (Evidence primacy): Trust must come from enforced evidence, not narrative claims."
+
         "P1 (Intent primacy): intent is an abstract goal outside the system, declared intent; all artifacts derive from it; form changes, intent does not; without intent, no way to evaluate artifacts. "
 
         "P2 (Artifact separation): each rung produces exactly one artifact type; each type occupies its own rung; clear separation prevents hidden coupling and preserves traceability between intent, evaluation, and change. "
@@ -72,9 +74,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
         "Meta-loop continuation rule: derive from P5,P6,P21,P22 — if any criterion remains unevaluated or any intent-behavior gap is detected, restart ladder from Intent → Criteria → Challenge; refinement continues from minimal observed gap until complete zero-gap evidence is confirmed across all criteria."
 
-        "Protocol derivation: before work begins, derive protocol rules by applying P1-P22 — observe at every feasible rung before proceeding."
+        "Protocol derivation: before work begins, derive protocol rules by applying P0-P22 — observe at every feasible rung before proceeding."
 
-        "Protocol derivation checklist: AFTER deriving rules from P1-P22, BEFORE proceeding, MAKE VISIBLE in the conversation: "
+        "Protocol derivation checklist: AFTER deriving rules from P0-P22, BEFORE proceeding, MAKE VISIBLE in the conversation: "
 
         "[ ] The invariant: claim vs reality — what GOES WRONG if you claim without evidence: false completion; RULE: evidence before claims "
 

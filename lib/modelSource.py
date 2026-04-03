@@ -70,7 +70,13 @@ def format_source_messages(
     current_request.append(
         format_message(
             "\n\n=== PLANNING DIRECTIVE ===\n"
-            "Begin your response by explaining how you will apply each token — "
+            "Before any work begins, you MUST derive each METHOD token. "
+            "For each METHOD token: restate its content in your own words, derive the concrete process it implies for this specific task, "
+            "and emit that derivation visibly in the conversation. "
+            "This is a hard gate — no task work may begin until every METHOD token has a visible derivation block. "
+            "If a METHOD token requires a governing artifact (plan, manifest, validation artifact), "
+            "that artifact must be produced before proceeding. This requirement applies regardless of task type.\n\n"
+            "After the derivation block, begin your response by explaining how you will apply each token — "
             "for TASK, cite the token name and how it shapes your approach; "
             "for each CONSTRAINTS token, cite its name and how it shapes your constraints; "
             "for PERSONA, cite each element (voice, audience, tone, intent) by name "

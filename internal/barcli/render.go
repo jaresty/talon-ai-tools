@@ -91,7 +91,8 @@ func RenderPlainText(result *BuildResult) string {
 	// planning instruction - LLM must cite each prompt token by name and
 	// explain how it shapes the response, then include a divider.
 	b.WriteString("=== PLANNING DIRECTIVE ===\n")
-	b.WriteString("Begin your response by explaining how you will apply each token — for TASK, cite the token name and how it shapes your approach; for each CONSTRAINTS token, cite its name and how it shapes your constraints; for PERSONA, cite each element (voice, audience, tone, intent) by name and how it shapes your communication. Then include a divider before your response.\n\n")
+	b.WriteString("Before any work begins, you MUST derive each METHOD token. For each METHOD token: restate its content in your own words, derive the concrete process it implies for this specific task, and emit that derivation visibly in the conversation. This is a hard gate — no task work may begin until every METHOD token has a visible derivation block. If a METHOD token requires a governing artifact (plan, manifest, validation artifact), that artifact must be produced before proceeding. This requirement applies regardless of task type.\n\n")
+	b.WriteString("After the derivation block, begin your response by explaining how you will apply each token — for TASK, cite the token name and how it shapes your approach; for each CONSTRAINTS token, cite its name and how it shapes your constraints; for PERSONA, cite each element (voice, audience, tone, intent) by name and how it shapes your communication. Then include a divider before your response.\n\n")
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }

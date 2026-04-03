@@ -172,7 +172,7 @@ func TestLoadGrammarExtraGrammarNotSet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected clean load with no extra grammar, got: %v", err)
 	}
-	if _, ok := g.AxisTokenSet("task")["ground"]; !ok {
-		t.Error("built-in task:ground missing after no-extra-grammar load")
+	if _, ok := g.AxisTokenSet("method")["ground"]; !ok {
+		t.Error("built-in method:ground missing after no-extra-grammar load")
 	}
 }

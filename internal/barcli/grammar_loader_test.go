@@ -407,7 +407,7 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
-	groundDesc := grammar.AxisDescription("task", "ground")
+	groundDesc := grammar.AxisDescription("method", "ground")
 	if groundDesc == "" {
 		t.Fatal("ground description must not be empty")
 	}

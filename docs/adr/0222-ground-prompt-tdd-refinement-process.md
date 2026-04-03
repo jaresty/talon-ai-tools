@@ -74,7 +74,7 @@ Repeat steps 2-4 until:
 
 ## Status
 
-Draft
+Adopted as process reference (see ADR-0223 for the structural experiment that uses this process)
 
 ## Notes
 

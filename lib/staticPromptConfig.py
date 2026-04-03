@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Set, TypedDict, Union
 
-from lib.groundPrompt import build_ground_prompt  # noqa: F401
 
 # Central configuration for static prompts:
 # - Each key is a canonical static prompt value (Talon list file is optional/auxiliary).
@@ -84,10 +83,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "check": {
         "description": "The response evaluates the subject against a condition and reports whether it passes or fails.",
-    },
-    "ground": {
-        "description": build_ground_prompt(),
-        "completeness": "full",
     },
 }
 
@@ -170,7 +165,6 @@ _STATIC_PROMPT_LABELS: dict[str, str] = {
     "check": "Evaluate or verify against criteria",
     "diff": "Compare and contrast subjects",
     "fix": "Reformat existing content",
-    "ground": "Establish correctness through evidence protocols",
     "make": "Create new content",
     "pick": "Select from a set of alternatives",
     "plan": "Propose steps, structure, or strategy",
@@ -380,29 +374,6 @@ _TASK_METADATA: dict[str, TaskMetadata] = {
         ],
         "distinctions": [],
     },
-    "ground": {
-        "definition": "Establishing correctness through enforced evidence protocols and observable proof.",
-        "heuristics": [
-            "prove it works",
-            "show me the evidence",
-            "demonstrate correctness",
-            "verify with proof",
-            "establish with evidence",
-            "show observable results",
-            "validate with proof",
-            "demonstrate functional correctness",
-        ],
-        "distinctions": [
-            {
-                "token": "probe",
-                "note": "ground = enforce evidence protocols; probe = analyze broadly",
-            },
-            {
-                "token": "check",
-                "note": "ground = comprehensive evidence protocols; check = evaluate against condition",
-            },
-        ],
-    },
 }
 
 # Distilled routing concept phrases for task tokens (ADR-0146).
@@ -411,7 +382,6 @@ _STATIC_PROMPT_ROUTING_CONCEPT: dict[str, str] = {
     "check": "Evaluate pass/fail",
     "diff": "Compare subjects",
     "fix": "Reformat/edit",
-    "ground": "Establish correctness through evidence",
     "make": "Create new content",
     "pick": "Choose from options",
     "plan": "Propose strategy",
@@ -427,7 +397,6 @@ _STATIC_PROMPT_KANJI: dict[str, str] = {
     "check": "検",
     "diff": "較",
     "fix": "修",
-    "ground": "地",
     "make": "作",
     "pick": "選",
     "plan": "策",

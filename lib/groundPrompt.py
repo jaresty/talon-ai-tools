@@ -1,11 +1,15 @@
-"""Ground method prompt — structured parts (ADR-0220).
+"""Ground task prompt — structured parts (ADR-0220, ADR-0221).
 
-This is the SSOT for the ground method's prompt injection text.
-It is NOT generated; edit directly here, then run `make axis-regenerate-apply`
-to propagate changes through to axisConfig.py and downstream grammar files.
+This is the SSOT for the ground task's prompt injection text.
+It is NOT generated; edit directly here, then run `make bar-grammar-update`
+to propagate changes through to staticPromptConfig.py and downstream grammar files.
 
 ADR-0220: generalized ground protocol — domain-agnostic derivation ladder.
 The model derives its own ladder from the principles on each session.
+
+Note: ground is a task token (staticPromptConfig.py), not a method token.
+GROUND_PARTS_MINIMAL["core"] contains the full P0-P22 protocol (not a minimal form —
+name retained from the pre-revert phase; see ADR-0221 for the canonical-essence history).
 """
 
 # Derived sentinels — model derives sentinels from principles (recursive intent structure).
@@ -197,8 +201,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
 
 def build_ground_prompt() -> str:
-    """Return the ground method prompt string (ADR-0217: generative ladder).
+    """Return the ground method prompt string (ADR-0220: generative ladder).
 
-    This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"].
+    This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"] via axisConfig.py.
+    ground is a method token — it is not in STATIC_PROMPT_CONFIG.
     """
-    return "Derive this protocol, ladder, and checklist in your own words and then follow it: " + GROUND_PARTS_MINIMAL["core"]
+    return "The response applies this evidence protocol — derive it in your own words and then follow it: " + GROUND_PARTS_MINIMAL["core"]

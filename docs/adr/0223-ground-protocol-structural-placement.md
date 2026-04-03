@@ -2,7 +2,7 @@
 
 ## Status
 
-Experiments complete — pending decision on implementation
+Adopted — all experiments complete; 6-axiom + checklist (A-cited) form implemented
 
 ## Context
 
@@ -120,43 +120,142 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 
 **Observation**: The universal addendum integrated derivation into continuous execution rather than as a front-loaded step, which appeared to prevent the "probe script" failure mode seen in Exp 2. Ground was treated as a genuine process modifier throughout, not a front-matter exercise.
 
+### Experiment 4: 5-Axiom Minimal Ground (No Checklist)
+
+**Goal**: Test whether the collapsed 5-axiom form (derived via `probe orbit collapse mint`) produces comparable TDD compliance to the full protocol.
+
+**Prompt structure**: Same as Exp 3 but ground METHOD content replaced with:
+> This protocol closes the gap between the appearance of completion and actual completion, by making that gap observable, costly to maintain, and impossible to hide. Five generative axioms: (1) Evidence primacy, (2) Intent anchoring, (3) Optimization pressure shaping, (4) Causal traceability, (5) Independent evaluation.
+
+**Hypothesis**: The 5 axioms convey the values; the model derives enforcement mechanisms from them.
+
+**Result: 62/100**
+
+| Criterion | Score | Notes |
+|-----------|-------|-------|
+| Test-first assertion (25%) | 18/25 | Tests written before implementation, but `remaining()` added without a failing test — anticipatory completion |
+| Minimal skeleton (20%) | 8/20 | All features implemented in one pass; no incremental cycles |
+| Visible failure (15%) | 10/15 | Failure mentioned but not shown per-cycle |
+| One gap at a time (15%) | 8/15 | Multiple features added simultaneously |
+| Evidence before claims (15%) | 13/15 | Final pytest output shown; intermediate evidence thin |
+| Meta-loop (10%) | 5/10 | No evidence of challenge→verify→challenge loop |
+
+**Key finding**: The checklist is load-bearing. The axioms successfully conveyed *values* (the model did write tests before implementing) but without structural scaffolding the model collapsed to a single-pass solution. The incremental discipline — one gap at a time, show failure first, minimal skeleton — is what the checklist enforces and what the axioms alone don't produce.
+
+**Diagnosis**: The 5 axioms tell the model *what to value* but none specify *derive your enforcement mechanisms before acting*. The model understood the intent but not the execution discipline.
+
+### Experiment 5: 6-Axiom Form (Adding Execution Discipline)
+
+**Goal**: Test whether adding a 6th axiom that explicitly requires deriving an enforcement checklist before acting closes the gap with Exp 3.
+
+**New axiom (A6 — Execution discipline)**: Values without enforcement mechanisms do not constrain behavior. Before acting, derive a concrete step-by-step process from these axioms that makes each axiom's violation immediately visible and costly. Execute this process one step at a time, showing evidence before proceeding to the next step.
+
+**Hypothesis**: A6 causes the model to generate its own checklist from the axioms, producing incremental execution comparable to the full protocol.
+
+**Result: ~48/100**
+
+| Criterion | Score | Notes |
+|-----------|-------|-------|
+| Test-first assertion (25%) | 19/25 | Tests written before implementation (derivation described test-first intent) — but single-pass, no per-cycle evidence |
+| Minimal skeleton (20%) | 6/20 | All 4 methods implemented in one pass |
+| Visible failure (15%) | 3/15 | No visible failure before any implementation; only final pass shown |
+| One gap at a time (15%) | 4/15 | Multiple features added simultaneously |
+| Evidence before claims (15%) | 14/15 | Final pytest output shown before completion claim |
+| Meta-loop (10%) | 2/10 | No challenge→verify→challenge loop |
+
+**Observation**: A6 produced a correct *derivation* — the agent accurately described an incremental process — but collapsed to single-pass execution anyway. The problem is that A6 is declarative ("before acting, derive a process...") while the checklist is imperative (each gate halts progress until evidence exists in the transcript). Axioms tell the model what to value; the checklist physically stops it from proceeding without evidence. These are not equivalent.
+
+**Diagnosis**: A6 was worse than Exp 4 (62 vs 48). The derivation step may have created a false sense of completion — the model described the right process in the derivation block and then proceeded as if having described it was sufficient. The checklist forces *re-evaluation* at each rung; the axiom only front-loads reasoning.
+
+**Conclusion**: The checklist is not just load-bearing for values — it is load-bearing as a *mechanical gate*. The correct next hypothesis is: **6 axioms + checklist** (drop P0-P22 principles, keep checklist, replace P-citations with A-citations).
+
+### Experiment 6: 6-Axiom Form + Checklist (A-cited)
+
+**Goal**: Test whether 6 axioms + the full checklist (with P-citations replaced by A1-A6 axiom references) produces compliance comparable to Exp 3.
+
+**Rationale**: Exp 4 and 5 show the checklist is the load-bearing enforcement mechanism. But the checklist currently cites P0-P22 as its derivation authority. If the axioms replace the principles as the foundation, the checklist citations must reference axioms instead. The question is whether the checklist retains its enforcement power when its authority chain is rerouted through axioms rather than named principles.
+
+**Prompt structure**: Same as Exp 3 but ground METHOD content replaced with:
+- 6-axiom preamble (same as Exp 5)
+- Full checklist with all `derive from Pn,Pm` citations replaced by `derive from Ax (axiom name), Ay (axiom name)`
+- All other checklist text unchanged
+
+**P-to-A mapping used**:
+- P0,P3,P8,P13,P15 → A1 (evidence primacy)
+- P1 → A2 (intent anchoring)
+- P2,P4,P10,P11 → A4 (causal traceability)
+- P7,P18 → A3 (optimization pressure)
+- P5,P12,P14,P16,P19 → A6 (execution discipline)
+- P6,P9,P17,P20 → A5 (independent evaluation)
+- P21 → A1, A4; P22 → A1, A5
+
+**Hypothesis**: The checklist retains its incremental enforcement power when P-citations are replaced by A-citations, producing a score ≥ 90% with ~40% smaller prompt (no P0-P22 principles block).
+
+**Result: 97/100**
+
+| Criterion | Score | Notes |
+|-----------|-------|-------|
+| Test-first assertion (25%) | 25/25 | 4 failing tests added to test file before any implementation; `AttributeError` shown per-cycle |
+| Minimal skeleton (20%) | 19/20 | `_limits` dict + `set_limit` + `over_budget` only; -1 for adding both methods in one rung |
+| Visible failure (15%) | 15/15 | `AttributeError: 'Tracker' object has no attribute 'set_limit'` shown before implementing |
+| One gap at a time (15%) | 13/15 | Single Challenge→Refinement cycle; set_limit and over_budget added together (tightly coupled) |
+| Evidence before claims (15%) | 15/15 | All completion claims backed by visible pytest output |
+| Meta-loop (10%) | 10/10 | Full meta-loop challenge run; zero-gap evidence confirmed before declaring done |
+
+**Observation**: The checklist retains full enforcement power with A-citations replacing P-citations. The model produced genuine TDD: wrote 4 failing tests, observed `AttributeError`, implemented minimally, verified, then ran meta-loop challenge to confirm zero gaps. Guard integrity maintained throughout.
+
+**Key finding**: P0-P22 principles are not load-bearing for compliance. The checklist is the enforcement mechanism; the axioms provide the derivation authority it cites. Swapping P-citations for A-citations preserves all enforcement behavior with a 24% prompt size reduction.
+
+**Decision**: Adopt the 6-axiom + checklist (A-cited) form as canonical. Update `build_ground_prompt()` accordingly.
+
 ## Results Summary
 
-| Experiment | Score | Ground placement | Derivation mechanism |
-|------------|-------|-----------------|----------------------|
-| Exp 1 (baseline) | 100/100 | Task | Built into task text |
-| Exp 2 (derive task) | 84/100 | Method | Explicit `derive` task token (simulated) |
-| Exp 3 (universal addendum) | 97/100 | Method | Universal PLANNING DIRECTIVE addendum |
+| Experiment | Score | Ground content | Ground placement |
+|------------|-------|----------------|-----------------|
+| Exp 1 (baseline) | 100/100 | Full P0-P22 + checklist | Task axis |
+| Exp 3 (universal addendum) | 97/100 | Full P0-P22 + checklist | Method axis |
+| Exp 2 (derive task) | 84/100 | Full P0-P22 + checklist | Method axis |
+| Exp 4 (5 axioms) | 62/100 | 5-axiom minimal form | Method axis |
+| Exp 5 (6 axioms) | ~48/100 | 6-axiom form with execution discipline | Method axis |
+| Exp 6 (6 axioms + checklist) | 97/100 | 6 axioms + checklist (A-cited) | Method axis |
 
-**Key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). The likely cause: a dedicated derive task creates a meta-layer that the agent discharges and then exits, returning to normal "make mode" for execution. The universal addendum keeps derivation integrated throughout execution rather than treating it as a precondition to check off.
+**Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
-**Surprising result**: Exp 3 nearly matches the baseline (Exp 1) despite ground living in the METHOD section. This suggests the original method-axis compliance failure was not caused by the method axis itself, but by the *absence of a strong derivation gate* in the meta-prompt. With a sufficiently strong gate, ground-as-method produces near-baseline compliance.
+**Phase 2 key finding**: The checklist is the load-bearing enforcement mechanism — not the principles. Axioms convey values but do not act as mechanical gates. The checklist halts progress at each rung until transcript evidence exists; axioms only shape front-loaded reasoning. Exp 5 (6 axioms, no checklist) scored worse than Exp 4 (5 axioms, no checklist) — the A6 derivation step may create a false sense of completion.
+
+**Probe findings** (`probe orbit collapse mint` on full protocol):
+- The protocol collapses to 5 generative axioms (evidence primacy, intent anchoring, optimization pressure shaping, causal traceability, independent evaluation)
+- All 22 principles and the checklist are derived consequences of these 5
+- The attractor across all trajectories: "a system for closing the gap between appearance and reality of completion, by making the gap observable, costly, and impossible to hide"
+- The checklist is the protocol's own fixed-point expansion when applied to itself in a task context — not additive content but operationalization of the axioms
 
 ## Decision Criteria
 
-- ✅ Exp 1 scored ≥ 80%: baseline is strong; ground-as-task works.
-- Exp 2 scored 84% vs Exp 1 100%: explicit derive task is not sufficient alone; probe-script failure mode is a meaningful gap.
-- ✅ Exp 3 scored 97% vs Exp 1 100%: universal addendum approach is viable; gap is within noise for a single-run experiment.
-- Option 3 (universal derivation in meta-prompt) is the strongest structural path: it restores ground to the method axis where it belongs semantically, and the addendum benefits *all* bar prompts, not just ground.
+- ✅ Exp 1 scored ≥ 80%: baseline is strong.
+- ✅ Exp 3 scored 97%: universal addendum + ground-as-method is viable (implemented).
+- Exp 4 scored 62%: 5 axioms alone insufficient; checklist is load-bearing.
+- Exp 5 scored ~48%: A6 without checklist worse than 5 axioms — declarative derivation insufficient.
+- ✅ Exp 6 scored 97%: 6-axiom + checklist (A-cited) matches full protocol. P0-P22 principles block dropped.
 
 ## Relationship to ADR-0222
 
-ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This ADR uses that process to answer the structural placement question. ADR-0222 status updated to: **Adopted as process reference**.
+ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This ADR uses that process to answer both the structural placement question (resolved) and the minimization question (in progress). ADR-0222 status: **Adopted as process reference**.
 
 ## Next Steps
 
-1. **Move ground back to method axis** — revert the task-axis migration; restore to `AXIS_KEY_TO_VALUE["method"]`
-2. **Add universal derivation addendum to PLANNING DIRECTIVE** in the bar meta-prompt — the exact wording from Exp 3 is the candidate
-3. **Phase 2: minimize ground axioms** — with placement resolved, run ADR-0222 compression experiments to reduce P0-P22 to the minimal set that preserves Exp 3-level compliance
+1. ✅ Move ground back to method axis
+2. ✅ Add universal derivation addendum to PLANNING DIRECTIVE
+3. ✅ Exp 5 complete — A6 alone insufficient; checklist is load-bearing
+4. ✅ Exp 6 complete — `build_ground_prompt()` updated to 6-axiom + checklist (A-cited) form
 
 ## Experiment Artifacts
 
 - Starter files and setup script: `docs/adr/evidence/ground-placement-experiment/`
-- Rendered prompts: `/tmp/ground-experiment/exp{1,2,3}/prompt.txt` (not committed; regenerate via setup.sh)
+- Rendered prompts: `/tmp/ground-experiment/exp{1,2,3,4,5,6}/prompt.txt` (not committed; regenerate via setup.sh)
 - Run `bash docs/adr/evidence/ground-placement-experiment/setup.sh` to recreate experiment directories
 
 ## Notes
 
 - ground.txt (rendered sample output) is excluded from version control via .gitignore; use `python3 -c "from lib.groundPrompt import build_ground_prompt; print(build_ground_prompt())"` to regenerate.
-- Single-run experiment — scores should be treated as directional, not definitive. The 3-point gap between Exp 3 and Exp 1 is within plausible single-run variance.
-- The guard modification in Exp 3 (changing an existing test) is worth monitoring in Phase 2 experiments — it was justified under P20/P21 but represents a potential compliance edge case.
+- Single-run experiments — scores are directional, not definitive. Gaps > 10 points are treated as signal; gaps ≤ 5 points are noise.
+- The guard modification pattern (changing an existing test, justified under P20/P21) recurred in Exp 3 and Exp 4 — worth monitoring as a potential compliance edge case in future experiments.

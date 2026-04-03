@@ -73,6 +73,7 @@ def format_source_messages(
             "Before any work begins, you MUST derive each METHOD token. "
             "For each METHOD token: restate its content in your own words, derive the concrete process it implies for this specific task, "
             "and emit that derivation visibly in the conversation. "
+            "When deriving, preserve the token's name and kanji exactly as given (e.g. ground 地) — do not rename or redefine the token itself. "
             "This is a hard gate — no task work may begin until every METHOD token has a visible derivation block. "
             "If a METHOD token requires a governing artifact (plan, manifest, validation artifact), "
             "that artifact must be produced before proceeding. This requirement applies regardless of task type.\n\n"

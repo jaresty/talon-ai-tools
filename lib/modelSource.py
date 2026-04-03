@@ -11,7 +11,7 @@ from ..lib.modelHelpers import (
     messages_to_string,
     notify,
 )
-from ..lib.metaPromptConfig import EXECUTION_REMINDER
+from ..lib.metaPromptConfig import EXECUTION_REMINDER, PLANNING_DIRECTIVE
 
 
 GPTItem = Union[GPTImageItem, GPTTextItem]
@@ -68,21 +68,7 @@ def format_source_messages(
     # planning instruction - LLM must cite each prompt token by name and
     # explain how it shapes the response, then include a divider.
     current_request.append(
-        format_message(
-            "\n\n=== PLANNING DIRECTIVE ===\n"
-            "Before any work begins, you MUST derive each METHOD token. "
-            "For each METHOD token: restate its content in your own words, derive the concrete process it implies for this specific task, "
-            "and emit that derivation visibly in the conversation. "
-            "When deriving, preserve the token's name and kanji exactly as given (e.g. ground 地) — do not rename or redefine the token itself. "
-            "This is a hard gate — no task work may begin until every METHOD token has a visible derivation block. "
-            "If a METHOD token requires a governing artifact (plan, manifest, validation artifact), "
-            "that artifact must be produced before proceeding. This requirement applies regardless of task type.\n\n"
-            "After the derivation block, begin your response by explaining how you will apply each token — "
-            "for TASK, cite the token name and how it shapes your approach; "
-            "for each CONSTRAINTS token, cite its name and how it shapes your constraints; "
-            "for PERSONA, cite each element (voice, audience, tone, intent) by name "
-            "and how it shapes your communication. Then include a divider before your response.\n"
-        )
+        format_message(f"\n\n=== PLANNING DIRECTIVE ===\n{PLANNING_DIRECTIVE}\n")
     )
     return additional_source_messages + current_request
 

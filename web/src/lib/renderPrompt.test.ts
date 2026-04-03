@@ -57,6 +57,7 @@ const grammar: Grammar = {
 		subject: 'SENTINEL_SUBJECT_CONTRACT',
 	},
 	execution_reminder: 'EXECUTION REMINDER TEXT',
+	planning_directive: 'PLANNING DIRECTIVE TEXT',
 	meta_interpretation_guidance: 'META INTERPRETATION GUIDANCE TEXT'
 };
 

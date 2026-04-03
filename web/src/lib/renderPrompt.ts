@@ -219,10 +219,7 @@ export function renderPrompt(
 	// Planning directive: replaces second EXECUTION REMINDER with explicit
 	// planning instruction - LLM must cite each prompt token by name and
 	// explain how it shapes the response, then include a divider.
-	parts.push(writeSection(
-		'=== PLANNING DIRECTIVE ===',
-		'Begin your response by explaining how you will apply each token — for TASK, cite the token name and how it shapes your approach; for each CONSTRAINTS token, cite its name and how it shapes your constraints; for PERSONA, cite each element (voice, audience, tone, intent) by name and how it shapes your communication. Then include a divider before your response.'
-	));
+	parts.push(writeSection('=== PLANNING DIRECTIVE ===', grammar.planning_directive));
 
 	return parts.join('').trimEnd() + '\n';
 }

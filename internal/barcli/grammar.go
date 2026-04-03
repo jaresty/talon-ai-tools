@@ -37,6 +37,7 @@ type Grammar struct {
 	SchemaVersion              string
 	ReferenceKey               ReferenceKeyContracts
 	ExecutionReminder          string
+	PlanningDirective          string
 	MetaInterpretationGuidance string
 	Axes              AxisSection
 	Static        StaticSection
@@ -171,6 +172,7 @@ type rawGrammar struct {
 	SchemaVersion              string           `json:"schema_version"`
 	ReferenceKey               ReferenceKeyContracts `json:"reference_key"`
 	ExecutionReminder          string           `json:"execution_reminder"`
+	PlanningDirective          string           `json:"planning_directive"`
 	MetaInterpretationGuidance string           `json:"meta_interpretation_guidance"`
 	Axes              rawAxisSection   `json:"axes"`
 	Static        rawStatic        `json:"tasks"`
@@ -284,6 +286,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 		SchemaVersion:              raw.SchemaVersion,
 		ReferenceKey:               raw.ReferenceKey,
 		ExecutionReminder:          raw.ExecutionReminder,
+		PlanningDirective:          raw.PlanningDirective,
 		MetaInterpretationGuidance: raw.MetaInterpretationGuidance,
 		Patterns:          raw.Patterns,
 		StarterPacks:  raw.StarterPacks,
@@ -838,7 +841,7 @@ func (g *Grammar) NormalizeTokensWithSource(tokens []string) []NormalizedToken {
 func (g *Grammar) AxisTokenSet(axis string) map[string]struct{} {
 	axisKey := normalizeAxis(axis)
 	set := make(map[string]struct{})
-	
+
 	// Special handling for task axis - tasks are stored in Static.Descriptions
 	if axisKey == "task" {
 		for token := range g.Static.Descriptions {
@@ -849,7 +852,7 @@ func (g *Grammar) AxisTokenSet(axis string) map[string]struct{} {
 		}
 		return set
 	}
-	
+
 	for token := range g.axisTokens[axisKey] {
 		set[token] = struct{}{}
 	}
@@ -881,12 +884,12 @@ func (g *Grammar) AxisDescription(axis, token string) string {
 	if axisKey == "" || tokenKey == "" {
 		return ""
 	}
-	
+
 	// Special handling for task axis - use TaskDescription
 	if axisKey == "task" {
 		return g.TaskDescription(tokenKey)
 	}
-	
+
 	docs := g.axisDocs[axisKey]
 	if docs == nil {
 		return ""

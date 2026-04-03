@@ -23,6 +23,7 @@ type BuildResult struct {
 	SchemaVersion       string              `json:"schema_version"`
 	ReferenceKey               ReferenceKeyContracts `json:"reference_key,omitempty"`
 	ExecutionReminder          string              `json:"execution_reminder,omitempty"`
+	PlanningDirective          string              `json:"planning_directive,omitempty"`
 	MetaInterpretationGuidance string              `json:"meta_interpretation_guidance,omitempty"`
 	Subject             string              `json:"subject"`
 	Addendum            string              `json:"addendum,omitempty"`
@@ -967,6 +968,7 @@ func (s *buildState) toResult() *BuildResult {
 		SchemaVersion:     s.grammar.SchemaVersion,
 		ReferenceKey:               s.grammar.ReferenceKey,
 		ExecutionReminder:          s.grammar.ExecutionReminder,
+		PlanningDirective:          s.grammar.PlanningDirective,
 		MetaInterpretationGuidance: s.grammar.MetaInterpretationGuidance,
 		Task:          task,
 		Constraints:   constraints,

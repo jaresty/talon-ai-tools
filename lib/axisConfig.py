@@ -1015,6 +1015,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "fourfold": "Reasoning",
         "gap": "Structural",
         "grain": "Diagnostic",
+        "ground": "Process",
         "grove": "Generative",
         "induce": "Reasoning",
         "inversion": "Diagnostic",

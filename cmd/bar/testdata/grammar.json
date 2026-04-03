@@ -889,6 +889,7 @@
         "fourfold": "Reasoning",
         "gap": "Structural",
         "grain": "Diagnostic",
+        "ground": "Process",
         "grove": "Generative",
         "induce": "Reasoning",
         "inversion": "Diagnostic",
@@ -9122,7 +9123,7 @@
     }
   ],
   "checksums": {
-    "axes": "8d1746d27e2004cea6b6e837498b5eee3476335cd3802f8f237517d83df35948",
+    "axes": "be523325af09870d86c9072fbef4cd5e46c13a631f3b55136d2b72fc667cdeaa",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "43381f90eba28841526b7beae11567d2a9356b33b98f82b8a081b6b44fcfdbf9",

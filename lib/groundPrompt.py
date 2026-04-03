@@ -75,7 +75,16 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'derive from A6 (execution discipline) — refinement adds only smallest necessary change[ ] Minimal artifact '
         "naming: derive from A6 (execution discipline) — refinement artifacts use 'Partial Implementation' or 'Minimal "
         "Code Change'; names must not imply full completion[ ] Gap isolation: derive from A6 (execution discipline) — one "
-        'refinement rung targets one observable gap only[ ] Consequence materialization: derive from A3 (optimization '
+        'refinement rung targets one observable gap only[ ] Gap declaration validity: derive from A1 (evidence primacy), '
+        'A2 (intent anchoring), A4 (causal traceability) — a valid gap declaration must cite two things: (1) the '
+        'specific observable evidence already present in the transcript that demonstrates the failure (tool output, test '
+        'result, or applied check — not an inference or assertion); and (2) the specific criterion from the Criteria rung '
+        'that the failure violates, with a reference to where that criterion was stated; a gap declared without prior '
+        'observable failure in transcript is an inference, not an observation; a gap declared without a criterion '
+        'citation is unanchored; WHAT GOES WRONG if absent: gaps are fabricated or inferred rather than observed, '
+        'declared criteria can be silently reframed or ignored, and the causal chain from intent to gap to refinement '
+        'is broken; CONSEQUENCE: rung rejection until the gap declaration is re-emitted with both an observable '
+        'evidence citation and a criterion citation[ ] Consequence materialization: derive from A3 (optimization '
         'pressure), A1 (evidence primacy) — every stated "what GOES WRONG" must create an immediate, visible protocol '
         'consequence; explanation without cost does not constrain behavior[ ] Prerequisite minimality: derive from A6 '
         '(execution discipline) — if failure is prerequisite absence, refinement may only restore guard executability; do '

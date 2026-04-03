@@ -31,6 +31,7 @@ vi.mock('$lib/grammar.js', () => ({
 		persona: { use_when: {} },
 		reference_key: { task: '', addendum: '', constraints: '', constraints_axes: {}, persona: '', subject: '' },
 		execution_reminder: '',
+		planning_directive: '',
 		meta_interpretation_guidance: '',
 		axes: { definitions: {}, labels: {} }
 	}),

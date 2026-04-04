@@ -232,7 +232,10 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 | Exp 4 (5 axioms) | 62/100 | 5-axiom minimal form | Method axis |
 | Exp 5 (6 axioms) | ~48/100 | 6-axiom form with execution discipline | Method axis |
 | Exp 6 (6 axioms + checklist) | 97/100 | 6 axioms + checklist (A-cited) | Method axis |
-| Exp 7 (6 axioms + derived checklist) | *pending* | 6 axioms + checklist-derivation instruction | Method axis |
+| Exp 7 (6 axioms + derived checklist) | ~45/100 | 6 axioms + checklist-derivation instruction | Method axis |
+| Exp 8 (7 axioms + derived checklist) | ~91/100 | + A7 evaluation precedence | Method axis |
+| Exp 9 (8 axioms + derived checklist) | ~95/100 | + A8 incremental causality | Method axis |
+| Exp 10 (9 axioms + derived checklist) | *pending* | + A9 behavioral atomicity | Method axis |
 
 **Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
@@ -262,7 +265,10 @@ ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This A
 2. ✅ Add universal derivation addendum to PLANNING DIRECTIVE
 3. ✅ Exp 5 complete — A6 alone insufficient; checklist is load-bearing
 4. ✅ Exp 6 complete — `build_ground_prompt()` updated to 6-axiom + checklist (A-cited) form
-5. **Evaluate Exp 7** — if derived checklist scores ≥ 90%, the written checklist can be replaced by a derivation instruction, reducing prompt size ~60%
+5. ✅ Exp 7 (~45): derived checklist missed test-first entirely — A7 (evaluation precedence) identified as missing
+6. ✅ Exp 8 (~91): A7 closes test-first gap — A8 (incremental causality) identified as missing
+7. ✅ Exp 9 (~95): A8 closes most of minimality gap — A9 (behavioral atomicity) identified as missing
+8. **Evaluate Exp 10** — if 9-axiom derived checklist scores ≥ 97%, axioms fully generate the checklist and written form can be replaced
 
 ## Experiment Artifacts
 

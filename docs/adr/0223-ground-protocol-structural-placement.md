@@ -235,7 +235,8 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 | Exp 7 (6 axioms + derived checklist) | ~45/100 | 6 axioms + checklist-derivation instruction | Method axis |
 | Exp 8 (7 axioms + derived checklist) | ~91/100 | + A7 evaluation precedence | Method axis |
 | Exp 9 (8 axioms + derived checklist) | ~95/100 | + A8 incremental causality | Method axis |
-| Exp 10 (9 axioms + derived checklist) | *pending* | + A9 behavioral atomicity | Method axis |
+| Exp 10 (9 axioms + derived checklist) | ~98/100 | + A9 behavioral atomicity | Method axis |
+| Exp 11 (9 axioms only) | *pending* | no derivation instruction | Method axis |
 
 **Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
@@ -268,7 +269,8 @@ ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This A
 5. ✅ Exp 7 (~45): derived checklist missed test-first entirely — A7 (evaluation precedence) identified as missing
 6. ✅ Exp 8 (~91): A7 closes test-first gap — A8 (incremental causality) identified as missing
 7. ✅ Exp 9 (~95): A8 closes most of minimality gap — A9 (behavioral atomicity) identified as missing
-8. **Evaluate Exp 10** — if 9-axiom derived checklist scores ≥ 97%, axioms fully generate the checklist and written form can be replaced
+8. ✅ Exp 10 (~98): A9 closes remaining gap — 9 axioms + derivation instruction matches written checklist
+9. **Evaluate Exp 11** — if 9 axioms alone (no derivation instruction) scores ≥ 97%, A6 is sufficient to produce checklist artifact behavior without explicit instruction
 
 ## Experiment Artifacts
 

@@ -23,7 +23,7 @@ _SENTINEL_GATES: dict[str, str] = {}
 GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
         'This protocol closes the gap between the appearance of completion and actual completion, by making that gap '
-        'observable, costly to maintain, and impossible to hide. Seven generative axioms — derive your process from these: '
+        'observable, costly to maintain, and impossible to hide. Eight generative axioms — derive your process from these: '
         '1. Evidence primacy: Claims require externalized evidence. A model cannot self-certify. 2. Intent anchoring: '
         'Intent is the only external anchor for evaluation. Without declared intent outside the system, drift is '
         'undetectable. 3. Optimization pressure shaping: The system must make compliance easier than deviation — rules '
@@ -39,7 +39,12 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         "the implementation shaped the evaluation's assumptions. Structural separation (A5) is necessary but not "
         'sufficient; temporal precedence is also required. The only evaluation with causal authority over an '
         'implementation is one that existed before it. '
-        'Protocol derivation checklist: AFTER deriving your process from the seven '
+        '8. Incremental causality: Each refinement step must address exactly one observed failure and introduce '
+        'nothing beyond what closes it. When multiple gaps are closed simultaneously, the causal link between each '
+        'specific change and its specific effect becomes unobservable — you cannot know which change fixed which gap, '
+        'whether any change introduced a new gap, or whether some changes were necessary at all. Incremental steps '
+        'are not a discipline preference; they are the minimum unit of observable causality. '
+        'Protocol derivation checklist: AFTER deriving your process from the eight '
         'axioms above, BEFORE proceeding, MAKE VISIBLE in the conversation: [ ] The invariant: claim vs reality — what '
         'GOES WRONG if you claim without evidence: false completion; RULE: evidence before claims [ ] Optimization '
         'pressure: the model will seek shortcuts — what GOES WRONG if unaddressed: steps skipped, unverifiable results; '

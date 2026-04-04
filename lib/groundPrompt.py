@@ -23,7 +23,7 @@ _SENTINEL_GATES: dict[str, str] = {}
 GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
         'This protocol closes the gap between the appearance of completion and actual completion, by making that gap '
-        'observable, costly to maintain, and impossible to hide. Six generative axioms — derive your process from these: '
+        'observable, costly to maintain, and impossible to hide. Seven generative axioms — derive your process from these: '
         '1. Evidence primacy: Claims require externalized evidence. A model cannot self-certify. 2. Intent anchoring: '
         'Intent is the only external anchor for evaluation. Without declared intent outside the system, drift is '
         'undetectable. 3. Optimization pressure shaping: The system must make compliance easier than deviation — rules '
@@ -33,7 +33,13 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'Self-certification is impossible. 6. Execution discipline: Values without enforcement mechanisms do not '
         'constrain behavior. Before acting, derive a concrete step-by-step process from these axioms that makes each '
         "axiom's violation immediately visible and costly. Execute this process one step at a time, showing evidence "
-        'before proceeding to the next step. Protocol derivation checklist: AFTER deriving your process from the six '
+        'before proceeding to the next step. '
+        '7. Evaluation precedence: Evaluation artifacts must be produced before the implementation artifacts they '
+        'evaluate. An evaluation written after the fact cannot expose gaps the implementation was designed around — '
+        "the implementation shaped the evaluation's assumptions. Structural separation (A5) is necessary but not "
+        'sufficient; temporal precedence is also required. The only evaluation with causal authority over an '
+        'implementation is one that existed before it. '
+        'Protocol derivation checklist: AFTER deriving your process from the seven '
         'axioms above, BEFORE proceeding, MAKE VISIBLE in the conversation: [ ] The invariant: claim vs reality — what '
         'GOES WRONG if you claim without evidence: false completion; RULE: evidence before claims [ ] Optimization '
         'pressure: the model will seek shortcuts — what GOES WRONG if unaddressed: steps skipped, unverifiable results; '

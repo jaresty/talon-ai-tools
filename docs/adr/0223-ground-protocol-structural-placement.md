@@ -208,6 +208,20 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 
 **Decision**: Adopt the 6-axiom + checklist (A-cited) form as canonical. Update `build_ground_prompt()` accordingly.
 
+### Experiment 7: 6-Axiom Form + Derived Checklist Artifact
+
+**Goal**: Test whether instructing the model to *produce* a `[ ]` checklist artifact (rather than providing one) yields comparable compliance to Exp 6, at ~60% smaller prompt size.
+
+**Rationale**: Exp 5 showed prose derivation insufficient. The hypothesis is that the *form* of derivation output matters: a concrete `[ ]` checklist artifact in the transcript (vs. prose description) may function like the written checklist because it creates the same gate structure. The model commits to specific gate conditions before proceeding, then checks each off against transcript evidence.
+
+**Key difference from Exp 5**: Exp 5 produced prose; Exp 7 requires a `[ ]` artifact with explicit gate conditions, failure modes, and consequences — a governing artifact the model must follow, not a planning narrative.
+
+**Prompt structure**: 6 axioms + instruction to produce a governing `[ ]` checklist artifact before any rung begins (hard gate: `🔵 Checklist derived.` sentinel required). No written checklist items. Prompt is ~7KB vs ~19KB for Exp 6.
+
+**Hypothesis**: If the model derives an adequate checklist from axioms, it scores ≥ 90%. If it misses specific failure modes (e.g. gap declaration validity, direct artifact coverage) that the written checklist names explicitly, it will score lower and those named items are doing irreplaceable attention-anchoring work.
+
+**Result**: *Pending*
+
 ## Results Summary
 
 | Experiment | Score | Ground content | Ground placement |
@@ -218,6 +232,7 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 | Exp 4 (5 axioms) | 62/100 | 5-axiom minimal form | Method axis |
 | Exp 5 (6 axioms) | ~48/100 | 6-axiom form with execution discipline | Method axis |
 | Exp 6 (6 axioms + checklist) | 97/100 | 6 axioms + checklist (A-cited) | Method axis |
+| Exp 7 (6 axioms + derived checklist) | *pending* | 6 axioms + checklist-derivation instruction | Method axis |
 
 **Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
@@ -247,6 +262,7 @@ ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This A
 2. ✅ Add universal derivation addendum to PLANNING DIRECTIVE
 3. ✅ Exp 5 complete — A6 alone insufficient; checklist is load-bearing
 4. ✅ Exp 6 complete — `build_ground_prompt()` updated to 6-axiom + checklist (A-cited) form
+5. **Evaluate Exp 7** — if derived checklist scores ≥ 90%, the written checklist can be replaced by a derivation instruction, reducing prompt size ~60%
 
 ## Experiment Artifacts
 

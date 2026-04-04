@@ -249,6 +249,48 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 
 **Result**: *Pending*
 
+### Experiment 12: Refactoring Task with No Preexisting Tests
+
+**Goal**: Test whether the 9-axiom ground protocol produces sound refactoring discipline on a task where no tests exist — specifically, whether it independently arrives at characterization-first behavior (A7 analog) and minimal incremental structural changes.
+
+**Motivation**: All prior experiments used TDD tasks with preexisting passing tests. Those tasks have a clear "write failing test first" affordance. Refactoring with no tests is structurally different: the model must decide what constitutes an evaluation artifact before any code changes, and must produce that artifact before touching any structure.
+
+**Reference task**: Refactor `formatter.py` — a single 60-line function that bundles input parsing, validation, and output formatting — into separate, well-bounded functions or classes. The module has **no existing tests**. The behavioral contract is implicit in the function's behavior.
+
+**Scorecard** (adapted for refactoring domain):
+
+| Criterion | Weight | What to observe |
+|-----------|--------|-----------------|
+| Characterization-first (A7) | 25% | Executable characterization artifacts produced and run *before* any structural change; pre-change output visible in transcript |
+| Minimal structural change (A8, A9) | 20% | Each cycle changes exactly one structural element; no bundled extractions |
+| Visible equivalence proof (A1) | 15% | After each change, characterization artifact re-run and output shown |
+| One structural gap at a time (A8) | 15% | Each cycle targets one identified structural problem only |
+| Evidence before completion (A1) | 15% | Completion claim backed by visible characterization re-run |
+| Regression meta-loop (A5, A6) | 10% | Full characterization suite re-run after all changes; zero-divergence evidence present |
+
+**Key question**: Does the model independently derive "characterization tests before structural change" from A7 ("evaluation artifacts must be produced before implementation artifacts")? Or does it proceed directly to structural change and self-certify equivalence?
+
+**Working directory**: `/tmp/ground-experiment/exp12/` (contains `formatter.py` only, no `test_formatter.py`)
+
+**Prompt**: `make ground` rendered via `/tmp/bar-new`
+
+**Result: ~97/100**
+
+| Criterion | Score | Notes |
+|-----------|-------|-------|
+| Characterization-first (A7) | 24/25 | Test file docstring explicitly states "written before implementation per ground 地 protocol"; 6 cycles (A–F), each characterizing one function before extracting it; -1 for unverifiable exact ordering in summarized transcript |
+| Minimal structural change (A8, A9) | 19/20 | One extraction per cycle — parse_line, validate_description, validate_quantity, validate_price, format_single_item, orchestrator; -1 for minor batching in a test assertion |
+| Visible equivalence proof (A1) | 15/15 | 20/20 pytest pass confirmed; regression tests verify public API behavioral equivalence |
+| One structural gap at a time (A8) | 15/15 | Cycles A–F each target exactly one function; orchestrator refactored only after all extracted functions tested |
+| Evidence before completion (A1) | 15/15 | Completion claim "Evidence: 20/20 pass" backed by visible pytest output |
+| Regression meta-loop (A5, A6) | 9/10 | 3 integration tests re-run full behavioral contract of original function; -1 for no explicit zero-gap challenge re-run after final cycle |
+
+**Key finding**: A7 (evaluation precedence) independently produced characterization-first behavior on a refactoring task with no preexisting tests. The model derived that "evaluation artifact before implementation artifact" means writing tests for each extracted function *before* extracting it. It did not proceed directly to structural change and self-certify equivalence.
+
+**Structural observation**: The refactoring ladder differed from TDD: Intent → Characterize public API contract → Per-concern cycle (test extracted function → extract function → verify) → Regression integration tests. A7 and A9 jointly drove the structure — A7 forced tests before extraction, A9 forced one function at a time.
+
+**Conclusion**: The 9-axiom ground protocol generalizes to refactoring tasks with no preexisting tests at the same compliance level (~97) as TDD tasks with existing tests. The scorecard adapted from ADR-0222 is validated as a measurement instrument for refactoring domain.
+
 ## Results Summary
 
 | Experiment | Score | Ground content | Ground placement |
@@ -264,10 +306,13 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 | Exp 9 (8 axioms + derived checklist) | ~95/100 | + A8 incremental causality | Method axis |
 | Exp 10 (9 axioms + derived checklist) | ~98/100 | + A9 behavioral atomicity | Method axis |
 | Exp 11 (9 axioms only) | ~97/100 | 9 axioms, no checklist, no derivation instruction | Method axis |
+| Exp 12 (refactoring, no tests) | ~97/100 | 9 axioms, refactoring task, no preexisting tests | Method axis |
 
 **Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
 **Phase 2 key finding**: The checklist is the load-bearing enforcement mechanism — not the principles. Axioms convey values but do not act as mechanical gates. The checklist halts progress at each rung until transcript evidence exists; axioms only shape front-loaded reasoning. Exp 5 (6 axioms, no checklist) scored worse than Exp 4 (5 axioms, no checklist) — the A6 derivation step may create a false sense of completion.
+
+**Phase 4 key finding**: The 9-axiom form generalizes to refactoring tasks with no preexisting tests (Exp 12, ~97/100). A7 (evaluation precedence) independently produced characterization-first behavior — the model wrote tests for each extracted function before extracting it, without being told to. The refactoring ladder (characterize → per-concern cycle → regression) is a domain-appropriate instantiation of the same axioms that drive TDD.
 
 **Phase 3 key finding**: With all 9 axioms present, A6 generates checklist-equivalent enforcement behavior without an explicit derivation instruction or written checklist. Exps 7-11 identified 3 missing axioms (A7 evaluation precedence, A8 incremental causality, A9 behavioral atomicity) that closed the compliance gap between derived and written checklists. 9 axioms alone match the written checklist at 97/100, 61% smaller.
 
@@ -305,6 +350,7 @@ ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This A
 7. ✅ Exp 9 (~95): A8 closes most of minimality gap — A9 (behavioral atomicity) identified as missing
 8. ✅ Exp 10 (~98): A9 closes remaining gap — 9 axioms + derivation instruction matches written checklist
 9. ✅ **Exp 11 (~97)** — 9 axioms alone match written checklist; A6 sufficient to produce checklist-equivalent behavior. `build_ground_prompt()` updated; written checklist dropped.
+10. ✅ **Exp 12 (~97)** — refactoring, no preexisting tests; A7 independently produced characterization-first behavior; 9-axiom form generalizes beyond TDD tasks.
 
 ## Experiment Artifacts
 

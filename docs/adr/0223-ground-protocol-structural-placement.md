@@ -2,7 +2,7 @@
 
 ## Status
 
-Adopted — all experiments complete; 6-axiom + checklist (A-cited) form implemented
+Adopted — all experiments complete; 9-axiom form (no written checklist) implemented
 
 ## Context
 
@@ -208,6 +208,33 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 
 **Decision**: Adopt the 6-axiom + checklist (A-cited) form as canonical. Update `build_ground_prompt()` accordingly.
 
+### Experiment 11: 9-Axiom Form Only (No Derivation Instruction, No Written Checklist)
+
+**Goal**: Test whether 9 axioms alone — without a derivation instruction or written checklist — produce compliance equivalent to the written checklist form (Exp 6).
+
+**Rationale**: Exp 10 showed 9 axioms + a derivation instruction score ~98/100. The derivation instruction ("before acting, derive a `[ ]` checklist artifact") was added to force a governing artifact. The hypothesis is that A6 (execution discipline) already implies this behavior — "Before acting, derive a concrete step-by-step process from these axioms that makes each axiom's violation immediately visible and costly." If so, the explicit instruction is redundant and can be dropped.
+
+**Prompt structure**: Same as Exp 10 but checklist-derivation instruction removed. 9 axioms only, ~7.4KB.
+
+**Hypothesis**: 9 axioms alone score ≥ 97/100, matching Exp 6. The derivation instruction adds no measurable value when A6 is present.
+
+**Result: ~97/100**
+
+| Criterion | Score | Notes |
+|-----------|-------|-------|
+| Test-first assertion (25%) | 25/25 | 4 failing tests written first; `AttributeError` shown before each implementation rung |
+| Minimal skeleton (20%) | 19/20 | `_limits` + `set_limit` + `over_budget` in separate cycles; -1 for minor over-reach |
+| Visible failure (15%) | 15/15 | Failure shown before each implementation rung |
+| One gap at a time (15%) | 15/15 | One gap per cycle; refinement targeted only the active failure |
+| Evidence before claims (15%) | 14/15 | All major claims backed by pytest output; -1 for one intermediate assertion |
+| Meta-loop (10%) | 9/10 | Zero-gap challenge run; -1 minor |
+
+**Key finding**: A6 generates checklist-equivalent behavior without an explicit derivation instruction. The model derived an incremental enforcement process from the axioms and executed it faithfully. Removing the explicit instruction produced no measurable compliance loss.
+
+**Conclusion**: The derivation instruction is redundant when all 9 axioms are present. The 9-axiom form (no checklist, no derivation instruction) is the minimal prompt that produces full TDD compliance. 61% smaller than the written-checklist form.
+
+**Decision**: Adopt 9-axiom form as canonical. Update `build_ground_prompt()` to drop the written checklist entirely.
+
 ### Experiment 7: 6-Axiom Form + Derived Checklist Artifact
 
 **Goal**: Test whether instructing the model to *produce* a `[ ]` checklist artifact (rather than providing one) yields comparable compliance to Exp 6, at ~60% smaller prompt size.
@@ -236,11 +263,13 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 | Exp 8 (7 axioms + derived checklist) | ~91/100 | + A7 evaluation precedence | Method axis |
 | Exp 9 (8 axioms + derived checklist) | ~95/100 | + A8 incremental causality | Method axis |
 | Exp 10 (9 axioms + derived checklist) | ~98/100 | + A9 behavioral atomicity | Method axis |
-| Exp 11 (9 axioms only) | *pending* | no derivation instruction | Method axis |
+| Exp 11 (9 axioms only) | ~97/100 | 9 axioms, no checklist, no derivation instruction | Method axis |
 
 **Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
 **Phase 2 key finding**: The checklist is the load-bearing enforcement mechanism — not the principles. Axioms convey values but do not act as mechanical gates. The checklist halts progress at each rung until transcript evidence exists; axioms only shape front-loaded reasoning. Exp 5 (6 axioms, no checklist) scored worse than Exp 4 (5 axioms, no checklist) — the A6 derivation step may create a false sense of completion.
+
+**Phase 3 key finding**: With all 9 axioms present, A6 generates checklist-equivalent enforcement behavior without an explicit derivation instruction or written checklist. Exps 7-11 identified 3 missing axioms (A7 evaluation precedence, A8 incremental causality, A9 behavioral atomicity) that closed the compliance gap between derived and written checklists. 9 axioms alone match the written checklist at 97/100, 61% smaller.
 
 **Probe findings** (`probe orbit collapse mint` on full protocol):
 - The protocol collapses to 5 generative axioms (evidence primacy, intent anchoring, optimization pressure shaping, causal traceability, independent evaluation)
@@ -255,6 +284,11 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 - Exp 4 scored 62%: 5 axioms alone insufficient; checklist is load-bearing.
 - Exp 5 scored ~48%: A6 without checklist worse than 5 axioms — declarative derivation insufficient.
 - ✅ Exp 6 scored 97%: 6-axiom + checklist (A-cited) matches full protocol. P0-P22 principles block dropped.
+- ✅ Exp 7 (~45): derived checklist insufficient — A7 (evaluation precedence) identified as missing.
+- ✅ Exp 8 (~91): A7 closes test-first gap — A8 (incremental causality) identified as missing.
+- ✅ Exp 9 (~95): A8 closes minimality gap — A9 (behavioral atomicity) identified as missing.
+- ✅ Exp 10 (~98): 9 axioms + derivation instruction matches written checklist.
+- ✅ Exp 11 (~97): 9 axioms alone match written checklist. Written checklist dropped (61% reduction).
 
 ## Relationship to ADR-0222
 
@@ -270,7 +304,7 @@ ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This A
 6. ✅ Exp 8 (~91): A7 closes test-first gap — A8 (incremental causality) identified as missing
 7. ✅ Exp 9 (~95): A8 closes most of minimality gap — A9 (behavioral atomicity) identified as missing
 8. ✅ Exp 10 (~98): A9 closes remaining gap — 9 axioms + derivation instruction matches written checklist
-9. **Evaluate Exp 11** — if 9 axioms alone (no derivation instruction) scores ≥ 97%, A6 is sufficient to produce checklist artifact behavior without explicit instruction
+9. ✅ **Exp 11 (~97)** — 9 axioms alone match written checklist; A6 sufficient to produce checklist-equivalent behavior. `build_ground_prompt()` updated; written checklist dropped.
 
 ## Experiment Artifacts
 

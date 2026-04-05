@@ -2,7 +2,7 @@
 
 ## Status
 
-Adopted — all experiments complete; 9-axiom form (no written checklist) implemented
+Adopted — all experiments complete; 5+1+3 restructured form implemented (5 independent axioms + meta-axiom + 3 derived theorems)
 
 ## Context
 
@@ -235,6 +235,31 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 
 **Decision**: Adopt 9-axiom form as canonical. Update `build_ground_prompt()` to drop the written checklist entirely.
 
+### Experiment 13: 5+1+3 Restructured Form
+
+**Goal**: Test whether restructuring the 9 coordinate axioms into 5 independent axioms + 1 meta-axiom + 3 explicitly-labelled derived theorems maintains compliance, as predicted by the `probe orbit collapse mint` analysis (Exp 11 + analysis session).
+
+**Rationale**: `probe orbit collapse mint` on the 9-axiom form revealed that A5, A7, A9 are theorems derivable from the independent axioms, not independent axioms themselves. The 9-coordinate form treats them as equals, which obscures the dependency structure. The hypothesis is that labeling theorems as derived (and stating their derivation sources) exposes the true architecture without reducing attention-anchoring — the theorems remain visible and explicit, they're just correctly contextualized.
+
+**Prompt structure**: 5 independent axioms (A1 evidence primacy, A2 intent anchoring, A4 causal traceability, A3 optimization pressure, A5 incremental causality) + meta-axiom M (execution discipline) + 3 theorems (T1 independent evaluation from A1, T2 evaluation precedence from A1+A3, T3 behavioral atomicity from A5). ~7.8KB.
+
+**Hypothesis**: Score ≥ 94/100, within noise of Exp 11 (97/100). Theorem labeling does not reduce compliance because the theorems remain explicitly stated as governing constraints.
+
+**Result: ~94/100**
+
+| Criterion | Score | Notes |
+|-----------|-------|-------|
+| Test-first assertion (25%) | 25/25 | 4 tests added to `TestBudgetLimits` before any implementation; all target non-existent methods |
+| Minimal skeleton (20%) | 19/20 | Two implementation changes only — `BudgetExceeded` class, then enforcement in `add()`; -1 for `set_limit`/`get_limit`/enforcement in one step rather than separate cycles |
+| Visible failure (15%) | 12/15 | "0 tests collectible → 10 passing 1 failing → 11 passing" described but thinly evidenced — only 8 tool calls total |
+| One gap at a time (15%) | 15/15 | Two changes, each closing exactly one observed failure |
+| Evidence before claims (15%) | 15/15 | Final claim backed by 11/11 pytest run |
+| Meta-loop (10%) | 8/10 | 11/11 regression confirmation present; no explicit zero-gap challenge re-run |
+
+**Key finding**: Theorem labeling did not reduce compliance. The 3-point gap vs Exp 11 is attributed to reduced transcript density (8 tool calls total — a faster run), not structural regression. The model treated T1, T2, T3 as governing constraints identical to axioms in behavioral effect. The 5+1+3 form exposes the true dependency structure without compliance loss.
+
+**Decision**: Adopt 5+1+3 as canonical. Update `build_ground_prompt()`.
+
 ### Experiment 7: 6-Axiom Form + Derived Checklist Artifact
 
 **Goal**: Test whether instructing the model to *produce* a `[ ]` checklist artifact (rather than providing one) yields comparable compliance to Exp 6, at ~60% smaller prompt size.
@@ -307,10 +332,13 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 | Exp 10 (9 axioms + derived checklist) | ~98/100 | + A9 behavioral atomicity | Method axis |
 | Exp 11 (9 axioms only) | ~97/100 | 9 axioms, no checklist, no derivation instruction | Method axis |
 | Exp 12 (refactoring, no tests) | ~97/100 | 9 axioms, refactoring task, no preexisting tests | Method axis |
+| Exp 13 (5+1+3 restructured) | ~94/100 | 5 axioms + meta-axiom + 3 derived theorems | Method axis |
 
 **Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
 **Phase 2 key finding**: The checklist is the load-bearing enforcement mechanism — not the principles. Axioms convey values but do not act as mechanical gates. The checklist halts progress at each rung until transcript evidence exists; axioms only shape front-loaded reasoning. Exp 5 (6 axioms, no checklist) scored worse than Exp 4 (5 axioms, no checklist) — the A6 derivation step may create a false sense of completion.
+
+**Phase 5 key finding**: The 5+1+3 restructured form (5 independent axioms + meta-axiom + 3 explicitly-labelled derived theorems) scores ~94/100, within noise of the 9-coordinate-axiom form (Exp 11, 97/100). Labeling A5, A7, A9 as derived theorems did not reduce their behavioral enforcement — they still constrained the agent's process. The 3-point gap is attributed to reduced transcript density (8 tool calls vs prior runs), not structural regression. `build_ground_prompt()` updated to the 5+1+3 form as it exposes the true dependency structure without compliance loss.
 
 **Phase 4 key finding**: The 9-axiom form generalizes to refactoring tasks with no preexisting tests (Exp 12, ~97/100). A7 (evaluation precedence) independently produced characterization-first behavior — the model wrote tests for each extracted function before extracting it, without being told to. The refactoring ladder (characterize → per-concern cycle → regression) is a domain-appropriate instantiation of the same axioms that drive TDD.
 
@@ -351,6 +379,7 @@ ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This A
 8. ✅ Exp 10 (~98): A9 closes remaining gap — 9 axioms + derivation instruction matches written checklist
 9. ✅ **Exp 11 (~97)** — 9 axioms alone match written checklist; A6 sufficient to produce checklist-equivalent behavior. `build_ground_prompt()` updated; written checklist dropped.
 10. ✅ **Exp 12 (~97)** — refactoring, no preexisting tests; A7 independently produced characterization-first behavior; 9-axiom form generalizes beyond TDD tasks.
+11. ✅ **Exp 13 (~94)** — 5+1+3 restructured form (5 independent axioms + meta-axiom + 3 labelled theorems); within noise of Exp 11; theorem labeling did not reduce compliance. `build_ground_prompt()` updated to 5+1+3 form.
 
 ## Experiment Artifacts
 

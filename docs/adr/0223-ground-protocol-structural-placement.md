@@ -2,7 +2,7 @@
 
 ## Status
 
-Adopted — all experiments complete; 5+1+3 restructured form implemented (5 independent axioms + meta-axiom + 3 derived theorems)
+Adopted — A0+5+1+3 form implemented (explicit optimizer assumption + 5 independent axioms + meta-axiom + 3 derived theorems)
 
 ## Context
 
@@ -260,6 +260,29 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 
 **Decision**: Adopt 5+1+3 as canonical. Update `build_ground_prompt()`.
 
+### Experiment 14: A0 + 5+1+3 Form (Explicit Optimizer Assumption)
+
+**Goal**: Test whether making the foundational optimizer assumption explicit (A0) strengthens the economic cluster (A3/M) and improves compliance vs. Exp 13.
+
+**Rationale**: The `probe orbit collapse mint` analysis identified an unstated assumption load-bearing for the entire protocol: "the agent is an optimizer." Without naming it, A3 (optimization pressure) and M (execution discipline) are assertions without motivation. A0 makes the causal chain explicit: *because* the agent optimizes for apparent completion, *therefore* compliance must be cheaper than deviation. The hypothesis is that naming this assumption sharpens the agent's self-awareness of its own optimization dynamics.
+
+**Prompt structure**: A0 foundational assumption + 5+1+3 form from Exp 13. ~8.4KB.
+
+**Result: ~96/100**
+
+| Criterion | Score | Notes |
+|-----------|-------|-------|
+| Test-first assertion (25%) | 25/25 | 7 new tests, one per behavior, each targeting non-existent methods; failure observed before each implementation |
+| Minimal skeleton (20%) | 17/20 | Six incremental cycles; -3 for `remaining()` added without being in subject — scope over-reach |
+| Visible failure (15%) | 15/15 | 17 tool calls; agent reported failure-before-pass per cycle; dense transcript |
+| One gap at a time (15%) | 15/15 | Six named cycles, one gap each |
+| Evidence before claims (15%) | 15/15 | 14/14 pytest output before completion claim |
+| Meta-loop (10%) | 9/10 | 7 original tests confirmed passing throughout; -1 no explicit zero-gap challenge re-run |
+
+**Key finding**: A0 did not prevent scope over-reach — `remaining()` was added without being in the subject. This is the resolution cluster drift point predicted by the mint analysis: the agent decided `remaining()` was part of "budget limits" as a concept, defining the behavioral boundary broadly. A0 sharpens awareness of optimization pressure but doesn't tighten the definition of what constitutes "one behavior."
+
+**Conclusion**: A0 is worth retaining — it motivates the economic cluster structurally and the score is within noise of Exp 11. The scope over-reach is a genuine signal about the resolution cluster gap, not a regression caused by A0.
+
 ### Experiment 7: 6-Axiom Form + Derived Checklist Artifact
 
 **Goal**: Test whether instructing the model to *produce* a `[ ]` checklist artifact (rather than providing one) yields comparable compliance to Exp 6, at ~60% smaller prompt size.
@@ -333,10 +356,13 @@ Experiments are conducted in sequence, each building on the previous. Evaluation
 | Exp 11 (9 axioms only) | ~97/100 | 9 axioms, no checklist, no derivation instruction | Method axis |
 | Exp 12 (refactoring, no tests) | ~97/100 | 9 axioms, refactoring task, no preexisting tests | Method axis |
 | Exp 13 (5+1+3 restructured) | ~94/100 | 5 axioms + meta-axiom + 3 derived theorems | Method axis |
+| Exp 14 (A0 + 5+1+3) | ~96/100 | + explicit optimizer assumption (A0) | Method axis |
 
 **Phase 1 key finding**: The explicit `derive` task (Exp 2) underperformed the universal addendum (Exp 3). Ground-as-method with a strong PLANNING DIRECTIVE gate nearly matches the baseline.
 
 **Phase 2 key finding**: The checklist is the load-bearing enforcement mechanism — not the principles. Axioms convey values but do not act as mechanical gates. The checklist halts progress at each rung until transcript evidence exists; axioms only shape front-loaded reasoning. Exp 5 (6 axioms, no checklist) scored worse than Exp 4 (5 axioms, no checklist) — the A6 derivation step may create a false sense of completion.
+
+**Phase 6 key finding**: A0 (explicit optimizer assumption) added to the 5+1+3 form scores ~96/100, within noise of all prior experiments. A0 motivates the economic cluster structurally but does not tighten the resolution boundary — scope over-reach (`remaining()` added without being in the subject) confirms the resolution cluster is the primary remaining drift risk. The agent defined "budget limits" broadly enough to include a convenience method the subject didn't request.
 
 **Phase 5 key finding**: The 5+1+3 restructured form (5 independent axioms + meta-axiom + 3 explicitly-labelled derived theorems) scores ~94/100, within noise of the 9-coordinate-axiom form (Exp 11, 97/100). Labeling A5, A7, A9 as derived theorems did not reduce their behavioral enforcement — they still constrained the agent's process. The 3-point gap is attributed to reduced transcript density (8 tool calls vs prior runs), not structural regression. `build_ground_prompt()` updated to the 5+1+3 form as it exposes the true dependency structure without compliance loss.
 
@@ -380,6 +406,7 @@ ADR-0222 defines the evaluation process (subagent, scorecard, iteration). This A
 9. ✅ **Exp 11 (~97)** — 9 axioms alone match written checklist; A6 sufficient to produce checklist-equivalent behavior. `build_ground_prompt()` updated; written checklist dropped.
 10. ✅ **Exp 12 (~97)** — refactoring, no preexisting tests; A7 independently produced characterization-first behavior; 9-axiom form generalizes beyond TDD tasks.
 11. ✅ **Exp 13 (~94)** — 5+1+3 restructured form (5 independent axioms + meta-axiom + 3 labelled theorems); within noise of Exp 11; theorem labeling did not reduce compliance. `build_ground_prompt()` updated to 5+1+3 form.
+12. ✅ **Exp 14 (~96)** — A0 explicit optimizer assumption; within noise of Exp 11; scope over-reach (`remaining()`) confirms resolution cluster drift risk. `build_ground_prompt()` updated to A0+5+1+3 form.
 
 ## Experiment Artifacts
 

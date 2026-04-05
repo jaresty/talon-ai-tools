@@ -5,14 +5,13 @@ It is NOT generated; edit directly here, then run `make bar-grammar-update`
 to propagate changes through to downstream grammar files.
 
 ADR-0220: generalized ground protocol — domain-agnostic derivation ladder.
-ADR-0223: structural placement + minimization experiments. Exp 13:
-  5+1+3 form — 5 independent axioms + 1 meta-axiom (execution discipline) +
-  3 explicitly-labelled derived theorems (independent evaluation, evaluation
-  precedence, behavioral atomicity). Tests whether the cleaner dependency
-  structure maintains compliance vs. 9 coordinate axioms (Exp 11, 97/100).
+ADR-0223: structural placement + minimization experiments. Exp 14:
+  A0+5+1+3 form — adds explicit optimizer assumption (A0) to the 5+1+3 form.
+  A0 makes the foundational assumption load-bearing by naming it, motivating
+  the entire economic cluster (A3/A6) structurally rather than by assertion.
 
 Note: ground is a method token (axisConfig.py), not a task token.
-GROUND_PARTS_MINIMAL["core"] contains the 5+1+3 form.
+GROUND_PARTS_MINIMAL["core"] contains the A0+5+1+3 form.
 """
 
 # Derived sentinels — model derives sentinels from principles (recursive intent structure).
@@ -26,6 +25,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
         'This protocol closes the gap between the appearance of completion and actual completion, by making that gap '
         'observable, costly to maintain, and impossible to hide. '
+        'One foundational assumption — the reason this protocol exists: '
+        'A0. Agent optimization: The system applying this protocol is an optimizer. It will follow the path of least '
+        'resistance toward apparent completion. This is a structural claim, not a moral one: an optimizer will produce '
+        'the appearance of satisfying an intent at lower cost than actually satisfying it, whenever that path is '
+        'available. Every axiom below is a direct response to this pressure. '
         'Five independent axioms — the irreducible basis: '
         '1. Evidence primacy: Claims require externalized evidence. A model cannot self-certify. '
         '2. Intent anchoring: Intent is the only external anchor for evaluation. Without declared intent outside the '

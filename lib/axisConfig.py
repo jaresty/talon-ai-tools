@@ -318,10 +318,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "that pressure. Before acting, derive a concrete step-by-step enforcement process from the intent of this task that makes each cheap path to apparent completion immediately "
         "visible and costly. Execute this derived process one step at a time, showing evidence before proceeding. The process you derive should address: what counts as completion (not "
         "appearance of completion); how you will make deviation more costly than compliance; and what visible evidence will exist at each step that the gap between appearance and "
-        "reality is closing. Before emitting any completion claim, return to the original stated intent and explicitly check whether the gap between intent and behavior is closed. If "
-        "any part of the stated intent is unaddressed, the gap is not closed — continue rather than declare done. A completion claim is only valid after this check has been performed "
-        "visibly. Naming a deviation does not close it. Any statement that labels, acknowledges, or apologizes for a shortcut without producing the missing artifact is itself a cheap "
-        "path to apparent compliance.",
+        "reality is closing. Before emitting any completion claim, return to the original stated intent and explicitly check whether the gap between intent and behavior is closed. This "
+        "check must follow the same process discipline as the rest of the derived process: show visible evidence for each item in the stated intent, one at a time. An assertion that "
+        "intent is satisfied is not evidence — the same principle applies here as everywhere else in this protocol. If any part of the stated intent is unaddressed, the gap is not "
+        "closed — continue rather than declare done. A completion claim is only valid after this check has been performed visibly. Naming a deviation does not close it. Any statement "
+        "that labels, acknowledges, or apologizes for a shortcut without producing the missing artifact is itself a cheap path to apparent compliance.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

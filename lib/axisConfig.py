@@ -3915,10 +3915,38 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "explicit reasoning structure",
             ],
         },
+        "atomic": {
+            "distinctions": [
+                {
+                    "note": "rigor = disciplined, well-justified reasoning throughout; atomic = specifically controls step granularity — one observable change per step. Rigorous "
+                    "reasoning can still bundle multiple changes.",
+                    "token": "rigor",
+                },
+                {
+                    "note": "ground = derive an enforcement process before acting; atomic = the specific constraint that each step changes exactly one thing. atomic is one "
+                    "component of what ground might derive.",
+                    "token": "ground",
+                },
+            ],
+            "heuristics": [
+                "one change at a time",
+                "one thing per step",
+                "atomic steps",
+                "don't bundle changes",
+                "change one variable at a time",
+                "one argument per revision",
+                "one assumption per decision cycle",
+                "I need to know what caused the improvement",
+                "isolate the cause",
+                "smallest independently observable change",
+                "one behavior per test cycle",
+                "don't fix multiple things at once",
+            ],
+        },
         "automate": {
             "distinctions": [
                 {
-                    "note": "automate = prefer automated operations over manual ones; ground = enforce falsifiability and advance through validation rungs",
+                    "note": "automate = prefer automated operations over manual ones; ground = derive an enforcement process before acting",
                     "token": "ground",
                 },
                 {
@@ -4056,6 +4084,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "formal calculation",
                 "compute",
                 "what are the numbers",
+            ],
+        },
+        "chain": {
+            "distinctions": [
+                {
+                    "note": "trace = narrate the sequential progression for observability; chain = enforce that each step derives from the previous step's actual content",
+                    "token": "trace",
+                },
+                {
+                    "note": "depends = trace dependency relationships between components; chain = enforce that each artifact or conclusion cites its predecessor's content",
+                    "token": "depends",
+                },
+                {
+                    "note": "atomic = one observable change per step; chain = each step must cite its predecessor. orthogonal: a step can be atomic yet untraceable, or traceable "
+                    "yet bundled.",
+                    "token": "atomic",
+                },
+            ],
+            "heuristics": [
+                "show your derivation",
+                "cite the previous step",
+                "each conclusion must trace back",
+                "how did you get there",
+                "make the reasoning reconstructable",
+                "auditable reasoning chain",
+                "each version must cite what changed",
+                "I need to be able to follow the logic",
+                "multi-step argument",
+                "iterative artifact sequence",
+                "nothing should appear from nowhere",
             ],
         },
         "cite": {
@@ -4465,6 +4523,39 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "two people assumed different things about this rule",
             ],
         },
+        "gate": {
+            "distinctions": [
+                {
+                    "note": "verify = falsification pressure on claims regardless of timing; gate = temporal ordering constraint — evaluation artifact must precede implementation "
+                    "artifact",
+                    "token": "verify",
+                },
+                {
+                    "note": "ground = derive an enforcement process before acting; gate = the specific constraint that evaluation precedes implementation. gate is one component of "
+                    "what ground might derive.",
+                    "token": "ground",
+                },
+                {
+                    "note": "chain = each step cites its predecessor; gate = evaluation must exist before the artifact it evaluates. gate is about temporal ordering; chain is "
+                    "about derivation continuity.",
+                    "token": "chain",
+                },
+            ],
+            "heuristics": [
+                "write the test first",
+                "TDD",
+                "test-driven development",
+                "define success criteria before building",
+                "evaluation before implementation",
+                "write the rubric before grading",
+                "what does passing look like before you start",
+                "declare acceptance criteria first",
+                "no implementation without a prior test",
+                "write the spec before the code",
+                "define what good looks like before producing it",
+                "what check would reject a bad version",
+            ],
+        },
         "grain": {
             "distinctions": [
                 {
@@ -4496,41 +4587,44 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "ground": {
             "distinctions": [
                 {
-                    "note": "bound = restrict propagation of effects to a region; ground = treat a declared governing layer as fixed and authoritative that representations must "
-                    "justify against",
-                    "token": "bound",
+                    "note": "gate = the specific constraint that evaluation precedes implementation; ground = meta-token that asks the model to derive its own enforcement "
+                    "process. use gate when you know evaluation-precedence is the constraint; use ground when you want the model to figure out what constraints this task "
+                    "needs.",
+                    "token": "gate",
                 },
                 {
-                    "note": "crystal = shape system toward explicit structure; ground = treat a declared layer as fixed authority requiring justification, not crystallization",
-                    "token": "crystal",
+                    "note": "chain = the specific constraint that each step cites its predecessor; ground = meta-token that derives what constraints apply. chain is one thing "
+                    "ground might derive.",
+                    "token": "chain",
                 },
                 {
-                    "note": "mint = build forward from assumptions toward conclusions; ground = validate backward against a fixed declared intent — they operate in opposite "
-                    "directions",
+                    "note": "atomic = the specific constraint of one observable change per step; ground = meta-token that derives what constraints apply. atomic is one thing "
+                    "ground might derive.",
+                    "token": "atomic",
+                },
+                {
+                    "note": "verify = falsification pressure on claims; ground = optimizer assumption + derive your own enforcement process. verify applies to claims; ground "
+                    "applies to the overall task process.",
+                    "token": "verify",
+                },
+                {
+                    "note": "mint = build forward from assumptions toward conclusions; ground = derive an enforcement process that makes shortcuts costly — they operate in "
+                    "opposite directions",
                     "token": "mint",
                 },
             ],
             "heuristics": [
-                "define the spec first",
-                "TDD",
-                "test-driven design",
-                "what should it do before how",
-                "specification before implementation",
-                "write the tests first",
-                "define success criteria",
-                "correctness criteria",
-                "ensure intent governs downstream",
-                "justify against declared constraints",
-                "explicit intent alignment",
-                "meaning governed by intent",
-                "I have a declared spec and want all reasoning to justify against it",
-                "I cannot tell from the requirement alone whether this output is correct",
-                "do not apply during active exploration when intent is not yet stable",
-                "what would prove this is done",
-                "define the success condition before building",
-                "write the acceptance criteria before the document",
-                "what does passing look like",
-                "what check would reject a bad version of this",
+                "don't let it look done when it isn't",
+                "I'm worried it will take shortcuts",
+                "make deviation costly",
+                "derive an enforcement process",
+                "optimizer assumption",
+                "appearance vs actuality",
+                "prevent plausible-looking outputs",
+                "I don't know what process this task needs",
+                "open-ended task with no obvious structure",
+                "make the gap between appearance and reality visible",
+                "enforce your own process before acting",
             ],
         },
         "grove": {
@@ -5573,12 +5667,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "verify": {
             "distinctions": [
                 {
+                    "note": "gate = temporal ordering — evaluation artifact must precede implementation artifact; verify = falsification pressure on claims regardless of timing",
+                    "token": "gate",
+                },
+                {
                     "note": "rigor = disciplined reasoning process; verify = apply explicit falsification to the outputs",
                     "token": "rigor",
                 },
                 {
-                    "note": "ground = define a falsifiable artifact before producing output, imposing I → V → O structure; verify = apply falsification pressure to claims after "
-                    "the fact without imposing a governing structure",
+                    "note": "ground = derive an enforcement process before acting; verify = apply falsification pressure to claims. verify is one thing ground might derive.",
                     "token": "ground",
                 },
             ],

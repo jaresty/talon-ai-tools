@@ -69,6 +69,87 @@ bar build <structure-scope> full <mapping-method>
 
 **Why this might work**: Analyzing architecture often benefits from mapping relationships and structure.
 
+## Process Discipline Patterns
+
+These patterns use the process method tokens (`ground`, `gate`, `chain`, `atomic`) introduced
+in ADR-0224. Each token closes a specific optimizer escape route. See
+`docs/process-tokens-guide.md` for full usage guidance.
+
+### Disciplined Iterative Making (`craft`)
+
+For TDD and any workflow where artifacts are produced in strict cycles:
+
+```bash
+bar build make ground gate chain atomic
+```
+
+- `ground`: derive an enforcement process before starting
+- `gate`: evaluation/tests exist before implementation
+- `chain`: each cycle cites its predecessor
+- `atomic`: one behavior per cycle
+
+**When to reach for this**: Software TDD, rigorous design iteration, any task where
+"I think it works" is not acceptable.
+
+### Verifiable Multi-Step Argument (`audit`)
+
+For research, policy analysis, or any argument where both claim grounding and
+reasoning continuity matter:
+
+```bash
+bar build make verify chain
+```
+
+- `verify`: each claim requires external evidence
+- `chain`: each step must cite the prior step's actual content
+
+**When to reach for this**: Fact-checking, legal arguments, research summaries,
+differential diagnosis.
+
+### Research with Defined Intent (`scout`)
+
+For literature reviews or due diligence where the failure modes are "didn't find
+what was asked" and "asserted without citing":
+
+```bash
+bar build make gate verify
+```
+
+- `gate`: define success criteria before starting
+- `verify`: require external anchoring for every claim
+
+**When to reach for this**: Literature reviews, due diligence, any research task
+with a specific question to answer.
+
+### Traceable Incremental Revision (`chisel`)
+
+For writing revision or iterative design where you need to know which change
+caused which improvement:
+
+```bash
+bar build make chain atomic
+```
+
+- `chain`: each draft cites what changed from the prior draft
+- `atomic`: exactly one argument, assumption, or variable changed per pass
+
+**When to reach for this**: Writing revision, debugging arguments, iterative design
+where causal attribution matters.
+
+### Ground Alone
+
+For open-ended or novel tasks where the failure mode is optimizer drift but you
+can't anticipate the specific form:
+
+```bash
+bar build make ground
+```
+
+**When to reach for this**: `ground` alone when you don't yet know which specific
+process constraints the task needs. Add `gate chain atomic` when you do.
+
+---
+
 ## Multi-Step Workflow Examples
 
 These are examples of discovered workflow sequences, not prescriptive recipes:

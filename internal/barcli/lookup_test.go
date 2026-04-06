@@ -14,20 +14,20 @@ func TestLookupExactHeuristicMatchTier3(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "TDD" is an exact heuristic for method:ground
+	// "TDD" is an exact heuristic for method:gate (ADR-0224: TDD routing moved from ground to gate)
 	results := LookupTokens("TDD", grammar, "")
 	if len(results) == 0 {
 		t.Fatal("expected results for 'TDD', got none")
 	}
 	var found *LookupResult
 	for i := range results {
-		if results[i].Axis == "method" && results[i].Token == "ground" {
+		if results[i].Axis == "method" && results[i].Token == "gate" {
 			found = &results[i]
 			break
 		}
 	}
 	if found == nil {
-		t.Fatalf("expected method:ground in results for 'TDD', got %v", results)
+		t.Fatalf("expected method:gate in results for 'TDD', got %v", results)
 	}
 	if found.Tier != 3 {
 		t.Errorf("expected tier 3 for exact heuristic match, got %d", found.Tier)

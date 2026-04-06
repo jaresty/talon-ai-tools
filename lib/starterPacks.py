@@ -32,7 +32,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="design",
         framing="Architectural or interface design decision",
-        command="bar build show spur trade balance",
+        command="bar build show spur compare balance",
     ),
     StarterPack(
         name="review",
@@ -47,7 +47,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="pitch",
         framing="Making a case to stakeholders",
-        command="bar build make argue trade analog",
+        command="bar build make argue compare analog",
     ),
     StarterPack(
         name="audit",
@@ -72,7 +72,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="versus",
         framing="Structured comparison between alternatives",
-        command="bar build diff compare trade polar",
+        command="bar build diff compare converge polar",
     ),
     StarterPack(
         name="craft",

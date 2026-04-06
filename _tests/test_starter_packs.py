@@ -7,6 +7,7 @@ Tests:
   SP4 — pack names do not conflict with any token in the bar registry
   SP5 — prompt_grammar_payload() includes 'starter_packs' key with correct shape
   SP6 — pack command strings are valid bar build commands (start with 'bar build ')
+  SP7 — every token word in each pack command exists in the registry
 """
 import unittest
 from typing import TYPE_CHECKING
@@ -87,6 +88,27 @@ if bootstrap is not None:
                         pack.command.startswith("bar build "),
                         f"pack '{pack.name}' command must start with 'bar build ', got: {pack.command!r}"
                     )
+
+        def test_SP7_pack_command_tokens_all_exist_in_registry(self) -> None:
+            """Every token word in each starter command must exist in the registry.
+
+            Catches use of deprecated or misspelled tokens (e.g. 'branch' after retirement).
+            Parses words after 'bar build', skipping key=value pairs (validated separately).
+            """
+            valid_tokens = _all_token_names()
+            for pack in STARTER_PACKS:
+                with self.subTest(pack=pack.name):
+                    # Strip 'bar build ' prefix, then check each word
+                    words = pack.command.removeprefix("bar build ").split()
+                    for word in words:
+                        # Skip key=value overrides like scope=act or completeness=deep
+                        if "=" in word:
+                            continue
+                        self.assertIn(
+                            word, valid_tokens,
+                            f"pack '{pack.name}': token '{word}' not found in registry — "
+                            f"deprecated or misspelled? Command: {pack.command!r}"
+                        )
 
 else:
     if not TYPE_CHECKING:

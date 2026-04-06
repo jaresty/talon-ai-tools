@@ -243,7 +243,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "import resolvable — not implementing the behavior the artifact will eventually verify. A missing function authorizes an empty stub — not its implementation. Each failure "
         "message is a separate permission slip for exactly one step. When deriving this token, the derivation must establish the cycle protocol: run the governing artifact, observe one "
         "failure, implement only what that failure message authorizes, run again. A derivation that omits this cycle protocol is incomplete. At each step, before producing any output, "
-        "state the current failure message visibly — that statement is the per-step gate. A step that begins without a visible failure message has not satisfied the gate.",
+        "state the current failure message visibly — that statement is the per-step gate. A step that begins without a visible failure message has not satisfied the gate. The failure "
+        "message must be quoted exactly from the governing artifact output — not paraphrased, summarized, or described. A paraphrase can be made to fit any implementation scope; the "
+        "exact message cannot. If the stated failure message is a summary of multiple failures, the gate has not been satisfied.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

@@ -313,7 +313,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "other evaluation artifacts exist. A governing artifact must authorize exactly one behavior — one observable outcome, one criterion, one claim. An artifact that covers multiple "
         "behaviors cannot serve as a gate because it cannot produce a single failure that authorizes a single step. This is structural, not policy: a governing artifact can only show one "
         "failure at a time, so it can only authorize one implementation step at a time. Complex behavior must emerge through multiple cycles, each observing one failure individually. "
-        "Implementation of multiple behaviors in one step is a gate violation regardless of how many behaviors the governing artifact declares.",
+        "Implementation of multiple behaviors in one step is a gate violation regardless of how many behaviors the governing artifact declares. An assertion that has not been seen to "
+        "fail is not known to work — it may be vacuous, passing regardless of the behavior it claims to cover. Before an assertion can serve as a governing artifact, it must be observed "
+        "to fail when the behavior is absent or broken. The mechanism: perturb the behavior, observe the assertion fail, restore the behavior. An assertion that has only ever passed has "
+        "not been verified as a gate.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",

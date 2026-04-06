@@ -34,6 +34,11 @@ PROMPT_REFERENCE_KEY: dict = {
         ),
         "method": (
             "Reasoning approach; governs planning and intermediate steps, not only the final output. "
+            "Intermediate steps must be visible in the output — internal correctness and visible "
+            "correctness are not the same thing. The model's default behavior is to collapse "
+            "intermediate reasoning into a readable narrative, simulating steps internally without "
+            "surfacing them; this makes output appear method-compliant without being verifiably so. "
+            "Method tokens counteract this by requiring steps to be shown, not just performed. "
             "If the method requires a governing artifact — a manifest, plan, or validation artifact — "
             "that precondition gates everything that follows and cannot be deferred."
         ),

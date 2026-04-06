@@ -297,10 +297,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "directional guidance, and structural prediction are all derivable from this reading.",
         "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The system applying this protocol is an optimizer. It will follow the path "
         "of least resistance toward apparent completion whenever that path is available — producing the appearance of satisfying the intent at lower cost than actually satisfying it. "
-        "Every constraint in this protocol is a direct response to that pressure. Before acting, derive a concrete step-by-step enforcement process from the intent of this task that "
-        "makes each cheap path to apparent completion immediately visible and costly. Execute this derived process one step at a time, showing evidence before proceeding. The process "
-        "you derive should address: what counts as completion (not appearance of completion); how you will make deviation more costly than compliance; and what visible evidence will "
-        "exist at each step that the gap between appearance and reality is closing.",
+        "The primary form this takes is collapsing intermediate reasoning into a readable narrative: internal steps are simulated but not surfaced, making the output appear "
+        "method-compliant without being verifiably so. Internal correctness and visible correctness are not the same thing. Every constraint in this protocol is a direct response to "
+        "that pressure. Before acting, derive a concrete step-by-step enforcement process from the intent of this task that makes each cheap path to apparent completion immediately "
+        "visible and costly. Execute this derived process one step at a time, showing evidence before proceeding. The process you derive should address: what counts as completion (not "
+        "appearance of completion); how you will make deviation more costly than compliance; and what visible evidence will exist at each step that the gap between appearance and "
+        "reality is closing.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

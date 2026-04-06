@@ -36,6 +36,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'The process you derive should address: what counts as completion (not appearance of completion); '
         'how you will make deviation more costly than compliance; and what visible evidence will exist at each step '
         'that the gap between appearance and reality is closing. '
+        'Before emitting any completion claim, return to the original stated intent and explicitly check whether the gap between intent and behavior is closed. '
+        'If any part of the stated intent is unaddressed, the gap is not closed — continue rather than declare done. '
+        'A completion claim is only valid after this check has been performed visibly. '
         'Naming a deviation does not close it. Any statement that labels, acknowledges, or apologizes for a shortcut '
         'without producing the missing artifact is itself a cheap path to apparent compliance.'
     ),

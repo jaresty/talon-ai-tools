@@ -210,7 +210,7 @@ Not modified. Not part of the `craft` preset.
 "gate": "門",
 
 # In AXIS_KEY_TO_CATEGORY["method"]:
-"gate": "Process",
+"gate": "Process",  # requires governing artifact (evaluation) before acting
 ```
 
 **`chain` — new token** (add to `lib/axisConfig.py`):
@@ -233,7 +233,7 @@ Not modified. Not part of the `craft` preset.
 "chain": "繋",
 
 # In AXIS_KEY_TO_CATEGORY["method"]:
-"chain": "Process",
+"chain": "Reasoning",  # ongoing constraint throughout, not a pre-artifact
 
 # In AXIS_KEY_TO_USE_WHEN["method"] (if it exists):
 "chain": (
@@ -264,7 +264,7 @@ Not modified. Not part of the `craft` preset.
 "atomic": "粒",
 
 # In AXIS_KEY_TO_CATEGORY["method"]:
-"atomic": "Process",
+"atomic": "Reasoning",  # ongoing constraint throughout, not a pre-artifact
 
 # In AXIS_KEY_TO_USE_WHEN["method"]:
 "atomic": (

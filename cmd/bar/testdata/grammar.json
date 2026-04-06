@@ -7,7 +7,7 @@
     "constraints_axes": {
       "completeness": "Coverage depth within scope; does not expand scope.",
       "scope": "Which dimension of understanding to privilege. Frames what kind of understanding matters most.",
-      "method": "Reasoning approach; governs planning and intermediate steps, not only the final output. Intermediate steps must be visible in the output — internal correctness and visible correctness are not the same thing. The model's default behavior is to collapse intermediate reasoning into a readable narrative, simulating steps internally without surfacing them; this makes output appear method-compliant without being verifiably so. Method tokens counteract this by requiring steps to be shown, not just performed. If the method requires a governing artifact — a manifest, plan, or validation artifact — that precondition gates everything that follows and cannot be deferred.",
+      "method": "Reasoning approach; governs planning and intermediate steps, not only the final output. Intermediate steps must be visible in the output — internal correctness and visible correctness are not the same thing. If the method requires a governing artifact — a manifest, plan, or validation artifact — that precondition gates everything that follows and cannot be deferred.",
       "form": "Output structure only; does not change the underlying reasoning.",
       "channel": "Delivery format; takes precedence over form. Task becomes a content lens.",
       "directional": "Execution modifier; applies globally and implicitly — do not name or label it in the response."

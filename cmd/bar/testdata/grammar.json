@@ -125,7 +125,7 @@
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
-        "atomic": "The response enhances the task by enforcing step-granularity discipline: each refinement step addresses exactly one observed failure and introduces nothing beyond what closes it. When multiple changes are bundled in one step, the causal link between each change and its effect becomes unobservable. Domain-agnostic: applies to implementation (one behavior per test cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — not the smallest convenient bundle.",
+        "atomic": "The response enhances the task by enforcing step-granularity discipline: each refinement step addresses exactly one observed failure and introduces nothing beyond what closes it. When multiple changes are bundled in one step, the causal link between each change and its effect becomes unobservable. Domain-agnostic: applies to implementation (one behavior per cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — not the smallest convenient bundle. The scope of each step is bounded by what the immediately preceding governing artifact specified — one behavior, one criterion, one claim. A governing artifact that pre-declares N units does not open N steps simultaneously; it opens one. Each subsequent unit requires its own govern-then-produce cycle before it is earned.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance is maintained.",
         "behave": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation plan.",
@@ -3054,7 +3054,7 @@
             "one behavior per test cycle",
             "don't fix multiple things at once"
           ],
-          "definition": "The response enhances the task by enforcing step-granularity discipline: each refinement step addresses exactly one observed failure and introduces nothing beyond what closes it. When multiple changes are bundled in one step, the causal link between each change and its effect becomes unobservable. Domain-agnostic: applies to implementation (one behavior per test cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — not the smallest convenient bundle."
+          "definition": "The response enhances the task by enforcing step-granularity discipline: each refinement step addresses exactly one observed failure and introduces nothing beyond what closes it. When multiple changes are bundled in one step, the causal link between each change and its effect becomes unobservable. Domain-agnostic: applies to implementation (one behavior per cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — not the smallest convenient bundle. The scope of each step is bounded by what the immediately preceding governing artifact specified — one behavior, one criterion, one claim. A governing artifact that pre-declares N units does not open N steps simultaneously; it opens one. Each subsequent unit requires its own govern-then-produce cycle before it is earned."
         },
         "automate": {
           "distinctions": [
@@ -9302,7 +9302,7 @@
     }
   ],
   "checksums": {
-    "axes": "30f03dca89e9de29822739d718e2d26c7dd053d4804da597b0d7e8654ea948b3",
+    "axes": "d20fb0b31b30cdffcd17ccce746d0d554270bd26cd71d9975594f695fea32c06",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",

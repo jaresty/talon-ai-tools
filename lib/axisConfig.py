@@ -235,8 +235,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "atomic": "The response enhances the task by enforcing step-granularity discipline: each refinement step addresses exactly one observed failure and introduces nothing beyond what closes "
         "it. When multiple changes are bundled in one step, the causal link between each change and its effect becomes unobservable. Domain-agnostic: applies to implementation (one "
-        "behavior per test cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — "
-        "not the smallest convenient bundle.",
+        "behavior per cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — not "
+        "the smallest convenient bundle. The scope of each step is bounded by what the immediately preceding governing artifact specified — one behavior, one criterion, one claim. A "
+        "governing artifact that pre-declares N units does not open N steps simultaneously; it opens one. Each subsequent unit requires its own govern-then-produce cycle before it is "
+        "earned.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

@@ -28,7 +28,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'apparent completion whenever that path is available — producing the appearance of satisfying the intent '
         'at lower cost than actually satisfying it. Every constraint in this protocol is a direct response to that '
         'pressure. Before acting, derive a concrete step-by-step enforcement process from the intent of this task '
-        'that makes each shortcut immediately visible and costly. Execute this derived process one step at a time, '
+        'that makes each cheap path to apparent completion immediately visible and costly. Execute this derived process one step at a time, '
         'showing evidence before proceeding. '
         'The process you derive should address: what counts as completion (not appearance of completion); '
         'how you will make deviation more costly than compliance; and what visible evidence will exist at each step '

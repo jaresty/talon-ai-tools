@@ -287,10 +287,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "gate": "The response enhances the task by enforcing evaluation precedence: declare what success looks like and produce an evaluation artifact before producing the implementation "
-        "artifact it evaluates. An evaluation written after the fact is shaped by what it evaluates and cannot expose gaps the implementation was designed around. Self-certification is "
-        "impossible — the evaluation must be structurally separate from the artifact. Use when any artifact (code, argument, plan, decision) must be demonstrably correct rather than "
-        "plausibly correct.",
+        "gate": "The response enforces evaluation precedence: before producing any output, name the evaluation artifact that will govern it. If no natural evaluation artifact exists for this "
+        "task — no testable criteria that can be verified independently of the output — state that explicitly and do not proceed. An evaluation produced by the same reasoning that "
+        "generates the output is not structurally separate from it. When no artifact is possible, flag the mismatch and suggest verify or rigor instead. When an artifact is possible: "
+        "produce it before the implementation artifact it evaluates. An evaluation written after the fact is shaped by what it evaluates and cannot expose gaps the implementation was "
+        "designed around. Self-certification is impossible — the evaluation must be structurally separate from the artifact and must have existed before the implementation began.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",

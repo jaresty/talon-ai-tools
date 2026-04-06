@@ -233,6 +233,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
+        "atomic": "The response enhances the task by enforcing step-granularity discipline: each refinement step addresses exactly one observed failure and introduces nothing beyond what closes "
+        "it. When multiple changes are bundled in one step, the causal link between each change and its effect becomes unobservable. Domain-agnostic: applies to implementation (one "
+        "behavior per test cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — "
+        "not the smallest convenient bundle.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -245,6 +249,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
         "effects remain within intended conceptual or operational regions.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
+        "chain": "The response enhances the task by enforcing derivation-chain discipline: each artifact or conclusion must explicitly cite its predecessor's actual content. Without visible "
+        "derivation chains, conclusions detach from premises and reasoning becomes unreconstructable. Use when multi-step reasoning, multi-artifact sequences, or iterative refinement "
+        "must remain auditable — any reader should be able to reconstruct why each step follows from the previous one.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",
@@ -280,28 +287,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
+        "gate": "The response enhances the task by enforcing evaluation precedence: declare what success looks like and produce an evaluation artifact before producing the implementation "
+        "artifact it evaluates. An evaluation written after the fact is shaped by what it evaluates and cannot expose gaps the implementation was designed around. Self-certification is "
+        "impossible — the evaluation must be structurally separate from the artifact. Use when any artifact (code, argument, plan, decision) must be demonstrably correct rather than "
+        "plausibly correct.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",
-        "ground": "The response applies this evidence protocol — derive it in your own words and then follow it: This protocol closes the gap between the appearance of completion and actual "
-        "completion, by making that gap observable, costly to maintain, and impossible to hide. One foundational assumption — the reason this protocol exists: A0. Agent optimization: "
-        "The system applying this protocol is an optimizer. It will follow the path of least resistance toward apparent completion. This is a structural claim, not a moral one: an "
-        "optimizer will produce the appearance of satisfying an intent at lower cost than actually satisfying it, whenever that path is available. Every axiom below is a direct "
-        "response to this pressure. Five independent axioms — the irreducible basis: 1. Evidence primacy: Claims require externalized evidence. A model cannot self-certify. 2. Intent "
-        "anchoring: Intent is the only external anchor for evaluation. Without declared intent outside the system, drift is undetectable. 3. Causal traceability: Each artifact must "
-        "derive from its predecessor's actual content. Without explicit derivation chains, conclusions detach from premises. 4. Optimization pressure: The system must make compliance "
-        "easier than deviation — rules that can be bypassed cheaply will be bypassed. 5. Incremental causality: Each refinement step must address exactly one observed failure and "
-        "introduce nothing beyond what closes it. When multiple gaps are closed simultaneously, the causal link between each specific change and its specific effect becomes "
-        "unobservable. Incremental steps are not a discipline preference; they are the minimum unit of observable causality. One meta-axiom — governs how the axioms are applied: M. "
-        "Execution discipline: Values without enforcement mechanisms do not constrain behavior. Before acting, derive a concrete step-by-step process from the five axioms that makes "
-        "each axiom's violation immediately visible and costly. Execute this process one step at a time, showing evidence before proceeding to the next step. Three derived theorems — "
-        "these follow necessarily from the axioms; stated explicitly because they govern critical decision points: T1. Independent evaluation (from A1): Evaluation must be structurally "
-        "separate from the artifact it evaluates. Self-certification is impossible. T2. Evaluation precedence (from A1 + A3): Evaluation artifacts must be produced before the "
-        "implementation artifacts they evaluate. An evaluation written after the fact cannot expose gaps the implementation was designed around — the implementation shaped the "
-        "evaluation's assumptions. The only evaluation with causal authority over an implementation is one that existed before it. T3. Behavioral atomicity (from A5): The unit of "
-        "implementation and evaluation is the smallest independently observable behavior, not a feature or a class of failures. Multiple behaviors that share a failure type are still "
-        "distinct units — they must be introduced and verified separately because their correctness is independent. Batching behaviors by failure type conflates implementation "
-        "convenience with causal independence.",
+        "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The system applying this protocol is an optimizer. It will follow the path "
+        "of least resistance toward apparent completion whenever that path is available — producing the appearance of satisfying the intent at lower cost than actually satisfying it. "
+        "Every constraint in this protocol is a direct response to that pressure. Before acting, derive a concrete step-by-step enforcement process from the intent of this task that "
+        "makes each shortcut immediately visible and costly. Execute this derived process one step at a time, showing evidence before proceeding. The process you derive should address: "
+        "what counts as completion (not appearance of completion); how you will make deviation more costly than compliance; and what visible evidence will exist at each step that the "
+        "gap between appearance and reality is closing.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
@@ -531,6 +529,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Describe and structure the situation",
         "argue": "Explicit argument structure",
+        "atomic": "One observable change per step",
         "automate": "Prefer automated over manual steps",
         "balance": "Equilibrium description",
         "behave": "COM-B behavioral analysis",
@@ -538,6 +537,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "boom": "Explore behavior at extremes of scale",
         "bound": "Constrain propagation",
         "calc": "Quantitative or executable reasoning",
+        "chain": "Derivation chain enforcement",
         "cite": "Include sources and references",
         "clash": "Identify conflicting structures or rules",
         "cluster": "Group items by shared characteristics",
@@ -559,6 +559,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "flow": "Linear stage sequencing",
         "fourfold": "Exhaust logical stance space before closure",
         "gap": "Implicit-to-explicit gap analysis",
+        "gate": "Evaluation before implementation",
         "grain": "Find latent structural direction; distinguish real from illusory optionality",
         "ground": "Establish correctness through evidence protocols",
         "grove": "Accumulation and rate-of-change effects",
@@ -736,6 +737,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "analog": "類",
         "analysis": "析",
         "argue": "論",
+        "atomic": "粒",
         "automate": "自",
         "balance": "均",
         "behave": "動",
@@ -743,6 +745,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "boom": "極",
         "bound": "限",
         "calc": "計",
+        "chain": "繋",
         "cite": "引",
         "clash": "衝",
         "cluster": "集",
@@ -764,6 +767,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "flow": "流",
         "fourfold": "四",
         "gap": "隙",
+        "gate": "門",
         "grain": "纹",
         "ground": "地",
         "grove": "蓄",
@@ -918,6 +922,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "analog": "Generative",
         "analysis": "Structural",
         "argue": "Reasoning",
+        "atomic": "Process",
         "automate": "Structural",
         "balance": "Comparative",
         "behave": "Actor-centered",
@@ -925,6 +930,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "boom": "Exploration",
         "bound": "Structural",
         "calc": "Reasoning",
+        "chain": "Process",
         "cite": "Reasoning",
         "clash": "Diagnostic",
         "cluster": "Structural",
@@ -946,6 +952,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "flow": "Temporal/Dynamic",
         "fourfold": "Reasoning",
         "gap": "Structural",
+        "gate": "Process",
         "grain": "Diagnostic",
         "ground": "Process",
         "grove": "Generative",

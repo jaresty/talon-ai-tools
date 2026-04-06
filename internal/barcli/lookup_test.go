@@ -110,10 +110,10 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "costly to maintain" appears in method:ground definition (ADR-0223: 6-axiom form) but not heuristics/distinctions.
-	results := LookupTokens("costly to maintain", grammar, "method")
+	// "appearance of satisfying the intent" appears in method:ground definition (ADR-0224: slimmed A0+M form) but not heuristics/distinctions.
+	results := LookupTokens("appearance of satisfying the intent", grammar, "method")
 	if len(results) == 0 {
-		t.Fatal("expected results for 'form changes intent does not', got none")
+		t.Fatal("expected results for 'appearance of satisfying the intent', got none")
 	}
 	var found *LookupResult
 	for i := range results {
@@ -123,7 +123,7 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		}
 	}
 	if found == nil {
-		t.Fatalf("expected method:ground in results for 'costly to maintain', got %v", results)
+		t.Fatalf("expected method:ground in results for 'appearance of satisfying the intent', got %v", results)
 	}
 	if found.Tier != 0 {
 		t.Errorf("expected tier 0 for definition-only match, got %d", found.Tier)

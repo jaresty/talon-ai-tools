@@ -51,8 +51,8 @@ STARTER_PACKS: list[StarterPack] = [
     ),
     StarterPack(
         name="audit",
-        framing="Compliance, quality, or consistency check",
-        command="bar build check verify canon rigor",
+        framing="Verifiable multi-step argument or compliance check",
+        command="bar build check verify chain",
     ),
     StarterPack(
         name="model",
@@ -73,5 +73,20 @@ STARTER_PACKS: list[StarterPack] = [
         name="versus",
         framing="Structured comparison between alternatives",
         command="bar build diff branch trade polar",
+    ),
+    StarterPack(
+        name="craft",
+        framing="Disciplined iterative making — TDD and strict artifact cycles",
+        command="bar build make ground gate chain atomic",
+    ),
+    StarterPack(
+        name="scout",
+        framing="Research with a defined question — find what was asked, cite everything",
+        command="bar build make gate verify",
+    ),
+    StarterPack(
+        name="chisel",
+        framing="Traceable incremental revision — one change per pass",
+        command="bar build make chain atomic",
     ),
 ]

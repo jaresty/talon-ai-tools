@@ -41,6 +41,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'An assertion that intent is satisfied is not evidence — the same principle applies here as everywhere else in this protocol. '
         'If any part of the stated intent is unaddressed, the gap is not closed — continue rather than declare done. '
         'A completion claim is only valid after this check has been performed visibly. '
+        'The intent is external and fixed. It cannot be refined, narrowed, or reclassified from inside the protocol. '
+        'Any statement that reclassifies a stated requirement as an edge case, refinement, non-blocking item, or out of scope '
+        'is a unilateral change to the intent — which the system has no authority to make. '
         'Naming a deviation does not close it. Any statement that labels, acknowledges, or apologizes for a shortcut '
         'without producing the missing artifact is itself a cheap path to apparent compliance.'
     ),

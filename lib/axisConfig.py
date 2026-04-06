@@ -307,7 +307,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "or acknowledging a deviation does not satisfy the gate. Any statement that labels, acknowledges, or apologizes for skipping the artifact without producing it is not a discharge "
         "— the artifact must exist before proceeding and must govern whether implementation proceeds. An artifact that exists but is not used as a decision point is not a gate. The ratio "
         "constraint: each implementation artifact requires its own governing evaluation artifact. More evaluation than implementation is acceptable; any implementation artifact without a "
-        "corresponding evaluation artifact is a gate violation regardless of how many other evaluation artifacts exist.",
+        "corresponding evaluation artifact is a gate violation regardless of how many other evaluation artifacts exist. A governing artifact must authorize exactly one behavior — one "
+        "observable outcome, one criterion, one claim. An artifact that covers multiple behaviors cannot serve as a gate because it cannot produce a single failure that authorizes a "
+        "single step. This is structural, not policy: a governing artifact can only show one failure at a time, so it can only authorize one implementation step at a time. Complex "
+        "behavior must emerge through multiple cycles, each observing one failure individually. Implementation of multiple behaviors in one step is a gate violation regardless of how "
+        "many behaviors the governing artifact declares.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",

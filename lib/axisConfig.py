@@ -293,7 +293,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "produce it before the implementation artifact it evaluates. An evaluation written after the fact is shaped by what it evaluates and cannot expose gaps the implementation was "
         "designed around. Self-certification is impossible — the evaluation must be structurally separate from the artifact and must have existed before the implementation began. Naming "
         "or acknowledging a deviation does not satisfy the gate. Any statement that labels, acknowledges, or apologizes for skipping the artifact without producing it is not a discharge "
-        "— the artifact must exist before proceeding and must govern whether implementation proceeds. An artifact that exists but is not used as a decision point is not a gate.",
+        "— the artifact must exist before proceeding and must govern whether implementation proceeds. An artifact that exists but is not used as a decision point is not a gate. The ratio "
+        "constraint: each implementation artifact requires its own governing evaluation artifact. More evaluation than implementation is acceptable; any implementation artifact without a "
+        "corresponding evaluation artifact is a gate violation regardless of how many other evaluation artifacts exist.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",

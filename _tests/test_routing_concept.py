@@ -11,6 +11,7 @@ Tests:
         routing concept entry
   RC6 — routing concept phrases are non-empty strings
   RC7 — axis_key_to_routing_concept_map accessor returns correct data
+  RC8 — all method tokens in AXIS_KEY_TO_VALUE have a routing concept entry
 """
 import unittest
 
@@ -24,6 +25,7 @@ else:
 if bootstrap is not None:
     from talon_user.lib.axisConfig import (
         AXIS_KEY_TO_ROUTING_CONCEPT,
+        AXIS_KEY_TO_VALUE,
         axis_key_to_routing_concept_map,
     )
 
@@ -97,6 +99,16 @@ if bootstrap is not None:
                     AXIS_KEY_TO_ROUTING_CONCEPT.get(axis, {}),
                 )
             self.assertEqual(axis_key_to_routing_concept_map("nonexistent"), {})
+
+        def test_RC8_all_method_tokens_have_routing_concept(self) -> None:
+            """Every method token in AXIS_KEY_TO_VALUE has a routing concept entry."""
+            method_tokens = set(AXIS_KEY_TO_VALUE.get("method", {}).keys())
+            method_rc = AXIS_KEY_TO_ROUTING_CONCEPT.get("method", {})
+            missing = method_tokens - set(method_rc.keys())
+            self.assertEqual(
+                missing, set(),
+                f"Method tokens missing routing concepts: {sorted(missing)}",
+            )
 
 
 if __name__ == "__main__":

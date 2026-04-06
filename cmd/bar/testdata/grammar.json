@@ -163,7 +163,7 @@
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete consequences or implementations, ordered by importance to the audience.",
-        "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, then seek a non-obvious entry point, angle, or reframing that still addresses the task. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better.",
+        "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, then seek a non-obvious entry point, angle, or reframing that still addresses the task. Critically, the test applies to the alternative framing too — not just the original. If the chosen alternative still produces the same content set that the obvious framing would have produced, it is not lateral: it is merely delayed convergence. The angle shift must change what is considered, not only how it is organized. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
@@ -1086,6 +1086,7 @@
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
+        "atomic": "One observable change per step",
         "automate": "Automate repeatable steps",
         "balance": "Equilibrium description",
         "behave": "COM-B / behavior change",
@@ -1093,6 +1094,7 @@
         "boom": "Extreme scale behavior",
         "bound": "Contain side effects",
         "calc": "Formal calculation",
+        "chain": "Each step cites predecessor's actual output",
         "cite": "Evidence/sources",
         "clash": "Structural conflicts",
         "cluster": "Group/categorize",
@@ -1108,11 +1110,13 @@
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
+        "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "fourfold": "Exhaust stance space",
         "gap": "Implicit gaps",
+        "gate": "Evaluation artifact before implementation",
         "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Establish correctness through evidence",
         "grove": "Compounding effects",
@@ -1120,6 +1124,7 @@
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
         "ladder": "Abstraction level traversal",
+        "lateral": "Resist obvious framing; seek non-obvious angle",
         "mapping": "Spatial map",
         "mark": "Audit trail",
         "meld": "Combinations/overlaps",
@@ -3881,9 +3886,11 @@
             "I want something more interesting than the standard answer",
             "what would someone outside this field say",
             "reframe this",
-            "what's the contrarian view"
+            "what's the contrarian view",
+            "don't just reorganize the standard list — actually consider different candidates",
+            "if the obvious framing would produce the same items, you haven't applied lateral"
           ],
-          "definition": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, then seek a non-obvious entry point, angle, or reframing that still addresses the task. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better."
+          "definition": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, then seek a non-obvious entry point, angle, or reframing that still addresses the task. Critically, the test applies to the alternative framing too — not just the original. If the chosen alternative still produces the same content set that the obvious framing would have produced, it is not lateral: it is merely delayed convergence. The angle shift must change what is considered, not only how it is organized. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better."
         },
         "mapping": {
           "distinctions": [
@@ -9295,7 +9302,7 @@
     }
   ],
   "checksums": {
-    "axes": "186e9e91fd802a8ff0461232c47306805dc93d6684598cfddfb644bd61973fad",
+    "axes": "76300dbb0f90858e27ed67bd3dfeb9a4935fed4e5579c7090b16343ed6f4756e",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",

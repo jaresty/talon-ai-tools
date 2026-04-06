@@ -314,9 +314,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "consequences or implementations, ordered by importance to the audience.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "
         "outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, "
-        "then seek a non-obvious entry point, angle, or reframing that still addresses the task. Applies to framing and angle, not to facts — lateral thinking does not justify "
-        "fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle "
-        "would serve the user better.",
+        "then seek a non-obvious entry point, angle, or reframing that still addresses the task. Critically, the test applies to the alternative framing too — not just the original. "
+        "If the chosen alternative still produces the same content set that the obvious framing would have produced, it is not lateral: it is merely delayed convergence. The angle "
+        "shift must change what is considered, not only how it is organized. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting "
+        "information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
@@ -1152,6 +1153,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "analog": "Reasoning by analogy",
         "analysis": "Decompose components",
         "argue": "Formal argument",
+        "atomic": "One observable change per step",
         "automate": "Automate repeatable steps",
         "balance": "Equilibrium description",
         "behave": "COM-B / behavior change",
@@ -1159,6 +1161,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "boom": "Extreme scale behavior",
         "bound": "Contain side effects",
         "calc": "Formal calculation",
+        "chain": "Each step cites predecessor's actual output",
         "cite": "Evidence/sources",
         "clash": "Structural conflicts",
         "cluster": "Group/categorize",
@@ -1174,11 +1177,13 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
+        "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "fourfold": "Exhaust stance space",
         "gap": "Implicit gaps",
+        "gate": "Evaluation artifact before implementation",
         "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Establish correctness through evidence",
         "grove": "Compounding effects",
@@ -1186,6 +1191,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
         "ladder": "Abstraction level traversal",
+        "lateral": "Resist obvious framing; seek non-obvious angle",
         "mapping": "Spatial map",
         "mark": "Audit trail",
         "meld": "Combinations/overlaps",
@@ -4757,6 +4763,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what would someone outside this field say",
                 "reframe this",
                 "what's the contrarian view",
+                "don't just reorganize the standard list — actually consider different candidates",
+                "if the obvious framing would produce the same items, you haven't applied lateral",
             ],
         },
         "mapping": {

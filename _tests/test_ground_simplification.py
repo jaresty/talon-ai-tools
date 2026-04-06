@@ -22,10 +22,10 @@ def test_generalized_protocol_preserves_intent_primacy():
 
 
 def test_generalized_protocol_preserves_artifact_type_discipline():
-    """P2 one artifact per type must be preserved."""
+    """Slimmed protocol (ADR-0224) requires visible evidence at each step."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "artifact type" in core.lower() or "one artifact" in core.lower(), (
-        "Generalized protocol must preserve artifact type discipline"
+    assert "evidence" in core.lower(), (
+        "Slimmed protocol must require visible evidence"
     )
 
 
@@ -38,33 +38,33 @@ def test_generalized_protocol_preserves_observable_evidence():
 
 
 def test_generalized_protocol_preserves_derivation_chain():
-    """P4 derivation chain must be preserved."""
+    """P4 derivation must be preserved in slimmed form."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "derivation" in core.lower() or "cite" in core.lower(), (
-        "Generalized protocol must preserve derivation chain"
+    assert "derive" in core.lower(), (
+        "Slimmed protocol must preserve derivation requirement"
     )
 
 
 def test_generalized_protocol_preserves_gap_driven_iteration():
-    """P5 gap-driven iteration must be preserved."""
+    """P5 gap-driven iteration — slimmed protocol uses appearance/reality gap language."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "gap" in core.lower() and (
-        "challenge" in core.lower() or "refine" in core.lower()
-    ), "Generalized protocol must preserve gap-driven iteration"
+    assert "appearance" in core.lower() and "reality" in core.lower(), (
+        "Slimmed protocol must address gap between appearance and reality"
+    )
 
 
 def test_generalized_protocol_is_domain_independent():
-    """Protocol must be domain-independent."""
+    """Protocol must be domain-independent — slimmed form uses task-agnostic language."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "domain" in core.lower() or "software" in core.lower(), (
-        "Generalized protocol must mention domain independence"
+    assert "task" in core.lower() or "intent" in core.lower(), (
+        "Slimmed protocol must be framed in task-agnostic terms"
     )
 
 
 def test_generalized_protocol_has_seven_rungs():
-    """Protocol must have the 7-rung ladder."""
+    """Slimmed protocol (ADR-0224) replaces 7-rung ladder with 3 enforcement questions."""
     core = GROUND_PARTS_MINIMAL["core"]
-    rung_count = core.lower().count("rung")
-    assert rung_count >= 7, (
-        f"Generalized protocol must define 7 rungs, found {rung_count}"
+    # Old ladder is gone; check that the 3 enforcement questions are present
+    assert "completion" in core.lower() and "deviation" in core.lower(), (
+        "Slimmed protocol must contain enforcement questions (completion, deviation)"
     )

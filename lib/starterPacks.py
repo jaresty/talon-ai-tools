@@ -32,7 +32,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="design",
         framing="Architectural or interface design decision",
-        command="bar build show branch trade balance",
+        command="bar build show spur trade balance",
     ),
     StarterPack(
         name="review",
@@ -62,7 +62,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="charter",
         framing="Planning a project or feature",
-        command="bar build plan branch prioritize risks",
+        command="bar build plan sweep prioritize risks",
     ),
     StarterPack(
         name="explain",
@@ -72,7 +72,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="versus",
         framing="Structured comparison between alternatives",
-        command="bar build diff branch trade polar",
+        command="bar build diff compare trade polar",
     ),
     StarterPack(
         name="craft",

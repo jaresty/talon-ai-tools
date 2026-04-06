@@ -9197,7 +9197,7 @@
     {
       "name": "design",
       "framing": "Architectural or interface design decision",
-      "command": "bar build show branch trade balance"
+      "command": "bar build show spur trade balance"
     },
     {
       "name": "review",
@@ -9227,7 +9227,7 @@
     {
       "name": "charter",
       "framing": "Planning a project or feature",
-      "command": "bar build plan branch prioritize risks"
+      "command": "bar build plan sweep prioritize risks"
     },
     {
       "name": "explain",
@@ -9237,7 +9237,7 @@
     {
       "name": "versus",
       "framing": "Structured comparison between alternatives",
-      "command": "bar build diff branch trade polar"
+      "command": "bar build diff compare trade polar"
     },
     {
       "name": "craft",
@@ -9262,6 +9262,6 @@
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",
     "slugs": "878f9761e49142a4d7403d005ad906718b724aa0c577e4012298f8365567d044",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
-    "starter_packs": "5948eed830a8e7c6cdd00a2b202a75cb174e79f90360cb1515367f028594faf0"
+    "starter_packs": "0433e3eb4d912db872e4a74a36dc5c181bb28cedec92a38052116865003047dd"
   }
 }

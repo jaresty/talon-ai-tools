@@ -238,7 +238,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "behavior per cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — not "
         "the smallest convenient bundle. Only a currently-failing observation opens a step. The cycle is: run the governing artifact, observe exactly one failure, implement only what "
         "closes that failure, run again. The next failure is not yet observable, so the next step is not yet open. A governing artifact does not grant permission in advance — each run "
-        "grants exactly one permission. Implementing beyond the currently-observed failure is a violation regardless of how many failures the governing artifact will eventually expose.",
+        "grants exactly one permission. Implementing beyond the currently-observed failure is a violation regardless of how many failures the governing artifact will eventually expose. "
+        "The implementation must be scoped to exactly what the failure message describes, not to what the governing artifact ultimately checks. A missing import authorizes making the "
+        "import resolvable — not implementing the behavior the artifact will eventually verify. A missing function authorizes an empty stub — not its implementation. Each failure "
+        "message is a separate permission slip for exactly one step.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

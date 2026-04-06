@@ -247,7 +247,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "message must be quoted exactly from the governing artifact output — not paraphrased, summarized, or described. A paraphrase can be made to fit any implementation scope; the "
         "exact message cannot. If the stated failure message is a summary of multiple failures, the gate has not been satisfied. The implementation target is the minimum that changes "
         "the failure message — not the minimum that satisfies the governing artifact. If one change shifts the failure message to a different failure, that is one complete step. "
-        "Implementing everything needed to satisfy the governing artifact in one step is a bundle, even if the failure message was quoted correctly.",
+        "Implementing everything needed to satisfy the governing artifact in one step is a bundle, even if the failure message was quoted correctly. The failure message must be read "
+        "literally, not interpreted. What the failure implies is not what the failure authorizes.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

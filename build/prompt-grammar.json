@@ -163,6 +163,7 @@
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete consequences or implementations, ordered by importance to the audience.",
+        "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, then seek a non-obvious entry point, angle, or reframing that still addresses the task. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
@@ -376,6 +377,7 @@
         "inversion",
         "jobs",
         "ladder",
+        "lateral",
         "mapping",
         "mark",
         "meld",
@@ -586,6 +588,7 @@
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
         "ladder": "Move between abstraction levels",
+        "lateral": "Resist obvious framing; seek non-obvious angle",
         "mapping": "Surface elements and relationships",
         "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
@@ -792,6 +795,7 @@
         "inversion": "逆",
         "jobs": "需",
         "ladder": "階",
+        "lateral": "斜",
         "mapping": "写",
         "mark": "印",
         "meld": "融",
@@ -910,6 +914,7 @@
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
         "ladder": "Reasoning",
+        "lateral": "Reasoning",
         "mapping": "Structural",
         "mark": "Temporal/Dynamic",
         "meld": "Comparative",
@@ -3849,6 +3854,36 @@
             "levels of abstraction"
           ],
           "definition": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete consequences or implementations, ordered by importance to the audience."
+        },
+        "lateral": {
+          "distinctions": [
+            {
+              "note": "inversion = flip the problem structure (reason from failure back); lateral = resist the obvious framing without necessarily inverting",
+              "token": "inversion"
+            },
+            {
+              "note": "spur = branch on key assumptions in parallel; lateral = resist the first framing before branching",
+              "token": "spur"
+            },
+            {
+              "note": "analog = map relational structure from a known case; lateral = seek a non-obvious angle on the current case without requiring a source domain",
+              "token": "analog"
+            }
+          ],
+          "heuristics": [
+            "give me a different angle",
+            "don't give me the obvious answer",
+            "surprise me",
+            "what's the unexpected take",
+            "think laterally",
+            "avoid the predictable",
+            "what's a non-obvious way to look at this",
+            "I want something more interesting than the standard answer",
+            "what would someone outside this field say",
+            "reframe this",
+            "what's the contrarian view"
+          ],
+          "definition": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, then seek a non-obvious entry point, angle, or reframing that still addresses the task. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better."
         },
         "mapping": {
           "distinctions": [
@@ -7563,6 +7598,7 @@
         "inversion": "inversion",
         "jobs": "jobs",
         "ladder": "ladder",
+        "lateral": "lateral",
         "mapping": "mapping",
         "mark": "mark",
         "meld": "meld",
@@ -7803,6 +7839,7 @@
         "method=inversion": "method-inversion",
         "method=jobs": "method-jobs",
         "method=ladder": "method-ladder",
+        "method=lateral": "method-lateral",
         "method=mapping": "method-mapping",
         "method=mark": "method-mark",
         "method=meld": "method-meld",
@@ -8220,6 +8257,7 @@
       "jog": "jog",
       "kindly": "kindly",
       "ladder": "ladder",
+      "lateral": "lateral",
       "lever": "lever",
       "log": "log",
       "make": "make",
@@ -8278,6 +8316,7 @@
       "method=inversion": "method-inversion",
       "method=jobs": "method-jobs",
       "method=ladder": "method-ladder",
+      "method=lateral": "method-lateral",
       "method=mapping": "method-mapping",
       "method=mark": "method-mark",
       "method=meld": "method-meld",
@@ -9256,11 +9295,11 @@
     }
   ],
   "checksums": {
-    "axes": "9681690e8a84c65ac3fd7be717fddc300bede77b0a74835104549bb5e5020387",
+    "axes": "186e9e91fd802a8ff0461232c47306805dc93d6684598cfddfb644bd61973fad",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",
-    "slugs": "878f9761e49142a4d7403d005ad906718b724aa0c577e4012298f8365567d044",
+    "slugs": "5741945864bb8bd1904b995cabfbb0a99153d282be1521f4c92ecb22c7e5f42e",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754"
   }

@@ -312,6 +312,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
         "consequences or implementations, ordered by importance to the audience.",
+        "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "
+        "outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, "
+        "then seek a non-obvious entry point, angle, or reframing that still addresses the task. Applies to framing and angle, not to facts — lateral thinking does not justify "
+        "fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle "
+        "would serve the user better.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
@@ -570,6 +575,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
         "ladder": "Move between abstraction levels",
+        "lateral": "Resist obvious framing; seek non-obvious angle",
         "mapping": "Surface elements and relationships",
         "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
@@ -778,6 +784,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "inversion": "逆",
         "jobs": "需",
         "ladder": "階",
+        "lateral": "斜",
         "mapping": "写",
         "mark": "印",
         "meld": "融",
@@ -963,6 +970,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
         "ladder": "Reasoning",
+        "lateral": "Reasoning",
         "mapping": "Structural",
         "mark": "Temporal/Dynamic",
         "meld": "Comparative",
@@ -4720,6 +4728,35 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "from concrete to abstract and back",
                 "abstraction ladder",
                 "levels of abstraction",
+            ],
+        },
+        "lateral": {
+            "distinctions": [
+                {
+                    "note": "inversion = flip the problem structure (reason from failure back); lateral = resist the obvious framing without necessarily inverting",
+                    "token": "inversion",
+                },
+                {
+                    "note": "spur = branch on key assumptions in parallel; lateral = resist the first framing before branching",
+                    "token": "spur",
+                },
+                {
+                    "note": "analog = map relational structure from a known case; lateral = seek a non-obvious angle on the current case without requiring a source domain",
+                    "token": "analog",
+                },
+            ],
+            "heuristics": [
+                "give me a different angle",
+                "don't give me the obvious answer",
+                "surprise me",
+                "what's the unexpected take",
+                "think laterally",
+                "avoid the predictable",
+                "what's a non-obvious way to look at this",
+                "I want something more interesting than the standard answer",
+                "what would someone outside this field say",
+                "reframe this",
+                "what's the contrarian view",
             ],
         },
         "mapping": {

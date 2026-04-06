@@ -291,7 +291,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "task — no testable criteria that can be verified independently of the output — state that explicitly and do not proceed. An evaluation produced by the same reasoning that "
         "generates the output is not structurally separate from it. When no artifact is possible, flag the mismatch and suggest verify or rigor instead. When an artifact is possible: "
         "produce it before the implementation artifact it evaluates. An evaluation written after the fact is shaped by what it evaluates and cannot expose gaps the implementation was "
-        "designed around. Self-certification is impossible — the evaluation must be structurally separate from the artifact and must have existed before the implementation began.",
+        "designed around. Self-certification is impossible — the evaluation must be structurally separate from the artifact and must have existed before the implementation began. Naming "
+        "or acknowledging a deviation does not satisfy the gate. Any statement that labels, acknowledges, or apologizes for skipping the artifact without producing it is not a discharge "
+        "— the artifact must exist before proceeding and must govern whether implementation proceeds. An artifact that exists but is not used as a decision point is not a gate.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",
@@ -302,7 +304,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "that pressure. Before acting, derive a concrete step-by-step enforcement process from the intent of this task that makes each cheap path to apparent completion immediately "
         "visible and costly. Execute this derived process one step at a time, showing evidence before proceeding. The process you derive should address: what counts as completion (not "
         "appearance of completion); how you will make deviation more costly than compliance; and what visible evidence will exist at each step that the gap between appearance and "
-        "reality is closing.",
+        "reality is closing. Naming a deviation does not close it. Any statement that labels, acknowledges, or apologizes for a shortcut without producing the missing artifact is "
+        "itself a cheap path to apparent compliance.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

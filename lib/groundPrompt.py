@@ -35,7 +35,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'showing evidence before proceeding. '
         'The process you derive should address: what counts as completion (not appearance of completion); '
         'how you will make deviation more costly than compliance; and what visible evidence will exist at each step '
-        'that the gap between appearance and reality is closing.'
+        'that the gap between appearance and reality is closing. '
+        'Naming a deviation does not close it. Any statement that labels, acknowledges, or apologizes for a shortcut '
+        'without producing the missing artifact is itself a cheap path to apparent compliance.'
     ),
 }
 

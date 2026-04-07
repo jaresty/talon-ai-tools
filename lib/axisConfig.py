@@ -233,22 +233,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
-        "atomic": "The response enhances the task by enforcing step-granularity discipline: each refinement step addresses exactly one observed failure and introduces nothing beyond what closes "
-        "it. When multiple changes are bundled in one step, the causal link between each change and its effect becomes unobservable. Domain-agnostic: applies to implementation (one "
-        "behavior per cycle), writing (one argument changed per edit), and decisions (one assumption changed per cycle). The unit is the smallest independently observable change — not "
-        "the smallest convenient bundle. Only a currently-failing observation opens a step. The cycle is: run the governing artifact, observe exactly one failure, implement only what "
-        "closes that failure, run again. The next failure is not yet observable, so the next step is not yet open. A governing artifact does not grant permission in advance — each run "
-        "grants exactly one permission. Implementing beyond the currently-observed failure is a violation regardless of how many failures the governing artifact will eventually expose. "
-        "The implementation must be scoped to exactly what the failure message describes, not to what the governing artifact ultimately checks. A missing import authorizes making the "
-        "import resolvable — not implementing the behavior the artifact will eventually verify. A missing function authorizes an empty stub — not its implementation. Each failure "
-        "message is a separate permission slip for exactly one step. When deriving this token, the derivation must establish the cycle protocol: run the governing artifact, observe one "
-        "failure, implement only what that failure message authorizes, run again. A derivation that omits this cycle protocol is incomplete. At each step, before producing any output, "
-        "state the current failure message visibly — that statement is the per-step gate. A step that begins without a visible failure message has not satisfied the gate. The failure "
-        "message must be quoted exactly from the governing artifact output — not paraphrased, summarized, or described. A paraphrase can be made to fit any implementation scope; the "
-        "exact message cannot. If the stated failure message is a summary of multiple failures, the gate has not been satisfied. The implementation target is the minimum that changes "
-        "the failure message — not the minimum that satisfies the governing artifact. If one change shifts the failure message to a different failure, that is one complete step. "
-        "Implementing everything needed to satisfy the governing artifact in one step is a bundle, even if the failure message was quoted correctly. The failure message must be read "
-        "literally, not interpreted. What the failure implies is not what the failure authorizes.",
+        "atomic": "The response enforces the principle that the causal link between a change and its effect is only observable if exactly one change is introduced per step. Every constraint "
+        "follows from that principle. One failure opens one step: run the governing artifact, take the first reported failure as the current step's scope, implement only what closes "
+        "it, run again — all other reported failures are not yet open. The derivation establishes this cycle; the per-step gate enforces it: before any implementation, reproduce the "
+        "exact failure message — not paraphrased, summarized, or described. The scope is the failure message read literally: when literal and semantic readings diverge, choose the "
+        "interpretation that produces the smallest change that would shift the message. The implementation target is the minimum that shifts the failure message to a different state — "
+        "not the minimum that satisfies the governing artifact. Implementing beyond the current failure is a violation regardless of how many other failures exist. When deriving this "
+        "token, establish the cycle protocol explicitly: what the governing artifact is, how failures will be observed, how scope will be determined. A derivation that omits this is "
+        "incomplete.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

@@ -39,7 +39,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'The intent is external and fixed; the completion check is the only permitted mechanism for determining '
         'what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or '
         'out of scope is a unilateral change to the intent. '
-        'Naming an unaddressed item does not close it — only visible evidence does.'
+        'Naming an unaddressed item does not close it — only visible evidence does. '
+        'If a gate constraint is present in this prompt, the derived enforcement process must include, as its first step, '
+        'the production of a verified assertion governing the first behavior to be produced — no behavior may be produced '
+        'before that assertion exists and has been verified to fail when the behavior is absent.'
     ),
 }
 

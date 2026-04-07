@@ -240,7 +240,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "interpretation that produces the smallest change that would shift the message. The implementation target is the minimum that shifts the failure message to a different state — "
         "not the minimum that satisfies the governing artifact. Implementing beyond the current failure is a violation regardless of how many other failures exist. When deriving this "
         "token, establish the cycle protocol explicitly: what the governing artifact is, how failures will be observed, how scope will be determined. A derivation that omits this is "
-        "incomplete.",
+        "incomplete. Each assertion in the governing artifact must cover exactly one behavior, and each implementation step must be scoped to exactly one failure message — these two "
+        "granularities must match; an assertion covering N behaviors cannot authorize N implementation steps. If a ground constraint is present in this prompt, exhausting the governing "
+        "artifact's failures is not a termination condition — when the artifact reports no failures, the next required step is ground's completion check; declaring done before that "
+        "check is a violation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -257,7 +260,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reasoning, reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The "
         "reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact "
         "content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Auditability is a consequence of this "
-        "structure, not a separate standard to satisfy.",
+        "structure, not a separate standard to satisfy. This reproduction requirement applies at every step in the protocol, including steps governed by a gate cycle: the failure "
+        "message produced by the governing artifact is the predecessor artifact for the implementation step that follows it; reproduce it exactly before implementing.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",
@@ -313,7 +317,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "would distinguish genuine compliance from that path. The completion check is the final required step of this process and must be included in the derivation: return to the "
         "original stated intent, and for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the "
         "completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of "
-        "scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does.",
+        "scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the "
+        "derived enforcement process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced "
+        "before that assertion exists and has been verified to fail when the behavior is absent.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

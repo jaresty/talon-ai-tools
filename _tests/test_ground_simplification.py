@@ -46,10 +46,10 @@ def test_generalized_protocol_preserves_derivation_chain():
 
 
 def test_generalized_protocol_preserves_gap_driven_iteration():
-    """P5 gap-driven iteration — slimmed protocol uses appearance/reality gap language."""
+    """P5 gap-driven iteration — crystal restructure uses apparent/actual completion gap language."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "appearance" in core.lower() and "reality" in core.lower(), (
-        "Slimmed protocol must address gap between appearance and reality"
+    assert "apparent" in core.lower() and "actual" in core.lower(), (
+        "Slimmed protocol must address gap between apparent and actual completion"
     )
 
 
@@ -62,9 +62,9 @@ def test_generalized_protocol_is_domain_independent():
 
 
 def test_generalized_protocol_has_seven_rungs():
-    """Slimmed protocol (ADR-0224) replaces 7-rung ladder with 3 enforcement questions."""
+    """Slimmed protocol (ADR-0224/crystal) — governing principle + completion check present."""
     core = GROUND_PARTS_MINIMAL["core"]
-    # Old ladder is gone; check that the 3 enforcement questions are present
-    assert "completion" in core.lower() and "deviation" in core.lower(), (
-        "Slimmed protocol must contain enforcement questions (completion, deviation)"
+    # Crystal restructure: governing principle (attack surface) + completion check as final step
+    assert "attack surface" in core.lower() and "completion check" in core.lower(), (
+        "Crystal-restructured protocol must contain governing principle and completion check"
     )

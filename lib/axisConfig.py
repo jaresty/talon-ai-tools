@@ -261,9 +261,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
         "effects remain within intended conceptual or operational regions.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
-        "chain": "The response enhances the task by enforcing derivation-chain discipline: each artifact or conclusion must explicitly cite its predecessor's actual content. Without visible "
-        "derivation chains, conclusions detach from premises and reasoning becomes unreconstructable. Use when multi-step reasoning, multi-artifact sequences, or iterative refinement "
-        "must remain auditable — any reader should be able to reconstruct why each step follows from the previous one.",
+        "chain": "The response enforces the principle that a conclusion not anchored to its predecessor's actual output cannot be verified as continuous with it. Before producing any new "
+        "reasoning, reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The "
+        "reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact "
+        "content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Auditability is a consequence of this "
+        "structure, not a separate standard to satisfy.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",

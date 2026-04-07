@@ -133,7 +133,7 @@
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring effects remain within intended conceptual or operational regions.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
-        "chain": "The response enhances the task by enforcing derivation-chain discipline: each artifact or conclusion must explicitly cite its predecessor's actual content. Without visible derivation chains, conclusions detach from premises and reasoning becomes unreconstructable. Use when multi-step reasoning, multi-artifact sequences, or iterative refinement must remain auditable — any reader should be able to reconstruct why each step follows from the previous one.",
+        "chain": "The response enforces the principle that a conclusion not anchored to its predecessor's actual output cannot be verified as continuous with it. Before producing any new reasoning, reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Auditability is a consequence of this structure, not a separate standard to satisfy.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global inconsistency or breakdown.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning of the items.",
@@ -3233,7 +3233,7 @@
             "iterative artifact sequence",
             "nothing should appear from nowhere"
           ],
-          "definition": "The response enhances the task by enforcing derivation-chain discipline: each artifact or conclusion must explicitly cite its predecessor's actual content. Without visible derivation chains, conclusions detach from premises and reasoning becomes unreconstructable. Use when multi-step reasoning, multi-artifact sequences, or iterative refinement must remain auditable — any reader should be able to reconstruct why each step follows from the previous one."
+          "definition": "The response enforces the principle that a conclusion not anchored to its predecessor's actual output cannot be verified as continuous with it. Before producing any new reasoning, reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Auditability is a consequence of this structure, not a separate standard to satisfy."
         },
         "cite": {
           "distinctions": [
@@ -9302,7 +9302,7 @@
     }
   ],
   "checksums": {
-    "axes": "90cb50423c341901c828b2398c489aefb269980262afbc61db0af6d6ec3dd08e",
+    "axes": "9985623669e8323178de14e12f621acd41b0eafde77844171147962254e6842f",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",

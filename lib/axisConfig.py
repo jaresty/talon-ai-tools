@@ -309,6 +309,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "absence, not to an unrelated condition; restore the behavior; an assertion that has only ever passed is unverified and may not govern. When no natural assertion is possible for "
         "this task, state that explicitly and do not proceed. Self-certification is impossible: the assertion must be structurally separate from what it governs and must have existed "
         "before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the verified assertion must exist before proceeding.",
+        "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
+        "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",
@@ -589,6 +591,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "fourfold": "Exhaust logical stance space before closure",
         "gap": "Implicit-to-explicit gap analysis",
         "gate": "Evaluation before implementation",
+        "gloss": "Compress system into tractable form for external intervention; name losses",
         "grain": "Find latent structural direction; distinguish real from illusory optionality",
         "ground": "Establish correctness through evidence protocols",
         "grove": "Accumulation and rate-of-change effects",
@@ -798,6 +801,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "fourfold": "四",
         "gap": "隙",
         "gate": "門",
+        "gloss": "釈",
         "grain": "纹",
         "ground": "地",
         "grove": "蓄",
@@ -984,6 +988,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "fourfold": "Reasoning",
         "gap": "Structural",
         "gate": "Process",
+        "gloss": "Diagnostic",
         "grain": "Diagnostic",
         "ground": "Process",
         "grove": "Generative",
@@ -1204,6 +1209,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "fourfold": "Exhaust stance space",
         "gap": "Implicit gaps",
         "gate": "Evaluation artifact before implementation",
+        "gloss": "Compress unfamiliar system for external intervention; name losses",
         "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Establish correctness through evidence",
         "grove": "Compounding effects",

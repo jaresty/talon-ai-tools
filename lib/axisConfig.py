@@ -300,12 +300,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gate": "The response enforces the principle that an unverified assertion provides no coverage guarantee: every behavior must be structurally prevented from existing without a verified "
         "assertion that would catch it breaking. Three requirements follow from this principle. First, assertion precedes behavior: no step may begin until a governing assertion exists "
         "and has been verified; the cycle continues until every behavior in scope has a corresponding verified assertion — this is a hard termination condition, not a probabilistic goal. "
-        "Second, one assertion per behavior: an assertion covering multiple behaviors cannot be verified in isolation; each assertion must cover exactly one observable outcome; more "
-        "assertions than behaviors is acceptable, any behavior without its own assertion is a structural violation. Third, verification before first use: before an assertion governs for "
-        "the first time, observe it fail when the behavior is absent — remove or break the behavior, confirm the assertion fails, restore; an assertion that has only ever passed is "
-        "unverified and may not govern. When no natural assertion is possible for this task, state that explicitly and do not proceed. Self-certification is impossible: the assertion "
-        "must be structurally separate from what it governs and must have existed before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the "
-        "verified assertion must exist before proceeding.",
+        "Second, one assertion per behavior: an assertion covering multiple behaviors cannot be verified in isolation; each assertion must cover exactly one observable outcome — a test "
+        "function containing multiple assert statements covers multiple behaviors and is a structural violation of this requirement; the unit of assertion is the individual assert "
+        "statement, not the test function; more assertions than behaviors is acceptable, any behavior without its own assert statement is a structural violation. Third, verification "
+        "before first use: before an assertion governs for the first time, observe it fail when the behavior is absent — remove or break the behavior, confirm the assertion fails, "
+        "restore; an assertion that has only ever passed is unverified and may not govern. When no natural assertion is possible for this task, state that explicitly and do not proceed. "
+        "Self-certification is impossible: the assertion must be structurally separate from what it governs and must have existed before the behavior it covers. Naming or acknowledging a "
+        "deviation does not discharge the gate — the verified assertion must exist before proceeding.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",

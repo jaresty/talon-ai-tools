@@ -363,6 +363,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
+        "paradox": "The response holds the subject as an unresolved generative tension rather than converging toward explanation or conclusion. It names what resists analysis without "
+        "substituting a reframing that dissolves the resistance. Synthesis, resolution, and explanation are not valid closing moves — the response ends at the boundary of what "
+        "analytical tools can reach.",
         "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "
         "or detection mechanisms.",
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
@@ -614,6 +617,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "orbit": "Find attractor geometry across trajectories",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
+        "paradox": "Hold subject as unresolved tension; name what resists analysis without resolving it",
         "perturb": "Introduce controlled faults to observe system response",
         "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
@@ -824,6 +828,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "orbit": "軌",
         "order": "順",
         "origin": "起",
+        "paradox": "矛",
         "perturb": "擾",
         "polar": "磁",
         "preserve": "守",
@@ -1011,6 +1016,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "orbit": "Temporal/Dynamic",
         "order": "Structural",
         "origin": "Structural",
+        "paradox": "Reasoning",
         "perturb": "Diagnostic",
         "polar": "Comparative",
         "preserve": "Structural",
@@ -1232,6 +1238,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "orbit": "Attractor geometry",
         "order": "Abstract ordering",
         "origin": "Historical causation",
+        "paradox": "Unresolved generative tension",
         "perturb": "Introduce controlled variations",
         "polar": "Attractors/repellers",
         "preserve": "Backward compatibility",

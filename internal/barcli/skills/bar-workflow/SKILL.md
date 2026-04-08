@@ -196,12 +196,14 @@ Do NOT advance until the user provides input. Do NOT synthesize or predict the u
 The user's response becomes the `--subject` for the next step.
 
 ### Interactive cycle mode
-After completing one full pass of the sequence, emit a cycle prompt:
+After completing one full pass of the sequence, emit a cycle prompt. Use the exact sequence
+steps from `bar sequence show` — do not invent additional steps (e.g. "integrate") that are
+not in the sequence definition:
 
 ```
-✅ Cycle <N> complete.
+✅ Cycle <N> complete (<step 1 role> → <step 2 role>).
 
-To run another cycle: provide your next input and I will start again from step 1.
+To run another cycle: provide your next experiment/input and I will run <step 1 role> again.
 Or say "done" to close and I will summarize all <N> cycles.
 ```
 
@@ -209,6 +211,7 @@ Accumulate a brief summary of each cycle's outcome. When the user ends the cycle
 across all iterations: what changed, what converged, what remains unresolved.
 
 **Cycle termination is always user-driven.** Do not decide the cycle is complete.
+**Do not add steps beyond the sequence definition.** The sequence ends where `bar sequence show` ends.
 
 ## Mode Inference for Ad Hoc Chains (ADR-0226 §7)
 

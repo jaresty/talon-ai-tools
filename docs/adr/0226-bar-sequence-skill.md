@@ -1,6 +1,6 @@
 # ADR-0226: Sequence-Aware bar-workflow and Interactive Sequence Modes
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-04-08
 **Supersedes:** ADR-0226 (initial draft — withdrawn, single-skill approach)
 **Related:** ADR-0225 (Named Workflow Sequences), ADR-0085 (Shuffle-Driven Refinement)

@@ -367,9 +367,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
-        "mu": "The response states the central tensions of the subject as a set of claims that resist logical resolution — each pair cannot both be true and cannot both be false. Each tension "
-        "must be derived from the subject's own internal structure, not imported from general philosophy or common discourse about the subject's domain. A tension is valid only if removing "
-        "the subject would make it disappear. Context and elaboration are permitted only if they deepen the irresolution. Do not resolve or qualify.",
+        "mu": "The response produces one or more objects — questions, scenarios, or imperatives — that enact the central irresolution of the subject rather than describing it. Each object must "
+        "trap the reader inside the tension: a question whose answer requires abandoning the question's own frame, a scenario where every move is structurally wrong, or an imperative that "
+        "collapses the distinction it invokes. The irresolution must arise from the subject's own internal structure, not imported from general philosophy or common discourse about the "
+        "subject's domain. A tension is valid only if removing the subject would make it disappear. Do not name the tension. Do not state that something cannot be resolved. The object "
+        "succeeds only if the reader cannot answer it without first becoming stuck.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "orbit": "The response enhances the task by varying initial conditions or assumptions across multiple trajectories and identifying the invariant structural form that behavior tends "

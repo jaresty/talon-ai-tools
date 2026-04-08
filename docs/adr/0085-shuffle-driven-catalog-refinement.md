@@ -339,6 +339,55 @@ run the chained evaluation on any shuffle pairs that intuitively suggest orderin
 **Output artifact:** Nominated sequences go to `lib/sequenceConfig.py` via the ADR-0225
 process. Record the nomination rationale and scores in `docs/adr/evidence/0085/sequences.md`.
 
+#### Phase 2g: Systematic Sequence Coverage Audit (ADR-0226)
+
+**When to run:** Periodically — after new sequences are added, after the usage pattern taxonomy
+in `bar help llm` is updated, or when there is reason to believe workflow patterns are not
+covered. Complements Phase 2f (empirical, shuffle-driven) with a systematic, taxonomy-driven
+pass.
+
+**Contrast with Phase 2f:** Phase 2f discovers sequence candidates by observing that prompt B
+scores higher after prompt A — it is empirical and bottom-up. Phase 2g audits coverage by
+enumerating known workflow patterns and asking whether each one has a named sequence — it is
+systematic and top-down. Both are needed: Phase 2f finds sequences you didn't anticipate;
+Phase 2g finds gaps in patterns you already know exist.
+
+**Protocol:**
+
+1. **Enumerate workflow patterns.** Run `bar help llm` and read § "Usage Patterns by Task
+   Type." List each pattern. This is the audit scope.
+
+2. **For each pattern, ask three questions:**
+   - Does a named sequence exist for this pattern? (`bar sequence list`)
+   - If yes: does the mode match how the workflow actually runs? A pattern that requires
+     real-world action between steps should be `linear` or `cycle`, not `autonomous`.
+   - If no: does this pattern naturally pause for real-world input? If yes, it is a gap.
+
+3. **Identify gaps.** A gap is any pattern that:
+   - Has no named sequence, AND involves a real-world step between LLM steps (experiment,
+     deploy, interview, code execution, human review), OR
+   - Has a named sequence with the wrong mode (e.g., marked `autonomous` but requires
+     user results between steps).
+
+4. **Propose candidates.** For each gap, draft:
+   - Sequence name (kebab-case)
+   - Mode: `autonomous` | `linear` | `cycle`
+   - Step sketch: 2–3 tokens with roles and whether each requires user input
+   - Rationale: what real-world action falls between steps, why the pattern recurs
+
+5. **Validate.** For each candidate, run a subagent with a representative task and observe
+   whether the pause/resume protocol triggers correctly and produces meaningful output at
+   each step. Use a weak model (e.g., Haiku) to keep cost low.
+
+**Output artifact:** Validated candidates go to `lib/sequenceConfig.py` via the ADR-0225
+process. Record the audit findings (patterns surveyed, gaps found, candidates proposed,
+validation results) in `docs/adr/evidence/0085/sequences.md`.
+
+**Termination condition:** The audit is complete when every pattern in the usage taxonomy
+either has a named sequence with the correct mode, or has a documented rationale for why
+no sequence is warranted (e.g., the pattern is fully autonomous and well-served by ad hoc
+chains).
+
 ### Phase 3: Recommendation
 
 Based on evaluation, categorize findings into actions:

@@ -313,6 +313,32 @@ run at least 3 different subject types before concluding indistinguishability.
 **Output artifact:** append distinction check results to the retire candidate entry in
 `docs/adr/evidence/0085/recommendations.yaml`.
 
+#### Phase 2f: Sequence Signal Detection (ADR-0225)
+
+**When to run:** During any Phase 2 evaluation cycle, after scoring individual prompts.
+
+**What to look for:** A *sequence signal* is present when running prompt B cold (without prior
+context) scores meaningfully lower than running prompt B after prompt A has already been
+applied to the same subject. This is a directed quality uplift — A's output makes B more
+effective, not merely compatible.
+
+Co-occurrence (tokens appearing together in the same shuffle seed) indicates compatibility,
+not sequence dependency. The sequence signal requires an explicit chained evaluation: score
+B cold, score B with A's output as prior context, compare.
+
+**Protocol:** Follow ADR-0225 §"Sequence discovery via shuffle" for the full nomination,
+chained evaluation, and threshold criteria. Key threshold: mean score uplift ≥ 0.75 points
+(1–5 scale) across ≥ 3 subject types, with directionality confirmed (A→B uplifts more than
+B→A).
+
+**Retrospective sweep:** Existing seeds in `docs/adr/evidence/0085/` are a candidate pool
+that has never been evaluated for sequence signals. Before generating new seeds for discovery,
+run the chained evaluation on any shuffle pairs that intuitively suggest ordering (e.g.,
+`prep` before `vet`, `diagnose` before `fix`).
+
+**Output artifact:** Nominated sequences go to `lib/sequenceConfig.py` via the ADR-0225
+process. Record the nomination rationale and scores in `docs/adr/evidence/0085/sequences.md`.
+
 ### Phase 3: Recommendation
 
 Based on evaluation, categorize findings into actions:

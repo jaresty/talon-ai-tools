@@ -329,12 +329,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred "
         "without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task. A "
         "valid derivation must name at least one cheap path that would produce the appearance of completion without satisfying the intent, and for each, specify what visible evidence "
-        "would distinguish genuine compliance from that path. The completion check is the final required step of this process and must be included in the derivation: return to the "
-        "original stated intent, and for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the "
-        "completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of "
-        "scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the "
-        "derived enforcement process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced "
-        "before that assertion exists and has been verified to fail when the behavior is absent.",
+        "would distinguish genuine compliance from that path. When the task touches multiple layers or systems, the derivation must identify a governing artifact per layer — declaring "
+        "one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from coverage and must be "
+        "explicitly named and closed. The completion check is the final required step of this process and must be included in the derivation: return to the original stated intent, and "
+        "for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the completion check is the only "
+        "permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change "
+        "to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the derived enforcement process must "
+        "include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion exists and "
+        "has been verified to fail when the behavior is absent.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

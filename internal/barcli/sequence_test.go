@@ -271,3 +271,124 @@ func nonEmptyLines(s string) []string {
 	}
 	return out
 }
+
+// Behavior 13: Sequence.Example is populated for a sequence that declares it.
+func TestSequenceExamplePopulated(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["experiment-cycle"]
+	if !ok {
+		t.Fatal("experiment-cycle not found")
+	}
+	if seq.Example == "" {
+		t.Error("expected experiment-cycle to have a non-empty Example field")
+	}
+}
+
+// Behavior 14: `bar sequence show` human output includes example line.
+func TestSequenceShowIncludesExample(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "example:") {
+		t.Errorf("expected \"example:\" label in bar sequence show output:\n%s", out)
+	}
+}
+
+// Behavior 15: `bar sequence show --json` includes example field.
+func TestSequenceShowJSONIncludesExample(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle", "--json"})
+	if code != 0 {
+		t.Fatalf("bar sequence show --json exited %d: %s", code, stderr)
+	}
+	type jsonSeq struct {
+		Example string `json:"example"`
+	}
+	var result jsonSeq
+	if err := json.Unmarshal([]byte(out), &result); err != nil {
+		t.Fatalf("expected valid JSON: %v\noutput: %s", err, out)
+	}
+	if result.Example == "" {
+		t.Errorf("expected non-empty example field in bar sequence show --json output:\n%s", out)
+	}
+}
+
+// Behavior 16: Grammar contains the "gather-and-synthesize" sequence.
+func TestGrammarContainsGatherAndSynthesize(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	if _, ok := g.Sequences["gather-and-synthesize"]; !ok {
+		t.Fatal("expected grammar.Sequences[\"gather-and-synthesize\"] to exist")
+	}
+}
+
+// Behavior 17: Grammar contains the "plan-and-retrospect" sequence.
+func TestGrammarContainsPlanAndRetrospect(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	if _, ok := g.Sequences["plan-and-retrospect"]; !ok {
+		t.Fatal("expected grammar.Sequences[\"plan-and-retrospect\"] to exist")
+	}
+}
+
+// Behavior 18: Grammar contains the "simulate-and-review" sequence.
+func TestGrammarContainsSimulateAndReview(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	if _, ok := g.Sequences["simulate-and-review"]; !ok {
+		t.Fatal("expected grammar.Sequences[\"simulate-and-review\"] to exist")
+	}
+}
+
+// Behavior 19: `bar help sequences` exits 0 and contains sequence names.
+func TestHelpSequencesExitsZero(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help sequences exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "experiment-cycle") {
+		t.Errorf("expected bar help sequences to include \"experiment-cycle\":\n%s", out)
+	}
+}
+
+// Behavior 20: `bar help sequences` includes mode information.
+func TestHelpSequencesIncludesMode(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help sequences exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "cycle") || !strings.Contains(out, "linear") || !strings.Contains(out, "autonomous") {
+		t.Errorf("expected bar help sequences to include all three modes:\n%s", out)
+	}
+}
+
+// Behavior 21: `bar help llm` includes a Named Sequences section.
+func TestHelpLLMIncludesSequencesSection(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "llm"})
+	if code != 0 {
+		t.Fatalf("bar help llm exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Named Sequences") {
+		t.Errorf("expected bar help llm to include \"Named Sequences\" section:\n%s", out[:min(len(out), 500)])
+	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

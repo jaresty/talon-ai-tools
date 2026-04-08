@@ -22,6 +22,7 @@ type SequenceStep struct {
 // Sequence is a named, directed multi-step workflow pattern.
 type Sequence struct {
 	Description string         `json:"description"`
+	Example     string         `json:"example,omitempty"`
 	Mode        string         `json:"mode,omitempty"` // ADR-0226: "autonomous" | "linear" | "cycle"
 	Steps       []SequenceStep `json:"steps"`
 }
@@ -120,6 +121,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		type jsonSeq struct {
 			Name        string     `json:"name"`
 			Description string     `json:"description"`
+			Example     string     `json:"example,omitempty"`
 			Mode        string     `json:"mode,omitempty"`
 			Steps       []jsonStep `json:"steps"`
 		}
@@ -127,7 +129,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		for i, s := range seq.Steps {
 			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput}
 		}
-		out := jsonSeq{Name: name, Description: seq.Description, Mode: seq.Mode, Steps: steps}
+		out := jsonSeq{Name: name, Description: seq.Description, Example: seq.Example, Mode: seq.Mode, Steps: steps}
 		enc := json.NewEncoder(stdout)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(out); err != nil {
@@ -138,6 +140,9 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 	}
 
 	fmt.Fprintf(stdout, "%s — %s\n", name, seq.Description)
+	if seq.Example != "" {
+		fmt.Fprintf(stdout, "example: %s\n", seq.Example)
+	}
 	if seq.Mode != "" {
 		fmt.Fprintf(stdout, "mode: %s\n", seq.Mode)
 	}

@@ -158,7 +158,7 @@
         "gate": "The response enforces the principle that an unverified assertion provides no coverage guarantee: every behavior must be structurally prevented from existing without a verified assertion that would catch it breaking. Three requirements follow from this principle. First, assertion precedes behavior: no step may begin until a governing assertion exists and has been verified; the cycle continues until every behavior the task requires the system to produce has a corresponding verified assertion — this is a hard termination condition, not a probabilistic goal; scope is determined by the task's stated requirements, not by what is convenient to assert; excluding a required behavior from assertion coverage is a unilateral change to the task's intent. Second, one assertion per behavior: an assertion covering multiple behaviors cannot be verified in isolation; each assertion must cover exactly one observable outcome — a governing artifact that checks multiple outcomes in a single verification step covers multiple behaviors and is a structural violation of this requirement; the unit of assertion is a single check that fails independently when its one target behavior is absent; more assertions than behaviors is acceptable, any behavior without its own independently-failing assertion is a structural violation. Before writing the assertion, verify it is a minimal, direct observable for exactly the intended behavior: the test must pass only when the specific behavior exists, not when any adjacent implementation satisfies it by coincidence — an assertion that could pass after an incomplete implementation is not specific enough and must be replaced or narrowed. Third, verification before first use: before an assertion governs for the first time, observe it fail when the behavior is absent — withhold or negate the behavior and confirm the assertion fails; the failure must be attributable to the behavior's absence, not to an unrelated condition; restore the behavior; an assertion that has only ever passed is unverified and may not govern. When no natural assertion is possible for this task, state that explicitly and do not proceed. Self-certification is impossible: the assertion must be structurally separate from what it governs and must have existed before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the verified assertion must exist before proceeding. Per-behavior sentinel requirement: immediately before implementing each behavior, emit a visible sentinel of the form '🔴 Test for [behavior]: [exact failure output]' containing the actual failure message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate. When atomic is co-present: if no failure message exists for the current behavior, the scope of the current step is undefined — the governing artifact has not been written yet. Test absence is not a silent condition: it is an explicit open gap that blocks implementation. The required action is to write and run the test, not to proceed without one. Layer boundary requirement: when a structural entity is defined in one layer and consumed in another, each layer must have an independently-failing assertion for the structural entities it owns. A cross-layer integration test does not substitute for same-layer coverage — both must exist.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, directional guidance, and structural prediction are all derivable from this reading.",
-        "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task. A valid derivation must name at least one cheap path that would produce the appearance of completion without satisfying the intent, and for each, specify what visible evidence would distinguish genuine compliance from that path. The completion check is the final required step of this process and must be included in the derivation: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the derived enforcement process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion exists and has been verified to fail when the behavior is absent.",
+        "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task. A valid derivation must name at least one cheap path that would produce the appearance of completion without satisfying the intent, and for each, specify what visible evidence would distinguish genuine compliance from that path. When the task touches multiple layers or systems, the derivation must identify a governing artifact per layer — declaring one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from coverage and must be explicitly named and closed. The completion check is the final required step of this process and must be included in the derivation: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the derived enforcement process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion exists and has been verified to fail when the behavior is absent.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
@@ -3779,7 +3779,7 @@
             "make the gap between appearance and reality visible",
             "enforce your own process before acting"
           ],
-          "definition": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task. A valid derivation must name at least one cheap path that would produce the appearance of completion without satisfying the intent, and for each, specify what visible evidence would distinguish genuine compliance from that path. The completion check is the final required step of this process and must be included in the derivation: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the derived enforcement process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion exists and has been verified to fail when the behavior is absent."
+          "definition": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task. A valid derivation must name at least one cheap path that would produce the appearance of completion without satisfying the intent, and for each, specify what visible evidence would distinguish genuine compliance from that path. When the task touches multiple layers or systems, the derivation must identify a governing artifact per layer — declaring one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from coverage and must be explicitly named and closed. The completion check is the final required step of this process and must be included in the derivation: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the derived enforcement process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion exists and has been verified to fail when the behavior is absent."
         },
         "grove": {
           "distinctions": [
@@ -9332,8 +9332,32 @@
     }
   ],
   "sequences": {
+    "debug-cycle": {
+      "description": "Surface root causes, fix them, then verify the fix holds.",
+      "example": "A production service is returning 500s intermittently and the cause is unknown.",
+      "mode": "linear",
+      "steps": [
+        {
+          "token": "task:probe",
+          "role": "root cause investigation",
+          "prompt_hint": "Use this step to surface hidden assumptions and possible causes before writing any fix.",
+          "requires_user_input": true
+        },
+        {
+          "token": "task:fix",
+          "role": "repair",
+          "prompt_hint": "Use this step to implement the targeted fix once the root cause is confirmed."
+        },
+        {
+          "token": "task:check",
+          "role": "verification",
+          "prompt_hint": "Use this step to verify the fix holds and no regressions were introduced."
+        }
+      ]
+    },
     "experiment-cycle": {
       "description": "Frame a hypothesis before running an experiment, then review evidence afterward.",
+      "example": "Testing whether adding a cache layer reduces p95 latency below 200ms.",
       "mode": "cycle",
       "steps": [
         {
@@ -9349,29 +9373,62 @@
         }
       ]
     },
-    "debug-cycle": {
-      "description": "Surface root causes, fix them, then verify the fix holds.",
+    "extract-and-package": {
+      "description": "Extract a relevant subset, then package it for downstream use.",
+      "example": "Pull the authentication flow from a large codebase and package it as context for a new engineer.",
+      "mode": "autonomous",
+      "steps": [
+        {
+          "token": "method:pull",
+          "role": "extraction",
+          "prompt_hint": "Use this step to identify and extract only the relevant material from the subject."
+        },
+        {
+          "token": "method:contextualise",
+          "role": "packaging",
+          "prompt_hint": "Use this step to wrap the extracted material with enough context for a downstream reader or LLM."
+        }
+      ]
+    },
+    "gather-and-synthesize": {
+      "description": "Frame what to gather, collect it in the real world, then synthesize findings into conclusions.",
+      "example": "Understanding why engineers on a team are reluctant to write tests.",
       "mode": "linear",
       "steps": [
         {
           "token": "task:probe",
-          "role": "root cause investigation",
-          "prompt_hint": "Use this step to surface hidden assumptions and possible causes before writing any fix."
+          "role": "gathering frame",
+          "prompt_hint": "Use this step to produce interview questions, a research plan, or observation vectors the user can go execute.",
+          "requires_user_input": true
         },
         {
-          "token": "task:fix",
-          "role": "repair",
-          "prompt_hint": "Use this step to implement the targeted fix once the root cause is confirmed."
+          "token": "task:show",
+          "role": "synthesis",
+          "prompt_hint": "Use this step to extract patterns and generalize conclusions from the gathered findings."
+        }
+      ]
+    },
+    "plan-and-retrospect": {
+      "description": "Derive an action plan, implement it in the real world, then retrospectively review what worked.",
+      "example": "Improving a team's code review process over two iterations.",
+      "mode": "cycle",
+      "steps": [
+        {
+          "token": "task:plan",
+          "role": "action planning",
+          "prompt_hint": "Use this step to produce concrete steps the user can go implement.",
+          "requires_user_input": true
         },
         {
-          "token": "task:check",
-          "role": "verification",
-          "prompt_hint": "Use this step to verify the fix holds and no regressions were introduced."
+          "token": "form:vet",
+          "role": "retrospective review",
+          "prompt_hint": "Use this step to evaluate what worked, what didn't, and what to adjust in the next cycle."
         }
       ]
     },
     "scenario-to-plan": {
       "description": "Simulate a scenario, then derive the action plan it implies.",
+      "example": "Planning a migration from a monolith to microservices.",
       "mode": "autonomous",
       "steps": [
         {
@@ -9386,31 +9443,33 @@
         }
       ]
     },
-    "extract-and-package": {
-      "description": "Extract a relevant subset, then package it for downstream use.",
-      "mode": "autonomous",
+    "simulate-and-review": {
+      "description": "Simulate a scenario before executing it, then review actual outcomes against the simulation.",
+      "example": "Migrating the auth service as a pilot for a broader microservices migration.",
+      "mode": "linear",
       "steps": [
         {
-          "token": "method:pull",
-          "role": "extraction",
-          "prompt_hint": "Use this step to identify and extract only the relevant material from the subject."
+          "token": "method:sim",
+          "role": "pre-execution simulation",
+          "prompt_hint": "Use this step to anticipate risks and surface hidden dependencies before the user executes.",
+          "requires_user_input": true
         },
         {
-          "token": "method:contextualise",
-          "role": "packaging",
-          "prompt_hint": "Use this step to wrap the extracted material with enough context for a downstream reader or LLM."
+          "token": "task:check",
+          "role": "outcome review",
+          "prompt_hint": "Use this step to compare what actually happened against the simulation's predictions."
         }
       ]
     }
   },
   "checksums": {
-    "axes": "ea8bb031e4b2d371491bfcd5f460a6d4d8c20b5a15a23d9c06633c8c4ef2fd82",
+    "axes": "628aecf960d8536a217b8572430e7d84adcf2602dc76b5554531813aa185da1c",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",
     "slugs": "001b1668379513f5efc81da22a872cc165e55bcbd84e82f5be4e852b351a570b",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
-    "sequences": "415966c3ba0c17cff3fb709290184708632e044640bf9f65196975fd4ae1a0a1"
+    "sequences": "46b25baf28ee240f9f9f07ad843941b47c600b0b94cec4b56b21bc5b1a0567c4"
   }
 }

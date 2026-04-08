@@ -57,6 +57,9 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 	if shouldRender("automation") {
 		renderAutomationFlags(w, compact)
 	}
+	if shouldRender("sequences") {
+		renderLLMSequencesSection(w, grammar, compact)
+	}
 	if shouldRender("metadata") {
 		renderMetadata(w, grammar, compact)
 	}
@@ -1341,4 +1344,42 @@ func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Tasks that inherently require statefulness (real-time brainstorming, live negotiation) are outside bar's representational scope. Bar can produce a strong single-turn starting prompt for these interactions.\n\n")
 	fmt.Fprintf(w, "---\n\n")
 	fmt.Fprintf(w, "*This reference is generated from the current grammar state. Use `bar help llm` to regenerate.*\n")
+}
+
+func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
+	fmt.Fprintf(w, "## Named Sequences\n\n")
+	fmt.Fprintf(w, "Named sequences are directed multi-step workflow patterns. Use `bar sequence list` to\n")
+	fmt.Fprintf(w, "discover them and `bar sequence show <name>` for steps, mode, and example.\n\n")
+	fmt.Fprintf(w, "**When to prefer a named sequence over an ad hoc chain:**\n")
+	fmt.Fprintf(w, "- Any step requires real-world action between LLM steps (experiment, deploy, gather data)\n")
+	fmt.Fprintf(w, "- The pattern recurs and ordering is non-obvious\n\n")
+	fmt.Fprintf(w, "**Execution modes:** `autonomous` (all steps run cold) | `linear` (pause for user input) | `cycle` (repeat until user ends)\n\n")
+
+	if compact {
+		fmt.Fprintf(w, "Run `bar sequence list` for available sequences.\n\n")
+		return
+	}
+
+	names := make([]string, 0, len(grammar.Sequences))
+	for k := range grammar.Sequences {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+
+	for _, name := range names {
+		seq := grammar.Sequences[name]
+		stepSummary := ""
+		for i, step := range seq.Steps {
+			if i > 0 {
+				stepSummary += " → "
+			}
+			stepSummary += step.Role
+		}
+		fmt.Fprintf(w, "- **%s** (%s): %s\n", name, seq.Mode, seq.Description)
+		if seq.Example != "" {
+			fmt.Fprintf(w, "  *Example: %s*\n", seq.Example)
+		}
+		fmt.Fprintf(w, "  Steps: %s\n", stepSummary)
+	}
+	fmt.Fprintf(w, "\n")
 }

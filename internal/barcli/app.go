@@ -508,6 +508,14 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		}
 		renderTokensHelp(stdout, grammar, filters, opts.Plain)
 		return 0
+	case "sequences":
+		grammar, err := LoadGrammar(opts.GrammarPath)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		renderSequencesHelp(stdout, grammar)
+		return 0
 	case "llm", "reference":
 		// Validate section if provided
 		if opts.Section != "" {
@@ -521,10 +529,11 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 				"patterns":     true,
 				"heuristics":   true,
 				"advanced":     true,
+				"sequences":    true,
 				"metadata":     true,
 			}
 			if !validSections[opts.Section] {
-				writeError(stderr, fmt.Sprintf("unknown section %q (valid: quickstart, architecture, cheatsheet, tokens, persona, rules, patterns, heuristics, advanced, metadata)", opts.Section))
+				writeError(stderr, fmt.Sprintf("unknown section %q (valid: quickstart, architecture, cheatsheet, tokens, persona, rules, patterns, heuristics, advanced, sequences, metadata)", opts.Section))
 				return 1
 			}
 		}

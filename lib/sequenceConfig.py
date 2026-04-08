@@ -11,8 +11,32 @@
 from typing import Any
 
 SEQUENCES: dict[str, dict[str, Any]] = {
+    "debug-cycle": {
+        "description": "Surface root causes, fix them, then verify the fix holds.",
+        "example": "A production service is returning 500s intermittently and the cause is unknown.",
+        "mode": "linear",
+        "steps": [
+            {
+                "token": "task:probe",
+                "role": "root cause investigation",
+                "prompt_hint": "Use this step to surface hidden assumptions and possible causes before writing any fix.",
+                "requires_user_input": True,  # user must attempt fix before verification
+            },
+            {
+                "token": "task:fix",
+                "role": "repair",
+                "prompt_hint": "Use this step to implement the targeted fix once the root cause is confirmed.",
+            },
+            {
+                "token": "task:check",
+                "role": "verification",
+                "prompt_hint": "Use this step to verify the fix holds and no regressions were introduced.",
+            },
+        ],
+    },
     "experiment-cycle": {
         "description": "Frame a hypothesis before running an experiment, then review evidence afterward.",
+        "example": "Testing whether adding a cache layer reduces p95 latency below 200ms.",
         "mode": "cycle",
         "steps": [
             {
@@ -28,29 +52,62 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
-    "debug-cycle": {
-        "description": "Surface root causes, fix them, then verify the fix holds.",
+    "extract-and-package": {
+        "description": "Extract a relevant subset, then package it for downstream use.",
+        "example": "Pull the authentication flow from a large codebase and package it as context for a new engineer.",
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "method:pull",
+                "role": "extraction",
+                "prompt_hint": "Use this step to identify and extract only the relevant material from the subject.",
+            },
+            {
+                "token": "method:contextualise",
+                "role": "packaging",
+                "prompt_hint": "Use this step to wrap the extracted material with enough context for a downstream reader or LLM.",
+            },
+        ],
+    },
+    "gather-and-synthesize": {
+        "description": "Frame what to gather, collect it in the real world, then synthesize findings into conclusions.",
+        "example": "Understanding why engineers on a team are reluctant to write tests.",
         "mode": "linear",
         "steps": [
             {
                 "token": "task:probe",
-                "role": "root cause investigation",
-                "prompt_hint": "Use this step to surface hidden assumptions and possible causes before writing any fix.",
+                "role": "gathering frame",
+                "prompt_hint": "Use this step to produce interview questions, a research plan, or observation vectors the user can go execute.",
+                "requires_user_input": True,  # user must gather before synthesis
             },
             {
-                "token": "task:fix",
-                "role": "repair",
-                "prompt_hint": "Use this step to implement the targeted fix once the root cause is confirmed.",
+                "token": "task:show",
+                "role": "synthesis",
+                "prompt_hint": "Use this step to extract patterns and generalize conclusions from the gathered findings.",
+            },
+        ],
+    },
+    "plan-and-retrospect": {
+        "description": "Derive an action plan, implement it in the real world, then retrospectively review what worked.",
+        "example": "Improving a team's code review process over two iterations.",
+        "mode": "cycle",
+        "steps": [
+            {
+                "token": "task:plan",
+                "role": "action planning",
+                "prompt_hint": "Use this step to produce concrete steps the user can go implement.",
+                "requires_user_input": True,  # user must implement before retrospective
             },
             {
-                "token": "task:check",
-                "role": "verification",
-                "prompt_hint": "Use this step to verify the fix holds and no regressions were introduced.",
+                "token": "form:vet",
+                "role": "retrospective review",
+                "prompt_hint": "Use this step to evaluate what worked, what didn't, and what to adjust in the next cycle.",
             },
         ],
     },
     "scenario-to-plan": {
         "description": "Simulate a scenario, then derive the action plan it implies.",
+        "example": "Planning a migration from a monolith to microservices.",
         "mode": "autonomous",
         "steps": [
             {
@@ -65,19 +122,21 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
-    "extract-and-package": {
-        "description": "Extract a relevant subset, then package it for downstream use.",
-        "mode": "autonomous",
+    "simulate-and-review": {
+        "description": "Simulate a scenario before executing it, then review actual outcomes against the simulation.",
+        "example": "Migrating the auth service as a pilot for a broader microservices migration.",
+        "mode": "linear",
         "steps": [
             {
-                "token": "method:pull",
-                "role": "extraction",
-                "prompt_hint": "Use this step to identify and extract only the relevant material from the subject.",
+                "token": "method:sim",
+                "role": "pre-execution simulation",
+                "prompt_hint": "Use this step to anticipate risks and surface hidden dependencies before the user executes.",
+                "requires_user_input": True,  # user must execute before review
             },
             {
-                "token": "method:contextualise",
-                "role": "packaging",
-                "prompt_hint": "Use this step to wrap the extracted material with enough context for a downstream reader or LLM.",
+                "token": "task:check",
+                "role": "outcome review",
+                "prompt_hint": "Use this step to compare what actually happened against the simulation's predictions.",
             },
         ],
     },

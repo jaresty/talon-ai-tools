@@ -265,7 +265,7 @@ the same information asymmetry this harness was built to eliminate for humans. T
 leverage single fix: it makes every subsequent exploration session more accurate.
 **Shape**: Extend `HarnessToken` struct; populate in `Harness.Observe()` from `cat.Options[i]` fields.
 
-### TUI2/Harness: `commit` action + `outcome` field (must-fix)
+### ✅ TUI2/Harness: `commit` action + `outcome` field (must-fix)
 **What**: Replace `done bool` in `HarnessState` with `outcome string` (`""` | `"committed"` |
 `"quit"`), and add a `"commit"` action type to `HarnessAction` that sets `outcome="committed"`.
 **Why Tier 2**: Currently `done: true` is emitted only on `quit`, making it impossible to distinguish
@@ -274,7 +274,7 @@ without this distinction.
 **Shape**: Change `HarnessState.Done bool` → `HarnessState.Outcome string`; add `"commit"` case
 in `Harness.Act()`. Update 17 existing tests. Breaking change to the JSON schema.
 
-### TUI2/Harness: Stage state vocabulary in HarnessState (must-fix)
+### ✅ TUI2/Harness: Stage state vocabulary in HarnessState (must-fix)
 **What**: Add `stage_statuses map[string]string` (`"empty"` | `"completed"` | `"skipped"`) and
 `stages_remaining int` to `HarnessState`.
 **Why Tier 2**: An LLM driver can't tell which stages are optional, which are complete, or how many

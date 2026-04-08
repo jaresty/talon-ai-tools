@@ -217,16 +217,18 @@ the orbit will establish a confirmed baseline score and may surface new gaps.
 comments on recency gating). Structural changes here need the same empirical discipline that
 produced the current layout. The orbit analysis de-risks the decision either way.
 
-### SPA: Reconsider subject/addendum placement on mobile
-**What**: On mobile, subject and addendum fields appear under the "output" section, but they are
-freeform input — not output. This is a misclassification that creates a confusing mental model:
-the user is looking at input fields in a section labeled for output.
-**Why Tier 2**: Structural misclassification on the primary mobile layout. Users composing a
-prompt with subject/addendum context have no affordance that these fields belong to the input
-side of the interaction.
+### SPA: Reconsider subject/addendum placement
+**What**: Subject and addendum fields appear under the "output" section on both mobile and
+desktop, but they are freeform input — not output. This misclassification creates a confusing
+mental model regardless of viewport: the user is filling in input fields inside a section
+framed as output.
+**Why Tier 2**: Structural misclassification on both layouts. Users composing a prompt with
+subject/addendum context have no affordance that these fields belong to the input side of the
+interaction. The problem is acute on mobile (where sections are stacked and the label is
+prominent) but present on desktop too.
 **Shape**: Evaluate whether subject/addendum should move to the token-selection / input section,
-appear inline near the command preview, or get their own clearly-labeled section. Consider the
-desktop layout too — the problem may be less acute but the same structural question applies.
+appear inline near the command preview, or get their own clearly-labeled section separate from
+the generated output.
 
 ### SPA: Persona page layout reformat
 **What**: Redesign the persona section to give voice / audience / tone / intent (formerly "purpose",

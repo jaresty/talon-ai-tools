@@ -4,8 +4,8 @@ package barcli
 // their counterparts in .claude/skills/. If they diverge, bar install-skills
 // will install stale content.
 //
-// When updating a skill: edit .claude/skills/<name>/skill.md (source of truth),
-// then cp it to internal/barcli/skills/<name>/skill.md (embedded copy).
+// When updating a skill: edit .claude/skills/<name>/SKILL.md (source of truth),
+// then cp it to internal/barcli/skills/<name>/SKILL.md (embedded copy).
 
 import (
 	"os"
@@ -34,8 +34,8 @@ func TestEmbeddedSkillsMatchSourceSkills(t *testing.T) {
 			continue
 		}
 		skillName := entry.Name()
-		embeddedFile := filepath.Join(embeddedDir, skillName, "skill.md")
-		sourceFile := filepath.Join(sourceDir, skillName, "skill.md")
+		embeddedFile := filepath.Join(embeddedDir, skillName, "SKILL.md")
+		sourceFile := filepath.Join(sourceDir, skillName, "SKILL.md")
 
 		embeddedContent, err := os.ReadFile(embeddedFile)
 		if err != nil {
@@ -48,7 +48,7 @@ func TestEmbeddedSkillsMatchSourceSkills(t *testing.T) {
 			continue
 		}
 		if string(embeddedContent) != string(sourceContent) {
-			t.Errorf("skill %q: embedded and source skill.md files differ.\n"+
+			t.Errorf("skill %q: embedded and source SKILL.md files differ.\n"+
 				"Source of truth: %s\n"+
 				"Embedded copy:   %s\n"+
 				"Run: cp %s %s", skillName, sourceFile, embeddedFile, sourceFile, embeddedFile)

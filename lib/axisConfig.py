@@ -242,8 +242,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "incomplete. Each assertion in the governing artifact must cover exactly one behavior, and each implementation step must be scoped to exactly one failure message — these two "
         "granularities must match; an assertion covering N behaviors cannot authorize N implementation steps. If a ground constraint is present in this prompt, exhausting the governing "
         "artifact's failures is not a termination condition — when the artifact reports no failures, the next required step is ground's completion check; declaring done before that "
-        "check is a violation. If no failure message exists, the active gap is the missing test — the governing artifact has not been written yet for the current behavior. Test absence "
-        "is not a silent condition: it is an explicit open gap that blocks implementation. The required action is to write and run the test, not to proceed without one.",
+        "check is a violation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -312,7 +311,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "this task, state that explicitly and do not proceed. Self-certification is impossible: the assertion must be structurally separate from what it governs and must have existed "
         "before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the verified assertion must exist before proceeding. Per-behavior sentinel "
         "requirement: immediately before implementing each behavior, emit a visible sentinel of the form '🔴 Test for [behavior]: [exact failure output]' containing the actual failure "
-        "message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate.",
+        "message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate. When atomic is co-present: if no failure message "
+        "exists for the current behavior, the scope of the current step is undefined — the governing artifact has not been written yet. Test absence is not a silent condition: it is an "
+        "explicit open gap that blocks implementation. The required action is to write and run the test, not to proceed without one.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

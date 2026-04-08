@@ -44,7 +44,7 @@ from typing import Any, Dict, FrozenSet, List, TypedDict, Union
 
 # ADR-0178: ground prompt SSOT is GROUND_PARTS_MINIMAL in lib/groundPrompt.py.
 # Edit GROUND_PARTS_MINIMAL there and run `make axis-regenerate-apply` to propagate changes.
-from lib.groundPrompt import build_ground_prompt  # noqa: F401
+from .groundPrompt import build_ground_prompt  # noqa: F401
 
 AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {

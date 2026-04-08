@@ -22,8 +22,8 @@ func TestHarnessInitialState(t *testing.T) {
 	if s.Stage != "task" {
 		t.Errorf("expected initial stage %q, got %q", "task", s.Stage)
 	}
-	if s.Done {
-		t.Error("expected done=false on init")
+	if s.Outcome != "" {
+		t.Errorf("expected Outcome %q on init, got %q", "", s.Outcome)
 	}
 	if s.Error != "" {
 		t.Errorf("expected no error on init, got %q", s.Error)
@@ -238,8 +238,8 @@ func TestHarnessQuit(t *testing.T) {
 	}
 
 	s := h.Observe()
-	if !s.Done {
-		t.Error("expected done=true after quit")
+	if s.Outcome != "quit" {
+		t.Errorf("expected Outcome %q after quit, got %q", "quit", s.Outcome)
 	}
 }
 
@@ -497,5 +497,105 @@ func TestHarnessCautionOnlyForActiveTokens(t *testing.T) {
 	view2 := h2.ObserveView()
 	if strings.Contains(view2, "⚠") {
 		t.Errorf("caution must NOT appear when no task is active; got:\n%s", view2)
+	}
+}
+
+// --- Behavior 1: Outcome field (ADR-0225 must-fix) ---
+
+// TestHarnessOutcomeInitiallyEmpty verifies that Outcome is "" on a fresh harness.
+func TestHarnessOutcomeInitiallyEmpty(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	s := h.Observe()
+	if s.Outcome != "" {
+		t.Errorf("expected Outcome %q on init, got %q", "", s.Outcome)
+	}
+}
+
+// TestHarnessOutcomeQuit verifies that Outcome is "quit" after a quit action.
+func TestHarnessOutcomeQuit(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	if err := h.Act(HarnessAction{Type: "quit"}); err != nil {
+		t.Fatalf("Act(quit): %v", err)
+	}
+	s := h.Observe()
+	if s.Outcome != "quit" {
+		t.Errorf("expected Outcome %q after quit, got %q", "quit", s.Outcome)
+	}
+}
+
+// TestHarnessOutcomeCommit verifies that Outcome is "committed" after a commit action.
+func TestHarnessOutcomeCommit(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	if err := h.Act(HarnessAction{Type: "commit"}); err != nil {
+		t.Fatalf("Act(commit): %v", err)
+	}
+	s := h.Observe()
+	if s.Outcome != "committed" {
+		t.Errorf("expected Outcome %q after commit, got %q", "committed", s.Outcome)
+	}
+}
+
+// TestHarnessCommitActionAccepted verifies that "commit" is a valid action type.
+func TestHarnessCommitActionAccepted(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	err := h.Act(HarnessAction{Type: "commit"})
+	if err != nil {
+		t.Errorf("expected commit action to be accepted, got error: %v", err)
+	}
+}
+
+// --- Behavior 2: stage_statuses + stages_remaining (ADR-0225 must-fix) ---
+
+// TestHarnessStageStatusesInitiallyEmpty verifies all stages start as "empty".
+func TestHarnessStageStatusesInitiallyEmpty(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	s := h.Observe()
+	if len(s.StageStatuses) == 0 {
+		t.Fatal("expected StageStatuses to be non-empty on init")
+	}
+	for stage, status := range s.StageStatuses {
+		if status != "empty" {
+			t.Errorf("expected stage %q to be %q on init, got %q", stage, "empty", status)
+		}
+	}
+}
+
+// TestHarnessStageStatusCompletedAfterSelect verifies that selecting a token marks its stage "completed".
+func TestHarnessStageStatusCompletedAfterSelect(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	if err := h.Act(HarnessAction{Type: "select", Target: "todo"}); err != nil {
+		t.Fatalf("Act(select todo): %v", err)
+	}
+	s := h.Observe()
+	if s.StageStatuses["task"] != "completed" {
+		t.Errorf("expected task stage %q after select, got %q", "completed", s.StageStatuses["task"])
+	}
+}
+
+// TestHarnessStageStatusSkippedAfterSkip verifies that skipping a stage marks it "skipped".
+func TestHarnessStageStatusSkippedAfterSkip(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	if err := h.Act(HarnessAction{Type: "skip"}); err != nil {
+		t.Fatalf("Act(skip): %v", err)
+	}
+	s := h.Observe()
+	if s.StageStatuses["task"] != "skipped" {
+		t.Errorf("expected task stage %q after skip, got %q", "skipped", s.StageStatuses["task"])
+	}
+}
+
+// TestHarnessStagesRemainingDecrements verifies stages_remaining decreases as stages are completed.
+func TestHarnessStagesRemainingDecrements(t *testing.T) {
+	h := NewHarness(harnessOpts())
+	initial := h.Observe().StagesRemaining
+	if initial == 0 {
+		t.Fatal("expected StagesRemaining > 0 on init")
+	}
+	if err := h.Act(HarnessAction{Type: "select", Target: "todo"}); err != nil {
+		t.Fatalf("Act(select todo): %v", err)
+	}
+	after := h.Observe().StagesRemaining
+	if after >= initial {
+		t.Errorf("expected StagesRemaining to decrease after select: initial=%d after=%d", initial, after)
 	}
 }

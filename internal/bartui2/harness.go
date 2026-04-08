@@ -19,8 +19,12 @@ type HarnessState struct {
 	Selected map[string][]string `json:"selected"`
 	// CommandPreview is the bar build command that would be generated from current selections.
 	CommandPreview string `json:"command_preview"`
-	// Done is true after a "quit" action has been received.
-	Done bool `json:"done"`
+	// Outcome is "" until the session ends: "committed" after a commit action, "quit" after quit.
+	Outcome string `json:"outcome"`
+	// StageStatuses maps each stage key to its status: "empty", "completed", or "skipped".
+	StageStatuses map[string]string `json:"stage_statuses"`
+	// StagesRemaining is the count of stages that are still "empty".
+	StagesRemaining int `json:"stages_remaining"`
 	// Error is set when the previous action failed; empty on success.
 	Error string `json:"error,omitempty"`
 }
@@ -56,10 +60,11 @@ type HarnessAction struct {
 // An LLM drives the TUI by calling Act with a HarnessAction and reading
 // the resulting state with Observe. No terminal is allocated.
 type Harness struct {
-	m       model
-	filter  string
-	done    bool
-	lastErr string
+	m               model
+	filter          string
+	outcome         string
+	skippedStages   map[string]bool
+	lastErr         string
 }
 
 // NewHarness creates a Harness from Options. No Bubble Tea program or PTY is started.
@@ -73,7 +78,7 @@ func NewHarness(opts Options) *Harness {
 		m.height = 24
 	}
 	m.advanceToNextIncompleteStage()
-	return &Harness{m: m}
+	return &Harness{m: m, skippedStages: make(map[string]bool)}
 }
 
 // Observe returns a snapshot of the current model state.
@@ -139,14 +144,42 @@ func (h *Harness) Observe() HarnessState {
 		preview = "bar build " + strings.Join(tokens, " ")
 	}
 
+	// Build stage_statuses: completed if has non-auto tokens, skipped if explicitly skipped, else empty.
+	stageStatuses := make(map[string]string, len(stageTraversalOrder))
+	stagesRemaining := 0
+	for _, s := range stageTraversalOrder {
+		if h.m.getCategoryByKey(s) == nil {
+			continue
+		}
+		tokens := h.m.tokensByCategory[s]
+		var nonAuto []string
+		for _, t := range tokens {
+			if !h.m.isAutoFilled(s, t) {
+				nonAuto = append(nonAuto, t)
+			}
+		}
+		var status string
+		if len(nonAuto) > 0 {
+			status = "completed"
+		} else if h.skippedStages[s] {
+			status = "skipped"
+		} else {
+			status = "empty"
+			stagesRemaining++
+		}
+		stageStatuses[s] = status
+	}
+
 	return HarnessState{
-		Stage:          stage,
-		FocusedToken:   focused,
-		VisibleTokens:  visible,
-		Selected:       selected,
-		CommandPreview: preview,
-		Done:           h.done,
-		Error:          h.lastErr,
+		Stage:           stage,
+		FocusedToken:    focused,
+		VisibleTokens:   visible,
+		Selected:        selected,
+		CommandPreview:  preview,
+		Outcome:         h.outcome,
+		StageStatuses:   stageStatuses,
+		StagesRemaining: stagesRemaining,
+		Error:           h.lastErr,
 	}
 }
 
@@ -267,15 +300,22 @@ func (h *Harness) Act(action HarnessAction) error {
 		h.filter = action.Text
 
 	case "skip":
+		skipped := h.m.getCurrentStage()
 		h.m.skipCurrentStage()
+		if skipped != "" {
+			h.skippedStages[skipped] = true
+		}
 		h.filter = ""
 
 	case "back":
 		h.m.goToPreviousStage()
 		h.filter = ""
 
+	case "commit":
+		h.outcome = "committed"
+
 	case "quit":
-		h.done = true
+		h.outcome = "quit"
 
 	default:
 		h.lastErr = fmt.Sprintf("unknown action type: %q", action.Type)

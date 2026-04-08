@@ -133,7 +133,7 @@ func runTUI2Harness(opts bartui2.Options, stdin io.Reader, stdout io.Writer) int
 		if err := enc.Encode(state); err != nil {
 			return 1
 		}
-		if state.Done {
+		if state.Outcome != "" {
 			break
 		}
 		var action bartui2.HarnessAction

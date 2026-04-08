@@ -1,6 +1,6 @@
 ---
 name: bar-workflow
-description: Build and execute multi-step bar command sequences for complex tasks requiring progressive refinement.
+description: Build and execute multi-step bar command sequences for complex tasks requiring progressive refinement. Sequence-aware: checks bar sequence list before composing ad hoc chains, and supports autonomous, interactive, and cyclic execution modes.
 ---
 
 # Bar Workflow Skill
@@ -32,9 +32,16 @@ Each step is a required gate. Do not advance to the next step until the current 
 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load comprehensive reference** via `bar help llm` once per conversation
-3. **Plan the full command sequence** — token choices for each step — before executing any
-4. **Execute bar commands in sequence** via Bash tool — for each command: run it, then read each method token description in the CONSTRAINTS section for ordering requirements before writing the response. Some method tokens specify that something must exist or be run before implementation begins — satisfy those preconditions first. Then write a **complete response** following its TASK/CONSTRAINTS/PERSONA, and proceed to the next command.
-5. **Synthesize results** into a comprehensive response that reflects all steps
+3. **Check for a named sequence** — run `bar sequence list` to discover available sequences. If the request matches a named sequence (explicitly or by description), run `bar sequence show <name>` to get steps, mode, and prompt hints. Confirm with the user if the match was implicit. If no named sequence fits, proceed to ad hoc planning (step 4) and apply mode inference (see §Mode Inference below).
+4. **Declare execution mode** before running any commands — one of: `autonomous`, `interactive`, or `cycle`. Show the plan:
+   ```
+   Sequence: <name> (<N> steps) — mode: <mode>
+     Step 1: <token> — <role>
+     Step 2: <token> — <role>
+   Proceeding with step 1...
+   ```
+5. **Execute bar commands** following the mode protocol (see §Execution Modes below)
+6. **Synthesize results** into a comprehensive response that reflects all steps
 
 ## Skill Behavior Rules
 
@@ -166,6 +173,61 @@ If the request doesn't fit standard progressions:
 Use output from step N to inform step N+1's `--subject` or `--addendum`, but the bar output from step N+1 is the new instruction.
 
 After completion, explain: "I used a [N]-step workflow: [step 1 tokens] to [reason], then [step 2 tokens] to [reason], etc."
+
+## Execution Modes (ADR-0226)
+
+### Autonomous mode
+All steps run without pausing for user input. Use previous step's full output as `--subject` for
+the next step; use the step's `prompt_hint` (from `bar sequence show`) as `--addendum`. This is
+the default for ad hoc chains and for named sequences with `mode: autonomous`.
+
+### Interactive linear mode
+After each step that has `requires_user_input: true` (visible in `bar sequence show` output as ⏸),
+pause and emit a handoff prompt before continuing:
+
+```
+✅ Step N complete (<role>).
+
+Now <describe the real-world action the user must take>.
+When you have results, paste them here and I will continue with step N+1 (<next role>).
+```
+
+Do NOT advance until the user provides input. Do NOT synthesize or predict the user's results.
+The user's response becomes the `--subject` for the next step.
+
+### Interactive cycle mode
+After completing one full pass of the sequence, emit a cycle prompt:
+
+```
+✅ Cycle <N> complete.
+
+To run another cycle: provide your next input and I will start again from step 1.
+Or say "done" to close and I will summarize all <N> cycles.
+```
+
+Accumulate a brief summary of each cycle's outcome. When the user ends the cycle, synthesize
+across all iterations: what changed, what converged, what remains unresolved.
+
+**Cycle termination is always user-driven.** Do not decide the cycle is complete.
+
+## Mode Inference for Ad Hoc Chains (ADR-0226 §7)
+
+When no named sequence fits, infer mode before executing:
+
+- **Autonomous**: all steps can run on existing information — proceed without prompting
+- **Interactive**: any planned step needs real-world results the user must provide (experiment
+  outcomes, test results, gathered data, deployed state) — declare interactive mode and use the
+  pause protocol above
+- **Cycle**: the user's request implies repetition until a goal is met — declare cycle mode
+
+When ambiguous, ask before executing:
+
+```
+I've planned a 2-step chain: [step 1 purpose] → [step 2 purpose].
+
+Step 2 will need [what's needed]. Will you be providing that between steps,
+or should I proceed autonomously using what I have now?
+```
 
 ## Example Workflow Planning
 

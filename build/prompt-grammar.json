@@ -9334,11 +9334,13 @@
   "sequences": {
     "experiment-cycle": {
       "description": "Frame a hypothesis before running an experiment, then review evidence afterward.",
+      "mode": "cycle",
       "steps": [
         {
           "token": "form:prep",
           "role": "pre-experiment framing",
-          "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment."
+          "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment.",
+          "requires_user_input": true
         },
         {
           "token": "form:vet",
@@ -9349,6 +9351,7 @@
     },
     "debug-cycle": {
       "description": "Surface root causes, fix them, then verify the fix holds.",
+      "mode": "linear",
       "steps": [
         {
           "token": "task:probe",
@@ -9369,6 +9372,7 @@
     },
     "scenario-to-plan": {
       "description": "Simulate a scenario, then derive the action plan it implies.",
+      "mode": "autonomous",
       "steps": [
         {
           "token": "method:sim",
@@ -9384,6 +9388,7 @@
     },
     "extract-and-package": {
       "description": "Extract a relevant subset, then package it for downstream use.",
+      "mode": "autonomous",
       "steps": [
         {
           "token": "method:pull",
@@ -9406,6 +9411,6 @@
     "slugs": "001b1668379513f5efc81da22a872cc165e55bcbd84e82f5be4e852b351a570b",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
-    "sequences": "04b9efd941effd629880a52ae39b975c42206654a8b8598bb2b40e4d163e75c4"
+    "sequences": "415966c3ba0c17cff3fb709290184708632e044640bf9f65196975fd4ae1a0a1"
   }
 }

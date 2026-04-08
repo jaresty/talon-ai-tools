@@ -13,11 +13,13 @@ from typing import Any
 SEQUENCES: dict[str, dict[str, Any]] = {
     "experiment-cycle": {
         "description": "Frame a hypothesis before running an experiment, then review evidence afterward.",
+        "mode": "cycle",
         "steps": [
             {
                 "token": "form:prep",
                 "role": "pre-experiment framing",
                 "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment.",
+                "requires_user_input": True,  # user must run the experiment before vet
             },
             {
                 "token": "form:vet",
@@ -28,6 +30,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     },
     "debug-cycle": {
         "description": "Surface root causes, fix them, then verify the fix holds.",
+        "mode": "linear",
         "steps": [
             {
                 "token": "task:probe",
@@ -48,6 +51,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     },
     "scenario-to-plan": {
         "description": "Simulate a scenario, then derive the action plan it implies.",
+        "mode": "autonomous",
         "steps": [
             {
                 "token": "method:sim",
@@ -63,6 +67,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     },
     "extract-and-package": {
         "description": "Extract a relevant subset, then package it for downstream use.",
+        "mode": "autonomous",
         "steps": [
             {
                 "token": "method:pull",

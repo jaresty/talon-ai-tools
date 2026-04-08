@@ -191,6 +191,76 @@ func TestHarnessTokenSequencesPopulated(t *testing.T) {
 	}
 }
 
+// --- ADR-0226: mode field + requires_user_input ---
+
+// Behavior 9: Sequence.Mode is populated from grammar for experiment-cycle.
+func TestSequenceModePopulated(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["experiment-cycle"]
+	if !ok {
+		t.Fatal("experiment-cycle not found")
+	}
+	if seq.Mode == "" {
+		t.Fatal("expected Sequence.Mode to be non-empty for experiment-cycle, got empty")
+	}
+	if seq.Mode != "cycle" {
+		t.Errorf("expected experiment-cycle Mode %q, got %q", "cycle", seq.Mode)
+	}
+}
+
+// Behavior 10: SequenceStep.RequiresUserInput is populated for a step that declares it.
+func TestSequenceStepRequiresUserInput(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["experiment-cycle"]
+	if !ok {
+		t.Fatal("experiment-cycle not found")
+	}
+	// form:prep step (index 0) requires user input — user must run the experiment before vet.
+	if !seq.Steps[0].RequiresUserInput {
+		t.Error("expected experiment-cycle step 0 (form:prep) RequiresUserInput=true")
+	}
+}
+
+// Behavior 11: `bar sequence show experiment-cycle` human output includes a mode label.
+func TestSequenceShowIncludesMode(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "mode:") {
+		t.Errorf("expected \"mode:\" label in bar sequence show output:\n%s", out)
+	}
+}
+
+// Behavior 12: `bar sequence show --json` includes mode field.
+func TestSequenceShowJSONIncludesMode(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle", "--json"})
+	if code != 0 {
+		t.Fatalf("bar sequence show --json exited %d: %s", code, stderr)
+	}
+	type jsonSeq struct {
+		Mode string `json:"mode"`
+	}
+	var result jsonSeq
+	if err := json.Unmarshal([]byte(out), &result); err != nil {
+		t.Fatalf("expected valid JSON from bar sequence show --json: %v\noutput: %s", err, out)
+	}
+	if result.Mode == "" {
+		t.Errorf("expected mode field in bar sequence show --json output, got empty\noutput: %s", out)
+	}
+	if result.Mode != "cycle" {
+		t.Errorf("expected mode %q, got %q", "cycle", result.Mode)
+	}
+}
+
 // nonEmptyLines returns lines with whitespace-only lines removed.
 func nonEmptyLines(s string) []string {
 	var out []string

@@ -13,14 +13,16 @@ import (
 
 // SequenceStep is one step in a named workflow sequence.
 type SequenceStep struct {
-	Token      string `json:"token"`
-	Role       string `json:"role"`
-	PromptHint string `json:"prompt_hint,omitempty"`
+	Token             string `json:"token"`
+	Role              string `json:"role"`
+	PromptHint        string `json:"prompt_hint,omitempty"`
+	RequiresUserInput bool   `json:"requires_user_input,omitempty"` // ADR-0226
 }
 
 // Sequence is a named, directed multi-step workflow pattern.
 type Sequence struct {
 	Description string         `json:"description"`
+	Mode        string         `json:"mode,omitempty"` // ADR-0226: "autonomous" | "linear" | "cycle"
 	Steps       []SequenceStep `json:"steps"`
 }
 
@@ -110,20 +112,22 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 
 	if asJSON {
 		type jsonStep struct {
-			Token      string `json:"token"`
-			Role       string `json:"role"`
-			PromptHint string `json:"prompt_hint,omitempty"`
+			Token             string `json:"token"`
+			Role              string `json:"role"`
+			PromptHint        string `json:"prompt_hint,omitempty"`
+			RequiresUserInput bool   `json:"requires_user_input,omitempty"`
 		}
 		type jsonSeq struct {
 			Name        string     `json:"name"`
 			Description string     `json:"description"`
+			Mode        string     `json:"mode,omitempty"`
 			Steps       []jsonStep `json:"steps"`
 		}
 		steps := make([]jsonStep, len(seq.Steps))
 		for i, s := range seq.Steps {
-			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint}
+			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput}
 		}
-		out := jsonSeq{Name: name, Description: seq.Description, Steps: steps}
+		out := jsonSeq{Name: name, Description: seq.Description, Mode: seq.Mode, Steps: steps}
 		enc := json.NewEncoder(stdout)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(out); err != nil {
@@ -133,9 +137,17 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		return 0
 	}
 
-	fmt.Fprintf(stdout, "%s — %s\n\n", name, seq.Description)
+	fmt.Fprintf(stdout, "%s — %s\n", name, seq.Description)
+	if seq.Mode != "" {
+		fmt.Fprintf(stdout, "mode: %s\n", seq.Mode)
+	}
+	fmt.Fprintln(stdout)
 	for i, step := range seq.Steps {
-		fmt.Fprintf(stdout, "  Step %d  %-24s %s\n", i+1, step.Token, step.Role)
+		marker := "  "
+		if step.RequiresUserInput {
+			marker = "⏸ "
+		}
+		fmt.Fprintf(stdout, "%sStep %d  %-24s %s\n", marker, i+1, step.Token, step.Role)
 		if step.PromptHint != "" {
 			fmt.Fprintf(stdout, "          %s\n", step.PromptHint)
 		}

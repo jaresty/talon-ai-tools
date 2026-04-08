@@ -307,7 +307,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "first time, observe it fail when the behavior is absent — withhold or negate the behavior and confirm the assertion fails; the failure must be attributable to the behavior's "
         "absence, not to an unrelated condition; restore the behavior; an assertion that has only ever passed is unverified and may not govern. When no natural assertion is possible for "
         "this task, state that explicitly and do not proceed. Self-certification is impossible: the assertion must be structurally separate from what it governs and must have existed "
-        "before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the verified assertion must exist before proceeding.",
+        "before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the verified assertion must exist before proceeding. Per-behavior sentinel "
+        "requirement: immediately before implementing each behavior, emit a visible sentinel of the form '🔴 Test for [behavior]: [exact failure output]' containing the actual failure "
+        "message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate. If no failure message exists because no test has "
+        "been written yet, the active gap is the missing test: write and run the test first, then emit the sentinel from its output. The absence of a failure message is never a reason to "
+        "proceed with implementation — it is always a signal that the test is missing. If a chain constraint is present, the sentinel is the only valid predecessor artifact class for an "
+        "implementation step; a prior implementation artifact or compile result does not satisfy the chain for an implementation step.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

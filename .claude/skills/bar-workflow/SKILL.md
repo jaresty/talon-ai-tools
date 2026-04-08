@@ -196,14 +196,13 @@ Do NOT advance until the user provides input. Do NOT synthesize or predict the u
 The user's response becomes the `--subject` for the next step.
 
 ### Interactive cycle mode
-After completing one full pass of the sequence, emit a cycle prompt. Use the exact sequence
-steps from `bar sequence show` — do not invent additional steps (e.g. "integrate") that are
-not in the sequence definition:
+After completing one full pass of the sequence, emit a cycle prompt. The sequence definition
+from `bar sequence show` is authoritative — do not add steps beyond what it specifies:
 
 ```
 ✅ Cycle <N> complete (<step 1 role> → <step 2 role>).
 
-To run another cycle: provide your next experiment/input and I will run <step 1 role> again.
+To run another cycle: provide your next input and I will run <step 1 role> again.
 Or say "done" to close and I will summarize all <N> cycles.
 ```
 

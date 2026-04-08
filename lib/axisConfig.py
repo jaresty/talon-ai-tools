@@ -313,7 +313,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "requirement: immediately before implementing each behavior, emit a visible sentinel of the form '🔴 Test for [behavior]: [exact failure output]' containing the actual failure "
         "message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate. When atomic is co-present: if no failure message "
         "exists for the current behavior, the scope of the current step is undefined — the governing artifact has not been written yet. Test absence is not a silent condition: it is an "
-        "explicit open gap that blocks implementation. The required action is to write and run the test, not to proceed without one.",
+        "explicit open gap that blocks implementation. The required action is to write and run the test, not to proceed without one. Layer boundary requirement: when a structural entity "
+        "is defined in one layer and consumed in another, each layer must have an independently-failing assertion for the structural entities it owns. A cross-layer integration test does "
+        "not substitute for same-layer coverage — both must exist.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

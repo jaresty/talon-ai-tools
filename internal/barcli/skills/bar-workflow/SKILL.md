@@ -211,6 +211,8 @@ across all iterations: what changed, what converged, what remains unresolved.
 
 **Cycle termination is always user-driven.** Do not decide the cycle is complete.
 **Do not add steps beyond the sequence definition.** The sequence ends where `bar sequence show` ends.
+If the task genuinely warrants additional steps not in the sequence, switch to a freeform ad hoc
+chain instead — do not stretch the sequence to cover them.
 
 ## Mode Inference for Ad Hoc Chains (ADR-0226 §7)
 

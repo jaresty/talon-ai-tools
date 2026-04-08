@@ -355,6 +355,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
+        "mu": "The response states the central tensions of the subject as a set of claims that resist logical resolution — each pair cannot both be true and cannot both be false. Do not resolve, "
+        "qualify, contextualize, or elaborate. Stop.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
         "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
         "orbit": "The response enhances the task by varying initial conditions or assumptions across multiple trajectories and identifying the invariant structural form that behavior tends "
@@ -612,6 +614,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mint": "Explicit constructive derivation",
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
+        "mu": "State central tension as irresolvable conjunction; stop",
         "objectivity": "Separate facts from opinions",
         "operations": "Operations research frameworks",
         "orbit": "Find attractor geometry across trajectories",
@@ -823,6 +826,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "mint": "鋳",
         "mod": "周",
         "models": "型",
+        "mu": "無",
         "objectivity": "客",
         "operations": "営",
         "orbit": "軌",
@@ -1011,6 +1015,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "mint": "Structural",
         "mod": "Generative",
         "models": "Generative",
+        "mu": "Reasoning",
         "objectivity": "Reasoning",
         "operations": "Temporal/Dynamic",
         "orbit": "Temporal/Dynamic",
@@ -1233,6 +1238,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "mint": "Constructive derivation",
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
+        "mu": "Irresolvable conjunction; no elaboration",
         "objectivity": "Facts vs opinions",
         "operations": "Operations research",
         "orbit": "Attractor geometry",

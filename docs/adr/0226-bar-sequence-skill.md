@@ -102,7 +102,8 @@ Bar-workflow's existing protocol applies unchanged, with one addition at the sta
    and the step's `prompt_hint` as `--addendum`
 5. Synthesize as bar-workflow does today
 
-If no named sequence fits, compose ad hoc as bar-workflow does today.
+If no named sequence fits, bar-workflow enters ad hoc mode — but before composing the chain,
+it applies a mode inference check (see §7).
 
 ### 4. Interactive linear mode
 
@@ -150,7 +151,34 @@ When no named sequence fits, bar-workflow composes an ad hoc chain as it does to
 sequence discovery step is additive — it does not prevent ad hoc composition.
 
 The check is: does a named sequence describe the user's workflow? If yes, use it and declare
-the mode. If no, compose ad hoc (which is implicitly autonomous).
+the mode. If no, enter ad hoc mode and apply §7.
+
+### 7. Mode inference for ad hoc chains
+
+When composing an ad hoc chain (no named sequence matched), bar-workflow infers whether the
+chain is autonomous, interactive, or cyclic before executing any steps. Two signals:
+
+**From the request:** if the user's description implies real-world action between steps
+("I'm going to run experiments and review each one", "after each test I want to…"), the
+chain is interactive. If it implies repetition until a goal is met, it is cyclic.
+
+**From the planned steps:** if any step's intended input cannot exist until the user takes an
+action outside the conversation (runs code, conducts an interview, collects data, deploys
+something), that step boundary is interactive. The LLM should recognize this when planning
+the chain and declare the mode before executing.
+
+When the mode is ambiguous, bar-workflow prompts the user:
+
+```
+I've planned a 2-step chain: [step 1 purpose] → [step 2 purpose].
+
+Step 2 will need [description of what's needed]. Will you be providing that between steps,
+or should I proceed autonomously using what I have?
+```
+
+This keeps mode selection transparent and user-confirmed rather than silently assumed.
+Ad hoc interactive and cyclic chains follow the same pause/resume and iteration protocols
+as their named-sequence equivalents (§4 and §5).
 
 ---
 
@@ -164,6 +192,8 @@ the mode. If no, compose ad hoc (which is implicitly autonomous).
   first-class workflow
 - The grammar schema gains `mode` — a durable field that constrains skill behavior across
   bar-workflow versions
+- Mode inference (§7) extends interactive and cyclic support to ad hoc chains, not just
+  named sequences — the capability is general, not gated on the sequence library
 
 **Negative / risks:**
 - Bar-workflow becomes more complex: it must handle three modes, sequence discovery, and

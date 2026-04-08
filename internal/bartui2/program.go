@@ -73,6 +73,7 @@ type completion struct {
 	Kanji          string // ADR-0143: kanji icons for visual display
 	SemanticGroup  string // ADR-0144: semantic family for method tokens; empty for other axes
 	RoutingConcept string // ADR-0146: distilled routing concept phrase; populated for scope/form only
+	Sequences      []HarnessTokenSequence // ADR-0225: sequence memberships
 	// Fills specifies other categories that get auto-filled when this option is selected.
 	Fills map[string]string
 }
@@ -220,6 +221,70 @@ type model struct {
 	ready       bool
 	err         error
 	noAltScreen bool
+
+	// ADR-0225: sequence index built from TokenCategories at init.
+	// Maps sequence name → ordered slice of {token, role} for each step.
+	sequenceIndex map[string][]sequenceIndexEntry
+}
+
+type sequenceIndexEntry struct {
+	token string
+	role  string
+}
+
+// buildSequenceIndex builds a map from sequence name → ordered steps from TokenCategories.
+// Each step records the token value and role for use in the sequence hint (ADR-0225).
+func buildSequenceIndex(cats []TokenCategory) map[string][]sequenceIndexEntry {
+	// index maps seqName → map[stepIndex]entry; we then sort by stepIndex.
+	type step struct {
+		idx  int
+		token string
+		role  string
+	}
+	raw := map[string][]step{}
+	for _, cat := range cats {
+		for _, opt := range cat.Options {
+			for _, seq := range opt.Sequences {
+				raw[seq.Name] = append(raw[seq.Name], step{idx: seq.StepIndex, token: opt.Value})
+			}
+		}
+	}
+	// Sort each sequence's steps by index.
+	result := make(map[string][]sequenceIndexEntry, len(raw))
+	for name, steps := range raw {
+		// Sort by step index.
+		sorted := make([]step, len(steps))
+		copy(sorted, steps)
+		for i := 0; i < len(sorted); i++ {
+			for j := i + 1; j < len(sorted); j++ {
+				if sorted[j].idx < sorted[i].idx {
+					sorted[i], sorted[j] = sorted[j], sorted[i]
+				}
+			}
+		}
+		entries := make([]sequenceIndexEntry, len(sorted))
+		for i, s := range sorted {
+			entries[i] = sequenceIndexEntry{token: s.token, role: s.role}
+		}
+		result[name] = entries
+	}
+	return result
+}
+
+// sequenceStepCount returns the total number of steps in a named sequence.
+func (m model) sequenceStepCount(name string) int {
+	return len(m.sequenceIndex[name])
+}
+
+// sequenceNextStep returns the token value and role of the step after stepIndex in the named sequence.
+// Returns empty strings if stepIndex is the last step or sequence is unknown.
+func (m model) sequenceNextStep(name string, stepIndex int) (token, role string) {
+	steps := m.sequenceIndex[name]
+	next := stepIndex + 1
+	if next >= len(steps) {
+		return "", ""
+	}
+	return steps[next].token, steps[next].role
 }
 
 // stateSnapshot captures token state for undo/redo.
@@ -309,6 +374,7 @@ func newModel(opts Options) model {
 		clipboardWrite:          opts.ClipboardWrite,
 		crossAxisCompositionFor: opts.CrossAxisCompositionFor,
 		axisDescriptions:        opts.AxisDescriptions,
+		sequenceIndex:           buildSequenceIndex(opts.TokenCategories),
 		width:                   opts.InitialWidth,
 		height:                  opts.InitialHeight,
 		noAltScreen:             opts.NoAltScreen,
@@ -971,6 +1037,7 @@ func (m *model) updateCompletions() {
 				Kanji:          opt.Kanji,
 				SemanticGroup:  opt.SemanticGroup,
 				RoutingConcept: opt.RoutingConcept,
+				Sequences:      opt.Sequences,
 				Fills:          opt.Fills,
 			})
 		}
@@ -2108,6 +2175,18 @@ func (m model) renderTokensPane() string {
 			if i == m.completionIndex && c.RoutingConcept != "" {
 				right.WriteString(routingConceptStyle.Render("   " + c.RoutingConcept))
 				right.WriteString("\n")
+			}
+			// ADR-0225: sequence hint — shown only on focused item, suppressed if last step.
+			if i == m.completionIndex {
+				for _, seq := range c.Sequences {
+					if seq.NextToken != "" {
+						total := m.sequenceStepCount(seq.Name)
+						hint := fmt.Sprintf("   part of %s (step %d/%d) — next: %s (%s)",
+							seq.Name, seq.StepIndex+1, total, seq.NextToken, seq.NextRole)
+						right.WriteString(dimStyle.Render(hint))
+						right.WriteString("\n")
+					}
+				}
 			}
 		}
 

@@ -513,6 +513,9 @@ def prompt_grammar_payload() -> dict[str, Any]:
         for p in STARTER_PACKS
     ]
 
+    from talon_user.lib.sequenceConfig import SEQUENCES
+    sequences_section = dict(SEQUENCES)
+
     sections: dict[str, Any] = {
         "axes": axis_section,
         "tasks": static_section,
@@ -521,6 +524,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "slugs": slug_section,
         "patterns": patterns_section,
         "starter_packs": starter_packs_section,
+        "sequences": sequences_section,
     }
 
     checksums = {name: _compute_checksum(content) for name, content in sections.items()}

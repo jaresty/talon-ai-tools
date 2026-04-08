@@ -44,6 +44,7 @@ type Grammar struct {
 	Persona       PersonaSection
 	Hierarchy     HierarchySection
 
+	Sequences     map[string]Sequence // ADR-0225
 	Patterns        []GrammarPattern
 	StarterPacks    []StarterPack
 	axisTokens      map[string]map[string]struct{}
@@ -179,8 +180,9 @@ type rawGrammar struct {
 	Persona       rawPersona       `json:"persona"`
 	Hierarchy     rawHierarchy     `json:"hierarchy"`
 	Slugs         rawSlugSection   `json:"slugs"`
-	Patterns      []GrammarPattern `json:"patterns"`
-	StarterPacks  []StarterPack    `json:"starter_packs"`
+	Sequences     map[string]Sequence `json:"sequences"` // ADR-0225
+	Patterns      []GrammarPattern    `json:"patterns"`
+	StarterPacks  []StarterPack       `json:"starter_packs"`
 }
 
 type rawAxisSection struct {
@@ -288,6 +290,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 		ExecutionReminder:          raw.ExecutionReminder,
 		PlanningDirective:          raw.PlanningDirective,
 		MetaInterpretationGuidance: raw.MetaInterpretationGuidance,
+		Sequences:     raw.Sequences,
 		Patterns:          raw.Patterns,
 		StarterPacks:  raw.StarterPacks,
 		Axes: AxisSection{

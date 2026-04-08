@@ -13,6 +13,7 @@ type LookupResult struct {
 	Tier         int    // 0–3; higher = more specific match
 	MatchedField string // "token", "heuristics", "distinctions", or "definition"
 	MatchedText  string // the specific phrase that matched
+	Sequences    []SequenceMembership // ADR-0225: sequence memberships for this token
 }
 
 // validLookupAxes lists all axis names that can be used as --axis filters.
@@ -234,6 +235,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			Tier:         c.tier,
 			MatchedField: c.matchedField,
 			MatchedText:  c.matchedText,
+			Sequences:    g.SequencesForToken(c.axis + ":" + c.token),
 		}
 	}
 	return results

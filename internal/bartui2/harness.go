@@ -25,11 +25,20 @@ type HarnessState struct {
 	Error string `json:"error,omitempty"`
 }
 
+// HarnessTokenSequence records sequence membership for a token visible in the harness.
+type HarnessTokenSequence struct {
+	Name      string `json:"name"`
+	StepIndex int    `json:"step_index"`
+	NextToken string `json:"next_token,omitempty"` // ADR-0225: token value of the next step (empty if last)
+	NextRole  string `json:"next_role,omitempty"`  // ADR-0225: role of the next step (empty if last)
+}
+
 // HarnessToken represents a selectable token visible in the current stage.
 type HarnessToken struct {
-	Key      string `json:"key"`
-	Label    string `json:"label"`
-	Selected bool   `json:"selected"`
+	Key       string                 `json:"key"`
+	Label     string                 `json:"label"`
+	Selected  bool                   `json:"selected"`
+	Sequences []HarnessTokenSequence `json:"sequences,omitempty"` // ADR-0225
 }
 
 // HarnessAction is a JSON-decodable instruction for Harness.Act.
@@ -96,9 +105,10 @@ func (h *Harness) Observe() HarnessState {
 					key = opt.Value
 				}
 				visible = append(visible, HarnessToken{
-					Key:      key,
-					Label:    opt.Label,
-					Selected: selectedSet[strings.ToLower(opt.Value)],
+					Key:       key,
+					Label:     opt.Label,
+					Selected:  selectedSet[strings.ToLower(opt.Value)],
+					Sequences: opt.Sequences,
 				})
 			}
 		}

@@ -9331,6 +9331,73 @@
       "command": "bar build make chain atomic"
     }
   ],
+  "sequences": {
+    "experiment-cycle": {
+      "description": "Frame a hypothesis before running an experiment, then review evidence afterward.",
+      "steps": [
+        {
+          "token": "form:prep",
+          "role": "pre-experiment framing",
+          "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment."
+        },
+        {
+          "token": "form:vet",
+          "role": "post-experiment review",
+          "prompt_hint": "Use this step to evaluate the evidence against the original hypothesis."
+        }
+      ]
+    },
+    "debug-cycle": {
+      "description": "Surface root causes, fix them, then verify the fix holds.",
+      "steps": [
+        {
+          "token": "task:probe",
+          "role": "root cause investigation",
+          "prompt_hint": "Use this step to surface hidden assumptions and possible causes before writing any fix."
+        },
+        {
+          "token": "task:fix",
+          "role": "repair",
+          "prompt_hint": "Use this step to implement the targeted fix once the root cause is confirmed."
+        },
+        {
+          "token": "task:check",
+          "role": "verification",
+          "prompt_hint": "Use this step to verify the fix holds and no regressions were introduced."
+        }
+      ]
+    },
+    "scenario-to-plan": {
+      "description": "Simulate a scenario, then derive the action plan it implies.",
+      "steps": [
+        {
+          "token": "method:sim",
+          "role": "scenario simulation",
+          "prompt_hint": "Use this step to simulate the scenario and observe what it implies."
+        },
+        {
+          "token": "method:plan",
+          "role": "action planning",
+          "prompt_hint": "Use this step to convert the simulation's implications into a concrete action plan."
+        }
+      ]
+    },
+    "extract-and-package": {
+      "description": "Extract a relevant subset, then package it for downstream use.",
+      "steps": [
+        {
+          "token": "method:pull",
+          "role": "extraction",
+          "prompt_hint": "Use this step to identify and extract only the relevant material from the subject."
+        },
+        {
+          "token": "method:contextualise",
+          "role": "packaging",
+          "prompt_hint": "Use this step to wrap the extracted material with enough context for a downstream reader or LLM."
+        }
+      ]
+    }
+  },
   "checksums": {
     "axes": "33d205a65265cb84f165447f1292ca9ddb2dc16493bbb8030505d241b0caa407",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
@@ -9338,6 +9405,7 @@
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",
     "slugs": "001b1668379513f5efc81da22a872cc165e55bcbd84e82f5be4e852b351a570b",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
-    "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754"
+    "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
+    "sequences": "04b9efd941effd629880a52ae39b975c42206654a8b8598bb2b40e4d163e75c4"
   }
 }

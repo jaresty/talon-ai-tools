@@ -19,7 +19,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|tui|install-skills]"
+	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|sequence|tui|install-skills]"
 )
 
 // barVersion holds the current version of bar, set by main package
@@ -267,6 +267,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runLookup(options, stdout, stderr)
 	}
 
+	if options.Command == "sequence" {
+		return runSequence(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1
@@ -378,16 +382,25 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 	results := LookupTokens(query, grammar, axisFilter)
 
 	if opts.JSON {
+		type jsonSeqMember struct {
+			Name      string `json:"name"`
+			StepIndex int    `json:"step_index"`
+		}
 		type jsonResult struct {
-			Axis         string `json:"axis"`
-			Token        string `json:"token"`
-			Label        string `json:"label"`
-			Tier         int    `json:"tier"`
-			MatchedField string `json:"matched_field"`
-			MatchedText  string `json:"matched_text"`
+			Axis         string         `json:"axis"`
+			Token        string         `json:"token"`
+			Label        string         `json:"label"`
+			Tier         int            `json:"tier"`
+			MatchedField string         `json:"matched_field"`
+			MatchedText  string         `json:"matched_text"`
+			Sequences    []jsonSeqMember `json:"sequences,omitempty"`
 		}
 		out := make([]jsonResult, len(results))
 		for i, r := range results {
+			var seqs []jsonSeqMember
+			for _, m := range r.Sequences {
+				seqs = append(seqs, jsonSeqMember{Name: m.Name, StepIndex: m.StepIndex})
+			}
 			out[i] = jsonResult{
 				Axis:         r.Axis,
 				Token:        r.Token,
@@ -395,6 +408,7 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 				Tier:         r.Tier,
 				MatchedField: r.MatchedField,
 				MatchedText:  r.MatchedText,
+				Sequences:    seqs,
 			}
 		}
 		enc := json.NewEncoder(stdout)
@@ -410,6 +424,15 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 		line := r.Axis + ":" + r.Token
 		if r.Label != "" {
 			line += " — " + r.Label
+		}
+		if len(r.Sequences) > 0 {
+			for _, m := range r.Sequences {
+				total := 0
+				if seq, ok := grammar.Sequences[m.Name]; ok {
+					total = len(seq.Steps)
+				}
+				line += fmt.Sprintf("    [part of: %s step %d/%d]", m.Name, m.StepIndex+1, total)
+			}
 		}
 		fmt.Fprintln(stdout, line)
 	}

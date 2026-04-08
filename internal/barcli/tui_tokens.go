@@ -219,6 +219,7 @@ func buildStaticCategory(grammar *Grammar) (bartui2.TokenCategory, bool) {
 			Heuristics:        taskHeuristics,
 			Kanji:          grammar.TaskKanji(value),
 			RoutingConcept: grammar.TaskRoutingConcept(value),
+			Sequences:      sequenceMemberships(grammar, "task:"+value),
 		})
 	}
 
@@ -269,6 +270,7 @@ func buildAxisOptions(grammar *Grammar, axis string) []bartui2.TokenOption {
 			Kanji:          grammar.AxisKanji(axis, value),
 			SemanticGroup:  grammar.AxisCategory(axis, value),
 			RoutingConcept: grammar.AxisRoutingConcept(axis, value),
+			Sequences:      sequenceMemberships(grammar, axis+":"+value),
 		})
 	}
 
@@ -389,4 +391,23 @@ func normalizeAxisCap(cap int) int {
 		return 1
 	}
 	return cap
+}
+
+// sequenceMemberships converts barcli.SequenceMembership slice to bartui2.HarnessTokenSequence
+// slice for embedding in TokenOption (ADR-0225).
+func sequenceMemberships(grammar *Grammar, axisSlug string) []bartui2.HarnessTokenSequence {
+	memberships := grammar.SequencesForToken(axisSlug)
+	if len(memberships) == 0 {
+		return nil
+	}
+	out := make([]bartui2.HarnessTokenSequence, len(memberships))
+	for i, m := range memberships {
+		entry := bartui2.HarnessTokenSequence{Name: m.Name, StepIndex: m.StepIndex}
+		if m.NextStep != nil {
+			entry.NextToken = m.NextStep.Token
+			entry.NextRole = m.NextStep.Role
+		}
+		out[i] = entry
+	}
+	return out
 }

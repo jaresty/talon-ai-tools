@@ -3298,3 +3298,70 @@ func TestCrossAxisChipPrefixColumnFormWithDirectional(t *testing.T) {
 		t.Errorf("form→directional: expected ⚠ on Commit line when fig active; got:\n%s", view)
 	}
 }
+
+// testCategoriesWithSequences returns categories where a token has Sequences populated (ADR-0225).
+func testCategoriesWithSequences() []TokenCategory {
+	return []TokenCategory{
+		{
+			Key:           "task",
+			Label:         "Task",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "show", Slug: "show", Label: "Show", Description: "Explain or describe"},
+			},
+		},
+		{
+			Key:           "form",
+			Label:         "Form",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{
+					Value: "prep", Slug: "prep", Label: "Prep", Description: "Pre-experiment framing",
+					Sequences: []HarnessTokenSequence{
+						{Name: "experiment-cycle", StepIndex: 0, NextToken: "vet", NextRole: "post-experiment review"},
+					},
+				},
+				{
+					Value: "vet", Slug: "vet", Label: "Vet", Description: "Post-experiment review",
+					Sequences: []HarnessTokenSequence{
+						{Name: "experiment-cycle", StepIndex: 1},
+					},
+				},
+			},
+		},
+	}
+}
+
+// TestSequenceHintRenderedForFocusedToken specifies that when the focused token in the TUI
+// belongs to a sequence and is not the last step, a dim hint appears showing the next step (ADR-0225).
+func TestSequenceHintRenderedForFocusedToken(t *testing.T) {
+	m := newModel(Options{
+		TokenCategories: testCategoriesWithSequences(),
+		InitialTokens:   []string{"show"}, // pre-select task to advance to form stage
+		InitialWidth:    80,
+		InitialHeight:   24,
+	})
+	m.ready = true
+	m.updateCompletions()
+
+	// Focus on "prep" which is step 0/2 in experiment-cycle.
+	m.completionIndex = 0 // prep is first in form
+	for i, c := range m.completions {
+		if c.Value == "prep" {
+			m.completionIndex = i
+			break
+		}
+	}
+
+	view := modelViewContent(m)
+	// The hint may wrap due to terminal width; check each token separately.
+	if !strings.Contains(view, "experiment-cycle") {
+		t.Errorf("expected sequence hint containing 'experiment-cycle' in TUI view for form:prep; got:\n%s", view)
+	}
+	if !strings.Contains(view, "next:") {
+		t.Errorf("expected sequence hint containing 'next:' in TUI view for form:prep; got:\n%s", view)
+	}
+	if !strings.Contains(view, "vet") {
+		t.Errorf("expected sequence hint containing 'vet' in TUI view for form:prep; got:\n%s", view)
+	}
+}

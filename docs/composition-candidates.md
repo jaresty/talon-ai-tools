@@ -18,6 +18,9 @@ requirement test result (or the composition name if one was created).
 | gate + chain | composition | 2026-04-09 | Produces `gate+chain` composition — only failing test output is valid predecessor artifact |
 | atomic + ground | composition | 2026-04-09 | Produces `atomic+ground` composition — ground completion check required when artifact reports no failures |
 | calc + chain | composition | 2026-04-09 | Each step output must be reproduced verbatim before next step constrains its conclusions |
+| calc + ladder | additive | 2026-04-09 | No emergent requirement — constraints operate independently across different dimensions |
+| flow + trace | additive | 2026-04-09 | No emergent requirement — stage ordering and data path narration compose additively |
+| mint + root | composition | 2026-04-09 | Produces `mint+root` composition — generative model mint constructs must itself be root-compliant (single canonical generative structure) |
 
 ---
 

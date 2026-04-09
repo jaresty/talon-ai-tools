@@ -9571,6 +9571,14 @@
         "chain"
       ],
       "prose": "calc + chain: each executable step's output must be reproduced verbatim before the next step may constrain its conclusions. calc requires that conclusions be constrained by the actual outputs of formal steps; chain requires that each step reproduce its predecessor's actual output before proceeding. Together: quoting a calculation result is not sufficient — the exact output of each step must appear in the response before the reasoning that depends on it."
+    },
+    {
+      "name": "mint+root",
+      "tokens": [
+        "mint",
+        "root"
+      ],
+      "prose": "mint + root: the generative model mint constructs must itself be root-compliant — there may be only one canonical generative structure for each domain under analysis. mint requires that generative assumptions be made explicit and conclusions follow as direct products; root requires that each proposition have a single authoritative locus with no unresolved parallel accounts. Together: constructing two independent generative models for the same phenomenon and deriving from both is a violation — the generative layer is not exempt from root's single-source requirement. Multiple structural models must be unified into one, or their dependency relationship must be made explicit before either is used as a generative basis."
     }
   ],
   "checksums": {
@@ -9582,6 +9590,6 @@
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "48064fc32d42e9544ac74b76e35c5c883e1ab97144d0ae9a1c77f3aa50bcc1aa"
+    "compositions": "bc71f17aadf38654d47e503bc513c843f9ceb7125d74d23c6f85a0fe486fab13"
   }
 }

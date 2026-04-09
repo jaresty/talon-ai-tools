@@ -68,6 +68,21 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "appear in the response before the reasoning that depends on it."
         ),
     },
+    {
+        "name": "mint+root",
+        "tokens": ["mint", "root"],
+        "prose": (
+            "mint + root: the generative model mint constructs must itself be root-compliant — "
+            "there may be only one canonical generative structure for each domain under analysis. "
+            "mint requires that generative assumptions be made explicit and conclusions follow as "
+            "direct products; root requires that each proposition have a single authoritative "
+            "locus with no unresolved parallel accounts. Together: constructing two independent "
+            "generative models for the same phenomenon and deriving from both is a violation — "
+            "the generative layer is not exempt from root's single-source requirement. Multiple "
+            "structural models must be unified into one, or their dependency relationship must be "
+            "made explicit before either is used as a generative basis."
+        ),
+    },
 ]
 
 

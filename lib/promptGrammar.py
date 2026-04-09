@@ -516,6 +516,12 @@ def prompt_grammar_payload() -> dict[str, Any]:
     from talon_user.lib.sequenceConfig import SEQUENCES
     sequences_section = dict(SEQUENCES)
 
+    from talon_user.lib.compositionConfig import COMPOSITIONS
+    compositions_section = [
+        {"name": c["name"], "tokens": list(c["tokens"]), "prose": c["prose"]}
+        for c in COMPOSITIONS
+    ]
+
     sections: dict[str, Any] = {
         "axes": axis_section,
         "tasks": static_section,
@@ -525,6 +531,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "patterns": patterns_section,
         "starter_packs": starter_packs_section,
         "sequences": sequences_section,
+        "compositions": compositions_section,
     }
 
     checksums = {name: _compute_checksum(content) for name, content in sections.items()}

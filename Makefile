@@ -92,10 +92,14 @@ axis-import-guard:
 	@ast-grep scan --rule rules/no-direct-axisconfig-import.yml lib/ GPT/
 	@echo "✓ No direct axisConfig imports in production code"
 
-.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all axis-import-guard axis-config-check
+.PHONY: output_tags test check-sync churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all axis-import-guard axis-config-check
 
 test:
 	$(PYTHON) -m unittest discover -s tests
+
+check-sync:
+	@echo "Running sync-check tests (CI mode)..."
+	CI=1 $(PYTHON) -m pytest _tests/test_axis_regen_all.py -v
 
 churn-scan:
 	$(PYTHON) .claude/skills/churn-concordance-adr-helper/scripts/churn-git-log-stat.py

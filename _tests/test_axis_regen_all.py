@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -5,6 +6,11 @@ import subprocess
 import json
 
 from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+
+# Sync-check tests gate commits, not development. They run only in CI
+# (where CI env var is set) to avoid blocking local development workflows.
+# In CI: set CI=1 or CI=true. Locally: run `make check-sync` instead.
+_IN_CI = bool(os.environ.get("CI", "").strip())
 
 
 class AxisRegenAllTests(unittest.TestCase):
@@ -63,6 +69,7 @@ class AxisRegenContentTests(unittest.TestCase):
         for marker in ("def axis_key_to_value_map", "def axis_docs_for", "def axis_docs_index"):
             self.assertIn(marker, axis_config, f"{marker} missing from generated axisConfig")
 
+    @unittest.skipUnless(_IN_CI, "sync check — run `make check-sync` locally or set CI=1")
     def test_generated_axis_config_matches_tracked(self):
         repo_root = Path(__file__).resolve().parents[1]
         cleanup_axis_regen_outputs(repo_root)

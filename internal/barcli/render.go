@@ -11,8 +11,9 @@ const (
 	sectionReference   = "=== REFERENCE KEY ==="
 	sectionTask        = "=== TASK 任務 (DO THIS) ==="
 	sectionAddendum    = "=== ADDENDUM 追加 (CLARIFICATION) ==="
-	sectionConstraints = "=== CONSTRAINTS 制約 (GUARDRAILS) ==="
-	sectionPersona     = "=== PERSONA 人格 (STANCE) ==="
+	sectionConstraints      = "=== CONSTRAINTS 制約 (GUARDRAILS) ==="
+	sectionCompositionRules = "=== COMPOSITION RULES 合成 (CO-PRESENCE) ===" // ADR-0227
+	sectionPersona          = "=== PERSONA 人格 (STANCE) ==="
 	sectionSubject     = "=== SUBJECT 題材 (CONTEXT) ==="
 	sectionExecution   = "=== EXECUTION REMINDER ==="
 	sectionMeta        = "=== META INTERPRETATION ==="
@@ -65,6 +66,16 @@ func RenderPlainText(result *BuildResult) string {
 			}
 		}
 		b.WriteString("\n")
+	}
+
+	// ADR-0227: inject COMPOSITION RULES section when token co-presence activates compositions.
+	if len(result.ActiveCompositions) > 0 {
+		b.WriteString(sectionCompositionRules)
+		b.WriteString("\n")
+		b.WriteString("↓ [Additional rules that apply because specific token combinations are co-present. Applied on top of CONSTRAINTS.]\n")
+		for _, comp := range result.ActiveCompositions {
+			fmt.Fprintf(&b, "%s\n\n", strings.TrimSpace(comp.Prose))
+		}
 	}
 
 	if writePersonaSection(&b, result.Persona, result.HydratedPersona, rk.Persona) {

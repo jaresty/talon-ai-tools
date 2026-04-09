@@ -34,6 +34,7 @@ type BuildResult struct {
 	Persona             PersonaResult       `json:"persona,omitempty"`
 	HydratedPersona     []HydratedPromptlet `json:"hydrated_persona,omitempty"`
 	Tokens              []string            `json:"tokens,omitempty"`
+	ActiveCompositions  []Composition       `json:"active_compositions,omitempty"` // ADR-0227
 	PlainText           string              `json:"-"`
 }
 
@@ -991,6 +992,17 @@ func (s *buildState) toResult() *BuildResult {
 	}
 	if len(s.hydratedPersona) > 0 {
 		result.HydratedPersona = append([]HydratedPromptlet(nil), s.hydratedPersona...)
+	}
+
+	// ADR-0227: populate active compositions from method token co-presence.
+	if len(s.grammar.Compositions) > 0 && len(s.method) > 0 {
+		methodSet := make(map[string]struct{}, len(s.method))
+		for _, tok := range s.method {
+			methodSet[tok] = struct{}{}
+		}
+		if active := s.grammar.ActiveCompositions(methodSet); len(active) > 0 {
+			result.ActiveCompositions = active
+		}
 	}
 
 	return result

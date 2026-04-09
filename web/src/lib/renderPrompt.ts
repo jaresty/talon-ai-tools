@@ -144,6 +144,21 @@ export function renderPrompt(
 		parts.push(constraintLines.join('\n') + '\n\n');
 	}
 
+	// ADR-0227: COMPOSITION RULES section — injected when active method token co-presence activates a composition.
+	if (grammar.compositions && grammar.compositions.length > 0) {
+		const activeMethodTokens = new Set(selected['method'] ?? []);
+		const activeCompositions = grammar.compositions.filter((c) =>
+			c.tokens.every((t) => activeMethodTokens.has(t))
+		);
+		if (activeCompositions.length > 0) {
+			parts.push(`=== COMPOSITION RULES 合成 (CO-PRESENCE) ===\n`);
+			parts.push(`↓ [Additional rules that apply because specific token combinations are co-present. Applied on top of CONSTRAINTS.]\n`);
+			for (const comp of activeCompositions) {
+				parts.push(comp.prose.trim() + '\n\n');
+			}
+		}
+	}
+
 	// PERSONA section — mirrors Go CLI's writePersonaSection() in render.go.
 	// Format: "- Label (token): description" when docs exist; "- Label: token" otherwise.
 	const personaLines: string[] = [];

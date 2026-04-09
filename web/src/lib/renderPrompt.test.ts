@@ -403,4 +403,42 @@ describe('renderPrompt', () => {
 		);
 		expect(result).not.toContain('↳');
 	});
+
+	it('injects COMPOSITION RULES section when method token pair activates a composition (ADR-0227)', () => {
+		const grammarWithCompositions: Grammar = {
+			...grammar,
+			compositions: [
+				{ name: 'ground+gate', tokens: ['ground', 'gate'], prose: 'GROUND_GATE_PROSE' },
+			],
+		};
+		const result = renderPrompt(
+			grammarWithCompositions,
+			{ method: ['ground', 'gate'] },
+			'x',
+			''
+		);
+		expect(result).toContain('=== COMPOSITION RULES');
+		expect(result).toContain('GROUND_GATE_PROSE');
+		const constraintsIdx = result.indexOf('=== CONSTRAINTS');
+		const compositionIdx = result.indexOf('=== COMPOSITION RULES');
+		const personaIdx = result.indexOf('=== PERSONA');
+		expect(compositionIdx).toBeGreaterThan(constraintsIdx);
+		expect(compositionIdx).toBeLessThan(personaIdx);
+	});
+
+	it('does not inject COMPOSITION RULES section when only one composition token is active (ADR-0227)', () => {
+		const grammarWithCompositions: Grammar = {
+			...grammar,
+			compositions: [
+				{ name: 'ground+gate', tokens: ['ground', 'gate'], prose: 'GROUND_GATE_PROSE' },
+			],
+		};
+		const result = renderPrompt(
+			grammarWithCompositions,
+			{ method: ['ground'] },
+			'x',
+			''
+		);
+		expect(result).not.toContain('=== COMPOSITION RULES');
+	});
 });

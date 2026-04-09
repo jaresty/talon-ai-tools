@@ -149,8 +149,8 @@ are removed from their respective token definitions:
 Each token definition then describes only its standalone behavior. Composite behavior is
 fully owned by the COMPOSITION RULES section.
 
-**Interim state**: until the grammar engine supports COMPOSITION RULES, the four integration
-notes remain in the token definitions as the interim specification.
+**Applied**: all four integration notes removed once COMPOSITION RULES infrastructure was
+complete and validated. Token definitions now describe standalone behavior only.
 
 ### Decision 3 — Tighten ground's completion check (prompt change)
 
@@ -227,21 +227,19 @@ Three changes:
    reports no remaining failures — exhausting the artifact is necessary but not sufficient
    for completion."
 
-3. **Remove gate co-presence note** (Decision 2, deferred): remove the final sentence
-   "If a gate constraint is present in this prompt…" — deferred until COMPOSITION RULES
-   infrastructure exists.
+3. **Remove gate co-presence note** (Decision 2): remove the final sentence
+   "If a gate constraint is present in this prompt…" — ✅ applied.
 
 ### `lib/axisConfig.py` — atomic
 
 Four changes:
 
 1. **Canonical term** (Decision 5): first use of "failure message" → "governing output (the
-   first reported failure from the governing artifact)"
+   first reported failure from the governing artifact)" — ✅ applied.
 2. **Canonical term** (Decision 5): subsequent "failure message" → "governing output"
-   throughout
-3. **Remove ground co-presence note** (Decision 2, deferred): remove final sentence
-   "If a ground constraint is present…" — deferred until COMPOSITION RULES infrastructure
-   exists.
+   throughout — ✅ applied.
+3. **Remove ground co-presence note** (Decision 2): remove final sentence
+   "If a ground constraint is present…" — ✅ applied.
 
 ### `lib/axisConfig.py` — chain
 
@@ -249,19 +247,18 @@ Two changes:
 
 1. **Canonical term** (Decision 5): "the failure message produced by the governing artifact
    is the predecessor artifact for the implementation step that follows it; reproduce it
-   exactly before implementing" → "the governing output is the predecessor artifact for the
-   implementation step that follows it; reproduce it exactly before implementing"
-2. **Remove gate co-presence note** (Decision 2, deferred): remove the final two sentences
+   exactly before implementing" → "the governing output is the predecessor artifact…" —
+   ✅ applied.
+2. **Remove gate co-presence note** (Decision 2): remove the final two sentences
    "Predecessor type constraint for implementation steps: when gate is also present…" —
-   deferred until COMPOSITION RULES infrastructure exists.
+   ✅ applied.
 
 ### `lib/axisConfig.py` — gate
 
-One change (deferred):
+One change:
 
-1. **Remove atomic co-presence note** (Decision 2, deferred): remove "When atomic is
-   co-present: if no failure message exists…" paragraph — deferred until COMPOSITION RULES
-   infrastructure exists.
+1. **Remove atomic co-presence note** (Decision 2): remove "When atomic is co-present: if
+   no failure message exists…" paragraph — ✅ applied.
 
 ---
 

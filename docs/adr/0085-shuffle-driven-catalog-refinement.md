@@ -409,9 +409,10 @@ chains).
 
 #### Phase 2h: Composition Signal Detection (ADR-0227)
 
-**When to run:** During any Phase 2 evaluation cycle, after scoring individual prompts.
-Specifically triggered when a shuffle seed produces two or more method tokens from the same
-semantic category (e.g., two Reasoning tokens, two Process tokens).
+**When to run:** At the start of any Phase 2 evaluation cycle, as a pre-cycle step before
+scoring seeds. Pair selection is generator-driven (ranked by same-category membership and
+shared interaction keywords), not shuffle-driven — shuffle is the outer loop that determines
+when the cycle runs, not what pairs to evaluate.
 
 **Contrast with Phase 2f/2g (sequence detection):** Phase 2f/2g asks whether running prompt
 B *after* prompt A improves output quality — a temporal, chained effect. Phase 2h asks
@@ -423,14 +424,11 @@ combinatorial effect. Sequences are about ordering; compositions are about co-pr
 `bar build [task] A B` output contains a behavioral requirement absent from both the
 A-alone and B-alone variants — visible via `make composition-check PAIR="A B"`.
 
-Note: shuffle's soft cap produces at most 1 method token per seed. Phase 2h therefore
-triggers on *any* seed containing a method token, not on seeds containing ≥2.
-
 **Protocol:**
 
-1. After scoring a shuffle seed, check whether it contains a method token A.
-2. If yes, run `make composition-candidates` and find the highest-priority pending pair
-   that includes A. If none found, skip.
+1. **Before scoring seeds:** run `make composition-candidates TOP=5` to surface the
+   highest-priority pending pairs.
+2. Select the top pending pair (A, B).
 3. Run:
    ```bash
    make composition-check PAIR="A B"
@@ -438,16 +436,12 @@ triggers on *any* seed containing a method token, not on seeds containing ≥2.
 4. Apply the emergent requirement test: does the combined output contain a behavioral
    requirement absent from both variants? Read the `bar build diff method=A,B` section and
    the combined output side-by-side.
-5. **If composition signal found:** draft prose, add to `lib/compositionConfig.py`,
+5. Write a **falsification case**: a one-paragraph response sketch that satisfies A's
+   constraint and B's constraint individually but violates the combined A+B requirement.
+   If no such case can be constructed, the signal is likely a false positive — mark additive.
+6. **If composition signal confirmed:** draft prose, add to `lib/compositionConfig.py`,
    run `pytest _tests/ && go test ./internal/barcli/...`, update status to `composition`.
-6. **If additive:** update status to `additive` with today's date.
-
-**Proactive candidate refresh:** Before starting any shuffle evaluation cycle, run:
-```bash
-make composition-candidates TOP=10
-```
-This surfaces the highest-priority unevaluated pairs. Evaluate any that appear in shuffle
-seeds during the cycle; remaining candidates carry forward to the next cycle.
+7. **If additive:** update status to `additive` with today's date.
 
 **Output artifact:** Evaluated pairs go to `docs/composition-candidates.md`. Confirmed
 compositions go to `lib/compositionConfig.py` via the ADR-0227 Loop-C process. Record

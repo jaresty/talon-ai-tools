@@ -98,7 +98,21 @@ def generate_candidates(top_n: int, category_filter: str | None):
 
     candidates.sort(key=lambda x: -x[0])
 
-    print(f"## Generated candidates (top {top_n}, excluding {len(evaluated)} already evaluated)\n")
+    total_pairs = len(tokens) * (len(tokens) - 1) // 2
+    total_same_cat = sum(
+        1 for a, b in combinations(tokens, 2)
+        if method_cats.get(a) == method_cats.get(b) and method_cats.get(a)
+    )
+    evaluated_same_cat = sum(
+        1 for pair in evaluated
+        if len(pair) == 2 and len(set(method_cats.get(t, '') for t in pair) - {''}) == 1
+    )
+
+    print(f"## Generated candidates (top {top_n})\n")
+    print(f"Coverage: {len(evaluated)} / {total_pairs} pairs evaluated "
+          f"({100*len(evaluated)/total_pairs:.1f}%) | "
+          f"High-priority (same-category): {evaluated_same_cat} / {total_same_cat} "
+          f"({100*evaluated_same_cat/total_same_cat:.1f}%)\n")
     print(f"| Pair | Priority | Rationale |")
     print(f"|---|---|---|")
     for _, a, b, cat_a, cat_b, rationale in candidates[:top_n]:

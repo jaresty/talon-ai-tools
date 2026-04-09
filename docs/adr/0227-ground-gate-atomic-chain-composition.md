@@ -369,14 +369,72 @@ composition activates.
 
 ## Open questions
 
-1. **`bar help llm` discoverability**: should compositions be listed as a first-class concept
-   in `bar help llm`, so users know that specific token pairs activate additional behavior?
+1. **`bar help llm` discoverability**: ✅ resolved — compositions listed as a first-class
+   concept in `bar help llm` via the "Pairwise Token Compositions (ADR-0227)" subsection
+   added in `renderCompositionRules()`.
 
 2. **Other compositions**: are there other token pairs with undocumented interaction effects
    that warrant compositions? Candidates to evaluate: `ground + formal` (formal verification
-   framing), `sim + check` (simulate-then-review interaction).
+   framing), `sim + check` (simulate-then-review interaction). See Loop-C below.
 
 3. **Ordering of composition prose blocks**: when multiple compositions activate
    simultaneously (e.g. all four tokens present activates all four compositions), should the
    prose blocks be ordered by dependency (ground+gate first, atomic+ground last) or by
    definition order in `compositionConfig.py`?
+
+---
+
+## Loop-C: Composition Discovery Protocol
+
+**Purpose:** Systematically identify method token pairs with undocumented interaction effects
+and encode them as compositions. Runs on trigger — not on schedule.
+
+### Signal: emergent requirement test
+
+A token pair `(A, B)` warrants a composition when the CONSTRAINTS section of
+`bar build [task] A B` contains at least one behavioral requirement that:
+1. Is **not present** in `bar build [task] A` alone, AND
+2. Is **not present** in `bar build [task] B` alone, AND
+3. Is **violated** by a response that individually satisfies A's constraints and B's constraints.
+
+This is an operationalizable diff: run the three bar commands, compare CONSTRAINTS sections,
+identify requirements present only in the combined output.
+
+Additive behavior (no composition warranted): the A+B CONSTRAINTS section is a strict union
+of A's and B's — no new requirement appears.
+
+### Scope
+
+Method×method pairs only for the initial pass. Approximately 30 method tokens → ~435 pairs.
+Evaluate at most 20 candidates per run using this priority filter:
+1. Same semantic category pairs (e.g., two Process tokens, two Reasoning tokens)
+2. Pairs whose definitions reference similar artifacts (governing artifact, assertion, failure)
+3. Empirically reported unexpected behavior with A+B
+
+Candidates are tracked in `docs/composition-candidates.md`.
+
+### Triggers
+
+| Event | Run Loop-C? |
+|---|---|
+| New method token added | Yes — always |
+| Existing method token definition changed | Yes — for pairs involving that token |
+| User reports unexpected A+B behavior | Yes |
+| Quarterly audit | Yes (optional) |
+| Routine grammar export or help_llm.go edit | No |
+
+### Protocol (per candidate pair)
+
+1. Select candidate pair from `docs/composition-candidates.md` (status: `pending`).
+2. Run `make composition-check PAIR="A B"` — captures CONSTRAINTS sections for A-only, B-only, A+B.
+3. Apply emergent requirement test against the output.
+4. **If emergent requirement found:** draft composition prose, add to `compositionConfig.py`,
+   run `pytest _tests/ && go test ./internal/barcli/...`, update candidate status to `composition`.
+5. **If additive:** update candidate status to `additive` with date — prevents re-evaluation.
+
+### Acceptance criteria for a Loop-C run
+
+- Each evaluated pair has an updated status in `docs/composition-candidates.md`
+- `make composition-check` output for the pair is reproduced in the candidates log
+- Any new composition has tests in `_tests/test_composition_config.py` and
+  `internal/barcli/composition_test.go`

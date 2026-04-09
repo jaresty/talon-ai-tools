@@ -92,7 +92,7 @@ axis-import-guard:
 	@ast-grep scan --rule rules/no-direct-axisconfig-import.yml lib/ GPT/
 	@echo "✓ No direct axisConfig imports in production code"
 
-.PHONY: output_tags test check-sync churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all axis-import-guard axis-config-check
+.PHONY: output_tags test check-sync composition-check churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all axis-import-guard axis-config-check
 
 test:
 	$(PYTHON) -m unittest discover -s tests
@@ -100,6 +100,18 @@ test:
 check-sync:
 	@echo "Running sync-check tests (CI mode)..."
 	CI=1 $(PYTHON) -m pytest _tests/test_axis_regen_all.py -v
+
+composition-check:
+	@if [ -z "$(PAIR)" ]; then echo "Usage: make composition-check PAIR=\"ground gate\""; exit 1; fi
+	@echo "=== Emergent requirement test for: $(PAIR) ==="
+	@TOKENS="$(PAIR)"; A=$$(echo $$TOKENS | awk '{print $$1}'); B=$$(echo $$TOKENS | awk '{print $$2}'); \
+	echo ""; echo "--- A only: bar build make $$A ---"; \
+	bar build make $$A 2>&1 | sed -n '/=== CONSTRAINTS/,/===/p' | head -30; \
+	echo ""; echo "--- B only: bar build make $$B ---"; \
+	bar build make $$B 2>&1 | sed -n '/=== CONSTRAINTS/,/===/p' | head -30; \
+	echo ""; echo "--- A+B combined: bar build make $$A $$B ---"; \
+	bar build make $$A $$B 2>&1 | sed -n '/=== CONSTRAINTS/,/===/p' | head -30; \
+	echo ""; echo "=== Apply emergent requirement test: does A+B add a requirement absent from both A and B alone? ==="
 
 churn-scan:
 	$(PYTHON) .claude/skills/churn-concordance-adr-helper/scripts/churn-git-log-stat.py

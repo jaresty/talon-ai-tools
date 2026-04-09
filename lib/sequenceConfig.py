@@ -87,6 +87,23 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "make-and-review": {
+        "description": "Produce an artifact, then review it critically before treating it as done.",
+        "example": "Drafting an ADR and reviewing it for gaps before publishing.",
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "task:make",
+                "role": "artifact production",
+                "prompt_hint": "Use this step to produce the artifact — document, plan, design, or code.",
+            },
+            {
+                "token": "form:vet",
+                "role": "critical review",
+                "prompt_hint": "Use this step to review the artifact: what was produced, how it compares to intent, what is missing or weak.",
+            },
+        ],
+    },
     "plan-and-retrospect": {
         "description": "Derive an action plan, implement it in the real world, then retrospectively review what worked.",
         "example": "Improving a team's code review process over two iterations.",

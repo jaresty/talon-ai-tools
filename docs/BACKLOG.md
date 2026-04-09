@@ -60,7 +60,7 @@ make guardrails
 ## ADR pattern
 
 New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0163).
-Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-24 complete, loop-25 pending).
+Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-25 complete — 5.0/5, all loop-24 gaps closed).
 
 ## How to help with this backlog
 

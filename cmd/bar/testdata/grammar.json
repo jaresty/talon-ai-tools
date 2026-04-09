@@ -9408,6 +9408,23 @@
         }
       ]
     },
+    "make-and-review": {
+      "description": "Produce an artifact, then review it critically before treating it as done.",
+      "example": "Drafting an ADR and reviewing it for gaps before publishing.",
+      "mode": "autonomous",
+      "steps": [
+        {
+          "token": "task:make",
+          "role": "artifact production",
+          "prompt_hint": "Use this step to produce the artifact — document, plan, design, or code."
+        },
+        {
+          "token": "form:vet",
+          "role": "critical review",
+          "prompt_hint": "Use this step to review the artifact: what was produced, how it compares to intent, what is missing or weak."
+        }
+      ]
+    },
     "plan-and-retrospect": {
       "description": "Derive an action plan, implement it in the real world, then retrospectively review what worked.",
       "example": "Improving a team's code review process over two iterations.",
@@ -9470,6 +9487,6 @@
     "slugs": "001b1668379513f5efc81da22a872cc165e55bcbd84e82f5be4e852b351a570b",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
-    "sequences": "46b25baf28ee240f9f9f07ad843941b47c600b0b94cec4b56b21bc5b1a0567c4"
+    "sequences": "3b5657ee5511180cbd1d44106bafe4421acc910616a5a430a221bd41313f0fa3"
   }
 }

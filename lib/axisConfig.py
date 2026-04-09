@@ -313,7 +313,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "entity is defined in one layer and consumed in another, each layer must have an independently-failing assertion for the structural entities it owns. A cross-layer integration "
         "test does not substitute for same-layer coverage — both must exist. When the task touches multiple layers or systems, the derivation must identify a governing artifact per layer "
         "— declaring one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from coverage and "
-        "must be explicitly named and closed.",
+        "must be explicitly named and closed. Fourth, assertion type must match behavior type: the assertion must be the same kind as the behavior it governs. If the behavior is "
+        "executable — it runs and produces output — the assertion must also be executable and automated. A static check (text search, file existence, manual inspection) cannot govern "
+        "executable behavior because it observes structure, not runtime output, and cannot detect drift that occurs after the static check passes. An automated executable assertion is "
+        "required whenever the behavior under test produces output by running.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

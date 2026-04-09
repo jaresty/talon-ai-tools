@@ -22,23 +22,23 @@ requirement test result (or the composition name if one was created).
 
 ## Pending candidates
 
-Note: `sim` and `check` are task tokens, not method tokens. Pending candidates must be
-method×method pairs only.
+Note: candidates must be method×method pairs. `sim`, `check`, `formal` are task/channel
+tokens and are not valid method token candidates.
 
 | Pair | Priority | Rationale |
 |---|---|---|
-| ground + formal | high | Both reference governing artifacts; formal may impose structure ground doesn't specify alone |
-| ground + crystal | medium | crystal imposes explicit structure; ground's enforcement process may interact |
-| gate + chain | medium | Already captured as a composition — confirm prose covers the full interaction |
-| gate + mark | medium | mark captures audit checkpoints; gate's assertion-before-behavior may require mark be co-present |
-| chain + grain | low | grain finds latent structure; chain's predecessor-reproduction may interact with grain's direction-finding |
+| ground + crystal | high | crystal imposes explicit structure; ground's enforcement process may interact with structure requirements |
+| gate + mark | high | mark captures audit checkpoints; gate's assertion-before-behavior may require mark as co-present precondition |
+| ground + reify | medium | reify makes implicit patterns explicit; ground's evidence protocol may add ordering requirement |
+| chain + grain | low | grain finds latent direction; chain's predecessor-reproduction may interact with grain's direction-finding |
+| gate + depends | low | depends traces relationships; gate's assertion scope may interact with dependency boundary |
 
 ---
 
 ## How to evaluate a pending pair
 
 ```bash
-make composition-check PAIR="ground formal"
+make composition-check PAIR="ground crystal"
 ```
 
 Read the output. Apply the emergent requirement test:

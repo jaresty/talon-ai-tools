@@ -115,6 +115,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
+        "taper": "The response adjusts coverage depth by following the contour of the subject — expanding in high-complexity regions where analysis demands depth, contracting where "
+        "resolution emerges. Like a derivative: the rate of change matters more than the total span. Accelerates toward dense regions, decelerates near resolution.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
         "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
         "zoom": "The response covers the full range of the subject by treating it as exponentially-spaced buckets from smallest natural unit to largest. Each bucket receives substantive "
@@ -502,6 +504,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "minimal": "Smallest satisfying answer only",
         "narrow": "Restricted to a very small slice",
         "skim": "Light pass, obvious issues only",
+        "taper": "Coverage follows subject contour",
         "triage": "Stakes-weighted coverage depth",
         "zoom": "Full-range coverage at adaptive granularity",
     },
@@ -716,7 +719,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "sync": "期",
         "video": "映",
     },
-    "completeness": {"grow": "増", "triage": "険", "zoom": "比"},
+    "completeness": {"grow": "増", "taper": "曲", "triage": "険", "zoom": "比"},
     "directional": {
         "bog": "反",
         "dig": "具",
@@ -1126,6 +1129,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "minimal": "Briefest valid response",
         "narrow": "Focused depth on a specific slice",
         "skim": "Surface-level coverage",
+        "taper": "Follow subject contour",
         "triage": "Stakes-proportionate coverage depth",
         "zoom": "Full-range coverage at adaptive granularity",
     },
@@ -2712,6 +2716,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "surface-level look",
                 "sanity check",
                 "quick skim",
+            ],
+        },
+        "taper": {
+            "distinctions": [
+                {
+                    "note": "taper = rate of change (derivative); zoom = fixed exponential buckets",
+                    "token": "zoom",
+                },
+                {
+                    "note": "taper = adapts to subject density; grow = expands on demand",
+                    "token": "grow",
+                },
+            ],
+            "heuristics": [
+                "follow the contour",
+                "where it's dense, go deep",
+                "contract toward resolution",
+                "go deeper where it warrants",
+                "shallow where it's resolved",
             ],
         },
         "triage": {

@@ -24,6 +24,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         "minimal",
         "narrow",
         "skim",
+        "taper",
         "triage",
         "zoom",
     }

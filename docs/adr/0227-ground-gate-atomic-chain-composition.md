@@ -389,6 +389,10 @@ composition activates.
 **Purpose:** Systematically identify method token pairs with undocumented interaction effects
 and encode them as compositions. Runs on trigger — not on schedule.
 
+**Integration:** Loop-C is embedded in the ADR-0085 shuffle-driven refinement process as
+**Phase 2h**. Running a shuffle cycle automatically includes composition signal detection
+for any seed containing ≥2 method tokens. Loop-C can also be run standalone (see below).
+
 ### Signal: emergent requirement test
 
 A token pair `(A, B)` warrants a composition when the CONSTRAINTS section of

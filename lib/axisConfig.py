@@ -233,17 +233,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "atomic": "The response enforces the principle that the causal link between a change and its effect is only observable if exactly one change is introduced per step. Every constraint "
-        "follows from that principle. One failure opens one step: run the governing artifact, take the first reported failure as the current step's scope, implement only what closes "
-        "it, run again — all other reported failures are not yet open. The derivation establishes this cycle; the per-step gate enforces it: before any implementation, reproduce the "
-        "exact failure message — not paraphrased, summarized, or described. The scope is the failure message read literally: when literal and semantic readings diverge, choose the "
-        "interpretation that produces the smallest change that would shift the message. The implementation target is the minimum that shifts the failure message to a different state — "
-        "not the minimum that satisfies the governing artifact. A step is the smallest change that could alter the result of any verification — compilation, static analysis, or test "
-        "execution; changes that address different verification layers are always separate steps even when they feel like parts of the same fix. Implementing beyond the current failure "
-        "is a violation regardless of how many other failures exist. When deriving this token, establish the cycle protocol explicitly: what the governing artifact is, how failures "
-        "will be observed, how scope will be determined. A derivation that omits this is incomplete. Each assertion in the governing artifact must cover exactly one behavior, and each "
-        "implementation step must be scoped to exactly one failure message — these two granularities must match; an assertion covering N behaviors cannot authorize N implementation "
-        "steps. If a ground constraint is present in this prompt, exhausting the governing artifact's failures is not a termination condition — when the artifact reports no failures, "
-        "the next required step is ground's completion check; declaring done before that check is a violation.",
+        "follows from that principle. One governing output opens one step: run the governing artifact, take the first reported failure from the governing artifact — the governing "
+        "output — as the current step's scope, implement only what closes it, run again — all other reported failures are not yet open. The derivation establishes this cycle; the "
+        "per-step gate enforces it: before any implementation, reproduce the exact governing output — not paraphrased, summarized, or described. The scope is the governing output read "
+        "literally: when literal and semantic readings diverge, choose the interpretation that produces the smallest change that would shift the governing output. The implementation "
+        "target is the minimum that shifts the governing output to a different state — not the minimum that satisfies the governing artifact. A step is the smallest change that could "
+        "alter the result of any verification — compilation, static analysis, or test execution; changes that address different verification layers are always separate steps even when "
+        "they feel like parts of the same fix. Implementing beyond the current governing output is a violation regardless of how many other failures exist. When deriving this token, "
+        "establish the cycle protocol explicitly: what the governing artifact is, how failures will be observed, how scope will be determined. A derivation that omits this is "
+        "incomplete. Each assertion in the governing artifact must cover exactly one behavior, and each implementation step must be scoped to exactly one governing output — these two "
+        "granularities must match; an assertion covering N behaviors cannot authorize N implementation steps. If a ground constraint is present in this prompt, exhausting the governing "
+        "artifact's failures is not a termination condition — when the artifact reports no failures, the next required step is ground's completion check; declaring done before that "
+        "check is a violation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -260,10 +261,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reasoning, reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The "
         "reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact "
         "content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Auditability is a consequence of this "
-        "structure, not a separate standard to satisfy. This reproduction requirement applies at every step in the protocol, including steps governed by a gate cycle: the failure "
-        "message produced by the governing artifact is the predecessor artifact for the implementation step that follows it; reproduce it exactly before implementing. Predecessor type "
-        "constraint for implementation steps: when gate is also present, the only valid predecessor artifact class for an implementation step is a failing test output. A prior "
-        "implementation artifact, compile result, or prose description does not satisfy the chain requirement for an implementation step — only a reproduced failure message does.",
+        "structure, not a separate standard to satisfy. This reproduction requirement applies at every step in the protocol, including steps governed by a gate cycle: the governing "
+        "output — the artifact output that opens the current implementation step — is the predecessor artifact for the implementation step that follows it; reproduce it exactly before "
+        "implementing. Predecessor type constraint for implementation steps: when gate is also present, the only valid predecessor artifact class for an implementation step is a "
+        "governing output. A prior implementation artifact, compile result, or prose description does not satisfy the chain requirement for an implementation step — only a reproduced "
+        "governing output does.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",
@@ -332,11 +334,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "would distinguish genuine compliance from that path. When the task touches multiple layers or systems, the derivation must identify a governing artifact per layer — declaring "
         "one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from coverage and must be "
         "explicitly named and closed. The completion check is the final required step of this process and must be included in the derivation: return to the original stated intent, and "
-        "for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence. The intent is external and fixed; the completion check is the only "
+        "for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence, and a criterion that has only ever passed provides no coverage "
+        "guarantee; only a criterion that has been verified to fail when the behavior is absent constitutes evidence. The intent is external and fixed; the completion check is the only "
         "permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change "
-        "to the intent. Naming an unaddressed item does not close it — only visible evidence does. If a gate constraint is present in this prompt, the derived enforcement process must "
-        "include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion exists and "
-        "has been verified to fail when the behavior is absent.",
+        "to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle "
+        "reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. If a gate constraint is present in this prompt, the derived enforcement "
+        "process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion "
+        "exists and has been verified to fail when the behavior is absent.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

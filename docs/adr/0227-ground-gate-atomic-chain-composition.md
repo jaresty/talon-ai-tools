@@ -374,8 +374,9 @@ composition activates.
    added in `renderCompositionRules()`.
 
 2. **Other compositions**: are there other token pairs with undocumented interaction effects
-   that warrant compositions? Candidates to evaluate: `ground + formal` (formal verification
-   framing), `sim + check` (simulate-then-review interaction). See Loop-C below.
+   that warrant compositions? See `docs/composition-candidates.md` for the tracked candidate
+   list (Loop-C below). Note: `sim` and `check` are task tokens — candidates must be
+   method×method pairs only.
 
 3. **Ordering of composition prose blocks**: when multiple compositions activate
    simultaneously (e.g. all four tokens present activates all four compositions), should the

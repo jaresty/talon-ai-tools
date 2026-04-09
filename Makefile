@@ -102,16 +102,8 @@ check-sync:
 	CI=1 $(PYTHON) -m pytest _tests/test_axis_regen_all.py -v
 
 composition-check:
-	@if [ -z "$(PAIR)" ]; then echo "Usage: make composition-check PAIR=\"ground gate\""; exit 1; fi
-	@echo "=== Emergent requirement test for: $(PAIR) ==="
-	@TOKENS="$(PAIR)"; A=$$(echo $$TOKENS | awk '{print $$1}'); B=$$(echo $$TOKENS | awk '{print $$2}'); \
-	echo ""; echo "--- A only: bar build make $$A ---"; \
-	bar build make $$A 2>&1 | sed -n '/=== CONSTRAINTS/,/===/p' | head -30; \
-	echo ""; echo "--- B only: bar build make $$B ---"; \
-	bar build make $$B 2>&1 | sed -n '/=== CONSTRAINTS/,/===/p' | head -30; \
-	echo ""; echo "--- A+B combined: bar build make $$A $$B ---"; \
-	bar build make $$A $$B 2>&1 | sed -n '/=== CONSTRAINTS/,/===/p' | head -30; \
-	echo ""; echo "=== Apply emergent requirement test: does A+B add a requirement absent from both A and B alone? ==="
+	@if [ -z "$(PAIR)" ]; then echo "Usage: make composition-check PAIR=\"sim check\" [TASK=show]"; exit 1; fi
+	@bash scripts/composition-check.sh $(PAIR) $(TASK)
 
 churn-scan:
 	$(PYTHON) .claude/skills/churn-concordance-adr-helper/scripts/churn-git-log-stat.py

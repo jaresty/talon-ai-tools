@@ -22,12 +22,16 @@ requirement test result (or the composition name if one was created).
 
 ## Pending candidates
 
+Note: `sim` and `check` are task tokens, not method tokens. Pending candidates must be
+method×method pairs only.
+
 | Pair | Priority | Rationale |
 |---|---|---|
 | ground + formal | high | Both reference governing artifacts; formal may impose structure ground doesn't specify alone |
-| sim + check | medium | simulate-then-review interaction may add ordering requirement absent from each alone |
-| gate + sim | medium | Gate's assertion-before-behavior may conflict with sim's hypothetical output |
-| chain + atomic | low | Already covered as gate+chain + gate+atomic; direct chain+atomic may be additive |
+| ground + crystal | medium | crystal imposes explicit structure; ground's enforcement process may interact |
+| gate + chain | medium | Already captured as a composition — confirm prose covers the full interaction |
+| gate + mark | medium | mark captures audit checkpoints; gate's assertion-before-behavior may require mark be co-present |
+| chain + grain | low | grain finds latent structure; chain's predecessor-reproduction may interact with grain's direction-finding |
 
 ---
 

@@ -314,7 +314,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "requirement: immediately before implementing each behavior, emit a visible sentinel of the form '🔴 Test for [behavior]: [exact failure output]' containing the actual failure "
         "message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate. Layer boundary requirement: when a structural "
         "entity is defined in one layer and consumed in another, each layer must have an independently-failing assertion for the structural entities it owns. A cross-layer integration "
-        "test does not substitute for same-layer coverage — both must exist.",
+        "test does not substitute for same-layer coverage — both must exist. When the task touches multiple layers or systems, the derivation must identify a governing artifact per layer "
+        "— declaring one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from coverage and "
+        "must be explicitly named and closed.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
@@ -325,16 +327,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred "
         "without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task. A "
         "valid derivation must name at least one cheap path that would produce the appearance of completion without satisfying the intent, and for each, specify what visible evidence "
-        "would distinguish genuine compliance from that path. When the task touches multiple layers or systems, the derivation must identify a governing artifact per layer — declaring "
-        "one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from coverage and must be "
-        "explicitly named and closed. The completion check is the final required step of this process and must be included in the derivation: return to the original stated intent, and "
-        "for each item, produce visible evidence that the behavior satisfies it — an assertion is not evidence, and a criterion that has only ever passed provides no coverage "
-        "guarantee; only a criterion that has been verified to fail when the behavior is absent constitutes evidence. The intent is external and fixed; the completion check is the only "
+        "would distinguish genuine compliance from that path. The completion check is the final required step of this process and must be included in the derivation: return to the "
+        "original stated intent, and for each item, produce visible evidence that the behavior satisfies it. The intent is external and fixed; the completion check is the only "
         "permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change "
         "to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle "
-        "reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. If a gate constraint is present in this prompt, the derived enforcement "
-        "process must include, as its first step, the production of a verified assertion governing the first behavior to be produced — no behavior may be produced before that assertion "
-        "exists and has been verified to fail when the behavior is absent.",
+        "reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

@@ -9408,6 +9408,23 @@
         }
       ]
     },
+    "check-and-fix": {
+      "description": "Evaluate an artifact against criteria, then repair or reframe based on the specific gaps found.",
+      "example": "Reviewing a technical design doc and fixing the sections that don't hold up.",
+      "mode": "autonomous",
+      "steps": [
+        {
+          "token": "task:check",
+          "role": "gap evaluation",
+          "prompt_hint": "Use this step to evaluate the subject against criteria and surface specific gaps."
+        },
+        {
+          "token": "task:fix",
+          "role": "targeted repair",
+          "prompt_hint": "Use this step to repair or reframe based on the gaps identified in the evaluation."
+        }
+      ]
+    },
     "make-and-review": {
       "description": "Produce an artifact, then review it critically before treating it as done.",
       "example": "Drafting an ADR and reviewing it for gaps before publishing.",
@@ -9422,6 +9439,24 @@
           "token": "form:vet",
           "role": "critical review",
           "prompt_hint": "Use this step to review the artifact: what was produced, how it compares to intent, what is missing or weak."
+        }
+      ]
+    },
+    "probe-and-plan": {
+      "description": "Diagnose the structure and hidden assumptions of a situation, then derive a targeted action plan.",
+      "example": "Figuring out why a team is slow to ship, then planning what to change.",
+      "mode": "linear",
+      "steps": [
+        {
+          "token": "task:probe",
+          "role": "structural diagnosis",
+          "prompt_hint": "Use this step to surface hidden assumptions, root causes, and structural factors before planning.",
+          "requires_user_input": true
+        },
+        {
+          "token": "task:plan",
+          "role": "targeted action plan",
+          "prompt_hint": "Use this step to produce a plan that directly addresses the findings from diagnosis."
         }
       ]
     },
@@ -9460,6 +9495,23 @@
         }
       ]
     },
+    "simulate-and-make": {
+      "description": "Simulate the consequences of a scenario, then produce the artifact the simulation implies is needed.",
+      "example": "Simulating a security breach to determine what runbook needs to be written.",
+      "mode": "autonomous",
+      "steps": [
+        {
+          "token": "method:sim",
+          "role": "consequence simulation",
+          "prompt_hint": "Use this step to simulate the scenario and surface what it implies is missing or needed."
+        },
+        {
+          "token": "task:make",
+          "role": "artifact production",
+          "prompt_hint": "Use this step to produce the artifact the simulation revealed is needed."
+        }
+      ]
+    },
     "simulate-and-review": {
       "description": "Simulate a scenario before executing it, then review actual outcomes against the simulation.",
       "example": "Migrating the auth service as a pilot for a broader microservices migration.",
@@ -9487,6 +9539,6 @@
     "slugs": "001b1668379513f5efc81da22a872cc165e55bcbd84e82f5be4e852b351a570b",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
-    "sequences": "3b5657ee5511180cbd1d44106bafe4421acc910616a5a430a221bd41313f0fa3"
+    "sequences": "3be9aa41e2ef8702d34e7a2bcca858cc6f26bb9c7f734a1fd7a4eedc37aae159"
   }
 }

@@ -87,6 +87,23 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "check-and-fix": {
+        "description": "Evaluate an artifact against criteria, then repair or reframe based on the specific gaps found.",
+        "example": "Reviewing a technical design doc and fixing the sections that don't hold up.",
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "task:check",
+                "role": "gap evaluation",
+                "prompt_hint": "Use this step to evaluate the subject against criteria and surface specific gaps.",
+            },
+            {
+                "token": "task:fix",
+                "role": "targeted repair",
+                "prompt_hint": "Use this step to repair or reframe based on the gaps identified in the evaluation.",
+            },
+        ],
+    },
     "make-and-review": {
         "description": "Produce an artifact, then review it critically before treating it as done.",
         "example": "Drafting an ADR and reviewing it for gaps before publishing.",
@@ -101,6 +118,24 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "token": "form:vet",
                 "role": "critical review",
                 "prompt_hint": "Use this step to review the artifact: what was produced, how it compares to intent, what is missing or weak.",
+            },
+        ],
+    },
+    "probe-and-plan": {
+        "description": "Diagnose the structure and hidden assumptions of a situation, then derive a targeted action plan.",
+        "example": "Figuring out why a team is slow to ship, then planning what to change.",
+        "mode": "linear",
+        "steps": [
+            {
+                "token": "task:probe",
+                "role": "structural diagnosis",
+                "prompt_hint": "Use this step to surface hidden assumptions, root causes, and structural factors before planning.",
+                "requires_user_input": True,
+            },
+            {
+                "token": "task:plan",
+                "role": "targeted action plan",
+                "prompt_hint": "Use this step to produce a plan that directly addresses the findings from diagnosis.",
             },
         ],
     },
@@ -136,6 +171,23 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "token": "method:plan",
                 "role": "action planning",
                 "prompt_hint": "Use this step to convert the simulation's implications into a concrete action plan.",
+            },
+        ],
+    },
+    "simulate-and-make": {
+        "description": "Simulate the consequences of a scenario, then produce the artifact the simulation implies is needed.",
+        "example": "Simulating a security breach to determine what runbook needs to be written.",
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "method:sim",
+                "role": "consequence simulation",
+                "prompt_hint": "Use this step to simulate the scenario and surface what it implies is missing or needed.",
+            },
+            {
+                "token": "task:make",
+                "role": "artifact production",
+                "prompt_hint": "Use this step to produce the artifact the simulation revealed is needed.",
             },
         ],
     },

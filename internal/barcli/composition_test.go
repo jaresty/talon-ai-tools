@@ -156,3 +156,32 @@ func TestGateDefinition_NoDerivationVocabulary(t *testing.T) {
 		t.Error("gate definition must not use ground's 'derivation' vocabulary in the multi-layer clause; use assertion-appropriate phrasing instead")
 	}
 }
+
+// Token attribution audit — executable tests for prior-session definition changes.
+
+func TestGateDefinition_FourthRequirement(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	def := g.Axes.Definitions["method"]["gate"]
+	if !strings.Contains(def, "Fourth, assertion type must match behavior type") {
+		t.Error("gate definition must contain the fourth requirement: assertion type must match behavior type")
+	}
+	if !strings.Contains(def, "executable and automated") {
+		t.Error("gate fourth requirement must specify that executable behavior requires an executable and automated assertion")
+	}
+}
+
+func TestChainDefinition_NoGateCycleClause(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	def := g.Axes.Definitions["method"]["chain"]
+	if strings.Contains(def, "including steps governed by a gate cycle") {
+		t.Error("chain definition must not contain the gate-cycle clause — it belongs in gate+chain composition prose, not the chain definition")
+	}
+}
+
+func TestAtomicDefinition_NoGranularitiesClause(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	def := g.Axes.Definitions["method"]["atomic"]
+	if strings.Contains(def, "these two granularities must match") {
+		t.Error("atomic definition must not contain the granularities-match clause — it belongs in gate+atomic composition prose, not the atomic definition")
+	}
+}

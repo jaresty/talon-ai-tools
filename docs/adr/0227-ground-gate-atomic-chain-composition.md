@@ -405,13 +405,21 @@ of A's and B's — no new requirement appears.
 
 ### Scope
 
-Method×method pairs only for the initial pass. Approximately 30 method tokens → ~435 pairs.
-Evaluate at most 20 candidates per run using this priority filter:
-1. Same semantic category pairs (e.g., two Process tokens, two Reasoning tokens)
-2. Pairs whose definitions reference similar artifacts (governing artifact, assertion, failure)
-3. Empirically reported unexpected behavior with A+B
+Method×method pairs only. ~100 method tokens → ~4950 pairs total.
+Evaluate at most 20 candidates per run, ranked by the generator.
 
-Candidates are tracked in `docs/composition-candidates.md`.
+Candidates are tracked and refreshed via:
+```bash
+make composition-candidates        # top 20, all categories
+make composition-candidates TOP=10 CATEGORY=Reasoning  # focused audit
+```
+
+The generator (`scripts/composition-candidates-generate.py`) ranks pairs by:
+1. Same semantic category (highest signal)
+2. Shared interaction keywords in token definitions (artifact, assertion, failure, etc.)
+3. Cross-category low-overlap (lowest signal — likely additive)
+
+Already-evaluated pairs are automatically excluded from output.
 
 ### Triggers
 
@@ -423,18 +431,35 @@ Candidates are tracked in `docs/composition-candidates.md`.
 | Quarterly audit | Yes (optional) |
 | Routine grammar export or help_llm.go edit | No |
 
+### How to start a Loop-C run
+
+```bash
+# 1. Refresh the candidate list
+make composition-candidates
+
+# 2. Pick the top pending pair and evaluate it
+make composition-check PAIR="atomic chain"
+
+# 3. Read the output — apply the emergent requirement test:
+#    Does the combined prompt contain a requirement absent from both variants?
+
+# 4a. If yes: draft composition prose, add to lib/compositionConfig.py,
+#     run tests, update docs/composition-candidates.md status to 'composition'
+# 4b. If no: update status to 'additive' with today's date
+```
+
 ### Protocol (per candidate pair)
 
-1. Select candidate pair from `docs/composition-candidates.md` (status: `pending`).
-2. Run `make composition-check PAIR="A B"` — captures CONSTRAINTS sections for A-only, B-only, A+B.
-3. Apply emergent requirement test against the output.
-4. **If emergent requirement found:** draft composition prose, add to `compositionConfig.py`,
+1. Run `make composition-candidates` — refresh pending list, excluding already-evaluated pairs.
+2. Select the top-ranked `pending` pair.
+3. Run `make composition-check PAIR="A B"` — renders A-only and B-only variants side-by-side via `bar build diff method=A,B`, then the combined `bar build [task] A B` output.
+4. Apply emergent requirement test against the output.
+5. **If emergent requirement found:** draft composition prose, add to `lib/compositionConfig.py`,
    run `pytest _tests/ && go test ./internal/barcli/...`, update candidate status to `composition`.
-5. **If additive:** update candidate status to `additive` with date — prevents re-evaluation.
+6. **If additive:** update candidate status to `additive` with date — prevents re-evaluation.
 
 ### Acceptance criteria for a Loop-C run
 
 - Each evaluated pair has an updated status in `docs/composition-candidates.md`
-- `make composition-check` output for the pair is reproduced in the candidates log
 - Any new composition has tests in `_tests/test_composition_config.py` and
   `internal/barcli/composition_test.go`

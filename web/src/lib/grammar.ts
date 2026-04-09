@@ -105,6 +105,7 @@ export interface Grammar {
 	execution_reminder: string;
 	planning_directive: string;
 	meta_interpretation_guidance: string;
+	subject_framing: string;
 }
 
 export interface TokenMeta {

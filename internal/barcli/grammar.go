@@ -39,6 +39,7 @@ type Grammar struct {
 	ExecutionReminder          string
 	PlanningDirective          string
 	MetaInterpretationGuidance string
+	SubjectFraming             string
 	Axes              AxisSection
 	Static        StaticSection
 	Persona       PersonaSection
@@ -176,6 +177,7 @@ type rawGrammar struct {
 	ExecutionReminder          string           `json:"execution_reminder"`
 	PlanningDirective          string           `json:"planning_directive"`
 	MetaInterpretationGuidance string           `json:"meta_interpretation_guidance"`
+	SubjectFraming             string           `json:"subject_framing"`
 	Axes              rawAxisSection   `json:"axes"`
 	Static        rawStatic        `json:"tasks"`
 	Persona       rawPersona       `json:"persona"`
@@ -292,6 +294,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 		ExecutionReminder:          raw.ExecutionReminder,
 		PlanningDirective:          raw.PlanningDirective,
 		MetaInterpretationGuidance: raw.MetaInterpretationGuidance,
+		SubjectFraming:             raw.SubjectFraming,
 		Sequences:     raw.Sequences,
 		Patterns:          raw.Patterns,
 		StarterPacks:  raw.StarterPacks,

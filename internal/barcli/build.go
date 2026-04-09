@@ -25,6 +25,7 @@ type BuildResult struct {
 	ExecutionReminder          string              `json:"execution_reminder,omitempty"`
 	PlanningDirective          string              `json:"planning_directive,omitempty"`
 	MetaInterpretationGuidance string              `json:"meta_interpretation_guidance,omitempty"`
+	SubjectFraming             string              `json:"subject_framing,omitempty"`
 	Subject             string              `json:"subject"`
 	Addendum            string              `json:"addendum,omitempty"`
 	Task                string              `json:"task"`
@@ -971,6 +972,7 @@ func (s *buildState) toResult() *BuildResult {
 		ExecutionReminder:          s.grammar.ExecutionReminder,
 		PlanningDirective:          s.grammar.PlanningDirective,
 		MetaInterpretationGuidance: s.grammar.MetaInterpretationGuidance,
+		SubjectFraming:             s.grammar.SubjectFraming,
 		Task:          task,
 		Constraints:   constraints,
 		Axes: AxesResult{

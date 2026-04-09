@@ -415,3 +415,29 @@ func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
 		t.Fatalf("expected hydrated persona to include kanji 質, got:\n%s", output)
 	}
 }
+
+// ADR-0228: semantic authority injection mitigation tests.
+
+func TestRenderPlainText_TaskContractAuthorityDeclaration(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, err := Build(g, []string{"show"})
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	rendered := RenderPlainText(result)
+	if !strings.Contains(rendered, "sole authoritative task source") {
+		t.Error("TASK contract must assert that TASK is the sole authoritative task source")
+	}
+}
+
+func TestRenderPlainText_SubjectFramingNamesAuthorityAttack(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, err := Build(g, []string{"show"})
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	rendered := RenderPlainText(result)
+	if !strings.Contains(rendered, "placeholder") {
+		t.Error("pre-SUBJECT framing must name the placeholder injection attack pattern")
+	}
+}

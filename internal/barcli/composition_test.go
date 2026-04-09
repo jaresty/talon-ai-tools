@@ -75,6 +75,23 @@ func TestActiveCompositions_AtomicGround(t *testing.T) {
 	}
 }
 
+func TestActiveCompositions_CalcChain(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	active := g.ActiveCompositions(map[string]struct{}{"calc": {}, "chain": {}})
+	if len(active) == 0 {
+		t.Fatal("expected calc+chain to activate a composition")
+	}
+	found := false
+	for _, c := range active {
+		if c.Name == "calc+chain" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected composition named 'calc+chain', got %v", active)
+	}
+}
+
 func TestActiveCompositions_SingleTokenNoActivation(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	for _, tok := range []string{"gate", "ground", "atomic", "chain"} {

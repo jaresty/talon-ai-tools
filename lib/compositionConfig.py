@@ -56,6 +56,18 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "level; they do not conflict."
         ),
     },
+    {
+        "name": "calc+chain",
+        "tokens": ["calc", "chain"],
+        "prose": (
+            "calc + chain: each executable step's output must be reproduced verbatim before "
+            "the next step may constrain its conclusions. calc requires that conclusions be "
+            "constrained by the actual outputs of formal steps; chain requires that each step "
+            "reproduce its predecessor's actual output before proceeding. Together: quoting "
+            "a calculation result is not sufficient — the exact output of each step must "
+            "appear in the response before the reasoning that depends on it."
+        ),
+    },
 ]
 
 

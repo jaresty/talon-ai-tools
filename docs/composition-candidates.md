@@ -17,6 +17,7 @@ requirement test result (or the composition name if one was created).
 | gate + atomic | composition | 2026-04-09 | Produces `gate+atomic` composition — single-failure scope rule from atomic gates implementation steps |
 | gate + chain | composition | 2026-04-09 | Produces `gate+chain` composition — only failing test output is valid predecessor artifact |
 | atomic + ground | composition | 2026-04-09 | Produces `atomic+ground` composition — ground completion check required when artifact reports no failures |
+| calc + chain | composition | 2026-04-09 | Each step output must be reproduced verbatim before next step constrains its conclusions |
 
 ---
 

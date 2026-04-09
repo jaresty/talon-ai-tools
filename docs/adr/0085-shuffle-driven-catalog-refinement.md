@@ -419,20 +419,19 @@ whether the *simultaneous co-presence* of tokens A and B in a single bar build c
 produces a behavioral requirement that neither A nor B would impose alone — a structural,
 combinatorial effect. Sequences are about ordering; compositions are about co-presence.
 
-**What to look for:** A *composition signal* is present when:
-1. A shuffle seed contains two method tokens A and B (same or adjacent category), AND
-2. Running `bar build diff method=A,B` reveals that the combined `bar build [task] A B`
-   output contains a behavioral requirement absent from both A-alone and B-alone variants.
+**What to look for:** A *composition signal* is present when the combined
+`bar build [task] A B` output contains a behavioral requirement absent from both the
+A-alone and B-alone variants — visible via `make composition-check PAIR="A B"`.
 
-Same-category co-presence is the strongest prior: tokens in the same category share
-structural framing and are more likely to interact than cross-category pairs.
+Note: shuffle's soft cap produces at most 1 method token per seed. Phase 2h therefore
+triggers on *any* seed containing a method token, not on seeds containing ≥2.
 
 **Protocol:**
 
-1. After scoring a shuffle seed, check whether it contains ≥2 method tokens.
-2. If yes, identify the pair(s) and check `docs/composition-candidates.md` — if the pair
-   is already evaluated (any status), skip.
-3. If not yet evaluated, run:
+1. After scoring a shuffle seed, check whether it contains a method token A.
+2. If yes, run `make composition-candidates` and find the highest-priority pending pair
+   that includes A. If none found, skip.
+3. Run:
    ```bash
    make composition-check PAIR="A B"
    ```

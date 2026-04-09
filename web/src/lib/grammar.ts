@@ -24,6 +24,13 @@ export interface PersonaPreset {
 	spoken: string;
 }
 
+// ADR-0227: Pairwise token composition — activates COMPOSITION RULES section in rendered prompt.
+export interface GrammarComposition {
+	name: string;
+	tokens: string[];
+	prose: string;
+}
+
 export interface GrammarPattern {
   title: string;
   command: string;
@@ -86,6 +93,7 @@ export interface Grammar {
 	};
 	patterns?: GrammarPattern[];
 	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
+	compositions?: GrammarComposition[]; // ADR-0227
 	reference_key: {
 		task: string;
 		addendum: string;

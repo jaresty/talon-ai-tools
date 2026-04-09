@@ -894,6 +894,27 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 			"capacity limits (one channel, one directional, etc.).\n")
 	}
 	fmt.Fprintf(w, "\n")
+
+	// ADR-0227: pairwise token compositions — activate COMPOSITION RULES section in rendered prompt.
+	if len(grammar.Compositions) > 0 {
+		fmt.Fprintf(w, "### Pairwise Token Compositions (ADR-0227)\n\n")
+		fmt.Fprintf(w, "When specific method token pairs co-appear in a `bar build` command, the rendered prompt\n")
+		fmt.Fprintf(w, "gains a `=== COMPOSITION RULES ===` section (after CONSTRAINTS, before PERSONA) containing\n")
+		fmt.Fprintf(w, "additional rules that govern the combined behavior. This section is injected automatically —\n")
+		fmt.Fprintf(w, "no extra token is needed.\n\n")
+		fmt.Fprintf(w, "Active compositions (from grammar):\n\n")
+		for _, comp := range grammar.Compositions {
+			fmt.Fprintf(w, "**%s** (tokens: %s)\n", comp.Name, strings.Join(comp.Tokens, " + "))
+			// Emit first sentence of prose as a summary.
+			prose := strings.TrimSpace(comp.Prose)
+			if idx := strings.Index(prose, ". "); idx > 0 && idx < 200 {
+				prose = prose[:idx+1]
+			} else if len(prose) > 200 {
+				prose = prose[:200] + "…"
+			}
+			fmt.Fprintf(w, "%s\n\n", prose)
+		}
+	}
 }
 
 // axisTokenHeuristics returns the heuristic trigger phrases for an axis token as a

@@ -331,6 +331,25 @@ chained evaluation, and threshold criteria. Key threshold: mean score uplift ≥
 (1–5 scale) across ≥ 3 subject types, with directionality confirmed (A→B uplifts more than
 B→A).
 
+**Running the chained evaluation correctly:**
+
+Shuffle seeds are deterministic and subject-independent — the same seed produces the same
+tokens regardless of what subject is passed. This means broad shuffle sweeps across many
+seeds do NOT surface co-occurrence patterns useful for sequence discovery. Use shuffle to
+*explore the token space*, not to find pairings.
+
+For sequence signal detection, skip shuffle and go directly to targeted chained evaluation:
+
+1. Identify candidate pairings intuitively (e.g., `probe → plan`, `check → fix`, `sim → make`)
+2. For each pairing (A → B):
+   - Run B cold on a subject; score 1–5; note what's missing
+   - Run A on the same subject; execute the output fully
+   - Run B primed with A's output as subject; score 1–5
+   - Record cold score, primed score, uplift, and whether direction matters
+3. Be honest about scores — uniform results across all pairings indicate the evaluator went
+   through the motions rather than genuinely measuring. Real evaluations produce varied scores.
+4. Confirm directionality: does A→B uplift more than B→A would? If not, ordering is arbitrary.
+
 **Retrospective sweep:** Existing seeds in `docs/adr/evidence/0085/` are a candidate pool
 that has never been evaluated for sequence signals. Before generating new seeds for discovery,
 run the chained evaluation on any shuffle pairs that intuitively suggest ordering (e.g.,

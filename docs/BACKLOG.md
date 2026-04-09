@@ -414,6 +414,50 @@ Phases 1–2 have low implementation cost and deliver the core value independent
 
 ---
 
+## Tier 2 — Sequence candidates from Phase 2f evaluation (2026-04-09)
+
+Three pairings showed genuine uplift (≥ +2/5) in chained evaluation on subject
+"a codebase where nobody owns the authentication module":
+
+### Sequences: probe-and-plan candidate
+**What**: Named sequence `probe-and-plan` (linear): diagnose structure and hidden assumptions,
+user acts on findings, then produce a targeted action plan.
+**Signal**: probe cold 4/5 → plan cold 3/5 → plan primed after probe 5/5. Direction confirmed:
+plan→probe does not show equivalent uplift.
+**Distinction from debug-cycle**: debug-cycle outputs a fix (code/config change); probe-and-plan
+outputs a plan (steps, priorities, owners). Different terminal artifact.
+**Shape**: Add to `lib/sequenceConfig.py` with mode=linear, requires_user_input on probe step.
+
+### Sequences: simulate-and-make candidate
+**What**: Named sequence `simulate-and-make` (autonomous): simulate consequences of a scenario,
+then produce the artifact the simulation implies is needed.
+**Signal**: sim cold 4/5 → make cold 3/5 → make primed after sim 5/5. Direction confirmed:
+make→sim does not show equivalent uplift.
+**Distinction from scenario-to-plan**: scenario-to-plan outputs action steps; simulate-and-make
+outputs a concrete artifact (document, design, policy).
+**Shape**: Add to `lib/sequenceConfig.py` with mode=autonomous.
+
+### Sequences: check-and-fix candidate
+**What**: Named sequence `check-and-fix` (autonomous): evaluate against criteria, then reframe
+or repair based on the specific gaps found.
+**Signal**: check cold 5/5 → fix cold 2/5 → fix primed after check 5/5. Strongest signal (+3).
+Direction confirmed: check provides material (gap list) that fix uses to move from generic
+rewording to targeted remediation.
+**Distinction from debug-cycle**: debug-cycle is code/system repair; check-and-fix is
+document/artifact/framing repair. Different domain.
+**Shape**: Add to `lib/sequenceConfig.py` with mode=autonomous.
+
+### CLI: Local usage telemetry for sequence discovery
+**What**: Track which token combinations are actually used in `bar build` invocations, stored
+locally (opt-in or always-local, never uploaded). Expose via `bar telemetry` or `bar stats`.
+**Why**: Sequence discovery currently relies on manual chained evaluation of intuitively chosen
+pairs. Local telemetry would surface naturally recurring multi-step patterns from real usage —
+sequences people are already constructing ad hoc that deserve naming.
+**Shape**: Append-only log of `{tokens, timestamp}` per invocation in `~/.config/bar/usage.log`
+or similar. `bar stats sequences` shows token pairs that co-occur across consecutive invocations
+on the same subject within a session. Phase 2f could then be data-driven rather than intuition-driven.
+**ADR needed**: Yes — covers privacy posture, retention, format, and discovery protocol integration.
+
 ## Tier 3 — Good ideas, not yet time-sensitive
 
 ### TUI2/Harness: Cross-axis composition hints in HarnessState

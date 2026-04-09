@@ -9408,9 +9408,9 @@
         }
       ]
     },
-    "check-and-fix": {
-      "description": "Evaluate an artifact against criteria, then repair or reframe based on the specific gaps found.",
-      "example": "Reviewing a technical design doc and fixing the sections that don't hold up.",
+    "check-and-rewrite": {
+      "description": "Evaluate an artifact against criteria, then rewrite it so the gaps are closed.",
+      "example": "Reviewing a technical design doc and rewriting the sections that don't hold up.",
       "mode": "autonomous",
       "steps": [
         {
@@ -9420,8 +9420,8 @@
         },
         {
           "token": "task:fix",
-          "role": "targeted repair",
-          "prompt_hint": "Use this step to repair or reframe based on the gaps identified in the evaluation."
+          "role": "form revision",
+          "prompt_hint": "Use this step to rewrite the artifact so that the gaps identified in the evaluation are closed — change presentation or structure, not meaning."
         }
       ]
     },
@@ -9539,6 +9539,6 @@
     "slugs": "001b1668379513f5efc81da22a872cc165e55bcbd84e82f5be4e852b351a570b",
     "patterns": "c3b272ce880ae3ee62890544220a8e2e076bd8744f1fcb3a278ba479350f1f34",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
-    "sequences": "3be9aa41e2ef8702d34e7a2bcca858cc6f26bb9c7f734a1fd7a4eedc37aae159"
+    "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c"
   }
 }

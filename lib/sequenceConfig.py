@@ -87,9 +87,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
-    "check-and-fix": {
-        "description": "Evaluate an artifact against criteria, then repair or reframe based on the specific gaps found.",
-        "example": "Reviewing a technical design doc and fixing the sections that don't hold up.",
+    "check-and-rewrite": {
+        "description": "Evaluate an artifact against criteria, then rewrite it so the gaps are closed.",
+        "example": "Reviewing a technical design doc and rewriting the sections that don't hold up.",
         "mode": "autonomous",
         "steps": [
             {
@@ -99,8 +99,8 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
             {
                 "token": "task:fix",
-                "role": "targeted repair",
-                "prompt_hint": "Use this step to repair or reframe based on the gaps identified in the evaluation.",
+                "role": "form revision",
+                "prompt_hint": "Use this step to rewrite the artifact so that the gaps identified in the evaluation are closed — change presentation or structure, not meaning.",
             },
         ],
     },

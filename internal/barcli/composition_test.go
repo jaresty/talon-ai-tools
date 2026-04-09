@@ -134,3 +134,25 @@ func TestRenderPlainText_NoCompositionRulesWithoutTokenPair(t *testing.T) {
 		t.Error("gate alone must not produce COMPOSITION RULES section")
 	}
 }
+
+// ADR-0227 token attribution audit — gate vocabulary tests.
+// Gate must use gate-appropriate vocabulary, not borrow ground's "unilateral change" framing.
+
+func TestGateDefinition_NoGroundVocabulary(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	def := g.Axes.Definitions["method"]["gate"]
+	if strings.Contains(def, "unilateral change to the task's intent") {
+		t.Error("gate definition must not use ground vocabulary 'unilateral change to the task's intent'; use gate-appropriate phrasing instead")
+	}
+	if !strings.Contains(def, "structural scope violation") {
+		t.Error("gate definition must contain 'structural scope violation' as the gate-appropriate replacement")
+	}
+}
+
+func TestGateDefinition_NoDerivationVocabulary(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	def := g.Axes.Definitions["method"]["gate"]
+	if strings.Contains(def, "the derivation must identify a governing artifact per layer") {
+		t.Error("gate definition must not use ground's 'derivation' vocabulary in the multi-layer clause; use assertion-appropriate phrasing instead")
+	}
+}

@@ -483,6 +483,18 @@
 		<p class="subtitle">Token composition for structured prompts</p>
 	</header>
 
+	<!-- Subject input — above tabs, first-class input -->
+	<label class="input-group subject-top">
+		<span class="input-label">--subject <span class="input-hint">source material</span></span>
+		<textarea
+			class="input-area"
+			data-field="subject"
+			rows="4"
+			placeholder="Paste code, document, or topic…"
+			bind:value={subject}
+		></textarea>
+	</label>
+
 	<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
 	<nav class="tab-bar" role="tablist" onkeydown={handleTabBarKey}>
 		{#each AXES_WITH_PERSONA as tab (tab)}
@@ -520,18 +532,6 @@
 				ontouchend={handleTouchEnd}
 				onanimationend={() => panelSlideDir = null}
 			>
-				<!-- Subject input — pinned top of selector panel, always visible -->
-				<label class="input-group">
-					<span class="input-label">--subject <span class="input-hint">source material</span></span>
-					<textarea
-						class="input-area"
-						data-field="subject"
-						rows="6"
-						placeholder="Paste code, document, or topic…"
-						bind:value={subject}
-					></textarea>
-				</label>
-
 				{#if activeTab === 'persona'}
 				<!-- Persona -->
 				<div class="persona-section">

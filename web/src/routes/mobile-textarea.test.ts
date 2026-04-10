@@ -59,6 +59,6 @@ describe('Page — Mobile Expanded Textareas', () => {
 
 		const subjectTextarea = container.querySelector('textarea[data-field="subject"]') as HTMLTextAreaElement;
 		expect(subjectTextarea).toBeTruthy();
-		expect(subjectTextarea.rows).toBeGreaterThanOrEqual(6);
+		expect(subjectTextarea.rows).toBeGreaterThanOrEqual(4);
 	});
 });

@@ -110,8 +110,8 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "appearance of satisfying the intent" appears in method:ground definition (ADR-0224: slimmed A0+M form) but not heuristics/distinctions.
-	results := LookupTokens("appearance of satisfying the intent", grammar, "method")
+	// "appearance-reality gap" appears in method:ground definition (ADR-0230: declarative rewrite) but not heuristics/distinctions.
+	results := LookupTokens("appearance-reality gap", grammar, "method")
 	if len(results) == 0 {
 		t.Fatal("expected results for 'appearance of satisfying the intent', got none")
 	}

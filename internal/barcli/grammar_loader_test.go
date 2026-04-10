@@ -416,7 +416,7 @@ func TestGroundIFormationPermittedPreManifest(t *testing.T) {
 	// intent that cannot be represented exactly, only derived. Verify this boundary
 	// concept survives in some form.
 	// Re-tighten if experiment restores full spec or violation is observed.
-	if !strings.Contains(groundDesc, "derived") && !strings.Contains(groundDesc, "derivation") {
+	if !strings.Contains(groundDesc, "derive") && !strings.Contains(groundDesc, "derivation") {
 		t.Error("ground boundary clause must reference intent as derived/external, not exact")
 	}
 }

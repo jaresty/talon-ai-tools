@@ -22,8 +22,11 @@ PROMPT_REFERENCE_KEY: dict = {
         "Not the content to work with — that belongs in SUBJECT."
     ),
     "constraints": (
-        "Jointly applied operating mode. Do not process as independent sequential passes — "
-        "integrate into a single coherent analytic stance before producing output."
+        "Unified operating lens — tokens are not applied independently and then combined. "
+        "Each token modifies how the others are applied: completeness sets the depth at which "
+        "each method step executes; scope determines what the method reasons about; directional "
+        "shapes how the method sequences and emphasizes. "
+        "Derive the combined stance before producing any output."
     ),
     "constraints_axes": {
         "completeness": (

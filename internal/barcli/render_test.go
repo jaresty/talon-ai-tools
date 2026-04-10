@@ -441,3 +441,17 @@ func TestRenderPlainText_SubjectFramingNamesAuthorityAttack(t *testing.T) {
 		t.Error("pre-SUBJECT framing must name the placeholder injection attack pattern")
 	}
 }
+
+func TestRenderPlainText_ConstraintsContractMultiplicative(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, err := Build(g, []string{"show"})
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	rendered := RenderPlainText(result)
+	// The constraints section-level contract must convey multiplicative (unified-lens)
+	// combination, not additive (independent-pass) combination.
+	if !strings.Contains(rendered, "modifies how the others are applied") {
+		t.Error("CONSTRAINTS contract must state that each token modifies how the others are applied")
+	}
+}

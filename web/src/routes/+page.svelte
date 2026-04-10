@@ -702,6 +702,18 @@
 				</details>
 			</section>
 
+			<!-- Subject input — always visible, outside toggled output panel -->
+			<label class="input-group">
+				<span class="input-label">--subject <span class="input-hint">source material</span></span>
+				<textarea
+					class="input-area"
+					data-field="subject"
+					rows="6"
+					placeholder="Paste code, document, or topic…"
+					bind:value={subject}
+				></textarea>
+			</label>
+
 			<button class="preview-toggle" onclick={togglePreview}>
 				{showPreview ? 'Hide Output' : 'Show Output'}
 			</button>
@@ -763,18 +775,6 @@
 						</ul>
 					{/if}
 				</details>
-
-				<!-- Subject input — above rendered output -->
-				<label class="input-group">
-					<span class="input-label">--subject <span class="input-hint">source material</span></span>
-					<textarea
-						class="input-area"
-						data-field="subject"
-						rows="6"
-						placeholder="Paste code, document, or topic…"
-						bind:value={subject}
-					></textarea>
-				</label>
 
 				<!-- Rendered prompt -->
 				<details class="prompt-preview-section">

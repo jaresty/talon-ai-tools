@@ -68,18 +68,17 @@ describe('Page — subject/addendum placement', () => {
 		expect(addendumInTask).toBeTruthy();
 	});
 
-	it('subject textarea appears before the rendered prompt', async () => {
+	it('subject textarea is outside the preview-panel (always visible on mobile)', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
 
 		const subjectTextarea = container.querySelector('textarea[data-field="subject"]');
-		const renderedPrompt = container.querySelector('.prompt-preview-section');
+		const previewPanel = container.querySelector('.preview-panel');
 		expect(subjectTextarea).toBeTruthy();
-		expect(renderedPrompt).toBeTruthy();
+		expect(previewPanel).toBeTruthy();
 
-		const position = subjectTextarea!.compareDocumentPosition(renderedPrompt!);
-		// DOCUMENT_POSITION_FOLLOWING = 4: renderedPrompt comes after subjectTextarea
-		expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		// subject must NOT be a descendant of .preview-panel
+		expect(previewPanel!.contains(subjectTextarea)).toBe(false);
 	});
 });

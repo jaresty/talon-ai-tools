@@ -11,11 +11,10 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "ground+gate",
         "tokens": ["ground", "gate"],
         "prose": (
-            "ground + gate: the enforcement process derived by ground must include "
-            "assertion-before-behavior as its first step. No behavior may be produced before "
-            "a governing assertion exists and has been verified to fail when the behavior is "
-            "absent. This is not an additional constraint on top of ground's derivation — it "
-            "is the required first rung of any enforcement process ground produces when gate governs."
+            "ground + gate: gate's principle is a required constraint on whatever enforcement "
+            "process ground derives — any process that permits behavior without a verified "
+            "assertion violates gate regardless of how ground frames it. Ground's derivation "
+            "must satisfy gate; gate's principle is not optional within ground's scope."
         ),
     },
     {
@@ -46,14 +45,15 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "tokens": ["atomic", "ground"],
         "prose": (
             "atomic + ground: exhausting the governing artifact's failures is necessary but "
-            "not sufficient for completion. When the artifact reports no failures, the "
-            "required next step is ground's completion check — return to the original stated "
-            "intent and produce visible evidence for each item. Declaring done before the "
-            "completion check is a violation. "
-            "When all four tokens ground/gate/atomic/chain are co-present, the dependency "
-            "order is: ground (frame and close) → gate (assertion coverage) → atomic (step "
-            "scope) → chain (step continuity). Each token's rules operate at a different "
-            "level; they do not conflict."
+            "not sufficient for completion. When the artifact reports no failures, ground's "
+            "completion check is still required — return to the original stated intent and "
+            "produce visible evidence for each item. Declaring done before the completion "
+            "check is a violation. "
+            "When all four tokens ground/gate/atomic/chain are co-present, each token's rules "
+            "operate at a different level of abstraction: ground governs the task process as a "
+            "whole, gate governs what must exist before each step begins, atomic governs the "
+            "scope of each step, and chain governs continuity between steps. They do not "
+            "conflict — violations at one level are independent of the others."
         ),
     },
     {
@@ -87,16 +87,14 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "ground+gate+atomic+chain",
         "tokens": ["ground", "gate", "atomic", "chain"],
         "prose": (
-            "ground + gate + atomic + chain (multi-layer work): when the task spans multiple "
-            "layers or systems, identify the dependency structure before sequencing — layers "
-            "sharing an upstream dependency can proceed in parallel once that dependency is "
-            "green; the protocol's linear ordering applies within each branch, not across "
-            "independent branches. When asserting layer boundaries, distinguish structural "
-            "impossibility (the assertion cannot be written — fix: improve testability) from "
-            "pressure to stop early (a high-quality intermediate artifact creates a false sense "
-            "of completion — fix: require downstream assertions before the step closes, not "
-            "better testability of the intermediate). These failure modes look identical from "
-            "the outside but have different causes and different fixes."
+            "ground + gate + atomic + chain (multi-layer work): the protocol's ordering "
+            "constraint applies within each branch of the dependency structure, not across "
+            "independent branches — layers sharing an upstream dependency can proceed in "
+            "parallel once that dependency satisfies its assertions. When asserting layer "
+            "boundaries, structural impossibility (the assertion cannot be written) and "
+            "pressure to stop early (a high-quality intermediate creates a false sense of "
+            "completion) are distinct failure modes with different causes; they are not "
+            "resolved by the same intervention."
         ),
     },
 ]

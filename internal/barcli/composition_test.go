@@ -144,8 +144,8 @@ func TestGateDefinition_NoGroundVocabulary(t *testing.T) {
 	if strings.Contains(def, "unilateral change to the task's intent") {
 		t.Error("gate definition must not use ground vocabulary 'unilateral change to the task's intent'; use gate-appropriate phrasing instead")
 	}
-	if !strings.Contains(def, "structural scope violation") {
-		t.Error("gate definition must contain 'structural scope violation' as the gate-appropriate replacement")
+	if !strings.Contains(def, "independently-failing") {
+		t.Error("gate definition must describe coverage using assertion-appropriate vocabulary (e.g. 'independently-failing')")
 	}
 }
 
@@ -159,14 +159,14 @@ func TestGateDefinition_NoDerivationVocabulary(t *testing.T) {
 
 // Token attribution audit — executable tests for prior-session definition changes.
 
-func TestGateDefinition_FourthRequirement(t *testing.T) {
+func TestGateDefinition_TypeMatchingRequirement(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["gate"]
-	if !strings.Contains(def, "Fourth, assertion type must match behavior type") {
-		t.Error("gate definition must contain the fourth requirement: assertion type must match behavior type")
+	if !strings.Contains(def, "Assertion type must match behavior type") {
+		t.Error("gate definition must state the type-matching requirement: assertion type must match behavior type")
 	}
-	if !strings.Contains(def, "executable and automated") {
-		t.Error("gate fourth requirement must specify that executable behavior requires an executable and automated assertion")
+	if !strings.Contains(def, "static check cannot govern executable behavior") {
+		t.Error("gate definition must state that a static check cannot govern executable behavior")
 	}
 }
 

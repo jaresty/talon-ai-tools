@@ -98,11 +98,11 @@ class TestBarHelpLLMExamples(unittest.TestCase):
         """Test that we have the expected number of examples."""
         examples = self.extract_example_commands()
 
-        # 32 patterns from USAGE_PATTERNS SSOT in lib/axisConfig.py (ADR-0134 D3)
+        # 33 patterns from USAGE_PATTERNS SSOT in lib/axisConfig.py (ADR-0134 D3)
         self.assertEqual(
             len(examples),
-            32,
-            f"Expected 30 example commands in patterns section, found {len(examples)}. "
+            33,
+            f"Expected 33 example commands in patterns section, found {len(examples)}. "
             f"If you added/removed patterns, update this test.",
         )
 

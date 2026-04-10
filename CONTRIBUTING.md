@@ -28,6 +28,74 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
   - This makes it easier to customize list items by overriding the `.talon-list` and not needing to fork the Python.
 - Avoid any configuration pattern that requires a user to fork this repository
 
+## TDD Enforcement: Method Tokens (ground, gate, chain, atomic)
+
+When contributing code—whether Python, Talon, or Go—use the method tokens `ground`, `gate`, `chain`, and `atomic` to apply a TDD enforcement discipline. These tokens form a protocol for making gaps between apparent completion and actual completion visible and costly to maintain.
+
+### The Four Tokens and Their Process
+
+**ground 地 (Derive the enforcement process)**
+Before implementing a feature or fix, derive a process that makes the gap visible. Your process must:
+1. Name at least one cheap path that would produce the appearance of completion without actual correctness (e.g., "I write code without tests," or "I write tests that pass trivially").
+2. For each cheap path, specify what visible evidence would distinguish genuine compliance from that shortcut.
+3. Include a completion check: return to the original intent, and for each requirement, produce visible evidence that it is satisfied.
+
+*Example:* For a Python function `parse_config()`, the cheap path is "write the function without a test." Evidence that you did not take the shortcut: (a) a test file exists at `tests/test_parse_config.py`, (b) the test imports and calls `parse_config()` with real config data, (c) running `pytest tests/test_parse_config.py` passes.
+
+**gate 門 (Assertions must precede behavior)**
+An assertion is a verifiable binary check (PASS/FAIL) that fails when the behavior is absent and passes only when it is present. No behavior may be implemented until:
+1. A governing assertion exists (a test, a type check, a static analysis rule, or a manual verification protocol).
+2. The assertion has been verified to fail in the current state (proof that the behavior is missing).
+
+When a natural executable assertion is not possible (e.g., "the documentation guides the reader correctly"), a manual verification protocol is required: specify who verifies, what procedure they follow, and what binary pass/fail condition is defined in advance.
+
+*Example:* For a Go struct field that must be non-empty:
+- Executable assertion: `func TestFieldRequired(t *testing.T) { s := &MyStruct{}; if s.Field != "" { t.Fail() } }` (fails before the field is added, passes after).
+- Non-executable assertion example: "the field improves code clarity" — no test can verify this. Instead, declare: "Code reviewer (who), reads the struct definition and checks whether the field name is unambiguous (procedure), PASS if field name clearly indicates its purpose (pass/fail)."
+
+**chain 繋 (Reproduce predecessor output before the next step)**
+Each reasoning or implementation step must begin by reproducing the exact predecessor output—the actual output, not a paraphrase. This makes intermediate steps verifiable.
+
+*Example:* Your test fails with the message:
+```
+FAILED tests/test_parse_config.py::test_parse_yaml - KeyError: 'version'
+```
+Before you implement a fix, reproduce this exact failure message in your step record or PR description. Then implement only the code that closes this failure. When you run the test again, reproduce the new output.
+
+**atomic 粒 (One governing output, one step)**
+Each implementation step opens from exactly one governing output (a test failure, a compile error, or a manual verification failure). Implement only what closes that one failure. Do not fix multiple problems, refactor unrelated code, or optimize beyond the current failure.
+
+*Example:*
+1. Run: `go test ./...` → Output: `undefined: ParseConfig` (first failure).
+2. Step 1: Implement `ParseConfig()` skeleton; run again.
+3. Output: `ParseConfig() returns uninitialized Config struct` (new failure, now open).
+4. Step 2: Add field initialization; run again.
+5. Output: all tests pass.
+
+Do not merge steps 1 and 2 ("implement ParseConfig fully") because that violates the one-failure-per-step principle. Each step should be independently reviewable and traceable to the failure it closes.
+
+### Applying All Four Tokens Together
+
+When all four are active (ground + gate + chain + atomic):
+
+1. **ground** governs the task process as a whole: you must have derived the enforcement process and included a completion check.
+2. **gate** governs what must exist before each step begins: every behavior must have a governing assertion that has been verified to fail.
+3. **chain** governs continuity between steps: each new step reproduces the exact predecessor failure or output.
+4. **atomic** governs the scope of each step: implement only what closes the current governing failure.
+
+They do not conflict—violations at one level are independent of the others.
+
+### Checklist for Contributors
+
+Before opening a PR, confirm:
+
+- [ ] I have derived an enforcement process that names cheap paths and specifies visible evidence.
+- [ ] Every behavior I implemented has a governing assertion (test, type check, static analysis, or manual protocol).
+- [ ] Each assertion was verified to fail before I implemented the behavior.
+- [ ] For each implementation step, I reproduced the governing output (test failure, error message, or manual verification note) before implementing.
+- [ ] Each step closes exactly one governing failure; unrelated changes are in separate steps.
+- [ ] I have completed the ground completion check: returning to the original intent, I have produced visible evidence for each requirement.
+
 ## Release checklist
 
 - Review README release notes for the current cycle and ensure skip sentinel guidance (`//next` usage) remains listed.

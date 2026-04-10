@@ -57,7 +57,7 @@ func RenderPlainText(result *BuildResult) string {
 					fmt.Fprintf(&b, "↓ [%s]\n", strings.TrimSpace(contract))
 				}
 			}
-			formatted := formatPromptlet(constraint)
+			formatted := renderPromptlet(constraint)
 			if formatted != "" {
 				fmt.Fprintf(&b, "- %s\n", formatted)
 				if constraint.ConflictNote != "" {
@@ -235,7 +235,7 @@ func writePersonaSection(b *strings.Builder, persona PersonaResult, promptlets [
 		for _, key := range keys {
 			entries := axisEntries[key]
 			for _, entry := range entries {
-				formatted := strings.TrimSpace(formatPromptlet(entry))
+				formatted := strings.TrimSpace(renderPromptlet(entry))
 				if formatted == "" {
 					continue
 				}

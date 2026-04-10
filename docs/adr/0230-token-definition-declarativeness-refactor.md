@@ -90,6 +90,58 @@ Two tests in `composition_test.go` locked in the previous definition structure a
 
 ---
 
+## Retest Results (2026-04-10)
+
+7-agent stress test run against updated definitions. Same task types as ADR-0229.
+
+### SSOT issue: ground binary was stale for first retest run
+
+During the retest, `lib/groundPrompt.py` had not yet been updated — only `lib/axisConfig.py` had been edited, which the pre-commit hook (`make bar-grammar-update`) silently reverted by regenerating `axisConfig.py` from `groundPrompt.py`. All 7 agents received the old ground text ("name at least one cheap path"). The ground fix was committed separately (commit e4809b90) after the retest was already underway. **Probe question 4 (cheap-path removal) results are invalidated — a targeted ground-only retest is required.**
+
+Gate and atomic changes were correctly committed (they live directly in `axisConfig.py`, not generated from a separate SSOT).
+
+### Agent scores
+
+| Agent | Task type | Self-score | Key finding |
+|-------|-----------|-----------|-------------|
+| Refactor | Rename function | 5/5 | Compiler-as-assertion; cited old cheap-path prescription (stale ground) |
+| Delete | Remove function + call sites | 4/5 | Correctly planned; gap: behavioral isolation of new writeSectionWithContract behavior |
+| Prose | Write CONTRIBUTING.md section | 5/5 | Floor assertions AND full manual verification protocol declared (who/procedure/pass-fail) |
+| Performance | Buffer pool benchmark | 4/5 | Set explicit threshold prospectively before implementation; simulated (not executed) benchmarks |
+| Multi-layer | token_version through 5 layers | 4.5/5 | Surfaced DAG, identified Layer 2 pressure point, noted epistemic independence |
+| Prioritization | Non-code evaluation task | 5/5 | Derived visible rubric mechanism from principle without 🔴 format |
+| Process design | Non-code design task | 5/5 | Gate assertions written before each component; completion check executed |
+
+### Probe question findings
+
+**1. Sentinel removal (gate rewrite)** ✅ VALIDATED
+
+Agents derived equivalent visible-signal mechanisms from the principle without being told the 🔴 format. The prioritization agent produced rubric-output blocks before each evaluation; the process design agent produced assertion-before-step blocks. The principle ("assertion precedes behavior; assertion must be verified to fail before implementation") is format-agnostic — agents select appropriate visible signal forms for the domain.
+
+**2. "No natural assertion" floor/ceiling principle (gate rewrite)** ✅ VALIDATED
+
+Prose agent obtained both: (a) structural floor assertions (file exists, headings present, cited paths resolve), and (b) a fully declared manual verification protocol specifying who verifies, what they do, and a binary pass/fail condition. The new declarative principle produced complete behavior without the old "do not proceed" instruction.
+
+**3. Atomic reproduction removal** ✅ VALIDATED
+
+Chain owned the reproduction requirement cleanly. Atomic's sizing concern (causal isolation, one change per step) was distinct and unambiguous. No agents reported confusion between the two. The overlap noted in ADR-0230 gap analysis was real but resolved by moving the reproduction requirement to chain exclusively.
+
+**4. Ground cheap-path removal** ❌ INVALIDATED (stale binary)
+
+Agents did enumerate cheap paths, but the ground binary contained the old prescription ("name at least one cheap path"). Cannot determine whether this resulted from the new principle or the old prescription. **Targeted ground-only retest required** after confirming the new binary is in use.
+
+**5. Composition prompt declarativeness** ✅ VALIDATED
+
+Multi-layer agent found the composition prompt non-redundant: it provided parallel-branch DAG guidance and the impossibility/pressure distinction that individual tokens did not cover. The constraint framing ("gate's principle is a required constraint on whatever ground derives") was correctly interpreted — no agents confused it with a procedural ordering requirement.
+
+### Additional findings
+
+**Threshold provenance (performance):** The performance agent set the threshold prospectively — baseline measurement first, then `baseline × 0.75 = threshold` declared before implementation, then benchmark run. This is the correct pattern: threshold commits to a binary pass/fail before results are known, preventing post-hoc rationalization.
+
+**Behavioral isolation gap (delete):** The delete agent (4/5) correctly planned the deletion but noted a gap: the behavioral side effect of `writeSectionWithContract` (new inline contract support) was not isolated in a separate assertion. The scope-creep decision-gate from ADR-0229 was applied nominally but not executed as a hard gate.
+
+---
+
 ## Retest Required
 
 The definition changes are significant enough to warrant a new stress test. Key questions for the retest:
@@ -108,11 +160,14 @@ Same 7 tasks from ADR-0229 retest, same scoring rubric. Focus questions on:
 - Does the "no natural assertion" floor/ceiling principle produce complete behavior?
 - Does the atomic definition (without reproduction gate) still produce anchored step execution when chain is absent?
 
+**Status:** Probes 1, 2, 3, 5 validated (2026-04-10). Probe 4 invalidated by stale binary — targeted ground-only retest pending.
+
 ---
 
 ## Open Items
 
-- [ ] Retest: run 7-agent stress test against updated definitions
+- [x] Retest: run 7-agent stress test against updated definitions
+- [ ] Ground-only retest: confirm cheap-path enumeration results from new principle (not old prescription) — binary must show "appearance-reality gap costly to maintain" in ground text
 - [ ] Evaluate: does gate need an explicit call to produce visible failing output before implementation, or is this derivable from "verified to fail" + chain's reproduction requirement?
 - [ ] Evaluate: chain's "predecessor" ambiguity — should "specific predecessor output" be made more precise for multi-step nested tasks?
 - [ ] Evaluate: atomic's "any verification" ambiguity in multi-layer systems — should this be specified as "the verification layer this step operates in"?

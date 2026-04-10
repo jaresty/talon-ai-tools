@@ -937,7 +937,7 @@ func (s *buildState) toResult() *BuildResult {
 
 	constraints := make([]string, 0, len(s.hydratedConstraints))
 	for _, entry := range s.hydratedConstraints {
-		constraints = append(constraints, formatPromptlet(entry))
+		constraints = append(constraints, renderPromptlet(entry))
 	}
 
 	persona := PersonaResult{}
@@ -1010,7 +1010,7 @@ func (s *buildState) toResult() *BuildResult {
 	return result
 }
 
-func formatPromptlet(p HydratedPromptlet) string {
+func renderPromptlet(p HydratedPromptlet) string {
 	axis := axisHeading(p.Axis)
 	token := strings.TrimSpace(p.Token)
 	kanji := strings.TrimSpace(p.Kanji)

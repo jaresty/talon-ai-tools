@@ -520,6 +520,18 @@
 				ontouchend={handleTouchEnd}
 				onanimationend={() => panelSlideDir = null}
 			>
+				<!-- Subject input — pinned top of selector panel, always visible -->
+				<label class="input-group">
+					<span class="input-label">--subject <span class="input-hint">source material</span></span>
+					<textarea
+						class="input-area"
+						data-field="subject"
+						rows="6"
+						placeholder="Paste code, document, or topic…"
+						bind:value={subject}
+					></textarea>
+				</label>
+
 				{#if activeTab === 'persona'}
 				<!-- Persona -->
 				<div class="persona-section">
@@ -676,18 +688,6 @@
 				</div>
 
 				<PatternsLibrary {patterns} {starterPacks} {grammar} onLoad={loadPattern} />
-
-				<!-- Subject input -->
-				<label class="input-group">
-					<span class="input-label">--subject <span class="input-hint">source material</span></span>
-					<textarea
-						class="input-area"
-						data-field="subject"
-						rows="6"
-						placeholder="Paste code, document, or topic…"
-						bind:value={subject}
-					></textarea>
-				</label>
 
 				<!-- Shortcut legend — after axis panel so Tab flow is uninterrupted -->
 				<details class="shortcut-legend">

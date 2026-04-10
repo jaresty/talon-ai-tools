@@ -83,6 +83,22 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "made explicit before either is used as a generative basis."
         ),
     },
+    {
+        "name": "ground+gate+atomic+chain",
+        "tokens": ["ground", "gate", "atomic", "chain"],
+        "prose": (
+            "ground + gate + atomic + chain (multi-layer work): when the task spans multiple "
+            "layers or systems, identify the dependency structure before sequencing — layers "
+            "sharing an upstream dependency can proceed in parallel once that dependency is "
+            "green; the protocol's linear ordering applies within each branch, not across "
+            "independent branches. When asserting layer boundaries, distinguish structural "
+            "impossibility (the assertion cannot be written — fix: improve testability) from "
+            "pressure to stop early (a high-quality intermediate artifact creates a false sense "
+            "of completion — fix: require downstream assertions before the step closes, not "
+            "better testability of the intermediate). These failure modes look identical from "
+            "the outside but have different causes and different fixes."
+        ),
+    },
 ]
 
 

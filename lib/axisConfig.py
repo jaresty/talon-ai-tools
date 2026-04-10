@@ -308,17 +308,23 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "that could pass after an incomplete implementation is not specific enough and must be replaced or narrowed. Third, verification before first use: before an assertion governs for "
         "the first time, observe it fail when the behavior is absent — withhold or negate the behavior and confirm the assertion fails; the failure must be attributable to the behavior's "
         "absence, not to an unrelated condition; restore the behavior; an assertion that has only ever passed is unverified and may not govern. When no natural assertion is possible for "
-        "this task, state that explicitly and do not proceed. Self-certification is impossible: the assertion must be structurally separate from what it governs and must have existed "
-        "before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the verified assertion must exist before proceeding. Per-behavior sentinel "
-        "requirement: immediately before implementing each behavior, emit a visible sentinel of the form '🔴 Test for [behavior]: [exact failure output]' containing the actual failure "
-        "message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate. Layer boundary requirement: when a structural "
-        "entity is defined in one layer and consumed in another, each layer must have an independently-failing assertion for the structural entities it owns. A cross-layer integration "
-        "test does not substitute for same-layer coverage — both must exist. When the task touches multiple layers or systems, the assertion structure must include a governing artifact "
-        "per layer — declaring one layer's verification tool as the governing artifact while modifying another layer is a structural cheap path that silently excludes that layer from "
-        "assertion coverage and must be explicitly named and closed. Fourth, assertion type must match behavior type: the assertion must be the same kind as the behavior it governs. If "
-        "the behavior is executable — it runs and produces output — the assertion must also be executable and automated. A static check (text search, file existence, manual inspection) "
-        "cannot govern executable behavior because it observes structure, not runtime output, and cannot detect drift that occurs after the static check passes. An automated executable "
-        "assertion is required whenever the behavior under test produces output by running.",
+        "this task, state that explicitly and do not proceed with this step. No structural assertion (file existence, heading presence, identifier resolution, or similar) constitutes a "
+        "gate on a behavioral claim — these are necessary floor checks but do not permit proceeding with the step. Self-certification is impossible: the assertion must be structurally "
+        "separate from what it governs and must have existed before the behavior it covers. Naming or acknowledging a deviation does not discharge the gate — the verified assertion must "
+        "exist before proceeding. Per-behavior sentinel requirement: immediately before implementing each behavior, emit a visible sentinel of the form '🔴 Test for [behavior]: [exact "
+        "failure output]' containing the actual failure message — not a description or placeholder. A sentinel without a real failure message is invalid and does not satisfy the gate. "
+        "Layer boundary requirement: when a structural entity is defined in one layer and consumed in another, each layer must have an epistemically independent assertion for the "
+        "structural entities it owns — one that produces a meaningful FAIL when its layer's contract is violated, regardless of other layers' state; the failure must be attributable to "
+        "the contract violation, not to an unrelated condition. A cross-layer integration test does not substitute for same-layer coverage — both must exist. When the task touches "
+        "multiple layers or systems, the assertion structure must include a governing artifact per layer — declaring one layer's verification tool as the governing artifact while "
+        "modifying another layer is a structural cheap path that silently excludes that layer from assertion coverage and must be explicitly named and closed. Fourth, assertion type must "
+        "match behavior type: the assertion must be the same kind as the behavior it governs. If the behavior is executable — it runs and produces output — the assertion must also be "
+        "executable and automated. A static check (text search, file existence, manual inspection) cannot govern executable behavior because it observes structure, not runtime output, "
+        "and cannot detect drift that occurs after the static check passes. An automated executable assertion is required whenever the behavior under test produces output by running. An "
+        "assertion closes a gate only if it produces a binary PASS/FAIL outcome — a measurement or observation is not an assertion. When a governing tool for the domain (a compiler, type "
+        "checker, schema validator, proof assistant, or equivalent) structurally enforces the constraint as a precondition for operation, that tool's verification is the complete "
+        "executable assertion and redundant checks add no coverage; a change is structurally enforced only if no behavioral difference is possible between old and new implementations — "
+        "if behavior can differ, the full gate applies regardless of whether the change also has a structural component.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
@@ -1996,6 +2002,13 @@ USAGE_PATTERNS: list[dict] = [
             "scope": ["good"],
             "task": ["check"],
         },
+    },
+    {
+        "title": "TDD Enforcement (ground + gate + chain + atomic)",
+        "command": 'bar build make ground gate chain atomic --subject "..."',
+        "example": 'bar build make ground gate chain atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
+        "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each step anchored to its predecessor's actual output, one observable change at a time. ground derives the enforcement process; gate enforces assertion-before-behavior; chain enforces derivation continuity; atomic enforces one change per step. Multi-layer work: identify the dependency structure before sequencing — layers sharing an upstream dependency can proceed in parallel once that dependency is green; the protocol's linear ordering applies within each branch, not across independent branches. When asserting layer boundaries, verify epistemic independence: an assertion that passes vacuously on stale upstream input is not independent, even if it does not structurally call other layers. Distinguish structural impossibility (the assertion cannot be written) from pressure to stop early (a high-quality intermediate artifact creates a false sense of completion) — these have different fixes: testability improvement vs. requiring downstream assertions before the step closes.",
+        "tokens": {"method": ["ground", "gate", "chain", "atomic"], "task": ["make"]},
     },
     {
         "title": "Progressive Refinement Workflow",

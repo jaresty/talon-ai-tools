@@ -608,6 +608,7 @@
 				{/if}
 
 				{#if activeTab === 'task'}
+				<div class="task-tab-section">
 				<TokenSelector
 					axis="task"
 					tokens={getTaskTokens(grammar)}
@@ -620,6 +621,17 @@
 					activeTokensByAxis={selected}
 					axisDescription={grammar?.axes?.axis_descriptions?.['task']}
 				/>
+				<label class="input-group">
+					<span class="input-label">--addendum <span class="input-hint">task directive</span></span>
+					<textarea
+						class="input-area"
+						data-field="addendum"
+						rows="4"
+						placeholder="e.g. Focus on error handling, include examples…"
+						bind:value={addendum}
+					></textarea>
+				</label>
+				</div>
 				{/if}
 				{#each AXES as axis (axis)}
 					{#if activeTab === axis}
@@ -752,34 +764,23 @@
 					{/if}
 				</details>
 
+				<!-- Subject input — above rendered output -->
+				<label class="input-group">
+					<span class="input-label">--subject <span class="input-hint">source material</span></span>
+					<textarea
+						class="input-area"
+						data-field="subject"
+						rows="6"
+						placeholder="Paste code, document, or topic…"
+						bind:value={subject}
+					></textarea>
+				</label>
+
 				<!-- Rendered prompt -->
 				<details class="prompt-preview-section">
 					<summary class="prompt-preview-label">Rendered Prompt</summary>
 					<pre class="prompt-preview">{promptText}</pre>
 				</details>
-
-				<!-- Subject / addendum inputs -->
-				<div class="inputs">
-					<label class="input-group">
-						<span class="input-label">--subject <span class="input-hint">source material</span></span>
-						<textarea
-							class="input-area"
-							rows="6"
-							placeholder="Paste code, document, or topic…"
-							bind:value={subject}
-						></textarea>
-					</label>
-
-					<label class="input-group">
-						<span class="input-label">--addendum <span class="input-hint">task directive</span></span>
-						<textarea
-							class="input-area"
-							rows="4"
-							placeholder="e.g. Focus on error handling, include examples…"
-							bind:value={addendum}
-						></textarea>
-					</label>
-				</div>
 
 				<LLMPanel {command} {subject} {addendum} />
 			</section>

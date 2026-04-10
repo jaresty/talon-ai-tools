@@ -22,12 +22,14 @@ vi.mock('$lib/grammar.js', () => ({
 		reference_key: { task: '', addendum: '', constraints: '', constraints_axes: {}, persona: '', subject: '' },
 		execution_reminder: '',
 		planning_directive: '',
-		meta_interpretation_guidance: ''
+		meta_interpretation_guidance: '',
+		subject_framing: ''
 	}),
 	getAxisTokens: vi.fn().mockReturnValue([]),
 	getTaskTokens: vi.fn().mockReturnValue([{ token: 'show', label: 'Explain' }]),
 	getPersonaPresets: vi.fn().mockReturnValue([]),
 	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
+	getPersonaAxisTokensMeta: vi.fn().mockReturnValue([]),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
@@ -42,7 +44,11 @@ vi.mock('$lib/incompatibilities.js', () => ({
 	findConflicts: vi.fn().mockReturnValue([])
 }));
 
-describe('Page — Mobile Expanded Textareas', () => {
+vi.mock('$lib/renderPrompt.js', () => ({
+	renderPrompt: vi.fn().mockReturnValue('MOCK RENDERED PROMPT TEXT')
+}));
+
+describe('Page — subject/addendum placement', () => {
 	let container: HTMLDivElement;
 
 	beforeEach(() => {
@@ -51,14 +57,29 @@ describe('Page — Mobile Expanded Textareas', () => {
 		document.body.appendChild(container);
 	});
 
-	it('has subject textarea with adequate rows', async () => {
+	it('addendum textarea is inside the task tab section', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
-
 		await new Promise(r => setTimeout(r, 100));
 
-		const subjectTextarea = container.querySelector('textarea[data-field="subject"]') as HTMLTextAreaElement;
+		const taskTab = container.querySelector('.task-tab-section');
+		expect(taskTab).toBeTruthy();
+		const addendumInTask = taskTab!.querySelector('textarea[data-field="addendum"]');
+		expect(addendumInTask).toBeTruthy();
+	});
+
+	it('subject textarea appears before the rendered prompt', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		const subjectTextarea = container.querySelector('textarea[data-field="subject"]');
+		const renderedPrompt = container.querySelector('.prompt-preview-section');
 		expect(subjectTextarea).toBeTruthy();
-		expect(subjectTextarea.rows).toBeGreaterThanOrEqual(6);
+		expect(renderedPrompt).toBeTruthy();
+
+		const position = subjectTextarea!.compareDocumentPosition(renderedPrompt!);
+		// DOCUMENT_POSITION_FOLLOWING = 4: renderedPrompt comes after subjectTextarea
+		expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 	});
 });

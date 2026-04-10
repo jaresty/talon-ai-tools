@@ -700,21 +700,22 @@
 						</tbody>
 					</table>
 				</details>
+
+				<!-- Subject input — inside selector-panel so it stays in column 1 on desktop
+				     and is always visible on mobile without toggling the output panel -->
+				<label class="input-group">
+					<span class="input-label">--subject <span class="input-hint">source material</span></span>
+					<textarea
+						class="input-area"
+						data-field="subject"
+						rows="6"
+						placeholder="Paste code, document, or topic…"
+						bind:value={subject}
+					></textarea>
+				</label>
 			</section>
 
-			<!-- Subject input — always visible, outside toggled output panel -->
-			<label class="input-group">
-				<span class="input-label">--subject <span class="input-hint">source material</span></span>
-				<textarea
-					class="input-area"
-					data-field="subject"
-					rows="6"
-					placeholder="Paste code, document, or topic…"
-					bind:value={subject}
-				></textarea>
-			</label>
-
-			<button class="preview-toggle" onclick={togglePreview}>
+		<button class="preview-toggle" onclick={togglePreview}>
 				{showPreview ? 'Hide Output' : 'Show Output'}
 			</button>
 

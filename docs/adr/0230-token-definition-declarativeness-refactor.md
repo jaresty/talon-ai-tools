@@ -180,25 +180,37 @@ All new text validated. One structural observation (agent 7: cheap paths placed 
 
 ---
 
-## Retest Required
+## Retest Results (2026-04-10) — Run 3 (fixture repo; chain nominal-vs-substantive addition; isolated agents)
 
-The definition changes are significant enough to warrant a new stress test. Key questions for the retest:
+Third 7-agent stress test. Changes since run 2: (1) chain nominal-vs-substantive gap added — "Reproducing the predecessor output without addressing what it specifically implies is also a violation"; (2) agents worked in isolated fixture repos (minimal Go package with real functions matching task subjects) to eliminate CLAUDE.md prompt contamination; (3) Bash permission granted to subagents.
 
-1. **gate rewrite — "no natural assertion" floor principle**: does the declarative floor/ceiling principle produce the correct behavior (structural floor + manual verification protocol declared) without the explicit "do not proceed" instruction?
-2. **gate rewrite — sentinel removal**: does removing the 🔴 sentinel format cause agents to skip making failing output visible, or do they derive an equivalent mechanism from the principle?
-3. **atomic reproduction removal**: when using atomic without chain, do agents still anchor to the governing output before implementing — or does removing the reproduction gate cause drift?
-4. **ground cheap-path removal**: does removing the prescribed derivation form cause ground to produce weaker enforcement processes, or do agents derive equivalent structure from the principle?
-5. **composition prompt declarativeness**: does the new ground+gate composition (constraint framing vs. first-step framing) produce equivalent behavior?
+### Agent scores
 
-### Suggested retest task coverage
+| Agent | Task type | Self-score | Key finding |
+|-------|-----------|-----------|-------------|
+| Refactor | Rename function | 5/5 | Gate forcing function: broken intermediate state is a required artifact, not an obstacle to avoid |
+| Delete | Remove function + call sites | 4/5 | Chain caught cascade import cleanup from actual compiler output; deletion tasks: gate manifests as "verify thing exists before deleting" |
+| Performance | Allocation reduction | 4/5 | Ground caught pre-applied working-tree change; reset to baseline rather than accepting apparent completion |
+| Multi-layer | TokenVersion through 3 layers | 4.5/5 | Gate/chain interaction most valuable in multi-layer: each layer's causal contribution independently visible |
+| Prose | CONTRIBUTING.md section | 4/5 | Atomic/manual-verification tension: no executable check between subsection edits; correctly declared as structural limitation |
+| Prioritization | Feature ranking | 4/5 | Rubric declared before scoring; atomic assumes falsifiable external artifact — irreducible gap in evaluation tasks |
+| Process design | Code review process | 4/5 | Gate/atomic tension on behavioral assertions: "no bypass exists" is naturally multi-instance under one G4 assertion |
 
-Same 7 tasks from ADR-0229 retest, same scoring rubric. Focus questions on:
-- Can the agent reconstruct the sentinel behavior from first principles without being told?
-- Can the agent reconstruct the cheap-path analysis from first principles without being told?
-- Does the "no natural assertion" floor/ceiling principle produce complete behavior?
-- Does the atomic definition (without reproduction gate) still produce anchored step execution when chain is absent?
+Mean: 4.21/5. Higher than run 2; agents worked against real executable subjects (Go fixture) for code tasks, producing tighter chain anchoring.
 
-**Status:** All 5 probes validated (2026-04-10). Probe 4 validated in run 2 with correct binary. Gate additions (invariant-based assertions, exploratory/confirmatory distinction) also validated in run 2.
+### Key findings
+
+**Chain nominal-vs-substantive addition** — not directly stress-tested as a probe, but the deletion agent noted its application: "the chain token's value was demonstrated concretely — the external mutation of render_test.go between my first read and first write would have been invisible without the tool error forcing a re-read." The addition was implicitly active.
+
+**Ground appearance-reality gap (performance agent)** — Agent discovered working tree had already been modified to the target state before work began. Correctly identified this as an appearance-reality gap, checked git history, reset to HEAD, and restarted from the correct baseline. Ground protocol detected and recovered from a pre-existing shortcut condition.
+
+**Atomic structural tensions** — Two independent agents surfaced the same structural observation: atomic assumes a falsifiable external artifact. In evaluation tasks (prioritization), the scoring artifact is self-produced. In prose tasks, no executable check exists between subsection edits. Both agents correctly identified this as an irreducible limitation and declared it rather than hiding it. No definition change warranted — these are correctly derivable from the principle.
+
+**Gate/atomic tension on behavioral assertions** — Process design agent noted that G4 ("no bypass exists") is a single behavioral assertion with multiple test cases (bypass scenarios). Strictly atomic would require one scenario per step. Agent correctly batched them under one assertion. The tokens do not prescribe the decomposition level for behavioral assertions; this is correctly left to the engineer.
+
+### No definition fix required
+
+All findings are correct derivations from existing principles. Agents identified structural tensions and handled them appropriately without additional guidance. No gaps were observed that existing text fails to cover.
 
 ---
 
@@ -206,6 +218,7 @@ Same 7 tasks from ADR-0229 retest, same scoring rubric. Focus questions on:
 
 - [x] Retest: run 7-agent stress test against updated definitions
 - [x] Ground-only retest: validated in run 2 — cheap-path enumeration derives from principle, not prescription
+- [x] Run 3: fixture repo + isolated agents + chain nominal-vs-substantive — mean 4.21/5, no definition changes warranted
 - [ ] Evaluate: does gate need an explicit call to produce visible failing output before implementation, or is this derivable from "verified to fail" + chain's reproduction requirement?
 - [ ] Evaluate: chain's "predecessor" ambiguity — should "specific predecessor output" be made more precise for multi-step nested tasks?
 - [ ] Evaluate: atomic's "any verification" ambiguity in multi-layer systems — should this be specified as "the verification layer this step operates in"?

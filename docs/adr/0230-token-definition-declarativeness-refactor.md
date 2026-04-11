@@ -214,6 +214,24 @@ All findings are correct derivations from existing principles. Agents identified
 
 ---
 
+## Targeted Retest (2026-04-10) — Chain non-adjacent predecessor + Atomic verification scope
+
+Two-agent targeted retest validating the chain and atomic definition additions from open items 2 and 3.
+
+### Chain retest (non-adjacent predecessor)
+
+Score: **5/5**. The addition "When the governing artifact for a step was produced by a non-adjacent predecessor rather than the immediately prior step, name that predecessor explicitly before reproducing its output — the immediately prior step is not automatically the relevant predecessor" was sufficient. Agent correctly named Step 1 as governing predecessor for Step 3 without additional prompting.
+
+Key finding: the token text names the rule; the task must identify which predecessor governs when it is not obvious from the change type. This is the correct division of responsibility — the definition cannot know the task structure.
+
+### Atomic retest (verification scope)
+
+Score: **5/5**. The addition "The governing artifact must be the verification layer with scope to detect a failure if this step's change is incorrect — running a layer that cannot see the specific files, call sites, or concerns this step touches does not satisfy the governing artifact requirement even if that layer passes" resolved the ambiguity completely. Agent immediately selected `go test` over `go build` for steps with call sites in test files, reasoning that `go build` structurally cannot see `_test.go` files. The exclusion is mechanical, not a judgment call — the correct layer selection follows necessarily from the definition.
+
+Both probes validated. No further changes required.
+
+---
+
 ## Open Items
 
 - [x] Retest: run 7-agent stress test against updated definitions

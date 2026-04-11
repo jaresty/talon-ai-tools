@@ -90,7 +90,7 @@ Two tests in `composition_test.go` locked in the previous definition structure a
 
 ---
 
-## Retest Results (2026-04-10)
+## Retest Results (2026-04-10) — Run 1 (stale ground binary)
 
 7-agent stress test run against updated definitions. Same task types as ADR-0229.
 
@@ -142,6 +142,44 @@ Multi-layer agent found the composition prompt non-redundant: it provided parall
 
 ---
 
+## Retest Results (2026-04-10) — Run 2 (correct binary; also tests gate additions)
+
+Second 7-agent stress test. Validated probe 4 (ground cheap-path) with correct binary. Also tested two gate additions made between runs: invariant-based assertion form (for well-defined domains) and exploratory/confirmatory assertion-type corollary.
+
+### Agent scores
+
+| Agent | Task type | Self-score | Key finding |
+|-------|-----------|-----------|-------------|
+| Refactor | Rename function | 4/5 | Spontaneous invariant on A1 (all files); compiler scope/limits correctly bounded |
+| Delete | Remove function + call sites | 3/5 | Spontaneous invariant on absence assertion; honest deduction (function doesn't exist) |
+| Prose | Write CONTRIBUTING.md section | 4/5 | Invariant across all 4 tokens against canonical defs; floor + manual protocol |
+| Performance | Buffer pool benchmark | 3/5 | Invariant with domain boundary (buffer capacity); prospective threshold; honest (function doesn't exist) |
+| Multi-layer | token_version through 5 layers | 4/5 | DAG correct; 3-copy invariant; vacuous pass risk on L4 identified |
+| Prioritization | Non-code evaluation task | 4/5 | Exploratory/confirmatory distinction applied correctly without prompting |
+| Process design | Non-code design task | 4/5 | PIR correctly identified as exploratory; observability vs outcome distinction applied |
+
+Mean: 3.71/5. Lower than run 1 because agents self-penalized more harshly for hypothetical subjects and unexecuted protocols — which is appropriate stricter scoring.
+
+### Probe question findings
+
+**4. Ground cheap-path removal** ✅ VALIDATED (run 2)
+
+All agents enumerated cheap paths from the principle, not from prescription. Agent 6 derived it cleanly: "the cheap path is to produce a confident-sounding ranking with post-hoc rationale" — from the optimizer assumption, not from being told to enumerate cheap paths. Agent 7 enumerated 5 cheap paths with detection mechanisms per path. Probe 4 is validated.
+
+**Invariant-based assertion form (new gate text)** ✅ VALIDATED
+
+Invariant-based assertions appeared spontaneously in every agent across all task types without being told to use them. Key examples: agent 1 stated the A1 grep scan as a universal quantifier over all source files; agent 2 applied it to the absence assertion (domain = all repo files, invariant = zero occurrences); agent 4 identified the domain boundary (buffer capacity) as the critical partition; agent 5 wrote a 3-copy consistency invariant for the JSON layer; agent 6 applied invariants to 3 of 5 evaluation criteria.
+
+**Exploratory/confirmatory distinction (new gate text)** ✅ VALIDATED
+
+Agents 6 and 7 both applied the distinction correctly without prompting. Agent 6: "this task is evaluative, not exploratory — outcome assertions are the correct type here." Agent 7 identified post-incident review as exploratory and switched to observability assertions: "an outcome assertion would close possibility space before exploration occurs and produce confirmation dynamics." The new text produced the correct assertion-type selection in both cases.
+
+### No definition fix required
+
+All new text validated. One structural observation (agent 7: cheap paths placed in the completion check rather than per-assertion block) is a usage pattern derivable from the principle — not a definition gap. No changes to gate or ground are warranted from this retest.
+
+---
+
 ## Retest Required
 
 The definition changes are significant enough to warrant a new stress test. Key questions for the retest:
@@ -160,14 +198,14 @@ Same 7 tasks from ADR-0229 retest, same scoring rubric. Focus questions on:
 - Does the "no natural assertion" floor/ceiling principle produce complete behavior?
 - Does the atomic definition (without reproduction gate) still produce anchored step execution when chain is absent?
 
-**Status:** Probes 1, 2, 3, 5 validated (2026-04-10). Probe 4 invalidated by stale binary — targeted ground-only retest pending.
+**Status:** All 5 probes validated (2026-04-10). Probe 4 validated in run 2 with correct binary. Gate additions (invariant-based assertions, exploratory/confirmatory distinction) also validated in run 2.
 
 ---
 
 ## Open Items
 
 - [x] Retest: run 7-agent stress test against updated definitions
-- [ ] Ground-only retest: confirm cheap-path enumeration results from new principle (not old prescription) — binary must show "appearance-reality gap costly to maintain" in ground text
+- [x] Ground-only retest: validated in run 2 — cheap-path enumeration derives from principle, not prescription
 - [ ] Evaluate: does gate need an explicit call to produce visible failing output before implementation, or is this derivable from "verified to fail" + chain's reproduction requirement?
 - [ ] Evaluate: chain's "predecessor" ambiguity — should "specific predecessor output" be made more precise for multi-step nested tasks?
 - [ ] Evaluate: atomic's "any verification" ambiguity in multi-layer systems — should this be specified as "the verification layer this step operates in"?

@@ -240,7 +240,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "literally: when literal and semantic readings diverge, choose the interpretation that produces the smallest change that would shift the governing output. The implementation "
         "target is the minimum that shifts the governing output to a different state — not the minimum that satisfies the governing artifact. A step is the smallest change that could "
         "alter the result of any verification — compilation, static analysis, or test execution; changes that address different verification layers are always separate steps even when "
-        "they feel like parts of the same fix. Implementing beyond the current governing output is a violation regardless of how many other failures exist.",
+        "they feel like parts of the same fix. The governing artifact must be the verification layer with scope to detect a failure if this step's change is incorrect — running a layer "
+        "that cannot see the specific files, call sites, or concerns this step touches does not satisfy the governing artifact requirement even if that layer passes. Implementing "
+        "beyond the current governing output is a violation regardless of how many other failures exist.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -258,7 +260,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact "
         "content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Reproducing the predecessor output without "
         "addressing what it specifically implies is also a violation — a step that quotes the prior output and then proceeds independently of its content has satisfied chain in form "
-        "only. Auditability is a consequence of this structure, not a separate standard to satisfy.",
+        "only. When the governing artifact for a step was produced by a non-adjacent predecessor rather than the immediately prior step, name that predecessor explicitly before "
+        "reproducing its output — the immediately prior step is not automatically the relevant predecessor. Auditability is a consequence of this structure, not a separate standard to "
+        "satisfy.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",

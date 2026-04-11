@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 # bootstrap-stress-fixture.sh
 # Creates a minimal Go fixture repo for bar stress tests.
-# Usage: scripts/bootstrap-stress-fixture.sh [target-dir]
-# Default target: /tmp/bar-stress-fixture
+# Usage: scripts/bootstrap-stress-fixture.sh <target-dir>
+# Each stress-test agent should get its own unique path to avoid collisions.
+# Example: scripts/bootstrap-stress-fixture.sh /tmp/bar-stress-fixture-agent1
 
 set -euo pipefail
 
-TARGET="${1:-/tmp/bar-stress-fixture}"
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <target-dir>" >&2
+  echo "Each agent needs its own unique path, e.g. /tmp/bar-stress-fixture-\$(uuidgen)" >&2
+  exit 1
+fi
+
+TARGET="$1"
 
 if [ -d "$TARGET" ]; then
   echo "Removing existing fixture at $TARGET"

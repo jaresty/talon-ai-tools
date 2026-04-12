@@ -312,11 +312,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "contract is violated, regardless of the state of other layers; an assertion that passes vacuously on stale upstream input does not satisfy this requirement. Before deriving the "
         "process, classify each assertion in the task against these principles: state which principle governs it, whether it has a natural FAIL state, and if it falls under Principle 4, "
         "name the perturbation required to witness it fail. This classification is a required precondition — no process derivation may begin until every assertion has been classified. "
-        "Then derive the process these six principles require and follow it. The derivation must be visible. The following cannot be derived without further specification. When no "
-        "behavioral assertion is possible, structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification "
-        "protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the "
-        "task is exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction "
-        "before exploration has occurred; an outcome assertion on an exploratory task closes possibility space before the protocol begins.",
+        "For any assertion classified as Principle 4: perturbation must be executed and its FAIL output reproduced before implementation of the target behavior begins — the "
+        "classification alone does not satisfy gate closure; the reproduced FAIL output from the perturbation run is the governing artifact that opens implementation. Then derive the "
+        "process these six principles require and follow it. The derivation must be visible. The following cannot be derived without further specification. When no behavioral assertion "
+        "is possible, structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification protocol must be "
+        "declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is "
+        "exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before "
+        "exploration has occurred; an outcome assertion on an exploratory task closes possibility space before the protocol begins.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

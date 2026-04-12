@@ -187,7 +187,8 @@ EXECUTION_REMINDER: str = """Execute the TASK specified above. All reasoning, pl
 
 PLANNING_DIRECTIVE: str = (
     "Your FIRST message must contain ONLY the following sections — no tool calls, no task work, no file reads. "
-    "Write all four sections as text now. Task work begins only in your SECOND message.\n\n"
+    "Write all four sections as text now. "
+    "After writing section 4, make your first tool call immediately and proceed with task work.\n\n"
     "SECTION 1 — TOKEN DERIVATIONS (one per METHOD token):\n"
     "For each METHOD token, output a block with this exact structure:\n"
     "  ## Derive: <token-name> <kanji>\n"
@@ -209,8 +210,8 @@ PLANNING_DIRECTIVE: str = (
     "and what would be different if any single token were absent.>\n\n"
     "SECTION 4 — READY TO PROCEED:\n"
     "Write: 'Derivations complete. Beginning task work.' "
-    "Then stop. Task work begins in your next message.\n\n"
-    "After your first message is complete, proceed with task work in subsequent messages."
+    "Then proceed immediately — if the task requires tool calls, make your first tool call now; "
+    "if no tool calls are needed, write your response now. Do not pause or wait."
 )
 
 META_INTERPRETATION_GUIDANCE: str = (

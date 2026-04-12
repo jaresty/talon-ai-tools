@@ -187,8 +187,7 @@ EXECUTION_REMINDER: str = """Execute the TASK specified above. All reasoning, pl
 
 PLANNING_DIRECTIVE: str = (
     "Your FIRST message must contain ONLY the following sections — no tool calls, no task work, no file reads. "
-    "Write all four sections as text now. "
-    "After writing section 4, make your first tool call immediately and proceed with task work.\n\n"
+    "Write all four sections as text now.\n\n"
     "SECTION 1 — TOKEN DERIVATIONS (one per METHOD token):\n"
     "For each METHOD token, output a block with this exact structure:\n"
     "  ## Derive: <token-name> <kanji>\n"

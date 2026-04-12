@@ -37,7 +37,14 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "gate + chain: for implementation steps, the governing output is the only valid "
             "predecessor artifact. A prior implementation artifact, compile result, or prose "
             "description does not satisfy chain's reproduction requirement for an "
-            "implementation step — only a reproduced governing output does."
+            "implementation step — only a reproduced governing output does. Any step that makes "
+            "a claim about test behavior is an implementation step for chain's purposes — its "
+            "predecessor is actual test output, not reasoning about what the test would do. "
+            "Coverage table entries satisfy both gate and chain simultaneously: gate requires a "
+            "FAIL row per assertion; chain requires that the FAIL output line in each row is "
+            "reproduced from actual tool output in the session transcript — not paraphrased, "
+            "summarized, or fabricated. A fabricated FAIL line in the coverage table is a chain "
+            "violation that blocks gate closure, same as any other chain violation."
         ),
     },
     {

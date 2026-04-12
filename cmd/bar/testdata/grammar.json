@@ -151,6 +151,7 @@
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "enforce": "The response identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip. When a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates subsequent steps, requiring actual output as a predecessor for the next step. Each step cannot proceed without the real artifact.",
         "enter": "The response enhances the task by moving into the direction of an incoming force, argument, or structure — joining its momentum rather than opposing it — and redirecting the outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
@@ -369,6 +370,7 @@
         "domains",
         "drift",
         "effects",
+        "enforce",
         "enter",
         "experimental",
         "field",
@@ -584,6 +586,7 @@
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
+        "enforce": "Convert procedural to structural dependencies",
         "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
@@ -795,6 +798,7 @@
         "domains": "領",
         "drift": "漂",
         "effects": "効",
+        "enforce": "拘",
         "enter": "入",
         "experimental": "実",
         "field": "場",
@@ -917,6 +921,7 @@
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
+        "enforce": "Structural",
         "enter": "Structural",
         "experimental": "Exploration",
         "field": "Actor-centered",
@@ -1131,6 +1136,7 @@
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
+        "enforce": "Convert procedural to structural dependencies",
         "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
         "field": "Structural field effects",
@@ -3574,6 +3580,27 @@
             "what follows downstream"
           ],
           "definition": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences."
+        },
+        "enforce": {
+          "distinctions": [
+            {
+              "note": "enforce = convert procedural to structural; gate = evaluation before implementation",
+              "token": "gate"
+            },
+            {
+              "note": "enforce = structural dependencies; drift = identify underenforced conclusions",
+              "token": "drift"
+            }
+          ],
+          "heuristics": [
+            "where requirements risk description-only satisfaction",
+            "make execution impossible to skip",
+            "convert procedural to structural dependencies",
+            "requirements that can be satisfied by describing what to do",
+            "gate requirements to actual output reproduction",
+            "classification + perturbation + reproduction chain"
+          ],
+          "definition": "The response identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip. When a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates subsequent steps, requiring actual output as a predecessor for the next step. Each step cannot proceed without the real artifact."
         },
         "enter": {
           "distinctions": [
@@ -7636,6 +7663,7 @@
         "domains": "domains",
         "drift": "drift",
         "effects": "effects",
+        "enforce": "enforce",
         "enter": "enter",
         "experimental": "experimental",
         "field": "field",
@@ -7881,6 +7909,7 @@
         "method=domains": "method-domains",
         "method=drift": "method-drift",
         "method=effects": "method-effects",
+        "method=enforce": "method-enforce",
         "method=enter": "method-enter",
         "method=experimental": "method-experimental",
         "method=field": "method-field",
@@ -8227,6 +8256,7 @@
       "draw": "draw",
       "drift": "drift",
       "effects": "effects",
+      "enforce": "enforce",
       "enter": "enter",
       "experimental": "experimental",
       "facilitate": "facilitate",
@@ -8363,6 +8393,7 @@
       "method=domains": "method-domains",
       "method=drift": "method-drift",
       "method=effects": "method-effects",
+      "method=enforce": "method-enforce",
       "method=enter": "method-enter",
       "method=experimental": "method-experimental",
       "method=field": "method-field",
@@ -9639,11 +9670,11 @@
     }
   ],
   "checksums": {
-    "axes": "501278caab2ef7cf4a69361446101d7674bb98980c706b57cd7544a18c002cc0",
+    "axes": "83828d6ce45d2b6ed6d48fad619f12d91631bb514806f446371a3a5b7370328d",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",
-    "slugs": "53260f8046b296ff5f75b4f02545e713903d953577d44a9d33c49d25c30861ee",
+    "slugs": "7dce9606fd7128174782e0acf263031cc191b511ce8591608abe455bc74d2814",
     "patterns": "fa6d09fdf6a9103d582dfd821d956fa5214dae4439f6e777cf99c63cf683f06f",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

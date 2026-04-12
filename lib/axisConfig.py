@@ -286,6 +286,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
+        "enforce": "The response identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip. When "
+        "a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates subsequent steps, requiring actual "
+        "output as a predecessor for the next step. Each step cannot proceed without the real artifact.",
         "enter": "The response enhances the task by moving into the direction of an incoming force, argument, or structure — joining its momentum rather than opposing it — and redirecting the "
         "outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
@@ -602,6 +605,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
+        "enforce": "Convert procedural to structural dependencies",
         "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
         "field": "Model interaction as a shared structured medium",
@@ -814,6 +818,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "domains": "領",
         "drift": "漂",
         "effects": "効",
+        "enforce": "拘",
         "enter": "入",
         "experimental": "実",
         "field": "場",
@@ -1003,6 +1008,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
+        "enforce": "Structural",
         "enter": "Structural",
         "experimental": "Exploration",
         "field": "Actor-centered",
@@ -1227,6 +1233,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
+        "enforce": "Convert procedural to structural dependencies",
         "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
         "field": "Structural field effects",
@@ -4489,6 +4496,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "unintended consequences",
                 "how does this propagate",
                 "what follows downstream",
+            ],
+        },
+        "enforce": {
+            "definition": "Identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip.",
+            "distinctions": [
+                {
+                    "note": "enforce = convert procedural to structural; gate = evaluation before implementation",
+                    "token": "gate",
+                },
+                {
+                    "note": "enforce = structural dependencies; drift = identify underenforced conclusions",
+                    "token": "drift",
+                },
+            ],
+            "heuristics": [
+                "where requirements risk description-only satisfaction",
+                "make execution impossible to skip",
+                "convert procedural to structural dependencies",
+                "requirements that can be satisfied by describing what to do",
+                "gate requirements to actual output reproduction",
+                "classification + perturbation + reproduction chain",
             ],
         },
         "enter": {

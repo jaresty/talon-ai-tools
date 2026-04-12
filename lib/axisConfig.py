@@ -4499,7 +4499,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "enforce": {
-            "definition": "Identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip.",
             "distinctions": [
                 {
                     "note": "enforce = convert procedural to structural; gate = evaluation before implementation",

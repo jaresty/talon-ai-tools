@@ -34,22 +34,15 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "gate+chain",
         "tokens": ["gate", "chain"],
         "prose": (
-            "gate + chain: gate requires a FAIL observation per assertion before any "
-            "implementation step proceeds; chain requires each implementation step reproduce "
-            "its predecessor's actual output verbatim. Derive what these two requirements "
-            "together demand of any step that involves test behavior — including what "
-            "constitutes a valid predecessor, what the coverage table must contain, and what "
-            "makes a coverage table entry a violation. The derivation must be visible. "
-            "For any assertion classified as Principle 4, the perturbation FAIL output is the "
-            "chain predecessor for the step that makes that assertion pass — this perturbation "
-            "must be executed after the test exists and before any implementation that would "
-            "cause that assertion to pass. A compilation error or earlier test failure is not "
-            "a valid substitute: the perturbation must run against a state where the assertion "
-            "is reachable (the test compiles and runs) but the behavior is deliberately wrong. "
-            "A step that makes a Principle 4 assertion pass without first reproducing its "
-            "perturbation FAIL output has violated chain, not merely gate. "
-            "Note: derivation blocks produced by the planning directive are not implementation "
-            "steps and are not governed by this rule."
+            "gate + chain: for every assertion with Natural FAIL state: no, the FAIL tool "
+            "result produced in gate's Phase 2 is the chain predecessor for the implementation "
+            "step that makes that assertion pass. Chain's reproduction requirement gates that "
+            "implementation step on this artifact — the step cannot begin without the tool "
+            "result in context. If the tool result is not yet in context when the implementation "
+            "step is reached, chain requires making the tool call now, not producing text that "
+            "resembles the expected output. "
+            "Note: classification and derivation steps are not implementation steps and are "
+            "not governed by this rule."
         ),
     },
     {

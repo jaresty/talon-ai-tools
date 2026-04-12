@@ -242,7 +242,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "alter the result of any verification — compilation, static analysis, or test execution; changes that address different verification layers are always separate steps even when "
         "they feel like parts of the same fix. The governing artifact must be the verification layer with scope to detect a failure if this step's change is incorrect — running a layer "
         "that cannot see the specific files, call sites, or concerns this step touches does not satisfy the governing artifact requirement even if that layer passes. Implementing "
-        "beyond the current governing output is a violation regardless of how many other failures exist.",
+        "beyond the current governing output is a violation regardless of how many other failures exist. Analysis and classification steps have a text artifact as their governing "
+        "artifact — a complete classification block or derivation section; no tool call is required to open or close these steps. Implementation steps have a FAIL tool result as their "
+        "governing artifact. These are distinct step types with distinct governing artifacts — analysis steps may precede the first tool call without violating atomic.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -261,8 +263,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Reproducing the predecessor output without "
         "addressing what it specifically implies is also a violation — a step that quotes the prior output and then proceeds independently of its content has satisfied chain in form "
         "only. When the governing artifact for a step was produced by a non-adjacent predecessor rather than the immediately prior step, name that predecessor explicitly before "
-        "reproducing its output — the immediately prior step is not automatically the relevant predecessor. Auditability is a consequence of this structure, not a separate standard to "
-        "satisfy.",
+        "reproducing its output — the immediately prior step is not automatically the relevant predecessor. When the required predecessor has not yet been produced because the tool call "
+        "that would produce it has not been made, the required action is to make that tool call now — not to produce text that resembles the expected output. Chain does not authorize "
+        "proceeding without a predecessor in context; it authorizes proceeding only after the predecessor exists as a real tool result. Auditability is a consequence of this structure, "
+        "not a separate standard to satisfy.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",
@@ -301,30 +305,24 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "gate": "The response enforces six principles and derives the required process from them. Principle 1: a passing observation is invisible — it carries zero coverage information; only a "
-        "FAIL observation establishes that an assertion can detect the absence of its behavior. Principle 2: coverage is per-assertion, not per-test — a test that FAILs establishes "
-        "coverage only for the assertions that fired and produced FAIL output; an assertion in the same test that was not reached or that passed carries zero coverage regardless of the "
-        "test's overall result. Principle 3: an observation requires executing the test — reasoning about what a test would produce is not an observation and cannot substitute for one. "
-        "Principle 4: some assertions have no natural FAIL state — an assertion that checks the behavior does NOT produce X passes when the behavior is absent (no X is produced, so the "
-        "absence-check trivially passes), meaning the behavior's absence is indistinguishable from the behavior being correctly absent; such an assertion can only appear in a FAIL result "
-        "by running it against a state where the behavior exists but is wrong; such an assertion cannot satisfy gate closure without that intervention — the required intervention is "
-        "perturbation: temporarily introduce incorrect behavior, observe the FAIL, then restore. Principle 5: Assertion type must match behavior type — a static check cannot govern "
-        "executable behavior; if the domain's governing tool (compiler, type checker, schema validator, or equivalent) structurally enforces a constraint as a precondition for operation, "
-        "that tool's output is the complete assertion and witnessing it fail is sufficient; adding a text-search or grep check on top of a compiler-enforced constraint adds no coverage. "
-        "Principle 6: in multi-layer work, each layer must have an independently-failing assertion — an assertion is independent only if it produces a meaningful FAIL when its layer's "
-        "contract is violated, regardless of the state of other layers; an assertion that passes vacuously on stale upstream input does not satisfy this requirement. Before deriving the "
-        "process, produce a classification block for each assertion in the task using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | "
-        "Natural FAIL state: <yes, or no — answer no if the assertion checks that something does NOT occur, because such assertions pass trivially when the behavior is absent> | "
-        "Perturbation: <if Natural FAIL state is no, describe the specific incorrect behavior to temporarily introduce to force a FAIL; otherwise n/a>. Every assertion must have its own "
-        "classification block — describing Principle 4 in general without applying it to a specific assertion does not satisfy this requirement. This classification is a required "
-        "precondition — no process derivation may begin until every assertion has its own block. For any assertion whose block names a perturbation: execute that perturbation, run the "
-        "test, and reproduce the FAIL output before implementing the target behavior — the classification block alone does not satisfy gate closure; the reproduced FAIL output from the "
-        "perturbation run is the governing artifact that opens implementation. Then derive the process these six principles require and follow it. The derivation must be visible. The "
-        "following cannot be derived without further specification. When no behavioral assertion is possible, structural floor assertions (file existence, path resolution, identifier "
-        "presence) are required but do not satisfy gate — a manual verification protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined "
-        "in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — claims about what can be "
-        "detected or measured — not outcome assertions that encode a direction before exploration has occurred; an outcome assertion on an exploratory task closes possibility space "
-        "before the protocol begins.",
+        "gate": "The response enforces six principles. Principle 1: a passing observation is invisible — only a FAIL observation establishes that an assertion can detect the absence of its "
+        "behavior. Principle 2: coverage is per-assertion, not per-test — a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not "
+        "reached or that passed carry zero coverage. Principle 3: an observation requires executing the test — reasoning about what a test would produce is not an observation. Principle "
+        "4: some assertions have no natural FAIL state — an assertion checking that behavior does NOT produce X passes trivially when the behavior is absent, so the behavior's absence is "
+        "indistinguishable from the behavior being correctly absent; such an assertion requires a coverage artifact produced by running it against a state where the behavior exists but "
+        "is deliberately wrong (perturbation). Principle 5: Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint "
+        "needs no additional assertion. Principle 6: in multi-layer work, each layer must have an independently-failing assertion that produces a meaningful FAIL when its own contract is "
+        "violated, regardless of other layers. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using "
+        "this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — answer no if the assertion checks that "
+        "something does NOT occur, because such assertions pass trivially when the behavior is absent> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect "
+        "behavior to introduce to produce a FAIL tool result; otherwise n/a>. Every assertion must have its own block. Phase 1 is complete when every assertion has a block. PHASE 2 — "
+        "coverage artifact (tool result required before implementation): for each assertion with Natural FAIL state: no, a FAIL tool result for that assertion must exist in the "
+        "transcript before any implementation step for that assertion proceeds. The classification block is not the coverage artifact — the tool result is. Phase 2 is complete when every "
+        "no-FAIL-state assertion has a FAIL tool result in the transcript. Then derive the process these six principles require and follow it. The derivation must be visible. When no "
+        "behavioral assertion is possible, structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification "
+        "protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the "
+        "task is exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction "
+        "before exploration has occurred.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
@@ -334,14 +332,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it "
         "will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred "
         "without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task whose "
-        "constraints make the appearance-reality gap costly to maintain. Prefer structural enforcement over procedural enforcement: a procedural constraint names what must happen and "
-        "can be satisfied by describing it; a structural constraint routes a later step through the output of an earlier step so that skipping the earlier step makes the later step "
-        "impossible or produces a detectable failure — not merely a violation of instructions. When designing constraints, ask: does this constraint make skipping it structurally "
-        "impossible, or only prohibited? The completion check is the final required step of any enforcement process: return to the original stated intent, and for each item, produce "
-        "visible evidence that the behavior satisfies it. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any "
-        "reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it "
-        "— only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is "
-        "necessary but not sufficient for completion.",
+        "constraints make the appearance-reality gap costly to maintain. Every step in the derived process requires a governing artifact — a tool-executed result already present in the "
+        "transcript — whose existence is the only valid basis for proceeding. A step without a governing artifact in context has no authorization to proceed. The completion check is "
+        "the final required step of any enforcement process: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it. The "
+        "intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge "
+        "case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing "
+        "artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

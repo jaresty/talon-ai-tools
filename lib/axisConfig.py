@@ -320,11 +320,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "using exactly one of these two forms — COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. "
         "The NOT YET PRODUCED form requires making the tool call immediately after writing it — it is a declaration of intent that must be fulfilled in the same response before "
         "implementation proceeds. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result in this conversation — a fabricated or paraphrased "
-        "output in a COMPLETE line is a chain violation. Phase 2 is complete when every no-FAIL-state assertion has a COMPLETE status line backed by a real tool result. Then derive the "
-        "process these six principles require and follow it. The derivation must be visible. When no behavioral assertion is possible, structural floor assertions (file existence, path "
-        "resolution, identifier presence) are required but do not satisfy gate — a manual verification protocol must be declared: who verifies, by what procedure, and what binary "
-        "pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — "
-        "claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred.",
+        "output in a COMPLETE line is a chain violation. A compilation error is not a valid coverage artifact for a no-FAIL-state assertion — the test must compile and run; the FAIL "
+        "output must come from executing the assertion against a state where the behavior exists but is deliberately wrong. Phase 2 is complete when every no-FAIL-state assertion has a "
+        "COMPLETE status line backed by a real tool result. Then derive the process these six principles require and follow it. The derivation must be visible. When no behavioral "
+        "assertion is possible, structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification protocol "
+        "must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is "
+        "exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before "
+        "exploration has occurred.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

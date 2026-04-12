@@ -40,6 +40,9 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "together demand of any step that involves test behavior — including what "
             "constitutes a valid predecessor, what the coverage table must contain, and what "
             "makes a coverage table entry a violation. The derivation must be visible. "
+            "For any assertion classified as Principle 4, the perturbation FAIL output is the "
+            "chain predecessor for the implementation step that targets that assertion — a step "
+            "that begins without reproducing this output has violated chain, not merely gate. "
             "Note: derivation blocks produced by the planning directive are not implementation "
             "steps and are not governed by this rule."
         ),

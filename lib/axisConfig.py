@@ -298,21 +298,23 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "gate": "The response enforces three principles and derives the required process from them. Principle 1: a passing observation is invisible — it carries zero coverage information; only a "
+        "gate": "The response enforces six principles and derives the required process from them. Principle 1: a passing observation is invisible — it carries zero coverage information; only a "
         "FAIL observation establishes that an assertion can detect the absence of its behavior. Principle 2: coverage is per-assertion, not per-test — a test that FAILs establishes "
         "coverage only for the assertions that fired and produced FAIL output; an assertion in the same test that was not reached or that passed carries zero coverage regardless of the "
         "test's overall result. Principle 3: an observation requires executing the test — reasoning about what a test would produce is not an observation and cannot substitute for one. "
         "Principle 4: some assertions have no natural FAIL state — an assertion that checks the behavior does NOT produce X passes when the behavior is absent (no X is produced, so the "
         "absence-check trivially passes), meaning the behavior's absence is indistinguishable from the behavior being correctly absent; such an assertion can only appear in a FAIL result "
         "by running it against a state where the behavior exists but is wrong; such an assertion cannot satisfy gate closure without that intervention — the required intervention is "
-        "perturbation: temporarily introduce incorrect behavior, observe the FAIL, then restore. Derive the process these four principles require and follow it. The derivation must be "
-        "visible. The following cannot be derived without further specification. When the domain's governing tool (compiler, type checker, schema validator, or equivalent) structurally "
-        "enforces a constraint as a precondition for operation — meaning no behavioral difference is possible without the tool reporting failure — that tool's output is the complete "
-        "assertion and witnessing it fail is sufficient. When no behavioral assertion is possible, structural floor assertions (file existence, path resolution, identifier presence) are "
-        "required but do not satisfy gate — a manual verification protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance "
-        "and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — claims about what can be detected or "
-        "measured — not outcome assertions that encode a direction before exploration has occurred; an outcome assertion on an exploratory task closes possibility space before the "
-        "protocol begins.",
+        "perturbation: temporarily introduce incorrect behavior, observe the FAIL, then restore. Principle 5: Assertion type must match behavior type — a static check cannot govern "
+        "executable behavior; if the domain's governing tool (compiler, type checker, schema validator, or equivalent) structurally enforces a constraint as a precondition for operation, "
+        "that tool's output is the complete assertion and witnessing it fail is sufficient; adding a text-search or grep check on top of a compiler-enforced constraint adds no coverage. "
+        "Principle 6: in multi-layer work, each layer must have an independently-failing assertion — an assertion is independent only if it produces a meaningful FAIL when its layer's "
+        "contract is violated, regardless of the state of other layers; an assertion that passes vacuously on stale upstream input does not satisfy this requirement. Derive the process "
+        "these six principles require and follow it. The derivation must be visible. The following cannot be derived without further specification. When no behavioral assertion is "
+        "possible, structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification protocol must be "
+        "declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is "
+        "exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before "
+        "exploration has occurred; an outcome assertion on an exploratory task closes possibility space before the protocol begins.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

@@ -9601,7 +9601,7 @@
         "gate",
         "chain"
       ],
-      "prose": "gate + chain: gate requires a FAIL observation per assertion before any implementation step proceeds; chain requires each implementation step reproduce its predecessor's actual output verbatim. Derive what these two requirements together demand of any step that involves test behavior — including what constitutes a valid predecessor, what the coverage table must contain, and what makes a coverage table entry a violation. The derivation must be visible. For any assertion classified as Principle 4, the perturbation FAIL output is the chain predecessor for the implementation step that targets that assertion — a step that begins without reproducing this output has violated chain, not merely gate. Note: derivation blocks produced by the planning directive are not implementation steps and are not governed by this rule."
+      "prose": "gate + chain: gate requires a FAIL observation per assertion before any implementation step proceeds; chain requires each implementation step reproduce its predecessor's actual output verbatim. Derive what these two requirements together demand of any step that involves test behavior — including what constitutes a valid predecessor, what the coverage table must contain, and what makes a coverage table entry a violation. The derivation must be visible. For any assertion classified as Principle 4, the perturbation FAIL output is the chain predecessor for the step that makes that assertion pass — this perturbation must be executed after the test exists and before any implementation that would cause that assertion to pass. A compilation error or earlier test failure is not a valid substitute: the perturbation must run against a state where the assertion is reachable (the test compiles and runs) but the behavior is deliberately wrong. A step that makes a Principle 4 assertion pass without first reproducing its perturbation FAIL output has violated chain, not merely gate. Note: derivation blocks produced by the planning directive are not implementation steps and are not governed by this rule."
     },
     {
       "name": "atomic+ground",
@@ -9647,6 +9647,6 @@
     "patterns": "fa6d09fdf6a9103d582dfd821d956fa5214dae4439f6e777cf99c63cf683f06f",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "5c9bb27f7bd624e2b9cbb1b19457cd2cb8706b1d9565e6318c05c01489302132"
+    "compositions": "897291e6c8b5d8d31f13ce4b6380040ed1621a2313ea2e2e2f3a2e8ab311d262"
   }
 }

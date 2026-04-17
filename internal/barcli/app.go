@@ -387,12 +387,13 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 			StepIndex int    `json:"step_index"`
 		}
 		type jsonResult struct {
-			Axis         string         `json:"axis"`
-			Token        string         `json:"token"`
-			Label        string         `json:"label"`
-			Tier         int            `json:"tier"`
-			MatchedField string         `json:"matched_field"`
-			MatchedText  string         `json:"matched_text"`
+			Axis         string          `json:"axis"`
+			Token        string          `json:"token"`
+			Label        string          `json:"label"`
+			Tier         int             `json:"tier"`
+			Score        float64         `json:"score,omitempty"`
+			MatchedField string          `json:"matched_field"`
+			MatchedText  string          `json:"matched_text"`
 			Sequences    []jsonSeqMember `json:"sequences,omitempty"`
 		}
 		out := make([]jsonResult, len(results))
@@ -406,6 +407,7 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 				Token:        r.Token,
 				Label:        r.Label,
 				Tier:         r.Tier,
+				Score:        r.Score,
 				MatchedField: r.MatchedField,
 				MatchedText:  r.MatchedText,
 				Sequences:    seqs,

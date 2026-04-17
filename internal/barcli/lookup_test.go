@@ -133,7 +133,7 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 	}
 }
 
-// TestLookupMultiWordANDLogic specifies that a multi-word query requires all words to match.
+// TestLookupMultiWordANDLogic specifies tier-result AND-match behavior and BM25 OR-match behavior.
 func TestLookupMultiWordANDLogic(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
 	grammar, err := LoadGrammar("")
@@ -141,7 +141,7 @@ func TestLookupMultiWordANDLogic(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "root cause" should match method:diagnose (has "root cause" in heuristics)
+	// "root cause" should match method:diagnose at a tier >= 0 (has "root cause" in heuristics)
 	results := LookupTokens("root cause", grammar, "")
 	var foundDiagnose bool
 	for _, r := range results {
@@ -153,11 +153,13 @@ func TestLookupMultiWordANDLogic(t *testing.T) {
 		t.Error("expected method:diagnose in results for 'root cause'")
 	}
 
-	// "xyz123 root" — xyz123 will not match anything, so no results
+	// "xyz123 root" — "xyz123" matches nothing; tier AND-match drops diagnose from tier results.
+	// BM25 OR-match may return diagnose as a BM25 result (Tier == -1); that is correct behavior.
+	// This test only asserts that diagnose does NOT appear as a tier-matched result (Tier >= 0).
 	results2 := LookupTokens("xyz123 root", grammar, "")
 	for _, r := range results2 {
-		if r.Axis == "method" && r.Token == "diagnose" {
-			t.Error("method:diagnose should not appear when one word (xyz123) has no match")
+		if r.Axis == "method" && r.Token == "diagnose" && r.Tier >= 0 {
+			t.Error("method:diagnose should not appear as a tier-matched result when one word (xyz123) has no tier match")
 		}
 	}
 }
@@ -296,6 +298,112 @@ func TestLookupCLIMissingQueryExits1(t *testing.T) {
 	result := runBuildCLI(t, []string{"lookup"}, nil)
 	if result.Exit != 1 {
 		t.Errorf("expected exit 1 for missing query, got %d", result.Exit)
+	}
+}
+
+// --- BM25 assertions (ADR-0232) ---
+
+// TestBM25CorpusConstruction specifies that buildTokenDocs returns a doc whose title
+// contains the token name and whose body contains definition text.
+func TestBM25CorpusConstruction(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	docs := buildTokenDocs(grammar, "")
+	if len(docs) == 0 {
+		t.Fatal("expected non-empty token docs")
+	}
+	var gateDoc *tokenDoc
+	for i := range docs {
+		if docs[i].id == "method:gate" {
+			gateDoc = &docs[i]
+			break
+		}
+	}
+	if gateDoc == nil {
+		t.Fatal("expected doc for method:gate")
+	}
+	if !strings.Contains(gateDoc.title, "gate") {
+		t.Errorf("expected title to contain 'gate', got %q", gateDoc.title)
+	}
+	if !strings.Contains(gateDoc.body, "FAIL") {
+		t.Errorf("expected body to contain 'FAIL' (from definition), got %q", gateDoc.body[:100])
+	}
+}
+
+// TestLookupBM25MultiWord specifies that a multi-word query that previously returned
+// zero results now returns at least one BM25 result.
+func TestLookupBM25MultiWord(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// "trace reasoning steps" returns 0 with AND-match but should return results via BM25
+	results := LookupTokens("trace reasoning steps", grammar, "")
+	if len(results) == 0 {
+		t.Fatal("expected at least one result for 'trace reasoning steps' via BM25, got none")
+	}
+}
+
+// TestLookupTierBeforeBM25 specifies that tier-3/2/1 results appear before BM25-only results.
+func TestLookupTierBeforeBM25(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// "TDD" is an exact heuristic for method:gate (tier 3).
+	// A single-word query produces both tier-matched and BM25-only results.
+	// All tier-matched results must appear before all BM25-only results.
+	results := LookupTokens("TDD", grammar, "")
+	if len(results) == 0 {
+		t.Fatal("expected results for 'TDD'")
+	}
+	seenBM25 := false
+	for i, r := range results {
+		if r.Tier == -1 {
+			seenBM25 = true
+		} else if seenBM25 {
+			t.Errorf("tier-matched result %s:%s (tier %d) at pos %d appeared after a BM25-only result", r.Axis, r.Token, r.Tier, i)
+		}
+	}
+}
+
+// TestLookupNoDuplicates specifies that a token matching at tier 3/2/1 does not
+// also appear as a BM25-only result in the same response.
+func TestLookupNoDuplicates(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	results := LookupTokens("TDD reasoning steps", grammar, "")
+	seen := map[string][]int{}
+	for i, r := range results {
+		key := r.Axis + ":" + r.Token
+		seen[key] = append(seen[key], i)
+	}
+	for key, positions := range seen {
+		if len(positions) > 1 {
+			t.Errorf("token %s appears %d times at positions %v", key, len(positions), positions)
+		}
+	}
+}
+
+// TestLookupCap specifies that combined tier + BM25 results never exceed 10.
+func TestLookupCap(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// broad single-word query likely to match many tokens across both tier and BM25 paths
+	results := LookupTokens("step", grammar, "")
+	if len(results) > 10 {
+		t.Errorf("expected at most 10 results, got %d", len(results))
 	}
 }
 

@@ -10,9 +10,10 @@ type LookupResult struct {
 	Axis         string
 	Token        string
 	Label        string
-	Tier         int    // 0–3; higher = more specific match
-	MatchedField string // "token", "heuristics", "distinctions", or "definition"
-	MatchedText  string // the specific phrase that matched
+	Tier         int     // 0–3 = tier match; -1 = BM25-only result (ADR-0232)
+	Score        float64 // BM25 score; 0 for tier-matched results
+	MatchedField string  // "token", "heuristics", "distinctions", "definition", or "bm25"
+	MatchedText  string  // the specific phrase that matched
 	Sequences    []SequenceMembership // ADR-0225: sequence memberships for this token
 }
 
@@ -193,11 +194,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		}
 	}
 
-	if len(candidates) == 0 {
-		return nil
-	}
-
-	// Deduplicate: keep highest-tier match per axis:token
+	// Deduplicate tier candidates: keep highest-tier match per axis:token
 	type key struct{ axis, token string }
 	best := make(map[key]candidate)
 	for _, c := range candidates {
@@ -221,14 +218,54 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		return ki < kj
 	})
 
-	limit := 10
-	if len(deduped) < limit {
-		limit = len(deduped)
+	// BM25 pass: score all tokens, exclude those already in tier results (ADR-0232).
+	tierKeys := make(map[key]bool, len(best))
+	for k := range best {
+		tierKeys[k] = true
 	}
-	results := make([]LookupResult, limit)
-	for i := 0; i < limit; i++ {
-		c := deduped[i]
-		results[i] = LookupResult{
+	docs := buildTokenDocs(g, axisFilter)
+	scores := bm25Scores(docs, query)
+
+	type bm25Candidate struct {
+		id    string
+		score float64
+	}
+	var bm25Results []bm25Candidate
+	for _, doc := range docs {
+		score, ok := scores[doc.id]
+		if !ok {
+			continue
+		}
+		// parse "axis:token" — split on first colon
+		colonIdx := strings.Index(doc.id, ":")
+		if colonIdx < 0 {
+			continue
+		}
+		axis := doc.id[:colonIdx]
+		token := doc.id[colonIdx+1:]
+		if tierKeys[key{axis, token}] {
+			continue // already in tier results, skip
+		}
+		bm25Results = append(bm25Results, bm25Candidate{id: doc.id, score: score})
+	}
+	sort.Slice(bm25Results, func(i, j int) bool {
+		return bm25Results[i].score > bm25Results[j].score
+	})
+
+	// Build label map for BM25 results
+	labelFor := make(map[string]string, len(docs))
+	for _, doc := range docs {
+		labelFor[doc.id] = doc.title
+	}
+
+	// Merge: tier results first, then BM25-only results, cap at 10
+	const resultCap = 10
+	var results []LookupResult
+	for _, c := range deduped {
+		if len(results) >= resultCap {
+			break
+		}
+		results = append(results, LookupResult{
 			Axis:         c.axis,
 			Token:        c.token,
 			Label:        c.label,
@@ -236,7 +273,30 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			MatchedField: c.matchedField,
 			MatchedText:  c.matchedText,
 			Sequences:    g.SequencesForToken(c.axis + ":" + c.token),
+		})
+	}
+	for _, br := range bm25Results {
+		if len(results) >= resultCap {
+			break
 		}
+		colonIdx := strings.Index(br.id, ":")
+		if colonIdx < 0 {
+			continue
+		}
+		axis := br.id[:colonIdx]
+		token := br.id[colonIdx+1:]
+		results = append(results, LookupResult{
+			Axis:         axis,
+			Token:        token,
+			Label:        g.AxisLabel(axis, token),
+			Tier:         -1,
+			Score:        br.score,
+			MatchedField: "bm25",
+			Sequences:    g.SequencesForToken(br.id),
+		})
+	}
+	if len(results) == 0 {
+		return nil
 	}
 	return results
 }

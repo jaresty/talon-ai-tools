@@ -34,13 +34,18 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "gate+chain",
         "tokens": ["gate", "chain"],
         "prose": (
-            "gate + chain: for every assertion with Natural FAIL state: no, the FAIL tool "
-            "result produced in gate's Phase 2 is the chain predecessor for the implementation "
-            "step that makes that assertion pass. Chain's reproduction requirement gates that "
-            "implementation step on this artifact — the step cannot begin without the tool "
-            "result in context. If the tool result is not yet in context when the implementation "
-            "step is reached, chain requires making the tool call now, not producing text that "
-            "resembles the expected output. "
+            "gate + chain: the FAIL tool result produced by gate's Phase 2 perturbation is "
+            "the chain predecessor for the implementation step that makes that assertion pass. "
+            "An implementation step's correctness criterion is: change the system from the "
+            "observed wrong state to the correct state. The wrong state is only defined by "
+            "observing the perturbation FAIL output — without that observation, the correctness "
+            "criterion is undefined. Chain requires every step to reproduce its predecessor's "
+            "actual output before proceeding, because the step's reasoning must be anchored to "
+            "what was actually observed. The agent derives from this that implementation is not "
+            "merely prohibited before the FAIL artifact exists — it is undefined. A step cannot "
+            "be anchored to a predecessor that has not been produced; proceeding requires "
+            "fabricating the predecessor, and fabrication is not reproduction regardless of "
+            "whether the fabricated content is plausible. "
             "Note: classification and derivation steps are not implementation steps and are "
             "not governed by this rule."
         ),

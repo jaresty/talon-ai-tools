@@ -83,7 +83,7 @@
         "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
         "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation that addresses objections and constraints.",
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
-        "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With one, formats the artifact to expose decision points and invite response.",
+        "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Each turn produces the channel output (code, html, diagram, etc.) in its current state — not chat text. Questions are asked within the channel format (comments, placeholders, or UI hints). With output-exclusive channel, produces the artifact. Without, conducts interactively with channel as the response medium.",
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
         "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs naturally with snag/mesh methods and diagram/sketch channels.",
@@ -2263,7 +2263,7 @@
             "with decision points",
             "iterative design"
           ],
-          "definition": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Without an output-exclusive channel, conducts this interactively: proposes, pauses for feedback, and iterates. With one, formats the artifact to expose decision points and invite response."
+          "definition": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Each turn produces the channel output (code, html, diagram, etc.) in its current state — not chat text. Questions are asked within the channel format (comments, placeholders, or UI hints). With output-exclusive channel, produces the artifact. Without, conducts interactively with channel as the response medium."
         },
         "commit": {
           "distinctions": [
@@ -9670,7 +9670,7 @@
     }
   ],
   "checksums": {
-    "axes": "c6e4c25acb04a1154f0c76b41e93d375ce3922ce52cee7304de64267847f634f",
+    "axes": "e4d38077e245df7bbced33daa10e5ed8a1f7e0a084aaea2315f0702da8e24a0f",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",

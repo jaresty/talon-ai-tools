@@ -23,6 +23,7 @@
     "definitions": {
       "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control. Best suited for decision-making tasks and architectural tradeoffs.",
+        "agent": "The response is structured as an agent definition — a persistent autonomous subprocess specification with a system prompt, declared tools, model selection, and persona. Formatted for direct use as an agent configuration in an agent harness.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
@@ -38,11 +39,13 @@
         "remote": "The response is optimised for remote delivery, ensuring instructions work in distributed or online contexts and surfacing tooling or interaction hints suitable for video, voice, or screen sharing.",
         "shellscript": "The response is delivered as a shell script output format, focusing on correct, executable shell code rather than prose or explanation.",
         "sketch": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI.",
+        "skill": "The response is structured as a reusable agent skill definition — YAML frontmatter (name, description, when_to_use) followed by a markdown body with usage instructions, workflow steps, and examples. The output is formatted for direct use as an installable skill in an agent harness.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         "store": "The response additionally writes output to persistent storage using available tools — a file on disk, a memory system, or any other durable medium the environment supports — as the work progresses. Conversational output continues normally; storage is additive, not a replacement. When no storage tool is available, the response notes explicitly what should be saved and suggests how.",
         "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
-        "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding prose or explanation."
+        "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding prose or explanation.",
+        "zettel": "The response is structured as one or more Zettelkasten notes in nn format — each note has a title, type, and atomic body. When the response implies multiple distinct ideas, emit one note per idea. Each note is self-contained and linkable. The output is formatted for direct use with `nn new` or `nn bulk-new`."
       },
       "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
@@ -158,7 +161,7 @@
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "fourfold": "The response enhances the task by exhausting the logical stance space before closure: explicitly considering the affirmative position, its negation, the possibility that both hold simultaneously, and the possibility that neither holds. Each quadrant must be treated as a live candidate rather than dismissed by assumption. Use when binary framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
-        "gate": "The response enforces six principles. Principle 1: a passing observation is invisible — only a FAIL observation establishes that an assertion can detect the absence of its behavior. Principle 2: coverage is per-assertion, not per-test — a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not reached or that passed carry zero coverage. Principle 3: an observation requires executing the test — reasoning about what a test would produce is not an observation. Principle 4: some assertions have no natural FAIL state — an assertion checking that behavior does NOT produce X passes trivially when the behavior is absent, so the behavior's absence is indistinguishable from the behavior being correctly absent; such an assertion requires a coverage artifact produced by running it against a state where the behavior exists but is deliberately wrong (perturbation). Principle 5: Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6: in multi-layer work, each layer must have an independently-failing assertion that produces a meaningful FAIL when its own contract is violated, regardless of other layers. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — answer no if the assertion checks that something does NOT occur, because such assertions pass trivially when the behavior is absent> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Every assertion must have its own block. Phase 1 is complete when every assertion has a block. PHASE 2 — coverage artifact (tool result required before implementation): every assertion requires a FAIL tool result before any implementation step — Principle 1 applies to all assertions without exception. For natural-FAIL-state assertions (Natural FAIL state: yes), the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion using exactly one of these two forms — COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The NOT YET PRODUCED form names a missing predecessor. The implementation step's correctness criterion is: change the system from the observed wrong state to the correct state. Without the FAIL tool result, the wrong state has not been observed — the correctness criterion is undefined, not merely unmet. Chain requires every step to reproduce its predecessor before proceeding, and the predecessor named here does not yet exist as a tool result. The agent derives from this that no implementation step is definable until the tool call is made and the COMPLETE line can be written from actual output. There is no path between NOT YET PRODUCED and implementation that does not require fabricating a predecessor — and fabrication is not reproduction. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result in this conversation — a fabricated or paraphrased output in a COMPLETE line is a chain violation. A compilation error is not a valid coverage artifact for a no-FAIL-state assertion — the test must compile and run; the FAIL output must come from executing the assertion against a state where the behavior exists but is deliberately wrong. Phase 2 is complete when every no-FAIL-state assertion has a COMPLETE status line backed by a real tool result. Then derive the process these six principles require and follow it. The derivation must be visible. When no behavioral assertion is possible, structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred.",
+        "gate": "The response enforces six principles. Principle 1: a passing observation is invisible — only a FAIL observation establishes that an assertion can detect the absence of its behavior. Principle 2: coverage is per-assertion, not per-test — a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not reached or that passed carry zero coverage. Principle 3: an observation requires executing the test — reasoning about what a test would produce is not an observation. Principle 4: some assertions have no natural FAIL state — an assertion checking that behavior does NOT produce X passes trivially when the behavior is absent, so the behavior's absence is indistinguishable from the behavior being correctly absent; such an assertion requires a coverage artifact produced by running it against a state where the behavior exists but is deliberately wrong (perturbation). Principle 5: Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6: in multi-layer work, each layer must have an independently-failing assertion that produces a meaningful FAIL when its own contract is violated, regardless of other layers. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — answer no if the assertion checks that something does NOT occur, because such assertions pass trivially when the behavior is absent> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Every assertion must have its own block. Phase 1 is complete when every assertion has a block. PHASE 2 — coverage artifact (tool result required before implementation): every assertion requires a FAIL tool result before any implementation step — Principle 1 applies to all assertions without exception. For natural-FAIL-state assertions (Natural FAIL state: yes), the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion using exactly one of these two forms — COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The NOT YET PRODUCED form names a missing predecessor. The implementation step's correctness criterion is: change the system from the observed wrong state to the correct state. Without the FAIL tool result, the wrong state has not been observed — the correctness criterion is undefined, not merely unmet. Chain requires every step to reproduce its predecessor before proceeding, and the predecessor named here does not yet exist as a tool result. The agent derives from this that no implementation step is definable until the tool call is made and the COMPLETE line can be written from actual output. There is no path between NOT YET PRODUCED and implementation that does not require fabricating a predecessor — and fabrication is not reproduction. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result in this conversation — a fabricated or paraphrased output in a COMPLETE line is a chain violation. A compilation error is not a valid coverage artifact for a no-FAIL-state assertion — the test must compile and run; the FAIL output must come from executing the assertion against a state where the behavior exists but is deliberately wrong. Phase 2 is complete when every no-FAIL-state assertion has a COMPLETE status line backed by a real tool result. Then derive the process these six principles require and follow it. The derivation must be visible. Principle 1 requires a FAIL observation. A FAIL observation requires an executable artifact whose state differs when the behavior is absent. The structural floor fallback applies only when no such artifact exists. An artifact exists whenever the behavior produces any observable output — a file, a parsed structure, a command exit code. The fallback is therefore unavailable whenever the behavior produces observable output, which is the common case for file, data structure, and command-based tasks. Structural floor assertions (file existence, path resolution, identifier presence) are required when the fallback genuinely applies but do not satisfy gate — a manual verification protocol must still be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred. An assertion's durability must match the durability of the behavior it governs — an assertion that exists only for the duration of a session cannot govern behavior that persists beyond it. A FAIL tool result produced by a session-only script satisfies the immediate Phase 2 gate but does not constitute a durable assertion; the assertion must be committed to the test suite before the implementation step closes.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, directional guidance, and structural prediction are all derivable from this reading.",
         "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task whose constraints make the appearance-reality gap costly to maintain. Every step in the derived process requires a governing artifact — a tool-executed result already present in the transcript — whose existence is the only valid basis for proceeding. A step without a governing artifact in context has no authorization to proceed. The completion check is the final required step of any enforcement process: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion.",
@@ -242,6 +245,7 @@
     "list_tokens": {
       "channel": [
         "adr",
+        "agent",
         "code",
         "codetour",
         "diagram",
@@ -257,11 +261,13 @@
         "remote",
         "shellscript",
         "sketch",
+        "skill",
         "slack",
         "store",
         "svg",
         "sync",
-        "video"
+        "video",
+        "zettel"
       ],
       "completeness": [
         "deep",
@@ -461,6 +467,7 @@
     "labels": {
       "channel": {
         "adr": "Architecture Decision Record format",
+        "agent": "Agent definition",
         "code": "Code or markup only, no prose",
         "codetour": "VS Code CodeTour JSON file",
         "diagram": "Mermaid diagram only",
@@ -474,10 +481,12 @@
         "remote": "Optimized for remote delivery",
         "shellscript": "Shell script format",
         "sketch": "D2 diagram source only",
+        "skill": "Agent skill definition",
         "slack": "Slack-formatted Markdown",
         "store": "Write output to persistent storage",
         "svg": "SVG markup only",
-        "sync": "Synchronous session plan"
+        "sync": "Synchronous session plan",
+        "zettel": "Zettelkasten note(s) for nn"
       },
       "completeness": {
         "deep": "Substantial depth within scope",
@@ -677,6 +686,7 @@
     "kanji": {
       "channel": {
         "adr": "記",
+        "agent": "使",
         "code": "碼",
         "codetour": "観",
         "diagram": "図",
@@ -692,11 +702,13 @@
         "remote": "遠",
         "shellscript": "脚",
         "sketch": "描",
+        "skill": "技",
         "slack": "通",
         "store": "保",
         "svg": "画",
         "sync": "期",
-        "video": "映"
+        "video": "映",
+        "zettel": "箋"
       },
       "completeness": {
         "grow": "増",
@@ -1008,6 +1020,7 @@
     "routing_concept": {
       "channel": {
         "adr": "Architecture decision record",
+        "agent": "Agent definition output",
         "code": "Code output",
         "codetour": "VS Code tour",
         "diagram": "Mermaid diagram",
@@ -1023,11 +1036,13 @@
         "remote": "Remote delivery",
         "shellscript": "Shell script",
         "sketch": "D2 diagram",
+        "skill": "Agent skill definition",
         "slack": "Slack formatting",
         "store": "Persist to durable storage",
         "svg": "SVG output",
         "sync": "Session plan",
-        "video": "Video output"
+        "video": "Video output",
+        "zettel": "Zettelkasten capture"
       },
       "completeness": {
         "deep": "Unpack reasoning layers and fine details",
@@ -1251,6 +1266,29 @@
             "record this decision formally for version control"
           ],
           "definition": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready for version control. Best suited for decision-making tasks and architectural tradeoffs."
+        },
+        "agent": {
+          "distinctions": [
+            {
+              "note": "skill = session-scoped reusable instruction; agent = persistent autonomous subprocess definition",
+              "token": "skill"
+            },
+            {
+              "note": "adr = architecture decision record; agent = autonomous subprocess specification",
+              "token": "adr"
+            }
+          ],
+          "heuristics": [
+            "define an agent",
+            "agent definition",
+            "write an agent",
+            "agent spec",
+            "create an agent",
+            "agent configuration",
+            "autonomous agent",
+            "subagent definition"
+          ],
+          "definition": "The response is structured as an agent definition — a persistent autonomous subprocess specification with a system prompt, declared tools, model selection, and persona. Formatted for direct use as an agent configuration in an agent harness."
         },
         "code": {
           "distinctions": [],
@@ -1489,6 +1527,25 @@
           ],
           "definition": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
         },
+        "skill": {
+          "distinctions": [
+            {
+              "note": "adr = architecture decision record; skill = reusable agent skill definition",
+              "token": "adr"
+            }
+          ],
+          "heuristics": [
+            "write a skill for this",
+            "create a skill",
+            "skill definition",
+            "add this as a skill",
+            "make this a skill",
+            "save as a skill",
+            "turn this into a skill",
+            "reusable agent skill"
+          ],
+          "definition": "The response is structured as a reusable agent skill definition — YAML frontmatter (name, description, when_to_use) followed by a markdown body with usage instructions, workflow steps, and examples. The output is formatted for direct use as an installable skill in an agent harness."
+        },
         "slack": {
           "distinctions": [],
           "heuristics": [
@@ -1568,6 +1625,26 @@
             "Kling"
           ],
           "definition": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding prose or explanation."
+        },
+        "zettel": {
+          "distinctions": [
+            {
+              "note": "store = persist output to durable storage; zettel = structure output as nn Zettelkasten note(s)",
+              "token": "store"
+            }
+          ],
+          "heuristics": [
+            "save this as a note",
+            "capture this idea",
+            "add to my zettelkasten",
+            "nn note",
+            "create a zettel",
+            "note this down",
+            "capture for later",
+            "add to notes",
+            "multiple notes"
+          ],
+          "definition": "The response is structured as one or more Zettelkasten notes in nn format — each note has a title, type, and atomic body. When the response implies multiple distinct ideas, emit one note per idea. Each note is self-contained and linkable. The output is formatted for direct use with `nn new` or `nn bulk-new`."
         }
       },
       "completeness": {
@@ -3765,7 +3842,7 @@
             "define what good looks like before producing it",
             "what check would reject a bad version"
           ],
-          "definition": "The response enforces six principles. Principle 1: a passing observation is invisible — only a FAIL observation establishes that an assertion can detect the absence of its behavior. Principle 2: coverage is per-assertion, not per-test — a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not reached or that passed carry zero coverage. Principle 3: an observation requires executing the test — reasoning about what a test would produce is not an observation. Principle 4: some assertions have no natural FAIL state — an assertion checking that behavior does NOT produce X passes trivially when the behavior is absent, so the behavior's absence is indistinguishable from the behavior being correctly absent; such an assertion requires a coverage artifact produced by running it against a state where the behavior exists but is deliberately wrong (perturbation). Principle 5: Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6: in multi-layer work, each layer must have an independently-failing assertion that produces a meaningful FAIL when its own contract is violated, regardless of other layers. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — answer no if the assertion checks that something does NOT occur, because such assertions pass trivially when the behavior is absent> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Every assertion must have its own block. Phase 1 is complete when every assertion has a block. PHASE 2 — coverage artifact (tool result required before implementation): every assertion requires a FAIL tool result before any implementation step — Principle 1 applies to all assertions without exception. For natural-FAIL-state assertions (Natural FAIL state: yes), the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion using exactly one of these two forms — COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The NOT YET PRODUCED form names a missing predecessor. The implementation step's correctness criterion is: change the system from the observed wrong state to the correct state. Without the FAIL tool result, the wrong state has not been observed — the correctness criterion is undefined, not merely unmet. Chain requires every step to reproduce its predecessor before proceeding, and the predecessor named here does not yet exist as a tool result. The agent derives from this that no implementation step is definable until the tool call is made and the COMPLETE line can be written from actual output. There is no path between NOT YET PRODUCED and implementation that does not require fabricating a predecessor — and fabrication is not reproduction. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result in this conversation — a fabricated or paraphrased output in a COMPLETE line is a chain violation. A compilation error is not a valid coverage artifact for a no-FAIL-state assertion — the test must compile and run; the FAIL output must come from executing the assertion against a state where the behavior exists but is deliberately wrong. Phase 2 is complete when every no-FAIL-state assertion has a COMPLETE status line backed by a real tool result. Then derive the process these six principles require and follow it. The derivation must be visible. When no behavioral assertion is possible, structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred."
+          "definition": "The response enforces six principles. Principle 1: a passing observation is invisible — only a FAIL observation establishes that an assertion can detect the absence of its behavior. Principle 2: coverage is per-assertion, not per-test — a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not reached or that passed carry zero coverage. Principle 3: an observation requires executing the test — reasoning about what a test would produce is not an observation. Principle 4: some assertions have no natural FAIL state — an assertion checking that behavior does NOT produce X passes trivially when the behavior is absent, so the behavior's absence is indistinguishable from the behavior being correctly absent; such an assertion requires a coverage artifact produced by running it against a state where the behavior exists but is deliberately wrong (perturbation). Principle 5: Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6: in multi-layer work, each layer must have an independently-failing assertion that produces a meaningful FAIL when its own contract is violated, regardless of other layers. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — answer no if the assertion checks that something does NOT occur, because such assertions pass trivially when the behavior is absent> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Every assertion must have its own block. Phase 1 is complete when every assertion has a block. PHASE 2 — coverage artifact (tool result required before implementation): every assertion requires a FAIL tool result before any implementation step — Principle 1 applies to all assertions without exception. For natural-FAIL-state assertions (Natural FAIL state: yes), the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion using exactly one of these two forms — COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The NOT YET PRODUCED form names a missing predecessor. The implementation step's correctness criterion is: change the system from the observed wrong state to the correct state. Without the FAIL tool result, the wrong state has not been observed — the correctness criterion is undefined, not merely unmet. Chain requires every step to reproduce its predecessor before proceeding, and the predecessor named here does not yet exist as a tool result. The agent derives from this that no implementation step is definable until the tool call is made and the COMPLETE line can be written from actual output. There is no path between NOT YET PRODUCED and implementation that does not require fabricating a predecessor — and fabrication is not reproduction. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result in this conversation — a fabricated or paraphrased output in a COMPLETE line is a chain violation. A compilation error is not a valid coverage artifact for a no-FAIL-state assertion — the test must compile and run; the FAIL output must come from executing the assertion against a state where the behavior exists but is deliberately wrong. Phase 2 is complete when every no-FAIL-state assertion has a COMPLETE status line backed by a real tool result. Then derive the process these six principles require and follow it. The derivation must be visible. Principle 1 requires a FAIL observation. A FAIL observation requires an executable artifact whose state differs when the behavior is absent. The structural floor fallback applies only when no such artifact exists. An artifact exists whenever the behavior produces any observable output — a file, a parsed structure, a command exit code. The fallback is therefore unavailable whenever the behavior produces observable output, which is the common case for file, data structure, and command-based tasks. Structural floor assertions (file existence, path resolution, identifier presence) are required when the fallback genuinely applies but do not satisfy gate — a manual verification protocol must still be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred. An assertion's durability must match the durability of the behavior it governs — an assertion that exists only for the duration of a session cannot govern behavior that persists beyond it. A FAIL tool result produced by a session-only script satisfies the immediate Phase 2 gate but does not constitute a durable assertion; the assertion must be committed to the test suite before the implementation step closes."
         },
         "grain": {
           "distinctions": [
@@ -7535,6 +7612,7 @@
     "axes": {
       "channel": {
         "adr": "adr",
+        "agent": "agent",
         "code": "code",
         "codetour": "codetour",
         "diagram": "diagram",
@@ -7550,11 +7628,13 @@
         "remote": "remote",
         "shellscript": "shellscript",
         "sketch": "sketch",
+        "skill": "skill",
         "slack": "slack",
         "store": "store",
         "svg": "svg",
         "sync": "sync",
-        "video": "video"
+        "video": "video",
+        "zettel": "zettel"
       },
       "completeness": {
         "deep": "deep",
@@ -7734,7 +7814,7 @@
       },
       "scope": {
         "act": "act",
-        "agent": "agent",
+        "agent": "axis-scope-agent",
         "assume": "assume",
         "cross": "cross",
         "dam": "dam",
@@ -8022,6 +8102,7 @@
       },
       "channel": {
         "channel=adr": "channel-adr",
+        "channel=agent": "channel-agent",
         "channel=code": "channel-code",
         "channel=codetour": "channel-codetour",
         "channel=diagram": "channel-diagram",
@@ -8037,11 +8118,13 @@
         "channel=remote": "channel-remote",
         "channel=shellscript": "channel-shellscript",
         "channel=sketch": "channel-sketch",
+        "channel=skill": "channel-skill",
         "channel=slack": "channel-slack",
         "channel=store": "channel-store",
         "channel=svg": "channel-svg",
         "channel=sync": "channel-sync",
-        "channel=video": "channel-video"
+        "channel=video": "channel-video",
+        "channel=zettel": "channel-zettel"
       },
       "directional": {
         "directional=bog": "directional-bog",
@@ -8118,7 +8201,7 @@
       "adr": "adr",
       "adversarial": "adversarial",
       "afford": "afford",
-      "agent": "agent",
+      "agent": "axis-scope-agent",
       "align": "align",
       "amorph": "amorph",
       "analog": "analog",
@@ -8172,6 +8255,7 @@
       "casually": "casually",
       "chain": "chain",
       "channel=adr": "channel-adr",
+      "channel=agent": "channel-agent",
       "channel=code": "channel-code",
       "channel=codetour": "channel-codetour",
       "channel=diagram": "channel-diagram",
@@ -8187,11 +8271,13 @@
       "channel=remote": "channel-remote",
       "channel=shellscript": "channel-shellscript",
       "channel=sketch": "channel-sketch",
+      "channel=skill": "channel-skill",
       "channel=slack": "channel-slack",
       "channel=store": "channel-store",
       "channel=svg": "channel-svg",
       "channel=sync": "channel-sync",
       "channel=video": "channel-video",
+      "channel=zettel": "channel-zettel",
       "check": "check",
       "checklist": "checklist",
       "cite": "cite",
@@ -8542,6 +8628,7 @@
       "sim": "sim",
       "simulation": "simulation",
       "sketch": "sketch",
+      "skill": "skill",
       "skim": "skim",
       "slack": "slack",
       "snag": "snag",
@@ -8630,6 +8717,7 @@
       "wardley": "wardley",
       "wasinawa": "wasinawa",
       "yield": "yield",
+      "zettel": "zettel",
       "zoom": "zoom"
     }
   },
@@ -9670,11 +9758,11 @@
     }
   ],
   "checksums": {
-    "axes": "e4d38077e245df7bbced33daa10e5ed8a1f7e0a084aaea2315f0702da8e24a0f",
+    "axes": "97387ad09da91aa3a1bd6b4528e0790c2d2dc4695613f6dace8c557d8cc1c5b5",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",
-    "slugs": "7dce9606fd7128174782e0acf263031cc191b511ce8591608abe455bc74d2814",
+    "slugs": "20286c4ec41994c0d813aa4b809ae527651256ccf34cf05094a89cd35b815126",
     "patterns": "fa6d09fdf6a9103d582dfd821d956fa5214dae4439f6e777cf99c63cf683f06f",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

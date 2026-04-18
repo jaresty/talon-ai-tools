@@ -628,8 +628,8 @@ describe('TokenSelector — F4 keyboard focus opens D2 metadata panel', () => {
 		await fireEvent.input(filterInput, { target: { value: 'tok0' } });
 
 		// Simulate user stopping typing (wait for debounce delay)
-		// The implementation should auto-focus first chip after ~350ms
-		await vi.advanceTimersByTimeAsync(400);
+		// The implementation should auto-focus first chip after ~600ms
+		await vi.advanceTimersByTimeAsync(700);
 
 		// First chip should now be focused, enabling arrow navigation
 		const firstChip = document.querySelector('[role="option"]') as HTMLElement;

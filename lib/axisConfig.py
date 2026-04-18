@@ -49,6 +49,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready "
         "for version control. Best suited for decision-making tasks and architectural tradeoffs.",
+        "agent": "The response is structured as an agent definition — a persistent autonomous subprocess specification with a system prompt, declared tools, model selection, and persona. "
+        "Formatted for direct use as an agent configuration in an agent harness.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
         "surrounding explanation.",
@@ -97,6 +99,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. "
         "Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the "
         "output is syntactically correct and compiles successfully with the D2 CLI.",
+        "skill": "The response is structured as a reusable agent skill definition — YAML frontmatter (name, description, when_to_use) followed by a markdown body with usage instructions, "
+        "workflow steps, and examples. The output is formatted for direct use as an installable skill in an agent harness.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         "store": "The response additionally writes output to persistent storage using available tools — a file on disk, a memory system, or any other durable medium the environment supports — "
         "as the work progresses. Conversational output continues normally; storage is additive, not a replacement. When no storage tool is available, the response notes explicitly what "
@@ -105,6 +109,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
         "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding "
         "prose or explanation.",
+        "zettel": "The response is structured as one or more Zettelkasten notes in nn format — each note has a title, type, and atomic body. When the response implies multiple distinct ideas, "
+        "emit one note per idea. Each note is self-contained and linkable. The output is formatted for direct use with `nn new` or `nn bulk-new`.",
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
@@ -327,10 +333,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reproduction. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result in this conversation — a fabricated or paraphrased output in a "
         "COMPLETE line is a chain violation. A compilation error is not a valid coverage artifact for a no-FAIL-state assertion — the test must compile and run; the FAIL output must come "
         "from executing the assertion against a state where the behavior exists but is deliberately wrong. Phase 2 is complete when every no-FAIL-state assertion has a COMPLETE status "
-        "line backed by a real tool result. Then derive the process these six principles require and follow it. The derivation must be visible. When no behavioral assertion is possible, "
-        "structural floor assertions (file existence, path resolution, identifier presence) are required but do not satisfy gate — a manual verification protocol must be declared: who "
-        "verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing "
-        "assertions must be observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred.",
+        "line backed by a real tool result. Then derive the process these six principles require and follow it. The derivation must be visible. Principle 1 requires a FAIL observation. A "
+        "FAIL observation requires an executable artifact whose state differs when the behavior is absent. The structural floor fallback applies only when no such artifact exists. An "
+        "artifact exists whenever the behavior produces any observable output — a file, a parsed structure, a command exit code. The fallback is therefore unavailable whenever the "
+        "behavior produces observable output, which is the common case for file, data structure, and command-based tasks. Structural floor assertions (file existence, path resolution, "
+        "identifier presence) are required when the fallback genuinely applies but do not satisfy gate — a manual verification protocol must still be declared: who verifies, by what "
+        "procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be "
+        "observability assertions — claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred. An assertion's "
+        "durability must match the durability of the behavior it governs — an assertion that exists only for the duration of a session cannot govern behavior that persists beyond it. A "
+        "FAIL tool result produced by a session-only script satisfies the immediate Phase 2 gate but does not constitute a durable assertion; the assertion must be committed to the test "
+        "suite before the implementation step closes.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
@@ -487,6 +499,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
 AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Architecture Decision Record format",
+        "agent": "Agent definition",
         "code": "Code or markup only, no prose",
         "codetour": "VS Code CodeTour JSON file",
         "diagram": "Mermaid diagram only",
@@ -500,10 +513,12 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "remote": "Optimized for remote delivery",
         "shellscript": "Shell script format",
         "sketch": "D2 diagram source only",
+        "skill": "Agent skill definition",
         "slack": "Slack-formatted Markdown",
         "store": "Write output to persistent storage",
         "svg": "SVG markup only",
         "sync": "Synchronous session plan",
+        "zettel": "Zettelkasten note(s) for nn",
     },
     "completeness": {
         "deep": "Substantial depth within scope",
@@ -709,6 +724,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
 AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] = {
     "channel": {
         "adr": "記",
+        "agent": "使",
         "code": "碼",
         "codetour": "観",
         "diagram": "図",
@@ -724,11 +740,13 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "remote": "遠",
         "shellscript": "脚",
         "sketch": "描",
+        "skill": "技",
         "slack": "通",
         "store": "保",
         "svg": "画",
         "sync": "期",
         "video": "映",
+        "zettel": "箋",
     },
     "completeness": {"grow": "増", "taper": "曲", "triage": "険", "zoom": "比"},
     "directional": {
@@ -1112,6 +1130,7 @@ AXIS_CATEGORY_ORDER: Dict[str, List[str]] = {
 AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Architecture decision record",
+        "agent": "Agent definition output",
         "code": "Code output",
         "codetour": "VS Code tour",
         "diagram": "Mermaid diagram",
@@ -1127,11 +1146,13 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "remote": "Remote delivery",
         "shellscript": "Shell script",
         "sketch": "D2 diagram",
+        "skill": "Agent skill definition",
         "slack": "Slack formatting",
         "store": "Persist to durable storage",
         "svg": "SVG output",
         "sync": "Session plan",
         "video": "Video output",
+        "zettel": "Zettelkasten capture",
     },
     "completeness": {
         "deep": "Unpack reasoning layers and fine details",
@@ -2289,6 +2310,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "record this decision formally for version control",
             ],
         },
+        "agent": {
+            "distinctions": [
+                {
+                    "note": "skill = session-scoped reusable instruction; agent = persistent autonomous subprocess definition",
+                    "token": "skill",
+                },
+                {
+                    "note": "adr = architecture decision record; agent = autonomous subprocess specification",
+                    "token": "adr",
+                },
+            ],
+            "heuristics": [
+                "define an agent",
+                "agent definition",
+                "write an agent",
+                "agent spec",
+                "create an agent",
+                "agent configuration",
+                "autonomous agent",
+                "subagent definition",
+            ],
+        },
         "code": {
             "distinctions": [],
             "heuristics": [
@@ -2506,6 +2549,24 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
             "heuristics": ["D2 diagram", "D2 format", "sketch diagram", "d2 source"],
         },
+        "skill": {
+            "distinctions": [
+                {
+                    "note": "adr = architecture decision record; skill = reusable agent skill definition",
+                    "token": "adr",
+                }
+            ],
+            "heuristics": [
+                "write a skill for this",
+                "create a skill",
+                "skill definition",
+                "add this as a skill",
+                "make this a skill",
+                "save as a skill",
+                "turn this into a skill",
+                "reusable agent skill",
+            ],
+        },
         "slack": {
             "distinctions": [],
             "heuristics": [
@@ -2579,6 +2640,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "Runway",
                 "Pika",
                 "Kling",
+            ],
+        },
+        "zettel": {
+            "distinctions": [
+                {
+                    "note": "store = persist output to durable storage; zettel = structure output as nn Zettelkasten note(s)",
+                    "token": "store",
+                }
+            ],
+            "heuristics": [
+                "save this as a note",
+                "capture this idea",
+                "add to my zettelkasten",
+                "nn note",
+                "create a zettel",
+                "note this down",
+                "capture for later",
+                "add to notes",
+                "multiple notes",
             ],
         },
     },

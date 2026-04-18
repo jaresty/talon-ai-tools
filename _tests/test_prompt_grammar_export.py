@@ -80,6 +80,20 @@ class PromptGrammarCliTests(unittest.TestCase):
             "method contract must include substantive behavioral guidance (not just a label)"
         )
 
+        channel_tokens = data.get("axes", {}).get("metadata", {}).get("channel", {})
+        self.assertIn(
+            "zettel", channel_tokens,
+            "channel axis must include 'zettel' token (nn Zettelkasten output)"
+        )
+        self.assertIn(
+            "skill", channel_tokens,
+            "channel axis must include 'skill' token (agent skill definition output)"
+        )
+        self.assertIn(
+            "agent", channel_tokens,
+            "channel axis must include 'agent' token (agent definition output)"
+        )
+
         axes_kanji = data.get("axes", {}).get("kanji", {})
         self.assertTrue(axes_kanji, "axes should contain kanji mappings (ADR-0143)")
         self.assertIn("scope", axes_kanji, "axes kanji should include scope")

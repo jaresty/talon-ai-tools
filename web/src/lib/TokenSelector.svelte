@@ -16,6 +16,7 @@
 <script lang="ts">
 	import { getMethodCategoryOrder, getCompositionData, getChipState, getReverseChipState, getChipStateWithReason } from './grammar.js';
 	import type { TokenMeta, Grammar } from './grammar.js';
+	import { bm25RankTokens } from './bm25.js';
 
 	interface Props {
 		axis: string;
@@ -78,20 +79,23 @@
 	// In grouped mode (no filter), tokens appear in category order; in flat/filter mode, unchanged.
 	let filtered = $derived(
 		filter.trim()
-			? tokens.filter((t) => {
-					const q = filter.toLowerCase();
-					return (
-						t.token.includes(q) ||
-						t.label.toLowerCase().includes(q) ||
-						t.description.toLowerCase().includes(q) ||
-						(t.routing_concept?.toLowerCase().includes(q) ?? false) ||
-						(t.metadata?.definition?.toLowerCase().includes(q) ?? false) ||
-						(t.metadata?.heuristics?.some((h) => h.toLowerCase().includes(q)) ?? false) ||
-					(t.metadata?.distinctions?.some(
-						(d) => d.token.toLowerCase().includes(q) || d.note.toLowerCase().includes(q)
-					) ?? false)
+			? (() => {
+					const ranked = bm25RankTokens(tokens, filter.trim()).map((r) => r.token);
+					if (ranked.length > 0) return ranked;
+					// Fallback: substring match when BM25 finds nothing (e.g. prefix queries)
+					const q = filter.trim().toLowerCase();
+					return tokens.filter(
+						(t) =>
+							t.token.toLowerCase().includes(q) ||
+							t.label.toLowerCase().includes(q) ||
+							t.description.toLowerCase().includes(q) ||
+							(t.metadata?.definition ?? '').toLowerCase().includes(q) ||
+							(t.metadata?.heuristics ?? []).some((h) => h.toLowerCase().includes(q)) ||
+							(t.metadata?.distinctions ?? []).some(
+								(d) => d.token.toLowerCase().includes(q) || d.note.toLowerCase().includes(q)
+							)
 					);
-				})
+				})()
 			: hasCategoryGroups
 				? categoryGroups().flatMap((g) => g.tokens)
 				: tokens
@@ -281,7 +285,7 @@
 				focusedIndex = 0;
 				focusChip(0);
 			}
-		}, 350);
+		}, 600);
 
 		return () => { if (filterTimeout) clearTimeout(filterTimeout); };
 	});

@@ -114,11 +114,12 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
 
 
 class ChannelAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-4: channel axis has structured metadata for all 20 tokens."""
+    """ADR-0155 T-4: channel axis has structured metadata for all 23 tokens."""
 
     AXIS = "channel"
     EXPECTED_TOKENS = {
         "adr",
+        "agent",
         "code",
         "codetour",
         "diagram",
@@ -134,11 +135,13 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "remote",
         "shellscript",
         "sketch",
+        "skill",
         "slack",
         "store",
         "svg",
         "sync",
         "video",
+        "zettel",
     }
 
     def setUp(self):

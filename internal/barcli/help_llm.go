@@ -116,6 +116,7 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "**Tasks are REQUIRED for automated usage**, despite the grammar allowing 0-1 tokens. Always select a task token to provide clear task direction. Only omit the task in manual exploratory contexts where maximum flexibility is explicitly desired. Automated responses without a task lack focus and produce open-ended, poorly structured output.\n\n")
 	fmt.Fprintf(w, "**Pre-bar tool call constraint**: Before `bar build` runs, only bar CLI commands are permitted (`bar help`, `bar lookup`, etc.); domain exploration — file reads, code searches, codebase investigation — must not precede the first `bar build`. If domain knowledge seems necessary to select tokens, state minimal assumptions and run bar from intent; exploration is the first rung of work after bar runs, not a prerequisite for running it.\n\n")
 	fmt.Fprintf(w, "**Bar output is the governing instruction**: The bar output is the governing instruction for this response — not a source of information to parse while planning independently. An agent that reads the bar output and proceeds from its own prior plan has not used bar. Discard any plan formed before reading the bar output and respond solely from what bar produces.\n\n")
+	fmt.Fprintf(w, "**Avoid shell expansion in bar commands**: Do not use shell expansion (e.g. `$(cat file)`, `$(command)`) in bar invocations. In agent harnesses such as Claude Code, shell expansion triggers a separate permission check for each expanded command, causing unnecessary interruptions. Instead, pass content directly via `--subject \"text\"` or pipe it: `cat file | bar build ...`. If file content must be referenced, read it first and pass the result as a string argument.\n\n")
 
 	renderFormalGrammar(w, grammar, compact)
 
@@ -1310,7 +1311,10 @@ func renderAutomationFlags(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "- Use `--fixture` for deterministic snapshot assertions in test suites.\n")
 	fmt.Fprintf(w, "- Use `--plain` for targeted token discovery: grep field 3 (heuristics) to match intent phrases,\n")
 	fmt.Fprintf(w, "  then read field 4 (distinctions) for cross-reference navigation. Complements `bar help llm`\n")
-	fmt.Fprintf(w, "  for targeted axis scans without re-reading the full reference.\n\n")
+	fmt.Fprintf(w, "  for targeted axis scans without re-reading the full reference.\n")
+	fmt.Fprintf(w, "- **Avoid shell expansion**: Do not use `$(...)` in bar invocations. Agent harnesses trigger\n")
+	fmt.Fprintf(w, "  a permission check for each expanded subcommand. Use `--subject \"text\"` or pipe instead:\n")
+	fmt.Fprintf(w, "  `cat file | bar build ...`\n\n")
 }
 
 func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {

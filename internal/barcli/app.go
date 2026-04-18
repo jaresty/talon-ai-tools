@@ -19,7 +19,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|sequence|tui|install-skills]"
+	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|sequence|tui|install-skills|install-hooks]"
 )
 
 // barVersion holds the current version of bar, set by main package
@@ -165,6 +165,10 @@ var generalHelpText = strings.TrimSpace(`USAGE
                  use bar for structuring responses and helps users learn bar manually.
                  Use --location to specify custom installation path, --dry-run to preview,
                  and --force to overwrite existing skills.
+    install-hooks   Install a PostCompact Claude hook into ~/.claude/settings.json.
+                 The hook injects the compaction summary back into the session so bar's
+                 context is restored after compaction. Use --location to specify a custom
+                 settings.json path.
 
 
   TOPICS & EXAMPLES
@@ -257,6 +261,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	if options.Command == "install-skills" {
 		return runInstallSkills(options, stdout, stderr)
+	}
+
+	if options.Command == "install-hooks" {
+		return runInstallHooksCLI(options, stdout, stderr)
 	}
 
 	if options.Command == "starter" {

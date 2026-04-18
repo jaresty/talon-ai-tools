@@ -320,7 +320,7 @@ func Parse(args []string) (*Config, error) {
 	}
 
 	if cfg.Command == "" && !cfg.Version {
-		return nil, fmt.Errorf("usage: bar [build|shuffle|help|completion|preset|tui|tui2|install-skills]")
+		return nil, fmt.Errorf("usage: bar [build|shuffle|help|completion|preset|tui|tui2|install-skills|install-hooks]")
 	}
 	if cfg.Subject != "" && cfg.InputPath != "" {
 		return nil, fmt.Errorf("--subject and --input cannot be used together")

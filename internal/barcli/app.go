@@ -1529,7 +1529,7 @@ func readPrompt(opts *cli.Config, stdin io.Reader) (string, error) {
 		return trimTrailingNewlines(string(data)), nil
 	}
 	if isPipedInput(stdin) {
-		data, err := io.ReadAll(stdin)
+		data, err := readStdinWithTimeout(stdin, stdinTimeoutDuration())
 		if err != nil {
 			return "", err
 		}

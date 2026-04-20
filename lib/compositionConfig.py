@@ -11,10 +11,15 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "ground+gate",
         "tokens": ["ground", "gate"],
         "prose": (
-            "ground + gate: gate's principle is a required constraint on whatever enforcement "
-            "process ground derives — any process that permits behavior without a verified "
-            "assertion violates gate regardless of how ground frames it. Ground's derivation "
-            "must satisfy gate; gate's principle is not optional within ground's scope. "
+            "ground + gate: the intent of this combination is that every behavior is governed "
+            "by an assertion — meaning the behavior cannot regress without a test automatically "
+            "detecting it. Producing passing tests that happen to exist alongside the "
+            "implementation does not satisfy this intent; the tests must structurally enforce "
+            "the behavior. Everything that follows derives from that intent. Gate's principle "
+            "is a required constraint on whatever enforcement process ground derives — any "
+            "process that permits behavior without a verified assertion violates gate regardless "
+            "of how ground frames it. Ground's derivation must satisfy gate; gate's principle "
+            "is not optional within ground's scope. "
             "Additionally, during ground's completion check, evaluate the quality of each "
             "assertion adversarially: ask whether the assertion would FAIL if the behavior "
             "were subtly wrong. For any natural-FAIL-state assertion where this is uncertain, "

@@ -14,7 +14,15 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "ground + gate: gate's principle is a required constraint on whatever enforcement "
             "process ground derives — any process that permits behavior without a verified "
             "assertion violates gate regardless of how ground frames it. Ground's derivation "
-            "must satisfy gate; gate's principle is not optional within ground's scope."
+            "must satisfy gate; gate's principle is not optional within ground's scope. "
+            "Additionally, during ground's completion check, evaluate the quality of each "
+            "assertion adversarially: ask whether the assertion would FAIL if the behavior "
+            "were subtly wrong. For any natural-FAIL-state assertion where this is uncertain, "
+            "perturb the behavior deliberately and verify the assertion produces a FAIL before "
+            "declaring the step complete. A completion check that finds only passing tests "
+            "without adversarial evaluation has established consistency between the behavior "
+            "and its tests — not that the tests govern the behavior. Perturbation at completion "
+            "is not required for assertions already perturbed in Phase 2."
         ),
     },
     {

@@ -9754,7 +9754,7 @@
         "atomic",
         "chain"
       ],
-      "prose": "ground + gate + atomic + chain (multi-layer work): the protocol's ordering constraint applies within each branch of the dependency structure, not across independent branches — layers sharing an upstream dependency can proceed in parallel once that dependency satisfies its assertions. When asserting layer boundaries, structural impossibility (the assertion cannot be written) and pressure to stop early (a high-quality intermediate creates a false sense of completion) are distinct failure modes with different causes; they are not resolved by the same intervention."
+      "prose": "ground + gate + atomic + chain (multi-layer work): ground's first artifact is a dependency graph that partitions the work into independent branches — two branches are independent if neither's first step depends on any node in the other. Each node carries an explicit predecessor/successor contract. This graph is required before any branch begins. The protocol's ordering constraint applies within each branch, not across independent branches. Once a shared upstream dependency satisfies its assertions, independent branches must be executed as parallel subagent invocations; parallel execution is available if and only if the execution context supports simultaneous tool calls — if not, state which condition is unmet before proceeding sequentially. Each subagent runs gate+atomic+chain on its assigned branch; ground is the orchestrating protocol and its dependency graph is not re-derived within a branch. When asserting layer boundaries, structural impossibility (the assertion cannot be written) and pressure to stop early (a high-quality intermediate creates a false sense of completion) are distinct failure modes with different causes; they are not resolved by the same intervention."
     }
   ],
   "checksums": {
@@ -9766,6 +9766,6 @@
     "patterns": "fa6d09fdf6a9103d582dfd821d956fa5214dae4439f6e777cf99c63cf683f06f",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "f172fada339d79bf5682bdcea0015dd2598217942b83b4028467bae32d787620"
+    "compositions": "3e397aab062553c89eeff02b2f250d89aa467e5b78515c7109d8532806b66713"
   }
 }

@@ -114,14 +114,22 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "ground+gate+atomic+chain",
         "tokens": ["ground", "gate", "atomic", "chain"],
         "prose": (
-            "ground + gate + atomic + chain (multi-layer work): the protocol's ordering "
-            "constraint applies within each branch of the dependency structure, not across "
-            "independent branches — layers sharing an upstream dependency can proceed in "
-            "parallel once that dependency satisfies its assertions. When asserting layer "
-            "boundaries, structural impossibility (the assertion cannot be written) and "
-            "pressure to stop early (a high-quality intermediate creates a false sense of "
-            "completion) are distinct failure modes with different causes; they are not "
-            "resolved by the same intervention."
+            "ground + gate + atomic + chain (multi-layer work): ground's first artifact is "
+            "a dependency graph that partitions the work into independent branches — two "
+            "branches are independent if neither's first step depends on any node in the "
+            "other. Each node carries an explicit predecessor/successor contract. This graph "
+            "is required before any branch begins. The protocol's ordering constraint "
+            "applies within each branch, not across independent branches. Once a shared "
+            "upstream dependency satisfies its assertions, independent branches must be "
+            "executed as parallel subagent invocations; parallel execution is available if "
+            "and only if the execution context supports simultaneous tool calls — if not, "
+            "state which condition is unmet before proceeding sequentially. Each subagent "
+            "runs gate+atomic+chain on its assigned branch; ground is the orchestrating "
+            "protocol and its dependency graph is not re-derived within a branch. When "
+            "asserting layer boundaries, structural impossibility (the assertion cannot be "
+            "written) and pressure to stop early (a high-quality intermediate creates a "
+            "false sense of completion) are distinct failure modes with different causes; "
+            "they are not resolved by the same intervention."
         ),
     },
 ]

@@ -351,9 +351,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "required when the fallback genuinely applies but do not satisfy gate — a manual verification protocol must still be declared: who verifies, by what procedure, and what binary "
         "pass/fail condition is defined in advance and checkable by someone other than the author. When the task is exploratory, governing assertions must be observability assertions — "
         "claims about what can be detected or measured — not outcome assertions that encode a direction before exploration has occurred. An assertion's durability must match the "
-        "durability of the behavior it governs — an assertion that exists only for the duration of a session cannot govern behavior that persists beyond it. A FAIL tool result produced "
-        "by a session-only script satisfies the immediate Phase 2 gate but does not constitute a durable assertion; the assertion must be committed to the test suite before the "
-        "implementation step closes.",
+        "durability of the behavior it governs — an assertion that exists only for the duration of a session cannot govern behavior that persists beyond it. Every permanent behavioral "
+        "change requires a committed unit assertion in the test suite; a one-off CLI invocation, manual check, or session script is not a durable assertion even if it produces a FAIL "
+        "output. A one-off invocation demonstrates current state; it does not govern future state — if the behavior regresses, the invocation will not re-fire and will not detect the "
+        "regression. Gate is not satisfied until the assertion exists as a committed, automatically re-executable test. A FAIL tool result produced by a session-only script satisfies the "
+        "immediate Phase 2 observation requirement but does not close the implementation step; the durable assertion must be committed to the test suite before the step closes.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

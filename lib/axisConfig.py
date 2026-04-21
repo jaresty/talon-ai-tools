@@ -340,12 +340,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool "
         "result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result — a "
         "fabricated or paraphrased output is a chain violation. Phase 2 is complete when every assertion has a COMPLETE status line backed by a real tool result. Then derive the process "
-        "these principles require and follow it — the derivation must be visible. RE-ANCHORING (governs every implementation tool call without exception): immediately before each "
-        "implementation tool call, produce a one-line governing artifact citation: 'Governing artifact: <transcript location and verbatim key output of the FAIL tool result that governs "
-        "this step>' or 'Governing artifact: NOT YET PRODUCED — producing now' followed immediately by the artifact-producing tool call and nothing else. The re-anchoring line is not a "
-        "planning note — it is a gate. If it cannot be written truthfully, the tool call is not permitted. Producing the Phase 1 classification block, the dependency graph, or any other "
-        "planning artifact does not satisfy this requirement — only a FAIL tool result in the transcript satisfies it. The protocol does not switch off after planning; the re-anchoring "
-        "check runs at every implementation tool call for the duration of the task.",
+        "these principles require and follow it — the derivation must be visible. RE-ANCHORING is the per-tool-call enforcement of Phase 2 — it does not introduce a separate requirement "
+        "but makes Phase 2's gate operate at tool-call granularity rather than step granularity. An implementation tool call is any tool call that modifies system state (file edit, "
+        "write, shell command that changes behavior); read, search, and classification tool calls are not governed by this requirement. Immediately before each implementation tool call, "
+        "produce a one-line governing artifact citation: 'Governing artifact: <verbatim key output of the FAIL tool result that governs this step>' or 'Governing artifact: NOT YET "
+        "PRODUCED — producing now' followed immediately by the artifact-producing tool call and nothing else. The re-anchoring line is not a planning note — it is a gate. If it cannot be "
+        "written truthfully, the tool call is not permitted. Producing the Phase 1 classification block, the dependency graph, or any other planning artifact does not satisfy this "
+        "requirement — only a FAIL tool result in the transcript satisfies it. The protocol does not switch off after planning; the re-anchoring check runs at every implementation tool "
+        "call for the duration of the task.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "

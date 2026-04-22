@@ -367,7 +367,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reducing the degrees of freedom for satisfying the intent. A rung with fewer degrees of freedom requires less human interpretation to verify: executable artifacts are "
         "unambiguous where prose is not. The ladder need not follow a fixed schema; the agent derives the rungs from the task's nature. A task involving executable behavior will "
         "typically descend from intent → acceptance criteria → formal specification → executable assertions → implementation, but the structure derives from the task, not from this "
-        "list.",
+        "list. Producing the ladder is a required artifact before any rung-work begins. The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type "
+        "produced at that rung, and the condition under which the rung is satisfied. Describing the ladder structure in prose does not produce this artifact.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

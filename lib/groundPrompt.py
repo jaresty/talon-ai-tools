@@ -51,7 +51,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'agent derives the rungs from the task\'s nature. A task involving executable behavior '
         'will typically descend from intent → acceptance criteria → formal specification → '
         'executable assertions → implementation, but the structure derives from the task, not '
-        'from this list.'
+        'from this list. '
+        'Producing the ladder is a required artifact before any rung-work begins. The artifact '
+        'is an enumerated list of rungs, each stating: the rung name, the artifact type produced '
+        'at that rung, and the condition under which the rung is satisfied. Describing the ladder '
+        'structure in prose does not produce this artifact.'
     ),
 }
 

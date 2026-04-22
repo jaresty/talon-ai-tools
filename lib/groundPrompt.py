@@ -42,7 +42,16 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'Naming an unaddressed item does not close it — only visible evidence does. '
         'When a governing artifact cycle is active, the completion check fires when the cycle '
         'reports no remaining failures — exhausting the artifact is necessary but not sufficient '
-        'for completion.'
+        'for completion. '
+        'The derived enforcement process must be a ladder: each rung is a strict refinement of '
+        'the rung above — its artifact preserves all constraints of the upper rung and adds new '
+        'ones, reducing the degrees of freedom for satisfying the intent. A rung with fewer '
+        'degrees of freedom requires less human interpretation to verify: executable artifacts '
+        'are unambiguous where prose is not. The ladder need not follow a fixed schema; the '
+        'agent derives the rungs from the task\'s nature. A task involving executable behavior '
+        'will typically descend from intent → acceptance criteria → formal specification → '
+        'executable assertions → implementation, but the structure derives from the task, not '
+        'from this list.'
     ),
 }
 

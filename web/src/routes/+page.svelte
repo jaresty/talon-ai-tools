@@ -34,6 +34,7 @@
 	let copied = $state(false);
 	let shared = $state(false);
 	let copiedPrompt = $state(false);
+	let linkCopied = $state(false);
 	let savedPresets = $state<SpaPreset[]>([]);
 	let presetNameInput = $state('');
 	let presetSaved = $state(false);
@@ -244,6 +245,15 @@
 			shared = true;
 			setTimeout(() => (shared = false), 1500);
 		}
+	}
+
+	async function copyLink() {
+		const encoded = serialize();
+		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
+		window.history.replaceState(null, '', `#${encoded}`);
+		await navigator.clipboard.writeText(url);
+		linkCopied = true;
+		setTimeout(() => (linkCopied = false), 1500);
 	}
 
 	async function sharePromptNative() {
@@ -740,7 +750,10 @@
 						<button class="share-link-btn" onclick={shareLink}>
 							{shared ? '✓ Link copied' : 'Share link'}
 						</button>
-						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K) | Copy cmd (⌘⇧C) | Copy prompt (⌘⇧P) | Share (⌘⇧U)">Clear</button>
+						<button class="copy-link-btn" onclick={copyLink}>
+							{linkCopied ? '✓ Link copied' : 'Copy link'}
+						</button>
+						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K)">Clear</button>
 					</div>
 				</div>
 
@@ -844,7 +857,10 @@
 		<button class="share-link-btn" onclick={shareLink}>
 			{shared ? '✓ Link copied' : 'Share link'}
 		</button>
-		<button class="clear-btn" onclick={clearState} title="Clear all (⌘K) | Copy cmd (⌘⇧C) | Copy prompt (⌘⇧P) | Share (⌘⇧U)">Clear</button>
+		<button class="copy-link-btn" onclick={copyLink}>
+			{linkCopied ? '✓ Link copied' : 'Copy link'}
+		</button>
+		<button class="clear-btn" onclick={clearState} title="Clear all (⌘K)">Clear</button>
 	</div>
 </div>
 
@@ -952,7 +968,7 @@
 		display: none;
 	}
 
-	.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .clear-btn {
+	.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .copy-link-btn, .clear-btn {
 		padding: 0.3rem 0.75rem;
 		background: var(--color-accent-muted);
 		border: 1px solid var(--color-accent);
@@ -962,7 +978,7 @@
 		font-size: 0.8rem;
 	}
 
-	.copy-btn:hover, .copy-prompt-btn:hover, .share-prompt-btn:hover, .share-link-btn:hover { background: var(--color-accent); }
+	.copy-btn:hover, .copy-prompt-btn:hover, .share-prompt-btn:hover, .share-link-btn:hover, .copy-link-btn:hover { background: var(--color-accent); }
 
 	.copy-prompt-btn {
 		border-color: var(--color-success);
@@ -1672,7 +1688,7 @@
 			justify-content: center;
 		}
 
-		.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .clear-btn {
+		.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .copy-link-btn, .clear-btn {
 			min-height: 44px;
 		}
 

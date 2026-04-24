@@ -10,6 +10,7 @@
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
 	import { addHistoryEntry, loadHistory, deleteHistoryEntry, clearHistory, type HistoryEntry } from '$lib/history.js';
 	import { encodeState, decodeState } from '$lib/stateCodec.js';
+	import { bm25Score } from '$lib/bm25.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
 
@@ -164,6 +165,17 @@
 	let conflicts = $derived(grammar ? findConflicts(grammar, selected) : []);
 	let activePresetMeta = $derived(grammar && persona.preset ? getPersonaPresets(grammar).find(p => p.key === persona.preset) ?? null : null);
 	let promptText = $derived(grammar ? renderPrompt(grammar, selected, subject, addendum, persona) : '');
+
+	// ADR-0233: BM25 suggestion scores — derived from subject + addendum to dim irrelevant chips
+	let suggestionScores = $derived.by(() => {
+		const query = (subject + ' ' + addendum).trim();
+		if (!grammar || query.length < 10) return new Map<string, number>();
+		const allTokens = [
+			...getTaskTokens(grammar),
+			...AXES.flatMap(ax => getAxisTokens(grammar, ax))
+		];
+		return bm25Score(allTokens, query);
+	});
 
 	let tokens = $derived.by(() => {
 		const personaTokens: string[] = [];
@@ -665,6 +677,7 @@
 					{grammar}
 					activeTokensByAxis={selected}
 					axisDescription={grammar?.axes?.axis_descriptions?.['task']}
+					{suggestionScores}
 				/>
 				<label class="input-group">
 					<span class="input-label">--addendum <span class="input-hint">task directive</span></span>
@@ -691,6 +704,7 @@
 						{grammar}
 						activeTokensByAxis={selected}
 						axisDescription={grammar?.axes?.axis_descriptions?.[axis]}
+						{suggestionScores}
 					/>
 					{/if}
 				{/each}

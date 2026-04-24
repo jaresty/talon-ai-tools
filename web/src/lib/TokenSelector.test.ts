@@ -2240,3 +2240,110 @@ describe('TokenSelector — F7 filter searches description, definition, heuristi
 		expect(screen.getByText('alpha')).toBeTruthy();
 	});
 });
+
+// ── ADR-0233: BM25 token suggestion via subject/addendum dimming ───────────────
+// B2: TokenSelector accepts suggestionScores prop without breaking rendering
+// B3: chips with zero score in a non-empty map get class suggestion-dim
+// B4: selected chips are never dimmed regardless of score
+
+describe('TokenSelector — ADR-0233 BM25 suggestion dimming', () => {
+	const suggestionTokens = [
+		{
+			token: 'explain',
+			label: 'Explain',
+			description: 'Explain something clearly.',
+			guidance: '',
+			use_when: ''
+		},
+		{
+			token: 'probe',
+			label: 'Probe',
+			description: 'Investigate a hypothesis.',
+			guidance: '',
+			use_when: ''
+		}
+	];
+
+	it('B2: renders without error when suggestionScores prop is provided', () => {
+		const scores = new Map([['explain', 1.5]]);
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: suggestionTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				suggestionScores: scores
+			}
+		});
+		expect(screen.getByText('explain')).toBeTruthy();
+		expect(screen.getByText('probe')).toBeTruthy();
+	});
+
+	it('B3: zero-score chip gets suggestion-dim class when map is non-empty', () => {
+		// explain scores 1.5, probe has no entry (zero score) → probe must be dimmed
+		const scores = new Map([['explain', 1.5]]);
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: suggestionTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				suggestionScores: scores
+			}
+		});
+		const probeChip = screen.getByText('probe').closest('.token-chip') as HTMLElement;
+		expect(probeChip.classList.contains('suggestion-dim')).toBe(true);
+	});
+
+	it('B3: non-zero-score chip does not get suggestion-dim class', () => {
+		const scores = new Map([['explain', 1.5]]);
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: suggestionTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				suggestionScores: scores
+			}
+		});
+		const explainChip = screen.getByText('explain').closest('.token-chip') as HTMLElement;
+		expect(explainChip.classList.contains('suggestion-dim')).toBe(false);
+	});
+
+	it('B3: no chips are dimmed when suggestionScores is empty map', () => {
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: suggestionTokens,
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				suggestionScores: new Map()
+			}
+		});
+		const chips = document.querySelectorAll('.token-chip');
+		chips.forEach((chip) => {
+			expect((chip as HTMLElement).classList.contains('suggestion-dim')).toBe(false);
+		});
+	});
+
+	it('B4: selected chip with zero score is not dimmed', () => {
+		// probe is selected but has zero score — must not be dimmed
+		const scores = new Map([['explain', 1.5]]);
+		render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: suggestionTokens,
+				selected: ['probe'],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				suggestionScores: scores
+			}
+		});
+		const probeChip = screen.getByText('probe').closest('.token-chip') as HTMLElement;
+		expect(probeChip.classList.contains('suggestion-dim')).toBe(false);
+	});
+});

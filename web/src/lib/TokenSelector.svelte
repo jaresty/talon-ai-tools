@@ -31,9 +31,11 @@
 		activeTokensByAxis?: Record<string, string[]>;
 		// axis-level empty-state description (Variant B)
 		axisDescription?: string;
+		// ADR-0233: BM25 suggestion scores from subject+addendum — zero-score chips are dimmed
+		suggestionScores?: Map<string, number>;
 	}
 
-	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev, grammar, activeTokensByAxis, axisDescription }: Props = $props();
+	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev, grammar, activeTokensByAxis, axisDescription, suggestionScores }: Props = $props();
 
 	let filter = $state('');
 	let activeToken = $state<string | null>(null);
@@ -440,12 +442,14 @@
 					{@const isSelected = selected.includes(meta.token)}
 					{@const atCap = !isSelected && selected.length >= maxSelect && maxSelect > 1}
 					{@const isActive = activeToken === meta.token}
+					{@const isSuggestionDim = !isSelected && suggestionScores != null && suggestionScores.size > 0 && !suggestionScores.has(meta.token)}
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<div
 						class="token-chip"
 						class:selected={isSelected}
 						class:disabled={atCap}
 						class:active-meta={isActive}
+						class:suggestion-dim={isSuggestionDim}
 						class:chip--natural={resolveChipState(meta.token) === 'natural'}
 						class:chip--cautionary={resolveChipState(meta.token) === 'cautionary'}
 						class:chip--distinction-ref={hoveredDistinctionToken === meta.token}
@@ -501,6 +505,7 @@
 					class:selected={isSelected}
 					class:disabled={atCap}
 					class:active-meta={isActive}
+					class:suggestion-dim={!isSelected && suggestionScores != null && suggestionScores.size > 0 && !suggestionScores.has(meta.token)}
 					class:chip--natural={resolveChipState(meta.token) === 'natural'}
 					class:chip--cautionary={resolveChipState(meta.token) === 'cautionary'}
 					class:chip--distinction-ref={hoveredDistinctionToken === meta.token}
@@ -765,6 +770,10 @@
 	.token-chip.disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	.token-chip.suggestion-dim {
+		opacity: 0.35;
 	}
 
 	/* ADR-0148: chip traffic light — natural (green left border) and cautionary (amber left border) */

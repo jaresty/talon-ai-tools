@@ -368,7 +368,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unambiguous where prose is not. The ladder need not follow a fixed schema; the agent derives the rungs from the task's nature. A task involving executable behavior will "
         "typically descend from intent → acceptance criteria → formal specification → executable assertions → implementation, but the structure derives from the task, not from this "
         "list. Producing the ladder is a required artifact before any rung-work begins. The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type "
-        "produced at that rung, and the condition under which the rung is satisfied. Describing the ladder structure in prose does not produce this artifact.",
+        "produced at that rung, and the condition under which the rung is satisfied. Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction "
+        'condition is valid if and only if it names a locatable artifact and a countable or boolean property of that artifact — "this block contains M entries each with fields name, '
+        'artifact-type, and satisfaction-condition present" is valid; "all rungs classified" is not. A rung transition occurs when the satisfaction condition evaluates to true against '
+        "a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a one-line ladder citation: \"Rung N [name]: satisfied — "
+        '<satisfaction condition evaluated against transcript location>" or "Rung N [name]: not yet satisfied — producing now." If the citation cannot be written truthfully, the '
+        "rung-work cannot begin. At rung transitions that involve implementation tool calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different "
+        "things and neither substitutes for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "

@@ -29,6 +29,7 @@ vi.mock('$lib/grammar.js', () => ({
 	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
+	toAxisTokenSlug: vi.fn((s: string) => s.toLowerCase().replace(/\s+/g, '-')),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
 	getStarterPacks: vi.fn().mockReturnValue([]),
 	getCompositionData: vi.fn().mockReturnValue(null),
@@ -154,5 +155,82 @@ describe('Page — Share: two distinct actions', () => {
 		await new Promise(r => setTimeout(r, 50));
 
 		expect((navigator.clipboard as { writeText: ReturnType<typeof vi.fn> }).writeText).toHaveBeenCalled();
+	});
+
+	// ── Copy Link (always clipboard, never native share) ──────────────────────
+
+	it('renders a .copy-link-btn in the action overlay', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		expect(container.querySelector('.action-overlay .copy-link-btn')).toBeTruthy();
+	});
+
+	it('renders a .copy-link-btn in the desktop action-row', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		expect(container.querySelector('.action-row .copy-link-btn')).toBeTruthy();
+	});
+
+	it('copy-link-btn always calls clipboard.writeText — never navigator.share', async () => {
+		const mockShare = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, 'share', { value: mockShare, writable: true, configurable: true });
+
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		(container.querySelector('.action-overlay .copy-link-btn') as HTMLElement).click();
+		await new Promise(r => setTimeout(r, 50));
+
+		expect((navigator.clipboard as { writeText: ReturnType<typeof vi.fn> }).writeText).toHaveBeenCalled();
+		expect(mockShare).not.toHaveBeenCalled();
+	});
+
+	it('copy-link-btn shows confirmation state after click', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		const btn = container.querySelector('.action-overlay .copy-link-btn') as HTMLElement;
+		const before = btn.textContent;
+		btn.click();
+		await new Promise(r => setTimeout(r, 50));
+
+		expect(btn.textContent).not.toBe(before);
+	});
+
+	// ── Keyboard shortcut ⌘⇧L / Ctrl+Shift+L ────────────────────────────────
+
+	it('⌘⇧L dispatches copyLink (clipboard.writeText called)', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', shiftKey: true, metaKey: true, bubbles: true }));
+		await new Promise(r => setTimeout(r, 50));
+
+		expect((navigator.clipboard as { writeText: ReturnType<typeof vi.fn> }).writeText).toHaveBeenCalled();
+	});
+
+	it('copy-link-btn has title attribute mentioning ⌘⇧L', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		const btn = container.querySelector('.action-row .copy-link-btn') as HTMLElement | null;
+		expect(btn?.title).toMatch(/⌘⇧L|Ctrl\+Shift\+L/);
+	});
+
+	it('shortcut-legend table contains a row for ⌘⇧L', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+
+		const table = container.querySelector('.shortcut-table');
+		expect(table?.textContent).toMatch(/⌘⇧L|Ctrl\+Shift\+L/);
 	});
 });

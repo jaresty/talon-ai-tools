@@ -97,6 +97,9 @@
 			} else if (e.key === 'u' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				shareLink();
+			} else if (e.key === 'l' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+				e.preventDefault();
+				copyLink();
 			} else if (e.code === 'Period' && e.altKey) {
 				if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
 				e.preventDefault();
@@ -719,6 +722,7 @@
 							<tr><td><kbd>⌘⇧C</kbd> / <kbd>Ctrl+Shift+C</kbd></td><td>Copy command</td></tr>
 							<tr><td><kbd>⌘⇧P</kbd> / <kbd>Ctrl+Shift+P</kbd></td><td>Copy rendered prompt</td></tr>
 							<tr><td><kbd>⌘⇧U</kbd> / <kbd>Ctrl+Shift+U</kbd></td><td>Share URL</td></tr>
+						<tr><td><kbd>⌘⇧L</kbd> / <kbd>Ctrl+Shift+L</kbd></td><td>Copy link</td></tr>
 						<tr><td><kbd>Alt+.</kbd></td><td>Next axis (focus filter)</td></tr>
 						<tr><td><kbd>Alt+,</kbd></td><td>Previous axis (focus filter)</td></tr>
 						</tbody>
@@ -750,7 +754,7 @@
 						<button class="share-link-btn" onclick={shareLink}>
 							{shared ? '✓ Link copied' : 'Share link'}
 						</button>
-						<button class="copy-link-btn" onclick={copyLink}>
+						<button class="copy-link-btn" onclick={copyLink} title="Copy link (⌘⇧L / Ctrl+Shift+L)">
 							{linkCopied ? '✓ Link copied' : 'Copy link'}
 						</button>
 						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K)">Clear</button>

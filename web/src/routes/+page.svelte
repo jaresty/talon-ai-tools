@@ -8,6 +8,7 @@
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 	import { parseCommand } from '$lib/parseCommand.js';
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
+	import { addHistoryEntry, loadHistory, deleteHistoryEntry, clearHistory, type HistoryEntry } from '$lib/history.js';
 	import { encodeState, decodeState } from '$lib/stateCodec.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
@@ -38,6 +39,7 @@
 	let savedPresets = $state<SpaPreset[]>([]);
 	let presetNameInput = $state('');
 	let presetSaved = $state(false);
+	let historyEntries = $state<HistoryEntry[]>([]);
 
 	// Serialize/deserialize prompt state
 	function serialize(): string {
@@ -62,11 +64,13 @@
 		const hash = window.location.hash.slice(1);
 		if (hash && hash !== '/') {
 			deserialize(hash);
+			addHistoryEntry(localStorage, { hash, trigger: 'open-link', subject_preview: '', command_preview: '' });
 		} else {
 			const saved = localStorage.getItem(STORAGE_KEY);
 			if (saved) deserialize(saved);
 		}
 		refreshPresets();
+		refreshHistory();
 
 		try {
 			grammar = await loadGrammar();
@@ -188,6 +192,10 @@
 		savedPresets = listPresets(localStorage);
 	}
 
+	function refreshHistory() {
+		historyEntries = loadHistory(localStorage);
+	}
+
 	function handleSavePreset() {
 		const name = presetNameInput.trim();
 		if (!name) return;
@@ -225,6 +233,8 @@
 
 	function copyCommand() {
 		navigator.clipboard.writeText(command);
+		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-command', subject_preview: subject.slice(0, 80), command_preview: command });
+		refreshHistory();
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
 	}
@@ -233,6 +243,8 @@
 		if (!grammar) return;
 		const text = renderPrompt(grammar, selected, subject, addendum, persona);
 		navigator.clipboard.writeText(text);
+		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-prompt', subject_preview: subject.slice(0, 80), command_preview: command });
+		refreshHistory();
 		copiedPrompt = true;
 		setTimeout(() => (copiedPrompt = false), 1500);
 	}
@@ -241,6 +253,8 @@
 		const encoded = serialize();
 		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
 		window.history.replaceState(null, '', `#${encoded}`);
+		addHistoryEntry(localStorage, { hash: encoded, trigger: 'share-link', subject_preview: subject.slice(0, 80), command_preview: command });
+		refreshHistory();
 		if (navigator.share) {
 			await navigator.share({ url });
 		} else {
@@ -255,6 +269,8 @@
 		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
 		window.history.replaceState(null, '', `#${encoded}`);
 		await navigator.clipboard.writeText(url);
+		addHistoryEntry(localStorage, { hash: encoded, trigger: 'copy-link', subject_preview: subject.slice(0, 80), command_preview: command });
+		refreshHistory();
 		linkCopied = true;
 		setTimeout(() => (linkCopied = false), 1500);
 	}
@@ -262,6 +278,8 @@
 	async function sharePromptNative() {
 		if (!grammar) return;
 		const text = renderPrompt(grammar, selected, subject, addendum, persona);
+		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'share-prompt', subject_preview: subject.slice(0, 80), command_preview: command });
+		refreshHistory();
 		if (navigator.share) {
 			await navigator.share({ text });
 		} else {
@@ -796,6 +814,31 @@
 					{/if}
 				</details>
 
+				<!-- ADR-0231: Prompt History -->
+				<details class="history-panel">
+					<summary class="history-summary">History</summary>
+					{#if historyEntries.length === 0}
+						<p class="history-empty">No history yet. History is saved when you copy or share a prompt.</p>
+					{:else}
+						<div class="history-header-row">
+							<button class="history-clear-btn" onclick={() => { clearHistory(localStorage); refreshHistory(); }}>Clear all</button>
+						</div>
+						<ul class="history-list">
+							{#each historyEntries as entry (entry.ts)}
+								<li class="history-entry">
+									<button class="history-entry-load" onclick={() => { deserialize(entry.hash); }}>
+										<code class="history-entry-command">{entry.command_preview || '(no command)'}</code>
+										{#if entry.subject_preview}
+											<span class="history-entry-subject">{entry.subject_preview}</span>
+										{/if}
+									</button>
+									<button class="history-delete-btn" onclick={() => { deleteHistoryEntry(localStorage, entry.ts); refreshHistory(); }}>✕</button>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</details>
+
 				<!-- Rendered prompt -->
 				<details class="prompt-preview-section">
 					<summary class="prompt-preview-label">Rendered Prompt</summary>
@@ -1054,6 +1097,88 @@
 	}
 
 	/* Named preset panel (ADR-0165) */
+
+	.history-panel {
+		margin-bottom: 0.75rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		overflow: hidden;
+	}
+	.history-summary {
+		padding: 0.4rem 0.75rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		cursor: pointer;
+		user-select: none;
+		background: var(--color-surface);
+		color: var(--color-text-muted);
+	}
+	.history-empty {
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		padding: 0.5rem 0.75rem 0.75rem;
+		margin: 0;
+	}
+	.history-header-row {
+		display: flex;
+		justify-content: flex-end;
+		padding: 0.4rem 0.75rem 0.1rem;
+	}
+	.history-clear-btn {
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0.1rem 0.25rem;
+	}
+	.history-clear-btn:hover { color: #f7768e; }
+	.history-list { list-style: none; margin: 0; padding: 0.25rem 0 0.5rem; }
+	.history-entry {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0 0.5rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.history-entry:last-child { border-bottom: none; }
+	.history-entry-load {
+		flex: 1;
+		text-align: left;
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0.35rem 0.25rem;
+		min-width: 0;
+	}
+	.history-entry-command {
+		display: block;
+		font-size: 0.75rem;
+		color: var(--color-accent);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.history-entry-subject {
+		display: block;
+		font-size: 0.72rem;
+		color: var(--color-text-muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.history-delete-btn {
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: var(--color-text-muted);
+		font-size: 0.8rem;
+		padding: 0.2rem 0.35rem;
+		flex-shrink: 0;
+	}
+	.history-delete-btn:hover { color: #f7768e; }
+
 	.presets-panel {
 		margin-bottom: 0.75rem;
 		border: 1px solid var(--color-border);

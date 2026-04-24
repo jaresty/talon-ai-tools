@@ -9,6 +9,7 @@ import {
 	getMethodTokensByCategory,
 	getMethodCategoryOrder,
 	toPersonaSlug,
+	toAxisTokenSlug,
 	getReverseChipState,
 	getChipStateWithReason,
 	type Grammar
@@ -503,5 +504,17 @@ describe('findConflicts — cross_axis_composition cautionary pairs', () => {
 			form: ['faq']
 		});
 		expect(conflicts).toHaveLength(0);
+	});
+});
+
+describe('toAxisTokenSlug — multi-word directional hyphenation', () => {
+	it('converts spaces to hyphens for multi-word directional tokens', () => {
+		expect(toAxisTokenSlug('dip bog')).toBe('dip-bog');
+		expect(toAxisTokenSlug('fly rog')).toBe('fly-rog');
+	});
+
+	it('leaves single-word tokens unchanged', () => {
+		expect(toAxisTokenSlug('dig')).toBe('dig');
+		expect(toAxisTokenSlug('fog')).toBe('fog');
 	});
 });

@@ -212,6 +212,11 @@ export function toPersonaSlug(s: string): string {
 	return s.toLowerCase().replace(/\s+/g, '-');
 }
 
+/** Convert a multi-word axis token (e.g. 'dip bog') to its CLI slug form ('dip-bog'). */
+export function toAxisTokenSlug(s: string): string {
+	return s.toLowerCase().replace(/\s+/g, '-');
+}
+
 export function getPersonaPresets(grammar: Grammar): PersonaPreset[] {
 	return Object.values(grammar.persona?.presets ?? {}).sort((a, b) =>
 		a.label.localeCompare(b.label)

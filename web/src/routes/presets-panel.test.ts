@@ -42,6 +42,7 @@ vi.mock('$lib/grammar.js', () => ({
 	getPersonaIntentTokens: vi.fn().mockReturnValue([]),
 	AXES: ['task'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
+	toAxisTokenSlug: vi.fn((s: string) => s.toLowerCase().replace(/\s+/g, '-')),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
 	getStarterPacks: vi.fn().mockReturnValue([]),
 	personaTokenHint: vi.fn().mockReturnValue(''),

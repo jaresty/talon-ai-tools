@@ -170,6 +170,34 @@ describe('parseCommand', () => {
 		expect(result.selected.scope).toEqual(['mean', 'sys']);
 	});
 
+	// --- multi-word directional slug round-trip ---
+	// Real grammar stores directionals with spaces ('dip bog', 'fly rog').
+	// CLI uses hyphens ('dip-bog', 'fly-rog').
+	// parseCommand must resolve hyphenated form back to canonical.
+
+	const multiWordDirectionalGrammar: Grammar = {
+		...grammar,
+		axes: {
+			...grammar.axes,
+			definitions: {
+				...grammar.axes.definitions,
+				directional: { 'dip bog': 'Concrete + acting.', 'fly rog': 'Abstract + reflective.' }
+			}
+		}
+	};
+
+	it('resolves hyphenated multi-word directional to canonical form', () => {
+		const result = parseCommand('bar build show dip-bog', multiWordDirectionalGrammar);
+		expect(result.selected.directional).toEqual(['dip bog']);
+		expect(result.unrecognized).toEqual([]);
+	});
+
+	it('resolves hyphenated multi-word directional fly-rog to canonical form', () => {
+		const result = parseCommand('bar build show fly-rog', multiWordDirectionalGrammar);
+		expect(result.selected.directional).toEqual(['fly rog']);
+		expect(result.unrecognized).toEqual([]);
+	});
+
 	it('parses positional voice token', () => {
 		const result = parseCommand('bar build as-developer show', grammar);
 		expect(result.persona.voice).toBe('as-developer');

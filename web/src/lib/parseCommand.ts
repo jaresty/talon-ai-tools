@@ -20,18 +20,28 @@ function extractFlag(cmd: string, flag: string): [string, string] {
 	return [cmd.replace(match[0], '').trim(), match[1].replace(/\\"/g, '"')];
 }
 
-/** Build a map from token → axis, covering all grammar axes and tasks. */
-function buildTokenIndex(grammar: Grammar): Map<string, string> {
+/** Build maps from token → axis and slug → canonical token.
+ *  Multi-word tokens (e.g. 'dip bog') are indexed under both their canonical
+ *  form and their hyphenated slug form ('dip-bog') so that CLI-generated
+ *  commands round-trip cleanly through parseCommand.
+ */
+function buildTokenIndex(grammar: Grammar): { index: Map<string, string>; canonical: Map<string, string> } {
 	const index = new Map<string, string>();
+	const canonical = new Map<string, string>();
 	for (const token of Object.keys(grammar.tasks.descriptions ?? {})) {
 		index.set(token, 'task');
 	}
 	for (const [axis, defs] of Object.entries(grammar.axes.definitions ?? {})) {
 		for (const token of Object.keys(defs)) {
 			index.set(token, axis);
+			const slug = token.toLowerCase().replace(/\s+/g, '-');
+			if (slug !== token) {
+				index.set(slug, axis);
+				canonical.set(slug, token);
+			}
 		}
 	}
-	return index;
+	return { index, canonical };
 }
 
 /**
@@ -87,7 +97,7 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 	[cmd, subject] = extractFlag(cmd, 'subject');
 	[cmd, addendum] = extractFlag(cmd, 'addendum');
 
-	const tokenIndex = buildTokenIndex(grammar);
+	const { index: tokenIndex, canonical: tokenCanonical } = buildTokenIndex(grammar);
 	const personaIndex = buildPersonaIndex(grammar);
 
 	const selected: Record<string, string[]> = {
@@ -140,9 +150,10 @@ export function parseCommand(raw: string, grammar: Grammar): ParseResult {
 
 		const axis = tokenIndex.get(tok);
 		if (axis) {
+			const resolved = tokenCanonical.get(tok) ?? tok;
 			if (!selected[axis]) selected[axis] = [];
-			if (!selected[axis].includes(tok)) {
-				selected[axis].push(tok);
+			if (!selected[axis].includes(resolved)) {
+				selected[axis].push(resolved);
 			}
 		} else {
 			const personaAxis = personaIndex.get(tok);

@@ -58,7 +58,7 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 			results = append(results, LookupResult{
 				Axis:         axis,
 				Token:        token,
-				Label:        g.AxisLabel(axis, token),
+				Label:        labelForToken(g, axis, token),
 				Tier:         -1,
 				Score:        r.score,
 				ContextScore: r.score,
@@ -96,6 +96,24 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 		return results[i].ContextScore > results[j].ContextScore
 	})
 	return results
+}
+
+// labelForToken returns the display label for any token regardless of category
+// (task, axis, or persona). Falls back to empty string if not found.
+// Persona tokens are stored with spaces ("to analyst") but BM25 docs use slugs
+// ("to-analyst"), so we also try replacing hyphens with spaces.
+func labelForToken(g *Grammar, axis, token string) string {
+	if axis == "task" {
+		return g.TaskLabel(token)
+	}
+	if label := g.AxisLabel(axis, token); label != "" {
+		return label
+	}
+	if label := g.PersonaLabel(axis, token); label != "" {
+		return label
+	}
+	// Try de-slugified form for persona tokens stored with spaces.
+	return g.PersonaLabel(axis, strings.ReplaceAll(token, "-", " "))
 }
 
 // validLookupAxes lists all axis names that can be used as --axis filters.
@@ -369,7 +387,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		results = append(results, LookupResult{
 			Axis:         axis,
 			Token:        token,
-			Label:        g.AxisLabel(axis, token),
+			Label:        labelForToken(g, axis, token),
 			Tier:         -1,
 			Score:        br.score,
 			MatchedField: "bm25",

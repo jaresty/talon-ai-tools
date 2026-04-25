@@ -533,3 +533,94 @@ func TestLookupWithContext_EmptyContextMatchesLegacy(t *testing.T) {
 		}
 	}
 }
+
+// ── ADR-0234 follow-up: label fix + plain-text output enrichment ─────────────
+
+// B1a: BM25-only task token results have non-empty labels.
+func TestLookupBM25TaskTokenHasLabel(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// "explain to audience" → task:show is a BM25-only result; must have label
+	results := LookupTokens("explain to audience", grammar, "")
+	var showResult *LookupResult
+	for i := range results {
+		if results[i].Axis == "task" && results[i].Token == "show" {
+			showResult = &results[i]
+			break
+		}
+	}
+	if showResult == nil {
+		t.Fatal("expected task:show in results for 'explain to audience'")
+	}
+	if showResult.Tier != -1 {
+		t.Skipf("task:show matched via tier %d, not BM25 — test requires BM25 path", showResult.Tier)
+	}
+	if showResult.Label == "" {
+		t.Errorf("task:show BM25 result has empty label; expected non-empty label")
+	}
+}
+
+// B1b: BM25-only persona/audience token results have non-empty labels.
+func TestLookupBM25PersonaTokenHasLabel(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// "explain to audience" → audience:to-managers is a BM25-only result; must have label
+	results := LookupTokens("explain to audience", grammar, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Axis == "audience" && results[i].Tier == -1 {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Skip("no BM25-only audience token in results — skipping")
+	}
+	if found.Label == "" {
+		t.Errorf("audience:%s BM25 result has empty label; expected non-empty label", found.Token)
+	}
+}
+
+// B2: Plain-text output includes matched snippet when MatchedField is not "bm25".
+func TestLookupPlaintextShowsMatchedSnippet(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	// "explain to a designer" is an exact heuristic match for audience:to-designer (tier 3)
+	result := runBuildCLI(t, []string{"lookup", "explain to a designer"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", result.Exit, result.Stderr)
+	}
+	// Should include a matched snippet in the output line for the tier result
+	if !strings.Contains(result.Stdout, "explain to a designer") {
+		t.Errorf("expected matched snippet in plain-text output, got:\n%s", result.Stdout)
+	}
+}
+
+// B3: Plain-text output includes [ctx: N.NN] when ContextScore > 0.
+func TestLookupPlaintextShowsContextScore(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	result := runBuildCLI(t, []string{"lookup", "explain to audience", "--subject", "explain auth code to my manager"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "[ctx:") {
+		t.Errorf("expected [ctx: N.NN] in plain-text output when --subject given, got:\n%s", result.Stdout)
+	}
+}
+
+// B4: Plain-text output does NOT include tier number.
+func TestLookupPlaintextNoTierNumber(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	result := runBuildCLI(t, []string{"lookup", "TDD"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", result.Exit, result.Stderr)
+	}
+	if strings.Contains(result.Stdout, "tier") || strings.Contains(result.Stdout, "Tier") {
+		t.Errorf("plain-text output should not include tier number, got:\n%s", result.Stdout)
+	}
+}

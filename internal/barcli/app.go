@@ -439,13 +439,19 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 		if r.Label != "" {
 			line += " — " + r.Label
 		}
+		if r.MatchedField != "" && r.MatchedField != "bm25" && r.MatchedText != "" {
+			line += fmt.Sprintf("  [matched %s: %q]", r.MatchedField, r.MatchedText)
+		}
+		if r.ContextScore > 0 {
+			line += fmt.Sprintf("  [ctx: %.2f]", r.ContextScore)
+		}
 		if len(r.Sequences) > 0 {
 			for _, m := range r.Sequences {
 				total := 0
 				if seq, ok := grammar.Sequences[m.Name]; ok {
 					total = len(seq.Steps)
 				}
-				line += fmt.Sprintf("    [part of: %s step %d/%d]", m.Name, m.StepIndex+1, total)
+				line += fmt.Sprintf("  [part of: %s step %d/%d]", m.Name, m.StepIndex+1, total)
 			}
 		}
 		fmt.Fprintln(stdout, line)

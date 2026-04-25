@@ -630,23 +630,39 @@ var codeContextKeywords = []string{
 	"code", "function", "class", "module", "codebase", "file", "dependency",
 	"refactor", "import", "interface", "coupling", "api", "method", "test",
 	"component", "service", "package", "library", "repo", "implementation",
+	"algorithm", "architecture", "pattern", "bug", "deploy", "pipeline",
+	"latency", "throughput", "data", "system", "design", "database", "query",
+	"complexity", "runtime", "build", "compile", "type", "variable",
 }
 
-// structuralAnalysisTokens are method tokens from structural-analysis-tokens.md that
-// must each have ≥1 code-specific heuristic (heuristic containing a codeContextKeyword).
-var structuralAnalysisTokens = []string{
-	"shear", "gap", "drift", "amorph", "clash", "mint", "ground", "reify", "crystal",
+// codeApplicableMethodTokens are method tokens that apply to code/software contexts
+// and must each have ≥1 code-specific heuristic. Excluded: tokens that are
+// primarily philosophical/literary/mindset (mu, paradox, release, sense, square,
+// yield, ritual, enter) which don't have natural code applications.
+var codeApplicableMethodTokens = []string{
+	"abduce", "actors", "align", "analog", "analysis", "argue", "automate",
+	"balance", "behave", "bias", "boom", "bound", "calc", "chain",
+	"cite", "clash", "collapse", "compare", "control", "converge",
+	"deduce", "diagnose", "dimension", "domains", "drift", "effects",
+	"flow", "fourfold", "gap", "grain", "grove", "ground",
+	"induce", "inversion", "jobs", "ladder", "lateral", "mapping",
+	"mark", "meld", "migrate", "mint", "mod", "models",
+	"amorph", "operations", "orbit", "order", "polar", "probability",
+	"product", "pulse", "reify", "crystal", "resilience", "rigor",
+	"risks", "robust", "root", "seep", "shear", "sever",
+	"shift", "simulation", "spur", "survive", "sweep", "systemic",
+	"thrust", "trace", "unknowns", "visual",
 }
 
-// TestStructuralAnalysisTokensHaveCodeHeuristics asserts that each structural analysis
-// token has at least one heuristic mentioning code/software context.
-func TestStructuralAnalysisTokensHaveCodeHeuristics(t *testing.T) {
+// TestMethodTokensHaveCodeHeuristics asserts that each code-applicable method token
+// has at least one heuristic mentioning code/software context.
+func TestMethodTokensHaveCodeHeuristics(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
 	g, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
-	for _, token := range structuralAnalysisTokens {
+	for _, token := range codeApplicableMethodTokens {
 		t.Run("method:"+token, func(t *testing.T) {
 			meta, ok := g.Axes.Metadata["method"][token]
 			if !ok {

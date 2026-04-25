@@ -4029,6 +4029,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what could explain this",
                 "what are the possible causes of this bug",
                 "generate competing explanations for this error",
+                "what are the most likely causes of this bug",
+                "generate competing explanations for this test failure",
             ],
         },
         "actors": {
@@ -4048,6 +4050,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what motivates each party",
                 "threat actors",
                 "roles and responsibilities",
+                "who owns this service and what are their incentives",
+                "identify which teams or components are involved in this flow",
             ],
         },
         "adversarial": {
@@ -4110,6 +4114,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "reconcile conflicting commitments",
                 "restructure so parts reinforce each other",
                 "everything needs to be consistent globally",
+                "make this module's behavior consistent with the interface contract",
+                "align the implementation with the type signatures",
             ],
         },
         "amorph": {
@@ -4149,6 +4155,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "reason by analogy",
                 "find a parallel case",
                 "what known situation does this resemble",
+                "this is like the observer pattern — use that analogy",
+                "what design pattern does this resemble",
             ],
         },
         "analysis": {
@@ -4166,6 +4174,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what is going on here",
                 "break this down for me",
                 "understand before acting",
+                "analyze this function for edge cases",
+                "decompose this module into its responsibilities",
             ],
         },
         "argue": {
@@ -4183,6 +4193,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "build the logical case",
                 "argument and rebuttal",
                 "explicit reasoning structure",
+                "make the case for this architecture choice",
+                "argue why this refactor is necessary",
             ],
         },
         "atomic": {
@@ -4236,6 +4248,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "automated pipeline",
                 "reduce toil",
                 "eliminate manual work",
+                "automate this manual deployment step",
+                "write a script to automate this test setup",
             ],
         },
         "balance": {
@@ -4253,6 +4267,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how do trade-offs play out",
                 "what tensions exist",
                 "balance of forces",
+                "balance between code readability and performance",
+                "what trade-offs exist between these two implementations",
             ],
         },
         "behave": {
@@ -4278,6 +4294,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how do we get people to do X",
                 "behavior change wheel",
                 "BCT",
+                "why do developers keep introducing this type of bug",
+                "what behavior pattern leads to this class of error",
             ],
         },
         "bias": {
@@ -4296,6 +4314,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where are we susceptible to bias",
                 "confirmation bias",
                 "availability heuristic",
+                "what cognitive biases might affect this code review",
+                "what assumptions are baked into this API design",
             ],
         },
         "boom": {
@@ -4314,6 +4334,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what dominates at scale",
                 "scale to the extreme",
                 "at the limit",
+                "what happens to this service at 100x traffic",
+                "test this algorithm at extreme input sizes",
             ],
         },
         "bound": {
@@ -4335,6 +4357,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what happens locally vs globally",
                 "limit responsibility propagation",
                 "scope the change impact",
+                "constrain how far this side effect propagates",
+                "limit what this function is allowed to modify",
             ],
         },
         "calc": {
@@ -4354,6 +4378,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "formal calculation",
                 "compute",
                 "what are the numbers",
+                "calculate the time complexity of this algorithm",
+                "what does the math say about cache hit rates here",
             ],
         },
         "chain": {
@@ -4384,6 +4410,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "multi-step argument",
                 "iterative artifact sequence",
                 "nothing should appear from nowhere",
+                "show the derivation chain from this function's input to its output",
+                "cite the previous step's actual output before proceeding",
             ],
         },
         "cite": {
@@ -4401,6 +4429,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where does this come from",
                 "support with citations",
                 "show your evidence",
+                "cite the RFC or spec that governs this API behavior",
+                "reference the ADR that justifies this architectural choice",
             ],
         },
         "clash": {
@@ -4462,6 +4492,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "remove structural redundancy",
                 "simplify while preserving behavior",
                 "optimize structure without changing behavior",
+                "collapse these duplicate code paths into one",
+                "consolidate these redundant abstractions",
             ],
         },
         "compare": {
@@ -4480,6 +4512,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "side by side comparison",
                 "which should I choose",
                 "pros and cons",
+                "compare these two implementations on performance and readability",
+                "which library should I use for this",
             ],
         },
         "control": {
@@ -4498,6 +4532,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what can I influence",
                 "what's within my agency",
                 "focus on what's in my control",
+                "what can I control vs. what is external in this system",
+                "focus on the parts of this codebase I can change",
             ],
         },
         "converge": {
@@ -4515,6 +4551,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "from all options, which is best",
                 "converge on an answer",
                 "filter and recommend",
+                "which implementation should I go with",
+                "narrow down these design options to one recommendation",
             ],
         },
         "crystal": {
@@ -4554,6 +4592,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "derive the consequence",
                 "if X then what",
                 "logically entails",
+                "given these type constraints, what follows about valid inputs",
+                "what can I deduce about this function's behavior from its signature",
             ],
         },
         "depends": {
@@ -4592,6 +4632,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "find the root cause",
                 "debug this",
                 "help me debug",
+                "diagnose the root cause of this test failure",
+                "what is causing this performance regression",
             ],
         },
         "dimension": {
@@ -4609,6 +4651,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what are we not considering",
                 "analyze across dimensions",
                 "surface the implicit factors",
+                "what dimensions define this system design problem",
+                "what factors influence this architectural decision",
             ],
         },
         "domains": {
@@ -4626,6 +4670,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "domain boundaries",
                 "how to carve up the system into domains",
                 "which team owns which",
+                "identify the bounded contexts in this codebase",
+                "where should this service's domain boundary be drawn",
             ],
         },
         "drift": {
@@ -4667,6 +4713,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "unintended consequences",
                 "how does this propagate",
                 "what follows downstream",
+                "what are the downstream effects of changing this interface",
+                "trace the second-order effects of this refactor",
             ],
         },
         "enforce": {
@@ -4774,6 +4822,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how does it progress",
                 "follow the data through the system",
                 "trace the path",
+                "trace how data flows through this pipeline",
+                "walk me through the request lifecycle in this service",
             ],
         },
         "fourfold": {
@@ -4798,6 +4848,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "tetralemma",
                 "fourfold negation",
                 "neither true nor false",
+                "what if this feature is both fast and unreliable — what if it's neither",
+                "apply a two-by-two to these implementation trade-offs",
             ],
         },
         "gap": {
@@ -4901,6 +4953,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "which commitments are already latent",
                 "what's illusory flexibility",
                 "work with the grain",
+                "what is the natural grain of this codebase — where does it want to be extended",
+                "which refactor works with the existing structure rather than against it",
             ],
         },
         "ground": {
@@ -4964,6 +5018,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how things build up",
                 "rate of change over time",
                 "snowball",
+                "how does technical debt compound through feedback loops in this codebase",
+                "how do small coupling violations accumulate into architectural problems",
             ],
         },
         "induce": {
@@ -4981,6 +5037,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what can I conclude from these cases",
                 "what rule emerges from these instances",
                 "extrapolate from these examples",
+                "what general pattern can I extract from these three failing tests",
+                "what rule do these similar bugs suggest",
             ],
         },
         "inversion": {
@@ -4998,6 +5056,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "invert the goal",
                 "work backwards from disaster",
                 "what produces the worst outcome",
+                "what would cause this deployment to fail completely",
+                "what changes would make this service impossible to test",
             ],
         },
         "jobs": {
@@ -5017,6 +5077,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "user motivation behind",
                 "JTBD",
                 "jobs to be done",
+                "what job does this API actually do for its callers",
+                "what is the user trying to accomplish when they hit this endpoint",
             ],
         },
         "ladder": {
@@ -5038,6 +5100,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "from concrete to abstract and back",
                 "abstraction ladder",
                 "levels of abstraction",
+                "step up to the architectural intent, then down to the specific implementation",
+                "move between the design principle and the concrete code change",
             ],
         },
         "lateral": {
@@ -5069,6 +5133,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what's the contrarian view",
                 "don't just reorganize the standard list — actually consider different candidates",
                 "if the obvious framing would produce the same items, you haven't applied lateral",
+                "what is a non-obvious solution to this bug",
+                "what would a completely different approach to this API look like",
             ],
         },
         "mapping": {
@@ -5087,6 +5153,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what's the structure of the landscape",
                 "map the territory",
                 "visualize the relationships",
+                "map the relationships between these modules",
+                "surface the dependency graph of this component",
             ],
         },
         "mark": {
@@ -5104,6 +5172,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "capture intermediate state",
                 "audit trail",
                 "what was the system state at X",
+                "record what the code state was at each stage of this refactor",
+                "audit log of what changed and why at each step",
             ],
         },
         "meld": {
@@ -5121,6 +5191,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where X and Y interact",
                 "navigate tensions between",
                 "find the combination that satisfies",
+                "find the overlap between these two abstractions",
+                "where do these two modules' responsibilities blur",
             ],
         },
         "melody": {
@@ -5196,6 +5268,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "phased transition",
                 "backward compatible change",
                 "coexist old and new",
+                "migrate this code from callback style to async/await",
+                "upgrade this library while keeping backward compatibility",
             ],
         },
         "mint": {
@@ -5235,6 +5309,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what wraps around",
                 "recurs periodically",
                 "equivalent states",
+                "identify the cyclic patterns in this state machine",
+                "find the repeating structure in this module's behavior",
             ],
         },
         "models": {
@@ -5253,6 +5329,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "apply systems thinking",
                 "what models explain this",
                 "name the applicable mental models",
+                "which design patterns apply here",
+                "what mental model best explains this codebase's structure",
             ],
         },
         "mu": {
@@ -5313,6 +5391,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "operations research",
                 "minimize wait time",
                 "optimization problem",
+                "identify the bottleneck in this data pipeline",
+                "apply queueing theory to this request processing system",
             ],
         },
         "orbit": {
@@ -5338,6 +5418,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what recurs despite variation",
                 "chaos theory",
                 "nonlinear dynamics",
+                "what behavior does this system keep returning to under load",
+                "find the attractor state in this distributed system's failure modes",
             ],
         },
         "order": {
@@ -5355,6 +5437,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "dominance structure",
                 "what makes one thing rank above another",
                 "ordering and precedence",
+                "what is the correct ordering of these initialization steps",
+                "define the hierarchy of dependencies in this module",
             ],
         },
         "origin": {
@@ -5437,6 +5521,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what pulls toward and pushes away",
                 "what's the attractor and repeller",
                 "positive and negative forces",
+                "what does this service optimize for and what does it sacrifice",
+                "what are the attractors and repellers in this system's design space",
             ],
         },
         "preserve": {
@@ -5497,6 +5583,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how certain are we",
                 "Bayesian reasoning",
                 "likelihood",
+                "how likely is this race condition to occur in the production system",
+                "estimate the probability of this edge case occurring",
             ],
         },
         "product": {
@@ -5515,6 +5603,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what does the product offer",
                 "user needs analysis",
                 "product thinking",
+                "view this technical decision through a product lens",
+                "what is the user-facing impact of this implementation choice",
             ],
         },
         "pulse": {
@@ -5534,6 +5624,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where does noise enter",
                 "signal-to-noise",
                 "observability pipeline fidelity",
+                "where does signal get lost in this event pipeline",
+                "where does data degrade as it passes through these service boundaries",
             ],
         },
         "reify": {
@@ -5611,6 +5703,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how does it behave under stress",
                 "graceful degradation",
                 "fault tolerance",
+                "how resilient is this service to downstream failures",
+                "what happens to this component under partial network outages",
             ],
         },
         "rigor": {
@@ -5629,6 +5723,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "logical rigor",
                 "no handwaving",
                 "substantiate your claims",
+                "make the reasoning behind this algorithm explicit",
+                "apply rigorous analysis to this performance claim",
             ],
         },
         "risks": {
@@ -5648,6 +5744,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what might fail",
                 "enumerate the risks",
                 "likelihood and severity",
+                "what are the risks of this deployment",
+                "what could go wrong with this refactor",
             ],
         },
         "ritual": {
@@ -5683,6 +5781,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "which option survives the most scenarios",
                 "resilient to unknowns",
                 "option value under uncertainty",
+                "does this function handle all edge cases in the input type",
+                "is this implementation robust to unexpected state",
             ],
         },
         "root": {
@@ -5706,6 +5806,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "derive X from Y instead of duplicating",
                 "canonical source for",
                 "reduce duplication to derivation",
+                "where is the single source of truth for this data",
+                "we have duplicate definitions of this concept — find the canonical one",
             ],
         },
         "seep": {
@@ -5837,6 +5939,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what would X think about this",
                 "see it through different frames",
                 "consider multiple viewpoints",
+                "look at this architecture from the perspective of the on-call engineer",
+                "rotate through the developer, operator, and user perspectives on this design",
             ],
         },
         "simulation": {
@@ -5859,6 +5963,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what emergent effects would arise",
                 "project systemic dynamics",
                 "model how effects compound over time",
+                "trace through this code path manually to verify the logic",
+                "run a thought experiment on what happens when this cache expires",
             ],
         },
         "snag": {
@@ -5918,6 +6024,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "multiple lines of reasoning",
                 "explore alternatives before choosing",
                 "parallel hypotheses",
+                "explore multiple approaches to this refactor in parallel",
+                "generate three different implementations and compare them",
             ],
         },
         "square": {
@@ -5970,6 +6078,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what happened when real users encountered it",
                 "live environment as authority",
                 "what did the world keep",
+                "does this code survive real production traffic patterns",
+                "what happened when we deployed this to staging — did it hold",
             ],
         },
         "sweep": {
@@ -5988,6 +6098,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "survey the landscape",
                 "open-ended exploration",
                 "what's possible here",
+                "what are all the possible approaches to this architecture problem",
+                "explore the solution space before committing to this design",
             ],
         },
         "systemic": {
@@ -6006,6 +6118,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "unintended consequences",
                 "second order effects across the system",
                 "interconnections",
+                "apply systems thinking to this service's failure modes",
+                "identify the feedback loops causing this bug to recur",
             ],
         },
         "thrust": {
@@ -6024,6 +6138,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "alternative configurations",
                 "what are we trading off",
                 "evaluate alternatives across dimensions",
+                "what are the trade-offs between these two architectural choices",
+                "weigh consistency vs availability for this data store decision",
             ],
         },
         "trace": {
@@ -6047,6 +6163,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "audit the steps",
                 "I want to follow along",
                 "surface intermediate state",
+                "show your work deriving this algorithm's complexity",
+                "make each transformation step in this data pipeline visible",
             ],
         },
         "unknowns": {
@@ -6065,6 +6183,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what's not on our radar",
                 "gaps in our knowledge",
                 "what could surprise us",
+                "what don't we know about this codebase's behavior under load",
+                "identify the unknown unknowns before starting this refactor",
             ],
         },
         "verify": {
@@ -6120,6 +6240,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "map this out conceptually",
                 "visual mental model",
                 "frame this as a landscape",
+                "think spatially about this module's dependency structure",
+                "draw the mental map of how these components relate",
             ],
         },
         "yield": {

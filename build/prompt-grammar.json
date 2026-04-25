@@ -3044,7 +3044,9 @@
             "ranked hypotheses from evidence",
             "what could explain this",
             "what are the possible causes of this bug",
-            "generate competing explanations for this error"
+            "generate competing explanations for this error",
+            "what are the most likely causes of this bug",
+            "generate competing explanations for this test failure"
           ],
           "definition": "The response enhances the task by generating explanatory hypotheses that best account for the available evidence, explicitly comparing alternative explanations."
         },
@@ -3064,7 +3066,9 @@
             "who does what",
             "what motivates each party",
             "threat actors",
-            "roles and responsibilities"
+            "roles and responsibilities",
+            "who owns this service and what are their incentives",
+            "identify which teams or components are involved in this flow"
           ],
           "definition": "The response enhances the task by identifying and centering people, roles, or agents involved in the system."
         },
@@ -3129,7 +3133,9 @@
             "restore consistency",
             "reconcile conflicting commitments",
             "restructure so parts reinforce each other",
-            "everything needs to be consistent globally"
+            "everything needs to be consistent globally",
+            "make this module's behavior consistent with the interface contract",
+            "align the implementation with the type signatures"
           ],
           "definition": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring global coherence across the system."
         },
@@ -3170,7 +3176,9 @@
             "what's the analogous structure",
             "reason by analogy",
             "find a parallel case",
-            "what known situation does this resemble"
+            "what known situation does this resemble",
+            "this is like the observer pattern — use that analogy",
+            "what design pattern does this resemble"
           ],
           "definition": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks."
         },
@@ -3188,7 +3196,9 @@
             "structure my understanding",
             "what is going on here",
             "break this down for me",
-            "understand before acting"
+            "understand before acting",
+            "analyze this function for edge cases",
+            "decompose this module into its responsibilities"
           ],
           "definition": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria."
         },
@@ -3206,7 +3216,9 @@
             "what supports this claim",
             "build the logical case",
             "argument and rebuttal",
-            "explicit reasoning structure"
+            "explicit reasoning structure",
+            "make the case for this architecture choice",
+            "argue why this refactor is necessary"
           ],
           "definition": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support."
         },
@@ -3259,7 +3271,9 @@
             "CI/CD",
             "automated pipeline",
             "reduce toil",
-            "eliminate manual work"
+            "eliminate manual work",
+            "automate this manual deployment step",
+            "write a script to automate this test setup"
           ],
           "definition": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement."
         },
@@ -3277,7 +3291,9 @@
             "what countervailing forces",
             "how do trade-offs play out",
             "what tensions exist",
-            "balance of forces"
+            "balance of forces",
+            "balance between code readability and performance",
+            "what trade-offs exist between these two implementations"
           ],
           "definition": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance is maintained."
         },
@@ -3302,7 +3318,9 @@
             "what barriers prevent behavior change",
             "how do we get people to do X",
             "behavior change wheel",
-            "BCT"
+            "BCT",
+            "why do developers keep introducing this type of bug",
+            "what behavior pattern leads to this class of error"
           ],
           "definition": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation plan."
         },
@@ -3321,7 +3339,9 @@
             "heuristics distorting judgment",
             "where are we susceptible to bias",
             "confirmation bias",
-            "availability heuristic"
+            "availability heuristic",
+            "what cognitive biases might affect this code review",
+            "what assumptions are baked into this API design"
           ],
           "definition": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions."
         },
@@ -3340,7 +3360,9 @@
             "at maximum load",
             "what dominates at scale",
             "scale to the extreme",
-            "at the limit"
+            "at the limit",
+            "what happens to this service at 100x traffic",
+            "test this algorithm at extreme input sizes"
           ],
           "definition": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes."
         },
@@ -3362,7 +3384,9 @@
             "contain the impact",
             "what happens locally vs globally",
             "limit responsibility propagation",
-            "scope the change impact"
+            "scope the change impact",
+            "constrain how far this side effect propagates",
+            "limit what this function is allowed to modify"
           ],
           "definition": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring effects remain within intended conceptual or operational regions."
         },
@@ -3382,7 +3406,9 @@
             "work out the probability",
             "formal calculation",
             "compute",
-            "what are the numbers"
+            "what are the numbers",
+            "calculate the time complexity of this algorithm",
+            "what does the math say about cache hit rates here"
           ],
           "definition": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions."
         },
@@ -3412,7 +3438,9 @@
             "I need to be able to follow the logic",
             "multi-step argument",
             "iterative artifact sequence",
-            "nothing should appear from nowhere"
+            "nothing should appear from nowhere",
+            "show the derivation chain from this function's input to its output",
+            "cite the previous step's actual output before proceeding"
           ],
           "definition": "The response enforces the principle that a conclusion not anchored to its predecessor's actual output cannot be verified as continuous with it. Before producing any new reasoning, reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Reproducing the predecessor output without addressing what it specifically implies is also a violation — a step that quotes the prior output and then proceeds independently of its content has satisfied chain in form only. When the governing artifact for a step was produced by a non-adjacent predecessor rather than the immediately prior step, name that predecessor explicitly before reproducing its output — the immediately prior step is not automatically the relevant predecessor. When the required predecessor has not yet been produced because the tool call that would produce it has not been made, the required action is to make that tool call now — not to produce text that resembles the expected output. Chain does not authorize proceeding without a predecessor in context; it authorizes proceeding only after the predecessor exists as a real tool result. Auditability is a consequence of this structure, not a separate standard to satisfy."
         },
@@ -3430,7 +3458,9 @@
             "link to sources",
             "where does this come from",
             "support with citations",
-            "show your evidence"
+            "show your evidence",
+            "cite the RFC or spec that governs this API behavior",
+            "reference the ADR that justifies this architectural choice"
           ],
           "definition": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration."
         },
@@ -3493,7 +3523,9 @@
             "unify duplicate representations",
             "remove structural redundancy",
             "simplify while preserving behavior",
-            "optimize structure without changing behavior"
+            "optimize structure without changing behavior",
+            "collapse these duplicate code paths into one",
+            "consolidate these redundant abstractions"
           ],
           "definition": "The response enhances the task by identifying redundant or equivalent representations and unifying them into a minimal canonical form while preserving behavioral invariants, reducing complexity while maintaining correctness."
         },
@@ -3512,7 +3544,9 @@
             "evaluate these options",
             "side by side comparison",
             "which should I choose",
-            "pros and cons"
+            "pros and cons",
+            "compare these two implementations on performance and readability",
+            "which library should I use for this"
           ],
           "definition": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision factors. Use when the user presents options and asks which to choose or how they differ."
         },
@@ -3530,7 +3564,9 @@
             "separate what's up to me from what's not",
             "what can I influence",
             "what's within my agency",
-            "focus on what's in my control"
+            "focus on what's in my control",
+            "what can I control vs. what is external in this system",
+            "focus on the parts of this codebase I can change"
           ],
           "definition": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former."
         },
@@ -3548,7 +3584,9 @@
             "synthesize into a recommendation",
             "from all options, which is best",
             "converge on an answer",
-            "filter and recommend"
+            "filter and recommend",
+            "which implementation should I go with",
+            "narrow down these design options to one recommendation"
           ],
           "definition": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered."
         },
@@ -3594,7 +3632,9 @@
             "what must be true if",
             "derive the consequence",
             "if X then what",
-            "logically entails"
+            "logically entails",
+            "given these type constraints, what follows about valid inputs",
+            "what can I deduce about this function's behavior from its signature"
           ],
           "definition": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment explicit."
         },
@@ -3634,7 +3674,9 @@
             "investigate why",
             "find the root cause",
             "debug this",
-            "help me debug"
+            "help me debug",
+            "diagnose the root cause of this test failure",
+            "what is causing this performance regression"
           ],
           "definition": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes."
         },
@@ -3652,7 +3694,9 @@
             "what hidden factors",
             "what are we not considering",
             "analyze across dimensions",
-            "surface the implicit factors"
+            "surface the implicit factors",
+            "what dimensions define this system design problem",
+            "what factors influence this architectural decision"
           ],
           "definition": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact."
         },
@@ -3670,7 +3714,9 @@
             "what are the distinct capabilities",
             "domain boundaries",
             "how to carve up the system into domains",
-            "which team owns which"
+            "which team owns which",
+            "identify the bounded contexts in this codebase",
+            "where should this service's domain boundary be drawn"
           ],
           "definition": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities."
         },
@@ -3712,7 +3758,9 @@
             "what happens next after that",
             "unintended consequences",
             "how does this propagate",
-            "what follows downstream"
+            "what follows downstream",
+            "what are the downstream effects of changing this interface",
+            "trace the second-order effects of this refactor"
           ],
           "definition": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences."
         },
@@ -3824,7 +3872,9 @@
             "control flow",
             "how does it progress",
             "follow the data through the system",
-            "trace the path"
+            "trace the path",
+            "trace how data flows through this pipeline",
+            "walk me through the request lifecycle in this service"
           ],
           "definition": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops."
         },
@@ -3849,7 +3899,9 @@
             "what stances are being suppressed",
             "tetralemma",
             "fourfold negation",
-            "neither true nor false"
+            "neither true nor false",
+            "what if this feature is both fast and unreliable — what if it's neither",
+            "apply a two-by-two to these implementation trade-offs"
           ],
           "definition": "The response enhances the task by exhausting the logical stance space before closure: explicitly considering the affirmative position, its negation, the possibility that both hold simultaneously, and the possibility that neither holds. Each quadrant must be treated as a live candidate rather than dismissed by assumption. Use when binary framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives."
         },
@@ -3952,7 +4004,9 @@
             "find the path of least structural resistance",
             "which commitments are already latent",
             "what's illusory flexibility",
-            "work with the grain"
+            "work with the grain",
+            "what is the natural grain of this codebase — where does it want to be extended",
+            "which refactor works with the existing structure rather than against it"
           ],
           "definition": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, directional guidance, and structural prediction are all derivable from this reading."
         },
@@ -4011,7 +4065,9 @@
             "network effect",
             "how things build up",
             "rate of change over time",
-            "snowball"
+            "snowball",
+            "how does technical debt compound through feedback loops in this codebase",
+            "how do small coupling violations accumulate into architectural problems"
           ],
           "definition": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms."
         },
@@ -4029,7 +4085,9 @@
             "generalize from these observations",
             "what can I conclude from these cases",
             "what rule emerges from these instances",
-            "extrapolate from these examples"
+            "extrapolate from these examples",
+            "what general pattern can I extract from these three failing tests",
+            "what rule do these similar bugs suggest"
           ],
           "definition": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations."
         },
@@ -4047,7 +4105,9 @@
             "what would guarantee failure",
             "invert the goal",
             "work backwards from disaster",
-            "what produces the worst outcome"
+            "what produces the worst outcome",
+            "what would cause this deployment to fail completely",
+            "what changes would make this service impossible to test"
           ],
           "definition": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths."
         },
@@ -4067,7 +4127,9 @@
             "what drives adoption",
             "user motivation behind",
             "JTBD",
-            "jobs to be done"
+            "jobs to be done",
+            "what job does this API actually do for its callers",
+            "what is the user trying to accomplish when they hit this endpoint"
           ],
           "definition": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices."
         },
@@ -4089,7 +4151,9 @@
             "zoom out then zoom in",
             "from concrete to abstract and back",
             "abstraction ladder",
-            "levels of abstraction"
+            "levels of abstraction",
+            "step up to the architectural intent, then down to the specific implementation",
+            "move between the design principle and the concrete code change"
           ],
           "definition": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete consequences or implementations, ordered by importance to the audience."
         },
@@ -4121,7 +4185,9 @@
             "reframe this",
             "what's the contrarian view",
             "don't just reorganize the standard list — actually consider different candidates",
-            "if the obvious framing would produce the same items, you haven't applied lateral"
+            "if the obvious framing would produce the same items, you haven't applied lateral",
+            "what is a non-obvious solution to this bug",
+            "what would a completely different approach to this API look like"
           ],
           "definition": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, then seek a non-obvious entry point, angle, or reframing that still addresses the task. Critically, the test applies to the alternative framing too — not just the original. If the chosen alternative still produces the same content set that the obvious framing would have produced, it is not lateral: it is merely delayed convergence. The angle shift must change what is considered, not only how it is organized. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better."
         },
@@ -4140,7 +4206,9 @@
             "build a map of",
             "what's the structure of the landscape",
             "map the territory",
-            "visualize the relationships"
+            "visualize the relationships",
+            "map the relationships between these modules",
+            "surface the dependency graph of this component"
           ],
           "definition": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative."
         },
@@ -4158,7 +4226,9 @@
             "what was observed at each step",
             "capture intermediate state",
             "audit trail",
-            "what was the system state at X"
+            "what was the system state at X",
+            "record what the code state was at each stage of this refactor",
+            "audit log of what changed and why at each step"
           ],
           "definition": "The response enhances the task by capturing checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression."
         },
@@ -4176,7 +4246,9 @@
             "combining X and Y",
             "where X and Y interact",
             "navigate tensions between",
-            "find the combination that satisfies"
+            "find the combination that satisfies",
+            "find the overlap between these two abstractions",
+            "where do these two modules' responsibilities blur"
           ],
           "definition": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements."
         },
@@ -4254,7 +4326,9 @@
             "deprecation path",
             "phased transition",
             "backward compatible change",
-            "coexist old and new"
+            "coexist old and new",
+            "migrate this code from callback style to async/await",
+            "upgrade this library while keeping backward compatibility"
           ],
           "definition": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the shift."
         },
@@ -4295,7 +4369,9 @@
             "repeating structure",
             "what wraps around",
             "recurs periodically",
-            "equivalent states"
+            "equivalent states",
+            "identify the cyclic patterns in this state machine",
+            "find the repeating structure in this module's behavior"
           ],
           "definition": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined period or wraps around boundaries."
         },
@@ -4314,7 +4390,9 @@
             "what lenses should I use",
             "apply systems thinking",
             "what models explain this",
-            "name the applicable mental models"
+            "name the applicable mental models",
+            "which design patterns apply here",
+            "what mental model best explains this codebase's structure"
           ],
           "definition": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them."
         },
@@ -4376,7 +4454,9 @@
             "utilization",
             "operations research",
             "minimize wait time",
-            "optimization problem"
+            "optimization problem",
+            "identify the bottleneck in this data pipeline",
+            "apply queueing theory to this request processing system"
           ],
           "definition": "The response enhances the task by identifying operations research or management science concepts that frame the situation."
         },
@@ -4402,7 +4482,9 @@
             "what's invariant across different starting points",
             "what recurs despite variation",
             "chaos theory",
-            "nonlinear dynamics"
+            "nonlinear dynamics",
+            "what behavior does this system keep returning to under load",
+            "find the attractor state in this distributed system's failure modes"
           ],
           "definition": "The response enhances the task by varying initial conditions or assumptions across multiple trajectories and identifying the invariant structural form that behavior tends toward despite sensitive dependence on starting points. Use when a system appears complex or chaotic but may have underlying recurrent geometry — the goal is to surface the attractor shape, not predict any specific path."
         },
@@ -4420,7 +4502,9 @@
             "what determines the order",
             "dominance structure",
             "what makes one thing rank above another",
-            "ordering and precedence"
+            "ordering and precedence",
+            "what is the correct ordering of these initialization steps",
+            "define the hierarchy of dependencies in this module"
           ],
           "definition": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed."
         },
@@ -4505,7 +4589,9 @@
             "goals and anti-goals",
             "what pulls toward and pushes away",
             "what's the attractor and repeller",
-            "positive and negative forces"
+            "positive and negative forces",
+            "what does this service optimize for and what does it sacrifice",
+            "what are the attractors and repellers in this system's design space"
           ],
           "definition": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit from avoidance."
         },
@@ -4568,7 +4654,9 @@
             "probability of failure",
             "how certain are we",
             "Bayesian reasoning",
-            "likelihood"
+            "likelihood",
+            "how likely is this race condition to occur in the production system",
+            "estimate the probability of this edge case occurring"
           ],
           "definition": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes."
         },
@@ -4587,7 +4675,9 @@
             "product strategy",
             "what does the product offer",
             "user needs analysis",
-            "product thinking"
+            "product thinking",
+            "view this technical decision through a product lens",
+            "what is the user-facing impact of this implementation choice"
           ],
           "definition": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions."
         },
@@ -4607,7 +4697,9 @@
             "trace signal path through the system",
             "where does noise enter",
             "signal-to-noise",
-            "observability pipeline fidelity"
+            "observability pipeline fidelity",
+            "where does signal get lost in this event pipeline",
+            "where does data degrade as it passes through these service boundaries"
           ],
           "definition": "The response models information transfer as a staged encode/decode process, distinguishing message from signal, accounting for noise and channel distortion, and specifying how transmission errors are detected and repaired."
         },
@@ -4687,7 +4779,9 @@
             "fragility vs robustness",
             "how does it behave under stress",
             "graceful degradation",
-            "fault tolerance"
+            "fault tolerance",
+            "how resilient is this service to downstream failures",
+            "what happens to this component under partial network outages"
           ],
           "definition": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks."
         },
@@ -4706,7 +4800,9 @@
             "justify each step",
             "logical rigor",
             "no handwaving",
-            "substantiate your claims"
+            "substantiate your claims",
+            "make the reasoning behind this algorithm explicit",
+            "apply rigorous analysis to this performance claim"
           ],
           "definition": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit."
         },
@@ -4726,7 +4822,9 @@
             "risk analysis",
             "what might fail",
             "enumerate the risks",
-            "likelihood and severity"
+            "likelihood and severity",
+            "what are the risks of this deployment",
+            "what could go wrong with this refactor"
           ],
           "definition": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity."
         },
@@ -4763,7 +4861,9 @@
             "uncertainty-aware decision",
             "which option survives the most scenarios",
             "resilient to unknowns",
-            "option value under uncertainty"
+            "option value under uncertainty",
+            "does this function handle all edge cases in the input type",
+            "is this implementation robust to unexpected state"
           ],
           "definition": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single forecast."
         },
@@ -4787,7 +4887,9 @@
             "who owns this data",
             "derive X from Y instead of duplicating",
             "canonical source for",
-            "reduce duplication to derivation"
+            "reduce duplication to derivation",
+            "where is the single source of truth for this data",
+            "we have duplicate definitions of this concept — find the canonical one"
           ],
           "definition": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to derivation from a canonical source, and parallel accounts must be explicitly mapped or unified. Explanations may not treat multiple representations of the same knowledge as independent causal or justificatory elements without specifying their dependency relationship."
         },
@@ -4923,7 +5025,9 @@
             "shift perspectives",
             "what would X think about this",
             "see it through different frames",
-            "consider multiple viewpoints"
+            "consider multiple viewpoints",
+            "look at this architecture from the perspective of the on-call engineer",
+            "rotate through the developer, operator, and user perspectives on this design"
           ],
           "definition": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts."
         },
@@ -4945,7 +5049,9 @@
             "tipping point analysis",
             "what emergent effects would arise",
             "project systemic dynamics",
-            "model how effects compound over time"
+            "model how effects compound over time",
+            "trace through this code path manually to verify the logic",
+            "run a thought experiment on what happens when this cache expires"
           ],
           "definition": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, bottlenecks, tipping points, and emergent effects."
         },
@@ -5007,7 +5113,9 @@
             "branch the reasoning",
             "multiple lines of reasoning",
             "explore alternatives before choosing",
-            "parallel hypotheses"
+            "parallel hypotheses",
+            "explore multiple approaches to this refactor in parallel",
+            "generate three different implementations and compare them"
           ],
           "definition": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives."
         },
@@ -5059,7 +5167,9 @@
             "telemetry vs specification",
             "what happened when real users encountered it",
             "live environment as authority",
-            "what did the world keep"
+            "what did the world keep",
+            "does this code survive real production traffic patterns",
+            "what happened when we deployed this to staging — did it hold"
           ],
           "definition": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions determine what remains credible."
         },
@@ -5078,7 +5188,9 @@
             "what could we do",
             "survey the landscape",
             "open-ended exploration",
-            "what's possible here"
+            "what's possible here",
+            "what are all the possible approaches to this architecture problem",
+            "explore the solution space before committing to this design"
           ],
           "definition": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them."
         },
@@ -5097,7 +5209,9 @@
             "how do the parts interact",
             "unintended consequences",
             "second order effects across the system",
-            "interconnections"
+            "interconnections",
+            "apply systems thinking to this service's failure modes",
+            "identify the feedback loops causing this bug to recur"
           ],
           "definition": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that arise from their interactions rather than from parts in isolation."
         },
@@ -5116,7 +5230,9 @@
             "pros and cons of each approach",
             "alternative configurations",
             "what are we trading off",
-            "evaluate alternatives across dimensions"
+            "evaluate alternatives across dimensions",
+            "what are the trade-offs between these two architectural choices",
+            "weigh consistency vs availability for this data store decision"
           ],
           "definition": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making each force and its magnitude explicit."
         },
@@ -5140,7 +5256,9 @@
             "observable execution",
             "audit the steps",
             "I want to follow along",
-            "surface intermediate state"
+            "surface intermediate state",
+            "show your work deriving this algorithm's complexity",
+            "make each transformation step in this data pipeline visible"
           ],
           "definition": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural changes."
         },
@@ -5159,7 +5277,9 @@
             "critical blind spots",
             "what's not on our radar",
             "gaps in our knowledge",
-            "what could surprise us"
+            "what could surprise us",
+            "what don't we know about this codebase's behavior under load",
+            "identify the unknown unknowns before starting this refactor"
           ],
           "definition": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes."
         },
@@ -5215,7 +5335,9 @@
             "big-picture structure",
             "map this out conceptually",
             "visual mental model",
-            "frame this as a landscape"
+            "frame this as a landscape",
+            "think spatially about this module's dependency structure",
+            "draw the mental map of how these components relate"
           ],
           "definition": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject."
         },
@@ -9894,7 +10016,7 @@
     }
   ],
   "checksums": {
-    "axes": "cce6c03b67e8b0af30ac71b31974411b4f7b99f787764edd5fbfd06717686a73",
+    "axes": "d65efc33bc040160c40817847f19d0461b88db1cb043970990e58d40fb66f738",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",

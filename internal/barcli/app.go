@@ -370,8 +370,10 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 	if len(opts.Tokens) > 0 {
 		query = opts.Tokens[0]
 	}
-	if query == "" {
-		writeError(stderr, "lookup requires a query argument\nUsage: bar lookup <query> [--axis AXIS] [--json]")
+	// ADR-0234: --subject/--addendum enable Mode B (discovery) without a positional query.
+	// Without them, a query is still required.
+	if query == "" && opts.Subject == "" && opts.Addendum == "" {
+		writeError(stderr, "lookup requires a query argument\nUsage: bar lookup [<query>] [--axis AXIS] [--subject TEXT] [--addendum TEXT] [--json]")
 		return 1
 	}
 
@@ -387,7 +389,7 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	results := LookupTokens(query, grammar, axisFilter)
+	results := LookupTokensWithContext(query, grammar, axisFilter, opts.Subject, opts.Addendum)
 
 	if opts.JSON {
 		type jsonSeqMember struct {
@@ -400,6 +402,7 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 			Label        string          `json:"label"`
 			Tier         int             `json:"tier"`
 			Score        float64         `json:"score,omitempty"`
+			ContextScore float64         `json:"context_score"`
 			MatchedField string          `json:"matched_field"`
 			MatchedText  string          `json:"matched_text"`
 			Sequences    []jsonSeqMember `json:"sequences,omitempty"`
@@ -416,6 +419,7 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 				Label:        r.Label,
 				Tier:         r.Tier,
 				Score:        r.Score,
+				ContextScore: r.ContextScore,
 				MatchedField: r.MatchedField,
 				MatchedText:  r.MatchedText,
 				Sequences:    seqs,

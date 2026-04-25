@@ -86,6 +86,13 @@ func renderQuickStart(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "bar lookup \"root cause\"             # → method:diagnose, task:probe, ...\n")
 	fmt.Fprintf(w, "bar lookup debug --axis method       # filter to method axis only\n")
 	fmt.Fprintf(w, "bar lookup \"compare options\" --json  # machine-readable JSON output\n")
+	fmt.Fprintf(w, "\n# Contextual lookup (ADR-0234): use --subject/--addendum to guide token discovery\n")
+	fmt.Fprintf(w, "# Mode B — discovery (no query): subject+addendum drive BM25 ranking across all tokens\n")
+	fmt.Fprintf(w, "bar lookup --subject \"explain auth code to my manager\"          # ranked by relevance\n")
+	fmt.Fprintf(w, "bar lookup --subject \"explain auth code\" --axis task            # scoped to task axis\n")
+	fmt.Fprintf(w, "# Mode A — confirmation (query + context): tiers preserved, reranked by context score\n")
+	fmt.Fprintf(w, "bar lookup show --subject \"explain auth code to my manager\"     # is 'show' a good fit?\n")
+	fmt.Fprintf(w, "bar lookup show --subject \"explain auth code\" --json            # context_score in output\n")
 	fmt.Fprintf(w, "```\n\n")
 }
 

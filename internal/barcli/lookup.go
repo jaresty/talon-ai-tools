@@ -15,6 +15,87 @@ type LookupResult struct {
 	MatchedField string  // "token", "heuristics", "distinctions", "definition", or "bm25"
 	MatchedText  string  // the specific phrase that matched
 	Sequences    []SequenceMembership // ADR-0225: sequence memberships for this token
+	ContextScore float64 // ADR-0234: secondary BM25 score from --subject/--addendum; 0 when not provided
+}
+
+// LookupTokensWithContext is like LookupTokens but accepts subject and addendum
+// for contextual reranking (ADR-0234).
+// Mode B: query empty, subject/addendum non-empty → pure BM25 discovery.
+// Mode A: query non-empty, subject/addendum non-empty → tier results reranked within tier by context BM25.
+// Falls back to LookupTokens when subject and addendum are both empty.
+func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, addendum string) []LookupResult {
+	contextQuery := strings.TrimSpace(subject + " " + addendum)
+
+	// Mode B: no positional query — BM25 discovery from subject+addendum.
+	if query == "" && contextQuery != "" {
+		docs := buildTokenDocs(g, axisFilter)
+		scores := bm25Scores(docs, contextQuery)
+		type bm25Candidate struct {
+			id    string
+			score float64
+		}
+		var ranked []bm25Candidate
+		for _, doc := range docs {
+			if score, ok := scores[doc.id]; ok {
+				ranked = append(ranked, bm25Candidate{id: doc.id, score: score})
+			}
+		}
+		sort.Slice(ranked, func(i, j int) bool {
+			return ranked[i].score > ranked[j].score
+		})
+		const resultCap = 10
+		var results []LookupResult
+		for _, r := range ranked {
+			if len(results) >= resultCap {
+				break
+			}
+			colonIdx := strings.Index(r.id, ":")
+			if colonIdx < 0 {
+				continue
+			}
+			axis := r.id[:colonIdx]
+			token := r.id[colonIdx+1:]
+			results = append(results, LookupResult{
+				Axis:         axis,
+				Token:        token,
+				Label:        g.AxisLabel(axis, token),
+				Tier:         -1,
+				Score:        r.score,
+				ContextScore: r.score,
+				MatchedField: "bm25",
+				Sequences:    g.SequencesForToken(r.id),
+			})
+		}
+		return results
+	}
+
+	// No context — fall back to existing behavior.
+	if contextQuery == "" {
+		return LookupTokens(query, g, axisFilter)
+	}
+
+	// Mode A: positional query present + context → tier results with context reranking.
+	results := LookupTokens(query, g, axisFilter)
+	if len(results) == 0 {
+		return results
+	}
+
+	// Compute secondary BM25 scores from context.
+	docs := buildTokenDocs(g, axisFilter)
+	ctxScores := bm25Scores(docs, contextQuery)
+	for i := range results {
+		id := results[i].Axis + ":" + results[i].Token
+		results[i].ContextScore = ctxScores[id]
+	}
+
+	// Rerank within each tier group by ContextScore desc.
+	sort.SliceStable(results, func(i, j int) bool {
+		if results[i].Tier != results[j].Tier {
+			return results[i].Tier > results[j].Tier
+		}
+		return results[i].ContextScore > results[j].ContextScore
+	})
+	return results
 }
 
 // validLookupAxes lists all axis names that can be used as --axis filters.

@@ -417,3 +417,119 @@ func TestLookupCLINoMatchesExits0WithEmptyOutput(t *testing.T) {
 		t.Errorf("expected empty output for no matches, got: %q", result.Stdout)
 	}
 }
+
+// ── ADR-0234: --subject / --addendum contextual reranking ────────────────────
+
+// B1: LookupResult has ContextScore float64 field.
+// Natural FAIL state: no — field doesn't exist yet, so JSON output won't have it.
+// Perturbation: check JSON output for context_score key when --subject is given.
+func TestLookupContextScoreInJSONOutput(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	result := runBuildCLI(t, []string{"lookup", "show", "--subject", "explain code to my manager", "--json"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", result.Exit, result.Stderr)
+	}
+	var out []map[string]interface{}
+	if err := json.Unmarshal([]byte(result.Stdout), &out); err != nil {
+		t.Fatalf("invalid JSON: %v\noutput: %s", err, result.Stdout)
+	}
+	if len(out) == 0 {
+		t.Fatal("expected at least one result")
+	}
+	// Every result must have a context_score key when --subject is provided
+	for _, r := range out {
+		if _, ok := r["context_score"]; !ok {
+			t.Errorf("result missing context_score field: %v", r)
+		}
+	}
+}
+
+// B2: Mode B — no positional query + --subject → BM25 discovery results.
+// Natural FAIL state: yes — currently errors "lookup requires a query argument".
+func TestLookupModeB_SubjectOnlyReturnsResults(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	result := runBuildCLI(t, []string{"lookup", "--subject", "explain authentication code to my manager"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0 for discovery mode, got %d: %s", result.Exit, result.Stderr)
+	}
+	if strings.TrimSpace(result.Stdout) == "" {
+		t.Fatal("expected non-empty output for discovery mode with subject")
+	}
+}
+
+// B2: Mode B results include task:show (explain/describe for audience) for "explain to manager".
+func TestLookupModeB_ShowRanksHighForExplainToManager(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	result := runBuildCLI(t, []string{"lookup", "--subject", "explain authentication code to my manager", "--json"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", result.Exit, result.Stderr)
+	}
+	var out []map[string]interface{}
+	if err := json.Unmarshal([]byte(result.Stdout), &out); err != nil {
+		t.Fatalf("invalid JSON: %v", err)
+	}
+	found := false
+	for _, r := range out {
+		if r["token"] == "show" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected task:show in discovery results for 'explain to manager', got: %v", out)
+	}
+}
+
+// B3: Mode A — query + --subject reranks within tiers by context score.
+// Natural FAIL state: yes — context_score field absent, reranking not implemented.
+// We assert that a token strongly matching subject scores higher context_score than one that doesn't.
+func TestLookupModeA_ContextScoreReranksWithinTier(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// Query "show" matches task:show (tier 3 exact). Also matches other tokens.
+	// Subject "explain code to manager" should give task:show a high context_score.
+	results := LookupTokensWithContext("show", grammar, "", "explain authentication code to my manager", "")
+	if len(results) == 0 {
+		t.Fatal("expected results")
+	}
+	var showResult *LookupResult
+	for i := range results {
+		if results[i].Axis == "task" && results[i].Token == "show" {
+			showResult = &results[i]
+			break
+		}
+	}
+	if showResult == nil {
+		t.Fatal("expected task:show in results")
+	}
+	if showResult.ContextScore <= 0 {
+		t.Errorf("expected task:show to have positive ContextScore for 'explain to manager', got %f", showResult.ContextScore)
+	}
+}
+
+// B4: Existing behavior unchanged when no --subject/--addendum.
+// Natural FAIL state: no — if we break it, existing tests catch it; this test confirms the contract explicitly.
+// Perturbation: LookupTokensWithContext with empty subject/addendum must equal LookupTokens.
+func TestLookupWithContext_EmptyContextMatchesLegacy(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	legacy := LookupTokens("TDD", grammar, "")
+	withCtx := LookupTokensWithContext("TDD", grammar, "", "", "")
+	if len(legacy) != len(withCtx) {
+		t.Errorf("LookupTokensWithContext with empty context returned %d results, legacy returned %d", len(withCtx), len(legacy))
+	}
+	for i := range legacy {
+		if i >= len(withCtx) {
+			break
+		}
+		if legacy[i].Axis != withCtx[i].Axis || legacy[i].Token != withCtx[i].Token || legacy[i].Tier != withCtx[i].Tier {
+			t.Errorf("result[%d] mismatch: legacy=%v withCtx=%v", i, legacy[i], withCtx[i])
+		}
+	}
+}

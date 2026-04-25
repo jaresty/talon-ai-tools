@@ -624,3 +624,23 @@ func TestLookupPlaintextNoTierNumber(t *testing.T) {
 		t.Errorf("plain-text output should not include tier number, got:\n%s", result.Stdout)
 	}
 }
+
+// TestTokenHeuristicCoverage asserts every token in every axis has ≥5 heuristics.
+// This test is intentionally dynamic: it iterates all axes/tokens from the grammar
+// so that newly added tokens are automatically covered without updating the test.
+func TestTokenHeuristicCoverage(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	for axis, tokens := range g.Axes.Metadata {
+		for token, meta := range tokens {
+			t.Run(axis+":"+token, func(t *testing.T) {
+				if len(meta.Heuristics) < 5 {
+					t.Errorf("%s:%s has %d heuristics, want ≥5", axis, token, len(meta.Heuristics))
+				}
+			})
+		}
+	}
+}

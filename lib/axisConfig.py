@@ -2568,7 +2568,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "diagram",
                 }
             ],
-            "heuristics": ["D2 diagram", "D2 format", "sketch diagram", "d2 source"],
+            "heuristics": [
+                "D2 diagram",
+                "D2 format",
+                "sketch diagram",
+                "d2 source",
+                "diagram in D2 language",
+                "draw this as a D2 sketch",
+                "architecture sketch in D2",
+                "generate D2 markup",
+            ],
         },
         "skill": {
             "distinctions": [
@@ -2642,6 +2651,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "live workshop agenda",
                 "meeting agenda with timing cues",
                 "synchronous workshop plan",
+                "timed agenda for a live session",
+                "plan for a real-time meeting",
+                "schedule with time blocks",
+                "agenda with facilitation timing",
             ],
         },
         "video": {
@@ -2932,6 +2945,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "both the structural examination and the actions",
                 "understand it structurally while also acting on that understanding",
                 "analysis and actions both",
+                "give me the meaning and the moves",
             ],
         },
         "dig": {
@@ -2968,6 +2982,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "ground it in examples and orient toward both structure and action",
                 "real examples shaping both what it reveals and what to do",
                 "grounded in specifics, oriented toward structure and action",
+                "specific examples, oriented toward both what they reveal and what to do",
             ],
         },
         "dip ong": {
@@ -2986,6 +3001,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "ground it in specifics and orient toward what to do",
                 "practical examples with actions",
                 "real cases with actionable direction",
+                "specific cases, oriented toward what to do next",
             ],
         },
         "dip rog": {
@@ -3004,6 +3020,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "ground it in specifics and orient toward its structure",
                 "specifics and what their structure reveals",
                 "specific example oriented toward structural patterns",
+                "real cases, oriented toward what their structure reveals",
             ],
         },
         "fig": {
@@ -3041,6 +3058,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "abstract and concrete, structural and acting",
                 "all four compass directions at once",
                 "span abstract to concrete while orienting toward structure and action",
+                "cover the full range and orient toward both what it reveals and what to do",
             ],
         },
         "fip ong": {
@@ -3059,6 +3077,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "span abstract to concrete and orient toward action",
                 "both levels of abstraction, shaped toward what to do",
                 "span abstract to concrete, orienting toward actions",
+                "cover the full range of abstraction, oriented toward what to do",
             ],
         },
         "fip rog": {
@@ -3077,6 +3096,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "span abstract to concrete and orient toward structure",
                 "both levels of abstraction, shaped by what the structure reveals",
                 "span abstract to concrete, orienting toward structural meaning",
+                "cover the full range of abstraction, oriented toward what the structure reveals",
             ],
         },
         "fly bog": {
@@ -3095,6 +3115,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "big picture anchoring, orienting toward both structure and action",
                 "principles shaping both what they reveal and what to do",
                 "abstract anchoring, oriented toward structure and action",
+                "big picture framing, oriented toward both what it reveals and what to do",
             ],
         },
         "fly ong": {
@@ -3113,6 +3134,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "big picture anchoring, oriented toward action",
                 "principles shaping what to do",
                 "big picture anchoring with action orientation",
+                "high-level framing, oriented toward what to do",
             ],
         },
         "fly rog": {
@@ -3131,6 +3153,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "big picture anchoring, oriented toward structure",
                 "principles shaping what the structure reveals",
                 "big picture anchoring with structural orientation",
+                "high-level framing, oriented toward what the structure reveals",
             ],
         },
         "fog": {
@@ -3161,6 +3184,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "no directional preference",
                 "null direction",
                 "no compass push",
+                "balanced response without leaning toward structure or action",
+                "don't push it in any compass direction",
             ],
         },
         "ong": {
@@ -3180,6 +3205,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "give me the actions with follow-on steps",
                 "what do I do and what's the next step after that",
                 "next steps and their extensions",
+                "orient toward acting and what comes after each action",
             ],
         },
         "rog": {
@@ -3206,6 +3232,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how is it organised and what does that reveal",
                 "walk me through the structure and reflect on the implications",
                 "what does the organisation tell us",
+                "orient toward structural examination and what it implies",
             ],
         },
     },
@@ -3345,6 +3372,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "work through incrementally",
                 "with decision points",
                 "iterative design",
+                "let's build this together step by step",
+                "pause for my input before continuing",
+                "collaborative design session",
+                "check with me before each major decision",
+                "co-design with checkpoints",
             ],
         },
         "commit": {
@@ -3434,6 +3466,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "facilitate a X",
                 "run a retrospective",
                 "workshop planning",
+                "design a workshop agenda",
+                "plan a team meeting",
+                "create a facilitation guide",
+                "structure a working session",
+                "meeting agenda with facilitation notes",
             ],
         },
         "faq": {
@@ -3734,6 +3771,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "should we adopt X?",
                 "spike on Y",
                 "investigation backlog item",
+                "write a research ticket",
+                "time-boxed investigation",
+                "what do we need to learn before deciding",
+                "evaluate whether to build X",
+                "technical investigation document",
             ],
         },
         "story": {
@@ -3786,6 +3828,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "classify all types of X",
                 "what kinds of Y exist",
                 "type hierarchy",
+                "give me a classification scheme",
+                "create a categorization framework",
+                "build a taxonomy of",
+                "how do these things relate in a hierarchy",
+                "structured categorization with distinguishing attributes",
             ],
         },
         "test": {
@@ -3934,6 +3981,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "Wardley map",
                 "map on evolution axis",
                 "genesis to commodity",
+                "map components by evolution stage",
+                "strategic landscape mapping",
+                "value chain on an evolution axis",
+                "situational awareness map",
+                "plot capabilities from custom-built to commodity",
             ],
         },
         "wasinawa": {
@@ -3948,6 +4000,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "reflect on incident",
                 "what went wrong and what to do next",
                 "lessons learned",
+                "what happened, so what, now what",
+                "retrospective reflection on what occurred",
+                "incident review format",
+                "structured debrief",
+                "post-mortem reflection",
             ],
         },
     },
@@ -4787,6 +4844,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what check would reject a bad version",
             ],
         },
+        "gloss": {
+            "distinctions": [
+                {
+                    "note": "summary = condense content; gloss = compress an unfamiliar system into a tractable representation for someone who needs to understand and intervene, "
+                    "explicitly naming what is lost",
+                    "token": "summary",
+                },
+                {
+                    "note": "define = state the meaning of a term; gloss = map a whole system's structure for an external actor, identifying key mechanisms, actors, and omissions",
+                    "token": "define",
+                },
+            ],
+            "heuristics": [
+                "explain this system to someone who needs to intervene in it",
+                "compress this codebase for an outside reviewer",
+                "give me a map of this system for someone unfamiliar with it",
+                "what does an outsider need to know to work on this",
+                "summarize the key mechanisms and actors, noting what is lost",
+                "orient me to this system quickly",
+                "what is the minimal model someone needs to understand to touch this",
+                "compress the domain into a working model for an external actor",
+            ],
+        },
         "grain": {
             "distinctions": [
                 {
@@ -5162,6 +5242,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "name the applicable mental models",
             ],
         },
+        "mu": {
+            "distinctions": [
+                {
+                    "note": "paradox = hold contradictory claims in tension without resolution; mu = enact the irresolution structurally so the reader cannot escape it by thinking "
+                    "harder",
+                    "token": "paradox",
+                },
+                {
+                    "note": "drift = follow the subject's own movement; mu = create structural irresolution from the subject's internal tension, not just follow its drift",
+                    "token": "drift",
+                },
+            ],
+            "heuristics": [
+                "write it so the reader gets stuck",
+                "don't resolve the tension",
+                "enact the irresolution rather than describing it",
+                "make the contradiction unavoidable for the reader",
+                "let the subject's own structure create the tension",
+                "don't name the paradox, make the reader feel it",
+                "write it so thinking harder doesn't help",
+                "hold the irresolution without explaining it away",
+            ],
+        },
         "objectivity": {
             "distinctions": [
                 {
@@ -5258,6 +5361,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how did this evolve",
                 "archaeology of the codebase",
                 "why is this the way it is",
+            ],
+        },
+        "paradox": {
+            "distinctions": [
+                {
+                    "note": "mu = enact irresolution structurally so the reader cannot escape it; paradox = name the tension explicitly and hold it without resolving or "
+                    "synthesizing",
+                    "token": "mu",
+                },
+                {
+                    "note": "inversion = start from failure outcomes and work backward; paradox = hold contradictory claims in productive tension without resolving either",
+                    "token": "inversion",
+                },
+            ],
+            "heuristics": [
+                "hold the contradiction without resolving it",
+                "don't synthesize or reconcile",
+                "name the tension and sit with it",
+                "what is the productive paradox here",
+                "both are true, don't collapse them",
+                "resist the urge to resolve this",
+                "what resists analysis without dissolving",
+                "name what analytical tools can't reach",
             ],
         },
         "perturb": {

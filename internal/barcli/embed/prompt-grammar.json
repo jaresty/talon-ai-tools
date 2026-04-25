@@ -1523,7 +1523,11 @@
             "D2 diagram",
             "D2 format",
             "sketch diagram",
-            "d2 source"
+            "d2 source",
+            "diagram in D2 language",
+            "draw this as a D2 sketch",
+            "architecture sketch in D2",
+            "generate D2 markup"
           ],
           "definition": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the output is syntactically correct and compiles successfully with the D2 CLI."
         },
@@ -1602,7 +1606,11 @@
             "session plan",
             "live workshop agenda",
             "meeting agenda with timing cues",
-            "synchronous workshop plan"
+            "synchronous workshop plan",
+            "timed agenda for a live session",
+            "plan for a real-time meeting",
+            "schedule with time blocks",
+            "agenda with facilitation timing"
           ],
           "definition": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text."
         },
@@ -1906,7 +1914,8 @@
             "examine what it means AND tell me what to do about it",
             "both the structural examination and the actions",
             "understand it structurally while also acting on that understanding",
-            "analysis and actions both"
+            "analysis and actions both",
+            "give me the meaning and the moves"
           ],
           "definition": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), covering structure, implications, actions, and extensions together."
         },
@@ -1944,7 +1953,8 @@
             "concrete grounding with structural and action orientation",
             "ground it in examples and orient toward both structure and action",
             "real examples shaping both what it reveals and what to do",
-            "grounded in specifics, oriented toward structure and action"
+            "grounded in specifics, oriented toward structure and action",
+            "specific examples, oriented toward both what they reveal and what to do"
           ],
           "definition": "The response additionally orients toward the concrete across the full horizontal span — grounded in specific examples and details, shaped by structural examination and action together."
         },
@@ -1963,7 +1973,8 @@
             "concrete examples with action orientation",
             "ground it in specifics and orient toward what to do",
             "practical examples with actions",
-            "real cases with actionable direction"
+            "real cases with actionable direction",
+            "specific cases, oriented toward what to do next"
           ],
           "definition": "The response additionally orients toward the concrete and acting — grounded in specific examples and details, shaped toward identifying what to do and extending those actions."
         },
@@ -1982,7 +1993,8 @@
             "concrete examples with structural orientation",
             "ground it in specifics and orient toward its structure",
             "specifics and what their structure reveals",
-            "specific example oriented toward structural patterns"
+            "specific example oriented toward structural patterns",
+            "real cases, oriented toward what their structure reveals"
           ],
           "definition": "The response additionally orients toward the concrete and structural — grounded in specific examples and details, shaped by how they are organized and what that reveals."
         },
@@ -2021,7 +2033,8 @@
             "full vertical and horizontal orientation",
             "abstract and concrete, structural and acting",
             "all four compass directions at once",
-            "span abstract to concrete while orienting toward structure and action"
+            "span abstract to concrete while orienting toward structure and action",
+            "cover the full range and orient toward both what it reveals and what to do"
           ],
           "definition": "The response additionally orients across all four compass dimensions — spanning abstract and concrete while shaped by structural examination and action together."
         },
@@ -2040,7 +2053,8 @@
             "abstract and concrete with action orientation",
             "span abstract to concrete and orient toward action",
             "both levels of abstraction, shaped toward what to do",
-            "span abstract to concrete, orienting toward actions"
+            "span abstract to concrete, orienting toward actions",
+            "cover the full range of abstraction, oriented toward what to do"
           ],
           "definition": "The response additionally orients across the full vertical axis toward action — spanning abstract and concrete, shaped toward identifying what to do and extending those actions."
         },
@@ -2059,7 +2073,8 @@
             "abstract and concrete with structural orientation",
             "span abstract to concrete and orient toward structure",
             "both levels of abstraction, shaped by what the structure reveals",
-            "span abstract to concrete, orienting toward structural meaning"
+            "span abstract to concrete, orienting toward structural meaning",
+            "cover the full range of abstraction, oriented toward what the structure reveals"
           ],
           "definition": "The response additionally orients across the full vertical axis toward the structural — spanning abstract and concrete, shaped by how the subject is organized and what that reveals."
         },
@@ -2078,7 +2093,8 @@
             "abstract grounding with structural and action orientation",
             "big picture anchoring, orienting toward both structure and action",
             "principles shaping both what they reveal and what to do",
-            "abstract anchoring, oriented toward structure and action"
+            "abstract anchoring, oriented toward structure and action",
+            "big picture framing, oriented toward both what it reveals and what to do"
           ],
           "definition": "The response additionally orients toward the abstract across the full horizontal span — anchored in general patterns and principles, shaped by structural examination and action together."
         },
@@ -2097,7 +2113,8 @@
             "abstract grounding with action orientation",
             "big picture anchoring, oriented toward action",
             "principles shaping what to do",
-            "big picture anchoring with action orientation"
+            "big picture anchoring with action orientation",
+            "high-level framing, oriented toward what to do"
           ],
           "definition": "The response additionally orients toward the abstract and acting — anchored in general patterns and principles, shaped toward identifying what to do and extending those actions."
         },
@@ -2116,7 +2133,8 @@
             "abstract grounding with structural orientation",
             "big picture anchoring, oriented toward structure",
             "principles shaping what the structure reveals",
-            "big picture anchoring with structural orientation"
+            "big picture anchoring with structural orientation",
+            "high-level framing, oriented toward what the structure reveals"
           ],
           "definition": "The response additionally orients toward the abstract and structural — anchored in general patterns and principles, shaped by how they are organized and what that reveals."
         },
@@ -2147,7 +2165,9 @@
           "heuristics": [
             "no directional preference",
             "null direction",
-            "no compass push"
+            "no compass push",
+            "balanced response without leaning toward structure or action",
+            "don't push it in any compass direction"
           ],
           "definition": "The response applies no directional orientation. Use when a directional token is required by the grammar but no compass push is desired."
         },
@@ -2166,7 +2186,8 @@
             "what actions should I take and what comes next after each",
             "give me the actions with follow-on steps",
             "what do I do and what's the next step after that",
-            "next steps and their extensions"
+            "next steps and their extensions",
+            "orient toward acting and what comes after each action"
           ],
           "definition": "The response additionally orients toward action and extension — identifying what to do and extending those actions to related situations or next steps."
         },
@@ -2193,7 +2214,8 @@
             "describe the structure and what it reveals",
             "how is it organised and what does that reveal",
             "walk me through the structure and reflect on the implications",
-            "what does the organisation tell us"
+            "what does the organisation tell us",
+            "orient toward structural examination and what it implies"
           ],
           "definition": "The response additionally orients toward the structural and reflective dimension — how the subject is organized and what that organization reveals."
         }
@@ -2338,7 +2360,12 @@
           "heuristics": [
             "work through incrementally",
             "with decision points",
-            "iterative design"
+            "iterative design",
+            "let's build this together step by step",
+            "pause for my input before continuing",
+            "collaborative design session",
+            "check with me before each major decision",
+            "co-design with checkpoints"
           ],
           "definition": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Each turn produces the channel output (code, html, diagram, etc.) in its current state — not chat text. Questions are asked within the channel format (comments, placeholders, or UI hints). With output-exclusive channel, produces the artifact. Without, conducts interactively with channel as the response medium."
         },
@@ -2430,7 +2457,12 @@
           "heuristics": [
             "facilitate a X",
             "run a retrospective",
-            "workshop planning"
+            "workshop planning",
+            "design a workshop agenda",
+            "plan a team meeting",
+            "create a facilitation guide",
+            "structure a working session",
+            "meeting agenda with facilitation notes"
           ],
           "definition": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide."
         },
@@ -2743,7 +2775,12 @@
           "heuristics": [
             "should we adopt X?",
             "spike on Y",
-            "investigation backlog item"
+            "investigation backlog item",
+            "write a research ticket",
+            "time-boxed investigation",
+            "what do we need to learn before deciding",
+            "evaluate whether to build X",
+            "technical investigation document"
           ],
           "definition": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks."
         },
@@ -2798,7 +2835,12 @@
           "heuristics": [
             "classify all types of X",
             "what kinds of Y exist",
-            "type hierarchy"
+            "type hierarchy",
+            "give me a classification scheme",
+            "create a categorization framework",
+            "build a taxonomy of",
+            "how do these things relate in a hierarchy",
+            "structured categorization with distinguishing attributes"
           ],
           "definition": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes clearly. Output adapts to channel: code channel → type system (interfaces, enums, hierarchies); markup → hierarchical structure; no channel → prose sections."
         },
@@ -2953,7 +2995,12 @@
           "heuristics": [
             "Wardley map",
             "map on evolution axis",
-            "genesis to commodity"
+            "genesis to commodity",
+            "map components by evolution stage",
+            "strategic landscape mapping",
+            "value chain on an evolution axis",
+            "situational awareness map",
+            "plot capabilities from custom-built to commodity"
           ],
           "definition": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity."
         },
@@ -2967,7 +3014,12 @@
           "heuristics": [
             "reflect on incident",
             "what went wrong and what to do next",
-            "lessons learned"
+            "lessons learned",
+            "what happened, so what, now what",
+            "retrospective reflection on what occurred",
+            "incident review format",
+            "structured debrief",
+            "post-mortem reflection"
           ],
           "definition": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps."
         }
@@ -3844,6 +3896,29 @@
           ],
           "definition": "The response enforces six principles. Principle 1 (root): a FAIL observation establishes that an assertion can detect the governed behavior's absence and identify which contract was violated — nothing that does not meet both conditions is a FAIL observation. A passing observation is invisible. Principle 2 (execution): an assertion fires only when execution reaches and evaluates the assertion statement — errors before that point, reasoning about what a test would produce, and compile failures are not FAIL observations because the assertion did not execute. When a test does not compile, write a stub (minimal implementation with correct signatures and no-op behavior) so the test compiles and runs, then collect the behavioral FAIL. Principle 3 (per-assertion coverage): a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not reached or that passed carry zero coverage. Principle 4 (no-natural-FAIL-state): an assertion whose absence is indistinguishable from the behavior being correctly absent passes trivially when the behavior is absent — structural test: does this assertion pass when the specific behavior being governed does not exist? 'The specific behavior does not exist' means the governed contract is not in effect — not merely that no code implements it. For assertions governing error or boundary conditions on a system with existing default behavior, the structural test must be run against the system with default behavior intact; if the default behavior satisfies the assertion, it has no natural FAIL state. If yes, it has no natural FAIL state and requires perturbation: run it against a state where the behavior exists but is deliberately wrong. Principle 5 (type matching): Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6 (proximity): prefer the assertion layer closest to the behavior that can observe a FAIL — the further the assertion from the behavior, the weaker the attribution to the governed contract (Principle 1 corollary). In multi-layer work, proximity requires an independently-failing per-layer assertion: a cross-layer FAIL cannot isolate which layer's contract was violated. Principle 7 (durability): assertion durability must match behavior durability — every permanent behavioral change requires a committed, automatically re-executable unit assertion in the test suite. A session-only invocation, manual check, or one-off script is not durable: it demonstrates current state but will not re-fire when behavior regresses. A FAIL tool result from a session-only script satisfies the Phase 2 observation requirement but does not close the implementation step; the committed assertion must exist before the step closes. Named exceptions (structural test required to invoke — self-assessment is not sufficient): Exception A (structural floor): when the behavior produces no observable output of any kind — no file, no parsed structure, no exit code, no return value — behavioral assertions are impossible and structural floor assertions (file existence, identifier presence) are required instead; these do not satisfy gate; a manual verification protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. Structural test to invoke: would the behavior produce any observable output if it ran? If yes, Exception A does not apply. Exception B (exploratory): when the task has no predetermined correct output — the goal is to discover what is measurable or detectable, not to implement a specified behavior — governing assertions must be observability assertions (claims about what can be detected or measured), not outcome assertions that encode a direction before exploration has occurred. Structural test to invoke: is there a specified correct output? If yes, Exception B does not apply. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — structural test: does this assertion pass when the specific behavior being governed does not exist?> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Phase 1 must be anchored to the prior rung's artifact — the rung immediately above the assertions rung in the ladder (acceptance criteria, formal specification, or equivalent). Phase 1 is complete when: (a) the source artifact has been read, (b) every assertion identifiable in that artifact has a classification block with all four fields present, and (c) the count of blocks matches the count of identifiable assertions. Declaring Phase 1 complete without reading the source artifact is not permitted. PHASE 2 — coverage artifact (tool result required before implementation): every assertion requires a FAIL tool result before any implementation step. For natural-FAIL-state assertions (Natural FAIL state: yes), the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result — a fabricated or paraphrased output is a chain violation. Phase 2 is complete when every assertion has a COMPLETE status line backed by a real tool result. Then derive the process these principles require and follow it — the derivation must be visible. RE-ANCHORING is the per-tool-call enforcement of Phase 2 — it does not introduce a separate requirement but makes Phase 2's gate operate at tool-call granularity rather than step granularity. An implementation tool call is any tool call that modifies system state (file edit, write, shell command that changes behavior); read, search, and classification tool calls are not governed by this requirement. Immediately before each implementation tool call, produce a one-line governing artifact citation: 'Governing artifact: <verbatim key output of the FAIL tool result that governs this step>' or 'Governing artifact: NOT YET PRODUCED — producing now' followed immediately by the artifact-producing tool call and nothing else. The re-anchoring line is not a planning note — it is a gate. If it cannot be written truthfully, the tool call is not permitted. Producing the Phase 1 classification block, the dependency graph, or any other planning artifact does not satisfy this requirement — only a FAIL tool result in the transcript satisfies it. The protocol does not switch off after planning; the re-anchoring check runs at every implementation tool call for the duration of the task."
         },
+        "gloss": {
+          "distinctions": [
+            {
+              "note": "summary = condense content; gloss = compress an unfamiliar system into a tractable representation for someone who needs to understand and intervene, explicitly naming what is lost",
+              "token": "summary"
+            },
+            {
+              "note": "define = state the meaning of a term; gloss = map a whole system's structure for an external actor, identifying key mechanisms, actors, and omissions",
+              "token": "define"
+            }
+          ],
+          "heuristics": [
+            "explain this system to someone who needs to intervene in it",
+            "compress this codebase for an outside reviewer",
+            "give me a map of this system for someone unfamiliar with it",
+            "what does an outsider need to know to work on this",
+            "summarize the key mechanisms and actors, noting what is lost",
+            "orient me to this system quickly",
+            "what is the minimal model someone needs to understand to touch this",
+            "compress the domain into a working model for an external actor"
+          ],
+          "definition": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression."
+        },
         "grain": {
           "distinctions": [
             {
@@ -4230,6 +4305,29 @@
           ],
           "definition": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them."
         },
+        "mu": {
+          "distinctions": [
+            {
+              "note": "paradox = hold contradictory claims in tension without resolution; mu = enact the irresolution structurally so the reader cannot escape it by thinking harder",
+              "token": "paradox"
+            },
+            {
+              "note": "drift = follow the subject's own movement; mu = create structural irresolution from the subject's internal tension, not just follow its drift",
+              "token": "drift"
+            }
+          ],
+          "heuristics": [
+            "write it so the reader gets stuck",
+            "don't resolve the tension",
+            "enact the irresolution rather than describing it",
+            "make the contradiction unavoidable for the reader",
+            "let the subject's own structure create the tension",
+            "don't name the paradox, make the reader feel it",
+            "write it so thinking harder doesn't help",
+            "hold the irresolution without explaining it away"
+          ],
+          "definition": "The response enacts the subject's central irresolution rather than describing or resolving it. The tension must arise from the subject's own internal structure — not imported from general discourse about the domain. The irresolution is not a tone or atmosphere — it is structural: the reader cannot resolve it by thinking harder. Do not name the tension or state that something cannot be resolved. The response succeeds if the reader cannot engage with it without first becoming stuck."
+        },
         "objectivity": {
           "distinctions": [
             {
@@ -4332,6 +4430,29 @@
             "why is this the way it is"
           ],
           "definition": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state."
+        },
+        "paradox": {
+          "distinctions": [
+            {
+              "note": "mu = enact irresolution structurally so the reader cannot escape it; paradox = name the tension explicitly and hold it without resolving or synthesizing",
+              "token": "mu"
+            },
+            {
+              "note": "inversion = start from failure outcomes and work backward; paradox = hold contradictory claims in productive tension without resolving either",
+              "token": "inversion"
+            }
+          ],
+          "heuristics": [
+            "hold the contradiction without resolving it",
+            "don't synthesize or reconcile",
+            "name the tension and sit with it",
+            "what is the productive paradox here",
+            "both are true, don't collapse them",
+            "resist the urge to resolve this",
+            "what resists analysis without dissolving",
+            "name what analytical tools can't reach"
+          ],
+          "definition": "The response holds the subject as an unresolved generative tension rather than converging toward explanation or conclusion. It names what resists analysis without substituting a reframing that dissolves the resistance. Synthesis, resolution, and explanation are not valid closing moves — the response ends at the boundary of what analytical tools can reach."
         },
         "perturb": {
           "distinctions": [
@@ -9758,7 +9879,7 @@
     }
   ],
   "checksums": {
-    "axes": "35bcf979a50a5ec9ee350a6a53b161304ab8fa2ce07f1c4da9c0d37343c43956",
+    "axes": "e5184e48aa87fecaed8f609190074edf77bd86f936d8543cf2b933a9ac3e45eb",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",

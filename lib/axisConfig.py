@@ -4944,8 +4944,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "open-ended task with no obvious structure",
                 "make the gap between appearance and reality visible",
                 "enforce your own process before acting",
-                "write a test before touching the code",
-                "I need a method before writing this implementation",
+                "before touching this codebase, derive what correctness means for this change",
+                "I don't know what process this refactor needs — figure it out first",
             ],
         },
         "grove": {

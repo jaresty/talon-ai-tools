@@ -3150,7 +3150,9 @@
             "where is behavior emergent rather than explicit",
             "identify the ambiguous areas",
             "where does implicit understanding substitute for structure",
-            "fluid or changing structure"
+            "fluid or changing structure",
+            "which modules have no clear ownership or defined behavior",
+            "find the parts of the codebase with no explicit structure"
           ],
           "definition": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit organization, indicating lack of crystallized system form."
         },
@@ -3452,7 +3454,9 @@
             "misaligned rules",
             "structural conflict",
             "find the incompatibilities",
-            "both constraints are explicitly stated but they contradict"
+            "both constraints are explicitly stated but they contradict",
+            "two interfaces that conflict with each other",
+            "find where the API contracts contradict"
           ],
           "definition": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global inconsistency or breakdown."
         },
@@ -3688,7 +3692,9 @@
             "conclusions that are implicit not derivable",
             "where does the representation allow inconsistency",
             "conclusions that vary on re-derivation",
-            "where the same premises yield different outputs"
+            "where the same premises yield different outputs",
+            "where can two developers read the same code and infer different behavior",
+            "which function contracts are underspecified enough to allow divergent implementations"
           ],
           "definition": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency."
         },
@@ -3861,7 +3867,9 @@
             "where are the hidden assumptions",
             "what's taken for granted",
             "gap between stated and actual",
-            "two people assumed different things about this rule"
+            "two people assumed different things about this rule",
+            "what does this codebase assume that's never documented",
+            "which interface contracts exist only in the developer's head"
           ],
           "definition": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error."
         },
@@ -3982,7 +3990,9 @@
             "I don't know what process this task needs",
             "open-ended task with no obvious structure",
             "make the gap between appearance and reality visible",
-            "enforce your own process before acting"
+            "enforce your own process before acting",
+            "write a test before touching the code",
+            "I need a method before writing this implementation"
           ],
           "definition": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task whose constraints make the appearance-reality gap costly to maintain. Every step in the derived process requires a governing artifact — a tool-executed result already present in the transcript — whose existence is the only valid basis for proceeding. A step without a governing artifact in context has no authorization to proceed. The completion check is the final required step of any enforcement process: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. The derived enforcement process must be a ladder: each rung is a strict refinement of the rung above — its artifact preserves all constraints of the upper rung and adds new ones, reducing the degrees of freedom for satisfying the intent. A rung with fewer degrees of freedom requires less human interpretation to verify: executable artifacts are unambiguous where prose is not. The ladder need not follow a fixed schema; the agent derives the rungs from the task's nature. A task involving executable behavior will typically descend from intent → acceptance criteria → formal specification → executable assertions → implementation, but the structure derives from the task, not from this list. Producing the ladder is a required artifact before any rung-work begins. The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type produced at that rung, and the condition under which the rung is satisfied. Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction condition is valid if and only if it names a locatable artifact and a countable or boolean property of that artifact — \"this block contains M entries each with fields name, artifact-type, and satisfaction-condition present\" is valid; \"all rungs classified\" is not. A rung transition occurs when the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a one-line ladder citation: \"Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>\" or \"Rung N [name]: not yet satisfied — producing now.\" If the citation cannot be written truthfully, the rung-work cannot begin. At rung transitions that involve implementation tool calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different things and neither substitutes for the other."
         },
@@ -4264,7 +4274,10 @@
             "construct explicit derivations",
             "conclusions are products of the model",
             "derivation structure is the response",
-            "make derivation steps explicit and auditable"
+            "make derivation steps explicit and auditable",
+            "build the type system so the valid states derive from the model",
+            "make the code's invariants explicit so violations are impossible to compile",
+            "derive the implementation from the spec, not the other way around"
           ],
           "definition": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model."
         },
@@ -4889,7 +4902,9 @@
             "how to untangle",
             "give me a plan to pull these apart",
             "what are the steps to separate these two things",
-            "give me a migration plan to decouple these"
+            "give me a migration plan to decouple these",
+            "step-by-step refactor to separate these modules",
+            "how do I extract this code into its own service"
           ],
           "definition": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface."
         },
@@ -9879,7 +9894,7 @@
     }
   ],
   "checksums": {
-    "axes": "e5184e48aa87fecaed8f609190074edf77bd86f936d8543cf2b933a9ac3e45eb",
+    "axes": "76b15e47a0c4136f89d71594c5a9c220f0308a794406eb39dc3e57c6145b4cd3",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",

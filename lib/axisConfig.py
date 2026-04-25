@@ -4130,6 +4130,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "identify the ambiguous areas",
                 "where does implicit understanding substitute for structure",
                 "fluid or changing structure",
+                "which modules have no clear ownership or defined behavior",
+                "find the parts of the codebase with no explicit structure",
             ],
         },
         "analog": {
@@ -4422,6 +4424,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "structural conflict",
                 "find the incompatibilities",
                 "both constraints are explicitly stated but they contradict",
+                "two interfaces that conflict with each other",
+                "find where the API contracts contradict",
             ],
         },
         "cluster": {
@@ -4644,6 +4648,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where does the representation allow inconsistency",
                 "conclusions that vary on re-derivation",
                 "where the same premises yield different outputs",
+                "where can two developers read the same code and infer different behavior",
+                "which function contracts are underspecified enough to allow divergent implementations",
             ],
         },
         "effects": {
@@ -4809,6 +4815,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what's taken for granted",
                 "gap between stated and actual",
                 "two people assumed different things about this rule",
+                "what does this codebase assume that's never documented",
+                "which interface contracts exist only in the developer's head",
             ],
         },
         "gate": {
@@ -4936,6 +4944,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "open-ended task with no obvious structure",
                 "make the gap between appearance and reality visible",
                 "enforce your own process before acting",
+                "write a test before touching the code",
+                "I need a method before writing this implementation",
             ],
         },
         "grove": {
@@ -5205,6 +5215,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "conclusions are products of the model",
                 "derivation structure is the response",
                 "make derivation steps explicit and auditable",
+                "build the type system so the valid states derive from the model",
+                "make the code's invariants explicit so violations are impossible to compile",
+                "derive the implementation from the spec, not the other way around",
             ],
         },
         "mod": {
@@ -5804,6 +5817,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "give me a plan to pull these apart",
                 "what are the steps to separate these two things",
                 "give me a migration plan to decouple these",
+                "step-by-step refactor to separate these modules",
+                "how do I extract this code into its own service",
             ],
         },
         "shift": {

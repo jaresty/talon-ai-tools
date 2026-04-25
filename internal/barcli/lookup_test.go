@@ -625,6 +625,54 @@ func TestLookupPlaintextNoTierNumber(t *testing.T) {
 	}
 }
 
+// codeContextKeywords are terms that signal a heuristic applies to code/software contexts.
+var codeContextKeywords = []string{
+	"code", "function", "class", "module", "codebase", "file", "dependency",
+	"refactor", "import", "interface", "coupling", "api", "method", "test",
+	"component", "service", "package", "library", "repo", "implementation",
+}
+
+// structuralAnalysisTokens are method tokens from structural-analysis-tokens.md that
+// must each have ≥1 code-specific heuristic (heuristic containing a codeContextKeyword).
+var structuralAnalysisTokens = []string{
+	"shear", "gap", "drift", "amorph", "clash", "mint", "ground", "reify", "crystal",
+}
+
+// TestStructuralAnalysisTokensHaveCodeHeuristics asserts that each structural analysis
+// token has at least one heuristic mentioning code/software context.
+func TestStructuralAnalysisTokensHaveCodeHeuristics(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	for _, token := range structuralAnalysisTokens {
+		t.Run("method:"+token, func(t *testing.T) {
+			meta, ok := g.Axes.Metadata["method"][token]
+			if !ok {
+				t.Fatalf("method:%s not found in grammar", token)
+			}
+			hasCode := false
+			for _, h := range meta.Heuristics {
+				hLower := strings.ToLower(h)
+				for _, kw := range codeContextKeywords {
+					if strings.Contains(hLower, kw) {
+						hasCode = true
+						break
+					}
+				}
+				if hasCode {
+					break
+				}
+			}
+			if !hasCode {
+				t.Errorf("method:%s has no code-context heuristic (keywords: %v)\nheuristics: %v",
+					token, codeContextKeywords, meta.Heuristics)
+			}
+		})
+	}
+}
+
 // TestTokenHeuristicCoverage asserts every token in every axis has ≥5 heuristics.
 // This test is intentionally dynamic: it iterates all axes/tokens from the grammar
 // so that newly added tokens are automatically covered without updating the test.

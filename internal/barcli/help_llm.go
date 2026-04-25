@@ -94,6 +94,7 @@ func renderQuickStart(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "# Mode A — confirmation (query + context): tiers preserved, reranked by context score\n")
 	fmt.Fprintf(w, "bar lookup show --subject \"explain auth code to my manager\"     # is 'show' a good fit?\n")
 	fmt.Fprintf(w, "bar lookup show --subject \"auth code\" --addendum \"explain to manager\" --json  # context_score shows fit\n")
+	fmt.Fprintf(w, "bar lookup show --subject \"auth code\" --addendum \"focus on error paths\" --json  # all three: query+subject+addendum\n")
 	fmt.Fprintf(w, "```\n\n")
 }
 

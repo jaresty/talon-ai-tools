@@ -90,9 +90,10 @@ func renderQuickStart(w io.Writer, compact bool) {
 	fmt.Fprintf(w, "# Mode B — discovery (no query): subject+addendum drive BM25 ranking across all tokens\n")
 	fmt.Fprintf(w, "bar lookup --subject \"explain auth code to my manager\"          # ranked by relevance\n")
 	fmt.Fprintf(w, "bar lookup --subject \"explain auth code\" --axis task            # scoped to task axis\n")
+	fmt.Fprintf(w, "bar lookup --subject \"auth code\" --addendum \"focus on error handling\"  # combined signal\n")
 	fmt.Fprintf(w, "# Mode A — confirmation (query + context): tiers preserved, reranked by context score\n")
 	fmt.Fprintf(w, "bar lookup show --subject \"explain auth code to my manager\"     # is 'show' a good fit?\n")
-	fmt.Fprintf(w, "bar lookup show --subject \"explain auth code\" --json            # context_score in output\n")
+	fmt.Fprintf(w, "bar lookup show --subject \"auth code\" --addendum \"explain to manager\" --json  # context_score shows fit\n")
 	fmt.Fprintf(w, "```\n\n")
 }
 

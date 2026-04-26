@@ -468,6 +468,8 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "grain",
         "ground",
         "grove",
+        "hollow",
+        "distill",
         "induce",
         "inversion",
         "jobs",
@@ -529,7 +531,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 101 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived)."""
+        """All 103 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; hollow/distill added)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

@@ -293,6 +293,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
         "proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
+        "distill": "The response rewrites each structural escape route in the subject prompt or definition as a genuine reasoning requirement. Converts prescribed output formats to visible "
+        "self-derivation directives — guiding questions the model must answer before producing output; generalizes domain-specific vocabulary to composable equivalents; and replaces "
+        "structural templates with open-ended derivation prompts. The governing question for each rewrite: would a model following this instruction nominally be distinguishable from "
+        "one following it genuinely? If not, the instruction must be restructured until the answer is yes.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
@@ -357,6 +361,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "things and neither substitutes for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
+        "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine "
+        "reasoning. Identifies: prescribed output formats that can be pattern-matched without derivation; fill-in-the-blank structures where the fields guide mimicry rather than "
+        "thought; domain-specific vocabulary that silently restricts composability to a narrow context; and instructions that specify what to produce rather than what to reason "
+        "through. Each escape route is named and its mechanism explained.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
@@ -621,6 +629,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "depends": "Trace dependency relationships",
         "diagnose": "Identify likely root causes",
         "dimension": "Explore multiple analytical axes",
+        "distill": "Rewrite escape routes as self-derivation directives",
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
@@ -637,6 +646,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "grain": "Find latent structural direction; distinguish real from illusory optionality",
         "ground": "Establish correctness through evidence protocols",
         "grove": "Accumulation and rate-of-change effects",
+        "hollow": "Identify structural escape routes in prompts",
         "induce": "Generalize patterns from examples",
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
@@ -838,6 +848,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "depends": "依",
         "diagnose": "診",
         "dimension": "次",
+        "distill": "蒸",
         "domains": "領",
         "drift": "漂",
         "effects": "効",
@@ -854,6 +865,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "grain": "纹",
         "ground": "地",
         "grove": "蓄",
+        "hollow": "殻",
         "induce": "帰",
         "inversion": "逆",
         "jobs": "需",
@@ -1029,6 +1041,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "depends": "Structural",
         "diagnose": "Diagnostic",
         "dimension": "Comparative",
+        "distill": "Structural",
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
@@ -1045,6 +1058,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "grain": "Diagnostic",
         "ground": "Process",
         "grove": "Generative",
+        "hollow": "Diagnostic",
         "induce": "Reasoning",
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
@@ -1258,6 +1272,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "depends": "Dependency tracing",
         "diagnose": "Root cause",
         "dimension": "Multiple dimensions",
+        "distill": "Rewrite prompts for genuine reasoning",
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
@@ -1274,6 +1289,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Establish correctness through evidence",
         "grove": "Compounding effects",
+        "hollow": "Identify structural escape routes in prompts",
         "induce": "Generalise from examples",
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
@@ -4635,6 +4651,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what factors influence this architectural decision",
             ],
         },
+        "distill": {
+            "distinctions": [
+                {
+                    "note": "hollow = diagnose escape routes in prompts; distill = rewrite those escape routes as genuine reasoning requirements",
+                    "token": "hollow",
+                },
+                {
+                    "note": "mint = reconstruct from generative assumptions; distill = rewrite instructions to require visible derivation rather than template-filling",
+                    "token": "mint",
+                },
+            ],
+            "heuristics": [
+                "rewrite this prompt to require genuine reasoning",
+                "convert prescribed format to self-derivation questions",
+                "make this instruction impossible to satisfy nominally",
+                "replace fill-in-the-blank with open-ended derivation",
+                "generalize domain-specific vocabulary",
+                "strengthen this definition against pattern-matching",
+                "how would I rewrite this so compliance theater is distinguishable from genuine execution",
+                "convert this template to a reasoning directive",
+            ],
+        },
         "domains": {
             "distinctions": [
                 {
@@ -5040,6 +5078,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "snowball",
                 "how does technical debt compound through feedback loops in this codebase",
                 "how do small coupling violations accumulate into architectural problems",
+            ],
+        },
+        "hollow": {
+            "distinctions": [
+                {
+                    "note": "drift = conclusions structurally underenforced; hollow = instructions satisfiable by surface compliance without genuine reasoning",
+                    "token": "drift",
+                },
+                {
+                    "note": "hollow = diagnose escape routes in prompts; distill = rewrite escape routes as self-derivation directives",
+                    "token": "distill",
+                },
+            ],
+            "heuristics": [
+                "where can this prompt be pattern-matched without reasoning",
+                "fill in the blank structure",
+                "prescribed output format",
+                "could a model satisfy this nominally",
+                "structural escape route",
+                "domain-specific vocabulary in a general instruction",
+                "audit this prompt for compliance theater",
+                "where does this definition tell you what to produce instead of what to derive",
+                "which parts of this instruction can be mimicked without understanding",
             ],
         },
         "induce": {

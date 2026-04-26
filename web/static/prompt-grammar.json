@@ -151,6 +151,7 @@
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
+        "distill": "The response rewrites each structural escape route in the subject prompt or definition as a genuine reasoning requirement. Converts prescribed output formats to visible self-derivation directives — guiding questions the model must answer before producing output; generalizes domain-specific vocabulary to composable equivalents; and replaces structural templates with open-ended derivation prompts. The governing question for each rewrite: would a model following this instruction nominally be distinguishable from one following it genuinely? If not, the instruction must be restructured until the answer is yes.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
@@ -167,6 +168,7 @@
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, directional guidance, and structural prediction are all derivable from this reading.",
         "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task whose constraints make the appearance-reality gap costly to maintain. Every step in the derived process requires a governing artifact — a tool-executed result already present in the transcript — whose existence is the only valid basis for proceeding. A step without a governing artifact in context has no authorization to proceed. The completion check is the final required step of any enforcement process: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. The derived enforcement process must be a ladder: each rung is a strict refinement of the rung above — its artifact preserves all constraints of the upper rung and adds new ones, reducing the degrees of freedom for satisfying the intent. A rung with fewer degrees of freedom requires less human interpretation to verify: executable artifacts are unambiguous where prose is not. The ladder need not follow a fixed schema; the agent derives the rungs from the task's nature. A task involving executable behavior will typically descend from intent → acceptance criteria → formal specification → executable assertions → implementation, but the structure derives from the task, not from this list. Producing the ladder is a required artifact before any rung-work begins. The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type produced at that rung, and the condition under which the rung is satisfied. Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction condition is valid if and only if it names a locatable artifact and a countable or boolean property of that artifact — \"this block contains M entries each with fields name, artifact-type, and satisfaction-condition present\" is valid; \"all rungs classified\" is not. A rung transition occurs when the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a one-line ladder citation: \"Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>\" or \"Rung N [name]: not yet satisfied — producing now.\" If the citation cannot be written truthfully, the rung-work cannot begin. At rung transitions that involve implementation tool calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
+        "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine reasoning. Identifies: prescribed output formats that can be pattern-matched without derivation; fill-in-the-blank structures where the fields guide mimicry rather than thought; domain-specific vocabulary that silently restricts composability to a narrow context; and instructions that specify what to produce rather than what to reason through. Each escape route is named and its mechanism explained.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
         "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
@@ -374,6 +376,7 @@
         "depends",
         "diagnose",
         "dimension",
+        "distill",
         "domains",
         "drift",
         "effects",
@@ -390,6 +393,7 @@
         "grain",
         "ground",
         "grove",
+        "hollow",
         "induce",
         "inversion",
         "jobs",
@@ -594,6 +598,7 @@
         "depends": "Trace dependency relationships",
         "diagnose": "Identify likely root causes",
         "dimension": "Explore multiple analytical axes",
+        "distill": "Rewrite escape routes as self-derivation directives",
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
@@ -610,6 +615,7 @@
         "grain": "Find latent structural direction; distinguish real from illusory optionality",
         "ground": "Establish correctness through evidence protocols",
         "grove": "Accumulation and rate-of-change effects",
+        "hollow": "Identify structural escape routes in prompts",
         "induce": "Generalize patterns from examples",
         "inversion": "Reason from catastrophic outcomes back",
         "jobs": "Jobs-to-be-done analysis",
@@ -810,6 +816,7 @@
         "depends": "依",
         "diagnose": "診",
         "dimension": "次",
+        "distill": "蒸",
         "domains": "領",
         "drift": "漂",
         "effects": "効",
@@ -826,6 +833,7 @@
         "grain": "纹",
         "ground": "地",
         "grove": "蓄",
+        "hollow": "殻",
         "induce": "帰",
         "inversion": "逆",
         "jobs": "需",
@@ -934,6 +942,7 @@
         "depends": "Structural",
         "diagnose": "Diagnostic",
         "dimension": "Comparative",
+        "distill": "Structural",
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
@@ -950,6 +959,7 @@
         "grain": "Diagnostic",
         "ground": "Process",
         "grove": "Generative",
+        "hollow": "Diagnostic",
         "induce": "Reasoning",
         "inversion": "Diagnostic",
         "jobs": "Actor-centered",
@@ -1153,6 +1163,7 @@
         "depends": "Dependency tracing",
         "diagnose": "Root cause",
         "dimension": "Multiple dimensions",
+        "distill": "Rewrite prompts for genuine reasoning",
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
@@ -1169,6 +1180,7 @@
         "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Establish correctness through evidence",
         "grove": "Compounding effects",
+        "hollow": "Identify structural escape routes in prompts",
         "induce": "Generalise from examples",
         "inversion": "Start from failure",
         "jobs": "Jobs to be done",
@@ -3706,6 +3718,29 @@
           ],
           "definition": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact."
         },
+        "distill": {
+          "distinctions": [
+            {
+              "note": "hollow = diagnose escape routes in prompts; distill = rewrite those escape routes as genuine reasoning requirements",
+              "token": "hollow"
+            },
+            {
+              "note": "mint = reconstruct from generative assumptions; distill = rewrite instructions to require visible derivation rather than template-filling",
+              "token": "mint"
+            }
+          ],
+          "heuristics": [
+            "rewrite this prompt to require genuine reasoning",
+            "convert prescribed format to self-derivation questions",
+            "make this instruction impossible to satisfy nominally",
+            "replace fill-in-the-blank with open-ended derivation",
+            "generalize domain-specific vocabulary",
+            "strengthen this definition against pattern-matching",
+            "how would I rewrite this so compliance theater is distinguishable from genuine execution",
+            "convert this template to a reasoning directive"
+          ],
+          "definition": "The response rewrites each structural escape route in the subject prompt or definition as a genuine reasoning requirement. Converts prescribed output formats to visible self-derivation directives — guiding questions the model must answer before producing output; generalizes domain-specific vocabulary to composable equivalents; and replaces structural templates with open-ended derivation prompts. The governing question for each rewrite: would a model following this instruction nominally be distinguishable from one following it genuinely? If not, the instruction must be restructured until the answer is yes."
+        },
         "domains": {
           "distinctions": [
             {
@@ -4111,6 +4146,30 @@
             "how do small coupling violations accumulate into architectural problems"
           ],
           "definition": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms."
+        },
+        "hollow": {
+          "distinctions": [
+            {
+              "note": "drift = conclusions structurally underenforced; hollow = instructions satisfiable by surface compliance without genuine reasoning",
+              "token": "drift"
+            },
+            {
+              "note": "hollow = diagnose escape routes in prompts; distill = rewrite escape routes as self-derivation directives",
+              "token": "distill"
+            }
+          ],
+          "heuristics": [
+            "where can this prompt be pattern-matched without reasoning",
+            "fill in the blank structure",
+            "prescribed output format",
+            "could a model satisfy this nominally",
+            "structural escape route",
+            "domain-specific vocabulary in a general instruction",
+            "audit this prompt for compliance theater",
+            "where does this definition tell you what to produce instead of what to derive",
+            "which parts of this instruction can be mimicked without understanding"
+          ],
+          "definition": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine reasoning. Identifies: prescribed output formats that can be pattern-matched without derivation; fill-in-the-blank structures where the fields guide mimicry rather than thought; domain-specific vocabulary that silently restricts composability to a narrow context; and instructions that specify what to produce rather than what to reason through. Each escape route is named and its mechanism explained."
         },
         "induce": {
           "distinctions": [
@@ -8039,6 +8098,7 @@
         "depends": "depends",
         "diagnose": "diagnose",
         "dimension": "dimension",
+        "distill": "distill",
         "domains": "domains",
         "drift": "drift",
         "effects": "effects",
@@ -8055,6 +8115,7 @@
         "grain": "grain",
         "ground": "ground",
         "grove": "grove",
+        "hollow": "hollow",
         "induce": "induce",
         "inversion": "inversion",
         "jobs": "jobs",
@@ -8286,6 +8347,7 @@
         "method=depends": "method-depends",
         "method=diagnose": "method-diagnose",
         "method=dimension": "method-dimension",
+        "method=distill": "method-distill",
         "method=domains": "method-domains",
         "method=drift": "method-drift",
         "method=effects": "method-effects",
@@ -8302,6 +8364,7 @@
         "method=grain": "method-grain",
         "method=ground": "method-ground",
         "method=grove": "method-grove",
+        "method=hollow": "method-hollow",
         "method=induce": "method-induce",
         "method=inversion": "method-inversion",
         "method=jobs": "method-jobs",
@@ -8639,6 +8702,7 @@
       "directional=ong": "directional-ong",
       "directional=rog": "directional-rog",
       "directly": "directly",
+      "distill": "distill",
       "domains": "domains",
       "draw": "draw",
       "drift": "drift",
@@ -8719,6 +8783,7 @@
       "grove": "grove",
       "grow": "grow",
       "help": "help",
+      "hollow": "hollow",
       "html": "html",
       "image": "image",
       "indirect": "indirect",
@@ -8778,6 +8843,7 @@
       "method=depends": "method-depends",
       "method=diagnose": "method-diagnose",
       "method=dimension": "method-dimension",
+      "method=distill": "method-distill",
       "method=domains": "method-domains",
       "method=drift": "method-drift",
       "method=effects": "method-effects",
@@ -8794,6 +8860,7 @@
       "method=grain": "method-grain",
       "method=ground": "method-ground",
       "method=grove": "method-grove",
+      "method=hollow": "method-hollow",
       "method=induce": "method-induce",
       "method=inversion": "method-inversion",
       "method=jobs": "method-jobs",
@@ -10070,11 +10137,11 @@
     }
   ],
   "checksums": {
-    "axes": "583a4a68445e2c7562194608e3e6339e7e1f8d9a59503df4234ee81bdf35527a",
+    "axes": "93157a2a977da7e12e12935b6dcef1a50c80fdd5755598cad1729bd8c65671f5",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "5781f1739d0ddab73d00cb7b640bc980249bfe09b74dee0bec51b7f1ace4a6d0",
-    "slugs": "b491efdcbc7bfe2980e88cca2935a2a017fef68329ad4def8be54ccd1fef931e",
+    "slugs": "82fd2cce9add4b796cd910b0f3851ad2c4395d72700c39cb0b6905fcd0c1ca98",
     "patterns": "ae90ba68e4d8f4f475805a83ce2bf354b9c7a2a47705a87190a7e5a85d7d46c8",
     "starter_packs": "f18dee3af4b3317581594a530f15bba5e68cb31128e222893f13767f0950422f",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

@@ -7,54 +7,71 @@ import (
 
 // ADR-0227: Composition injection tests.
 
-func TestActiveCompositions_GroundGate(t *testing.T) {
+func TestActiveCompositions_GroundFalsify(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	active := g.ActiveCompositions(map[string]struct{}{"ground": {}, "gate": {}})
+	active := g.ActiveCompositions(map[string]struct{}{"ground": {}, "falsify": {}})
 	if len(active) == 0 {
-		t.Fatal("expected ground+gate to activate a composition")
+		t.Fatal("expected ground+falsify to activate a composition")
 	}
 	found := false
 	for _, c := range active {
-		if c.Name == "ground+gate" {
+		if c.Name == "ground+falsify" {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("expected composition named 'ground+gate', got %v", active)
+		t.Errorf("expected composition named 'ground+falsify', got %v", active)
 	}
 }
 
-func TestActiveCompositions_GateAtomic(t *testing.T) {
+func TestActiveCompositions_FalsifyAtomic(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	active := g.ActiveCompositions(map[string]struct{}{"gate": {}, "atomic": {}})
+	active := g.ActiveCompositions(map[string]struct{}{"falsify": {}, "atomic": {}})
 	if len(active) == 0 {
-		t.Fatal("expected gate+atomic to activate a composition")
+		t.Fatal("expected falsify+atomic to activate a composition")
 	}
 	found := false
 	for _, c := range active {
-		if c.Name == "gate+atomic" {
+		if c.Name == "falsify+atomic" {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("expected composition named 'gate+atomic', got %v", active)
+		t.Errorf("expected composition named 'falsify+atomic', got %v", active)
 	}
 }
 
-func TestActiveCompositions_GateChain(t *testing.T) {
+func TestActiveCompositions_FalsifyChain(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	active := g.ActiveCompositions(map[string]struct{}{"gate": {}, "chain": {}})
+	active := g.ActiveCompositions(map[string]struct{}{"falsify": {}, "chain": {}})
 	if len(active) == 0 {
-		t.Fatal("expected gate+chain to activate a composition")
+		t.Fatal("expected falsify+chain to activate a composition")
 	}
 	found := false
 	for _, c := range active {
-		if c.Name == "gate+chain" {
+		if c.Name == "falsify+chain" {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("expected composition named 'gate+chain', got %v", active)
+		t.Errorf("expected composition named 'falsify+chain', got %v", active)
+	}
+}
+
+func TestActiveCompositions_GateFalsify(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	active := g.ActiveCompositions(map[string]struct{}{"gate": {}, "falsify": {}})
+	if len(active) == 0 {
+		t.Fatal("expected gate+falsify to activate a composition")
+	}
+	found := false
+	for _, c := range active {
+		if c.Name == "gate+falsify" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected composition named 'gate+falsify', got %v", active)
 	}
 }
 
@@ -135,38 +152,37 @@ func TestRenderPlainText_NoCompositionRulesWithoutTokenPair(t *testing.T) {
 	}
 }
 
-// ADR-0227 token attribution audit — gate vocabulary tests.
-// Gate must use gate-appropriate vocabulary, not borrow ground's "unilateral change" framing.
+// Token attribution audit — falsify vocabulary tests.
+// falsify is the renamed 'gate' token: it governs falsifiable artifact quality.
+// The new 'gate' token is the general hard-blocking checkpoint.
 
-func TestGateDefinition_NoGroundVocabulary(t *testing.T) {
+func TestFalsifyDefinition_AbsenceDetection(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	def := g.Axes.Definitions["method"]["gate"]
-	if strings.Contains(def, "unilateral change to the task's intent") {
-		t.Error("gate definition must not use ground vocabulary 'unilateral change to the task's intent'; use gate-appropriate phrasing instead")
+	def := g.Axes.Definitions["method"]["falsify"]
+	if !strings.Contains(def, "detecting the governed behavior's absence") {
+		t.Error("falsify definition must state the absence-detection requirement")
 	}
-	if !strings.Contains(def, "independently-failing") {
-		t.Error("gate definition must describe coverage using assertion-appropriate vocabulary (e.g. 'independently-failing')")
+	if !strings.Contains(def, "minimal wrong state") {
+		t.Error("falsify definition must state the minimal-wrong-state requirement")
 	}
 }
 
-func TestGateDefinition_NoDerivationVocabulary(t *testing.T) {
+func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	def := g.Axes.Definitions["method"]["gate"]
-	if strings.Contains(def, "the derivation must identify a governing artifact per layer") {
-		t.Error("gate definition must not use ground's 'derivation' vocabulary in the multi-layer clause; use assertion-appropriate phrasing instead")
+	def := g.Axes.Definitions["method"]["falsify"]
+	if !strings.Contains(def, "before implementation begins") {
+		t.Error("falsify definition must state that the artifact must have fired before implementation begins")
 	}
 }
 
-// Token attribution audit — executable tests for prior-session definition changes.
-
-func TestGateDefinition_TypeMatchingRequirement(t *testing.T) {
+func TestGateDefinition_HardBlockingCheckpoint(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["gate"]
-	if !strings.Contains(def, "Assertion type must match behavior type") {
-		t.Error("gate definition must state the type-matching requirement: assertion type must match behavior type")
+	if !strings.Contains(def, "hard-blocking checkpoint") {
+		t.Error("gate definition must describe a hard-blocking checkpoint")
 	}
-	if !strings.Contains(def, "static check cannot govern executable behavior") {
-		t.Error("gate definition must state that a static check cannot govern executable behavior")
+	if !strings.Contains(def, "rationalization") {
+		t.Error("gate definition must distinguish gate from rule by referencing rationalization opt-out")
 	}
 }
 

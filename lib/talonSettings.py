@@ -131,7 +131,7 @@ class AxisValues(TypedDict):
 _AXIS_SOFT_CAPS: dict[str, int] = {
     # Completeness remains scalar and is capped by construction.
     "scope": 2,
-    "method": 4,
+    "method": 5,
     "form": 1,
     "channel": 1,
     "directional": 1,

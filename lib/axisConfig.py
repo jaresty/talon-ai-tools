@@ -303,6 +303,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
+        "falsify": "An artifact governing this step must be structurally capable of detecting the governed behavior's absence — not merely confirming its presence. The artifact must have fired "
+        "against a state where the governed behavior is absent and produced a visible signal in the transcript before implementation begins. For each assertion, the firing must occur "
+        "against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors are intact — a stub that returns a universally wrong answer does "
+        "not constitute a valid artifact fire. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion "
+        "using this exact structure: Assertion: <name or description> | Natural FAIL state: <yes — stub with all governed behaviors absent produces a FAIL; or no — requires "
+        "perturbation: identify the minimal wrong state stub> | Minimal wrong state: <for natural-FAIL-state assertions: n/a; for no-FAIL-state assertions: describe the stub that "
+        "removes only the governed behavior while leaving all others intact>. Phase 1 is complete when every assertion has a classification block with all three fields present. PHASE "
+        "2 — artifact fire (tool result required before implementation): every assertion requires a visible FAIL tool result before any implementation step. For natural-FAIL-state "
+        "assertions, run against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state stub. Before any implementation step, produce a status "
+        "line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. "
+        "RE-ANCHORING: immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that governs this step>' — if this cannot be written "
+        "truthfully, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -311,47 +323,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "gate": "The response enforces six principles. Principle 1 (root): a FAIL observation establishes that an assertion can detect the governed behavior's absence and identify which contract "
-        "was violated — nothing that does not meet both conditions is a FAIL observation. A passing observation is invisible. Principle 2 (execution): an assertion fires only when "
-        "execution reaches and evaluates the assertion statement — errors before that point, reasoning about what a test would produce, and compile failures are not FAIL observations "
-        "because the assertion did not execute. When a test does not compile, write a stub (minimal implementation with correct signatures and no-op behavior) so the test compiles and "
-        "runs, then collect the behavioral FAIL. Principle 3 (per-assertion coverage): a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; "
-        "assertions not reached or that passed carry zero coverage. Principle 4 (no-natural-FAIL-state): an assertion whose absence is indistinguishable from the behavior being correctly "
-        "absent passes trivially when the behavior is absent — structural test: does this assertion pass when the specific behavior being governed does not exist? 'The specific behavior "
-        "does not exist' means the governed contract is not in effect — not merely that no code implements it. For assertions governing error or boundary conditions on a system with "
-        "existing default behavior, the structural test must be run against the system with default behavior intact; if the default behavior satisfies the assertion, it has no natural "
-        "FAIL state. If yes, it has no natural FAIL state and requires perturbation: run it against a state where the behavior exists but is deliberately wrong. Principle 5 (type "
-        "matching): Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6 "
-        "(proximity): prefer the assertion layer closest to the behavior that can observe a FAIL — the further the assertion from the behavior, the weaker the attribution to the governed "
-        "contract (Principle 1 corollary). In multi-layer work, proximity requires an independently-failing per-layer assertion: a cross-layer FAIL cannot isolate which layer's contract "
-        "was violated. Principle 7 (durability): assertion durability must match behavior durability — every permanent behavioral change requires a committed, automatically re-executable "
-        "unit assertion in the test suite. A session-only invocation, manual check, or one-off script is not durable: it demonstrates current state but will not re-fire when behavior "
-        "regresses. A FAIL tool result from a session-only script satisfies the Phase 2 observation requirement but does not close the implementation step; the committed assertion must "
-        "exist before the step closes. Named exceptions (structural test required to invoke — self-assessment is not sufficient): Exception A (structural floor): when the behavior "
-        "produces no observable output of any kind — no file, no parsed structure, no exit code, no return value — behavioral assertions are impossible and structural floor assertions "
-        "(file existence, identifier presence) are required instead; these do not satisfy gate; a manual verification protocol must be declared: who verifies, by what procedure, and what "
-        "binary pass/fail condition is defined in advance and checkable by someone other than the author. Structural test to invoke: would the behavior produce any observable output if "
-        "it ran? If yes, Exception A does not apply. Exception B (exploratory): when the task has no predetermined correct output — the goal is to discover what is measurable or "
-        "detectable, not to implement a specified behavior — governing assertions must be observability assertions (claims about what can be detected or measured), not outcome assertions "
-        "that encode a direction before exploration has occurred. Structural test to invoke: is there a specified correct output? If yes, Exception B does not apply. PHASE 1 — "
-        "classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or "
-        "description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — structural test: does this assertion pass when the specific behavior being governed "
-        "does not exist?> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Phase 1 "
-        "must be anchored to the prior rung's artifact — the rung immediately above the assertions rung in the ladder (acceptance criteria, formal specification, or equivalent). Phase 1 "
-        "is complete when: (a) the source artifact has been read, (b) every assertion identifiable in that artifact has a classification block with all four fields present, and (c) the "
-        "count of blocks matches the count of identifiable assertions. Declaring Phase 1 complete without reading the source artifact is not permitted. PHASE 2 — coverage artifact (tool "
-        "result required before implementation): every assertion requires a FAIL tool result before any implementation step. For natural-FAIL-state assertions (Natural FAIL state: yes), "
-        "the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, "
-        "produce a Phase 2 status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — "
-        "running now. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result — a fabricated or paraphrased output is a chain violation. Phase 2 "
-        "is complete when every assertion has a COMPLETE status line backed by a real tool result. Then derive the process these principles require and follow it — the derivation must be "
-        "visible. RE-ANCHORING is the per-tool-call enforcement of Phase 2 — it does not introduce a separate requirement but makes Phase 2's gate operate at tool-call granularity rather "
-        "than step granularity. An implementation tool call is any tool call that modifies system state (file edit, write, shell command that changes behavior); read, search, and "
-        "classification tool calls are not governed by this requirement. Immediately before each implementation tool call, produce a one-line governing artifact citation: 'Governing "
-        "artifact: <verbatim key output of the FAIL tool result that governs this step>' or 'Governing artifact: NOT YET PRODUCED — producing now' followed immediately by the "
-        "artifact-producing tool call and nothing else. The re-anchoring line is not a planning note — it is a gate. If it cannot be written truthfully, the tool call is not permitted. "
-        "Producing the Phase 1 classification block, the dependency graph, or any other planning artifact does not satisfy this requirement — only a FAIL tool result in the transcript "
-        "satisfies it. The protocol does not switch off after planning; the re-anchoring check runs at every implementation tool call for the duration of the task.",
+        "gate": "The response applies a hard-blocking checkpoint: the next action is blocked until a condition is objectively met and verifiably testable. A gate requires an explicit "
+        "before-and-after structure — the condition is checked, not assumed. A rule has an opt-out path (rationalization allows proceeding before the condition is met); a gate does not — "
+        "the condition must be satisfied or the action cannot occur. Use gate when a specific, objectively checkable condition must hold before proceeding: 'do I have X?' is a gate "
+        "condition; 'I should probably have X' is a rule.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit "
         "structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
@@ -651,11 +626,12 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
+        "falsify": "Falsifiable artifact before implementation",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
         "fourfold": "Exhaust logical stance space before closure",
         "gap": "Implicit-to-explicit gap analysis",
-        "gate": "Evaluation before implementation",
+        "gate": "Hard-blocking checkpoint",
         "gloss": "Compress system into tractable form for external intervention; name losses",
         "grain": "Find latent structural direction; distinguish real from illusory optionality",
         "ground": "Establish correctness through evidence protocols",
@@ -867,11 +843,12 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "enforce": "拘",
         "enter": "入",
         "experimental": "実",
+        "falsify": "偽",
         "field": "場",
         "flow": "流",
         "fourfold": "四",
         "gap": "隙",
-        "gate": "門",
+        "gate": "閘",
         "gloss": "釈",
         "grain": "纹",
         "ground": "地",
@@ -1057,6 +1034,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "enforce": "Structural",
         "enter": "Structural",
         "experimental": "Exploration",
+        "falsify": "Process",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
         "fourfold": "Reasoning",
@@ -1285,11 +1263,12 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
+        "falsify": "Falsifiable artifact fires against absent behavior before implementation",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "fourfold": "Exhaust stance space",
         "gap": "Implicit gaps",
-        "gate": "Evaluation artifact before implementation",
+        "gate": "Hard-blocking checkpoint — next action blocked until condition is objectively met",
         "gloss": "Compress unfamiliar system for external intervention; name losses",
         "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Establish correctness through evidence",
@@ -2056,11 +2035,14 @@ USAGE_PATTERNS: list[dict] = [
         },
     },
     {
-        "title": "TDD Enforcement (ground + gate + chain + atomic)",
-        "command": 'bar build make ground gate chain atomic --subject "..."',
-        "example": 'bar build make ground gate chain atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
-        "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each step anchored to its predecessor's actual output, one observable change at a time. ground derives the enforcement process; gate enforces assertion-before-behavior; chain enforces derivation continuity; atomic enforces one change per step. Multi-layer work: identify the dependency structure before sequencing — layers sharing an upstream dependency can proceed in parallel once that dependency is green; the protocol's linear ordering applies within each branch, not across independent branches. When asserting layer boundaries, verify epistemic independence: an assertion that passes vacuously on stale upstream input is not independent, even if it does not structurally call other layers. Distinguish structural impossibility (the assertion cannot be written) from pressure to stop early (a high-quality intermediate artifact creates a false sense of completion) — these have different fixes: testability improvement vs. requiring downstream assertions before the step closes.",
-        "tokens": {"method": ["ground", "gate", "chain", "atomic"], "task": ["make"]},
+        "title": "TDD Enforcement (ground + gate + falsify + chain + atomic)",
+        "command": 'bar build make ground gate falsify chain atomic --subject "..."',
+        "example": 'bar build make ground gate falsify chain atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
+        "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each step anchored to its predecessor's actual output, one observable change at a time. ground derives the enforcement process; gate blocks each step until its condition is met; falsify requires that every governing artifact has fired against the minimal wrong state before implementation; chain enforces derivation continuity; atomic enforces one change per step. NOTE: gate + falsify were previously a single token called 'gate' — they are now split. gate alone = hard-blocking checkpoint (general); falsify alone = falsifiable artifact quality requirement; gate + falsify together = full TDD enforcement. Multi-layer work: identify the dependency structure before sequencing — layers sharing an upstream dependency can proceed in parallel once that dependency is green; the protocol's linear ordering applies within each branch, not across independent branches.",
+        "tokens": {
+            "method": ["ground", "gate", "falsify", "chain", "atomic"],
+            "task": ["make"],
+        },
     },
     {
         "title": "Progressive Refinement Workflow",
@@ -4720,7 +4702,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "enforce": {
             "distinctions": [
                 {
-                    "note": "enforce = convert procedural to structural; gate = evaluation before implementation",
+                    "note": "enforce = convert procedural to structural dependencies; gate = hard-blocking checkpoint; falsify = falsifiable artifact must fire before "
+                    "implementation",
                     "token": "gate",
                 },
                 {
@@ -4787,6 +4770,49 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "treat this as a debugging experiment",
                 "systematic debugging",
                 "how do I isolate the cause",
+            ],
+        },
+        "falsify": {
+            "distinctions": [
+                {
+                    "note": "falsify = the artifact must have fired against the absent behavior before implementation; gate = the next action is blocked until a condition is "
+                    "met. falsify specifies what kind of evidence satisfies a gate; gate specifies the blocking structure. use falsify + gate together for full TDD "
+                    "enforcement.",
+                    "token": "gate",
+                },
+                {
+                    "note": "verify = apply falsification pressure to claims regardless of timing; falsify = the artifact must fire against the absent behavior before "
+                    "implementation begins. falsify adds the temporal and minimal-wrong-state requirements that verify does not.",
+                    "token": "verify",
+                },
+                {
+                    "note": "ground = derive an enforcement process before acting; falsify = the specific constraint that every governing artifact must be falsifiable and have "
+                    "fired against the absent behavior. falsify is one thing ground might derive.",
+                    "token": "ground",
+                },
+                {
+                    "note": "chain = each step cites its predecessor; falsify = the artifact firing is the predecessor that implementation steps must cite. falsify produces the "
+                    "chain predecessor; chain requires it to be reproduced.",
+                    "token": "chain",
+                },
+            ],
+            "heuristics": [
+                "write the test first",
+                "TDD",
+                "test-driven development",
+                "define success criteria before building",
+                "evaluation before implementation",
+                "write the rubric before grading",
+                "what does passing look like before you start",
+                "declare acceptance criteria first",
+                "no implementation without a prior test",
+                "write the spec before the code",
+                "define what good looks like before producing it",
+                "what check would reject a bad version",
+                "prove the test can fail before implementing",
+                "see it fail before you make it pass",
+                "minimal wrong state",
+                "falsifiable assertion",
             ],
         },
         "field": {
@@ -4874,34 +4900,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "gate": {
             "distinctions": [
                 {
-                    "note": "verify = falsification pressure on claims regardless of timing; gate = temporal ordering constraint — evaluation artifact must precede implementation "
-                    "artifact",
-                    "token": "verify",
+                    "note": "RENAMED: the old 'gate' token (TDD enforcement — assertion must fire against absent behavior before implementation) is now called 'falsify'. The new "
+                    "'gate' is the general hard-blocking checkpoint concept. For TDD enforcement use 'gate + falsify' together.",
+                    "token": "falsify",
                 },
                 {
-                    "note": "ground = derive an enforcement process before acting; gate = the specific constraint that evaluation precedes implementation. gate is one component of "
-                    "what ground might derive.",
+                    "note": "ground = derive an enforcement process; gate = the specific constraint that a condition must be objectively met before proceeding. gate is one thing "
+                    "ground might derive as a blocking mechanism.",
                     "token": "ground",
                 },
                 {
-                    "note": "chain = each step cites its predecessor; gate = evaluation must exist before the artifact it evaluates. gate is about temporal ordering; chain is "
-                    "about derivation continuity.",
+                    "note": "chain = each step cites its predecessor's actual output; gate = the next action is blocked until a condition is met. gate governs whether to proceed; "
+                    "chain governs how steps are linked when proceeding.",
                     "token": "chain",
                 },
             ],
             "heuristics": [
-                "write the test first",
-                "TDD",
-                "test-driven development",
-                "define success criteria before building",
-                "evaluation before implementation",
-                "write the rubric before grading",
-                "what does passing look like before you start",
-                "declare acceptance criteria first",
-                "no implementation without a prior test",
-                "write the spec before the code",
-                "define what good looks like before producing it",
-                "what check would reject a bad version",
+                "block until condition is met",
+                "hard checkpoint",
+                "do not proceed without",
+                "verify before continuing",
+                "condition must be satisfied first",
+                "no rationalization allowed",
+                "objective completion required",
+                "have X before doing Y",
             ],
         },
         "gloss": {
@@ -4960,9 +4982,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "ground": {
             "distinctions": [
                 {
-                    "note": "gate = the specific constraint that evaluation precedes implementation; ground = meta-token that asks the model to derive its own enforcement "
-                    "process. use gate when you know evaluation-precedence is the constraint; use ground when you want the model to figure out what constraints this task "
-                    "needs.",
+                    "note": "gate = hard-blocking checkpoint (next action blocked until condition met); falsify = falsifiable artifact must fire before implementation; ground = "
+                    "meta-token that derives what constraints apply. use gate/falsify when you know the constraints; use ground when you want the model to figure out "
+                    "what constraints this task needs.",
                     "token": "gate",
                 },
                 {
@@ -6190,7 +6212,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "verify": {
             "distinctions": [
                 {
-                    "note": "gate = temporal ordering — evaluation artifact must precede implementation artifact; verify = falsification pressure on claims regardless of timing",
+                    "note": "gate = hard-blocking checkpoint (next action blocked until condition met); falsify = falsifiable artifact must fire against absent behavior before "
+                    "implementation; verify = falsification pressure on claims regardless of timing. falsify adds timing and minimal-wrong-state requirements that verify "
+                    "does not.",
                     "token": "gate",
                 },
                 {

@@ -417,7 +417,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 104 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 105 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -461,6 +461,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "flow",
         "fourfold",
         "chain",
+        "falsify",
         "gap",
         "gate",
         "gloss",

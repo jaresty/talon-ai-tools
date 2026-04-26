@@ -157,11 +157,12 @@
         "enforce": "The response identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip. When a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates subsequent steps, requiring actual output as a predecessor for the next step. Each step cannot proceed without the real artifact.",
         "enter": "The response enhances the task by moving into the direction of an incoming force, argument, or structure — joining its momentum rather than opposing it — and redirecting the outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses.",
+        "falsify": "An artifact governing this step must be structurally capable of detecting the governed behavior's absence — not merely confirming its presence. The artifact must have fired against a state where the governed behavior is absent and produced a visible signal in the transcript before implementation begins. For each assertion, the firing must occur against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors are intact — a stub that returns a universally wrong answer does not constitute a valid artifact fire. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Natural FAIL state: <yes — stub with all governed behaviors absent produces a FAIL; or no — requires perturbation: identify the minimal wrong state stub> | Minimal wrong state: <for natural-FAIL-state assertions: n/a; for no-FAIL-state assertions: describe the stub that removes only the governed behavior while leaving all others intact>. Phase 1 is complete when every assertion has a classification block with all three fields present. PHASE 2 — artifact fire (tool result required before implementation): every assertion requires a visible FAIL tool result before any implementation step. For natural-FAIL-state assertions, run against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state stub. Before any implementation step, produce a status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. RE-ANCHORING: immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that governs this step>' — if this cannot be written truthfully, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
         "fourfold": "The response enhances the task by exhausting the logical stance space before closure: explicitly considering the affirmative position, its negation, the possibility that both hold simultaneously, and the possibility that neither holds. Each quadrant must be treated as a live candidate rather than dismissed by assumption. Use when binary framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces ambiguity, coordination failure, or error.",
-        "gate": "The response enforces six principles. Principle 1 (root): a FAIL observation establishes that an assertion can detect the governed behavior's absence and identify which contract was violated — nothing that does not meet both conditions is a FAIL observation. A passing observation is invisible. Principle 2 (execution): an assertion fires only when execution reaches and evaluates the assertion statement — errors before that point, reasoning about what a test would produce, and compile failures are not FAIL observations because the assertion did not execute. When a test does not compile, write a stub (minimal implementation with correct signatures and no-op behavior) so the test compiles and runs, then collect the behavioral FAIL. Principle 3 (per-assertion coverage): a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not reached or that passed carry zero coverage. Principle 4 (no-natural-FAIL-state): an assertion whose absence is indistinguishable from the behavior being correctly absent passes trivially when the behavior is absent — structural test: does this assertion pass when the specific behavior being governed does not exist? 'The specific behavior does not exist' means the governed contract is not in effect — not merely that no code implements it. For assertions governing error or boundary conditions on a system with existing default behavior, the structural test must be run against the system with default behavior intact; if the default behavior satisfies the assertion, it has no natural FAIL state. If yes, it has no natural FAIL state and requires perturbation: run it against a state where the behavior exists but is deliberately wrong. Principle 5 (type matching): Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6 (proximity): prefer the assertion layer closest to the behavior that can observe a FAIL — the further the assertion from the behavior, the weaker the attribution to the governed contract (Principle 1 corollary). In multi-layer work, proximity requires an independently-failing per-layer assertion: a cross-layer FAIL cannot isolate which layer's contract was violated. Principle 7 (durability): assertion durability must match behavior durability — every permanent behavioral change requires a committed, automatically re-executable unit assertion in the test suite. A session-only invocation, manual check, or one-off script is not durable: it demonstrates current state but will not re-fire when behavior regresses. A FAIL tool result from a session-only script satisfies the Phase 2 observation requirement but does not close the implementation step; the committed assertion must exist before the step closes. Named exceptions (structural test required to invoke — self-assessment is not sufficient): Exception A (structural floor): when the behavior produces no observable output of any kind — no file, no parsed structure, no exit code, no return value — behavioral assertions are impossible and structural floor assertions (file existence, identifier presence) are required instead; these do not satisfy gate; a manual verification protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. Structural test to invoke: would the behavior produce any observable output if it ran? If yes, Exception A does not apply. Exception B (exploratory): when the task has no predetermined correct output — the goal is to discover what is measurable or detectable, not to implement a specified behavior — governing assertions must be observability assertions (claims about what can be detected or measured), not outcome assertions that encode a direction before exploration has occurred. Structural test to invoke: is there a specified correct output? If yes, Exception B does not apply. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — structural test: does this assertion pass when the specific behavior being governed does not exist?> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Phase 1 must be anchored to the prior rung's artifact — the rung immediately above the assertions rung in the ladder (acceptance criteria, formal specification, or equivalent). Phase 1 is complete when: (a) the source artifact has been read, (b) every assertion identifiable in that artifact has a classification block with all four fields present, and (c) the count of blocks matches the count of identifiable assertions. Declaring Phase 1 complete without reading the source artifact is not permitted. PHASE 2 — coverage artifact (tool result required before implementation): every assertion requires a FAIL tool result before any implementation step. For natural-FAIL-state assertions (Natural FAIL state: yes), the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result — a fabricated or paraphrased output is a chain violation. Phase 2 is complete when every assertion has a COMPLETE status line backed by a real tool result. Then derive the process these principles require and follow it — the derivation must be visible. RE-ANCHORING is the per-tool-call enforcement of Phase 2 — it does not introduce a separate requirement but makes Phase 2's gate operate at tool-call granularity rather than step granularity. An implementation tool call is any tool call that modifies system state (file edit, write, shell command that changes behavior); read, search, and classification tool calls are not governed by this requirement. Immediately before each implementation tool call, produce a one-line governing artifact citation: 'Governing artifact: <verbatim key output of the FAIL tool result that governs this step>' or 'Governing artifact: NOT YET PRODUCED — producing now' followed immediately by the artifact-producing tool call and nothing else. The re-anchoring line is not a planning note — it is a gate. If it cannot be written truthfully, the tool call is not permitted. Producing the Phase 1 classification block, the dependency graph, or any other planning artifact does not satisfy this requirement — only a FAIL tool result in the transcript satisfies it. The protocol does not switch off after planning; the re-anchoring check runs at every implementation tool call for the duration of the task.",
+        "gate": "The response applies a hard-blocking checkpoint: the next action is blocked until a condition is objectively met and verifiably testable. A gate requires an explicit before-and-after structure — the condition is checked, not assumed. A rule has an opt-out path (rationalization allows proceeding before the condition is met); a gate does not — the condition must be satisfied or the action cannot occur. Use gate when a specific, objectively checkable condition must hold before proceeding: 'do I have X?' is a gate condition; 'I should probably have X' is a rule.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a tractable representation for an external actor seeking to understand and intervene, making implicit structure explicit, identifying the key mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, directional guidance, and structural prediction are all derivable from this reading.",
         "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task whose constraints make the appearance-reality gap costly to maintain. Every step in the derived process requires a governing artifact — a tool-executed result already present in the transcript — whose existence is the only valid basis for proceeding. A step without a governing artifact in context has no authorization to proceed. The completion check is the final required step of any enforcement process: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it. The intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. The derived enforcement process must be a ladder: each rung is a strict refinement of the rung above — its artifact preserves all constraints of the upper rung and adds new ones, reducing the degrees of freedom for satisfying the intent. A rung with fewer degrees of freedom requires less human interpretation to verify: executable artifacts are unambiguous where prose is not. The ladder need not follow a fixed schema; the agent derives the rungs from the task's nature. A task involving executable behavior will typically descend from intent → acceptance criteria → formal specification → executable assertions → implementation, but the structure derives from the task, not from this list. Producing the ladder is a required artifact before any rung-work begins. The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type produced at that rung, and the condition under which the rung is satisfied. Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction condition is valid if and only if it names a locatable artifact and a countable or boolean property of that artifact — \"this block contains M entries each with fields name, artifact-type, and satisfaction-condition present\" is valid; \"all rungs classified\" is not. A rung transition occurs when the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a one-line ladder citation: \"Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>\" or \"Rung N [name]: not yet satisfied — producing now.\" If the citation cannot be written truthfully, the rung-work cannot begin. At rung transitions that involve implementation tool calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
@@ -379,6 +380,7 @@
         "enforce",
         "enter",
         "experimental",
+        "falsify",
         "field",
         "flow",
         "fourfold",
@@ -598,11 +600,12 @@
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
+        "falsify": "Falsifiable artifact before implementation",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
         "fourfold": "Exhaust logical stance space before closure",
         "gap": "Implicit-to-explicit gap analysis",
-        "gate": "Evaluation before implementation",
+        "gate": "Hard-blocking checkpoint",
         "gloss": "Compress system into tractable form for external intervention; name losses",
         "grain": "Find latent structural direction; distinguish real from illusory optionality",
         "ground": "Establish correctness through evidence protocols",
@@ -813,11 +816,12 @@
         "enforce": "拘",
         "enter": "入",
         "experimental": "実",
+        "falsify": "偽",
         "field": "場",
         "flow": "流",
         "fourfold": "四",
         "gap": "隙",
-        "gate": "門",
+        "gate": "閘",
         "gloss": "釈",
         "grain": "纹",
         "ground": "地",
@@ -936,6 +940,7 @@
         "enforce": "Structural",
         "enter": "Structural",
         "experimental": "Exploration",
+        "falsify": "Process",
         "field": "Actor-centered",
         "flow": "Temporal/Dynamic",
         "fourfold": "Reasoning",
@@ -1154,11 +1159,12 @@
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
+        "falsify": "Falsifiable artifact fires against absent behavior before implementation",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "fourfold": "Exhaust stance space",
         "gap": "Implicit gaps",
-        "gate": "Evaluation artifact before implementation",
+        "gate": "Hard-blocking checkpoint — next action blocked until condition is objectively met",
         "gloss": "Compress unfamiliar system for external intervention; name losses",
         "grain": "Latent structural direction / real vs illusory optionality",
         "ground": "Establish correctness through evidence",
@@ -3767,7 +3773,7 @@
         "enforce": {
           "distinctions": [
             {
-              "note": "enforce = convert procedural to structural; gate = evaluation before implementation",
+              "note": "enforce = convert procedural to structural dependencies; gate = hard-blocking checkpoint; falsify = falsifiable artifact must fire before implementation",
               "token": "gate"
             },
             {
@@ -3838,6 +3844,45 @@
             "how do I isolate the cause"
           ],
           "definition": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would update the hypotheses."
+        },
+        "falsify": {
+          "distinctions": [
+            {
+              "note": "falsify = the artifact must have fired against the absent behavior before implementation; gate = the next action is blocked until a condition is met. falsify specifies what kind of evidence satisfies a gate; gate specifies the blocking structure. use falsify + gate together for full TDD enforcement.",
+              "token": "gate"
+            },
+            {
+              "note": "verify = apply falsification pressure to claims regardless of timing; falsify = the artifact must fire against the absent behavior before implementation begins. falsify adds the temporal and minimal-wrong-state requirements that verify does not.",
+              "token": "verify"
+            },
+            {
+              "note": "ground = derive an enforcement process before acting; falsify = the specific constraint that every governing artifact must be falsifiable and have fired against the absent behavior. falsify is one thing ground might derive.",
+              "token": "ground"
+            },
+            {
+              "note": "chain = each step cites its predecessor; falsify = the artifact firing is the predecessor that implementation steps must cite. falsify produces the chain predecessor; chain requires it to be reproduced.",
+              "token": "chain"
+            }
+          ],
+          "heuristics": [
+            "write the test first",
+            "TDD",
+            "test-driven development",
+            "define success criteria before building",
+            "evaluation before implementation",
+            "write the rubric before grading",
+            "what does passing look like before you start",
+            "declare acceptance criteria first",
+            "no implementation without a prior test",
+            "write the spec before the code",
+            "define what good looks like before producing it",
+            "what check would reject a bad version",
+            "prove the test can fail before implementing",
+            "see it fail before you make it pass",
+            "minimal wrong state",
+            "falsifiable assertion"
+          ],
+          "definition": "An artifact governing this step must be structurally capable of detecting the governed behavior's absence — not merely confirming its presence. The artifact must have fired against a state where the governed behavior is absent and produced a visible signal in the transcript before implementation begins. For each assertion, the firing must occur against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors are intact — a stub that returns a universally wrong answer does not constitute a valid artifact fire. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Natural FAIL state: <yes — stub with all governed behaviors absent produces a FAIL; or no — requires perturbation: identify the minimal wrong state stub> | Minimal wrong state: <for natural-FAIL-state assertions: n/a; for no-FAIL-state assertions: describe the stub that removes only the governed behavior while leaving all others intact>. Phase 1 is complete when every assertion has a classification block with all three fields present. PHASE 2 — artifact fire (tool result required before implementation): every assertion requires a visible FAIL tool result before any implementation step. For natural-FAIL-state assertions, run against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state stub. Before any implementation step, produce a status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. RE-ANCHORING: immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that governs this step>' — if this cannot be written truthfully, the tool call is not permitted."
         },
         "field": {
           "distinctions": [
@@ -3928,33 +3973,29 @@
         "gate": {
           "distinctions": [
             {
-              "note": "verify = falsification pressure on claims regardless of timing; gate = temporal ordering constraint — evaluation artifact must precede implementation artifact",
-              "token": "verify"
+              "note": "RENAMED: the old 'gate' token (TDD enforcement — assertion must fire against absent behavior before implementation) is now called 'falsify'. The new 'gate' is the general hard-blocking checkpoint concept. For TDD enforcement use 'gate + falsify' together.",
+              "token": "falsify"
             },
             {
-              "note": "ground = derive an enforcement process before acting; gate = the specific constraint that evaluation precedes implementation. gate is one component of what ground might derive.",
+              "note": "ground = derive an enforcement process; gate = the specific constraint that a condition must be objectively met before proceeding. gate is one thing ground might derive as a blocking mechanism.",
               "token": "ground"
             },
             {
-              "note": "chain = each step cites its predecessor; gate = evaluation must exist before the artifact it evaluates. gate is about temporal ordering; chain is about derivation continuity.",
+              "note": "chain = each step cites its predecessor's actual output; gate = the next action is blocked until a condition is met. gate governs whether to proceed; chain governs how steps are linked when proceeding.",
               "token": "chain"
             }
           ],
           "heuristics": [
-            "write the test first",
-            "TDD",
-            "test-driven development",
-            "define success criteria before building",
-            "evaluation before implementation",
-            "write the rubric before grading",
-            "what does passing look like before you start",
-            "declare acceptance criteria first",
-            "no implementation without a prior test",
-            "write the spec before the code",
-            "define what good looks like before producing it",
-            "what check would reject a bad version"
+            "block until condition is met",
+            "hard checkpoint",
+            "do not proceed without",
+            "verify before continuing",
+            "condition must be satisfied first",
+            "no rationalization allowed",
+            "objective completion required",
+            "have X before doing Y"
           ],
-          "definition": "The response enforces six principles. Principle 1 (root): a FAIL observation establishes that an assertion can detect the governed behavior's absence and identify which contract was violated — nothing that does not meet both conditions is a FAIL observation. A passing observation is invisible. Principle 2 (execution): an assertion fires only when execution reaches and evaluates the assertion statement — errors before that point, reasoning about what a test would produce, and compile failures are not FAIL observations because the assertion did not execute. When a test does not compile, write a stub (minimal implementation with correct signatures and no-op behavior) so the test compiles and runs, then collect the behavioral FAIL. Principle 3 (per-assertion coverage): a test that FAILs establishes coverage only for assertions that fired and produced FAIL output; assertions not reached or that passed carry zero coverage. Principle 4 (no-natural-FAIL-state): an assertion whose absence is indistinguishable from the behavior being correctly absent passes trivially when the behavior is absent — structural test: does this assertion pass when the specific behavior being governed does not exist? 'The specific behavior does not exist' means the governed contract is not in effect — not merely that no code implements it. For assertions governing error or boundary conditions on a system with existing default behavior, the structural test must be run against the system with default behavior intact; if the default behavior satisfies the assertion, it has no natural FAIL state. If yes, it has no natural FAIL state and requires perturbation: run it against a state where the behavior exists but is deliberately wrong. Principle 5 (type matching): Assertion type must match behavior type — a static check cannot govern executable behavior; a compiler-enforced constraint needs no additional assertion. Principle 6 (proximity): prefer the assertion layer closest to the behavior that can observe a FAIL — the further the assertion from the behavior, the weaker the attribution to the governed contract (Principle 1 corollary). In multi-layer work, proximity requires an independently-failing per-layer assertion: a cross-layer FAIL cannot isolate which layer's contract was violated. Principle 7 (durability): assertion durability must match behavior durability — every permanent behavioral change requires a committed, automatically re-executable unit assertion in the test suite. A session-only invocation, manual check, or one-off script is not durable: it demonstrates current state but will not re-fire when behavior regresses. A FAIL tool result from a session-only script satisfies the Phase 2 observation requirement but does not close the implementation step; the committed assertion must exist before the step closes. Named exceptions (structural test required to invoke — self-assessment is not sufficient): Exception A (structural floor): when the behavior produces no observable output of any kind — no file, no parsed structure, no exit code, no return value — behavioral assertions are impossible and structural floor assertions (file existence, identifier presence) are required instead; these do not satisfy gate; a manual verification protocol must be declared: who verifies, by what procedure, and what binary pass/fail condition is defined in advance and checkable by someone other than the author. Structural test to invoke: would the behavior produce any observable output if it ran? If yes, Exception A does not apply. Exception B (exploratory): when the task has no predetermined correct output — the goal is to discover what is measurable or detectable, not to implement a specified behavior — governing assertions must be observability assertions (claims about what can be detected or measured), not outcome assertions that encode a direction before exploration has occurred. Structural test to invoke: is there a specified correct output? If yes, Exception B does not apply. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Principle: <which principle governs it> | Natural FAIL state: <yes, or no — structural test: does this assertion pass when the specific behavior being governed does not exist?> | Coverage artifact: <if Natural FAIL state is no, describe the specific incorrect behavior to introduce to produce a FAIL tool result; otherwise n/a>. Phase 1 must be anchored to the prior rung's artifact — the rung immediately above the assertions rung in the ladder (acceptance criteria, formal specification, or equivalent). Phase 1 is complete when: (a) the source artifact has been read, (b) every assertion identifiable in that artifact has a classification block with all four fields present, and (c) the count of blocks matches the count of identifiable assertions. Declaring Phase 1 complete without reading the source artifact is not permitted. PHASE 2 — coverage artifact (tool result required before implementation): every assertion requires a FAIL tool result before any implementation step. For natural-FAIL-state assertions (Natural FAIL state: yes), the FAIL comes from the initial red-state test run. For no-FAIL-state assertions (Natural FAIL state: no), the FAIL requires perturbation. Before any implementation step, produce a Phase 2 status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. The COMPLETE form requires the quoted FAIL output to be present verbatim in a prior tool result — a fabricated or paraphrased output is a chain violation. Phase 2 is complete when every assertion has a COMPLETE status line backed by a real tool result. Then derive the process these principles require and follow it — the derivation must be visible. RE-ANCHORING is the per-tool-call enforcement of Phase 2 — it does not introduce a separate requirement but makes Phase 2's gate operate at tool-call granularity rather than step granularity. An implementation tool call is any tool call that modifies system state (file edit, write, shell command that changes behavior); read, search, and classification tool calls are not governed by this requirement. Immediately before each implementation tool call, produce a one-line governing artifact citation: 'Governing artifact: <verbatim key output of the FAIL tool result that governs this step>' or 'Governing artifact: NOT YET PRODUCED — producing now' followed immediately by the artifact-producing tool call and nothing else. The re-anchoring line is not a planning note — it is a gate. If it cannot be written truthfully, the tool call is not permitted. Producing the Phase 1 classification block, the dependency graph, or any other planning artifact does not satisfy this requirement — only a FAIL tool result in the transcript satisfies it. The protocol does not switch off after planning; the re-anchoring check runs at every implementation tool call for the duration of the task."
+          "definition": "The response applies a hard-blocking checkpoint: the next action is blocked until a condition is objectively met and verifiably testable. A gate requires an explicit before-and-after structure — the condition is checked, not assumed. A rule has an opt-out path (rationalization allows proceeding before the condition is met); a gate does not — the condition must be satisfied or the action cannot occur. Use gate when a specific, objectively checkable condition must hold before proceeding: 'do I have X?' is a gate condition; 'I should probably have X' is a rule."
         },
         "gloss": {
           "distinctions": [
@@ -4013,7 +4054,7 @@
         "ground": {
           "distinctions": [
             {
-              "note": "gate = the specific constraint that evaluation precedes implementation; ground = meta-token that asks the model to derive its own enforcement process. use gate when you know evaluation-precedence is the constraint; use ground when you want the model to figure out what constraints this task needs.",
+              "note": "gate = hard-blocking checkpoint (next action blocked until condition met); falsify = falsifiable artifact must fire before implementation; ground = meta-token that derives what constraints apply. use gate/falsify when you know the constraints; use ground when you want the model to figure out what constraints this task needs.",
               "token": "gate"
             },
             {
@@ -5286,7 +5327,7 @@
         "verify": {
           "distinctions": [
             {
-              "note": "gate = temporal ordering — evaluation artifact must precede implementation artifact; verify = falsification pressure on claims regardless of timing",
+              "note": "gate = hard-blocking checkpoint (next action blocked until condition met); falsify = falsifiable artifact must fire against absent behavior before implementation; verify = falsification pressure on claims regardless of timing. falsify adds timing and minimal-wrong-state requirements that verify does not.",
               "token": "gate"
             },
             {
@@ -7850,7 +7891,7 @@
     ],
     "axis_soft_caps": {
       "scope": 2,
-      "method": 4,
+      "method": 5,
       "form": 1,
       "channel": 1,
       "directional": 1
@@ -8004,6 +8045,7 @@
         "enforce": "enforce",
         "enter": "enter",
         "experimental": "experimental",
+        "falsify": "falsify",
         "field": "field",
         "flow": "flow",
         "fourfold": "fourfold",
@@ -8250,6 +8292,7 @@
         "method=enforce": "method-enforce",
         "method=enter": "method-enter",
         "method=experimental": "method-experimental",
+        "method=falsify": "method-falsify",
         "method=field": "method-field",
         "method=flow": "method-flow",
         "method=fourfold": "method-fourfold",
@@ -8605,6 +8648,7 @@
       "experimental": "experimental",
       "facilitate": "facilitate",
       "fail": "fail",
+      "falsify": "falsify",
       "faq": "faq",
       "field": "field",
       "fig": "fig",
@@ -8740,6 +8784,7 @@
       "method=enforce": "method-enforce",
       "method=enter": "method-enter",
       "method=experimental": "method-experimental",
+      "method=falsify": "method-falsify",
       "method=field": "method-field",
       "method=flow": "method-flow",
       "method=fourfold": "method-fourfold",
@@ -9248,14 +9293,15 @@
       }
     },
     {
-      "title": "TDD Enforcement (ground + gate + chain + atomic)",
-      "command": "bar build make ground gate chain atomic --subject \"...\"",
-      "example": "bar build make ground gate chain atomic --subject \"Add token_version field through grammar export, Go struct, and SPA layers\"",
-      "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each step anchored to its predecessor's actual output, one observable change at a time. ground derives the enforcement process; gate enforces assertion-before-behavior; chain enforces derivation continuity; atomic enforces one change per step. Multi-layer work: identify the dependency structure before sequencing — layers sharing an upstream dependency can proceed in parallel once that dependency is green; the protocol's linear ordering applies within each branch, not across independent branches. When asserting layer boundaries, verify epistemic independence: an assertion that passes vacuously on stale upstream input is not independent, even if it does not structurally call other layers. Distinguish structural impossibility (the assertion cannot be written) from pressure to stop early (a high-quality intermediate artifact creates a false sense of completion) — these have different fixes: testability improvement vs. requiring downstream assertions before the step closes.",
+      "title": "TDD Enforcement (ground + gate + falsify + chain + atomic)",
+      "command": "bar build make ground gate falsify chain atomic --subject \"...\"",
+      "example": "bar build make ground gate falsify chain atomic --subject \"Add token_version field through grammar export, Go struct, and SPA layers\"",
+      "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each step anchored to its predecessor's actual output, one observable change at a time. ground derives the enforcement process; gate blocks each step until its condition is met; falsify requires that every governing artifact has fired against the minimal wrong state before implementation; chain enforces derivation continuity; atomic enforces one change per step. NOTE: gate + falsify were previously a single token called 'gate' — they are now split. gate alone = hard-blocking checkpoint (general); falsify alone = falsifiable artifact quality requirement; gate + falsify together = full TDD enforcement. Multi-layer work: identify the dependency structure before sequencing — layers sharing an upstream dependency can proceed in parallel once that dependency is green; the protocol's linear ordering applies within each branch, not across independent branches.",
       "tokens": {
         "method": [
           "ground",
           "gate",
+          "falsify",
           "chain",
           "atomic"
         ],
@@ -9957,28 +10003,36 @@
   },
   "compositions": [
     {
-      "name": "ground+gate",
+      "name": "gate+falsify",
+      "tokens": [
+        "gate",
+        "falsify"
+      ],
+      "prose": "gate + falsify: when these two tokens are co-present, the objective condition that gate requires to be met before proceeding is that a falsifiable artifact satisfying falsify's criteria exists in the transcript — it has fired against the minimal wrong state and produced a visible signal. Gate provides the blocking structure; falsify specifies the evidentiary quality that satisfies it. Together they produce the discipline previously called 'TDD enforcement': no implementation step may begin until every governing assertion has been observed to fail against the specific absent behavior it governs."
+    },
+    {
+      "name": "ground+falsify",
       "tokens": [
         "ground",
-        "gate"
+        "falsify"
       ],
-      "prose": "ground + gate: the intent of this combination is that every behavior is governed by an assertion — meaning the behavior cannot regress without a test automatically detecting it. Producing passing tests that happen to exist alongside the implementation does not satisfy this intent; the tests must structurally enforce the behavior. Everything that follows derives from that intent. Gate's principle is a required constraint on whatever enforcement process ground derives — any process that permits behavior without a verified assertion violates gate regardless of how ground frames it. Ground's derivation must satisfy gate; gate's principle is not optional within ground's scope. Additionally, during ground's completion check, each assertion must have a correlated FAIL artifact in the transcript — evidence that the assertion would detect a regression in the behavior it governs. The check for each assertion is: does a correlated FAIL artifact already exist in the transcript for this assertion? If yes — the adversarial check is satisfied; do not re-perturb. If no — produce that evidence now by any means that generates a correlated FAIL (perturbation is the standard method; any approach that produces a FAIL traceable to the governed behavior is valid). A passing-tests run without correlated FAIL artifacts in the transcript is not an adversarial check — it establishes consistency between the behavior and its tests, not that the tests govern the behavior. Self-assessed certainty ('I am confident this would catch a regression') does not substitute for a FAIL artifact — the artifact is the evidence; the assessment is not."
+      "prose": "ground + falsify: the intent of this combination is that every behavior is governed by a falsifiable artifact — meaning the behavior cannot regress without the artifact detecting it. Producing passing artifacts that happen to exist alongside the implementation does not satisfy this intent; each artifact must structurally enforce its governed behavior. Falsify's criteria are required constraints on whatever enforcement process ground derives. During ground's completion check, each assertion must have a correlated artifact-fire in the transcript — evidence that it would detect a regression. Does a correlated FAIL artifact already exist for this assertion? If yes — adversarial check satisfied; do not re-perturb. If no — produce it now. Self-assessed certainty does not substitute for a visible artifact fire — the artifact is the evidence; the assessment is not."
     },
     {
-      "name": "gate+atomic",
+      "name": "falsify+atomic",
       "tokens": [
-        "gate",
+        "falsify",
         "atomic"
       ],
-      "prose": "gate + atomic: the governing output is the artifact output (failure message, compile error, test result) produced by the governing artifact that opens the current implementation step. When no governing output exists for the current behavior, the scope of the current step is undefined — the governing artifact has not been written yet. Test absence is an explicit open gap that blocks implementation; the required action is to write and run the assertion, not to proceed without one."
+      "prose": "falsify + atomic: the governing output is the artifact-fire output (failure message, visible signal) produced by running the falsifiable artifact against the minimal wrong state. When no artifact fire exists for the current behavior, the scope of the current step is undefined — the artifact has not yet been run against the absent behavior. Artifact absence is an explicit open gap that blocks implementation; the required action is to produce the artifact fire, not to proceed without one."
     },
     {
-      "name": "gate+chain",
+      "name": "falsify+chain",
       "tokens": [
-        "gate",
+        "falsify",
         "chain"
       ],
-      "prose": "gate + chain: the FAIL tool result produced by gate's Phase 2 perturbation is the chain predecessor for the implementation step that makes that assertion pass. An implementation step's correctness criterion is: change the system from the observed wrong state to the correct state. The wrong state is only defined by observing the perturbation FAIL output — without that observation, the correctness criterion is undefined. Chain requires every step to reproduce its predecessor's actual output before proceeding, because the step's reasoning must be anchored to what was actually observed. The agent derives from this that implementation is not merely prohibited before the FAIL artifact exists — it is undefined. A step cannot be anchored to a predecessor that has not been produced; proceeding requires fabricating the predecessor, and fabrication is not reproduction regardless of whether the fabricated content is plausible. Note: classification and derivation steps are not implementation steps and are not governed by this rule."
+      "prose": "falsify + chain: the artifact-fire tool result produced by falsify is the chain predecessor for the implementation step that makes that assertion pass. An implementation step's correctness criterion is: change the system from the observed wrong state to the correct state. The wrong state is only defined by observing the artifact-fire output — without that observation, the correctness criterion is undefined. Chain requires every step to reproduce its predecessor's actual output before proceeding. The agent derives that implementation is not merely prohibited before the artifact fire exists — it is undefined. Note: classification and derivation steps are not implementation steps and are not governed by this rule."
     },
     {
       "name": "atomic+ground",
@@ -9986,7 +10040,7 @@
         "atomic",
         "ground"
       ],
-      "prose": "atomic + ground: exhausting the governing artifact's failures is necessary but not sufficient for completion. When the artifact reports no failures, ground's completion check is still required — return to the original stated intent and produce visible evidence for each item. Declaring done before the completion check is a violation. When all four tokens ground/gate/atomic/chain are co-present, each token's rules operate at a different level of abstraction: ground governs the task process as a whole, gate governs what must exist before each step begins, atomic governs the scope of each step, and chain governs continuity between steps. They do not conflict — violations at one level are independent of the others."
+      "prose": "atomic + ground: exhausting the governing artifact's failures is necessary but not sufficient for completion. When the artifact reports no failures, ground's completion check is still required — return to the original stated intent and produce visible evidence for each item. Declaring done before the completion check is a violation. When ground/gate/falsify/atomic/chain are co-present, each token operates at a different level: ground governs the task process as a whole; gate governs whether to proceed; falsify governs the evidentiary quality required to proceed; atomic governs the scope of each step; chain governs continuity between steps. They do not conflict — violations at one level are independent of the others."
     },
     {
       "name": "calc+chain",
@@ -10005,25 +10059,26 @@
       "prose": "mint + root: the generative model mint constructs must itself be root-compliant — there may be only one canonical generative structure for each domain under analysis. mint requires that generative assumptions be made explicit and conclusions follow as direct products; root requires that each proposition have a single authoritative locus with no unresolved parallel accounts. Together: constructing two independent generative models for the same phenomenon and deriving from both is a violation — the generative layer is not exempt from root's single-source requirement. Multiple structural models must be unified into one, or their dependency relationship must be made explicit before either is used as a generative basis."
     },
     {
-      "name": "ground+gate+atomic+chain",
+      "name": "ground+gate+falsify+atomic+chain",
       "tokens": [
         "ground",
         "gate",
+        "falsify",
         "atomic",
         "chain"
       ],
-      "prose": "ground + gate + atomic + chain (multi-layer work): ground's first artifact is a dependency graph that partitions the work into independent branches — two branches are independent if neither's first step depends on any node in the other. Each node carries an explicit predecessor/successor contract. This graph is required before any branch begins. The protocol's ordering constraint applies within each branch, not across independent branches. Once a shared upstream dependency satisfies its assertions, independent branches must be executed as parallel subagent invocations; parallel execution is available if and only if the execution context supports simultaneous tool calls — if not, state which condition is unmet before proceeding sequentially. Each subagent runs gate+atomic+chain on its assigned branch; ground is the orchestrating protocol and its dependency graph is not re-derived within a branch. When asserting layer boundaries, structural impossibility (the assertion cannot be written) and pressure to stop early (a high-quality intermediate creates a false sense of completion) are distinct failure modes with different causes; they are not resolved by the same intervention."
+      "prose": "ground + gate + falsify + atomic + chain (multi-layer work): ground's first artifact is a dependency graph that partitions the work into independent branches — two branches are independent if neither's first step depends on any node in the other. Each node carries an explicit predecessor/successor contract. This graph is required before any branch begins. The protocol's ordering constraint applies within each branch, not across independent branches. Once a shared upstream dependency satisfies its assertions, independent branches must be executed as parallel subagent invocations; parallel execution is available if and only if the execution context supports simultaneous tool calls — if not, state which condition is unmet before proceeding sequentially. Each subagent runs gate+falsify+atomic+chain on its assigned branch; ground is the orchestrating protocol and its dependency graph is not re-derived within a branch. When asserting layer boundaries, structural impossibility (the assertion cannot be written) and pressure to stop early (a high-quality intermediate creates a false sense of completion) are distinct failure modes with different causes; they are not resolved by the same intervention."
     }
   ],
   "checksums": {
-    "axes": "d65efc33bc040160c40817847f19d0461b88db1cb043970990e58d40fb66f738",
+    "axes": "33353eb092b1142bd9014588b92eca8173df24add23786ae8c3b5220f616e2af",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
-    "hierarchy": "93789ecf7b0cd92ea25d6052cbcfb0fa71e26fd20f0eb8389268662f6a0aaf35",
-    "slugs": "20286c4ec41994c0d813aa4b809ae527651256ccf34cf05094a89cd35b815126",
-    "patterns": "fa6d09fdf6a9103d582dfd821d956fa5214dae4439f6e777cf99c63cf683f06f",
+    "hierarchy": "5781f1739d0ddab73d00cb7b640bc980249bfe09b74dee0bec51b7f1ace4a6d0",
+    "slugs": "b491efdcbc7bfe2980e88cca2935a2a017fef68329ad4def8be54ccd1fef931e",
+    "patterns": "0b374ba361ac34a4d08860bfb6d8e5383cdafc9f6ea8badc89cfcdfc2cd37310",
     "starter_packs": "e102103900015968b814e85df64eac903f32638a8486081bdd8be83c8e755754",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "3e397aab062553c89eeff02b2f250d89aa467e5b78515c7109d8532806b66713"
+    "compositions": "ff65a6422f9a7f69f0f150f8aeddeeb8d0c437613704849c1a8142d5308eae25"
   }
 }

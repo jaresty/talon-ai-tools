@@ -255,9 +255,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
         "is maintained.",
-        "behave": "The response enhances the task by analysing using the COM-B model (Capability, Opportunity, Motivation, Behaviour), identifying key enablers and barriers across those "
-        "dimensions, mapping them to Behaviour Change Wheel intervention functions and behaviour change techniques, and outlining a minimal, testable implementation and evaluation "
-        "plan.",
+        "behave": "The response enhances the task by analyzing behavioral change in terms of three independent gaps: whether the actor has the capability to perform the behavior, whether the "
+        "environment provides the opportunity, and whether the motivation is present. For each gap identified, name the smallest intervention that closes it and specify how you would "
+        "know the intervention worked.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
@@ -299,7 +299,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "one following it genuinely? If not, the instruction must be restructured until the answer is yes.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
-        "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency.",
+        "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "
+        "stated, the structural representation claimed to enforce it, and a reachable state of that representation where the conclusion does not hold.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
         "enforce": "The response identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip. When "
         "a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates subsequent steps, requiring actual "
@@ -369,7 +370,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
         "or design around those paths.",
-        "jobs": "The response enhances the task by analyzing Jobs To Be Done—the outcomes users want to achieve and the forces shaping their choices.",
+        "jobs": "The response enhances the task by analyzing the outcomes users are trying to achieve and the functional, social, and emotional pressures that cause them to seek or switch "
+        "solutions — independent of what product or system they currently use.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
         "consequences or implementations, ordered by importance to the audience.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "
@@ -389,7 +391,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
-        "mint": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model.",
+        "mint": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model. Each assumption is "
+        "stated as a separately statable claim; each conclusion is traceable to a specific assumption such that removing that assumption would break the derivation.",
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
@@ -397,7 +400,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "general discourse about the domain. The irresolution is not a tone or atmosphere — it is structural: the reader cannot resolve it by thinking harder. Do not name the tension or "
         "state that something cannot be resolved. The response succeeds if the reader cannot engage with it without first becoming stuck.",
         "objectivity": "The response enhances the task by distinguishing objective facts from subjective opinions and supporting claims with evidence.",
-        "operations": "The response enhances the task by identifying operations research or management science concepts that frame the situation.",
+        "operations": "The response enhances the task by naming the objective being optimized, the constraints that bound it, and the tradeoffs that must be navigated — making the structural "
+        "tension in the situation explicit so that decisions can be evaluated against it.",
         "orbit": "The response enhances the task by varying initial conditions or assumptions across multiple trajectories and identifying the invariant structural form that behavior tends "
         "toward despite sensitive dependence on starting points. Use when a system appears complex or chaotic but may have underlying recurrent geometry — the goal is to surface the "
         "attractor shape, not predict any specific path.",
@@ -416,11 +420,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "product": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
-        "pulse": "The response models information transfer as a staged encode/decode process, distinguishing message from signal, accounting for noise and channel distortion, and specifying how "
-        "transmission errors are detected and repaired.",
+        "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
+        "specifying what mechanism — if any — detects and corrects that distortion.",
         "reify": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that "
         "constrain reasoning.",
-        "release": "The response reduces distortion or disturbance by loosening attachment or identification with transient states, roles, or outcomes.",
+        "release": "The response reduces distortion by de-weighting contingent or temporary features of the situation — asking which concerns would dissolve if the current state changed, and "
+        "treating those as non-load-bearing rather than as fixed constraints.",
         "reset": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed.",
         "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
@@ -611,7 +616,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "atomic": "One observable change per step",
         "automate": "Prefer automated over manual steps",
         "balance": "Equilibrium description",
-        "behave": "COM-B behavioral analysis",
+        "behave": "Capability/opportunity/motivation gap analysis",
         "bias": "Identify cognitive biases",
         "boom": "Explore behavior at extremes of scale",
         "bound": "Constrain propagation",
@@ -663,7 +668,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "models": "Apply named mental models explicitly",
         "mu": "State central tension as irresolvable conjunction; stop",
         "objectivity": "Separate facts from opinions",
-        "operations": "Operations research frameworks",
+        "operations": "Objective/constraint/tradeoff structure",
         "orbit": "Find attractor geometry across trajectories",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
@@ -674,9 +679,9 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank items by importance or impact",
         "probability": "Probabilistic and statistical reasoning",
         "product": "Product lens — features, users, value",
-        "pulse": "Information transfer staged encode/decode model",
+        "pulse": "Content vs medium; distortion and correction",
         "reify": "Make implicit patterns explicit as rules",
-        "release": "Loosen attachment to transient states",
+        "release": "De-weight contingent features; surface load-bearing constraints",
         "reset": "Reconstruct without prior compatibility constraints",
         "resilience": "Behavior under stress and recovery",
         "rigor": "Disciplined, well-justified reasoning",
@@ -1254,7 +1259,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "atomic": "One observable change per step",
         "automate": "Automate repeatable steps",
         "balance": "Equilibrium description",
-        "behave": "COM-B / behavior change",
+        "behave": "Behavioral gap analysis and minimal intervention",
         "bias": "Cognitive biases",
         "boom": "Extreme scale behavior",
         "bound": "Contain side effects",
@@ -1306,7 +1311,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "models": "Named mental models",
         "mu": "Irresolvable conjunction; no elaboration",
         "objectivity": "Facts vs opinions",
-        "operations": "Operations research",
+        "operations": "Objective, constraints, and tradeoffs",
         "orbit": "Attractor geometry",
         "order": "Abstract ordering",
         "origin": "Historical causation",
@@ -1317,9 +1322,9 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank by importance",
         "probability": "Statistical reasoning",
         "product": "Product lens",
-        "pulse": "Information encode/decode transmission",
+        "pulse": "Content/medium separation and distortion",
         "reify": "Make implicit explicit",
-        "release": "Let go of attachment",
+        "release": "De-weight transient features",
         "reset": "Clean slate/greenfield",
         "resilience": "Stress and fragility",
         "rigor": "Disciplined reasoning",

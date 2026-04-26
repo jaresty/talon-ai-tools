@@ -2035,14 +2035,11 @@ USAGE_PATTERNS: list[dict] = [
         },
     },
     {
-        "title": "TDD Enforcement (ground + gate + falsify + chain + atomic)",
-        "command": 'bar build make ground gate falsify chain atomic --subject "..."',
-        "example": 'bar build make ground gate falsify chain atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
-        "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each step anchored to its predecessor's actual output, one observable change at a time. ground derives the enforcement process; gate blocks each step until its condition is met; falsify requires that every governing artifact has fired against the minimal wrong state before implementation; chain enforces derivation continuity; atomic enforces one change per step. NOTE: gate + falsify were previously a single token called 'gate' — they are now split. gate alone = hard-blocking checkpoint (general); falsify alone = falsifiable artifact quality requirement; gate + falsify together = full TDD enforcement. Multi-layer work: identify the dependency structure before sequencing — layers sharing an upstream dependency can proceed in parallel once that dependency is green; the protocol's linear ordering applies within each branch, not across independent branches.",
-        "tokens": {
-            "method": ["ground", "gate", "falsify", "chain", "atomic"],
-            "task": ["make"],
-        },
+        "title": "TDD Enforcement (ground + gate + falsify + atomic)",
+        "command": 'bar build make ground gate falsify atomic --subject "..."',
+        "example": 'bar build make ground gate falsify atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
+        "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each governing assertion must have fired against the minimal wrong state before implementation begins, one observable change at a time. ground derives the enforcement process; gate blocks each step until its condition is met; falsify requires that every governing artifact has fired against the minimal wrong state before implementation; atomic enforces one change per step. chain is not needed — falsify's RE-ANCHORING requirement (verbatim FAIL output immediately before each tool call) already enforces derivation continuity. NOTE: gate + falsify were previously a single token called 'gate' — they are now split. gate alone = hard-blocking checkpoint (general); falsify alone = falsifiable artifact quality requirement; gate + falsify together = full TDD enforcement.",
+        "tokens": {"method": ["ground", "gate", "falsify", "atomic"], "task": ["make"]},
     },
     {
         "title": "Progressive Refinement Workflow",

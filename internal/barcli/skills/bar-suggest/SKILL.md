@@ -36,7 +36,7 @@ I can approach this several ways. Which would you prefer?
    `bar build probe full struct depends effects`
 
 3. **Risk-focused** — surface failure modes and fragilities
-   `bar build probe fail adversarial risks checklist`
+   `bar build probe fail adversarial checklist`
 
 4. **Surprise me** — `bar shuffle` generates an unexpected angle
 

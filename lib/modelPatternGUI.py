@@ -399,7 +399,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Risk scan",
         description="List and briefly explain key risks.",
-        recipe="probe · gist · struct · risks · bullets · fog",
+        recipe="probe · gist · struct · fail · bullets · fog",
         domain="writing",
     ),
     PromptPattern(

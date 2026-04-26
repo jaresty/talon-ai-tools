@@ -258,7 +258,7 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
 
 
 class ScopeAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-6: scope axis has structured metadata for all 16 tokens (lever added)."""
+    """ADR-0155 T-6: scope axis has structured metadata for all 18 tokens (lever added; jobs/product moved from method)."""
 
     AXIS = "scope"
     EXPECTED_TOKENS = {
@@ -269,8 +269,10 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         "dam",
         "fail",
         "good",
+        "jobs",
         "mean",
         "motifs",
+        "product",
         "storage",
         "stable",
         "lever",
@@ -284,7 +286,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_scope_metadata_covers_all_tokens(self):
-        """All 15 scope tokens must have metadata entries."""
+        """All 18 scope tokens must have metadata entries."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,
@@ -417,7 +419,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 105 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -472,7 +474,6 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "distill",
         "induce",
         "inversion",
-        "jobs",
         "lateral",
         "mapping",
         "meld",
@@ -494,17 +495,14 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "preserve",
         "prioritize",
         "probability",
-        "product",
         "pulse",
         "reify",
         "release",
         "ritual",
         "ladder",
-        "resilience",
         "sense",
         "reset",
         "rigor",
-        "risks",
         "robust",
         "root",
         "seep",
@@ -531,7 +529,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 103 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; hollow/distill added)."""
+        """All 99 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; hollow/distill added; risks/resilience/jobs/product moved out)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

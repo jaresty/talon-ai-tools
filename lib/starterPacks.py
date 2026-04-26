@@ -37,7 +37,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="review",
         framing="Code or document review",
-        command="bar build check adversarial risks verify",
+        command="bar build check adversarial fail verify",
     ),
     StarterPack(
         name="dissect",
@@ -62,7 +62,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="charter",
         framing="Planning a project or feature",
-        command="bar build plan sweep prioritize risks",
+        command="bar build plan sweep prioritize fail",
     ),
     StarterPack(
         name="explain",

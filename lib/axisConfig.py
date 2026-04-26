@@ -381,9 +381,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
         "or design around those paths.",
-        "jobs": "The response enhances the task by analyzing the outcomes users are trying to achieve and the pressures that would persist even if every current solution were removed — the "
-        "pressures that make the outcome non-negotiable rather than merely convenient. Any finding that depends on the features of a specific product or system is about the product, not "
-        "the outcome, and does not satisfy this requirement.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
         "consequences or implementations, ordered by importance to the audience.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "
@@ -434,7 +431,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "continue to function without modification.",
         "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
-        "product": "The response enhances the task by examining the subject through a product lens—features, user needs, and value propositions.",
         "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
         "specifying what mechanism — if any — detects and corrects that distortion.",
         "reify": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that "
@@ -442,9 +438,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "release": "The response reduces distortion by de-weighting contingent or temporary features of the situation — asking which concerns would dissolve if the current state changed, and "
         "treating those as non-load-bearing rather than as fixed constraints.",
         "reset": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed.",
-        "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
-        "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
         "ritual": "The response structures actions according to the positions actors occupy relative to each other and the sequence those positions prescribe — meaning derives from relational "
         "placement, not from the intrinsic content of the action. Use when what matters is not what is done but who does it, in what order, and in relation to whom.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
@@ -498,6 +492,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "modes rather than overall quality or preferred outcomes.",
         "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting "
         "perspective.",
+        "jobs": "The response focuses on the outcomes the subject is trying to achieve and the pressures that would persist even if every current solution were removed — the pressures that make "
+        "the outcome non-negotiable rather than merely convenient. Any finding that depends on the features of a specific product or system is about the product, not the outcome, and does "
+        "not satisfy this requirement.",
         "lever": "The response focuses on intervention points—places in the system where applied force shifts equilibrium; identifying feedback loops, constraints, delays, rules, or parameters "
         "whose change propagates to alter which stable states the system settles into. Includes load-bearing elements whose change disproportionately alters the outcome, even before any "
         "deliberate intervention.",
@@ -505,6 +502,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
         "their internal topology in detail or their boundary-spanning distribution.",
+        "product": "The response focuses on the subject through a product lens — features, user needs, and value propositions — suppressing concerns that do not bear on what users want, what the "
+        "product does, and why it matters to them.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
         "perturbations affect their continuity.",
         "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
@@ -671,7 +670,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "hollow": "Identify structural escape routes in prompts",
         "induce": "Generalize patterns from examples",
         "inversion": "Reason from catastrophic outcomes back",
-        "jobs": "Jobs-to-be-done analysis",
         "ladder": "Move between abstraction levels",
         "lateral": "Resist obvious framing; seek non-obvious angle",
         "mapping": "Surface elements and relationships",
@@ -695,14 +693,11 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "preserve": "Maintain compatibility with existing structures",
         "prioritize": "Rank items by importance or impact",
         "probability": "Probabilistic and statistical reasoning",
-        "product": "Product lens — features, users, value",
         "pulse": "Content vs medium; distortion and correction",
         "reify": "Make implicit patterns explicit as rules",
         "release": "De-weight contingent features; surface load-bearing constraints",
         "reset": "Reconstruct without prior compatibility constraints",
-        "resilience": "Behavior under stress and recovery",
         "rigor": "Disciplined, well-justified reasoning",
-        "risks": "Potential problems and failure modes",
         "ritual": "Structure via established roles and procedures",
         "robust": "Reason under deep uncertainty",
         "root": "Reduce multiple representations to a single authoritative source",
@@ -734,9 +729,11 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "dam": "Containment boundaries and limits",
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
+        "jobs": "Outcomes users seek and non-negotiable pressures",
         "lever": "Intervention points that shift equilibrium",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
+        "product": "Product lens — features, users, value",
         "stable": "Stability and persistence of states",
         "storage": "Durable state and storage layer",
         "struct": "Arrangement and relationships",
@@ -890,7 +887,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "hollow": "殻",
         "induce": "帰",
         "inversion": "逆",
-        "jobs": "需",
         "ladder": "階",
         "lateral": "斜",
         "mapping": "写",
@@ -914,14 +910,11 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "preserve": "守",
         "prioritize": "優",
         "probability": "確",
-        "product": "商",
         "pulse": "伝",
         "reify": "形",
         "release": "放",
         "reset": "初",
-        "resilience": "耐",
         "rigor": "厳",
-        "risks": "危",
         "ritual": "礼",
         "robust": "堅",
         "root": "準",
@@ -1002,9 +995,11 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "dam": "圏",
         "fail": "敗",
         "good": "良",
+        "jobs": "需",
         "lever": "梃",
         "mean": "意",
         "motifs": "紋",
+        "product": "商",
         "stable": "安",
         "storage": "庫",
         "struct": "造",
@@ -1083,7 +1078,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "hollow": "Diagnostic",
         "induce": "Reasoning",
         "inversion": "Diagnostic",
-        "jobs": "Actor-centered",
         "ladder": "Reasoning",
         "lateral": "Reasoning",
         "mapping": "Structural",
@@ -1107,14 +1101,11 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "preserve": "Structural",
         "prioritize": "Comparative",
         "probability": "Reasoning",
-        "product": "Generative",
         "pulse": "Temporal/Dynamic",
         "reify": "Generative",
         "release": "Conduct",
         "reset": "Structural",
-        "resilience": "Diagnostic",
         "rigor": "Reasoning",
-        "risks": "Diagnostic",
         "ritual": "Conduct",
         "robust": "Diagnostic",
         "root": "Structural",
@@ -1314,7 +1305,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "hollow": "Identify structural escape routes in prompts",
         "induce": "Generalise from examples",
         "inversion": "Start from failure",
-        "jobs": "Jobs to be done",
         "ladder": "Abstraction level traversal",
         "lateral": "Resist obvious framing; seek non-obvious angle",
         "mapping": "Spatial map",
@@ -1338,14 +1328,11 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "preserve": "Backward compatibility",
         "prioritize": "Rank by importance",
         "probability": "Statistical reasoning",
-        "product": "Product lens",
         "pulse": "Content/medium separation and distortion",
         "reify": "Make implicit explicit",
         "release": "De-weight transient features",
         "reset": "Clean slate/greenfield",
-        "resilience": "Stress and fragility",
         "rigor": "Disciplined reasoning",
-        "risks": "Potential problems",
         "ritual": "Structure via established roles and procedures",
         "robust": "Works across futures",
         "root": "Single source of truth",
@@ -1377,9 +1364,11 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "dam": "Containment and boundaries",
         "fail": "Failure modes",
         "good": "Quality/criteria",
+        "jobs": "User outcomes and adoption pressures",
         "lever": "Intervention/leverage points",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
+        "product": "Product lens",
         "stable": "Invariants/stable states",
         "storage": "Durable state and storage layer",
         "struct": "Entities/boundaries",
@@ -5163,27 +5152,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what changes would make this service impossible to test",
             ],
         },
-        "jobs": {
-            "distinctions": [
-                {
-                    "note": "product = features, user needs, value propositions broadly; jobs = specifically the outcome/progress users seek and the forces blocking or enabling it",
-                    "token": "product",
-                }
-            ],
-            "heuristics": [
-                "what is the user actually trying to accomplish",
-                "what job does this feature do",
-                "what need does this solve",
-                "why would someone use this",
-                "what outcome does the user want",
-                "what drives adoption",
-                "user motivation behind",
-                "JTBD",
-                "jobs to be done",
-                "what job does this API actually do for its callers",
-                "what is the user trying to accomplish when they hit this endpoint",
-            ],
-        },
         "ladder": {
             "distinctions": [
                 {
@@ -5690,26 +5658,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "estimate the probability of this edge case occurring",
             ],
         },
-        "product": {
-            "distinctions": [
-                {
-                    "note": "jobs = outcomes users seek and forces shaping adoption; product = broader product lens including features and value propositions",
-                    "token": "jobs",
-                }
-            ],
-            "heuristics": [
-                "product perspective",
-                "through a product lens",
-                "feature vs user need",
-                "value proposition",
-                "product strategy",
-                "what does the product offer",
-                "user needs analysis",
-                "product thinking",
-                "view this technical decision through a product lens",
-                "what is the user-facing impact of this implementation choice",
-            ],
-        },
         "pulse": {
             "distinctions": [
                 {
@@ -5790,26 +5738,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "break from the current design",
             ],
         },
-        "resilience": {
-            "distinctions": [
-                {
-                    "note": "robust = choose options that perform across uncertain futures; resilience = analyze system behavior under stress specifically",
-                    "token": "robust",
-                }
-            ],
-            "heuristics": [
-                "how resilient is this",
-                "what happens under load",
-                "failure recovery",
-                "margin of safety",
-                "fragility vs robustness",
-                "how does it behave under stress",
-                "graceful degradation",
-                "fault tolerance",
-                "how resilient is this service to downstream failures",
-                "what happens to this component under partial network outages",
-            ],
-        },
         "rigor": {
             "distinctions": [
                 {
@@ -5828,27 +5756,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "substantiate your claims",
                 "make the reasoning behind this algorithm explicit",
                 "apply rigorous analysis to this performance claim",
-            ],
-        },
-        "risks": {
-            "distinctions": [
-                {
-                    "note": "adversarial = construct attacks to stress-test; risks = enumerate and assess failure modes and their likelihood",
-                    "token": "adversarial",
-                }
-            ],
-            "heuristics": [
-                "what are the risks",
-                "what could go wrong",
-                "risk assessment",
-                "failure modes",
-                "identify the hazards",
-                "risk analysis",
-                "what might fail",
-                "enumerate the risks",
-                "likelihood and severity",
-                "what are the risks of this deployment",
-                "what could go wrong with this refactor",
             ],
         },
         "ritual": {
@@ -6493,6 +6400,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what does success look like",
             ],
         },
+        "jobs": {
+            "distinctions": [
+                {
+                    "note": "product = features, user needs, value propositions broadly; jobs = specifically the outcome/progress users seek and the forces blocking or enabling it",
+                    "token": "product",
+                }
+            ],
+            "heuristics": [
+                "what is the user actually trying to accomplish",
+                "what job does this feature do",
+                "what need does this solve",
+                "why would someone use this",
+                "what outcome does the user want",
+                "what drives adoption",
+                "user motivation behind",
+                "JTBD",
+                "jobs to be done",
+                "what job does this API actually do for its callers",
+                "what is the user trying to accomplish when they hit this endpoint",
+            ],
+        },
         "lever": {
             "distinctions": [
                 {
@@ -6562,6 +6490,26 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "common idioms",
                 "what keeps showing up",
                 "same pattern in different places",
+            ],
+        },
+        "product": {
+            "distinctions": [
+                {
+                    "note": "jobs = outcomes users seek and forces shaping adoption; product = broader product lens including features and value propositions",
+                    "token": "jobs",
+                }
+            ],
+            "heuristics": [
+                "product perspective",
+                "through a product lens",
+                "feature vs user need",
+                "value proposition",
+                "product strategy",
+                "what does the product offer",
+                "user needs analysis",
+                "product thinking",
+                "view this technical decision through a product lens",
+                "what is the user-facing impact of this implementation choice",
             ],
         },
         "stable": {

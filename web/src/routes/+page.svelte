@@ -13,6 +13,14 @@
 	import { bm25Score } from '$lib/bm25.js';
 
 	const STORAGE_KEY = 'bar-prompt-state';
+	const RELEASE_NOTE_KEY = 'bar-release-note-gate-falsify-split-dismissed';
+
+	let releaseNoteDismissed = $state(false);
+
+	function dismissReleaseNote() {
+		releaseNoteDismissed = true;
+		localStorage.setItem(RELEASE_NOTE_KEY, '1');
+	}
 
 	let grammar: Grammar | null = $state(null);
 	let error: string | null = $state(null);
@@ -69,6 +77,7 @@
 		} else {
 			const saved = localStorage.getItem(STORAGE_KEY);
 			if (saved) deserialize(saved);
+		releaseNoteDismissed = !!localStorage.getItem(RELEASE_NOTE_KEY);
 		}
 		refreshPresets();
 		refreshHistory();
@@ -528,6 +537,18 @@
 		<p class="subtitle">Token composition for structured prompts</p>
 	</header>
 
+	{#if !releaseNoteDismissed}
+		<div class="release-note-banner">
+			<div class="release-note-content">
+				<strong>Token change:</strong> The <code>gate</code> token has been split.
+				<code>gate</code> is now a general hard-blocking checkpoint;
+				<code>falsify</code> is the new token for TDD artifact quality (artifact must fire against the minimal wrong state before implementation).
+				The <strong>craft</strong> preset and TDD enforcement now use <code>ground gate falsify atomic</code> — update any saved commands that used <code>ground gate chain atomic</code> or <code>ground gate atomic</code>.
+			</div>
+			<button class="release-note-dismiss" onclick={dismissReleaseNote} aria-label="Dismiss">✕</button>
+		</div>
+	{/if}
+
 	<!-- Subject input — above tabs, first-class input -->
 	<label class="input-group subject-top">
 		<span class="input-label">--subject <span class="input-hint">source material</span></span>
@@ -944,6 +965,38 @@
 
 	.loading, .error { color: var(--color-text-muted); padding: 2rem; text-align: center; }
 	.error { color: #f7768e; }
+
+	.release-note-banner {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+		background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+		border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+		border-radius: 6px;
+		padding: 0.65rem 0.85rem;
+		margin-bottom: 1.25rem;
+		font-size: 0.82rem;
+		line-height: 1.5;
+	}
+	.release-note-content { flex: 1; color: var(--color-text); }
+	.release-note-content code {
+		font-family: monospace;
+		background: color-mix(in srgb, var(--color-accent) 18%, var(--color-bg));
+		padding: 0.1em 0.3em;
+		border-radius: 3px;
+		font-size: 0.95em;
+	}
+	.release-note-dismiss {
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: var(--color-text-muted);
+		font-size: 0.85rem;
+		padding: 0;
+		line-height: 1;
+		flex-shrink: 0;
+	}
+	.release-note-dismiss:hover { color: var(--color-text); }
 
 	.main {
 		display: grid;

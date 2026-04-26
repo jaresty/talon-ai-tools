@@ -117,14 +117,12 @@ export function renderPrompt(
 			const desc = grammar.axes?.definitions?.[axis]?.[token] ?? '';
 			const heading = axisHeading(axis);
 			const kanji = kanjiMap[token] ?? '';
-			const category = categoryMap[token] ?? '';
 			const tokenWithKanji = kanji ? `${token} ${kanji}` : token;
-			const headingWithCategory = category ? `${heading} [${category}]` : heading;
 			let line = '';
 			if (token && desc) {
-				line = `- ${headingWithCategory} (${tokenWithKanji}): ${desc}`;
+				line = `- ${heading} (${tokenWithKanji}): ${desc}`;
 			} else if (token) {
-				line = `- ${headingWithCategory}: ${tokenWithKanji}`;
+				line = `- ${heading}: ${tokenWithKanji}`;
 			}
 			if (line) {
 				const note = conflictNotes[axis]?.[token];

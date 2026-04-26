@@ -1014,7 +1014,6 @@ func renderPromptlet(p HydratedPromptlet) string {
 	axis := axisHeading(p.Axis)
 	token := strings.TrimSpace(p.Token)
 	kanji := strings.TrimSpace(p.Kanji)
-	category := strings.TrimSpace(p.Category)
 	description := strings.TrimSpace(p.Description)
 
 	tokenWithKanji := token
@@ -1022,20 +1021,15 @@ func renderPromptlet(p HydratedPromptlet) string {
 		tokenWithKanji = fmt.Sprintf("%s %s", token, kanji)
 	}
 
-	axisWithCategory := axis
-	if category != "" {
-		axisWithCategory = fmt.Sprintf("%s [%s]", axis, category)
-	}
-
 	switch {
 	case token != "" && description != "":
-		return fmt.Sprintf("%s (%s): %s", axisWithCategory, tokenWithKanji, description)
+		return fmt.Sprintf("%s (%s): %s", axis, tokenWithKanji, description)
 	case token != "":
-		return fmt.Sprintf("%s: %s", axisWithCategory, tokenWithKanji)
+		return fmt.Sprintf("%s: %s", axis, tokenWithKanji)
 	case description != "":
-		return fmt.Sprintf("%s: %s", axisWithCategory, description)
+		return fmt.Sprintf("%s: %s", axis, description)
 	default:
-		return axisWithCategory
+		return axis
 	}
 }
 

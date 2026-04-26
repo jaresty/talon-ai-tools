@@ -2038,13 +2038,12 @@ USAGE_PATTERNS: list[dict] = [
     },
     {
         "title": "Risk Extraction",
-        "command": 'bar build pull fail full risks checklist --subject "..."',
-        "example": 'bar build pull fail full risks checklist --subject "Deploy payment service on Friday"',
+        "command": 'bar build pull fail full checklist --subject "..."',
+        "example": 'bar build pull fail full checklist --subject "Deploy payment service on Friday"',
         "desc": "Use when extracting a bounded risk list or summary: 'what are the risks?'. Prefer pull over probe when a risk register or checklist is the deliverable, not an open-ended analysis.",
         "tokens": {
             "completeness": ["full"],
             "form": ["checklist"],
-            "method": ["risks"],
             "scope": ["fail"],
             "task": ["pull"],
         },
@@ -2276,13 +2275,13 @@ USAGE_PATTERNS: list[dict] = [
     },
     {
         "title": "Evaluation with Falsification",
-        "command": 'bar build check <scope> full verify risks --subject "..."',
-        "example": 'bar build check thing full verify risks --subject "Evaluate the proposed caching strategy"',
-        "desc": "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with risks (systematic problem identification). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
+        "command": 'bar build check fail full verify --subject "..."',
+        "example": 'bar build check fail full verify --subject "Evaluate the proposed caching strategy"',
+        "desc": "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with scope=fail (failure modes and fragility). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
         "tokens": {
             "completeness": ["full"],
-            "method": ["verify", "risks"],
-            "scope": ["thing"],
+            "method": ["verify"],
+            "scope": ["fail"],
             "task": ["check"],
         },
     },
@@ -4064,8 +4063,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "adversarial": {
             "distinctions": [
                 {
-                    "note": "risks = enumerate failure modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples",
-                    "token": "risks",
+                    "note": "scope=fail = focus on failure modes and fragility; adversarial = actively stress-test by constructing attacks and counterexamples",
+                    "token": "fail",
                 }
             ],
             "heuristics": [
@@ -5136,8 +5135,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "inversion": {
             "distinctions": [
                 {
-                    "note": "risks = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
-                    "token": "risks",
+                    "note": "scope=fail = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
+                    "token": "fail",
                 }
             ],
             "heuristics": [

@@ -3079,8 +3079,8 @@
         "adversarial": {
           "distinctions": [
             {
-              "note": "risks = enumerate failure modes and likelihood; adversarial = actively stress-test by constructing attacks and counterexamples",
-              "token": "risks"
+              "note": "scope=fail = focus on failure modes and fragility; adversarial = actively stress-test by constructing attacks and counterexamples",
+              "token": "fail"
             }
           ],
           "heuristics": [
@@ -4180,8 +4180,8 @@
         "inversion": {
           "distinctions": [
             {
-              "note": "risks = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
-              "token": "risks"
+              "note": "scope=fail = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
+              "token": "fail"
             }
           ],
           "heuristics": [
@@ -9250,8 +9250,8 @@
     },
     {
       "title": "Risk Extraction",
-      "command": "bar build pull fail full risks checklist --subject \"...\"",
-      "example": "bar build pull fail full risks checklist --subject \"Deploy payment service on Friday\"",
+      "command": "bar build pull fail full checklist --subject \"...\"",
+      "example": "bar build pull fail full checklist --subject \"Deploy payment service on Friday\"",
       "desc": "Use when extracting a bounded risk list or summary: 'what are the risks?'. Prefer pull over probe when a risk register or checklist is the deliverable, not an open-ended analysis.",
       "tokens": {
         "completeness": [
@@ -9259,9 +9259,6 @@
         ],
         "form": [
           "checklist"
-        ],
-        "method": [
-          "risks"
         ],
         "scope": [
           "fail"
@@ -9678,19 +9675,18 @@
     },
     {
       "title": "Evaluation with Falsification",
-      "command": "bar build check <scope> full verify risks --subject \"...\"",
-      "example": "bar build check thing full verify risks --subject \"Evaluate the proposed caching strategy\"",
-      "desc": "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with risks (systematic problem identification). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
+      "command": "bar build check fail full verify --subject \"...\"",
+      "example": "bar build check fail full verify --subject \"Evaluate the proposed caching strategy\"",
+      "desc": "Use when evaluating claims by actively searching for ways they could be wrong. Combines verify (falsification pressure) with scope=fail (failure modes and fragility). Best for: reviewing designs, validating assumptions, stress-testing proposals.",
       "tokens": {
         "completeness": [
           "full"
         ],
         "method": [
-          "verify",
-          "risks"
+          "verify"
         ],
         "scope": [
-          "thing"
+          "fail"
         ],
         "task": [
           "check"
@@ -10072,12 +10068,12 @@
     }
   ],
   "checksums": {
-    "axes": "324352799c4235e56dfa2e290531bef787ba8d7ed7d8a100e1b34d8aeaadf010",
+    "axes": "ee22124cb6d8e9361cf541ce6b6ef7a4a6052e9610d907226ea0fd718d1cdf19",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "5781f1739d0ddab73d00cb7b640bc980249bfe09b74dee0bec51b7f1ace4a6d0",
     "slugs": "b040aefe202e3e53128f42d57f6d5df1f99ec59be9b411abc70a43a5085551f9",
-    "patterns": "ae90ba68e4d8f4f475805a83ce2bf354b9c7a2a47705a87190a7e5a85d7d46c8",
+    "patterns": "7a0b98462f5869a672f3f4202373c118704072db33cf82c2281b7052a4e84e61",
     "starter_packs": "f2406034bc08e4034383ccb4d0802511de9a3947cf6c6fb0d2f3f751954efa62",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
     "compositions": "ff65a6422f9a7f69f0f150f8aeddeeb8d0c437613704849c1a8142d5308eae25"

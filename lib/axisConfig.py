@@ -255,9 +255,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
         "is maintained.",
-        "behave": "The response enhances the task by analyzing behavioral change in terms of three independent gaps: whether the actor has the capability to perform the behavior, whether the "
-        "environment provides the opportunity, and whether the motivation is present. For each gap identified, name the smallest intervention that closes it and specify how you would "
-        "know the intervention worked.",
+        "behave": "The response enhances the task by analyzing behavioral change by asking: what must be true for this behavior to occur, and what is currently preventing each of those things? "
+        "For each precondition identified as absent, name the specific thing that is missing — not the category of gap, but the concrete absent condition. For each gap, name the "
+        "smallest intervention that closes it — smallest means removing this intervention would leave the gap open — and specify how you would know it worked.",
         "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
         "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
@@ -312,15 +312,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "falsify": "The response applies this constraint: an artifact governing this step must be structurally capable of detecting the governed behavior's absence — not merely confirming its "
         "presence. A criterion that has only ever passed provides no coverage guarantee — a passing artifact is not evidence that the behavior is enforced, only that it was not broken "
         "at the moment of observation. The artifact must have fired against a state where the governed behavior is absent and produced a visible signal in the transcript before "
-        "implementation begins. For each assertion, the firing must occur against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors "
-        "are intact — a stub that returns a universally wrong answer does not constitute a valid artifact fire. Before any artifact fire, derive for each assertion: (1) does this "
-        "assertion have a natural fail state — would a stub with the governed behavior absent produce a FAIL without perturbation? (2) if not, what is the minimal wrong state — the "
-        "specific stub that removes only this governed behavior while leaving all others intact? These two questions must be answered visibly before any tool call. PHASE 2 — artifact "
-        "fire (tool result required before implementation): every assertion requires a visible FAIL tool result before any implementation step. For natural-FAIL-state assertions, run "
-        "against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state stub. Before any implementation step, produce a status line for every "
-        "assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. RE-ANCHORING: immediately "
-        "before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that governs this step>' — if this cannot be written truthfully, the tool call is "
-        "not permitted.",
+        "implementation begins — visible means present as a tool result, not asserted in prose; a model-written claim that a signal was produced does not satisfy this requirement. For "
+        "each assertion, the firing must occur against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors are intact — a stub that "
+        "returns a universally wrong answer does not constitute a valid artifact fire. Before any artifact fire, derive for each assertion: (1) does this assertion have a natural fail "
+        "state — would a stub with the governed behavior absent produce a FAIL without perturbation? (2) if not, what is the minimal wrong state — the specific stub that removes only "
+        "this governed behavior while leaving all others intact? These two questions must be answered visibly before any tool call. PHASE 2 — artifact fire (tool result required "
+        "before implementation): every assertion requires a visible FAIL tool result before any implementation step. For natural-FAIL-state assertions, run against the absent-behavior "
+        "stub. For no-FAIL-state assertions, run against the minimal wrong state stub. Before any implementation step, produce a status line for every assertion: COMPLETE: Phase 2 "
+        "[assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. RE-ANCHORING: immediately before each implementation "
+        "tool call, produce: 'Governing artifact: <verbatim FAIL output that governs this step>' — if this cannot be written truthfully, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -338,28 +338,30 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
         "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
         "directional guidance, and structural prediction are all derivable from this reading.",
-        "ground": "The response applies this meta-process discipline — derive it in your own words and then follow it: The gap between apparent completion and actual completion is the "
-        "optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. The system applying this protocol is an optimizer: it "
-        "will follow the path of least resistance toward apparent completion, collapsing intermediate reasoning into a readable narrative so that internal steps appear to have occurred "
-        "without being verifiable. Internal correctness and visible correctness are not the same thing. Before acting, derive an enforcement process from the intent of this task whose "
-        "constraints make the appearance-reality gap costly to maintain. Every step in the derived process requires a governing artifact — a tool-executed result already present in the "
-        "transcript — whose existence is the only valid basis for proceeding. A step without a governing artifact in context has no authorization to proceed. The completion check is "
-        "the final required step of any enforcement process: return to the original stated intent, and for each item, produce visible evidence that the behavior satisfies it. The "
-        "intent is external and fixed; the completion check is the only permitted mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge "
-        "case, non-blocking item, or out of scope is a unilateral change to the intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing "
-        "artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. The "
-        "derived enforcement process must be a ladder: each rung is a strict refinement of the rung above — its artifact preserves all constraints of the upper rung and adds new ones, "
-        "reducing the degrees of freedom for satisfying the intent. A rung with fewer degrees of freedom requires less human interpretation to verify: executable artifacts are "
-        "unambiguous where prose is not. The ladder need not follow a fixed schema; the agent derives the rungs from the task's nature. A task involving executable behavior will "
-        "typically descend from intent → acceptance criteria → formal specification → executable assertions → implementation, but the structure derives from the task, not from this "
-        "list. Producing the ladder is a required artifact before any rung-work begins. The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type "
-        "produced at that rung, and the condition under which the rung is satisfied. Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction "
-        'condition is valid if and only if it names a locatable artifact and a countable or boolean property of that artifact — "this block contains M entries each with fields name, '
-        'artifact-type, and satisfaction-condition present" is valid; "all rungs classified" is not. A rung transition occurs when the satisfaction condition evaluates to true against '
-        "a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a one-line ladder citation: \"Rung N [name]: satisfied — "
-        '<satisfaction condition evaluated against transcript location>" or "Rung N [name]: not yet satisfied — producing now." If the citation cannot be written truthfully, the '
-        "rung-work cannot begin. At rung transitions that involve implementation tool calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different "
-        "things and neither substitutes for the other.",
+        "ground": "The response applies this meta-process discipline — before acting, answer: what does this specific task require as evidence of completion that cannot be faked by describing "
+        "the process? If you cannot identify what that evidence would look like for this task, the process is not yet derived. Derive an enforcement process whose steps produce that "
+        "evidence. The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and "
+        "costly to maintain. The system applying this protocol is an optimizer: it will follow the path of least resistance toward apparent completion, collapsing intermediate "
+        "reasoning into a readable narrative so that internal steps appear to have occurred without being verifiable. Internal correctness and visible correctness are not the same "
+        "thing. Before acting, derive an enforcement process from the intent of this task whose constraints make the appearance-reality gap costly to maintain. Every step in the "
+        "derived process requires a governing artifact — a tool-executed result already present in the transcript — whose existence is the only valid basis for proceeding. A step "
+        "without a governing artifact in context has no authorization to proceed. The completion check is the final required step of any enforcement process: return to the original "
+        "stated intent, and for each item, produce visible evidence that the behavior satisfies it. The intent is external and fixed; the completion check is the only permitted "
+        "mechanism for determining what is in scope. Any reclassification of a stated requirement as an edge case, non-blocking item, or out of scope is a unilateral change to the "
+        "intent. Naming an unaddressed item does not close it — only visible evidence does. When a governing artifact cycle is active, the completion check fires when the cycle reports "
+        "no remaining failures — exhausting the artifact is necessary but not sufficient for completion. The derived enforcement process must be a ladder: each rung is a strict "
+        "refinement of the rung above — its artifact preserves all constraints of the upper rung and adds new ones, reducing the degrees of freedom for satisfying the intent. A rung "
+        "with fewer degrees of freedom requires less human interpretation to verify: executable artifacts are unambiguous where prose is not. The ladder need not follow a fixed schema; "
+        "the agent derives the rungs from the task's nature. A task involving executable behavior will typically descend from intent → acceptance criteria → formal specification → "
+        "executable assertions → implementation, but the structure derives from the task, not from this list. Producing the ladder is a required artifact before any rung-work begins. "
+        "The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type produced at that rung, and the condition under which the rung is satisfied. "
+        "Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction condition is valid if and only if it names a locatable artifact and a countable "
+        'or boolean property of that artifact — "this block contains M entries each with fields name, artifact-type, and satisfaction-condition present" is valid; "all rungs '
+        'classified" is not. A satisfaction condition of "see above", "as planned", or any phrase that requires interpretation to evaluate is not valid. A rung transition occurs when '
+        "the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a "
+        'one-line ladder citation: "Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>" or "Rung N [name]: not yet satisfied — producing now." If '
+        "the citation cannot be written truthfully, the rung-work cannot begin. At rung transitions that involve implementation tool calls, both the ladder citation and the "
+        "RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine "
@@ -370,8 +372,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
         "or design around those paths.",
-        "jobs": "The response enhances the task by analyzing the outcomes users are trying to achieve and the functional, social, and emotional pressures that cause them to seek or switch "
-        "solutions — independent of what product or system they currently use.",
+        "jobs": "The response enhances the task by analyzing the outcomes users are trying to achieve and the pressures that would persist even if every current solution were removed — the "
+        "pressures that make the outcome non-negotiable rather than merely convenient. Any finding that depends on the features of a specific product or system is about the product, not "
+        "the outcome, and does not satisfy this requirement.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
         "consequences or implementations, ordered by importance to the audience.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "

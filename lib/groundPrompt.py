@@ -59,7 +59,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'A rung\'s satisfaction condition is valid if and only if it names a locatable artifact '
         'and a countable or boolean property of that artifact — "this block contains M entries '
         'each with fields name, artifact-type, and satisfaction-condition present" is valid; '
-        '"all rungs classified" is not. A rung transition occurs when the satisfaction condition '
+        '"all rungs classified" is not. A satisfaction condition of "see above", "as planned", or '
+        'any phrase that requires interpretation to evaluate is not valid. '
+        'A rung transition occurs when the satisfaction condition '
         'evaluates to true against a locatable artifact in the transcript — it is checked, not '
         'declared. Before beginning each rung\'s work, produce a one-line ladder citation: '
         '"Rung N [name]: satisfied — <satisfaction condition evaluated against transcript '
@@ -78,4 +80,10 @@ def build_ground_prompt() -> str:
     This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"] via axisConfig.py.
     ground is a method token — it is not in STATIC_PROMPT_CONFIG.
     """
-    return "The response applies this meta-process discipline — derive it in your own words and then follow it: " + GROUND_PARTS_MINIMAL["core"]
+    return (
+        "The response applies this meta-process discipline — before acting, answer: what does this specific task "
+        "require as evidence of completion that cannot be faked by describing the process? If you cannot identify "
+        "what that evidence would look like for this task, the process is not yet derived. Derive an enforcement "
+        "process whose steps produce that evidence. "
+        + GROUND_PARTS_MINIMAL["core"]
+    )

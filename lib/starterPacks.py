@@ -77,7 +77,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="craft",
         framing="Disciplined iterative making — TDD and strict artifact cycles",
-        command="bar build make ground gate chain atomic",
+        command="bar build make ground gate falsify atomic",
     ),
     StarterPack(
         name="scout",

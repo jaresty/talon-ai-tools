@@ -26,11 +26,13 @@ def test_each_composition_has_required_fields():
 
 
 def test_four_named_compositions_exist():
+    # ADR-0227: gate split into gate+falsify; compositions updated accordingly
     from lib.compositionConfig import COMPOSITIONS
     names = {c["name"] for c in COMPOSITIONS}
-    assert "ground+gate" in names, "ground+gate composition missing"
-    assert "gate+atomic" in names, "gate+atomic composition missing"
-    assert "gate+chain" in names, "gate+chain composition missing"
+    assert "gate+falsify" in names, "gate+falsify composition missing"
+    assert "ground+falsify" in names, "ground+falsify composition missing"
+    assert "falsify+atomic" in names, "falsify+atomic composition missing"
+    assert "falsify+chain" in names, "falsify+chain composition missing"
     assert "atomic+ground" in names, "atomic+ground composition missing"
 
 

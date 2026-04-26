@@ -18,6 +18,10 @@ from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 from lib.axisConfig import AXIS_KEY_TO_VALUE
 
 
+def _falsify() -> str:
+    return AXIS_KEY_TO_VALUE["method"]["falsify"]
+
+
 def _ground() -> str:
     return build_ground_prompt()
 
@@ -32,22 +36,16 @@ def _chain() -> str:
 
 # --- ground: evidence quality (Decision 3) ---
 
-def test_ground_evidence_quality_requires_criterion_to_have_failed():
-    """ground's completion check must require that criteria have been verified to fail.
+def test_falsify_evidence_quality_requires_criterion_to_have_failed():
+    """falsify must state that a criterion which has only ever passed provides no coverage guarantee.
 
-    ADR-0227 Decision 3: 'an assertion is not evidence' is extended — a criterion
-    that has only ever passed provides no coverage guarantee. This must appear
-    in proximity to the completion check clause, not only in the gate co-presence note.
+    ADR-0227 Decision 3: the coverage guarantee clause belongs in falsify (not ground)
+    because it is about falsifiability — a passing artifact is not evidence of enforcement.
     """
-    text = _ground()
-    # Find the completion check section and verify the evidence quality claim is there
-    completion_idx = text.find("completion check")
-    assert completion_idx != -1, "ground must contain 'completion check'"
-    # The evidence quality extension must appear after the completion check mention
-    after_completion = text[completion_idx:]
-    assert "only ever passed" in after_completion or "coverage guarantee" in after_completion, (
-        "ground's completion check clause must state that a criterion which has only "
-        "ever passed provides no coverage guarantee (ADR-0227 Decision 3)"
+    text = _falsify()
+    assert "only ever passed" in text or "coverage guarantee" in text, (
+        "falsify must state that a criterion which has only ever passed provides no "
+        "coverage guarantee (ADR-0227 Decision 3)"
     )
 
 

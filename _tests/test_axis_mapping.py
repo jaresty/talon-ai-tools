@@ -119,15 +119,15 @@ if bootstrap is not None:
             self.assertEqual(round_tripped, canonical)
 
         def test_canonicalise_axis_tokens_respects_method_soft_cap(self) -> None:
-            """Method axis canonicalisation should enforce a cap of 4 tokens (raised in ADR-0224)."""
-            # For method, the soft cap is 4. Providing five distinct tokens
-            # should result in exactly four surviving, all drawn from the
+            """Method axis canonicalisation should enforce a cap of 5 tokens (raised in ADR-0227)."""
+            # For method, the soft cap is 5. Providing six distinct tokens
+            # should result in exactly five surviving, all drawn from the
             # original set.
-            tokens = ["steps", "plan", "rigor", "rewrite", "atomic"]
+            tokens = ["steps", "plan", "rigor", "rewrite", "atomic", "ground"]
 
             canonical = _canonicalise_axis_tokens("method", tokens)
 
-            self.assertEqual(len(canonical), 4)
+            self.assertEqual(len(canonical), 5)
             for token in canonical:
                 self.assertIn(token, tokens)
 

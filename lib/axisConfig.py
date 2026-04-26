@@ -263,8 +263,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
         "effects remain within intended conceptual or operational regions.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
-        "chain": "The response enforces the principle that a conclusion not anchored to its predecessor's actual output cannot be verified as continuous with it. Before producing any new "
-        "reasoning, reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The "
+        "chain": "The response enforces the principle that a conclusion not anchored to its predecessor's actual output cannot be verified as continuous with it. For implementation steps, the "
+        "governing output — the specific predecessor output that opens the current step — must be reproduced before any new reasoning or tool call. Before producing any new reasoning, "
+        "reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The "
         "reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact "
         "content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Reproducing the predecessor output without "
         "addressing what it specifically implies is also a violation — a step that quotes the prior output and then proceeds independently of its content has satisfied chain in form "
@@ -303,18 +304,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "An artifact governing this step must be structurally capable of detecting the governed behavior's absence — not merely confirming its presence. The artifact must have fired "
-        "against a state where the governed behavior is absent and produced a visible signal in the transcript before implementation begins. For each assertion, the firing must occur "
-        "against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors are intact — a stub that returns a universally wrong answer does "
-        "not constitute a valid artifact fire. PHASE 1 — classification (text artifact, required before any process derivation): produce a classification block for each assertion "
-        "using this exact structure: Assertion: <name or description> | Natural FAIL state: <yes — stub with all governed behaviors absent produces a FAIL; or no — requires "
-        "perturbation: identify the minimal wrong state stub> | Minimal wrong state: <for natural-FAIL-state assertions: n/a; for no-FAIL-state assertions: describe the stub that "
-        "removes only the governed behavior while leaving all others intact>. Phase 1 is complete when every assertion has a classification block with all three fields present. PHASE "
-        "2 — artifact fire (tool result required before implementation): every assertion requires a visible FAIL tool result before any implementation step. For natural-FAIL-state "
-        "assertions, run against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state stub. Before any implementation step, produce a status "
-        "line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. "
-        "RE-ANCHORING: immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that governs this step>' — if this cannot be written "
-        "truthfully, the tool call is not permitted.",
+        "falsify": "The response applies this constraint: an artifact governing this step must be structurally capable of detecting the governed behavior's absence — not merely confirming its "
+        "presence. A criterion that has only ever passed provides no coverage guarantee — a passing artifact is not evidence that the behavior is enforced, only that it was not broken "
+        "at the moment of observation. The artifact must have fired against a state where the governed behavior is absent and produced a visible signal in the transcript before "
+        "implementation begins. For each assertion, the firing must occur against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors "
+        "are intact — a stub that returns a universally wrong answer does not constitute a valid artifact fire. PHASE 1 — classification (text artifact, required before any process "
+        "derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Natural FAIL state: <yes — stub with all "
+        "governed behaviors absent produces a FAIL; or no — requires perturbation: identify the minimal wrong state stub> | Minimal wrong state: <for natural-FAIL-state assertions: "
+        "n/a; for no-FAIL-state assertions: describe the stub that removes only the governed behavior while leaving all others intact>. Phase 1 is complete when every assertion has a "
+        "classification block with all three fields present. PHASE 2 — artifact fire (tool result required before implementation): every assertion requires a visible FAIL tool result "
+        "before any implementation step. For natural-FAIL-state assertions, run against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state "
+        "stub. Before any implementation step, produce a status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET "
+        "PRODUCED: Phase 2 [assertion name] — running now. RE-ANCHORING: immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that "
+        "governs this step>' — if this cannot be written truthfully, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

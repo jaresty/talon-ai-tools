@@ -285,8 +285,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "factors. Use when the user presents options and asks which to choose or how they differ.",
         "control": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
         "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
-        "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined primarily by explicit structural organization "
-        "rather than by interpretive reasoning, implicit assumption, or uncontrolled coupling.",
+        "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined by explicit structural organization rather than by "
+        "interpretive reasoning, implicit assumption, or uncontrolled coupling. A structural determination is valid only when the behavior cannot be produced by a different structural "
+        "configuration — if an alternative arrangement would produce the same behavior without the claimed organization, the determination is incomplete.",
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment "
         "explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
@@ -402,8 +403,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mesh": "The response enhances the task by describing how coupling propagates — tracing what each coupled domain affects and how influence travels across the seam.",
         "migrate": "The response modifies the task by introducing a transition path between existing and new structures, allowing change while maintaining temporary compatibility during the "
         "shift.",
-        "mint": "The response constructs the generative assumptions explicitly, building a structured derivation from which conclusions follow as direct products of the model. Each assumption is "
-        "stated as a separately statable claim; each conclusion is traceable to a specific assumption such that removing that assumption would break the derivation.",
+        "mint": "The response constructs the generative assumptions explicitly, building a structured derivation from which each conclusion is shown to follow — not listed as a product but "
+        "derived by a visible reasoning step. Each assumption is stated as a separately statable claim; each conclusion is traceable to a specific assumption such that removing that "
+        "assumption would break the derivation. A conclusion that can be stated without performing the derivation step has not been derived — it has been asserted.",
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
         "models": "The response enhances the task by explicitly identifying and naming relevant mental models, explaining why they apply (or fail), and comparing or combining them.",
@@ -415,7 +417,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "tension in the situation explicit so that decisions can be evaluated against it.",
         "orbit": "The response enhances the task by varying initial conditions or assumptions across multiple trajectories and identifying the invariant structural form that behavior tends "
         "toward despite sensitive dependence on starting points. Use when a system appears complex or chaotic but may have underlying recurrent geometry — the goal is to surface the "
-        "attractor shape, not predict any specific path.",
+        "attractor shape, not predict any specific path. Variation is sufficient only when it includes at least one trajectory that begins in a qualitatively different region — a "
+        "trajectory that, if the attractor were absent, would produce a structurally different outcome. A claimed attractor must be shown to hold across trajectories that begin far "
+        "apart; trajectories that begin near each other do not establish invariance.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
         "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
@@ -441,7 +445,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "resilience": "The response enhances the task by concentrating on how the system behaves under stress and uncertainty—fragility vs robustness, margin of safety, and tail risks.",
         "rigor": "The response enhances the task by relying on disciplined, well-justified reasoning and making its logic explicit.",
         "risks": "The response enhances the task by focusing on potential problems, failure modes, or negative outcomes and their likelihood or severity.",
-        "ritual": "The response structures actions according to established roles and ordered relationships, emphasizing social coherence through proper conduct and recognized procedures.",
+        "ritual": "The response structures actions according to the positions actors occupy relative to each other and the sequence those positions prescribe — meaning derives from relational "
+        "placement, not from the intrinsic content of the action. Use when what matters is not what is done but who does it, in what order, and in relation to whom.",
         "robust": "The response enhances the task by reasoning under deep uncertainty, favoring options that perform acceptably across many plausible futures rather than optimizing for a single "
         "forecast.",
         "root": "The response models each proposition, rule, or dependency as having a single authoritative locus within the explanatory structure. Apparent duplication must be reduced to "
@@ -473,8 +478,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural "
         "changes.",
         "unknowns": "The response enhances the task by identifying critical unknown unknowns and exploring how they might impact outcomes.",
-        "verify": "The response enhances the task by applying falsification pressure to claims, requiring externally imposed constraints and explicitly defined negative space, without governing "
-        "the layer those tests must satisfy.",
+        "verify": "The response enhances the task by applying falsification pressure to claims: for each claim, the conditions under which it would be false must be made explicit — not as a "
+        "rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a "
+        "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject.",
         "yield": "The response advances the task by reducing forceful intervention, allowing structures or dynamics to resolve through minimal guided action rather than imposed direction.",
     },

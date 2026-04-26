@@ -360,8 +360,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         'classified" is not. A satisfaction condition of "see above", "as planned", or any phrase that requires interpretation to evaluate is not valid. A rung transition occurs when '
         "the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a "
         'one-line ladder citation: "Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>" or "Rung N [name]: not yet satisfied — producing now." If '
-        "the citation cannot be written truthfully, the rung-work cannot begin. At rung transitions that involve implementation tool calls, both the ladder citation and the "
-        "RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
+        "the citation cannot be written truthfully, the rung-work cannot begin. The transcript location cited must already exist above the citation at the time of writing — a citation "
+        "pointing to a location the model is about to produce does not satisfy the requirement. At rung transitions that involve implementation tool calls, both the ladder citation and "
+        "the RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine "

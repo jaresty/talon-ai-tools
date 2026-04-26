@@ -58,6 +58,10 @@ Before adding a new token, verify:
 - [ ] Can bar-autopilot skills explain when to use this token?
 - [ ] Would `bar help llm` provide adequate guidance for this token?
 
+### 7. Structural Quality
+- [ ] **Self-derivation check**: Can the definition be satisfied by pattern-matching its structure — filling in prescribed fields without genuine reasoning? If yes, reframe as guiding questions that require visible derivation. (Use `bar build hollow distill` to audit.)
+- [ ] **Domain vocabulary check**: Does the definition use domain-specific terms (e.g., "assertion", "test", "implementation step") that would silently restrict the token's composability to a narrow domain? If yes, either generalize the vocabulary or document the domain constraint explicitly.
+
 > **Why this matters:** Most issues discovered in shuffle/task refinement cycles (ADR-0085/0113) could have been caught at token creation if these questions had been asked.
 
 ## Step-by-Step Process

@@ -366,8 +366,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine "
         "reasoning. Identifies: prescribed output formats that can be pattern-matched without derivation; fill-in-the-blank structures where the fields guide mimicry rather than "
-        "thought; domain-specific vocabulary that silently restricts composability to a narrow context; and instructions that specify what to produce rather than what to reason "
-        "through. Each escape route is named and its mechanism explained.",
+        "thought; domain-specific vocabulary that silently restricts composability to a narrow context; instructions that specify what to produce rather than what to reason through; "
+        "and causal-ordering escape routes, where a citation or dependency claim can be generated simultaneously with the thing it supposedly depends on, collapsing the before/after "
+        "relationship into a single generative act and making precedence unfalsifiable. Each escape route is named and its mechanism explained.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "

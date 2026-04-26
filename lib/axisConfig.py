@@ -308,15 +308,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "presence. A criterion that has only ever passed provides no coverage guarantee — a passing artifact is not evidence that the behavior is enforced, only that it was not broken "
         "at the moment of observation. The artifact must have fired against a state where the governed behavior is absent and produced a visible signal in the transcript before "
         "implementation begins. For each assertion, the firing must occur against the minimal wrong state: the state where only the governed behavior is absent and all other behaviors "
-        "are intact — a stub that returns a universally wrong answer does not constitute a valid artifact fire. PHASE 1 — classification (text artifact, required before any process "
-        "derivation): produce a classification block for each assertion using this exact structure: Assertion: <name or description> | Natural FAIL state: <yes — stub with all "
-        "governed behaviors absent produces a FAIL; or no — requires perturbation: identify the minimal wrong state stub> | Minimal wrong state: <for natural-FAIL-state assertions: "
-        "n/a; for no-FAIL-state assertions: describe the stub that removes only the governed behavior while leaving all others intact>. Phase 1 is complete when every assertion has a "
-        "classification block with all three fields present. PHASE 2 — artifact fire (tool result required before implementation): every assertion requires a visible FAIL tool result "
-        "before any implementation step. For natural-FAIL-state assertions, run against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state "
-        "stub. Before any implementation step, produce a status line for every assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET "
-        "PRODUCED: Phase 2 [assertion name] — running now. RE-ANCHORING: immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that "
-        "governs this step>' — if this cannot be written truthfully, the tool call is not permitted.",
+        "are intact — a stub that returns a universally wrong answer does not constitute a valid artifact fire. Before any artifact fire, derive for each assertion: (1) does this "
+        "assertion have a natural fail state — would a stub with the governed behavior absent produce a FAIL without perturbation? (2) if not, what is the minimal wrong state — the "
+        "specific stub that removes only this governed behavior while leaving all others intact? These two questions must be answered visibly before any tool call. PHASE 2 — artifact "
+        "fire (tool result required before implementation): every assertion requires a visible FAIL tool result before any implementation step. For natural-FAIL-state assertions, run "
+        "against the absent-behavior stub. For no-FAIL-state assertions, run against the minimal wrong state stub. Before any implementation step, produce a status line for every "
+        "assertion: COMPLETE: Phase 2 [assertion name] — <verbatim FAIL output from tool result> or NOT YET PRODUCED: Phase 2 [assertion name] — running now. RE-ANCHORING: immediately "
+        "before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output that governs this step>' — if this cannot be written truthfully, the tool call is "
+        "not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

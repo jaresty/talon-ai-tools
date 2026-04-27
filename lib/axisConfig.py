@@ -242,15 +242,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "atomic": "The response enforces the principle that the causal link between a change and its effect is only observable if exactly one change is introduced per step. Every constraint "
         "follows from that principle. One governing output opens one step: run the governing artifact, take the first reported failure from the governing artifact — the governing "
-        "output — as the current step's scope, implement only what closes it, run again — all other reported failures are not yet open. The scope is the governing output read "
-        "literally: when literal and semantic readings diverge, choose the interpretation that produces the smallest change that would shift the governing output. The implementation "
-        "target is the minimum that shifts the governing output to a different state — not the minimum that satisfies the governing artifact. A step is the smallest change that could "
-        "alter the result of any verification — compilation, static analysis, or test execution; changes that address different verification layers are always separate steps even when "
-        "they feel like parts of the same fix. The governing artifact must be the verification layer with scope to detect a failure if this step's change is incorrect — running a layer "
-        "that cannot see the specific files, call sites, or concerns this step touches does not satisfy the governing artifact requirement even if that layer passes. Implementing "
-        "beyond the current governing output is a violation regardless of how many other failures exist. Analysis and classification steps have a text artifact as their governing "
-        "artifact — a complete classification block or derivation section; no tool call is required to open or close these steps. Implementation steps have a FAIL tool result as their "
-        "governing artifact. These are distinct step types with distinct governing artifacts — analysis steps may precede the first tool call without violating atomic.",
+        "output — as the current step's scope, implement only what closes it. An implementation edit is permitted only when a tool-executed run result from this step's governing "
+        "artifact appears in the transcript immediately above it — the run must separate edits, not follow them. All other reported failures are not yet open. The scope is the "
+        "governing output read literally: when literal and semantic readings diverge, choose the interpretation that produces the smallest change that would shift the governing output. "
+        "The implementation target is permitted only after producing a one-line derivation naming the single smallest textual change that would shift the governing output — not the "
+        "minimum that satisfies the governing artifact. A step is the smallest change that could alter the result of any verification — compilation, static analysis, or test execution; "
+        "changes that address different verification layers are always separate steps even when they feel like parts of the same fix. The governing artifact must be the verification "
+        "layer with scope to detect a failure if this step's change is incorrect — running a layer that cannot see the specific files, call sites, or concerns this step touches does "
+        "not satisfy the governing artifact requirement even if that layer passes. An artifact is a valid governing artifact for this step only when a derivation exists in the "
+        "transcript naming the specific FAIL output it would produce if this step's change were absent. Implementing beyond the current governing output is a violation regardless of "
+        "how many other failures exist. Analysis and classification steps have a text artifact as their governing artifact — a complete classification block or derivation section; no "
+        "tool call is required to open or close these steps. A step qualifies as an analysis step when and only when its governing artifact's content, if applied verbatim to the "
+        "system, would produce no change in system behavior. Implementation steps have a FAIL tool result as their governing artifact. These are distinct step types with distinct "
+        "governing artifacts — analysis steps may precede the first tool call without violating atomic.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

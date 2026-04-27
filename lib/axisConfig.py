@@ -408,12 +408,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "and causal-ordering escape routes, where a citation or dependency claim can be generated simultaneously with the thing it supposedly depends on, collapsing the before/after "
         "relationship into a single generative act and making precedence unfalsifiable; and measurable-proxy escape routes, where the instruction specifies a countable proxy that can "
         "be maximized without satisfying the underlying intent — the proxy is cheaper to optimize than the real goal, so a model following the instruction nominally is "
-        "indistinguishable from one following it genuinely; and permit-without-bind escape routes, where a pre-condition gates entry to an action but no post-condition checks that the "
-        "action stayed within the pre-condition's stated scope — the pre-condition is genuine and correctly satisfied, but the action inside is unconstrained. A finding is valid only "
-        "when three things are shown: the specific text, the mechanism — derived before the example, not after — by which a model could satisfy it without genuine reasoning, and a "
-        "concrete example that is a consequence of the mechanism (an example that could have been written without the mechanism has not been derived). The escape route type named in a "
-        "finding is derived from the mechanism, not selected from the list above — the list is a reference, not a checklist. A finding of absence is valid only when a specific "
-        "candidate sentence from the text has been named and the reason it does not constitute that escape route has been stated.",
+        "indistinguishable from one following it genuinely (a specific instance: wrong-cause artifact fire, where a verification artifact fires against a stub but the FAIL is caused by "
+        "a different absence than the governed behavior — the proxy 'FAIL exists' is satisfied while the governed behavior has no coverage); and permit-without-bind escape routes, "
+        "where a pre-condition gates entry to an action but no post-condition checks that the action stayed within the pre-condition's stated scope — the pre-condition is genuine and "
+        "correctly satisfied, but the action inside is unconstrained. A finding is valid only when three things are shown: the specific text, the mechanism — derived before the "
+        "example, not after — by which a model could satisfy it without genuine reasoning, and a concrete example that is a consequence of the mechanism (an example that could have "
+        "been written without the mechanism has not been derived). The escape route type named in a finding is derived from the mechanism, not selected from the list above — the list "
+        "is a reference, not a checklist. A finding of absence is valid only when a specific candidate sentence from the text has been named and the reason it does not constitute that "
+        "escape route has been stated.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "

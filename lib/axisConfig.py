@@ -310,7 +310,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "answer cannot be predicted without actually engaging with the specific subject — a question answerable by pattern-matching the instruction is itself hollow. When rewriting a "
         "permit condition (a pre-condition that gates an action), the rewrite is incomplete unless it also adds a post-action confirmation requirement: a line after the action that "
         "names what was actually done and cites the pre-condition's stated scope — if the action exceeds the stated scope, it must be reverted. A permit condition without a "
-        "post-action confirmation leaves the action inside unconstrained and is itself a permit-without-bind escape route.",
+        "post-action confirmation leaves the action inside unconstrained and is itself a permit-without-bind escape route. Rewrites must use allow-list framing: state exactly what "
+        "conditions permit the action, leaving nothing implicitly open. A deny-list rewrite — one that names what is prohibited rather than what is permitted — leaves all unlisted "
+        "cases implicitly open and is itself an escape route.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "

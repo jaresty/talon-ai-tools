@@ -307,7 +307,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "structural templates with open-ended derivation prompts. The governing question for each rewrite: would a model following this instruction nominally be distinguishable from "
         "one following it genuinely? If not, the instruction must be restructured until the answer is yes. For each rewrite, show that the governing question is satisfied — "
         "demonstrate that nominal compliance with the rewritten instruction would be detectable as different from genuine compliance. A self-derivation question is valid only if its "
-        "answer cannot be predicted without actually engaging with the specific subject — a question answerable by pattern-matching the instruction is itself hollow.",
+        "answer cannot be predicted without actually engaging with the specific subject — a question answerable by pattern-matching the instruction is itself hollow. When rewriting a "
+        "permit condition (a pre-condition that gates an action), the rewrite is incomplete unless it also adds a post-action confirmation requirement: a line after the action that "
+        "names what was actually done and cites the pre-condition's stated scope — if the action exceeds the stated scope, it must be reverted. A permit condition without a "
+        "post-action confirmation leaves the action inside unconstrained and is itself a permit-without-bind escape route.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "
@@ -393,9 +396,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "and causal-ordering escape routes, where a citation or dependency claim can be generated simultaneously with the thing it supposedly depends on, collapsing the before/after "
         "relationship into a single generative act and making precedence unfalsifiable; and measurable-proxy escape routes, where the instruction specifies a countable proxy that can "
         "be maximized without satisfying the underlying intent — the proxy is cheaper to optimize than the real goal, so a model following the instruction nominally is "
-        "indistinguishable from one following it genuinely. A finding is valid only when three things are shown: the specific text that constitutes the escape route, the mechanism by "
-        "which a model could satisfy it without genuine reasoning, and a concrete example of nominal compliance that would be indistinguishable from genuine compliance. The escape "
-        "route type list is not a checklist — do not report absence of a type without actively testing for it in the specific text under review.",
+        "indistinguishable from one following it genuinely; and permit-without-bind escape routes, where a pre-condition gates entry to an action but no post-condition checks that the "
+        "action stayed within the pre-condition's stated scope — the pre-condition is genuine and correctly satisfied, but the action inside is unconstrained. A finding is valid only "
+        "when three things are shown: the specific text that constitutes the escape route, the mechanism by which a model could satisfy it without genuine reasoning, and a concrete "
+        "example of nominal compliance that would be indistinguishable from genuine compliance. The escape route type list is not a checklist — do not report absence of a type without "
+        "actively testing for it in the specific text under review.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "

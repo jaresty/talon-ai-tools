@@ -22,18 +22,18 @@ def test_generalized_protocol_preserves_intent_primacy():
 
 
 def test_generalized_protocol_preserves_artifact_type_discipline():
-    """Slimmed protocol (ADR-0224) requires visible evidence at each step."""
+    """Slimmed protocol (ADR-0224) requires named artifact per intent item at completion check."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "evidence" in core.lower(), (
-        "Slimmed protocol must require visible evidence"
+    assert "intent artifact" in core.lower(), (
+        "Slimmed protocol must reference intent artifact in completion check"
     )
 
 
 def test_generalized_protocol_preserves_observable_evidence():
-    """P3 observable evidence must be preserved."""
+    """P3 observable evidence must be preserved — completion check names artifact + dimension."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "evidence" in core.lower() or "external" in core.lower(), (
-        "Generalized protocol must preserve observable evidence requirement"
+    assert "dimension" in core.lower() and "intent artifact" in core.lower(), (
+        "Generalized protocol must require naming artifact and dimension covered at completion check"
     )
 
 

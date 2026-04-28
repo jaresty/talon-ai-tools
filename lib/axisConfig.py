@@ -425,20 +425,24 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "the rung name, the artifact type produced at that rung, the condition under which the rung is satisfied, and — for every rung after the first — at least one specific outcome "
         "that would satisfy the previous rung but be rejected by this rung. If no such outcome can be named, the proposed rung is not a refinement — it is a parallel task and must be "
         "merged with the rung above or dropped. Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction condition is valid if and only if it "
-        "names a locatable artifact, a countable or boolean property of that artifact, and — for rungs that refine a rung above — the count of behavioral dimensions in the rung above's "
-        "artifact with confirmation that the rung's artifact contains a covering item for each. A satisfaction condition that evaluates to true with fewer covering items than "
-        'dimensions in the rung above is not satisfied. "This block contains M entries each with fields name, artifact-type, satisfaction-condition, and covering-dimension present" is '
-        'valid; "all rungs classified" is not. A satisfaction condition of "see above", "as planned", or any phrase that requires interpretation to evaluate is not valid. A rung '
-        "transition occurs when the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's "
-        "work, produce a coverage mapping: for each behavioral dimension identified in the rung above's artifact, name the item in this rung's artifact that covers it and would be "
-        "absent if that dimension were absent. Any dimension in the rung above with no covering item is an open gap that must be added before this rung's work begins. For rung 1, the "
-        "rung above is the intent artifact — the closest written approximation of intent available, not intent itself; the coverage mapping for rung 1 is bounded by what the intent "
-        "artifact captured, and cannot surface dimensions of the actual intent that the intent artifact failed to express. The coverage mapping is bounded by dimensions identified in "
-        "the rung above's artifact — it cannot surface dimensions the rung above itself failed to capture. The coverage mapping is a required artifact; rung work is not permitted to "
-        'begin without it. Then produce a one-line ladder citation: "Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>" or "Rung N [name]: not '
-        'yet satisfied — producing now." If the citation cannot be written truthfully, the rung-work cannot begin. The transcript location cited must already exist above the citation '
-        "at the time of writing — a citation pointing to a location the model is about to produce does not satisfy the requirement. At rung transitions that involve implementation tool "
-        "calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
+        "names: (a) a locatable artifact, and (b) a property of that artifact that would evaluate differently if any behavioral dimension of the artifact were absent — a property that "
+        "evaluates the same regardless of which behavioral dimensions are present is not valid. A count of items is not a valid property unless each counted item is itself required to "
+        "name a specific behavioral dimension such that removing any one item would change the count and leave a dimension uncovered; a bare item count without this per-item behavioral "
+        "binding is not valid. For rungs that refine a rung above, the satisfaction condition must additionally confirm that the rung's artifact contains a covering item for each "
+        "behavioral dimension in the rung above's artifact — a satisfaction condition that evaluates to true with fewer covering items than dimensions in the rung above is not "
+        "satisfied. When stating a satisfaction condition, the model must also state the specific property value that would cause the condition to evaluate to false — a satisfaction "
+        'condition whose false-evaluating state cannot be named has not been derived. A satisfaction condition of "see above", "as planned", or any phrase that requires interpretation '
+        "to evaluate is not valid. A rung transition occurs when the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not "
+        "declared. Before beginning each rung's work, produce a coverage mapping: for each behavioral dimension identified in the rung above's artifact, name the item in this rung's "
+        "artifact that covers it and would be absent if that dimension were absent. Any dimension in the rung above with no covering item is an open gap that must be added before this "
+        "rung's work begins. For rung 1, the rung above is the intent artifact — the closest written approximation of intent available, not intent itself; the coverage mapping for rung "
+        "1 is bounded by what the intent artifact captured, and cannot surface dimensions of the actual intent that the intent artifact failed to express. The coverage mapping is "
+        "bounded by dimensions identified in the rung above's artifact — it cannot surface dimensions the rung above itself failed to capture. The coverage mapping is a required "
+        'artifact; rung work is not permitted to begin without it. Then produce a one-line ladder citation: "Rung N [name]: satisfied — <satisfaction condition evaluated against '
+        'transcript location>" or "Rung N [name]: not yet satisfied — producing now." If the citation cannot be written truthfully, the rung-work cannot begin. The transcript location '
+        "cited must already exist above the citation at the time of writing — a citation pointing to a location the model is about to produce does not satisfy the requirement. At rung "
+        "transitions that involve implementation tool calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different things and neither substitutes "
+        "for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine "

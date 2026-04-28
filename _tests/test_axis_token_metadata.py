@@ -263,7 +263,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
     AXIS = "scope"
     EXPECTED_TOKENS = {
         "act",
-        "agent",
+        "authority",
         "assume",
         "cross",
         "dam",

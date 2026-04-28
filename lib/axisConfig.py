@@ -581,9 +581,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "
         "perspective-shifting.",
-        "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their "
-        "choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
+        "authority": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how "
+        "their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across "
         "partitions—without primarily analyzing internal arrangement or recurring structural form.",
         "dam": "The response focuses on containment boundaries — what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between what belongs "
@@ -823,8 +823,8 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "act": "Tasks and intended actions",
-        "agent": "Actors with agency and decision-making",
         "assume": "Premises and preconditions",
+        "authority": "Actors with authority and decision-making",
         "cross": "Cross-cutting concerns spanning modules",
         "dam": "Containment boundaries and limits",
         "fail": "Breakdowns and failure modes",
@@ -1089,8 +1089,8 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     },
     "scope": {
         "act": "為",
-        "agent": "主",
         "assume": "仮",
+        "authority": "主",
         "cross": "横",
         "dam": "圏",
         "fail": "敗",
@@ -1458,8 +1458,8 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "act": "Actions/tasks",
-        "agent": "Actors with agency",
         "assume": "Premises/preconditions",
+        "authority": "Actors with authority",
         "cross": "Cross-cutting concerns",
         "dam": "Containment and boundaries",
         "fail": "Failure modes",
@@ -2457,6 +2457,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "agent configuration",
                 "autonomous agent",
                 "subagent definition",
+                "what triggers this agent",
+                "what tools does the agent have access to",
+                "what are the agent's failure conditions",
+                "what is the agent not allowed to do",
+                "what is the agent's termination condition",
             ],
         },
         "code": {
@@ -2701,6 +2706,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "save as a skill",
                 "turn this into a skill",
                 "reusable agent skill",
+                "when should this skill be loaded",
+                "what does this skill not cover",
+                "which other skills does this interact with",
+                "how much context does this skill consume",
             ],
         },
         "slack": {
@@ -4142,8 +4151,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "actors": {
             "distinctions": [
                 {
-                    "note": "agent (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
-                    "token": "agent",
+                    "note": "authority (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
+                    "token": "authority",
                 }
             ],
             "heuristics": [
@@ -4625,9 +4634,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "control": {
             "distinctions": [
                 {
-                    "note": "agent (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within "
+                    "note": "authority (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within "
                     "agency, excluding those outside it",
-                    "token": "agent",
+                    "token": "authority",
                 }
             ],
             "heuristics": [
@@ -6391,10 +6400,21 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "the activities it performs",
             ],
         },
-        "agent": {
+        "assume": {
+            "distinctions": [],
+            "heuristics": [
+                "what assumptions",
+                "what are we assuming",
+                "what must be true",
+                "what preconditions",
+                "hidden assumptions",
+                "what are we taking for granted",
+            ],
+        },
+        "authority": {
             "distinctions": [
                 {
-                    "note": "agent = who has decision-making authority; view = how the subject appears from a specific vantage point",
+                    "note": "authority = who has decision-making authority; view = how the subject appears from a specific vantage point",
                     "token": "view",
                 }
             ],
@@ -6405,17 +6425,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "decision-making",
                 "agency",
                 "who is responsible",
-            ],
-        },
-        "assume": {
-            "distinctions": [],
-            "heuristics": [
-                "what assumptions",
-                "what are we assuming",
-                "what must be true",
-                "what preconditions",
-                "hidden assumptions",
-                "what are we taking for granted",
             ],
         },
         "cross": {
@@ -6527,8 +6536,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "stable",
                 },
                 {
-                    "note": "lever = structural intervention points in the system; agent = who has authority to act",
-                    "token": "agent",
+                    "note": "lever = structural intervention points in the system; authority = who has authority to act",
+                    "token": "authority",
                 },
                 {
                     "note": "lever = identifies where force produces change; control (method) = separates what is within agency from what is not",
@@ -6718,8 +6727,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "view": {
             "distinctions": [
                 {
-                    "note": "view = how the subject appears from a specific vantage point; agent = who has decision-making authority",
-                    "token": "agent",
+                    "note": "view = how the subject appears from a specific vantage point; authority = who has decision-making authority",
+                    "token": "authority",
                 }
             ],
             "heuristics": [

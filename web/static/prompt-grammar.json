@@ -224,8 +224,8 @@
       },
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
-        "agent": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
+        "authority": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
         "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across partitions—without primarily analyzing internal arrangement or recurring structural form.",
         "dam": "The response focuses on containment boundaries — what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between what belongs inside versus outside a defined scope.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure modes rather than overall quality or preferred outcomes.",
@@ -447,8 +447,8 @@
       ],
       "scope": [
         "act",
-        "agent",
         "assume",
+        "authority",
         "cross",
         "dam",
         "fail",
@@ -667,8 +667,8 @@
       },
       "scope": {
         "act": "Tasks and intended actions",
-        "agent": "Actors with agency and decision-making",
         "assume": "Premises and preconditions",
+        "authority": "Actors with authority and decision-making",
         "cross": "Cross-cutting concerns spanning modules",
         "dam": "Containment boundaries and limits",
         "fail": "Breakdowns and failure modes",
@@ -883,8 +883,8 @@
       },
       "scope": {
         "act": "為",
-        "agent": "主",
         "assume": "仮",
+        "authority": "主",
         "cross": "横",
         "dam": "圏",
         "fail": "敗",
@@ -1224,8 +1224,8 @@
       },
       "scope": {
         "act": "Actions/tasks",
-        "agent": "Actors with agency",
         "assume": "Premises/preconditions",
+        "authority": "Actors with authority",
         "cross": "Cross-cutting concerns",
         "dam": "Containment and boundaries",
         "fail": "Failure modes",
@@ -1290,7 +1290,12 @@
             "create an agent",
             "agent configuration",
             "autonomous agent",
-            "subagent definition"
+            "subagent definition",
+            "what triggers this agent",
+            "what tools does the agent have access to",
+            "what are the agent's failure conditions",
+            "what is the agent not allowed to do",
+            "what is the agent's termination condition"
           ],
           "definition": "The response is structured as an agent definition — a persistent autonomous subprocess specification with a system prompt, declared tools, model selection, and persona. Formatted for direct use as an agent configuration in an agent harness."
         },
@@ -1550,7 +1555,11 @@
             "make this a skill",
             "save as a skill",
             "turn this into a skill",
-            "reusable agent skill"
+            "reusable agent skill",
+            "when should this skill be loaded",
+            "what does this skill not cover",
+            "which other skills does this interact with",
+            "how much context does this skill consume"
           ],
           "definition": "The response is structured as a reusable agent skill definition — YAML frontmatter (name, description, when_to_use) followed by a markdown body with usage instructions, workflow steps, and examples. The output is formatted for direct use as an installable skill in an agent harness."
         },
@@ -3057,8 +3066,8 @@
         "actors": {
           "distinctions": [
             {
-              "note": "agent (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
-              "token": "agent"
+              "note": "authority (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
+              "token": "authority"
             }
           ],
           "heuristics": [
@@ -3557,8 +3566,8 @@
         "control": {
           "distinctions": [
             {
-              "note": "agent (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within agency, excluding those outside it",
-              "token": "agent"
+              "note": "authority (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within agency, excluding those outside it",
+              "token": "authority"
             }
           ],
           "heuristics": [
@@ -5379,10 +5388,22 @@
           ],
           "definition": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting."
         },
-        "agent": {
+        "assume": {
+          "distinctions": [],
+          "heuristics": [
+            "what assumptions",
+            "what are we assuming",
+            "what must be true",
+            "what preconditions",
+            "hidden assumptions",
+            "what are we taking for granted"
+          ],
+          "definition": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function."
+        },
+        "authority": {
           "distinctions": [
             {
-              "note": "agent = who has decision-making authority; view = how the subject appears from a specific vantage point",
+              "note": "authority = who has decision-making authority; view = how the subject appears from a specific vantage point",
               "token": "view"
             }
           ],
@@ -5395,18 +5416,6 @@
             "who is responsible"
           ],
           "definition": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics."
-        },
-        "assume": {
-          "distinctions": [],
-          "heuristics": [
-            "what assumptions",
-            "what are we assuming",
-            "what must be true",
-            "what preconditions",
-            "hidden assumptions",
-            "what are we taking for granted"
-          ],
-          "definition": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function."
         },
         "cross": {
           "distinctions": [
@@ -5522,8 +5531,8 @@
               "token": "stable"
             },
             {
-              "note": "lever = structural intervention points in the system; agent = who has authority to act",
-              "token": "agent"
+              "note": "lever = structural intervention points in the system; authority = who has authority to act",
+              "token": "authority"
             },
             {
               "note": "lever = identifies where force produces change; control (method) = separates what is within agency from what is not",
@@ -5722,8 +5731,8 @@
         "view": {
           "distinctions": [
             {
-              "note": "view = how the subject appears from a specific vantage point; agent = who has decision-making authority",
-              "token": "agent"
+              "note": "view = how the subject appears from a specific vantage point; authority = who has decision-making authority",
+              "token": "authority"
             }
           ],
           "heuristics": [
@@ -8114,8 +8123,8 @@
       },
       "scope": {
         "act": "act",
-        "agent": "axis-scope-agent",
         "assume": "assume",
+        "authority": "authority",
         "cross": "cross",
         "dam": "dam",
         "fail": "fail",
@@ -8241,8 +8250,8 @@
       },
       "scope": {
         "scope=act": "scope-act",
-        "scope=agent": "scope-agent",
         "scope=assume": "scope-assume",
+        "scope=authority": "scope-authority",
         "scope=cross": "scope-cross",
         "scope=dam": "scope-dam",
         "scope=fail": "scope-fail",
@@ -8504,7 +8513,7 @@
       "adr": "adr",
       "adversarial": "adversarial",
       "afford": "afford",
-      "agent": "axis-scope-agent",
+      "agent": "agent",
       "align": "align",
       "amorph": "amorph",
       "analog": "analog",
@@ -8542,6 +8551,7 @@
       "audience=to stakeholders": "audience-to-stakeholders",
       "audience=to stream aligned team": "audience-to-stream-aligned-team",
       "audience=to team": "audience-to-team",
+      "authority": "authority",
       "automate": "automate",
       "balance": "balance",
       "behave": "behave",
@@ -8905,8 +8915,8 @@
       "root": "root",
       "scaffold": "scaffold",
       "scope=act": "scope-act",
-      "scope=agent": "scope-agent",
       "scope=assume": "scope-assume",
+      "scope=authority": "scope-authority",
       "scope=cross": "scope-cross",
       "scope=dam": "scope-dam",
       "scope=fail": "scope-fail",
@@ -10068,11 +10078,11 @@
     }
   ],
   "checksums": {
-    "axes": "dc72e034180cae51ef8fc20762231b1e1f132aa7b5af061454ca02303c81c721",
+    "axes": "cffae8cacb9c84c7e5fe88bc34750c5d5415f18def73c1fb11211b68c7d1d126",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "5781f1739d0ddab73d00cb7b640bc980249bfe09b74dee0bec51b7f1ace4a6d0",
-    "slugs": "b040aefe202e3e53128f42d57f6d5df1f99ec59be9b411abc70a43a5085551f9",
+    "slugs": "4d5bc2f6eddcbca30a8e67fb2c59e087da3ba5564d1e72c7201b111582df5fc7",
     "patterns": "7a0b98462f5869a672f3f4202373c118704072db33cf82c2281b7052a4e84e61",
     "starter_packs": "f2406034bc08e4034383ccb4d0802511de9a3947cf6c6fb0d2f3f751954efa62",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

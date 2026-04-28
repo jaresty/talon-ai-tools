@@ -392,36 +392,41 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "not. The ladder need not follow a fixed schema; the agent derives the rungs from the task's nature. A task involving executable behavior will typically descend from intent → "
         "acceptance criteria → formal specification → executable assertions → implementation — treat this as a floor, not a ceiling. Before finalizing the ladder, produce one line per "
         'transition: either "Transition N→N+1: no intermediate rung — [reason the current gap cannot be further subdivided into a judgment-reducing artifact]" or "Transition N→N+1: '
-        'inserting [rung name] — rejects [specific outcome the prior rung admits]". A transition with no such line is unexamined and the ladder is incomplete. A transition line is '
-        "complete only when it also states the count of behavioral dimensions in the rung above's artifact — derived by naming each dimension individually before stating the count; a "
-        "count stated without a preceding enumeration has not been derived — and confirms that count is matched by covering items in the rung below — a transition where these counts "
-        "diverge is incomplete regardless of whether intermediate rungs are absent. If rung 1 is below intent level, each intermediate level between the cited floor artifact and rung 1 "
-        "that is absent from the ladder is valid only when a specific artifact already present in the transcript above the ladder provides that level's judgment reduction — the "
-        "citation must name: (1) the location of that artifact in the transcript, (2) the specific text at that location that provides the level's judgment reduction, and (3) at least "
-        "one outcome that text would reject at that level. The SUBJECT section and ADDENDUM section of a bar-formatted prompt are task input and directives — neither is a valid skip "
-        "artifact. They contain no judgment reduction and reject no outcomes. If the cited artifact cannot satisfy all three parts, the skip is invalid and the level must be added as a "
-        "rung. Any other omission is invalid. The rules-out requirement already prevents invalid splits — a rung that cannot name a specific outcome the previous rung admits but this "
-        "rung rejects cannot be added. Producing the ladder is a required artifact before any rung-work begins. The ladder is not itself a rung — it is a precondition to all rungs "
-        "including rung 1. A ladder entry whose artifact is the ladder itself is invalid: the ladder cannot govern its own production. The rung 1 coverage mapping is a separate "
-        "required artifact produced after the ladder is closed — producing both in the same generative act does not satisfy this requirement. The ladder must be a completed artifact in "
-        "the transcript before the rung 1 coverage mapping begins. The artifact is an enumerated list of rungs, each stating: the rung name, the artifact type produced at that rung, "
-        "the condition under which the rung is satisfied, and — for every rung after the first — at least one specific outcome that would satisfy the previous rung but be rejected by "
-        "this rung. If no such outcome can be named, the proposed rung is not a refinement — it is a parallel task and must be merged with the rung above or dropped. Describing the "
-        "ladder structure in prose does not produce this artifact. A rung's satisfaction condition is valid if and only if it names a locatable artifact, a countable or boolean "
-        "property of that artifact, and — for rungs that refine a rung above — the count of behavioral dimensions in the rung above's artifact with confirmation that the rung's "
-        'artifact contains a covering item for each. A satisfaction condition that evaluates to true with fewer covering items than dimensions in the rung above is not satisfied. "This '
-        'block contains M entries each with fields name, artifact-type, satisfaction-condition, and covering-dimension present" is valid; "all rungs classified" is not. A satisfaction '
-        'condition of "see above", "as planned", or any phrase that requires interpretation to evaluate is not valid. A rung transition occurs when the satisfaction condition evaluates '
-        "to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's work, produce a coverage mapping: for each behavioral "
-        "dimension identified in the rung above's artifact, name the item in this rung's artifact that covers it and would be absent if that dimension were absent. Any dimension in the "
-        "rung above with no covering item is an open gap that must be added before this rung's work begins. For rung 1, the rung above is the intent artifact — the closest written "
-        "approximation of intent available, not intent itself; the coverage mapping for rung 1 is bounded by what the intent artifact captured, and cannot surface dimensions of the "
-        "actual intent that the intent artifact failed to express. The coverage mapping is bounded by dimensions identified in the rung above's artifact — it cannot surface dimensions "
-        "the rung above itself failed to capture. The coverage mapping is a required artifact; rung work is not permitted to begin without it. Then produce a one-line ladder citation: "
-        '"Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>" or "Rung N [name]: not yet satisfied — producing now." If the citation cannot be '
-        "written truthfully, the rung-work cannot begin. The transcript location cited must already exist above the citation at the time of writing — a citation pointing to a location "
-        "the model is about to produce does not satisfy the requirement. At rung transitions that involve implementation tool calls, both the ladder citation and the RE-ANCHORING "
-        "citation are required — they govern different things and neither substitutes for the other.",
+        'inserting [rung name] — rejects [specific outcome the prior rung admits]". A transition with no such line is unexamined and the ladder is incomplete. A transition\'s "rejects" '
+        "claim is valid only when it names: (a) a specific artifact state that satisfies the previous rung's satisfaction condition, and (b) the specific behavioral dimension that "
+        'state fails to constrain — a dimension whose absence would not be detectable by inspecting the prior rung\'s artifact alone. A "rejects" claim that names a count threshold, a '
+        "format property, or any property other than a behavioral dimension not constrainable by the prior rung is not valid. A transition line is complete only when it also states the "
+        "count of behavioral dimensions in the rung above's artifact — derived by naming each dimension individually before stating the count; a count stated without a preceding "
+        "enumeration has not been derived — and confirms that count is matched by covering items in the rung below — a transition where these counts diverge is incomplete regardless of "
+        "whether intermediate rungs are absent. A covering item is valid only when it names: (a) the specific condition under which this rung's artifact would fail if the dimension it "
+        "covers were absent, and (b) at least one artifact state that satisfies this rung's satisfaction condition but would be rejected if this covering item were added as a "
+        "constraint. A covering item that names only a dimension label without stating the failure condition has not been derived. If rung 1 is below intent level, each intermediate "
+        "level between the cited floor artifact and rung 1 that is absent from the ladder is valid only when a specific artifact already present in the transcript above the ladder "
+        "provides that level's judgment reduction — the citation must name: (1) the location of that artifact in the transcript, (2) the specific text at that location that provides "
+        "the level's judgment reduction, and (3) at least one outcome that text would reject at that level. The SUBJECT section and ADDENDUM section of a bar-formatted prompt are task "
+        "input and directives — neither is a valid skip artifact. They contain no judgment reduction and reject no outcomes. If the cited artifact cannot satisfy all three parts, the "
+        "skip is invalid and the level must be added as a rung. Any other omission is invalid. The rules-out requirement already prevents invalid splits — a rung that cannot name a "
+        "specific outcome the previous rung admits but this rung rejects cannot be added. Producing the ladder is a required artifact before any rung-work begins. The ladder is not "
+        "itself a rung — it is a precondition to all rungs including rung 1. A ladder entry whose artifact is the ladder itself is invalid: the ladder cannot govern its own production. "
+        "The rung 1 coverage mapping is a separate required artifact produced after the ladder is closed — producing both in the same generative act does not satisfy this requirement. "
+        "The ladder must be a completed artifact in the transcript before the rung 1 coverage mapping begins. The artifact is an enumerated list of rungs, each stating: the rung name, "
+        "the artifact type produced at that rung, the condition under which the rung is satisfied, and — for every rung after the first — at least one specific outcome that would "
+        "satisfy the previous rung but be rejected by this rung. If no such outcome can be named, the proposed rung is not a refinement — it is a parallel task and must be merged with "
+        "the rung above or dropped. Describing the ladder structure in prose does not produce this artifact. A rung's satisfaction condition is valid if and only if it names a "
+        "locatable artifact, a countable or boolean property of that artifact, and — for rungs that refine a rung above — the count of behavioral dimensions in the rung above's "
+        "artifact with confirmation that the rung's artifact contains a covering item for each. A satisfaction condition that evaluates to true with fewer covering items than "
+        'dimensions in the rung above is not satisfied. "This block contains M entries each with fields name, artifact-type, satisfaction-condition, and covering-dimension present" is '
+        'valid; "all rungs classified" is not. A satisfaction condition of "see above", "as planned", or any phrase that requires interpretation to evaluate is not valid. A rung '
+        "transition occurs when the satisfaction condition evaluates to true against a locatable artifact in the transcript — it is checked, not declared. Before beginning each rung's "
+        "work, produce a coverage mapping: for each behavioral dimension identified in the rung above's artifact, name the item in this rung's artifact that covers it and would be "
+        "absent if that dimension were absent. Any dimension in the rung above with no covering item is an open gap that must be added before this rung's work begins. For rung 1, the "
+        "rung above is the intent artifact — the closest written approximation of intent available, not intent itself; the coverage mapping for rung 1 is bounded by what the intent "
+        "artifact captured, and cannot surface dimensions of the actual intent that the intent artifact failed to express. The coverage mapping is bounded by dimensions identified in "
+        "the rung above's artifact — it cannot surface dimensions the rung above itself failed to capture. The coverage mapping is a required artifact; rung work is not permitted to "
+        'begin without it. Then produce a one-line ladder citation: "Rung N [name]: satisfied — <satisfaction condition evaluated against transcript location>" or "Rung N [name]: not '
+        'yet satisfied — producing now." If the citation cannot be written truthfully, the rung-work cannot begin. The transcript location cited must already exist above the citation '
+        "at the time of writing — a citation pointing to a location the model is about to produce does not satisfy the requirement. At rung transitions that involve implementation tool "
+        "calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine "

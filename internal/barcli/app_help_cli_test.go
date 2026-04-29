@@ -511,14 +511,15 @@ func TestHelpLLMScopeFormDynamic(t *testing.T) {
 		t.Error("Choosing Scope must list both thing and struct in the Entities/boundaries bullet")
 	}
 
-	// scope:agent is in RoutingConcept but NOT in the old hardcoded section.
+	// scope:authority is in RoutingConcept but NOT in the old hardcoded section.
 	// Dynamic rendering must include it; hardcoded rendering would not.
-	conceptAgent := grammar.Axes.RoutingConcept["scope"]["agent"]
-	if conceptAgent == "" {
-		t.Fatal("scope:agent must have a routing concept phrase (verify AXIS_KEY_TO_ROUTING_CONCEPT)")
+	// (scope:agent was renamed to scope:authority in 9dc42ae0)
+	conceptAuthority := grammar.Axes.RoutingConcept["scope"]["authority"]
+	if conceptAuthority == "" {
+		t.Fatal("scope:authority must have a routing concept phrase (verify AXIS_KEY_TO_ROUTING_CONCEPT)")
 	}
-	if !strings.Contains(scopeSection, "`agent`") {
-		t.Error("ADR-0146 Phase 2: Choosing Scope must render scope:agent dynamically (absent from old hardcoded section)")
+	if !strings.Contains(scopeSection, "`authority`") {
+		t.Error("ADR-0146 Phase 2: Choosing Scope must render scope:authority dynamically (absent from old hardcoded section)")
 	}
 
 	// Extract Choosing Form section

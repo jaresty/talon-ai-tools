@@ -1362,6 +1362,7 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- Any step requires real-world action between LLM steps (experiment, deploy, gather data)\n")
 	fmt.Fprintf(w, "- The pattern recurs and ordering is non-obvious\n\n")
 	fmt.Fprintf(w, "**Execution modes:** `autonomous` (all steps run cold) | `linear` (pause for user input) | `cycle` (repeat until user ends)\n\n")
+	fmt.Fprintf(w, "**Parallelization:** When planning multiple sequences, those where neither sequence names the other's output among its inputs may be run as parallel agents — each agent runs its full sequence independently, and results are synthesized afterward. This is a judgment call: parallelize when you can name a specific cost that sequential execution would incur that parallel execution avoids; otherwise run sequentially.\n\n")
 
 	if compact {
 		fmt.Fprintf(w, "Run `bar sequence list` for available sequences.\n\n")

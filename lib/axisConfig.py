@@ -420,17 +420,20 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gap costly to maintain. Every step in the derived process requires a governing artifact — a tool-executed result already present in the transcript — whose existence is the "
         "only valid basis for proceeding. A step without a governing artifact in context has no authorization to proceed. The completion check is the final required step of any "
         "enforcement process and its output is a required closing artifact. A response is not permitted to end until the completion check artifact exists in the transcript. The "
-        "completion check artifact is valid only when it names each item in the intent artifact by reference, and for each item: (a) names the specific artifact in the transcript that "
-        "covers it and the dimension that artifact would detect if absent, and (b) names any aspect for which no covering artifact exists. A closing statement, summary, or synthesis "
-        "that appears before the completion check artifact is present has no authorization to proceed. The completion check artifact is not satisfied by a description of having run it "
-        "— only by the enumerated output above appearing in the transcript. The intent artifact is a partial representation; the completion check makes coverage of that representation "
-        'explicit but cannot surface dimensions of intent that the intent artifact itself failed to capture. The "bounded by representation" clause applies only after the anchoring '
-        "citation exists — citing that clause to explain an uncovered dimension is valid only when the anchoring citation is already present in the transcript and names the "
-        "highest-level goal statement the derivation started from. Intent is external and cannot be fully expressed in any artifact; the completion check is the only permitted "
-        "mechanism for determining what is in scope against the intent artifact. Scope reduction is permitted at two stages only, each with a distinct required basis. At "
-        "ladder-derivation stage (before any completion check has been run): scope reduction is permitted only when the intent artifact itself contains text that explicitly excludes "
-        'the element. Before stating any scope reduction, produce a one-line citation: "Scope reduction basis (intent artifact): [transcript location of intent artifact], item [quoted '
-        'text] explicitly excludes [named element]." The quoted text must appear verbatim at the cited location and must state the exclusion directly — a phrase that could be '
+        "completion check artifact is valid only when it names each item in the intent artifact by reference, and for each item: (a) the named covering artifact is a prior-executed "
+        "result already present in the transcript — not a description of what an artifact would do, but a record of what it did — and the entry states the specific outcome in that "
+        "execution result that would be different if the behavioral dimension were absent, named precisely enough that a reader could locate it in the transcript by inspecting the "
+        "execution result; a covering claim that names an artifact without citing a specific outcome in an execution result of that artifact has not been derived; and (b) where no "
+        "execution result exists for a given dimension, the entry records that dimension as uncovered — asserting coverage from an artifact that has not been executed is not permitted. "
+        "A closing statement, summary, or synthesis that appears before the completion check artifact is present has no authorization to proceed. The completion check artifact is not "
+        "satisfied by a description of having run it — only by the enumerated output above appearing in the transcript. The intent artifact is a partial representation; the completion "
+        'check makes coverage of that representation explicit but cannot surface dimensions of intent that the intent artifact itself failed to capture. The "bounded by representation" '
+        "clause applies only after the anchoring citation exists — citing that clause to explain an uncovered dimension is valid only when the anchoring citation is already present in "
+        "the transcript and names the highest-level goal statement the derivation started from. Intent is external and cannot be fully expressed in any artifact; the completion check "
+        "is the only permitted mechanism for determining what is in scope against the intent artifact. Scope reduction is permitted at two stages only, each with a distinct required "
+        "basis. At ladder-derivation stage (before any completion check has been run): scope reduction is permitted only when the intent artifact itself contains text that explicitly "
+        'excludes the element. Before stating any scope reduction, produce a one-line citation: "Scope reduction basis (intent artifact): [transcript location of intent artifact], item '
+        '[quoted text] explicitly excludes [named element]." The quoted text must appear verbatim at the cited location and must state the exclusion directly — a phrase that could be '
         "interpreted as an exclusion does not satisfy this requirement. At enforcement stage (after a completion check has been run): scope reduction is permitted only when the "
         'completion-check artifact contains a specific item whose text explicitly excludes the element. Before stating any scope reduction, produce a one-line citation: "Scope '
         'reduction basis (completion check): [transcript location], item [quoted text] explicitly excludes [named element]." At neither stage is a cost, effort, complexity, or '

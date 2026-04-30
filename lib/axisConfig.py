@@ -345,11 +345,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "necessary but not sufficient for completion. The response is not permitted to end until the completion check artifact exists in the transcript: for each item in the intent "
         "artifact, it cites the specific outcome in a prior execution result that was observed to differ when the behavioral dimension was absent — a prediction of what would differ "
         "does not satisfy this; where no such result exists, the dimension is recorded as uncovered. Scope reduction is permitted only when the intent artifact or a prior "
-        "completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage. After "
-        "producing each required artifact, produce a companion block marked [NON-BINDING DISPLAY] that visualizes the current state for the human observer. Use plain language and "
-        "simple visual structure — e.g. a short bulleted list, a small table, or a status board with emoji indicators (✅ done, 🔲 pending, ❌ gap). Show: which goals were found and which "
-        "is anchored; the intent artifact as a numbered list of behaviors; the ladder as a brief outline of rungs; completion check status per item. This block has no effect on the "
-        "validity of any artifact and does not substitute for it.",
+        "completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage. After the "
+        "anchoring citation, the intent artifact, the ladder derivation, and the completion check — each in turn — produce a [NON-BINDING DISPLAY] block visualizing that artifact's "
+        "current state using plain language and emoji indicators (✅ done, 🔲 pending, ❌ gap). This block has no effect on artifact validity and does not substitute for it.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject instruction for every place where a model following it nominally produces a transcript state a reader could not distinguish from genuine "

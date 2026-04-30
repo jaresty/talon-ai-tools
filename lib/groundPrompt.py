@@ -67,11 +67,12 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'Scope reduction is permitted only when the intent artifact or a prior completion-check '
         'artifact contains text that verbatim and explicitly excludes the element — cost, effort, '
         'or proportionality arguments are not valid at any stage. '
-        'After the anchoring citation, the intent artifact, the ladder derivation, and the completion '
-        'check — each in turn — produce a [NON-BINDING DISPLAY] block that opens with a one-line '
-        'statement defining what ✅ means at this artifact stage, then visualizes that artifact\'s '
-        'current state using plain language and emoji indicators (✅ done, 🔲 pending, ❌ gap). '
-        'This block has no effect on artifact validity and does not substitute for it.'
+        'After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, '
+        'completion check), the model may produce a brief non-binding display summarizing that '
+        'artifact\'s current state — format and content are at the model\'s discretion. This display '
+        'has no effect on artifact validity and does not substitute for it. It may be omitted only '
+        'when the model names a prior artifact in the same response that already conveys the same '
+        'state information.'
     ),
 }
 

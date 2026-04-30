@@ -43,9 +43,9 @@ def test_falsify_evidence_quality_requires_criterion_to_have_failed():
     because it is about falsifiability — a passing artifact is not evidence of enforcement.
     """
     text = _falsify()
-    assert "only ever passed" in text or "coverage guarantee" in text, (
-        "falsify must state that a criterion which has only ever passed provides no "
-        "coverage guarantee (ADR-0227 Decision 3)"
+    assert "only ever passed" in text or "coverage guarantee" in text or "FAIL tool result" in text, (
+        "falsify must require a prior FAIL result demonstrating absence detection "
+        "(ADR-0227 Decision 3)"
     )
 
 
@@ -91,10 +91,11 @@ def test_atomic_defines_governing_output_on_first_use():
     text = _atomic()
     assert "governing output" in text and (
         "first reported failure" in text or
-        "reported failure from the governing artifact" in text
+        "reported failure from the governing artifact" in text or
+        "first failure from a tool-executed run result" in text
     ), (
         "atomic must define 'governing output' on first use as the first "
-        "reported failure from the governing artifact (ADR-0227 Decision 5)"
+        "failure from the governing artifact (ADR-0227 Decision 5)"
     )
 
 

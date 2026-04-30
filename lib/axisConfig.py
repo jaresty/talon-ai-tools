@@ -240,14 +240,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "analysis": "The response enhances the task by decomposing the subject into its constituent components and examining each for its role, properties, and interactions—without imposing a "
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
-        "atomic": "One governing output opens one step: take the first failure from a tool-executed run result already in the transcript as the step's scope — a scope that names a failure not "
-        "present in a prior tool result has not been derived. Before any edit, produce three prior artifacts in order, each as a completed transcript entry before the next begins: (1) "
-        "scope declaration quoting verbatim the failure signal from the prior run result — the quoted text must appear in a tool result above this line; (2) derivation block naming the "
-        "candidate change and at least one smaller change whose insufficiency is demonstrated by quoting specific text from a prior transcript artifact — the quoted text must appear at "
-        "the cited location; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the behavior the line "
-        "implements. After the edit, produce a post-edit run result by tool call, then verify: (a) the governed failure is absent from the new result; (b) no new failures appear whose "
-        "governing artifact produced no failure before the edit — any such failure requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted "
-        "regardless of interpretation.",
+        "atomic": "The response enforces one governing output per step: take the first failure from a tool-executed run result already in the transcript as the step's scope — a scope that names "
+        "a failure not present in a prior tool result has not been derived. Before any edit, produce three prior artifacts in order, each as a completed transcript entry before the "
+        "next begins: (1) scope declaration quoting verbatim the failure signal from the prior run result — the quoted text must appear in a tool result above this line; (2) derivation "
+        "block naming the candidate change and at least one smaller change whose insufficiency is demonstrated by quoting specific text from a prior transcript artifact — the quoted "
+        "text must appear at the cited location; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the "
+        "behavior the line implements. After the edit, produce a post-edit run result by tool call, then verify: (a) the governed failure is absent from the new result; (b) no new "
+        "failures appear whose governing artifact produced no failure before the edit — any such failure requires revert. An edit that introduces a failure absent from the pre-edit "
+        "result must be reverted regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -291,12 +291,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
         "proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
-        "distill": "For each place in the subject instruction where a model following it nominally produces a transcript state a reader could not distinguish from genuine compliance by "
-        "inspecting only the transcript: rewrite so the two states differ by a specific string or structural property present in one and absent in the other — named before claiming "
-        "the rewrite closes the gap. State exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the specific "
-        "observable that would be absent if the condition were not satisfied. A rewrite is valid only when it is no longer than the original, or when each added clause closes a named "
-        "gap that the shorter form leaves open — the gap must be named before the clause is added. Rewrites must use domain-agnostic language — vocabulary that applies across any "
-        "field where instructions govern model behavior, not only software or technical contexts.",
+        "distill": "The response rewrites each place in the subject instruction where a model following it nominally produces a transcript state a reader could not distinguish from genuine "
+        "compliance by inspecting only the transcript: rewrite so the two states differ by a specific string or structural property present in one and absent in the other — named "
+        "before claiming the rewrite closes the gap. State exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the "
+        "specific observable that would be absent if the condition were not satisfied. A rewrite is valid only when it is no longer than the original, or when each added clause closes "
+        "a named gap that the shorter form leaves open — the gap must be named before the clause is added. Rewrites must use domain-agnostic language — vocabulary that applies across "
+        "any field where instructions govern model behavior, not only software or technical contexts.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "
@@ -309,11 +309,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "Before any implementation step, every governed behavior must have a FAIL tool result already present in the transcript produced by running the governing artifact against a "
-        "state where only that behavior is absent — a FAIL caused by a different absence is not valid. Before the tool call, name: the specific behavior being removed and at least one "
-        "other behavior that remains intact in the test state; if omitting less than the named behavior would produce the same FAIL, the named behavior is not the governed cause and "
-        "must be rederived. Immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL exists above this line in the "
-        "transcript, the tool call is not permitted.",
+        "falsify": "The response applies this constraint: before any step, every governed behavior must have a FAIL tool result already present in the transcript produced by running the "
+        "governing artifact against a state where only that behavior is absent — a FAIL caused by a different absence is not valid. Before the tool call, name: the specific behavior "
+        "being removed and at least one other behavior that remains intact in the test state; if omitting less than the named behavior would produce the same FAIL, the named behavior "
+        "is not the governed cause and must be rederived. Immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL "
+        "exists above this line in the transcript, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -341,10 +341,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "rejects, and (b) the behavioral dimension that outcome leaves unconstrained in the prior rung — a rung that cannot name both has not been derived and must be merged with the "
         "rung above. The ladder must terminate at an artifact whose satisfaction condition is checked by prior-executed results, not by inspection of prose. Every step requires a "
         "prior-executed result already in the transcript as its governing artifact — a step whose governing artifact has not produced a result above it in the transcript has no "
-        "authorization to proceed. The response is not permitted to end until the completion check artifact exists in the transcript: for each item in the intent artifact, it cites the "
-        "specific outcome in a prior execution result that was observed to differ when the behavioral dimension was absent — a prediction of what would differ does not satisfy this; "
-        "where no such result exists, the dimension is recorded as uncovered. Scope reduction is permitted only when the intent artifact or a prior completion-check artifact contains "
-        "text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage.",
+        "authorization to proceed. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is "
+        "necessary but not sufficient for completion. The response is not permitted to end until the completion check artifact exists in the transcript: for each item in the intent "
+        "artifact, it cites the specific outcome in a prior execution result that was observed to differ when the behavioral dimension was absent — a prediction of what would differ "
+        "does not satisfy this; where no such result exists, the dimension is recorded as uncovered. Scope reduction is permitted only when the intent artifact or a prior "
+        "completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject instruction for every place where a model following it nominally produces a transcript state a reader could not distinguish from genuine "

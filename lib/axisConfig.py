@@ -352,12 +352,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. No content naming a specific "
         "artifact to be produced or edited may appear in the response before the completion check artifact. The response is not permitted to end until the completion check artifact "
         "exists and at least one behavioral dimension cites a prior execution result that was observed to differ when that dimension was absent. For each item in the intent artifact, "
-        "the completion check cites the specific outcome in a prior execution result that was observed to differ when the behavioral dimension was absent — a prediction of what would "
-        "differ does not satisfy this; where no such result exists, the dimension is recorded as uncovered. A completion check with zero covered dimensions does not satisfy this gate. "
-        "Scope reduction is permitted only when the intent artifact or a prior completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, "
-        "or proportionality arguments are not valid at any stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), the model "
-        "may produce a brief non-binding display summarizing that artifact's current state — format and content are at the model's discretion. This display has no effect on artifact "
-        "validity and does not substitute for it. It may be omitted only when the model names a prior artifact in the same response that already conveys the same state information.",
+        "the completion check cites the specific outcome in the execution result of the terminal ladder artifact for that dimension that was observed to differ when the behavioral "
+        "dimension was absent — a result from a different artifact is not valid even if it correlates; a prediction of what would differ does not satisfy this; where no such result "
+        "exists, the dimension is recorded as uncovered. A completion check with zero covered dimensions does not satisfy this gate. Scope reduction is permitted only when the intent "
+        "artifact or a prior completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any "
+        "stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), the model may produce a brief non-binding display "
+        "summarizing that artifact's current state — format and content are at the model's discretion. This display has no effect on artifact validity and does not substitute for it. "
+        "It may be omitted only when the model names a prior artifact in the same response that already conveys the same state information.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject instruction for every place where a model following it nominally produces a transcript state a reader could not distinguish from genuine "

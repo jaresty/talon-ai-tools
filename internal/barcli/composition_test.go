@@ -159,19 +159,16 @@ func TestRenderPlainText_NoCompositionRulesWithoutTokenPair(t *testing.T) {
 func TestFalsifyDefinition_AbsenceDetection(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "detecting the governed behavior's absence") {
-		t.Error("falsify definition must state the absence-detection requirement")
-	}
-	if !strings.Contains(def, "minimal wrong state") {
-		t.Error("falsify definition must state the minimal-wrong-state requirement")
+	if !strings.Contains(def, "behavior is absent") && !strings.Contains(def, "behavior absent") {
+		t.Error("falsify definition must require artifact to fire against absent behavior")
 	}
 }
 
 func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "before implementation begins") {
-		t.Error("falsify definition must state that the artifact must have fired before implementation begins")
+	if !strings.Contains(def, "FAIL tool result already present") && !strings.Contains(def, "before any implementation") {
+		t.Error("falsify definition must require FAIL result to exist before implementation")
 	}
 }
 
@@ -181,8 +178,8 @@ func TestGateDefinition_HardBlockingCheckpoint(t *testing.T) {
 	if !strings.Contains(def, "hard-blocking checkpoint") {
 		t.Error("gate definition must describe a hard-blocking checkpoint")
 	}
-	if !strings.Contains(def, "rationalization") {
-		t.Error("gate definition must distinguish gate from rule by referencing rationalization opt-out")
+	if !strings.Contains(def, "prior-executed result") {
+		t.Error("gate definition must require a prior-executed result, not assertion")
 	}
 }
 

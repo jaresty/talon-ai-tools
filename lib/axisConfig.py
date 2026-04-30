@@ -342,20 +342,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
         "proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
-        "distill": "The response rewrites each structural escape route in the subject prompt or definition as a genuine reasoning requirement. Converts prescribed output formats to visible "
-        "self-derivation directives — guiding questions the model must answer before producing output; generalizes domain-specific vocabulary to composable equivalents; and replaces "
-        "structural templates with open-ended derivation prompts. The governing question for each rewrite: would a model following this instruction nominally be distinguishable from "
-        "one following it genuinely? If not, the instruction must be restructured until the answer is yes. For each rewrite, show that the governing question is satisfied — "
-        "demonstrate that nominal compliance with the rewritten instruction would be detectable as different from genuine compliance — the demonstration is valid only when it names a "
-        "specific observable difference that is locatable in the transcript and that requires inspecting the rewrite to verify; an observable that could be stated without examining "
-        "the rewrite has not been derived. A self-derivation question is valid only if its answer cannot be predicted without actually engaging with the specific subject — a question "
-        "answerable by pattern-matching the instruction is itself hollow. When rewriting a permit condition (a pre-condition that gates an action), the rewrite is incomplete unless it "
-        "also adds a post-action confirmation requirement: a line after the action that names what was actually done, cites the pre-condition's stated scope, and names the specific "
-        "observable in the transcript that would be different if the action had exceeded that scope — a confirmation that cannot name what would look different if the action were "
-        "wrong does not bind the action. If the action exceeds the stated scope, it must be reverted. A permit condition without a post-action confirmation leaves the action inside "
-        "unconstrained and is itself a permit-without-bind escape route. Rewrites must use allow-list framing: state exactly what conditions permit the action, leaving nothing "
-        "implicitly open. A deny-list rewrite — one that names what is prohibited rather than what is permitted — leaves all unlisted cases implicitly open and is itself an escape "
-        "route.",
+        "distill": "For each place in the subject instruction where a model following it nominally produces a transcript state a reader could not distinguish from genuine compliance by "
+        "inspecting only the transcript: rewrite so the two states differ by a specific string or structural property present in one and absent in the other — named before claiming "
+        "the rewrite closes the gap. State exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the specific "
+        "observable that would be absent if the condition were not satisfied. A rewrite is valid only when it is no longer than the original, or when each added clause closes a named "
+        "gap that the shorter form leaves open — the gap must be named before the clause is added.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "
@@ -506,19 +497,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "involve implementation tool calls, both the ladder citation and the RE-ANCHORING citation are required — they govern different things and neither substitutes for the other.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
-        "hollow": "The response audits the subject prompt or definition for structural escape routes: places where a model can satisfy the instruction by surface compliance rather than genuine "
-        "reasoning. Identifies: prescribed output formats that can be pattern-matched without derivation; fill-in-the-blank structures where the fields guide mimicry rather than "
-        "thought; domain-specific vocabulary that silently restricts composability to a narrow context; instructions that specify what to produce rather than what to reason through; "
-        "and causal-ordering escape routes, where a citation or dependency claim can be generated simultaneously with the thing it supposedly depends on, collapsing the before/after "
-        "relationship into a single generative act and making precedence unfalsifiable; and measurable-proxy escape routes, where the instruction specifies a countable proxy that can "
-        "be maximized without satisfying the underlying intent — the proxy is cheaper to optimize than the real goal, so a model following the instruction nominally is "
-        "indistinguishable from one following it genuinely (a specific instance: wrong-cause proxy satisfaction, where the proxy measure is satisfied by a mechanism different from the "
-        "one the instruction intends to govern — the proxy fires but the governed condition has no coverage); and permit-without-bind escape routes, where a pre-condition gates entry "
-        "to an action but no post-condition checks that the action stayed within the pre-condition's stated scope — the pre-condition is genuine and correctly satisfied, but the action "
-        "inside is unconstrained. A finding is valid only when three things are shown: the specific text, the mechanism — derived before the example, not after — by which a model could "
-        "satisfy it without genuine reasoning, and a concrete example that is a consequence of the mechanism (an example that could have been written without the mechanism has not been "
-        "derived). The escape route type named in a finding is derived from the mechanism, not selected from the list above — the list is a reference, not a checklist. A finding of "
-        "absence is valid only when a specific candidate sentence from the text has been named and the reason it does not constitute that escape route has been stated.",
+        "hollow": "The response audits the subject instruction for every place where a model following it nominally produces a transcript state a reader could not distinguish from genuine "
+        "compliance by inspecting only the transcript. For each such place: name the specific text, derive the mechanism of indistinguishability before giving any example, and give a "
+        "concrete example that names a specific transcript state satisfying the instruction nominally but not genuinely — a state whose existence requires the mechanism to explain.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "

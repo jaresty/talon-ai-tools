@@ -241,10 +241,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "atomic": "The response enforces one governing output per step: take the first failure from a tool-executed run result already in the transcript as the step's scope — a scope that names "
-        "a failure not present in a prior tool result has not been derived. Before any edit, produce three prior artifacts in order, each as a completed transcript entry before the "
-        "next begins: (1) scope declaration quoting verbatim the failure signal from the prior run result — the quoted text must appear in a tool result above this line; (2) derivation "
-        "block naming the candidate change and at least one smaller change whose insufficiency is demonstrated by quoting specific text from a prior transcript artifact — the quoted "
-        "text must appear at the cited location; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the "
+        "a failure not present in a prior tool result has not been derived. Before any edit, produce three artifacts as separate completed blocks — each block must end before the next "
+        "opens, and no edit tool call may appear in the same block as any artifact: (1) scope declaration quoting verbatim the failure signal from the prior run result — the quoted "
+        "text must appear in a tool result above this line; (2) derivation block as two entries: first, name the candidate change and at least one smaller change; second, in a separate "
+        "entry below, quote the specific text from a prior transcript artifact that demonstrates the smaller change's insufficiency — the quote must appear in a tool result above the "
+        "first entry, not introduced here; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the "
         "behavior the line implements. After the edit, produce a post-edit run result by tool call, then verify: (a) the governed failure is absent from the new result; (b) no new "
         "failures appear whose governing artifact produced no failure before the edit — any such failure requires revert. An edit that introduces a failure absent from the pre-edit "
         "result must be reverted regardless of interpretation.",

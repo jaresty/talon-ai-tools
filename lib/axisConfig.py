@@ -242,15 +242,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals and assessing their support.",
         "atomic": "The response enforces one governing output per step: take the first failure from a tool-executed run result already in the transcript as the step's scope — a scope that names "
         "a failure not present in a prior tool result has not been derived. Before any edit, produce three artifacts as separate completed blocks — each block must end before the next "
-        "opens, and no edit tool call may appear in the same block as any artifact: (1) scope declaration quoting verbatim the failure signal from the prior run result — the quoted "
-        "text must appear in a tool result above this line; (2) derivation block as two entries: first, name the candidate change and at least one smaller change; second, in a separate "
-        "entry below, quote the specific text from a prior tool-executed result that demonstrates the smaller change's insufficiency by showing what the smaller change would leave "
-        "unresolved — the quote must appear in an execution result above the first entry, not introduced here and not from a source that produces output by retrieval rather than by "
-        "execution; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the behavior the line implements. "
-        "Immediately before each edit tool call, produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Lines: <count of lines in manifest>' — if "
-        "this line does not appear immediately above the edit tool call in the transcript, the edit is not permitted. After the edit, produce a post-edit run result by tool call, then "
-        "verify: (a) the governed failure is absent from the new result; (b) no new failures appear whose governing artifact produced no failure before the edit — any such failure "
-        "requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
+        "opens, and no tool call that modifies a file may appear in the same block as any artifact: (1) scope declaration quoting verbatim the failure signal from the prior run result "
+        "— the quoted text must appear in a tool result above this line; (2) derivation block as two entries: first, name the candidate change and at least one smaller change; second, "
+        "in a separate entry below, quote the specific text from a prior tool-executed result that demonstrates the smaller change's insufficiency by showing what the smaller change "
+        "would leave unresolved — the quote must appear in an execution result above the first entry, not introduced here and not from a source that produces output by retrieval rather "
+        "than by execution; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the behavior the line "
+        "implements. Immediately before each tool call that modifies a file, produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Lines: <count of "
+        "lines in manifest>' — if this line does not appear immediately above the tool call that modifies a file in the transcript, the edit is not permitted. After the edit, produce a "
+        "post-edit run result by tool call, then verify: (a) the governed failure is absent from the new result; (b) no new failures appear whose governing artifact produced no failure "
+        "before the edit — any such failure requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "
@@ -312,8 +312,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "The response applies this constraint: before any step, every governed behavior must have a FAIL tool result that appears in the transcript before any edit tool call that "
-        "touches a file governed by that behavior — a FAIL that appears after any such edit is not valid regardless of its position relative to the governing artifact citation. The "
+        "falsify": "The response applies this constraint: before any step, every governed behavior must have a FAIL tool result that appears in the transcript before any tool call that modifies "
+        "a file governed by that behavior — a FAIL that appears after any such modification is not valid regardless of its position relative to the governing artifact citation. The "
         "FAIL must be produced by running an artifact that (a) is written to assert that specific behavior and (b) executes when the same event triggers evaluation of the artifact "
         "being changed — name the triggering event that causes both to execute; if no such shared trigger can be named, the artifact does not govern this change. A FAIL produced from "
         "a state with additional absences beyond the named behavior is not valid. Before the tool call, name: the specific behavior being removed and at least one other behavior that "

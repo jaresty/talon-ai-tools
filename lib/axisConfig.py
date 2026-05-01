@@ -247,10 +247,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "in a separate entry below, quote the specific text from a prior tool-executed result that demonstrates the smaller change's insufficiency by showing what the smaller change "
         "would leave unresolved — the quote must appear in an execution result above the first entry, not introduced here and not from a source that produces output by retrieval rather "
         "than by execution; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the behavior the line "
-        "implements. Immediately before each tool call that modifies a file, produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Lines: <count of "
-        "lines in manifest>' — if this line does not appear immediately above the tool call that modifies a file in the transcript, the edit is not permitted. After the edit, produce a "
-        "post-edit run result by tool call, then verify: (a) the governed failure is absent from the new result; (b) no new failures appear whose governing artifact produced no failure "
-        "before the edit — any such failure requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
+        "implements. Immediately before each tool call that modifies a file, produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Smaller: <named "
+        "smaller change whose insufficiency is demonstrated above> | Lines: <count of lines in manifest>' — if this line does not appear immediately above the tool call that modifies a "
+        "file in the transcript, the edit is not permitted. After the edit, produce a post-edit run result by tool call, then verify: (a) the governed failure is absent from the new "
+        "result; (b) no new failures appear whose governing artifact produced no failure before the edit — any such failure requires revert. An edit that introduces a failure absent "
+        "from the pre-edit result must be reverted regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

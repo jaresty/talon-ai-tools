@@ -364,9 +364,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "dimension was absent — a result from a different artifact is not valid even if it correlates; a prediction of what would differ does not satisfy this; where no such result "
         "exists, the dimension is recorded as uncovered. A completion check with zero covered dimensions does not satisfy this gate. Scope reduction is permitted only when the intent "
         "artifact or a prior completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any "
-        "stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), the model may produce a brief non-binding display "
-        "summarizing that artifact's current state — format and content are at the model's discretion. This display has no effect on artifact validity and does not substitute for it. "
-        "It may be omitted only when the model names a prior artifact in the same response that already conveys the same state information.",
+        "stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), consider: would a brief visual summary communicate the "
+        "artifact's current state more efficiently than the prose already does? If yes, produce one in whatever format conveys the state most directly. This display has no effect on "
+        "artifact validity and does not substitute for it.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response audits the subject instruction for every place where a model following it nominally produces a transcript state a reader could not distinguish from genuine "

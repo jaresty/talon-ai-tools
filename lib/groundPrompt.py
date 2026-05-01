@@ -73,11 +73,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'artifact contains text that verbatim and explicitly excludes the element — cost, effort, '
         'or proportionality arguments are not valid at any stage. '
         'After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, '
-        'completion check), the model may produce a brief non-binding display summarizing that '
-        'artifact\'s current state — format and content are at the model\'s discretion. This display '
-        'has no effect on artifact validity and does not substitute for it. It may be omitted only '
-        'when the model names a prior artifact in the same response that already conveys the same '
-        'state information.'
+        'completion check), consider: would a brief visual summary communicate the artifact\'s current '
+        'state more efficiently than the prose already does? If yes, produce one in whatever format '
+        'conveys the state most directly. This display has no effect on artifact validity and does '
+        'not substitute for it.'
     ),
 }
 

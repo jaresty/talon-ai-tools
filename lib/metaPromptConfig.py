@@ -213,7 +213,7 @@ PLANNING_DIRECTIVE: str = (
     "and what would be different if any single token were absent.>\n\n"
     "SECTION 4 — READY TO PROCEED:\n"
     "Write: 'Derivations complete. Beginning task work.' "
-    "Then proceed immediately — if the task requires tool calls, make your first tool call now; "
+    "Then proceed immediately — if no method token has named an artifact precondition that is not yet satisfied in the transcript, make your first tool call now; "
     "if no tool calls are needed, write your response now. Do not pause or wait."
 )
 

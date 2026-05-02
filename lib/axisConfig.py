@@ -49,8 +49,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "The response takes the shape of an Architecture Decision Record (ADR) document with sections for context, decision, and consequences, formatted as a structured document ready "
         "for version control. Best suited for decision-making tasks and architectural tradeoffs.",
-        "agent": "The response is structured as an agent definition — a persistent autonomous subprocess specification with a system prompt, declared tools, model selection, and persona. "
-        "Formatted for direct use as an agent configuration in an agent harness.",
+        "agent": "The response is structured as an agent definition — a persistent autonomous subprocess specification with YAML frontmatter (name, system_prompt, tools, model, persona, "
+        "trigger) followed by a body describing behavior and constraints. Formatted for direct use as an agent configuration in an agent harness. The agent definition must: (1) declare "
+        "all required tools explicitly in the frontmatter tools field; (2) state a trigger condition specific enough to be invoked unambiguously — the trigger must answer yes/no at "
+        "runtime with no interpretation required; (3) end with an explicit 'Write to disk' instruction naming the target path (e.g. ~/.claude/agents/<name>.md or "
+        ".claude/agents/<name>.md for project-scoped agents).",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
         "surrounding explanation.",
@@ -99,8 +102,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. "
         "Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the "
         "output is syntactically correct and compiles successfully with the D2 CLI.",
-        "skill": "The response is structured as a reusable agent skill definition — YAML frontmatter (name, description, when_to_use) followed by a markdown body with usage instructions, "
-        "workflow steps, and examples. The output is formatted for direct use as an installable skill in an agent harness.",
+        "skill": "The response is structured as a reusable agent skill definition — YAML frontmatter (name, description, when_to_use, requires) followed by a markdown body with usage "
+        "instructions, workflow steps, and one real worked example. The output is formatted for direct use as an installable skill in an agent harness. The skill body must: (1) "
+        "identify any mechanically deterministic steps and extract them as companion scripts referenced from the skill body; (2) end with an explicit 'Write to disk' instruction naming "
+        "the target path (e.g. ~/.claude/skills/<name>.md or .claude/skills/<name>.md for project-scoped skills); (3) declare all external tool dependencies in the frontmatter requires "
+        "field. The when_to_use field must be answerable yes/no at invocation time — no vague prose.",
         "slack": "The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         "store": "The response additionally writes output to persistent storage using available tools — a file on disk, a memory system, or any other durable medium the environment supports — "
         "as the work progresses. Conversational output continues normally; storage is additive, not a replacement. When no storage tool is available, the response notes explicitly what "

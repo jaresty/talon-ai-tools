@@ -212,8 +212,8 @@ PLANNING_DIRECTIVE: str = (
     "State how each token modifies the others, what the integrated approach looks like, "
     "and what would be different if any single token were absent.>\n\n"
     "SECTION 4 — READY TO PROCEED:\n"
-    "Write: 'Derivations complete — tokens: <list each token from Section 1 verbatim>. Beginning task work.' "
-    "This phrase cannot be written truthfully if Section 1 is absent — the verbatim token list has no source. "
+    "Write: 'Derivations complete — tokens: <list each token from Section 1 verbatim>; first derive: <quote opening 6 words of your first ## Derive block verbatim>. Beginning task work.' "
+    "This phrase cannot be written truthfully if Section 1 is absent — neither the token list nor the verbatim quote has a source. "
     "Then proceed immediately — if no method token has named an artifact precondition that is not yet satisfied in the transcript, make your first tool call now; "
     "if no tool calls are needed, write your response now. Do not pause or wait."
 )

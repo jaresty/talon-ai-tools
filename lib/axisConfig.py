@@ -324,16 +324,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "asserted in prose. A file is governed if its modification changes any such result, regardless of whether the change is an addition, deletion, or rename; classifying a file as "
         "ungoverned based on change type rather than execution-result impact is not valid. A FAIL that appears after any such modification is not valid regardless of its position "
         "relative to the governing artifact citation. Before the run tool call, produce a derivation block as three entries: first, name at least one slower check that would catch "
-        "this behavior but takes longer to run locally — quote the output from running this check; if no such output exists above this line, the candidate is not justified as minimal; "
-        "second, name the candidate check — the specific artifact to run, naming its relative speed compared to alternatives; third, name at least one insufficient check — a faster "
-        "check that would not catch this behavior — and quote the specific output from a prior run result showing the insufficient check passes when the behavior is absent; if no such "
-        "insufficient check output exists above this line in the transcript, the candidate is not derived and a different check must be chosen. Then run the candidate check. The FAIL "
-        "must be produced by running an artifact that (a) is written to assert that specific behavior and (b) executes when the same event triggers evaluation of the artifact being "
-        "changed — name the triggering event that causes both to execute; if no such shared trigger can be named, the artifact does not govern this change. A FAIL produced from a "
-        "state with additional absences beyond the named behavior is not valid. Before the tool call, name: the specific behavior being removed and at least one other behavior that "
-        "remains intact in the test state; if omitting less than the named behavior would produce the same FAIL, the named behavior is not the governed cause and must be rederived. "
-        "Immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL exists above this line in the transcript, the tool "
-        "call is not permitted.",
+        "this behavior but takes longer to run locally — quote the output from running this check — the quote must appear in a tool result from this session, not a description; if no "
+        "such output exists above this line, the candidate is not justified as minimal; second, name the candidate check — the specific artifact to run, naming its relative speed "
+        "compared to alternatives; third, name at least one insufficient check — a faster check that would not catch this behavior — and quote the specific output from a prior run "
+        "result showing the insufficient check passes when the behavior is absent; if no such insufficient check output exists above this line in the transcript, the candidate is not "
+        "derived and a different check must be chosen. Then run the candidate check. The FAIL must be produced by running an artifact that (a) is written to assert that specific "
+        "behavior and (b) executes when the same event triggers evaluation of the artifact being changed — name the triggering event that causes both to execute; if no such shared "
+        "trigger can be named, the artifact does not govern this change. A FAIL produced from a state with additional absences beyond the named behavior is not valid. Before the tool "
+        "call, name: the specific behavior being removed and at least one other behavior that remains intact in the test state; if omitting less than the named behavior would produce "
+        "the same FAIL, the named behavior is not the governed cause and must be rederived. Immediately before each implementation tool call, produce: 'Governing artifact: <verbatim "
+        "FAIL output>' — if no such FAIL exists above this line in the transcript, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

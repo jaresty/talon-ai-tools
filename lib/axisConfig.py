@@ -319,16 +319,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "outcome from within. Contact precedes transformation: the response does not resist or replace the structure but works through its own internal logic to shift where it leads.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "The response applies this constraint: before any step, every governed behavior must have a FAIL tool result — produced by a run tool call, not reasoning or assertion about "
-        "prior code state — that appears in the transcript before any tool call that modifies a file whose modification would change the outcome of any execution result in the "
-        "transcript — not asserted in prose. A file is governed if its modification changes any such result, regardless of whether the change is an addition, deletion, or rename; "
-        "classifying a file as ungoverned based on change type rather than execution-result impact is not valid. A FAIL that appears after any such modification is not valid "
-        "regardless of its position relative to the governing artifact citation. The FAIL must be produced by running an artifact that (a) is written to assert that specific behavior "
-        "and (b) executes when the same event triggers evaluation of the artifact being changed — name the triggering event that causes both to execute; if no such shared trigger can "
-        "be named, the artifact does not govern this change. A FAIL produced from a state with additional absences beyond the named behavior is not valid. Before the tool call, name: "
-        "the specific behavior being removed and at least one other behavior that remains intact in the test state; if omitting less than the named behavior would produce the same "
-        "FAIL, the named behavior is not the governed cause and must be rederived. Immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL "
-        "output>' — if no such FAIL exists above this line in the transcript, the tool call is not permitted.",
+        "falsify": "The response applies this constraint: before any step, every governed behavior must have a FAIL tool result — the only permitted source is a run tool call made in this "
+        "session; if not satisfied, no run tool call producing the FAIL appears in the current transcript — that appears in the transcript before any tool call that modifies a file "
+        "whose modification would change the outcome of any execution result in the transcript — not asserted in prose. A file is governed if its modification changes any such result, "
+        "regardless of whether the change is an addition, deletion, or rename; classifying a file as ungoverned based on change type rather than execution-result impact is not valid. "
+        "A FAIL that appears after any such modification is not valid regardless of its position relative to the governing artifact citation. The FAIL must be produced by running an "
+        "artifact that (a) is written to assert that specific behavior and (b) executes when the same event triggers evaluation of the artifact being changed — name the triggering "
+        "event that causes both to execute; if no such shared trigger can be named, the artifact does not govern this change. A FAIL produced from a state with additional absences "
+        "beyond the named behavior is not valid. Before the tool call, name: the specific behavior being removed and at least one other behavior that remains intact in the test state; "
+        "if omitting less than the named behavior would produce the same FAIL, the named behavior is not the governed cause and must be rederived. Immediately before each "
+        "implementation tool call, produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL exists above this line in the transcript, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

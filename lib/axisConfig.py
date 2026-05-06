@@ -388,12 +388,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "hollow": "The response applies the root criterion: a clause is valid only if it names, within its own text, the observable that distinguishes compliance from non-compliance without "
         "requiring the evaluator to assess the model's intent. For each clause in the subject instruction that violates the root criterion: state the root criterion as a separately "
         "quotable claim before deriving anything; name the specific text; derive the mechanism of indistinguishability from the stated criterion — the mechanism must follow from the "
-        "stated criterion, not from the model's understanding of it; give a concrete example naming a specific transcript state satisfying the instruction nominally but not genuinely — "
-        "a state whose existence requires the mechanism to explain. Any rewrite produced must name the specific string or structural property that distinguishes the two compliance "
-        "states before claiming the rewrite closes the gap; state exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming "
-        "the specific observable that would be absent if the condition were not satisfied; a rewrite is valid only when it is no longer than the original, or when each added clause "
-        "closes a named gap that the shorter form leaves open — the gap must be named before the clause is added. All findings and rewrites must use domain-agnostic language — "
-        "vocabulary that applies across any field where instructions govern model behavior, not only software or technical contexts.",
+        "stated criterion — the mechanism statement must quote a specific phrase from the stated criterion that makes the indistinguishability inevitable; a mechanism statement that "
+        "does not quote a specific phrase from the stated criterion has not been derived from it; give a concrete example naming a specific transcript state satisfying the instruction "
+        "nominally but not genuinely — name the specific string or field in that state that satisfies the instruction nominally, and state explicitly that this string is absent from "
+        "any state satisfying it genuinely. Any rewrite produced must name the specific string or structural property that distinguishes the two compliance states before claiming the "
+        "rewrite closes the gap; state exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the specific observable "
+        "that would be absent if the condition were not satisfied; a rewrite is valid only when it is no longer than the original, or when each added clause closes a named gap that the "
+        "shorter form leaves open — the gap must be named before the clause is added. All findings and rewrites must use domain-agnostic language — vocabulary that applies across any "
+        "field where instructions govern model behavior, not only software or technical contexts.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those "
         "generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "

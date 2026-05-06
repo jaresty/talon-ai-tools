@@ -607,6 +607,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "hollow vocabulary clause must name the observable that distinguishes compliant from non-compliant terms",
         )
 
+    def test_falsify_empty_transcript_gap_closed(self):
+        """falsify must block file modifications when no execution result exists in the transcript — the 'would change the outcome of any execution result' condition is vacuously ungoverned when the result set is empty (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "if no execution result exists in the transcript above that tool call, the tool call is not permitted",
+            definition,
+            "falsify must explicitly block file modifications when no execution result exists in the transcript",
+        )
+
     def test_falsify_slower_check_excludes_compiler_artifacts(self):
         """falsify's slower-check clause must require a named runnable test case producing a named failure message, not 'test or assertion' which admits compiler checks and type annotations (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})

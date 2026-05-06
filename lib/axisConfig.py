@@ -316,9 +316,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "update the hypotheses.",
         "falsify": "The response applies this constraint: before any step, every governed behavior must have a FAIL tool result — the only permitted source is a tool call that directly invokes "
         "the artifact's execution in this session; a tool call that reads, displays, or retrieves the output of a prior execution (such as a status command, log viewer, or build "
-        "monitor) does not satisfy this gate regardless of the failure signal it shows — that appears in the transcript before any tool call that modifies a file whose modification "
-        "would change the outcome of any execution result in the transcript — not asserted in prose. A file is governed if its modification changes any such result, regardless of "
-        "whether the change is an addition, deletion, or rename; classifying a file as ungoverned based on change type rather than execution-result impact is not valid. A FAIL that "
+        "monitor) does not satisfy this gate regardless of the failure signal it shows — that appears in the transcript before any tool call that modifies a file; if no execution "
+        "result exists in the transcript above that tool call, the tool call is not permitted; if execution results exist, a file is governed if its modification would change the "
+        "outcome of any such result — not asserted in prose. Classifying a file as ungoverned based on change type rather than execution-result impact is not valid; A FAIL that "
         "appears after any such modification is not valid regardless of its position relative to the governing artifact citation. Before the run tool call, produce a derivation block "
         "as three entries: first, name at least one slower check that would catch this behavior but takes longer to run locally — name it by file path or command; do not run this "
         "check; name what specific test case in that check covers this behavior — the named entity must be a runnable test case that produces a named failure message (a test name or "

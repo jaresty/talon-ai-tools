@@ -77,20 +77,18 @@ Each gap was identified via `hollow`, the fix was proposed via `distill`, and ch
 
 ---
 
-### 3. Distill — closure gap and derivation relationship
+### 3. Distill — removed; constraints absorbed into hollow
 
 **Gap**: distill rewrites clauses but does not require running hollow on the rewrite. Closure is self-declared.
 
 **Structural finding** (from `probe root` and `probe collapse`):
-Hollow and distill are not two independent tokens — they are two phases of one operation applied at different times:
-- `hollow` = audit phase: find clauses violating the root criterion
-- `distill` = repair phase: rewrite clauses to satisfy the root criterion
+Hollow and distill are not two independent tokens — they are two phases of one operation:
+- audit: find clauses violating the root criterion
+- repair: rewrite clauses to satisfy the root criterion
 
-Once hollow is refactored to encode the root criterion as a lens (not only audit mode), distill is expressible as `fix hollow`. Additional phases become naturally expressible: `check hollow` (verify a rewrite satisfies the root) and `make hollow` (generate a new clause satisfying the root from scratch).
+Distill's repair constraints (observable named before claiming closure, length constraint, gap-named-before-clause, allow-list/post-condition) belong in hollow's definition as constraints on any rewrite hollow governs — not in a separate token. Encoding them as token interactions would violate the principle that tokens do not specify behavior conditional on other tokens.
 
-**Decision**: distill is retained as an ergonomic alias for `fix hollow` — the pairing `hollow distill` remains a readable workflow shorthand. However, distill's definition will be updated to derive from hollow's root criterion explicitly rather than maintaining an independent definition of the same criterion.
-
-The `check hollow` phase (closure verification) was previously inexpressible and is now the recommended post-distill step.
+**Decision**: distill is removed. Its repair constraints are folded into hollow's definition as unconditional requirements on any rewrite hollow produces or governs. The workflow previously expressed as `hollow distill` is now expressed as `fix hollow`. Additional phases — `check hollow` (verify a rewrite satisfies the root) and `make hollow` (generate a new clause from scratch) — are naturally expressible via the task axis.
 
 ---
 
@@ -106,14 +104,13 @@ The `check hollow` phase (closure verification) was previously inexpressible and
 
 **Positive**:
 - Ten concrete escape routes in `falsify`/`atomic` are closed with specific observable properties named for each.
-- The root criterion shared by `hollow` and `distill` is now explicit and will be encoded in hollow's definition.
-- `check hollow`, `make hollow`, and `fix hollow` become expressible as natural task+method combinations once hollow encodes the lens.
-- Distill's independence from hollow's root is eliminated; future drift between the two definitions is prevented by derivation.
+- The root criterion is now encoded in hollow's definition; hollow and distill no longer maintain independent definitions of the same criterion.
+- `fix hollow`, `check hollow`, and `make hollow` are naturally expressible via the task axis with no additional tokens.
+- Removing distill eliminates the risk of the two definitions drifting independently.
 
 **Negative / risks**:
 - Hollow's updated definition (requiring criterion statement before each mechanism) adds overhead to hollow audits; a model auditing a long instruction must state the criterion before each finding.
 - The ten falsify fixes make the falsify derivation block substantially longer and more demanding; there is a tradeoff between escape-route coverage and cognitive load per derivation.
 
 **Open**:
-- Hollow's definition update (decision 2) and distill's derivation update (decision 3) are decided but not yet implemented.
-- Whether `check hollow` should be added to the bar-workflow skill as a recommended post-distill step.
+- Whether `check hollow` should be added to the bar-workflow skill as a recommended post-`fix hollow` step.

@@ -151,7 +151,6 @@
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
         "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
-        "distill": "The response rewrites each place in the subject instruction where a model following it nominally produces a transcript state a reader could not distinguish from genuine compliance by inspecting only the transcript: rewrite so the two states differ by a specific string or structural property present in one and absent in the other — named before claiming the rewrite closes the gap. State exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the specific observable that would be absent if the condition were not satisfied. A rewrite is valid only when it is no longer than the original, or when each added clause closes a named gap that the shorter form leaves open — the gap must be named before the clause is added. Rewrites must use domain-agnostic language — vocabulary that applies across any field where instructions govern model behavior, not only software or technical contexts.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion stated, the structural representation claimed to enforce it, and a reachable state of that representation where the conclusion does not hold.",
         "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
@@ -168,7 +167,7 @@
         "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, directional guidance, and structural prediction are all derivable from this reading.",
         "ground": "The response applies this meta-process discipline — before acting, answer: what does this specific task require as evidence of completion that cannot be faked by describing the process? If you cannot identify what that evidence would look like for this task, the process is not yet derived. Derive an enforcement process whose steps produce that evidence. The gap between apparent completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. Before acting, state the boundary searched (the first message of the current session, or the specific prior message where the search began), then list every statement within that boundary that describes a desired end state. For each, state whether it subsumes the others — a goal G1 subsumes G2 if achieving G2 is a necessary condition for achieving G1. Produce the subsumption analysis as a completed block. Then, in a separate block below it, cite the goal no other goal subsumes as the anchoring citation, quoting its text and location. If multiple unsubsumed goals exist, cite all of them. Derive the intent artifact from the cited goal statement(s) as an enumerated list of behavioral dimensions — each dimension must cite the specific clause in the anchoring citation it derives from, and every clause in the anchoring citation must produce at least one dimension; a dimension with no cited source clause has not been derived, and a clause with no corresponding dimension has been silently dropped. Each dimension states the specific behavior it governs such that its presence or absence in any artifact is determinable without interpretation. Then derive a ladder: an ordered sequence of artifacts where each rung names (a) the specific outcome the prior rung admits that this rung rejects, (b) the behavioral dimension that outcome leaves unconstrained in the prior rung, and (c) the artifact type whose presence eliminates the judgment the prior rung required — two rungs belong to the same class when the same artifact type eliminates both; a rung whose judgment class cannot be named by an artifact type has not been derived. A rung that cannot name all three has not been derived and must be merged with the rung above — the merge is permitted only when a completed block above this line quotes the specific text from each candidate rung that was attempted and found to require the same artifact type — the quoted-text block must end before the merge block opens. For each rung, produce a completed block above it naming two candidate sub-rungs and the artifact type each would eliminate; if both name the same artifact type, the split is not required and that block constitutes the demonstration; if they name different artifact types, the split is required and the block must end before the two new rungs open. The ladder must terminate at an artifact whose satisfaction condition requires no judgment — checked by prior-executed results, not by inspection of prose. Every step requires a prior-executed result already in the transcript as its governing artifact — a step whose governing artifact has not produced a result above it in the transcript has no authorization to proceed. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. No content naming a specific artifact to be produced or edited may appear in the response before the completion check artifact. The response is not permitted to end until the completion check artifact exists and at least one behavioral dimension cites a prior execution result that was observed to differ when that dimension was absent. For each item in the intent artifact, the completion check cites the specific outcome in the execution result of the terminal ladder artifact for that dimension that was observed to differ when the behavioral dimension was absent — a result from a different artifact is not valid even if it correlates; a prediction of what would differ does not satisfy this; where no such result exists, the dimension is recorded as uncovered. A completion check with zero covered dimensions does not satisfy this gate. Scope reduction is permitted only when the intent artifact or a prior completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), consider: would a brief visual summary communicate the artifact's current state more efficiently than the prose already does? If yes, produce one in whatever format conveys the state most directly. This display has no effect on artifact validity and does not substitute for it.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
-        "hollow": "The response audits the subject instruction for every place where a model following it nominally produces a transcript state a reader could not distinguish from genuine compliance by inspecting only the transcript. For each such place: name the specific text, derive the mechanism of indistinguishability before giving any example, and give a concrete example that names a specific transcript state satisfying the instruction nominally but not genuinely — a state whose existence requires the mechanism to explain. Findings and rewrites must use domain-agnostic language — vocabulary that applies across any field where instructions govern model behavior, not only software or technical contexts.",
+        "hollow": "The response applies the root criterion: a clause is valid only if it names, within its own text, the observable that distinguishes compliance from non-compliance without requiring the evaluator to assess the model's intent. For each clause in the subject instruction that violates the root criterion: state the root criterion as a separately quotable claim before deriving anything; name the specific text; derive the mechanism of indistinguishability from the stated criterion — the mechanism must follow from the stated criterion, not from the model's understanding of it; give a concrete example naming a specific transcript state satisfying the instruction nominally but not genuinely — a state whose existence requires the mechanism to explain. Any rewrite produced must name the specific string or structural property that distinguishes the two compliance states before claiming the rewrite closes the gap; state exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the specific observable that would be absent if the condition were not satisfied; a rewrite is valid only when it is no longer than the original, or when each added clause closes a named gap that the shorter form leaves open — the gap must be named before the clause is added. All findings and rewrites must use domain-agnostic language — vocabulary that applies across any field where instructions govern model behavior, not only software or technical contexts.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and assessing the strength and limits of those generalizations.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, or design around those paths.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete consequences or implementations, ordered by importance to the audience.",
@@ -374,7 +373,6 @@
         "depends",
         "diagnose",
         "dimension",
-        "distill",
         "domains",
         "drift",
         "effects",
@@ -594,7 +592,6 @@
         "depends": "Trace dependency relationships",
         "diagnose": "Identify likely root causes",
         "dimension": "Explore multiple analytical axes",
-        "distill": "Rewrite escape routes as self-derivation directives",
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
@@ -810,7 +807,6 @@
         "depends": "依",
         "diagnose": "診",
         "dimension": "次",
-        "distill": "蒸",
         "domains": "領",
         "drift": "漂",
         "effects": "効",
@@ -934,7 +930,6 @@
         "depends": "Structural",
         "diagnose": "Diagnostic",
         "dimension": "Comparative",
-        "distill": "Structural",
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
@@ -1151,7 +1146,6 @@
         "depends": "Dependency tracing",
         "diagnose": "Root cause",
         "dimension": "Multiple dimensions",
-        "distill": "Rewrite prompts for genuine reasoning",
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
@@ -3713,29 +3707,6 @@
           ],
           "definition": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact."
         },
-        "distill": {
-          "distinctions": [
-            {
-              "note": "hollow = diagnose escape routes in prompts; distill = rewrite those escape routes as genuine reasoning requirements",
-              "token": "hollow"
-            },
-            {
-              "note": "mint = reconstruct from generative assumptions; distill = rewrite instructions to require visible derivation rather than template-filling",
-              "token": "mint"
-            }
-          ],
-          "heuristics": [
-            "rewrite this prompt to require genuine reasoning",
-            "convert prescribed format to self-derivation questions",
-            "make this instruction impossible to satisfy nominally",
-            "replace fill-in-the-blank with open-ended derivation",
-            "generalize domain-specific vocabulary",
-            "strengthen this definition against pattern-matching",
-            "how would I rewrite this so compliance theater is distinguishable from genuine execution",
-            "convert this template to a reasoning directive"
-          ],
-          "definition": "The response rewrites each place in the subject instruction where a model following it nominally produces a transcript state a reader could not distinguish from genuine compliance by inspecting only the transcript: rewrite so the two states differ by a specific string or structural property present in one and absent in the other — named before claiming the rewrite closes the gap. State exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the specific observable that would be absent if the condition were not satisfied. A rewrite is valid only when it is no longer than the original, or when each added clause closes a named gap that the shorter form leaves open — the gap must be named before the clause is added. Rewrites must use domain-agnostic language — vocabulary that applies across any field where instructions govern model behavior, not only software or technical contexts."
-        },
         "domains": {
           "distinctions": [
             {
@@ -4149,8 +4120,8 @@
               "token": "drift"
             },
             {
-              "note": "hollow = diagnose escape routes in prompts; distill = rewrite escape routes as self-derivation directives",
-              "token": "distill"
+              "note": "hollow = audit and repair escape routes in instructions; fix hollow = rewrite each violating clause to satisfy the root criterion",
+              "token": "hollow"
             }
           ],
           "heuristics": [
@@ -4164,7 +4135,7 @@
             "where does this definition tell you what to produce instead of what to derive",
             "which parts of this instruction can be mimicked without understanding"
           ],
-          "definition": "The response audits the subject instruction for every place where a model following it nominally produces a transcript state a reader could not distinguish from genuine compliance by inspecting only the transcript. For each such place: name the specific text, derive the mechanism of indistinguishability before giving any example, and give a concrete example that names a specific transcript state satisfying the instruction nominally but not genuinely — a state whose existence requires the mechanism to explain. Findings and rewrites must use domain-agnostic language — vocabulary that applies across any field where instructions govern model behavior, not only software or technical contexts."
+          "definition": "The response applies the root criterion: a clause is valid only if it names, within its own text, the observable that distinguishes compliance from non-compliance without requiring the evaluator to assess the model's intent. For each clause in the subject instruction that violates the root criterion: state the root criterion as a separately quotable claim before deriving anything; name the specific text; derive the mechanism of indistinguishability from the stated criterion — the mechanism must follow from the stated criterion, not from the model's understanding of it; give a concrete example naming a specific transcript state satisfying the instruction nominally but not genuinely — a state whose existence requires the mechanism to explain. Any rewrite produced must name the specific string or structural property that distinguishes the two compliance states before claiming the rewrite closes the gap; state exactly what conditions permit the action (allow-list); where a condition gates an action, add a post-condition naming the specific observable that would be absent if the condition were not satisfied; a rewrite is valid only when it is no longer than the original, or when each added clause closes a named gap that the shorter form leaves open — the gap must be named before the clause is added. All findings and rewrites must use domain-agnostic language — vocabulary that applies across any field where instructions govern model behavior, not only software or technical contexts."
         },
         "induce": {
           "distinctions": [
@@ -8050,7 +8021,6 @@
         "depends": "depends",
         "diagnose": "diagnose",
         "dimension": "dimension",
-        "distill": "distill",
         "domains": "domains",
         "drift": "drift",
         "effects": "effects",
@@ -8299,7 +8269,6 @@
         "method=depends": "method-depends",
         "method=diagnose": "method-diagnose",
         "method=dimension": "method-dimension",
-        "method=distill": "method-distill",
         "method=domains": "method-domains",
         "method=drift": "method-drift",
         "method=effects": "method-effects",
@@ -8651,7 +8620,6 @@
       "directional=ong": "directional-ong",
       "directional=rog": "directional-rog",
       "directly": "directly",
-      "distill": "distill",
       "domains": "domains",
       "draw": "draw",
       "drift": "drift",
@@ -8792,7 +8760,6 @@
       "method=depends": "method-depends",
       "method=diagnose": "method-diagnose",
       "method=dimension": "method-dimension",
-      "method=distill": "method-distill",
       "method=domains": "method-domains",
       "method=drift": "method-drift",
       "method=effects": "method-effects",
@@ -10078,11 +10045,11 @@
     }
   ],
   "checksums": {
-    "axes": "61723f26b97c7537e47956a9c1e5ec4c3ea21a6f464a8164cedaca966180c9f5",
+    "axes": "33cb844d54b98ec15bfc1d44f9e2a75ac244e040a29b4ebad1e0f3ddb0b5af0a",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "5781f1739d0ddab73d00cb7b640bc980249bfe09b74dee0bec51b7f1ace4a6d0",
-    "slugs": "4d5bc2f6eddcbca30a8e67fb2c59e087da3ba5564d1e72c7201b111582df5fc7",
+    "slugs": "b0b2678c1d951a44f40f543624812fde003ffc7f14ed985f20c340207c4a9354",
     "patterns": "7a0b98462f5869a672f3f4202373c118704072db33cf82c2281b7052a4e84e61",
     "starter_packs": "f2406034bc08e4034383ccb4d0802511de9a3947cf6c6fb0d2f3f751954efa62",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

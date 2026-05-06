@@ -607,6 +607,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "hollow vocabulary clause must name the observable that distinguishes compliant from non-compliant terms",
         )
 
+    def test_falsify_direct_invocation_observable(self):
+        """falsify's FAIL source clause must name the observable distinguishing direct artifact invocation from a tool call that reads or displays prior execution output (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "directly invokes the artifact's execution",
+            definition,
+            "falsify must name the observable that distinguishes direct invocation from status display",
+        )
+
     def test_hollow_root_criterion_encodes_domain_scope(self):
         """hollow's root criterion sentence must name its domain of application so the domain-agnostic language clause is derivable from the criterion rather than independently asserted (ADR-0235 mint/root/collapse finding)."""
         hollow = self.meta.get("hollow", {})

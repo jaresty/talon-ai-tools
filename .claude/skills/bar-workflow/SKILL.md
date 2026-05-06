@@ -32,7 +32,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load comprehensive reference** via `bar help llm` once per conversation
-3. **Check for a named sequence** — run `bar sequence list` to discover available sequences. If the request matches a named sequence (explicitly or by description), run `bar sequence show <name>` to get steps, mode, and prompt hints. Confirm with the user if the match was implicit. If no named sequence fits, proceed to ad hoc planning (step 4) and apply mode inference (see §Mode Inference below).
+3. **Check for a named sequence** — run `bar sequence list` to discover available sequences. If the request matches a named sequence (explicitly or by description), run `bar sequence show <name>` to get steps, mode, and prompt hints. Confirm with the user if the match was implicit. If no named sequence fits, proceed to ad hoc planning (step 4) and apply mode inference (see §Mode Inference below). **Follow the sequence guidance in `bar help llm` § Named Sequences** — it is the authoritative source for how to select tokens alongside a sequence and when to break out of one mid-run.
 4. **Declare execution mode** before running any commands — one of: `autonomous`, `interactive`, or `cycle`. Show the plan:
    ```
    Sequence: <name> (<N> steps) — mode: <mode>

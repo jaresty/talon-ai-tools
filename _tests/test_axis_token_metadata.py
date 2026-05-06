@@ -587,6 +587,37 @@ class MethodAxisMetadataTests(unittest.TestCase):
         # ADR-0217: ladder rungs are derived from P1-P6, not explicitly stated.
         # This echo check removed - trust derivation, not explicit strings.
 
+    def test_hollow_allowlist_clause_names_governed_action(self):
+        """hollow's allow-list clause must name 'where a clause names an action' so the allow-list is verifiable as governing the correct action (hollow self-audit finding)."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        self.assertIn(
+            "where a clause names an action",
+            definition,
+            "hollow allow-list clause must name the governed action to be verifiable by inspection",
+        )
+
+    def test_hollow_structural_vocabulary_requirement(self):
+        """hollow's vocabulary requirement must name an observable distinguishing structural from domain-specific terms (hollow self-audit finding)."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        self.assertIn(
+            "refer to the structure of instructions",
+            definition,
+            "hollow vocabulary clause must name the observable that distinguishes compliant from non-compliant terms",
+        )
+
+    def test_hollow_root_criterion_encodes_domain_scope(self):
+        """hollow's root criterion sentence must name its domain of application so the domain-agnostic language clause is derivable from the criterion rather than independently asserted (ADR-0235 mint/root/collapse finding)."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        root_criterion_sentence = definition.split(".")[0] if "." in definition else definition
+        self.assertIn(
+            "any domain where instructions govern model behavior",
+            root_criterion_sentence,
+            "hollow root criterion must name its domain of application within the criterion sentence itself",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

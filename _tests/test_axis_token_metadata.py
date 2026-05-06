@@ -607,6 +607,26 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "hollow vocabulary clause must name the observable that distinguishes compliant from non-compliant terms",
         )
 
+    def test_falsify_slower_check_excludes_compiler_artifacts(self):
+        """falsify's slower-check clause must require a named runnable test case producing a named failure message, not 'test or assertion' which admits compiler checks and type annotations (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "produces a named failure message",
+            definition,
+            "falsify slower-check clause must name the observable that excludes compiler artifacts",
+        )
+
+    def test_falsify_self_refuting_closes_entry(self):
+        """falsify's self-refuting description clause must name a structural gate preventing a candidate check from appearing after a self-refuting description (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "no candidate check may be named until a non-self-refuting slower check appears",
+            definition,
+            "falsify self-refuting clause must structurally prevent candidate check from appearing after invalidation",
+        )
+
     def test_falsify_direct_invocation_observable(self):
         """falsify's FAIL source clause must name the observable distinguishing direct artifact invocation from a tool call that reads or displays prior execution output (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})

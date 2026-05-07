@@ -56,7 +56,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 **For bar versions with `bar help llm` support:**
 
 1. **Check for cached reference** - If `bar help llm` was already run in this conversation, reuse it
-2. **Load reference once** - If not cached, run `bar help llm` to load comprehensive reference (~500 lines)
+2. **Load reference once** - If not cached, run `bar help llm` as a standalone Bash command and read its full output before any planning — never pipe it as `--subject` or `--addendum` to another command; piping truncates output and silently drops token definitions
 3. **Token selection strategy:**
    - Consult **"Usage Patterns by Task Type"** section for similar use case examples
    - Reference **"Token Selection Heuristics"** section for scope/method/form guidance

@@ -602,7 +602,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         hollow = self.meta.get("hollow", {})
         definition = hollow.get("definition", "")
         self.assertIn(
-            "refer to the structure of instructions",
+            "meaning does not change when the instruction's subject matter changes",
             definition,
             "hollow vocabulary clause must name the observable that distinguishes compliant from non-compliant terms",
         )

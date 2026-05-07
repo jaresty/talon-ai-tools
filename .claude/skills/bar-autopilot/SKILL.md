@@ -9,6 +9,7 @@ description: Automatically detect and apply bar structuring to responses for bet
 
 **Running `bar build` before answering is not optional.** This skill does not provide suggestions for when bar might help — it requires you to invoke bar for every request.
 
+- **A `bar build` tool result must appear in the transcript above any substantive response — a response that appears before the first `bar build` tool result in the transcript does not satisfy this requirement.**
 - Do NOT answer the user directly, even if you already know the answer.
 - Do NOT skip bar because the request seems simple or the answer feels obvious.
 - Do NOT compose a response before completing steps 1–5 of the High-level Workflow below.
@@ -43,7 +44,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 - **Never hardcode tokens.** Always discover them via `bar help llm` (preferred) or `bar help tokens` (fallback).
 - **Be version-agnostic.** Tokens evolve; discover them dynamically from the current bar version.
 - **Use kebab-case for multi-word tokens.** When tokens contain spaces (e.g., "as kent beck"), convert to kebab-case: "as-kent-beck".
-- **Be transparent about usage.** After using bar, briefly explain which command you used and why it fits the request type.
+- **Be transparent about usage.** After running bar build, state the command used and the reason each token was selected — a response that does not name both the command and the token selection reasons does not satisfy this requirement.
 - **Fallback only on command-not-found.** If bar is unavailable, fall back to normal response and tell the user. A failed bar command is not a reason to skip; retry once with corrections.
 - **Cross-agent compatible.** Must work across all Claude agent types (general-purpose, Explore, Plan, etc.).
 - **Use Bash tool.** Execute bar commands via the Bash tool.
@@ -226,7 +227,7 @@ When `bar build` fails, follow this retry logic:
    - Reorder tokens according to grammar (persona → static → completeness → scope → method → form → channel → directional)
    - Remove incompatible combinations (consult reference § "Composition Rules")
    - Reduce token count if over capacity
-   - Retry the command once with corrections
+   - Retry the command once with the specific token named in the error corrected — a retry that does not change the token named in the error does not satisfy this requirement
 
 3. **Fall back after retry failure** - Only fall back to normal response if:
    - The retry also fails

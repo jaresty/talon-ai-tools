@@ -259,7 +259,7 @@ bar preset show my-decision-pattern
 - **Validate ordering.** Token order from reference: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional
 - **Support overrides.** After first `key=value`, all remaining tokens must be `key=value`.
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "as-kent-beck").
-- **Offer shuffling after baseline.** Don't suggest shuffle until user has built at least one command.
+- **Offer shuffling after baseline.** A shuffle suggestion is permitted only when a prior bar build command result appears above it in the transcript — a shuffle suggestion that appears without a prior bar build result in the transcript does not satisfy this requirement.
 - **"Run the command" means execute + show output.** Execute the bar command and show results.
 
 ## Recommended Conversation Flow

@@ -59,6 +59,7 @@ Reply with a number (or describe what you want) and I'll proceed.
 ## Skill Behavior Rules
 
 - **Do not answer directly before presenting options.** Always present 2-4 choices first.
+- **A response that addresses the original request is permitted only when a user selection appears above it in the transcript — a response addressing the original request without a prior user selection in the transcript does not satisfy this requirement.**
 - **Use AskUserQuestion when available** (Claude agents); otherwise fall back to an inline numbered list (Mode B).
 - **Present options, don't choose.** Let the user decide the approach after seeing the options.
 - **Never hardcode tokens.** Discover via `bar help llm` (preferred) or `bar help tokens` (fallback).
@@ -66,7 +67,7 @@ Reply with a number (or describe what you want) and I'll proceed.
 - **Keep options distinct.** Each option should represent a meaningfully different approach.
 - **Explain trade-offs.** Help the user understand what each option emphasizes.
 - **Be transparent about usage.** After executing the user's choice, explain the bar command used.
-- **Execute chosen option.** After user selects, run the bar command and structure the response.
+- **Execute chosen option.** A `bar build` tool result must appear in the transcript above the response for the chosen option — a response for the chosen option that appears before the bar build result does not satisfy this requirement.
 
 ## Discovery Workflow
 
@@ -178,7 +179,7 @@ Use AskUserQuestion with:
 - Optional: Reference to similar pattern from § "Usage Patterns" if using bar help llm
 
 **If AskUserQuestion is unavailable (Mode B):**
-Write a numbered list in your response with the same information — option name, trade-off description, and the bar command that would be used. End with an explicit prompt asking the user to reply with their choice.
+Write a numbered list in your response with the same information — option name, trade-off description, and the bar command that would be used. After emitting the numbered list and selection prompt, produce no further content in the same response — additional content after the selection prompt in the same response does not satisfy this requirement.
 
 When user selects, build and execute the corresponding bar command with discovered tokens.
 
@@ -296,7 +297,7 @@ When `bar build` fails (either during option generation or execution), follow th
    - Reorder tokens according to grammar (persona → static → completeness → scope → method → form → channel → directional)
    - Remove incompatible combinations (consult reference § "Composition Rules")
    - Reduce token count if over capacity
-   - Retry the command once with corrections
+   - Retry the command once with the specific token named in the error corrected — a retry that does not change the token named in the error does not satisfy this requirement
 
 3. **Handle errors appropriately** - Depending on when the error occurs:
    - If error during option generation: Fix the token issue and retry; do not present options without valid bar commands

@@ -17,8 +17,9 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "state and produced a visible signal. Gate provides the blocking structure; falsify "
             "specifies the evidentiary quality that satisfies it. Together they produce the "
             "discipline previously called 'TDD enforcement': no implementation step may begin "
-            "until every governing assertion has been observed to fail against the specific "
-            "absent behavior it governs."
+            "until a tool-executed FAIL result appears in the transcript whose output names the "
+            "assertion text that fires on the absent behavior — 'observed to fail' is satisfied "
+            "only by such a result; a FAIL result that does not name the assertion text does not satisfy this requirement."
         ),
     },
     {
@@ -44,10 +45,9 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "prose": (
             "falsify + atomic: the governing output is the artifact-fire output (failure message, "
             "visible signal) produced by running the falsifiable artifact against the minimal wrong "
-            "state. When no artifact fire exists for the current behavior, the scope of the current "
-            "step is undefined — the artifact has not yet been run against the absent behavior. "
-            "Artifact absence is an explicit open gap that blocks implementation; the required "
-            "action is to produce the artifact fire, not to proceed without one."
+            "state. When no artifact-fire result exists in the transcript for the current behavior, "
+            "the only permitted action is to produce the artifact-fire — no file-modifying tool call "
+            "is permitted until a tool-executed artifact-fire result appears above it in the transcript."
         ),
     },
     {
@@ -70,15 +70,14 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "atomic+ground",
         "tokens": ["atomic", "ground"],
         "prose": (
-            "atomic + ground: exhausting the governing artifact's failures is necessary but "
-            "not sufficient for completion. When the artifact reports no failures, ground's "
-            "completion check must be produced as a completed block before any done declaration "
-            "opens — the completion check block must end before the done claim appears. "
-            "When ground/gate/falsify/atomic/chain are co-present, each token operates at a "
-            "different level: ground governs the task process as a whole; gate governs whether "
-            "to proceed; falsify governs the evidentiary quality required to proceed; atomic "
-            "governs the scope of each step; chain governs continuity between steps. They do "
-            "not conflict — violations at one level are independent of the others."
+            "atomic + ground: when the artifact's run result contains no remaining failures, "
+            "that result is a necessary precondition for the completion check — the completion "
+            "check is not permitted to open until a tool-executed run result showing zero failures "
+            "appears in the transcript above it; the completion check block must end before any "
+            "done declaration opens. Each of ground, gate, falsify, atomic, and chain applies its "
+            "requirements regardless of whether any other co-present token's requirements have "
+            "been met — satisfying gate does not exempt falsify; satisfying falsify does not exempt "
+            "atomic; satisfying atomic does not exempt ground."
         ),
     },
     {

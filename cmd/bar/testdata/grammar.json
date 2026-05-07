@@ -10014,7 +10014,7 @@
         "atomic",
         "ground"
       ],
-      "prose": "atomic + ground: when the artifact's run result contains no remaining failures, that result is a necessary precondition for the completion check — the completion check is not permitted to open until a tool-executed run result showing zero failures appears in the transcript above it; the completion check block must end before any done declaration opens. Each of ground, gate, falsify, atomic, and chain applies its requirements regardless of whether any other co-present token's requirements have been met — satisfying gate does not exempt falsify; satisfying falsify does not exempt atomic; satisfying atomic does not exempt ground."
+      "prose": "atomic + ground: when the artifact's run result contains no remaining failures, that result is a necessary precondition for the completion check — the completion check is not permitted to open until a tool-executed run result showing zero failures appears in the transcript above it; the completion check block must end before any done declaration opens. Satisfying atomic's requirements does not exempt ground's requirements; satisfying ground's requirements does not exempt atomic's requirements — each applies independently."
     },
     {
       "name": "calc+chain",
@@ -10053,6 +10053,6 @@
     "patterns": "7a0b98462f5869a672f3f4202373c118704072db33cf82c2281b7052a4e84e61",
     "starter_packs": "f2406034bc08e4034383ccb4d0802511de9a3947cf6c6fb0d2f3f751954efa62",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "b80940d8f57661114051503940a54abfe4660162e37beb2e8733051305cd519d"
+    "compositions": "2528089e95b2757ced3c96356ab3b1cc2695cf464593231382b1299b10723169"
   }
 }

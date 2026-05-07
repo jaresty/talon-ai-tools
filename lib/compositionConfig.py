@@ -74,10 +74,9 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "that result is a necessary precondition for the completion check — the completion "
             "check is not permitted to open until a tool-executed run result showing zero failures "
             "appears in the transcript above it; the completion check block must end before any "
-            "done declaration opens. Each of ground, gate, falsify, atomic, and chain applies its "
-            "requirements regardless of whether any other co-present token's requirements have "
-            "been met — satisfying gate does not exempt falsify; satisfying falsify does not exempt "
-            "atomic; satisfying atomic does not exempt ground."
+            "done declaration opens. Satisfying atomic's requirements does not exempt ground's "
+            "requirements; satisfying ground's requirements does not exempt atomic's requirements — "
+            "each applies independently."
         ),
     },
     {

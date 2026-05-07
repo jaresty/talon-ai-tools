@@ -257,14 +257,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "appear in an execution result above the first entry, not introduced here and not from a source that produces output by retrieval rather than by execution; the candidate change "
         "is permitted only to address the specific error or failing assertion visible in the governing failure signal — a change that resolves an error or assertion not present in that "
         "signal is not permitted regardless of whether it appears only in reasoning not grounded in a prior execution result in the transcript; an assertion not yet observed to fail "
-        "has not been shown to govern, and a change that fixes it cannot be derived from the current governing artifact; the smaller change is insufficient only if it cannot resolve "
-        "the specific error or assertion in the governing failure signal — if the smaller change can resolve that error, it is sufficient for this step and must become the candidate; "
-        "future failures not present in the governing failure signal may not be cited to demonstrate insufficiency; (3) line manifest listing every line to be added, each entry quoting "
-        "the specific text in the governing failure signal that names the behavior the line implements. Immediately before each tool call that modifies a file, produce: 'Scope: "
-        "<verbatim quoted failure signal> | Candidate: <named candidate change> | Smaller: <named smaller change whose insufficiency is demonstrated above> | Lines: <count of lines in "
-        "manifest>' — if this line does not appear immediately above the tool call that modifies a file in the transcript, the edit is not permitted. After the edit, produce a "
-        "post-edit run result by tool call, then verify: (a) the governed failure is absent from the new result; (b) no new failures appear whose governing artifact produced no failure "
-        "before the edit — any such failure requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
+        "has not been shown to govern, and a change that fixes it cannot be derived from the current governing artifact; an insufficiency claim is permitted only when it quotes "
+        "specific text from the governing failure signal that the smaller change leaves unresolved — no other basis for an insufficiency claim is valid; if the smaller change resolves "
+        "all quoted text in the governing failure signal, it is sufficient and must become the candidate; (3) line manifest listing every line to be added, each entry quoting the "
+        "specific text in the governing failure signal that names the behavior the line implements. Immediately before each tool call that modifies a file, produce: 'Scope: <verbatim "
+        "quoted failure signal> | Candidate: <named candidate change> | Smaller: <named smaller change whose insufficiency is demonstrated above> | Lines: <count of lines in manifest>' "
+        "— if this line does not appear immediately above the tool call that modifies a file in the transcript, the edit is not permitted. After the edit, produce a post-edit run "
+        "result by tool call, then verify: (a) the governed failure is absent from the new result; (b) no new failures appear whose governing artifact produced no failure before the "
+        "edit — any such failure requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

@@ -607,6 +607,26 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "hollow vocabulary clause must name the observable that distinguishes compliant from non-compliant terms",
         )
 
+    def test_atomic_candidate_scoped_to_observed_failure(self):
+        """atomic's candidate change must be scoped to the specific error or assertion in the governing FAIL — changes that fix unobserved assertions are not permitted (hollow audit finding)."""
+        atomic = self.meta.get("atomic", {})
+        definition = atomic.get("definition", "")
+        self.assertIn(
+            "an assertion not yet observed to fail has not been shown to govern",
+            definition,
+            "atomic must explicitly prohibit changes that fix assertions not present in the governing FAIL result",
+        )
+
+    def test_atomic_smaller_change_insufficient_against_current_fail(self):
+        """atomic must require that the smaller change's insufficiency be demonstrated against the current FAIL only — future failures may not be cited (hollow audit finding)."""
+        atomic = self.meta.get("atomic", {})
+        definition = atomic.get("definition", "")
+        self.assertIn(
+            "future failures not present in the governing failure signal may not be cited to demonstrate insufficiency",
+            definition,
+            "atomic must block citing future failures to justify a larger candidate change",
+        )
+
     def test_falsify_empty_transcript_gap_closed(self):
         """falsify must block file modifications when no execution result exists in the transcript — the 'would change the outcome of any execution result' condition is vacuously ungoverned when the result set is empty (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})

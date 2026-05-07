@@ -607,6 +607,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "hollow vocabulary clause must name the observable that distinguishes compliant from non-compliant terms",
         )
 
+    def test_atomic_candidate_limited_to_first_failure(self):
+        """atomic must explicitly limit the candidate to the first failure only — other failures in the same result may not expand the candidate (hollow audit finding)."""
+        atomic = self.meta.get("atomic", {})
+        definition = atomic.get("definition", "")
+        self.assertIn(
+            "other failures visible in the same result are not in scope for this step",
+            definition,
+            "atomic must name the observable that limits the candidate to the first failure only",
+        )
+
     def test_atomic_candidate_scoped_to_observed_failure(self):
         """atomic's candidate change must be scoped to the specific error or assertion in the governing FAIL — changes that fix unobserved assertions are not permitted (hollow audit finding)."""
         atomic = self.meta.get("atomic", {})

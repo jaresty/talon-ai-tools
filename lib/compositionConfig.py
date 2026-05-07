@@ -43,11 +43,17 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "falsify+atomic",
         "tokens": ["falsify", "atomic"],
         "prose": (
-            "falsify + atomic: the governing output is the artifact-fire output (failure message, "
-            "visible signal) produced by running the falsifiable artifact against the minimal wrong "
-            "state. When no artifact-fire result exists in the transcript for the current behavior, "
-            "the only permitted action is to produce the artifact-fire — no file-modifying tool call "
-            "is permitted until a tool-executed artifact-fire result appears above it in the transcript."
+            "falsify + atomic: the governing output is the artifact-fire output produced by running "
+            "the falsifiable artifact against the minimal wrong state. When no artifact-fire result "
+            "exists in the transcript for the current behavior, the only permitted action is to "
+            "produce the artifact-fire — no file-modifying tool call is permitted until a "
+            "tool-executed artifact-fire result appears above it in the transcript. The quote "
+            "required in atomic's derivation block entry (2) must name a behavioral assertion — a "
+            "test name or assertion message that fires on the governed behavior — from a "
+            "tool-executed result; a quote from a source that produces output by retrieval rather "
+            "than execution does not satisfy this requirement; a quote naming only a module-level "
+            "or import-level error does not satisfy this requirement because the smaller change may "
+            "resolve that error while leaving behavioral assertions failing only by inference."
         ),
     },
     {

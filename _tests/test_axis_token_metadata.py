@@ -622,7 +622,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "an assertion not yet observed to fail has not been shown to govern",
+            "a failure not yet observed in a prior tool-executed run result has not been shown to govern",
             definition,
             "atomic must explicitly prohibit changes that fix assertions not present in the governing FAIL result",
         )

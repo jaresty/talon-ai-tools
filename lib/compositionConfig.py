@@ -48,12 +48,16 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "exists in the transcript for the current behavior, the only permitted action is to "
             "produce the artifact-fire — no file-modifying tool call is permitted until a "
             "tool-executed artifact-fire result appears above it in the transcript. The quote "
-            "required in atomic's derivation block entry (2) must name a behavioral assertion — a "
-            "test name or assertion message that fires on the governed behavior — from a "
-            "tool-executed result; a quote from a source that produces output by retrieval rather "
-            "than execution does not satisfy this requirement; a quote naming only a module-level "
-            "or import-level error does not satisfy this requirement because the smaller change may "
-            "resolve that error while leaving behavioral assertions failing only by inference."
+            "required in atomic's derivation block entry (2) must be a string that (a) appears in "
+            "the tool-executed run result when the governed behavior is absent and (b) is absent "
+            "from the run result when the governed behavior is present — the permitted sources are: "
+            "a named test assertion message, a named test case identifier, or a named assertion "
+            "string from the run output that directly names the governed behavior; a string that "
+            "passes when the symbol is exported as an empty stub (e.g. typeof checks, export "
+            "presence checks) does not satisfy requirement (b); a module-level or import-level "
+            "error string does not satisfy requirement (a) because it names a missing module, not "
+            "the governed behavior; a quote from a source that produces output by retrieval rather "
+            "than execution does not satisfy this requirement regardless of its content."
         ),
     },
     {

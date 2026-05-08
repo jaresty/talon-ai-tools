@@ -339,13 +339,17 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "quote the specific output from a prior run result showing the insufficient check passes when the behavior is absent — the quoted output must be from a prior execution of the "
         "named insufficient check specifically, and the quoted text must contain the check's name, command, or a test identifier from it so the source is verifiable by inspection; a "
         "quote whose text does not identify the named check is not valid — this entry is not complete until that quote appears; if no such prior result exists above this line, the "
-        "candidate is not derived and a different check must be chosen. Then run the candidate check. The FAIL must be produced by running an artifact that (a) is written to assert "
-        "that specific behavior and (b) executes when the same event triggers evaluation of the artifact being changed — name the triggering event that causes both to execute; if no "
-        "such shared trigger can be named, the artifact does not govern this change. A FAIL produced from a state with additional absences beyond the named behavior is not valid. "
-        "Before the tool call, produce a minimal-state declaration naming: the specific behavior being removed, and at least one other behavior that is present and unchanged in the "
-        "test state — the minimal-state declaration is not complete until both items appear in the transcript above the tool call; if a tool-executed FAIL result shows the same "
-        "failure with less than the named behavior removed, the named behavior is not the sole governed cause and must be rederived. Immediately before each implementation tool call, "
-        "produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL exists above this line in the transcript, the tool call is not permitted.",
+        "candidate is not derived and a different check must be chosen. Then run the candidate check. The FAIL must be produced by running an artifact that (a) contains an assertion "
+        "whose output string appears in the run result when the behavior is absent and is absent from the run result when the behavior is present — a check that produces no failure "
+        "output when run against an empty stub exporting the correct symbol does not satisfy this requirement; (b) executes when the same triggering event causes evaluation of the "
+        "artifact being changed — name the triggering event, then quote the specific string from a prior tool-executed result showing both the artifact and the changed file were "
+        "invoked by that event; if no such quoted string exists above this line, the shared trigger is not established and the artifact does not govern this change. A FAIL is valid "
+        "only when a prior tool-executed result in the transcript shows all behaviors other than the named behavior passing — if no such prior result exists, the FAIL is not valid; a "
+        "module-level or import-level error is not valid as a governing FAIL because it does not show any behavioral assertion present and passing. Before the tool call, produce a "
+        "minimal-state declaration naming: the specific behavior being removed, and at least one other behavior that is present and unchanged in the test state — the minimal-state "
+        "declaration is not complete until both items appear in the transcript above the tool call; if a tool-executed FAIL result shows the same failure with less than the named "
+        "behavior removed, the named behavior is not the sole governed cause and must be rederived. Immediately before each implementation tool call, produce: 'Governing artifact: "
+        "<verbatim FAIL output>' — if no such FAIL exists above this line in the transcript, the tool call is not permitted.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

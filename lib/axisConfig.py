@@ -357,7 +357,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "behavior that is present and unchanged in the test state — the minimal-state declaration is not complete until both items appear in the transcript above the tool call; if a "
         "tool-executed FAIL result shows the same failure with less than the named behavior removed, the named behavior is not the sole governed cause and must be rederived. "
         "Immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL exists above this line in the transcript, the tool "
-        "call is not permitted.",
+        "call is not permitted. Exception — unreachable dead code: this constraint does not apply when the code being modified is statically unreachable — defined as: (a) a static "
+        "analysis tool or compiler flags the specific code path as unreachable in a tool-executed result above this line, or (b) a tool-executed run of the full test suite with the "
+        "code removed produces an identical result to a run with it present; both conditions are verifiable by inspection of tool results; a code path is not unreachable merely "
+        "because no current test covers it — reachability is a structural property of the code, not a property of the test suite.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

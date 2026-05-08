@@ -632,9 +632,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "an insufficiency claim is permitted only when it quotes specific text from the governing failure signal that the smaller change leaves unresolved",
+            "an insufficiency claim is not permitted until a tool-executed result showing the smaller change appears above it in the transcript",
             definition,
-            "atomic must require insufficiency claims to quote text from the governing failure signal",
+            "atomic must require a tool-executed run of the smaller change before an insufficiency claim is permitted",
         )
 
     def test_falsify_empty_transcript_gap_closed(self):

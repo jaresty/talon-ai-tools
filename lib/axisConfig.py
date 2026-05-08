@@ -256,13 +256,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "the smaller change would resolve all quoted text in the governing failure signal, it is sufficient and must become the candidate; a candidate that is larger than the smallest "
         "change that resolves the quoted failure text is not permitted regardless of what else it also resolves; a failure not yet observed in a prior tool-executed run result has not "
         "been shown to govern, and a change that fixes it cannot be derived from the current governing artifact; an insufficiency claim is permitted only when it quotes specific text "
-        "from the governing failure signal that the smaller change leaves unresolved — no other basis for an insufficiency claim is valid; (3) line manifest listing every line to be "
-        "added, each entry quoting the specific text in the governing failure signal that names the behavior the line implements. Immediately before each tool call that modifies a "
-        "file, produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Smaller: <named smaller change whose insufficiency is demonstrated above> | "
-        "Lines: <count of lines in manifest>' — if this line does not appear immediately above the tool call that modifies a file in the transcript, the edit is not permitted. After "
-        "the edit, produce a post-edit run result by tool call, then verify: (a) the assertion text from the scope declaration is absent from the new run result; (b) no assertion text "
-        "appears in the new run result that was absent from all tool-executed run results appearing above this edit in the transcript — any such new assertion text requires revert. An "
-        "edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
+        "from the governing failure signal that the smaller change leaves unresolved — no other basis for an insufficiency claim is valid; an insufficiency argument that names or "
+        "references any failure string other than the governing failure signal text does not satisfy this requirement — the insufficiency must be derivable from the governing failure "
+        "signal text alone; (3) line manifest listing every line to be added, each entry quoting the specific text in the governing failure signal that names the behavior the line "
+        "implements. Immediately before each tool call that modifies a file, produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Smaller: <named "
+        "smaller change whose insufficiency is demonstrated above> | Lines: <count of lines in manifest>' — if this line does not appear immediately above the tool call that modifies a "
+        "file in the transcript, the edit is not permitted. After the edit, produce a post-edit run result by tool call, then verify: (a) the assertion text from the scope declaration "
+        "is absent from the new run result; (b) no assertion text appears in the new run result that was absent from all tool-executed run results appearing above this edit in the "
+        "transcript — any such new assertion text requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the acceptable equilibrium state of a system — the balance point between opposing forces — and specifies tolerances or conditions under which balance "

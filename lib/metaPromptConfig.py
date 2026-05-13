@@ -29,6 +29,10 @@ PROMPT_REFERENCE_KEY: dict = {
         "Derive the combined stance before producing any output."
     ),
     "constraints_axes": {
+        "topology": (
+            "Epistemic observer framing; governs how much reasoning state is externalized "
+            "and for whom. Applied before completeness and method."
+        ),
         "completeness": (
             "Coverage depth within scope; does not expand scope."
         ),
@@ -74,6 +78,7 @@ _SECTION_KANJI = {
     "subject":     "題材",
 }
 _AXIS_KANJI = {
+    "topology":     "位相",
     "scope":        "範囲",
     "completeness": "完了度",
     "method":       "方法",
@@ -84,6 +89,18 @@ _AXIS_KANJI = {
 
 # Full bullet content for each constraints axis, used only in the Talon flat-string path.
 _AXIS_FULL_TEXT = {
+    "topology": (
+        "The topology token sets the epistemic observer framing for the response — "
+        "it governs how much reasoning state is externalized and for whom. "
+        "solo: optimize for synthesis efficiency; externalize reasoning only when the derivation requires it. "
+        "witness: surface assumptions before relying on them; name the causal basis at each transition. "
+        "audit: make each claim locally defensible without relying on later conclusions; "
+        "name evidence before proceeding at each reasoning transition. "
+        "relay: externalize state sufficient for continuation — schemas, invariants, terminology — "
+        "so a reader without prior context can reconstruct the reasoning state at any point. "
+        "blind: reconstruct key assumptions and constraints explicitly before relying on them; "
+        "assumption blocks appear before the conclusions that depend on them."
+    ),
     "scope": (
         "The scope indicates which dimension of understanding to privilege when responding. "
         "It frames *what kind of understanding matters most* for this prompt. "

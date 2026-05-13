@@ -750,3 +750,21 @@ func TestTopologyAxisInPartnerAxes(t *testing.T) {
 		t.Error("topology axis missing from grammar.Axes.RoutingConcept — AXIS_KEY_TO_ROUTING_CONCEPT not exported")
 	}
 }
+
+// TestTopologyTokenInUsagePatterns specifies that at least one usage pattern in the
+// grammar includes a topology token, so the LLM can see how topology combines with
+// other axes. ADR-0236.
+func TestTopologyTokenInUsagePatterns(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	topologyTokens := map[string]bool{"solo": true, "witness": true, "audit": true, "relay": true, "blind": true}
+	for _, pattern := range grammar.Patterns {
+		for _, tokens := range pattern.Tokens {
+			for _, token := range tokens {
+				if topologyTokens[token] {
+					return // found one — test passes
+				}
+			}
+		}
+	}
+	t.Error("no usage pattern includes a topology token (solo/witness/audit/relay/blind) — add one to USAGE_PATTERNS in axisConfig.py")
+}

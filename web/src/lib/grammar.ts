@@ -205,7 +205,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 		}));
 }
 
-export const AXES = ['completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+export const AXES = ['topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
 /** Convert a human-readable persona value to a bar slug ("as designer" → "as-designer"). */
 export function toPersonaSlug(s: string): string {

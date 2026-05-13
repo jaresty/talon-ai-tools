@@ -73,6 +73,8 @@ type buildState struct {
 	static         string
 	staticExplicit bool
 
+	topology string
+
 	completeness         string
 	completenessExplicit bool
 
@@ -288,6 +290,13 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 			s.staticExplicit = true
 			return nil
 		},
+		SetTopology: func(value string) error {
+			if s.topology != "" {
+				return s.errorf(errorConflict, "topology accepts a single token")
+			}
+			s.topology = value
+			return nil
+		},
 		SetCompleteness: func(value string) error {
 			s.completeness = value
 			s.completenessExplicit = true
@@ -327,6 +336,11 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 
 func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {
 	switch axis {
+	case "topology":
+		if s.topology != "" {
+			return s.errorf(errorConflict, "topology accepts a single token")
+		}
+		s.topology = token
 	case "completeness":
 		if s.completenessExplicit {
 			return s.errorf(errorConflict, "multiple completeness tokens provided")
@@ -830,6 +844,9 @@ func (s *buildState) buildHydratedConstraints() []HydratedPromptlet {
 		}
 	}
 
+	if s.topology != "" {
+		add("topology", []string{s.topology})
+	}
 	if s.completeness != "" {
 		add("completeness", []string{s.completeness})
 	}

@@ -128,6 +128,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
     static            Show only tasks (slug + canonical hints)
     axes              Show all contract axes (slug + canonical hints)
+    topology          Show only topology axis tokens
     completeness      Show only completeness axis tokens
     scope             Show only scope axis tokens
     method            Show only method axis tokens
@@ -379,7 +380,7 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 
 	axisFilter := opts.Axis
 	if axisFilter != "" && !validLookupAxes[axisFilter] {
-		writeError(stderr, fmt.Sprintf("unknown axis %q; valid axes: task, completeness, scope, method, form, channel, directional, voice, audience, tone, intent, presets", axisFilter))
+		writeError(stderr, fmt.Sprintf("unknown axis %q; valid axes: task, topology, completeness, scope, method, form, channel, directional, voice, audience, tone, intent, presets", axisFilter))
 		return 1
 	}
 
@@ -1140,7 +1141,7 @@ func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
 			filters["task"] = true
 		case "axes":
 			filters["axes"] = true
-		case "completeness", "scope", "method", "form", "channel", "directional":
+		case "topology", "completeness", "scope", "method", "form", "channel", "directional":
 			filters["axis:"+section] = true
 		case "persona":
 			filters["persona-presets"] = true
@@ -1247,7 +1248,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool, pl
 
 	if shouldShow("axes") || hasAxisFilters {
 		// Use canonical ordering from tui_tokens.go
-		orderedAxes := []string{"completeness", "scope", "method", "form", "channel", "directional"}
+		orderedAxes := []string{"topology", "completeness", "scope", "method", "form", "channel", "directional"}
 
 		// Add any additional axes from grammar that aren't in the canonical list
 		seenAxes := make(map[string]bool)

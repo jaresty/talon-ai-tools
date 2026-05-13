@@ -419,3 +419,54 @@ func TestRunPresetUseJSON(t *testing.T) {
 		t.Fatalf("expected tokens in JSON output, got %#v", payload.Tokens)
 	}
 }
+
+// TestTopologyInHelpTokensSection specifies that "bar help tokens topology"
+// succeeds and renders topology token descriptions. ADR-0236.
+func TestTopologyInHelpTokensSection(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"help", "tokens", "topology"}, strings.NewReader(""), stdout, stderr)
+	if exitCode != 0 {
+		t.Fatalf("bar help tokens topology exited %d, stderr: %s", exitCode, stderr.String())
+	}
+	output := stdout.String()
+	for _, token := range []string{"solo", "witness", "audit", "relay", "blind"} {
+		if !strings.Contains(output, token) {
+			t.Errorf("bar help tokens topology output missing token %q", token)
+		}
+	}
+}
+
+// TestTopologyInLookupAxis specifies that "bar lookup --axis topology" accepts
+// the topology axis without error. ADR-0236.
+func TestTopologyInLookupAxis(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"lookup", "handoff", "--axis", "topology"}, strings.NewReader(""), stdout, stderr)
+	if exitCode != 0 {
+		t.Fatalf("bar lookup --axis topology exited %d, stderr: %s", exitCode, stderr.String())
+	}
+}
+
+// TestTopologyTokensInHelpTokensAxesSection specifies that "bar help tokens axes"
+// renders topology tokens in canonical order (before completeness). ADR-0236.
+func TestTopologyTokensInHelpTokensAxesSection(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"help", "tokens", "axes"}, strings.NewReader(""), stdout, stderr)
+	if exitCode != 0 {
+		t.Fatalf("bar help tokens axes exited %d, stderr: %s", exitCode, stderr.String())
+	}
+	output := stdout.String()
+	topologyIdx := strings.Index(output, "solo")
+	completenessIdx := strings.Index(output, "full")
+	if topologyIdx < 0 {
+		t.Error("topology token 'solo' missing from bar help tokens axes output")
+	}
+	if completenessIdx < 0 {
+		t.Error("completeness token 'full' missing from bar help tokens axes output")
+	}
+	if topologyIdx > 0 && completenessIdx > 0 && topologyIdx > completenessIdx {
+		t.Error("topology tokens must appear before completeness tokens in bar help tokens axes output")
+	}
+}

@@ -599,3 +599,66 @@ func TestHarnessStagesRemainingDecrements(t *testing.T) {
 		t.Errorf("expected StagesRemaining to decrease after select: initial=%d after=%d", initial, after)
 	}
 }
+
+// TestTopologyStageAppearsInTUI specifies that when a topology category is
+// provided, the harness traverses a topology stage and includes it in
+// StageStatuses. ADR-0236.
+func TestTopologyStageAppearsInTUI(t *testing.T) {
+	cats := []TokenCategory{
+		{
+			Key:           "task",
+			Label:         "Task",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "show", Slug: "show", Label: "Show", Description: "Explain for audience"},
+			},
+		},
+		{
+			Key:           "topology",
+			Label:         "Topology",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "solo", Slug: "solo", Label: "Solo", Description: "Unobserved reasoning"},
+				{Value: "relay", Slug: "relay", Label: "Relay", Description: "Handoff-ready reasoning"},
+			},
+		},
+		{
+			Key:           "completeness",
+			Label:         "Completeness",
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "full", Slug: "full", Label: "Full", Description: "Thorough answer"},
+			},
+		},
+	}
+	h := NewHarness(Options{TokenCategories: cats, InitialWidth: 80, InitialHeight: 24})
+	s := h.Observe()
+
+	if _, ok := s.StageStatuses["topology"]; !ok {
+		t.Fatal("topology stage missing from StageStatuses — not registered in stageTraversalOrder")
+	}
+
+	// After selecting a task, the TUI must advance to topology (before completeness).
+	if err := h.Act(HarnessAction{Type: "select", Target: "show"}); err != nil {
+		t.Fatalf("Act(select show): %v", err)
+	}
+	after := h.Observe()
+	if after.Stage != "topology" {
+		t.Errorf("expected next stage to be 'topology' after task selection, got %q", after.Stage)
+	}
+}
+
+// TestTopologyDisplayNameInTUI specifies that the topology stage has a
+// human-readable display name. ADR-0236.
+func TestTopologyDisplayNameInTUI(t *testing.T) {
+	name := stageDisplayName("topology")
+	if name == "" || name == "topology" {
+		t.Errorf("stageDisplayName('topology') must return a human label, got %q", name)
+	}
+	if !strings.EqualFold(name, "topology") {
+		// Allow any capitalisation of "Topology"
+		if strings.ToLower(name) != "topology" {
+			t.Errorf("stageDisplayName('topology') expected 'Topology', got %q", name)
+		}
+	}
+}

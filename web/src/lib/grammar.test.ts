@@ -12,6 +12,7 @@ import {
 	toAxisTokenSlug,
 	getReverseChipState,
 	getChipStateWithReason,
+	AXES,
 	type Grammar
 } from './grammar.js';
 import { findConflicts } from './incompatibilities.js';
@@ -504,6 +505,15 @@ describe('findConflicts — cross_axis_composition cautionary pairs', () => {
 			form: ['faq']
 		});
 		expect(conflicts).toHaveLength(0);
+	});
+});
+
+describe('AXES — ADR-0236 topology axis', () => {
+	it('includes topology before completeness', () => {
+		expect(AXES).toContain('topology');
+		const topologyIdx = AXES.indexOf('topology');
+		const completenessIdx = AXES.indexOf('completeness');
+		expect(topologyIdx).toBeLessThan(completenessIdx);
 	});
 });
 

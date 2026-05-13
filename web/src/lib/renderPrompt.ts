@@ -7,7 +7,7 @@ import type { Grammar } from './grammar.js';
 
 const SUBJECT_PLACEHOLDER = '(none provided)';
 
-const CONSTRAINT_AXES = ['completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+const CONSTRAINT_AXES = ['topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
 function axisHeading(axis: string): string {
 	if (!axis) return '';

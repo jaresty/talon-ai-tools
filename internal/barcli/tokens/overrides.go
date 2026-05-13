@@ -14,7 +14,8 @@ type OverrideContext struct {
 	Errorf          func(kind, format string, args ...any) error
 	UnknownValue    func(axis, value string) error
 	ApplyPersona    func(axis, value string, override bool) error
-	SetTask       func(value string) error
+	SetTask         func(value string) error
+	SetTopology     func(value string) error
 	SetCompleteness func(value string) error
 	SetScope        func(values []string) error
 	SetMethod       func(values []string) error
@@ -47,6 +48,15 @@ func ApplyOverride(ctx OverrideContext, token string) error {
 			return err
 		}
 		ctx.AddRecognized("task", value)
+		return nil
+	case "topology":
+		if !ctx.IsAxisToken("topology", value) {
+			return ctx.UnknownValue(key, value)
+		}
+		if err := ctx.SetTopology(value); err != nil {
+			return err
+		}
+		ctx.AddRecognized("topology", value)
 		return nil
 	case "completeness":
 		if !ctx.IsAxisToken("completeness", value) {

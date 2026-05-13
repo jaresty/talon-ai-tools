@@ -2,6 +2,29 @@ import { describe, it, expect } from 'vitest';
 import { renderPrompt } from './renderPrompt.js';
 import type { Grammar } from './grammar.js';
 
+// ADR-0236: CONSTRAINT_AXES in renderPrompt.ts must include topology so
+// topology token descriptions appear in the rendered CONSTRAINTS section.
+describe('renderPrompt — ADR-0236 topology axis', () => {
+	it('includes topology token description in CONSTRAINTS when topology is active', () => {
+		const grammarWithTopology: Grammar = {
+			...grammar,
+			axes: {
+				...grammar.axes,
+				definitions: {
+					...grammar.axes.definitions,
+					topology: { solo: 'Unobserved synthesis-optimized reasoning.' },
+				},
+				kanji: {
+					...grammar.axes.kanji,
+					topology: { solo: '独' },
+				},
+			},
+		};
+		const result = renderPrompt(grammarWithTopology, { topology: ['solo'] }, 'show', '');
+		expect(result).toContain('solo');
+	});
+});
+
 const grammar: Grammar = {
 	axes: {
 		definitions: {

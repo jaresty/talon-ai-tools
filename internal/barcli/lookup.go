@@ -118,7 +118,8 @@ func labelForToken(g *Grammar, axis, token string) string {
 
 // validLookupAxes lists all axis names that can be used as --axis filters.
 var validLookupAxes = map[string]bool{
-	"task":        true,
+	"task":         true,
+	"topology":     true,
 	"completeness": true,
 	"scope":       true,
 	"method":      true,

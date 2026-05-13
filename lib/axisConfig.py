@@ -2392,6 +2392,13 @@ USAGE_PATTERNS: list[dict] = [
             "task": ["plan"],
         },
     },
+    {
+        "title": "Handoff / Continuation",
+        "command": 'bar build make relay full --subject "..."',
+        "example": 'bar build make relay full --subject "Design the API contract for the payment service"',
+        "desc": "Use when producing an artifact another person or agent will continue from without prior context",
+        "tokens": {"completeness": ["full"], "task": ["make"], "topology": ["relay"]},
+    },
 ]
 
 

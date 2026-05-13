@@ -88,6 +88,7 @@ var stageOrder = []string{
 	"audience",       // Target audience (optional) - Path 2 continued
 	"tone",           // Emotional tone (optional) - Path 2 continued
 	"task",           // Task - the main task type
+	"topology",       // Epistemic observer framing
 	"completeness",   // How thorough
 	"scope",          // How focused
 	"method",         // How to approach
@@ -102,6 +103,7 @@ var stageOrder = []string{
 // Traversal order does not affect prompt output order (stageOrder governs that).
 var stageTraversalOrder = []string{
 	"task",           // Task - the main task type (start here)
+	"topology",       // Epistemic observer framing
 	"completeness",   // How thorough
 	"scope",          // How focused
 	"method",         // How to approach
@@ -130,6 +132,8 @@ func stageDisplayName(stage string) string {
 		return "Tone"
 	case "task":
 		return "Task"
+	case "topology":
+		return "Topology"
 	case "completeness":
 		return "Completeness"
 	case "scope":

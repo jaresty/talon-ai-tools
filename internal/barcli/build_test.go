@@ -219,3 +219,47 @@ func TestGrammarPatternsLoaded(t *testing.T) {
 		t.Fatalf("expected at least 32 patterns, got %d", len(grammar.Patterns))
 	}
 }
+
+// TestTopologyTokenAccepted specifies that bar build accepts topology tokens
+// (solo/witness/audit/relay/blind) as shorthand and produces output containing
+// the topology constraint section. ADR-0236.
+func TestTopologyTokenAccepted(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	for _, token := range []string{"solo", "witness", "audit", "relay", "blind"} {
+		t.Run(token, func(t *testing.T) {
+			state := newBuildState(grammar)
+			if err := state.applyShorthandAxis("topology", token); err != nil {
+				t.Fatalf("applyShorthandAxis(%q) returned error: %v", token, err)
+			}
+			if state.topology != token {
+				t.Fatalf("expected state.topology=%q, got %q", token, state.topology)
+			}
+		})
+	}
+}
+
+// TestTopologyOverrideAccepted specifies that topology=<token> key=value override
+// is parsed and stored correctly. ADR-0236.
+func TestTopologyOverrideAccepted(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	state := newBuildState(grammar)
+	if err := state.applyOverrideToken("topology=solo"); err != nil {
+		t.Fatalf("applyOverrideToken(topology=solo) returned error: %v", err)
+	}
+	if state.topology != "solo" {
+		t.Fatalf("expected state.topology=%q, got %q", "solo", state.topology)
+	}
+}
+
+// TestTopologyInPromptOutput specifies that a topology token appears in the
+// CONSTRAINTS section of bar build output. ADR-0236.
+func TestTopologyInPromptOutput(t *testing.T) {
+	var out, errBuf strings.Builder
+	code := Run([]string{"build", "show", "solo", "--subject", "test"}, nil, &out, &errBuf)
+	if code != 0 {
+		t.Fatalf("bar build explain solo exited %d: %s", code, errBuf.String())
+	}
+	if !strings.Contains(out.String(), "solo") {
+		t.Errorf("topology token 'solo' missing from prompt output:\n%s", out.String())
+	}
+}

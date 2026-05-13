@@ -14,9 +14,9 @@ if not TYPE_CHECKING:
             contents = workflow.read_text()
             self.assertIn("make ci-guardrails", contents, "CI should run guardrails")
             self.assertIn(
-                "python3 -m unittest discover -s tests -v",
+                "python3 -m pytest tests/",
                 contents,
-                "CI should run the main test suite via python3 -m unittest",
+                "CI should run the main test suite via pytest",
             )
             self.assertNotIn(
                 "history-validation-summary.telemetry.json",

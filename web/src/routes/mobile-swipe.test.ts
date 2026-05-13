@@ -28,7 +28,7 @@ vi.mock('$lib/grammar.js', () => ({
 	getTaskTokens: vi.fn().mockReturnValue([{ token: 'show', label: 'Explain' }]),
 	getPersonaPresets: vi.fn().mockReturnValue([]),
 	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
-	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
+	AXES: ['topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
 	getStarterPacks: vi.fn().mockReturnValue([]),
@@ -64,8 +64,8 @@ function activeTabLabel(container: HTMLDivElement): string | undefined {
 	return container.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.textContent?.trim();
 }
 
-// AXES_WITH_PERSONA order: ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional']
-// Default activeTab = 'task'; left swipe → 'completeness'; right swipe → 'persona'
+// AXES_WITH_PERSONA order: ['persona', 'task', 'topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional']
+// Default activeTab = 'task'; left swipe → 'topology'; right swipe → 'persona'
 
 describe('Page — Swipe to Switch Tabs', () => {
 	let container: HTMLDivElement;
@@ -94,7 +94,7 @@ describe('Page — Swipe to Switch Tabs', () => {
 		expect(activeTabLabel(container)).toBe('task');
 
 		await new Promise(r => setTimeout(r, 300));
-		expect(activeTabLabel(container)).toBe('completeness');
+		expect(activeTabLabel(container)).toBe('topology');
 	});
 
 	it('right swipe retreats to previous tab after the slide-out animation (~250ms)', async () => {
@@ -102,12 +102,12 @@ describe('Page — Swipe to Switch Tabs', () => {
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
 
-		// Advance to 'completeness' first
+		// Advance to 'topology' first
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		fireTouchStart(panel, 300, 200);
 		fireTouchEnd(panel, 150, 210);
 		await new Promise(r => setTimeout(r, 300));
-		expect(activeTabLabel(container)).toBe('completeness');
+		expect(activeTabLabel(container)).toBe('topology');
 
 		// Right swipe back to 'task'
 		fireTouchStart(panel, 150, 200);
@@ -123,10 +123,10 @@ describe('Page — Swipe to Switch Tabs', () => {
 
 		const panel = container.querySelector('.selector-panel') as HTMLElement;
 		fireTouchStart(panel, 300, 200);
-		fireTouchEnd(panel, 150, 210); // left swipe → completeness tab
+		fireTouchEnd(panel, 150, 210); // left swipe → topology tab
 		await new Promise(r => setTimeout(r, 300));
 
-		expect(activeTabLabel(container)).toBe('completeness');
+		expect(activeTabLabel(container)).toBe('topology');
 		// After a swipe, document.activeElement must not be a chip inside the panel
 		// (chips have class 'token-chip' or similar — anything that's not a .tab button)
 		const focused = document.activeElement as HTMLElement | null;

@@ -50,7 +50,7 @@ vi.mock('$lib/grammar.js', () => ({
 	getPresetHint: vi.fn().mockReturnValue(''),
 	personaTokenHint: vi.fn().mockReturnValue(''),
 	personaTokenDistinctionText: vi.fn().mockReturnValue(''),
-	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
+	AXES: ['topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
 	getStarterPacks: vi.fn().mockReturnValue([]),
@@ -337,8 +337,8 @@ describe('ADR-0141 — K1: ArrowKey focus stays on tab strip (F1c/F2c)', () => {
 	// F1c: ArrowRight must leave focus on the active tab button, not move it to a chip
 	it('F1c: ArrowRight on tab-bar leaves focus on the newly-active tab button', async () => {
 		vi.mocked(getAxisTokens).mockImplementation((_grammar, axis) =>
-			axis === 'completeness'
-				? [{ token: 'deep', label: 'Deep', description: '', guidance: '', use_when: '' }]
+			axis === 'topology'
+				? [{ token: 'solo', label: 'Solo', description: '', guidance: '', use_when: '' }]
 				: []
 		);
 
@@ -353,10 +353,10 @@ describe('ADR-0141 — K1: ArrowKey focus stays on tab strip (F1c/F2c)', () => {
 		await new Promise((r) => setTimeout(r, 20));
 		flushSync();
 
-		// Focus must be on the active tab button (completeness), NOT on a chip
+		// Focus must be on the active tab button (topology), NOT on a chip
 		const activeTab = container.querySelector('[role="tab"][aria-selected="true"]') as HTMLElement | null;
 		expect(activeTab).toBeTruthy();
-		expect(activeTab?.textContent?.trim()).toBe('completeness');
+		expect(activeTab?.textContent?.trim()).toBe('topology');
 		expect(document.activeElement).toBe(activeTab);
 	});
 
@@ -400,10 +400,10 @@ describe('ADR-0139 — T2 wiring regression: +page.svelte passes callbacks (F4b/
 	});
 
 	// F4b: Integration — Tab from last chip of task in the full page advances the axis
-	it('F4b: Tab from last task chip advances to completeness axis and focuses first chip', async () => {
+	it('F4b: Tab from last task chip advances to topology axis and focuses first chip', async () => {
 		vi.mocked(getAxisTokens).mockImplementation((_grammar, axis) =>
-			axis === 'completeness'
-				? [{ token: 'deep', label: 'Deep', description: '', guidance: '', use_when: '' }]
+			axis === 'topology'
+				? [{ token: 'solo', label: 'Solo', description: '', guidance: '', use_when: '' }]
 				: []
 		);
 
@@ -427,26 +427,26 @@ describe('ADR-0139 — T2 wiring regression: +page.svelte passes callbacks (F4b/
 		await new Promise((r) => setTimeout(r, 20));
 		flushSync();
 
-		// completeness tab should be active
+		// topology tab should be active
 		const tabs = container.querySelectorAll('[role="tab"]');
-		const completenessTab = Array.from(tabs).find((t) => t.textContent?.trim() === 'completeness');
-		expect(completenessTab?.getAttribute('aria-selected')).toBe('true');
+		const topologyTab = Array.from(tabs).find((t) => t.textContent?.trim() === 'topology');
+		expect(topologyTab?.getAttribute('aria-selected')).toBe('true');
 
-		// first chip in completeness ('deep') should have focus
-		const deepChip = container.querySelector('[role="option"]') as HTMLElement | null;
-		expect(deepChip?.textContent).toContain('deep');
-		expect(document.activeElement).toBe(deepChip);
+		// first chip in topology ('solo') should have focus
+		const soloChip = container.querySelector('[role="option"]') as HTMLElement | null;
+		expect(soloChip?.textContent).toContain('solo');
+		expect(document.activeElement).toBe(soloChip);
 
 		document.body.removeChild(container);
 	});
 
-	// F5b: Integration — Shift+Tab from first chip of completeness retreats to task
-	it('F5b: Shift+Tab from first completeness chip retreats to task axis and focuses last chip', async () => {
+	// F5b: Integration — Shift+Tab from first chip of topology retreats to task
+	it('F5b: Shift+Tab from first topology chip retreats to task axis and focuses last chip', async () => {
 		vi.mocked(getAxisTokens).mockImplementation((_grammar, axis) =>
-			axis === 'completeness'
+			axis === 'topology'
 				? [
-						{ token: 'deep', label: 'Deep', description: '', guidance: '', use_when: '' },
-						{ token: 'full', label: 'Full', description: '', guidance: '', use_when: '' }
+						{ token: 'solo', label: 'Solo', description: '', guidance: '', use_when: '' },
+						{ token: 'witness', label: 'Witness', description: '', guidance: '', use_when: '' }
 					]
 				: []
 		);
@@ -519,8 +519,8 @@ describe('ADR-0141 — K2: Tab-exhaustion to persona panel does not lose focus (
 
 		// Navigate to directional tab
 		const nav = container.querySelector('nav.tab-bar') as HTMLElement;
-		// default activeTab=task(1); directional is index 7 → 6 ArrowRights
-		for (let i = 0; i < 6; i++) {
+		// default activeTab=task(1); directional is index 8 → 7 ArrowRights (topology inserted at index 2)
+		for (let i = 0; i < 7; i++) {
 			nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
 			flushSync();
 		}

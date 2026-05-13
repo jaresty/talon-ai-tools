@@ -438,7 +438,7 @@
 	let hoveredDistinctionPreset = $state<string | null>(null);
 
 
-	const AXES_WITH_PERSONA = ['persona', 'task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+	const AXES_WITH_PERSONA = ['persona', 'task', 'topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
 	function focusActiveTab() {
 		document.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();

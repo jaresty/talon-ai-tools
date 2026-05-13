@@ -61,7 +61,7 @@ jobs:
         run: make ci-guardrails
 
       - name: Run tests
-        run: python3 -m unittest discover -s tests -v
+        run: python3 -m pytest tests/ -v
 
       - name: Install ast-grep
         run: npm install -g @ast-grep/cli

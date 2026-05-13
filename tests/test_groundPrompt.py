@@ -1,69 +1,5 @@
-"""Tests for groundPrompt — sentinel gates and ADR-0179 axiom-first formulation."""
-from lib.groundPrompt import SENTINEL_TEMPLATES, build_ground_prompt
-
-
-def test_manifest_declared_sentinel_present():
-    """SENTINEL_TEMPLATES contains a 'manifest_declared' sentinel."""
-    assert "manifest_declared" in SENTINEL_TEMPLATES
-
-
-def test_ground_entered_sentinel_present():
-    """SENTINEL_TEMPLATES contains a 'ground_entered' sentinel."""
-    assert "ground_entered" in SENTINEL_TEMPLATES
-
-
-def test_hard_stop_sentinel_present():
-    """Rendered ground prompt contains HARD STOP text."""
-    assert "HARD STOP" in build_ground_prompt()
-
-
-def test_hard_stop_signals_upward_return_not_termination():
-    """HARD STOP description specifies upward return to criteria, not termination."""
-    text = build_ground_prompt()
-    hard_stop_idx = text.index("HARD STOP")
-    nearby = text[hard_stop_idx:hard_stop_idx + 300]
-    assert "no further content" not in nearby
-
-
-def test_axiom_a1_present():
-    """ADR-0179: rendered prompt states A1 (epistemic authority — tool-executed events only)."""
-    text = build_ground_prompt()
-    assert "A1" in text, (
-        "expected 'A1' in rendered ground prompt — "
-        "axiom-first formulation must name A1 explicitly"
-    )
-
-
-def test_rung_entry_gate_present():
-    """ADR-0181: rendered prompt contains rung-entry gate text."""
-    text = build_ground_prompt()
-    assert "Rung-entry gate" in text, (
-        "expected 'Rung-entry gate' in rendered ground prompt — "
-        "ADR-0181 requires a rung-entry gate before any rung-specific enforcement text"
-    )
-
-
-def test_rung_entry_gate_follows_rung_table():
-    """ADR-0182: rung-entry gate is repositioned to after protocol mechanics (after rung table)."""
-    text = build_ground_prompt()
-    gate_idx = text.index("Rung-entry gate")
-    rung_table_idx = text.index("Rung table")
-    assert rung_table_idx < gate_idx, (
-        "rung-entry gate must appear after the rung table — "
-        "ADR-0182 restructure places gate at position 5 (after protocol mechanics)"
-    )
-
-
-def test_rung_entry_gate_follows_r2_block():
-    """ADR-0181: rung-entry gate appears after the R2 axiom block."""
-    text = build_ground_prompt()
-    r2_anchor = "each artifact addresses only the gap declared by the prior rung"
-    r2_idx = text.index(r2_anchor)
-    gate_idx = text.index("Rung-entry gate")
-    assert r2_idx < gate_idx, (
-        "rung-entry gate must follow the R2 axiom block — "
-        "ADR-0181 specifies placement immediately after A1-A3-R2"
-    )
+"""Tests for groundPrompt — current slim form (ADR-0224: ground slimmed to A0+M only)."""
+from lib.groundPrompt import build_ground_prompt
 
 
 def test_attractor1_vro_stop_removed():
@@ -111,26 +47,4 @@ def test_attractor5_enforcement_wrapper_removed():
     text = build_ground_prompt()
     assert "it is invalid \u2014 split it before continuing" not in text, (
         "attractor 5 enforcement wrapper must be removed — only definitional content is kept"
-    )
-
-
-def test_attractor5_conjunction_definition_retained():
-    """ADR-0181: attractor 5 conjunction definition retained after enforcement wrapper removed."""
-    text = build_ground_prompt()
-    assert "conjunction" in text, (
-        "conjunction definitional content must be retained — "
-        "the model needs it to execute the rung-entry gate correctly"
-    )
-
-
-def test_axiom_r2_present():
-    """ADR-0179: rendered prompt states R2 as a named axiom (not only in sentinel text)."""
-    text = build_ground_prompt()
-    # "R2" already appears in sentinel text; require it to appear before the sentinel block
-    sentinel_block_marker = "Sentinel formats"
-    sentinel_idx = text.index(sentinel_block_marker) if sentinel_block_marker in text else len(text)
-    pre_sentinel = text[:sentinel_idx]
-    assert "R2" in pre_sentinel, (
-        "expected 'R2' in the axiom/rule section of the rendered prompt (before sentinel block) — "
-        "axiom-first formulation must name R2 as a derivation rule"
     )

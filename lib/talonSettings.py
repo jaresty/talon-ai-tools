@@ -43,6 +43,7 @@ def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
     Falls back to the provided fallback if the file or key is not found.
     """
     axis_for_file = {
+        "topologyModifier.talon-list": "topology",
         "completenessModifier.talon-list": "completeness",
         "scopeModifier.talon-list": "scope",
         "methodModifier.talon-list": "method",
@@ -77,6 +78,7 @@ def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
 def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
     """Build a mapping from axis value back to its short key (tokens only)."""
     axis_for_file = {
+        "topologyModifier.talon-list": "topology",
         "completenessModifier.talon-list": "completeness",
         "scopeModifier.talon-list": "scope",
         "methodModifier.talon-list": "method",
@@ -258,6 +260,7 @@ def _normalise_directional(raw_value) -> str:
 
 
 _AXIS_PRIORITY: tuple[str, ...] = (
+    "topology",
     "completeness",
     "scope",
     "method",
@@ -484,6 +487,7 @@ mod.tag("gpt_beta", desc="Tag for enabling beta GPT commands")
 # Stores all our prompts that don't require arguments
 # (ie those that just take in the clipboard text)
 mod.list("staticPrompt", desc="GPT Prompts Without Dynamic Arguments")
+mod.list("topologyModifier", desc="GPT Topology Modifiers")
 mod.list("directionalModifier", desc="GPT Directional Modifiers")
 mod.list("completenessModifier", desc="GPT Completeness Modifiers")
 mod.list("scopeModifier", desc="GPT Scope Modifiers")

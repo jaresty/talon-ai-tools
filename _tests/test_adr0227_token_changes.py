@@ -92,7 +92,8 @@ def test_atomic_defines_governing_output_on_first_use():
     assert "governing output" in text and (
         "first reported failure" in text or
         "reported failure from the governing artifact" in text or
-        "first failure from a tool-executed run result" in text
+        "first failure from a tool-executed run result" in text or
+        "first failure signal from a tool-executed run result" in text
     ), (
         "atomic must define 'governing output' on first use as the first "
         "failure from the governing artifact (ADR-0227 Decision 5)"

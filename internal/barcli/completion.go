@@ -148,7 +148,6 @@ complete -k -c bar -f -a '(__fish_bar_completions)'
 const skipSectionPrefix = "//next"
 
 const (
-	orderDefault         = 1
 	orderCommand         = 20
 	orderHelpTopic       = 18
 	orderCompletionShell = 17
@@ -159,14 +158,16 @@ const (
 	orderPersonaTone     = 12
 	orderStatic          = 11
 	orderOverride        = 10
-	orderCompleteness    = 9
-	orderScope           = 8
-	orderMethod          = 7
-	orderForm            = 6
-	orderChannel         = 5
-	orderDirectional     = 4
-	orderPresetName      = 3
-	orderFlag            = 2
+	orderTopology        = 9
+	orderCompleteness    = 8
+	orderScope           = 7
+	orderMethod          = 6
+	orderForm            = 5
+	orderChannel         = 4
+	orderDirectional     = 3
+	orderPresetName      = 2
+	orderFlag            = 1
+	orderDefault         = 0
 )
 
 type completionCatalog struct {
@@ -286,6 +287,8 @@ func stageOrder(stage string) int {
 		return orderPersonaPreset
 	case "task":
 		return orderStatic
+	case "topology":
+		return orderTopology
 	case "completeness":
 		return orderCompleteness
 	case "method":

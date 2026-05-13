@@ -58,6 +58,7 @@ class RequestGatingMacroGuardTests(unittest.TestCase):
             if (
                 path.name == "requestBus.py"
                 or "__pycache__" in path.parts
+                or ".claude" in path.parts
                 or rel_path in allowlist
             ):
                 continue

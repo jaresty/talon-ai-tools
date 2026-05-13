@@ -470,7 +470,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
     )
     _register(override_slugs["task"])
 
-    for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
+    for axis in ("topology", "completeness", "scope", "method", "form", "channel", "directional"):
         labels = axis_slugs.get(axis, {})
         if not labels:
             continue

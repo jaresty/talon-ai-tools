@@ -22,6 +22,7 @@ from .staticPromptConfig import (
 # validate drift between axisConfig and list tokens without re-implementing
 # file parsing. Catalog remains the SSOT; lists are used only when present.
 _AXIS_LIST_FILES: Dict[str, str] = {
+    "topology": "topologyModifier.talon-list",
     "completeness": "completenessModifier.talon-list",
     "scope": "scopeModifier.talon-list",
     "method": "methodModifier.talon-list",

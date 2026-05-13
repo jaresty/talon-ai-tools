@@ -20,7 +20,7 @@ func BuildTokenCategories(grammar *Grammar) []bartui2.TokenCategory {
 		seen[staticCategory.Key] = true
 	}
 
-	orderedAxes := []string{"completeness", "scope", "method", "form", "channel", "directional"}
+	orderedAxes := []string{"topology", "completeness", "scope", "method", "form", "channel", "directional"}
 	for _, axis := range orderedAxes {
 		axisKey := normalizeAxis(axis)
 		if axisKey == "" || seen[axisKey] {

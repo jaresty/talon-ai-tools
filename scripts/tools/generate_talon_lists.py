@@ -80,6 +80,7 @@ def generate(out_dir: Path) -> None:
     axis_lists = catalog.get("axis_list_tokens", {}) or {}
 
     axis_to_list_name = {
+        "topology": "topologyModifier",
         "completeness": "completenessModifier",
         "scope": "scopeModifier",
         "method": "methodModifier",

@@ -24,6 +24,7 @@ var shuffleStageOrder = []string{
 	"audience",
 	"tone",
 	"task",
+	"topology",
 	"completeness",
 	"scope",
 	"method",

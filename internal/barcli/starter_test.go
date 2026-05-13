@@ -30,7 +30,7 @@ func TestStarterList(t *testing.T) {
 		t.Fatalf("ST1: bar starter list exited %d, want 0", code)
 	}
 	// Must contain at least one pack name from the grammar JSON
-	for _, name := range []string{"debug", "design", "review", "dissect", "pitch", "audit", "model", "charter", "explain", "versus"} {
+	for _, name := range []string{"debug", "design", "review", "dissect", "pitch", "compliance", "model", "charter", "explain", "versus"} {
 		if !strings.Contains(out, name) {
 			t.Errorf("ST1: bar starter list output missing pack %q", name)
 		}

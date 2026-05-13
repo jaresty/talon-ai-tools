@@ -576,6 +576,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, "
         "evaluating outcomes, or prescribing action.",
     },
+    "topology": {
+        "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each major reasoning transition names the evidence or premise it depends on "
+        "before proceeding. Unsupported continuity jumps are treated as failures.",
+        "blind": "The response reconstructs key assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the "
+        "conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
+        "relay": "The response externalizes state sufficient for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining "
+        "implicit. A reader without prior context can reconstruct the reasoning state at any point.",
+        "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation structurally requires them. The "
+        "output contains the final artifact and the reasoning directly essential to it.",
+        "witness": "The response surfaces important assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty "
+        "is named before it is collapsed into a conclusion.",
+    },
 }
 
 # Short CLI-facing labels for token selection (ADR-0109).
@@ -798,6 +810,13 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "thing": "Entities and bounded units",
         "time": "Sequences and temporal change",
         "view": "Stakeholder perspective",
+    },
+    "topology": {
+        "audit": "Locally defensible reasoning",
+        "blind": "Reconstructable reasoning",
+        "relay": "Handoff-ready reasoning",
+        "solo": "Unobserved reasoning",
+        "witness": "Inspectable reasoning",
     },
 }
 
@@ -1076,6 +1095,13 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "show": "示",
         "sim": "模",
         "sort": "整",
+    },
+    "topology": {
+        "audit": "査",
+        "blind": "暗",
+        "relay": "継",
+        "solo": "独",
+        "witness": "観",
     },
 }
 
@@ -1443,6 +1469,13 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "show": "Explain/describe",
         "sim": "Play out scenario",
         "sort": "Arrange/categorize",
+    },
+    "topology": {
+        "audit": "Locally defensible claims, adversarial scrutiny",
+        "blind": "Reconstruct context for future replay",
+        "relay": "Handoff-ready, continuation-safe reasoning",
+        "solo": "Unobserved, synthesis-optimized reasoning",
+        "witness": "Surface assumptions for continuous observer",
     },
 }
 
@@ -6672,6 +6705,124 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how does this look to stakeholders",
                 "from a customer's view",
                 "through the lens of",
+            ],
+        },
+    },
+    "topology": {
+        "audit": {
+            "distinctions": [
+                {
+                    "note": "audit = adversarial challenge per claim; witness = continuous observer checks flow",
+                    "token": "witness",
+                },
+                {
+                    "note": "audit = locally defensible; solo = synthesis-optimized",
+                    "token": "solo",
+                },
+            ],
+            "heuristics": [
+                "locally defensible",
+                "adversarial challenge",
+                "security analysis",
+                "compliance evaluation",
+                "formal design review",
+                "each claim stands alone",
+                "no narrative dependency",
+                "skeptical evaluator",
+            ],
+        },
+        "blind": {
+            "distinctions": [
+                {
+                    "note": "blind = future replay from scratch; relay = continuation mid-stream",
+                    "token": "relay",
+                },
+                {
+                    "note": "blind = reconstruct for future reader; witness = justify for live observer",
+                    "token": "witness",
+                },
+            ],
+            "heuristics": [
+                "reconstructable reasoning",
+                "incident postmortem",
+                "reproducible research",
+                "long-lived design records",
+                "archival documentation",
+                "future readers lack context",
+                "no implicit carry-forward",
+                "explicit assumptions",
+            ],
+        },
+        "relay": {
+            "distinctions": [
+                {
+                    "note": "relay = another party continues mid-stream; witness = observer evaluates but does not continue",
+                    "token": "witness",
+                },
+                {
+                    "note": "relay = continuation mid-stream; blind = future replay from scratch",
+                    "token": "blind",
+                },
+            ],
+            "heuristics": [
+                "handoff-ready",
+                "engineering handoff",
+                "another person continues",
+                "agent orchestration",
+                "externalize schemas",
+                "contracts and invariants",
+                "open-source API design",
+                "collaborative architecture",
+                "continuation-safe",
+            ],
+        },
+        "solo": {
+            "distinctions": [
+                {
+                    "note": "solo = no external scrutiny assumed; witness = continuous observer evaluates each transition",
+                    "token": "witness",
+                },
+                {
+                    "note": "solo = optimize for synthesis; audit = each claim must stand independently",
+                    "token": "audit",
+                },
+            ],
+            "heuristics": [
+                "unobserved reasoning",
+                "early-stage ideation",
+                "speculative architecture",
+                "no external scrutiny",
+                "synthesis efficiency",
+                "compress to final artifact",
+                "naming and metaphor work",
+                "mathematical intuition",
+            ],
+        },
+        "witness": {
+            "distinctions": [
+                {
+                    "note": "witness = continuous observer assumed; solo = no observer",
+                    "token": "solo",
+                },
+                {
+                    "note": "witness = observer checks causal flow; audit = adversarial challenge per claim",
+                    "token": "audit",
+                },
+                {
+                    "note": "witness = observer evaluates transitions; relay = another party continues mid-stream",
+                    "token": "relay",
+                },
+            ],
+            "heuristics": [
+                "inspectable reasoning",
+                "surface assumptions",
+                "architecture review",
+                "long-horizon planning",
+                "scientific reasoning",
+                "hidden assumption failures",
+                "why does this follow",
+                "justify each transition",
+                "best default epistemic hygiene",
             ],
         },
     },

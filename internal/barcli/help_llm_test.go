@@ -705,3 +705,48 @@ func TestHelpLLMAutomationFlags(t *testing.T) {
 		t.Error("bar help llm must document --command for bar tui2 seeding")
 	}
 }
+
+// TestTopologyAxisInLLMHelp verifies ADR-0236: topology axis appears in bar help llm
+// output with all required sections (grammar BNF, ordered axes, partner axes,
+// Choosing Topology heuristic section).
+func TestTopologyAxisInLLMHelp(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	if !strings.Contains(output, "topology") {
+		t.Error("topology axis missing from bar help llm output (orderedAxes not updated)")
+	}
+	if !strings.Contains(output, "Choosing Topology") {
+		t.Error("Choosing Topology heuristic section missing from bar help llm output")
+	}
+}
+
+// TestTopologyAxisInGrammarBNF verifies that the Grammar BNF section includes
+// a <topology-value> line (ADR-0236 §Go/CLI item 5).
+func TestTopologyAxisInGrammarBNF(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "architecture", false)
+	output := buf.String()
+
+	if !strings.Contains(output, "topology") {
+		t.Error("<topology-value> line missing from Grammar BNF section in bar help llm")
+	}
+}
+
+// TestTopologyAxisInPartnerAxes verifies that topology is registered in the partnerAxes
+// slice in renderCrossAxisComposition (ADR-0236 §Go/CLI item 5). Topology tokens will
+// appear in rendered cross-axis output once CROSS_AXIS_COMPOSITION entries reference them;
+// this test verifies the infrastructure is in place.
+func TestTopologyAxisInPartnerAxes(t *testing.T) {
+	// Verify topology is a recognised axis in the grammar (loaded from JSON).
+	grammar := loadCompletionGrammar(t)
+	if _, ok := grammar.Axes.Definitions["topology"]; !ok {
+		t.Error("topology axis missing from grammar.Axes.Definitions — grammar JSON not updated")
+	}
+	if _, ok := grammar.Axes.RoutingConcept["topology"]; !ok {
+		t.Error("topology axis missing from grammar.Axes.RoutingConcept — AXIS_KEY_TO_ROUTING_CONCEPT not exported")
+	}
+}

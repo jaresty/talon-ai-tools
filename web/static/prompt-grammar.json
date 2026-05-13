@@ -240,6 +240,13 @@
         "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, evaluation, or perspective.",
         "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or immediate action.",
         "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
+      },
+      "topology": {
+        "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each major reasoning transition names the evidence or premise it depends on before proceeding. Unsupported continuity jumps are treated as failures.",
+        "blind": "The response reconstructs key assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
+        "relay": "The response externalizes state sufficient for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. A reader without prior context can reconstruct the reasoning state at any point.",
+        "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation structurally requires them. The output contains the final artifact and the reasoning directly essential to it.",
+        "witness": "The response surfaces important assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
       }
     },
     "list_tokens": {
@@ -462,6 +469,13 @@
         "thing",
         "time",
         "view"
+      ],
+      "topology": [
+        "audit",
+        "blind",
+        "relay",
+        "solo",
+        "witness"
       ]
     },
     "labels": {
@@ -681,6 +695,13 @@
         "thing": "Entities and bounded units",
         "time": "Sequences and temporal change",
         "view": "Stakeholder perspective"
+      },
+      "topology": {
+        "audit": "Locally defensible reasoning",
+        "blind": "Reconstructable reasoning",
+        "relay": "Handoff-ready reasoning",
+        "solo": "Unobserved reasoning",
+        "witness": "Inspectable reasoning"
       }
     },
     "kanji": {
@@ -896,6 +917,13 @@
         "thing": "物",
         "time": "時",
         "view": "視"
+      },
+      "topology": {
+        "audit": "査",
+        "blind": "暗",
+        "relay": "継",
+        "solo": "独",
+        "witness": "観"
       }
     },
     "categories": {
@@ -1235,6 +1263,13 @@
         "thing": "Entities/boundaries",
         "time": "Sequences/change",
         "view": "Perspectives"
+      },
+      "topology": {
+        "audit": "Locally defensible claims, adversarial scrutiny",
+        "blind": "Reconstruct context for future replay",
+        "relay": "Handoff-ready, continuation-safe reasoning",
+        "solo": "Unobserved, synthesis-optimized reasoning",
+        "witness": "Surface assumptions for continuous observer"
       }
     },
     "axis_descriptions": {
@@ -5717,6 +5752,129 @@
           ],
           "definition": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
         }
+      },
+      "topology": {
+        "audit": {
+          "distinctions": [
+            {
+              "note": "audit = adversarial challenge per claim; witness = continuous observer checks flow",
+              "token": "witness"
+            },
+            {
+              "note": "audit = locally defensible; solo = synthesis-optimized",
+              "token": "solo"
+            }
+          ],
+          "heuristics": [
+            "locally defensible",
+            "adversarial challenge",
+            "security analysis",
+            "compliance evaluation",
+            "formal design review",
+            "each claim stands alone",
+            "no narrative dependency",
+            "skeptical evaluator"
+          ],
+          "definition": "The response makes each claim locally defensible without relying on later conclusions for support. Each major reasoning transition names the evidence or premise it depends on before proceeding. Unsupported continuity jumps are treated as failures."
+        },
+        "blind": {
+          "distinctions": [
+            {
+              "note": "blind = future replay from scratch; relay = continuation mid-stream",
+              "token": "relay"
+            },
+            {
+              "note": "blind = reconstruct for future reader; witness = justify for live observer",
+              "token": "witness"
+            }
+          ],
+          "heuristics": [
+            "reconstructable reasoning",
+            "incident postmortem",
+            "reproducible research",
+            "long-lived design records",
+            "archival documentation",
+            "future readers lack context",
+            "no implicit carry-forward",
+            "explicit assumptions"
+          ],
+          "definition": "The response reconstructs key assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact."
+        },
+        "relay": {
+          "distinctions": [
+            {
+              "note": "relay = another party continues mid-stream; witness = observer evaluates but does not continue",
+              "token": "witness"
+            },
+            {
+              "note": "relay = continuation mid-stream; blind = future replay from scratch",
+              "token": "blind"
+            }
+          ],
+          "heuristics": [
+            "handoff-ready",
+            "engineering handoff",
+            "another person continues",
+            "agent orchestration",
+            "externalize schemas",
+            "contracts and invariants",
+            "open-source API design",
+            "collaborative architecture",
+            "continuation-safe"
+          ],
+          "definition": "The response externalizes state sufficient for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. A reader without prior context can reconstruct the reasoning state at any point."
+        },
+        "solo": {
+          "distinctions": [
+            {
+              "note": "solo = no external scrutiny assumed; witness = continuous observer evaluates each transition",
+              "token": "witness"
+            },
+            {
+              "note": "solo = optimize for synthesis; audit = each claim must stand independently",
+              "token": "audit"
+            }
+          ],
+          "heuristics": [
+            "unobserved reasoning",
+            "early-stage ideation",
+            "speculative architecture",
+            "no external scrutiny",
+            "synthesis efficiency",
+            "compress to final artifact",
+            "naming and metaphor work",
+            "mathematical intuition"
+          ],
+          "definition": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation structurally requires them. The output contains the final artifact and the reasoning directly essential to it."
+        },
+        "witness": {
+          "distinctions": [
+            {
+              "note": "witness = continuous observer assumed; solo = no observer",
+              "token": "solo"
+            },
+            {
+              "note": "witness = observer checks causal flow; audit = adversarial challenge per claim",
+              "token": "audit"
+            },
+            {
+              "note": "witness = observer evaluates transitions; relay = another party continues mid-stream",
+              "token": "relay"
+            }
+          ],
+          "heuristics": [
+            "inspectable reasoning",
+            "surface assumptions",
+            "architecture review",
+            "long-horizon planning",
+            "scientific reasoning",
+            "hidden assumption failures",
+            "why does this follow",
+            "justify each transition",
+            "best default epistemic hygiene"
+          ],
+          "definition": "The response surfaces important assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
+        }
       }
     },
     "cross_axis_composition": {
@@ -7865,6 +8023,7 @@
   },
   "hierarchy": {
     "axis_priority": [
+      "topology",
       "completeness",
       "scope",
       "method",
@@ -8110,6 +8269,13 @@
         "thing": "thing",
         "time": "time",
         "view": "view"
+      },
+      "topology": {
+        "audit": "audit",
+        "blind": "blind",
+        "relay": "relay",
+        "solo": "solo",
+        "witness": "witness"
       }
     },
     "task": {
@@ -8204,6 +8370,13 @@
         "task=show": "task-show",
         "task=sim": "task-sim",
         "task=sort": "task-sort"
+      },
+      "topology": {
+        "topology=audit": "topology-audit",
+        "topology=blind": "topology-blind",
+        "topology=relay": "topology-relay",
+        "topology=solo": "topology-solo",
+        "topology=witness": "topology-witness"
       },
       "completeness": {
         "completeness=deep": "completeness-deep",
@@ -8520,11 +8693,13 @@
       "audience=to stakeholders": "audience-to-stakeholders",
       "audience=to stream aligned team": "audience-to-stream-aligned-team",
       "audience=to team": "audience-to-team",
+      "audit": "audit",
       "authority": "authority",
       "automate": "automate",
       "balance": "balance",
       "behave": "behave",
       "bias": "bias",
+      "blind": "blind",
       "bog": "bog",
       "boom": "boom",
       "bound": "bound",
@@ -8872,6 +9047,7 @@
       "quiz": "quiz",
       "recipe": "recipe",
       "reify": "reify",
+      "relay": "relay",
       "release": "release",
       "remote": "remote",
       "reset": "reset",
@@ -8916,6 +9092,7 @@
       "snag": "snag",
       "snap": "snap",
       "socratic": "socratic",
+      "solo": "solo",
       "sort": "sort",
       "spike": "spike",
       "split": "split",
@@ -8972,6 +9149,11 @@
       "tone=formally": "tone-formally",
       "tone=gently": "tone-gently",
       "tone=kindly": "tone-kindly",
+      "topology=audit": "topology-audit",
+      "topology=blind": "topology-blind",
+      "topology=relay": "topology-relay",
+      "topology=solo": "topology-solo",
+      "topology=witness": "topology-witness",
       "trace": "trace",
       "triage": "triage",
       "twin": "twin",
@@ -8998,6 +9180,7 @@
       "walkthrough": "walkthrough",
       "wardley": "wardley",
       "wasinawa": "wasinawa",
+      "witness": "witness",
       "yield": "yield",
       "zettel": "zettel",
       "zoom": "zoom"
@@ -9735,7 +9918,7 @@
       "command": "bar build make argue compare analog"
     },
     {
-      "name": "audit",
+      "name": "compliance",
       "framing": "Verifiable multi-step argument or compliance check",
       "command": "bar build check verify chain"
     },
@@ -10045,13 +10228,13 @@
     }
   ],
   "checksums": {
-    "axes": "14a2559b307a7ed07b3273bd95af14dd4c41f671f79b07d68ed597c7b051f5f4",
+    "axes": "e7dd5266cf595479d14ff3ff1208ef736cdc89b9086aabf776a538b3e43bf095",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
-    "hierarchy": "5781f1739d0ddab73d00cb7b640bc980249bfe09b74dee0bec51b7f1ace4a6d0",
-    "slugs": "b0b2678c1d951a44f40f543624812fde003ffc7f14ed985f20c340207c4a9354",
+    "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
+    "slugs": "47165550f8ac265acef6539702f0d632af68281d5b7769573ac2318b1ef1acbe",
     "patterns": "7a0b98462f5869a672f3f4202373c118704072db33cf82c2281b7052a4e84e61",
-    "starter_packs": "f2406034bc08e4034383ccb4d0802511de9a3947cf6c6fb0d2f3f751954efa62",
+    "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
     "compositions": "4229dcc958b82a973630f30149355bfbd0a697d810708748efa6484e0997a6a5"
   }

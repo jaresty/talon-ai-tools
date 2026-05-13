@@ -50,7 +50,7 @@ STARTER_PACKS: list[StarterPack] = [
         command="bar build make argue compare analog",
     ),
     StarterPack(
-        name="audit",
+        name="compliance",
         framing="Verifiable multi-step argument or compliance check",
         command="bar build check verify chain",
     ),

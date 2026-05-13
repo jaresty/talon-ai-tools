@@ -103,18 +103,19 @@ func renderQuickStart(w io.Writer, compact bool) {
 func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	if compact {
 		fmt.Fprintf(w, "## Grammar Architecture\n\n")
-		fmt.Fprintf(w, "Order: [persona] [static] [completeness] [scope 0-2] [method 0-3] [form] [channel] [directional]\n\n")
+		fmt.Fprintf(w, "Order: [persona] [static] [topology] [completeness] [scope 0-2] [method 0-3] [form] [channel] [directional]\n\n")
 		return
 	}
 	fmt.Fprintf(w, "## Grammar Architecture\n\n")
 	fmt.Fprintf(w, "### Token Ordering\n\n")
 	fmt.Fprintf(w, "Tokens must follow this order:\n\n")
 	fmt.Fprintf(w, "```\n")
-	fmt.Fprintf(w, "[persona] [static] [completeness] [scope...] [method...] [form] [channel] [directional]\n")
+	fmt.Fprintf(w, "[persona] [static] [topology] [completeness] [scope...] [method...] [form] [channel] [directional]\n")
 	fmt.Fprintf(w, "```\n\n")
 
 	fmt.Fprintf(w, "### Axis Capacity\n\n")
 	fmt.Fprintf(w, "- **Tasks**: 1 token (required)\n")
+	fmt.Fprintf(w, "- **Topology**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Completeness**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Scope**: 0-2 tokens\n")
 	fmt.Fprintf(w, "- **Method**: 0-3 tokens\n")
@@ -144,7 +145,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "```ebnf\n")
 		fmt.Fprintf(w, "<command> ::= \"bar\" \"build\" <token-sequence> <flags>\n")
 		fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <static-token> <constraint-tokens> <override-tokens>*\n")
-		fmt.Fprintf(w, "<constraint-tokens> ::= <completeness>? <scope>? <scope>? <method>? <method>? <method>? <form>? <channel>? <directional>?\n")
+		fmt.Fprintf(w, "<constraint-tokens> ::= <topology>? <completeness>? <scope>? <scope>? <method>? <method>? <method>? <form>? <channel>? <directional>?\n")
 		fmt.Fprintf(w, "```\n\n")
 		return
 	}
@@ -182,8 +183,9 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 
 	fmt.Fprintf(w, "<static-token>   ::= <static-value>\n\n")
 
-	fmt.Fprintf(w, "<constraint-tokens> ::= <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
+	fmt.Fprintf(w, "<constraint-tokens> ::= <topology-token>? <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
 
+	fmt.Fprintf(w, "<topology-token>     ::= <topology-value>\n")
 	fmt.Fprintf(w, "<completeness-token> ::= <completeness-value>\n")
 	fmt.Fprintf(w, "<scope-token>        ::= <scope-value>\n")
 	fmt.Fprintf(w, "<method-token>       ::= <method-value>\n")
@@ -251,6 +253,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 		return strings.Join(slugs, " | ")
 	}
 
+	fmt.Fprintf(w, "<topology-value>     ::= %s\n", formatAxisTokens("topology", 5))
 	fmt.Fprintf(w, "<completeness-value> ::= %s\n", formatAxisTokens("completeness", 0))
 	fmt.Fprintf(w, "<scope-value>        ::= %s\n", formatAxisTokens("scope", 8))
 	fmt.Fprintf(w, "<method-value>       ::= %s\n", formatAxisTokens("method", 7))
@@ -407,7 +410,7 @@ func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "**Static (required):** %s\n\n", strings.Join(staticNames, ", "))
 
 	// Contract axes in canonical order
-	orderedAxes := []string{"completeness", "scope", "method", "form", "channel", "directional"}
+	orderedAxes := []string{"topology", "completeness", "scope", "method", "form", "channel", "directional"}
 
 	for _, axisName := range orderedAxes {
 		tokens, exists := grammar.Axes.Definitions[axisName]
@@ -846,7 +849,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Key distinctions for commonly confused tokens (from structured metadata):\n\n")
 
 	// Render key distinctions from structured axis token metadata (ADR-0155 T-10)
-	axesWithMetadata := []string{"form", "method", "channel", "directional", "completeness", "scope"}
+	axesWithMetadata := []string{"form", "method", "channel", "directional", "completeness", "scope", "topology"}
 	for _, axisName := range axesWithMetadata {
 		tokens, exists := grammar.Axes.Definitions[axisName]
 		if !exists {
@@ -1087,6 +1090,9 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	fmt.Fprintf(w, "- **Cross-functional communication** → `persona=stakeholder_facilitator` (as-facilitator to-stakeholders) or compose `voice=` + `audience=` explicitly\n")
 	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person), **intent=** (communication purpose: WHY addressing the audience) — consult the Persona System section for per-token trigger phrases\n\n")
 
+	// Choosing Topology — rendered dynamically from AXIS_KEY_TO_ROUTING_CONCEPT (ADR-0236)
+	renderRoutingConceptSection(w, "Choosing Topology", grammar.Axes.RoutingConcept["topology"])
+
 	fmt.Fprintf(w, "### Choosing Completeness\n\n")
 	fmt.Fprintf(w, "- **Depth-oriented tasks** (`probe`, `sim`): prefer `deep` or `full` completeness. `minimal` and `gist` reduce analytical value — probe's purpose is surfacing structure and implications (needs depth); sim's narrative arc requires space to develop. Exception: explicit user brevity signals (\"quickly\", \"brief overview\", \"just a sketch\") override this default — honor the user's stated intent.\n")
 	fmt.Fprintf(w, "- **Extraction tasks** (`pull`, `sort`, `diff`): any completeness level works; match to how much of the source you want covered.\n")
@@ -1125,7 +1131,7 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 
 	fmt.Fprintf(w, "### Choosing Channel\n\n")
 
-	partnerAxes := []string{"task", "completeness", "audience", "channel", "form", "directional", "method", "tone"}
+	partnerAxes := []string{"task", "topology", "completeness", "audience", "channel", "form", "directional", "method", "tone"}
 
 	for _, axisA := range []string{"channel", "form", "completeness", "method", "tone"} {
 		byToken, ok := cac[axisA]

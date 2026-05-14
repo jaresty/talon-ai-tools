@@ -126,6 +126,53 @@ def test_falsify_governing_artifact_creation_not_gated():
     )
 
 
+# --- atomic: hollow audit fixes ---
+
+def test_atomic_manifest_entry_requires_disappearance_criterion():
+    """atomic line manifest entry must require quoted text to disappear from run result.
+
+    hollow audit finding 1: 'each entry quoting the specific text in the governing
+    failure signal that names the behavior the line implements' requires intent-assessment
+    (what the line 'implements'). Fix: the quoted string must be the assertion string
+    that is absent from the run result when the line's behavior is present — structurally
+    verifiable without intent assessment.
+    """
+    text = _atomic()
+    # The fix must appear in the manifest clause itself, not in the post-edit
+    # verification clause (which already contains "absent from the new run result").
+    # We require the manifest clause to contain the disappearance criterion tied
+    # to the line being present — the specific phrase that closes the escape route.
+    assert (
+        "absent from the run result" in text and "line is present" in text
+    ) or (
+        "disappear" in text and ("manifest" in text or "line to be added" in text)
+    ), (
+        "atomic manifest entry clause must require the quoted string to be absent from "
+        "the run result when the line is present — not assessed by what the line 'implements' "
+        "(hollow audit fix 1)"
+    )
+
+
+def test_atomic_minimal_stub_defined_by_zero_extra_statements():
+    """atomic minimal stub must be defined structurally as zero non-signature statements.
+
+    hollow audit finding 2: 'without performing the governed transformation' requires
+    intent-assessment (what counts as 'performing' the transformation). Fix: minimal stub
+    is defined as containing only the type signature and a return statement — no other
+    statements — determinable by inspection without intent assessment.
+    """
+    text = _atomic()
+    assert (
+        "no other statement" in text or
+        "zero other statement" in text or
+        "only" in text and "return statement" in text and "no other" in text
+    ), (
+        "atomic minimal stub must be defined as containing only the type signature and "
+        "a return statement with no other statements — not by 'without performing the "
+        "governed transformation' (hollow audit fix 2)"
+    )
+
+
 # --- chain: governing output vocabulary (Decision 5) ---
 
 def test_chain_uses_governing_output_for_implementation_step_predecessor():

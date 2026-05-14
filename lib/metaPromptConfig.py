@@ -213,7 +213,7 @@ PLANNING_DIRECTIVE: str = (
     "Preserve the token's name and kanji exactly as given. "
     "If a token requires a governing artifact (plan, manifest, validation artifact), "
     "name that artifact explicitly — it must be produced before any implementation begins.\n"
-    "For all other tokens present (task, scope, completeness, form, channel, directional, persona), "
+    "For all other tokens present (task, scope, completeness, form, channel, directional, persona, topology), "
     "output a single line each:\n"
     "  <axis>: <token-name> — <one sentence: what this token concretely requires for this task>\n\n"
     "SECTION 2 — COMPOSITION RULE DERIVATIONS (one per applicable rule):\n"

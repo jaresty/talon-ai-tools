@@ -100,6 +100,32 @@ def test_atomic_defines_governing_output_on_first_use():
     )
 
 
+# --- falsify: governing-artifact exception (hollow audit fix) ---
+
+def test_falsify_governing_artifact_creation_not_gated():
+    """falsify must not gate governing artifact creation (test/spec file writing).
+
+    hollow audit finding: the falsify definition used 'before implementation proceeds'
+    without defining 'implementation', allowing agents to treat test-writing as gated.
+    Fix: the definition must explicitly state that governing artifact creation is not
+    subject to the FAIL gate — only non-governing file edits are gated.
+    The structural definition of governing artifact must also be present.
+    """
+    text = _falsify()
+    assert (
+        "governing artifact creation" in text and (
+            "not gated" in text or
+            "not subject to" in text or
+            "governing artifact creation is not" in text or
+            "cannot pre-exist its own" in text
+        )
+    ), (
+        "falsify must explicitly exempt governing artifact creation (test/spec writing) "
+        "from the FAIL gate — the phrase 'governing artifact creation' plus an explicit "
+        "exemption clause must appear in the definition (hollow audit fix)"
+    )
+
+
 # --- chain: governing output vocabulary (Decision 5) ---
 
 def test_chain_uses_governing_output_for_implementation_step_predecessor():

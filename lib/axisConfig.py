@@ -365,7 +365,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "call is not permitted. Exception — unreachable dead code: this constraint does not apply when the code being modified is statically unreachable — defined as: (a) a static "
         "analysis tool or compiler flags the specific code path as unreachable in a tool-executed result above this line, or (b) a tool-executed run of the full test suite with the "
         "code removed produces an identical result to a run with it present; both conditions are verifiable by inspection of tool results; a code path is not unreachable merely "
-        "because no current test covers it — reachability is a structural property of the code, not a property of the test suite.",
+        "because no current test covers it — reachability is a structural property of the code, not a property of the test suite. Exception — governing artifact creation: this "
+        "constraint does not apply to writing a governing artifact (a test or spec file — a file whose content contains assertions about the behavior under test, separate from the "
+        "source of that behavior); governing artifact creation is not subject to the FAIL gate because a governing artifact cannot pre-exist its own creation; the FAIL gate applies "
+        "only to non-governing file edits (implementation).",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

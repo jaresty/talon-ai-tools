@@ -243,11 +243,11 @@
         "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, evaluating outcomes, or prescribing action."
       },
       "topology": {
-        "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each major reasoning transition names the evidence or premise it depends on before proceeding. Unsupported continuity jumps are treated as failures.",
-        "blind": "The response reconstructs key assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
-        "relay": "The response externalizes state sufficient for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. A reader without prior context can reconstruct the reasoning state at any point.",
-        "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation structurally requires them. The output contains the final artifact and the reasoning directly essential to it.",
-        "witness": "The response surfaces important assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
+        "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each reasoning transition names the evidence or premise it depends on before proceeding. Unsupported continuity jumps are treated as failures.",
+        "blind": "The response reconstructs assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
+        "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. A reader without prior context can reconstruct the reasoning state at any point.",
+        "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation requires them. The output contains the final artifact and the reasoning directly required to reach it.",
+        "witness": "The response surfaces assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
       }
     },
     "list_tokens": {
@@ -5776,7 +5776,7 @@
             "no narrative dependency",
             "skeptical evaluator"
           ],
-          "definition": "The response makes each claim locally defensible without relying on later conclusions for support. Each major reasoning transition names the evidence or premise it depends on before proceeding. Unsupported continuity jumps are treated as failures."
+          "definition": "The response makes each claim locally defensible without relying on later conclusions for support. Each reasoning transition names the evidence or premise it depends on before proceeding. Unsupported continuity jumps are treated as failures."
         },
         "blind": {
           "distinctions": [
@@ -5799,7 +5799,7 @@
             "no implicit carry-forward",
             "explicit assumptions"
           ],
-          "definition": "The response reconstructs key assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact."
+          "definition": "The response reconstructs assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact."
         },
         "relay": {
           "distinctions": [
@@ -5823,7 +5823,7 @@
             "collaborative architecture",
             "continuation-safe"
           ],
-          "definition": "The response externalizes state sufficient for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. A reader without prior context can reconstruct the reasoning state at any point."
+          "definition": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. A reader without prior context can reconstruct the reasoning state at any point."
         },
         "solo": {
           "distinctions": [
@@ -5846,7 +5846,7 @@
             "naming and metaphor work",
             "mathematical intuition"
           ],
-          "definition": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation structurally requires them. The output contains the final artifact and the reasoning directly essential to it."
+          "definition": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation requires them. The output contains the final artifact and the reasoning directly required to reach it."
         },
         "witness": {
           "distinctions": [
@@ -5874,7 +5874,7 @@
             "justify each transition",
             "best default epistemic hygiene"
           ],
-          "definition": "The response surfaces important assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
+          "definition": "The response surfaces assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
         }
       }
     },
@@ -10246,7 +10246,7 @@
     }
   ],
   "checksums": {
-    "axes": "f9327eb1098244b8c362e8f25e01fe2cbedff42d19d7283e77c86b2914bf87f3",
+    "axes": "71b0103945396bd0f966685f66fc5a70f6b6599abc46a836d849865348adb41c",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

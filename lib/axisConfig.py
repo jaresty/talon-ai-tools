@@ -578,16 +578,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "evaluating outcomes, or prescribing action.",
     },
     "topology": {
-        "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each major reasoning transition names the evidence or premise it depends on "
+        "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each reasoning transition names the evidence or premise it depends on "
         "before proceeding. Unsupported continuity jumps are treated as failures.",
-        "blind": "The response reconstructs key assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the "
-        "conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
-        "relay": "The response externalizes state sufficient for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining "
-        "implicit. A reader without prior context can reconstruct the reasoning state at any point.",
-        "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation structurally requires them. The "
-        "output contains the final artifact and the reasoning directly essential to it.",
-        "witness": "The response surfaces important assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty "
-        "is named before it is collapsed into a conclusion.",
+        "blind": "The response reconstructs assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions "
+        "that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
+        "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. "
+        "A reader without prior context can reconstruct the reasoning state at any point.",
+        "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation requires them. The output "
+        "contains the final artifact and the reasoning directly required to reach it.",
+        "witness": "The response surfaces assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named "
+        "before it is collapsed into a conclusion.",
     },
 }
 

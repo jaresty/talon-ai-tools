@@ -489,9 +489,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "attractor shape, not predict any specific path. Variation is sufficient only when it includes at least one trajectory that begins in a qualitatively different region — a "
         "trajectory that, if the attractor were absent, would produce a structurally different outcome. A claimed attractor must be shown to hold across trajectories that begin far "
         "apart; trajectories that begin near each other do not establish invariance.",
-        "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on the "
-        "criteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
+        "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on "
+        "thecriteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
+        "own": "The response contains no path, command, instruction, or recommendation whose execution would write to a repository, shared tool, or multi-user environment. Output targeting only "
+        "the operator's local filesystem, shell session, or personal tooling satisfies this constraint; output targeting any shared system does not.",
         "paradox": "The response holds the subject as an unresolved generative tension rather than converging toward explanation or conclusion. It names what resists analysis without "
         "substituting a reframing that dissolves the resistance. Synthesis, resolution, and explanation are not valid closing moves — the response ends at the boundary of what "
         "analytical tools can reach.",
@@ -777,6 +779,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "orbit": "Find attractor geometry across trajectories",
         "order": "Abstract structural and ordering reasoning",
         "origin": "Uncover how the subject arose",
+        "own": "Operator-private effect scope",
         "paradox": "Hold subject as unresolved tension; name what resists analysis without resolving it",
         "perturb": "Introduce controlled faults to observe system response",
         "polar": "Attractor and repeller dynamics",
@@ -1003,6 +1006,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "orbit": "軌",
         "order": "順",
         "origin": "起",
+        "own": "私",
         "paradox": "矛",
         "perturb": "擾",
         "polar": "磁",
@@ -1202,6 +1206,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "orbit": "Temporal/Dynamic",
         "order": "Structural",
         "origin": "Structural",
+        "own": "Boundary",
         "paradox": "Reasoning",
         "perturb": "Diagnostic",
         "polar": "Comparative",
@@ -1429,6 +1434,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "orbit": "Attractor geometry",
         "order": "Abstract ordering",
         "origin": "Historical causation",
+        "own": "Operator-private scope",
         "paradox": "Unresolved generative tension",
         "perturb": "Introduce controlled variations",
         "polar": "Attractors/repellers",

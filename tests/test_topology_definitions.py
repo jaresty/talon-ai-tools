@@ -8,7 +8,7 @@ from lib.axisConfig import AXIS_KEY_TO_VALUE
 def test_topology_definitions_exist():
     assert "topology" in AXIS_KEY_TO_VALUE
     tokens = AXIS_KEY_TO_VALUE["topology"]
-    assert set(tokens.keys()) == {"witness", "audit", "blind", "relay", "solo"}
+    assert set(tokens.keys()) == {"witness", "audit", "blind", "relay", "solo", "live"}
 
 
 def test_topology_definitions_no_intent_qualifiers():

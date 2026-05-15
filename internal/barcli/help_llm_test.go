@@ -830,3 +830,61 @@ func TestBlindCodeCompositionRuleRendered(t *testing.T) {
 		t.Errorf("### Choosing Topology blind+code composition rule must describe comment-based assumption reconstruction (expected 'comment' in section)")
 	}
 }
+
+// TestChoosingTopologyC22Recommendations specifies that bar help llm Choosing Topology
+// section contains all four ADR-0085 cycle-22 recommendations:
+// R2: witness+skim/gist guidance; R3: audit+probe natural; R4: relay+notebook natural;
+// R5: witness+gate natural.
+func TestChoosingTopologyC22Recommendations(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	start := strings.Index(output, "### Choosing Topology")
+	if start == -1 {
+		t.Fatal("bar help llm output missing ### Choosing Topology section")
+	}
+	end := strings.Index(output[start:], "### Choosing Completeness")
+	if end == -1 {
+		end = len(output) - start
+	}
+	section := output[start : start+end]
+
+	cases := []struct {
+		name    string
+		phrases []string
+		msg     string
+	}{
+		{
+			"R2: witness+skim/gist guidance",
+			[]string{"witness", "skim", "gist"},
+			"witness+skim/gist guidance missing from ### Choosing Topology — add note about compressed assumption traces",
+		},
+		{
+			"R3: audit+probe natural",
+			[]string{"audit", "probe"},
+			"audit+probe natural pairing missing from ### Choosing Topology",
+		},
+		{
+			"R4: relay+notebook natural",
+			[]string{"relay", "notebook"},
+			"relay+notebook natural pairing missing from ### Choosing Topology",
+		},
+		{
+			"R5: witness+gate natural",
+			[]string{"witness", "gate"},
+			"witness+gate natural pairing missing from ### Choosing Topology",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, phrase := range tc.phrases {
+				if !strings.Contains(section, phrase) {
+					t.Errorf("%s (missing phrase %q)", tc.msg, phrase)
+				}
+			}
+		})
+	}
+}

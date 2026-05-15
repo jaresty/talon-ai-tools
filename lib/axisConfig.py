@@ -1913,6 +1913,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         }
     },
     "topology": {
+        "audit": {"task": {"natural": ["probe", "diff", "check"]}},
         "blind": {
             "channel": {
                 "cautionary": {
@@ -1920,7 +1921,9 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "sections that depend on them — code-only output is preserved; the assumption blocks appear as inline comment headers rather than prose"
                 }
             }
-        }
+        },
+        "relay": {"channel": {"natural": ["notebook"]}},
+        "witness": {"form": {"natural": ["gate"]}},
     },
 }
 

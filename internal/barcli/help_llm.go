@@ -1086,6 +1086,13 @@ func renderTopologyCrossAxisComposition(w io.Writer, grammar *Grammar) {
 		sort.Strings(axes)
 		for _, ax := range axes {
 			pair := pairsByAxis[ax]
+			if len(pair.Natural) > 0 {
+				backticked := make([]string, len(pair.Natural))
+				for i, n := range pair.Natural {
+					backticked[i] = "`" + n + "`"
+				}
+				fmt.Fprintf(w, "- **`%s`** natural with %s: %s\n", tok, ax, strings.Join(backticked, ", "))
+			}
 			keys := make([]string, 0, len(pair.Cautionary))
 			for k := range pair.Cautionary {
 				keys = append(keys, k)
@@ -1156,6 +1163,7 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	renderRoutingConceptSection(w, "Choosing Topology", grammar.Axes.RoutingConcept["topology"])
 	renderAxisTokenHeuristics(w, grammar.Axes.Metadata["topology"])
 	renderTopologyCrossAxisComposition(w, grammar)
+	fmt.Fprintf(w, "- **`witness` + `skim`/`gist`**: produces compressed assumption traces — if brevity is required, prefer `solo` (no externalized reasoning state) or surface only critical assumptions explicitly\n\n")
 
 	fmt.Fprintf(w, "### Choosing Completeness\n\n")
 	fmt.Fprintf(w, "- **Depth-oriented tasks** (`probe`, `sim`): prefer `deep` or `full` completeness. `minimal` and `gist` reduce analytical value — probe's purpose is surfacing structure and implications (needs depth); sim's narrative arc requires space to develop. Exception: explicit user brevity signals (\"quickly\", \"brief overview\", \"just a sketch\") override this default — honor the user's stated intent.\n")

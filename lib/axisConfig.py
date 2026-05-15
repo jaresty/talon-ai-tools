@@ -505,6 +505,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
         "specifying what mechanism — if any — detects and corrects that distortion.",
+        "redact": "The response rewrites the subject for a general audience by applying a named criteria list. Before producing the rewritten output, it states each category of content being "
+        "excluded. The rewritten output contains no content matching any named category — a rewrite where a named category is present in the output does not satisfy this requirement. "
+        "Content is removed or paraphrased naturally; no placeholder markers are required.",
         "reify": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that "
         "constrain reasoning.",
         "release": "The response reduces distortion by de-weighting contingent or temporary features of the situation — asking which concerns would dissolve if the current state changed, and "
@@ -781,6 +784,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank items by importance or impact",
         "probability": "Probabilistic and statistical reasoning",
         "pulse": "Content vs medium; distortion and correction",
+        "redact": "Rewrite for general consumption",
         "reify": "Make implicit patterns explicit as rules",
         "release": "De-weight contingent features; surface load-bearing constraints",
         "reset": "Reconstruct without prior compatibility constraints",
@@ -1006,6 +1010,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "prioritize": "優",
         "probability": "確",
         "pulse": "伝",
+        "redact": "消",
         "reify": "形",
         "release": "放",
         "reset": "初",
@@ -1431,6 +1436,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank by importance",
         "probability": "Statistical reasoning",
         "pulse": "Content/medium separation and distortion",
+        "redact": "Criteria-governed content removal for general audience",
         "reify": "Make implicit explicit",
         "release": "De-weight transient features",
         "reset": "Clean slate/greenfield",
@@ -5829,6 +5835,38 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "observability pipeline fidelity",
                 "where does signal get lost in this event pipeline",
                 "where does data degrade as it passes through these service boundaries",
+            ],
+        },
+        "redact": {
+            "distinctions": [
+                {
+                    "note": "pull = extract a subset to keep; redact = rewrite the whole with named categories omitted",
+                    "token": "pull",
+                },
+                {
+                    "note": "narrow = restrict scope of discussion; redact = full scope preserved, named sensitive categories removed from content",
+                    "token": "narrow",
+                },
+                {
+                    "note": "fix = reformat existing content preserving meaning; redact = rewrite changing content by removing named categories",
+                    "token": "fix",
+                },
+                {
+                    "note": "dam (scope) = define containment boundaries conceptually; redact = actively apply removal criteria to produce clean output",
+                    "token": "dam",
+                },
+            ],
+            "heuristics": [
+                "rewrite for general audience",
+                "sanitize for public sharing",
+                "remove internal information",
+                "clean this up for external use",
+                "what can I share externally",
+                "remove confidential details",
+                "prepare for external publication",
+                "anonymize this",
+                "make this safe to share",
+                "strip sensitive details",
             ],
         },
         "reify": {

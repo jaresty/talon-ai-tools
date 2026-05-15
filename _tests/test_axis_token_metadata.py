@@ -502,6 +502,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "ladder",
         "sense",
         "reset",
+        "redact",
         "rigor",
         "robust",
         "root",

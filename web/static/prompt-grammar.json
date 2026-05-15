@@ -196,6 +196,7 @@
         "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and specifying what mechanism — if any — detects and corrects that distortion.",
+        "redact": "The response rewrites the subject for a general audience by applying a named criteria list. Before producing the rewritten output, it states each category of content being excluded. The rewritten output contains no content matching any named category — a rewrite where a named category is present in the output does not satisfy this requirement. Content is removed or paraphrased naturally; no placeholder markers are required.",
         "reify": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that constrain reasoning.",
         "release": "The response reduces distortion by de-weighting contingent or temporary features of the situation — asking which concerns would dissolve if the current state changed, and treating those as non-load-bearing rather than as fixed constraints.",
         "reset": "The response modifies the task by discarding compatibility constraints and reconstructing the structure as if no prior commitments existed.",
@@ -427,6 +428,7 @@
         "prioritize",
         "probability",
         "pulse",
+        "redact",
         "reify",
         "release",
         "reset",
@@ -655,6 +657,7 @@
         "prioritize": "Rank items by importance or impact",
         "probability": "Probabilistic and statistical reasoning",
         "pulse": "Content vs medium; distortion and correction",
+        "redact": "Rewrite for general consumption",
         "reify": "Make implicit patterns explicit as rules",
         "release": "De-weight contingent features; surface load-bearing constraints",
         "reset": "Reconstruct without prior compatibility constraints",
@@ -879,6 +882,7 @@
         "prioritize": "優",
         "probability": "確",
         "pulse": "伝",
+        "redact": "消",
         "reify": "形",
         "release": "放",
         "reset": "初",
@@ -1227,6 +1231,7 @@
         "prioritize": "Rank by importance",
         "probability": "Statistical reasoning",
         "pulse": "Content/medium separation and distortion",
+        "redact": "Criteria-governed content removal for general audience",
         "reify": "Make implicit explicit",
         "release": "De-weight transient features",
         "reset": "Clean slate/greenfield",
@@ -4809,6 +4814,39 @@
           ],
           "definition": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and specifying what mechanism — if any — detects and corrects that distortion."
         },
+        "redact": {
+          "distinctions": [
+            {
+              "note": "pull = extract a subset to keep; redact = rewrite the whole with named categories omitted",
+              "token": "pull"
+            },
+            {
+              "note": "narrow = restrict scope of discussion; redact = full scope preserved, named sensitive categories removed from content",
+              "token": "narrow"
+            },
+            {
+              "note": "fix = reformat existing content preserving meaning; redact = rewrite changing content by removing named categories",
+              "token": "fix"
+            },
+            {
+              "note": "dam (scope) = define containment boundaries conceptually; redact = actively apply removal criteria to produce clean output",
+              "token": "dam"
+            }
+          ],
+          "heuristics": [
+            "rewrite for general audience",
+            "sanitize for public sharing",
+            "remove internal information",
+            "clean this up for external use",
+            "what can I share externally",
+            "remove confidential details",
+            "prepare for external publication",
+            "anonymize this",
+            "make this safe to share",
+            "strip sensitive details"
+          ],
+          "definition": "The response rewrites the subject for a general audience by applying a named criteria list. Before producing the rewritten output, it states each category of content being excluded. The rewritten output contains no content matching any named category — a rewrite where a named category is present in the output does not satisfy this requirement. Content is removed or paraphrased naturally; no placeholder markers are required."
+        },
         "reify": {
           "distinctions": [
             {
@@ -8337,6 +8375,7 @@
         "prioritize": "prioritize",
         "probability": "probability",
         "pulse": "pulse",
+        "redact": "redact",
         "reify": "reify",
         "release": "release",
         "reset": "reset",
@@ -8601,6 +8640,7 @@
         "method=prioritize": "method-prioritize",
         "method=probability": "method-probability",
         "method=pulse": "method-pulse",
+        "method=redact": "method-redact",
         "method=reify": "method-reify",
         "method=release": "method-release",
         "method=reset": "method-reset",
@@ -9098,6 +9138,7 @@
       "method=prioritize": "method-prioritize",
       "method=probability": "method-probability",
       "method=pulse": "method-pulse",
+      "method=redact": "method-redact",
       "method=reify": "method-reify",
       "method=release": "method-release",
       "method=reset": "method-reset",
@@ -9166,6 +9207,7 @@
       "questions": "questions",
       "quiz": "quiz",
       "recipe": "recipe",
+      "redact": "redact",
       "reify": "reify",
       "relay": "relay",
       "release": "release",
@@ -10366,11 +10408,11 @@
     }
   ],
   "checksums": {
-    "axes": "11dcbd2fed34a9694c805ba1ca76044fe568b03306c06a117791746d50c2b099",
+    "axes": "3caa0475c2a0c3d09a7ee87dd37b420cbe993f7d19ccd4b6a2fcb3f9c4c193f0",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
-    "slugs": "56b0094699a115fbb08dd9ab4e673e5acf63db0fd105e893699080b4dfe3298c",
+    "slugs": "afd3810ae8fd364b149abe5cb989a9a1e68598c50e1d14cc0f9c95102ccff43f",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

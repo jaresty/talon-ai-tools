@@ -57,6 +57,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
         "surrounding explanation.",
+        "demo": "The response produces a pull request evidence artifact. The output must contain, as literal text: (1) the action taken, and (2) the result as it appeared when captured. No "
+        "execution by the reviewer is required or assumed. The artifact is the evidence; interpretation is left to the reviewer.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not "
         "allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "draw": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not "
@@ -115,11 +117,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
         "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding "
         "prose or explanation.",
-        "zettel": "Structure the response as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, or) "
-        "joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending in "
-        "a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative (begins "
-        "with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear as the "
-        "literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the "
+        "zettel": "The response is structured as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, "
+        "or) joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending "
+        "in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative "
+        "(begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear "
+        "as the literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the "
         "suggest-links output contains at least one candidate not already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: "
         "skipped — zero qualifying suggestions` in the transcript.",
     },
@@ -610,6 +612,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "agent": "Agent definition",
         "code": "Code or markup only, no prose",
         "codetour": "VS Code CodeTour JSON file",
+        "demo": "Pull request evidence artifact",
         "diagram": "Mermaid diagram only",
         "draw": "Spatial ASCII prose layout",
         "formal": "Formal notation with optional clarifying prose",
@@ -842,6 +845,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "agent": "使",
         "code": "碼",
         "codetour": "観",
+        "demo": "証",
         "diagram": "図",
         "draw": "枠",
         "formal": "式",
@@ -1253,6 +1257,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "agent": "Agent definition output",
         "code": "Code output",
         "codetour": "VS Code tour",
+        "demo": "Pull request evidence artifact",
         "diagram": "Mermaid diagram",
         "draw": "ASCII spatial layout",
         "formal": "Formal notation specification",
@@ -2503,6 +2508,42 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "code tour file",
                 "interactive code walkthrough",
                 "create a codetour",
+            ],
+        },
+        "demo": {
+            "distinctions": [
+                {
+                    "note": "witness (topology) = constraint on Claude's own observation behavior; demo = channel producing a human-reviewer evidence artifact",
+                    "token": "witness",
+                },
+                {
+                    "note": "code = implementation only; demo = observed output of that implementation",
+                    "token": "code",
+                },
+                {
+                    "note": "shellscript = executable script; demo = captured result of execution, not the script",
+                    "token": "shellscript",
+                },
+                {
+                    "note": "plain = suppresses formatting; demo = formatting governed by reviewer legibility",
+                    "token": "plain",
+                },
+                {
+                    "note": "sync = session plan with timing cues; demo = fixed-at-capture evidence, no timing",
+                    "token": "sync",
+                },
+            ],
+            "heuristics": [
+                "attach to the PR",
+                "proof of life",
+                "show it works",
+                "demonstrate the change",
+                "before and after",
+                "show the output",
+                "here's what it produced",
+                "evidence for reviewers",
+                "show don't tell",
+                "what does this actually do",
             ],
         },
         "diagram": {

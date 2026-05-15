@@ -122,6 +122,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "agent",
         "code",
         "codetour",
+        "demo",
         "diagram",
         "draw",
         "formal",

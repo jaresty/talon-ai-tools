@@ -27,6 +27,7 @@
         "agent": "The response is structured as an agent definition — a persistent autonomous subprocess specification with YAML frontmatter (name, system_prompt, tools, model, persona, trigger) followed by a body describing behavior and constraints. Formatted for direct use as an agent configuration in an agent harness. The agent definition must: (1) declare all required tools explicitly in the frontmatter tools field; (2) state a trigger condition specific enough to be invoked unambiguously — the trigger must answer yes/no at runtime with no interpretation required; (3) end with an explicit 'Write to disk' instruction naming the target path (e.g. ~/.claude/agents/<name>.md or .claude/agents/<name>.md for project-scoped agents).",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation.",
+        "demo": "The response produces a pull request evidence artifact. The output must contain, as literal text: (1) the action taken, and (2) the result as it appeared when captured. No execution by the reviewer is required or assumed. The artifact is the evidence; interpretation is left to the reviewer.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
         "draw": "The response is delivered as a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short legend where needed. Human-readable and not machine-parseable. Use when a conceptual overview in spatial form is wanted without the precision constraints of Mermaid or D2.",
         "formal": "The response separates behavioral specification from explanation. Formal notation (type signatures, interfaces, invariants, pre/postconditions) encodes what must be true — the executable or testable part. Natural language labels, introduces, and explains the specification — prose adds context but does not substitute for formal encoding where precision matters. The notation describes what must be true rather than how to implement it — permitted forms include type signatures without bodies, interface shapes, protocol definitions, and logical assertions; prohibited forms include complete function implementations, variable assignments, or working code sequences. When domain-specific notation exists (e.g., Z notation, TLA+, Alloy), the response may use it if appropriate; otherwise uses pseudocode-style type annotations and constraint statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`).",
@@ -46,7 +47,7 @@
         "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
         "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding prose or explanation.",
-        "zettel": "Structure the response as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, or) joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear as the literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the transcript."
+        "zettel": "The response is structured as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, or) joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear as the literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the transcript."
       },
       "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
@@ -256,6 +257,7 @@
         "agent",
         "code",
         "codetour",
+        "demo",
         "diagram",
         "draw",
         "formal",
@@ -485,6 +487,7 @@
         "agent": "Agent definition",
         "code": "Code or markup only, no prose",
         "codetour": "VS Code CodeTour JSON file",
+        "demo": "Pull request evidence artifact",
         "diagram": "Mermaid diagram only",
         "draw": "Spatial ASCII prose layout",
         "formal": "Formal notation with optional clarifying prose",
@@ -711,6 +714,7 @@
         "agent": "使",
         "code": "碼",
         "codetour": "観",
+        "demo": "証",
         "diagram": "図",
         "draw": "枠",
         "formal": "式",
@@ -1050,6 +1054,7 @@
         "agent": "Agent definition output",
         "code": "Code output",
         "codetour": "VS Code tour",
+        "demo": "Pull request evidence artifact",
         "diagram": "Mermaid diagram",
         "draw": "ASCII spatial layout",
         "formal": "Formal notation specification",
@@ -1352,6 +1357,43 @@
             "create a codetour"
           ],
           "definition": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or surrounding explanation."
+        },
+        "demo": {
+          "distinctions": [
+            {
+              "note": "witness (topology) = constraint on Claude's own observation behavior; demo = channel producing a human-reviewer evidence artifact",
+              "token": "witness"
+            },
+            {
+              "note": "code = implementation only; demo = observed output of that implementation",
+              "token": "code"
+            },
+            {
+              "note": "shellscript = executable script; demo = captured result of execution, not the script",
+              "token": "shellscript"
+            },
+            {
+              "note": "plain = suppresses formatting; demo = formatting governed by reviewer legibility",
+              "token": "plain"
+            },
+            {
+              "note": "sync = session plan with timing cues; demo = fixed-at-capture evidence, no timing",
+              "token": "sync"
+            }
+          ],
+          "heuristics": [
+            "attach to the PR",
+            "proof of life",
+            "show it works",
+            "demonstrate the change",
+            "before and after",
+            "show the output",
+            "here's what it produced",
+            "evidence for reviewers",
+            "show don't tell",
+            "what does this actually do"
+          ],
+          "definition": "The response produces a pull request evidence artifact. The output must contain, as literal text: (1) the action taken, and (2) the result as it appeared when captured. No execution by the reviewer is required or assumed. The artifact is the evidence; interpretation is left to the reviewer."
         },
         "diagram": {
           "distinctions": [
@@ -1695,7 +1737,7 @@
             "add to notes",
             "multiple notes"
           ],
-          "definition": "Structure the response as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, or) joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear as the literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the transcript."
+          "definition": "The response is structured as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, or) joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear as the literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the transcript."
         }
       },
       "completeness": {
@@ -8088,6 +8130,7 @@
         "agent": "agent",
         "code": "code",
         "codetour": "codetour",
+        "demo": "demo",
         "diagram": "diagram",
         "draw": "draw",
         "formal": "formal",
@@ -8592,6 +8635,7 @@
         "channel=agent": "channel-agent",
         "channel=code": "channel-code",
         "channel=codetour": "channel-codetour",
+        "channel=demo": "channel-demo",
         "channel=diagram": "channel-diagram",
         "channel=draw": "channel-draw",
         "channel=formal": "channel-formal",
@@ -8748,6 +8792,7 @@
       "channel=agent": "channel-agent",
       "channel=code": "channel-code",
       "channel=codetour": "channel-codetour",
+      "channel=demo": "channel-demo",
       "channel=diagram": "channel-diagram",
       "channel=draw": "channel-draw",
       "channel=formal": "channel-formal",
@@ -8801,6 +8846,7 @@
       "dam": "dam",
       "deduce": "deduce",
       "deep": "deep",
+      "demo": "demo",
       "depends": "depends",
       "diagnose": "diagnose",
       "diagram": "diagram",
@@ -10278,11 +10324,11 @@
     }
   ],
   "checksums": {
-    "axes": "c134e63b41720073058ac424b815e3712d69b70e6e6f101ec667ada049a91489",
+    "axes": "0de2990814acfda2861d1c3688318bc0b165914349f19364286bccedd6b5fc74",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
-    "slugs": "47165550f8ac265acef6539702f0d632af68281d5b7769573ac2318b1ef1acbe",
+    "slugs": "dab2ea3464b38016ada97f52f964337cd4a2cb2b43f5b5ffbd4485a02705c453",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

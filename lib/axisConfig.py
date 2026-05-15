@@ -594,6 +594,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "before proceeding. Unsupported continuity jumps are treated as failures.",
         "blind": "The response reconstructs assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions "
         "that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
+        "live": "The response externalizes inner states that are currently influencing its output. Every output segment that advances the task is preceded or accompanied by a named inner-state "
+        "observation in the same segment — a segment with no such observation does not satisfy this requirement. Inner states are named as they arise, not summarized after the "
+        "response.",
         "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. "
         "A reader without prior context can reconstruct the reasoning state at any point.",
         "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation requires them. The output "
@@ -828,6 +831,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "topology": {
         "audit": "Locally defensible reasoning",
         "blind": "Reconstructable reasoning",
+        "live": "Live inner state",
         "relay": "Handoff-ready reasoning",
         "solo": "Unobserved reasoning",
         "witness": "Inspectable reasoning",
@@ -1114,6 +1118,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "topology": {
         "audit": "査",
         "blind": "暗",
+        "live": "在",
         "relay": "継",
         "solo": "独",
         "witness": "観",
@@ -1489,6 +1494,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "topology": {
         "audit": "Locally defensible claims, adversarial scrutiny",
         "blind": "Reconstruct context for future replay",
+        "live": "Live inner state, per-segment externalization",
         "relay": "Handoff-ready, continuation-safe reasoning",
         "solo": "Unobserved, synthesis-optimized reasoning",
         "witness": "Surface assumptions for continuous observer",
@@ -6825,6 +6831,35 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "explicit assumptions",
             ],
         },
+        "live": {
+            "distinctions": [
+                {
+                    "note": "live = externalizes states currently influencing output (motivations, competing pulls); witness = externalizes propositions (assumptions, epistemic "
+                    "basis)",
+                    "token": "witness",
+                },
+                {
+                    "note": "live = topology shaping what inner states are visible; ground = method deriving enforcement process before acting",
+                    "token": "ground",
+                },
+                {
+                    "note": "live = shapes what of the model's own state is co-present per segment; relay = shapes output for handoff to another agent",
+                    "token": "relay",
+                },
+            ],
+            "heuristics": [
+                "think out loud",
+                "show your thinking",
+                "stream of consciousness",
+                "what are you actually thinking",
+                "be transparent about your reasoning",
+                "what's pulling you",
+                "what feels uncertain",
+                "narrate your inner state",
+                "metacognition",
+                "Buddhist-style awareness",
+            ],
+        },
         "relay": {
             "distinctions": [
                 {
@@ -6883,6 +6918,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "witness = observer evaluates transitions; relay = another party continues mid-stream",
                     "token": "relay",
+                },
+                {
+                    "note": "witness = externalizes propositions (assumptions, epistemic basis); live = externalizes states currently influencing output, named per-segment",
+                    "token": "live",
                 },
             ],
             "heuristics": [

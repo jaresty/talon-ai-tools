@@ -12,7 +12,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-_TOPOLOGY_TOKENS = {"solo", "witness", "audit", "relay", "blind"}
+_TOPOLOGY_TOKENS = {"solo", "witness", "audit", "relay", "blind", "live"}
 
 if bootstrap is not None:
     from talon_user.lib.axisConfig import (

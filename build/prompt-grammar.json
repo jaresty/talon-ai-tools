@@ -246,6 +246,7 @@
       "topology": {
         "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each reasoning transition names the evidence or premise it depends on before proceeding. Unsupported continuity jumps are treated as failures.",
         "blind": "The response reconstructs assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
+        "live": "The response externalizes inner states that are currently influencing its output. Every output segment that advances the task is preceded or accompanied by a named inner-state observation in the same segment — a segment with no such observation does not satisfy this requirement. Inner states are named as they arise, not summarized after the response.",
         "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. A reader without prior context can reconstruct the reasoning state at any point.",
         "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation requires them. The output contains the final artifact and the reasoning directly required to reach it.",
         "witness": "The response surfaces assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
@@ -476,6 +477,7 @@
       "topology": [
         "audit",
         "blind",
+        "live",
         "relay",
         "solo",
         "witness"
@@ -703,6 +705,7 @@
       "topology": {
         "audit": "Locally defensible reasoning",
         "blind": "Reconstructable reasoning",
+        "live": "Live inner state",
         "relay": "Handoff-ready reasoning",
         "solo": "Unobserved reasoning",
         "witness": "Inspectable reasoning"
@@ -926,6 +929,7 @@
       "topology": {
         "audit": "査",
         "blind": "暗",
+        "live": "在",
         "relay": "継",
         "solo": "独",
         "witness": "観"
@@ -1273,6 +1277,7 @@
       "topology": {
         "audit": "Locally defensible claims, adversarial scrutiny",
         "blind": "Reconstruct context for future replay",
+        "live": "Live inner state, per-segment externalization",
         "relay": "Handoff-ready, continuation-safe reasoning",
         "solo": "Unobserved, synthesis-optimized reasoning",
         "witness": "Surface assumptions for continuous observer"
@@ -5843,6 +5848,35 @@
           ],
           "definition": "The response reconstructs assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact."
         },
+        "live": {
+          "distinctions": [
+            {
+              "note": "live = externalizes states currently influencing output (motivations, competing pulls); witness = externalizes propositions (assumptions, epistemic basis)",
+              "token": "witness"
+            },
+            {
+              "note": "live = topology shaping what inner states are visible; ground = method deriving enforcement process before acting",
+              "token": "ground"
+            },
+            {
+              "note": "live = shapes what of the model's own state is co-present per segment; relay = shapes output for handoff to another agent",
+              "token": "relay"
+            }
+          ],
+          "heuristics": [
+            "think out loud",
+            "show your thinking",
+            "stream of consciousness",
+            "what are you actually thinking",
+            "be transparent about your reasoning",
+            "what's pulling you",
+            "what feels uncertain",
+            "narrate your inner state",
+            "metacognition",
+            "Buddhist-style awareness"
+          ],
+          "definition": "The response externalizes inner states that are currently influencing its output. Every output segment that advances the task is preceded or accompanied by a named inner-state observation in the same segment — a segment with no such observation does not satisfy this requirement. Inner states are named as they arise, not summarized after the response."
+        },
         "relay": {
           "distinctions": [
             {
@@ -5903,6 +5937,10 @@
             {
               "note": "witness = observer evaluates transitions; relay = another party continues mid-stream",
               "token": "relay"
+            },
+            {
+              "note": "witness = externalizes propositions (assumptions, epistemic basis); live = externalizes states currently influencing output, named per-segment",
+              "token": "live"
             }
           ],
           "heuristics": [
@@ -8349,6 +8387,7 @@
       "topology": {
         "audit": "audit",
         "blind": "blind",
+        "live": "live",
         "relay": "relay",
         "solo": "solo",
         "witness": "witness"
@@ -8450,6 +8489,7 @@
       "topology": {
         "topology=audit": "topology-audit",
         "topology=blind": "topology-blind",
+        "topology=live": "topology-live",
         "topology=relay": "topology-relay",
         "topology=solo": "topology-solo",
         "topology=witness": "topology-witness"
@@ -8974,6 +9014,7 @@
       "ladder": "ladder",
       "lateral": "lateral",
       "lever": "lever",
+      "live": "live",
       "log": "log",
       "make": "make",
       "mapping": "mapping",
@@ -9230,6 +9271,7 @@
       "tone=kindly": "tone-kindly",
       "topology=audit": "topology-audit",
       "topology=blind": "topology-blind",
+      "topology=live": "topology-live",
       "topology=relay": "topology-relay",
       "topology=solo": "topology-solo",
       "topology=witness": "topology-witness",
@@ -10324,11 +10366,11 @@
     }
   ],
   "checksums": {
-    "axes": "0de2990814acfda2861d1c3688318bc0b165914349f19364286bccedd6b5fc74",
+    "axes": "11dcbd2fed34a9694c805ba1ca76044fe568b03306c06a117791746d50c2b099",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
-    "slugs": "dab2ea3464b38016ada97f52f964337cd4a2cb2b43f5b5ffbd4485a02705c453",
+    "slugs": "56b0094699a115fbb08dd9ab4e673e5acf63db0fd105e893699080b4dfe3298c",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",

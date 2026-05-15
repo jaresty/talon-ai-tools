@@ -6365,6 +6365,15 @@
             }
           }
         }
+      },
+      "topology": {
+        "blind": {
+          "channel": {
+            "cautionary": {
+              "code": "blind+code composition: assumption reconstruction manifests as structured comments (`# ASSUMPTION:`, `# CONTEXT:`) placed before the code sections that depend on them — code-only output is preserved; the assumption blocks appear as inline comment headers rather than prose"
+            }
+          }
+        }
       }
     },
     "form_default_completeness": {
@@ -10246,7 +10255,7 @@
     }
   ],
   "checksums": {
-    "axes": "1a098b3f0fdb133b90be1c65a3dff8d67df07a63faea38252270c7ef75f7e285",
+    "axes": "49378030754fe4bc8f9d987e1bfb4e15019cf80c34f0a7d65e2558cd8ea696a2",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

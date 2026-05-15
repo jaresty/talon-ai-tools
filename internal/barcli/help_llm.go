@@ -1065,6 +1065,41 @@ func renderAxisTokenHeuristics(w io.Writer, axisMetadata map[string]TaskMetadata
 	fmt.Fprintf(w, "\n")
 }
 
+// renderTopologyCrossAxisComposition renders composition rules for topology tokens
+// from grammar.Axes.CrossAxisComposition["topology"] (ADR-0085 C22).
+func renderTopologyCrossAxisComposition(w io.Writer, grammar *Grammar) {
+	topoCAC, ok := grammar.Axes.CrossAxisComposition["topology"]
+	if !ok || len(topoCAC) == 0 {
+		return
+	}
+	tokens := make([]string, 0, len(topoCAC))
+	for tok := range topoCAC {
+		tokens = append(tokens, tok)
+	}
+	sort.Strings(tokens)
+	for _, tok := range tokens {
+		pairsByAxis := topoCAC[tok]
+		axes := make([]string, 0, len(pairsByAxis))
+		for ax := range pairsByAxis {
+			axes = append(axes, ax)
+		}
+		sort.Strings(axes)
+		for _, ax := range axes {
+			pair := pairsByAxis[ax]
+			keys := make([]string, 0, len(pair.Cautionary))
+			for k := range pair.Cautionary {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, partnerTok := range keys {
+				note := pair.Cautionary[partnerTok]
+				fmt.Fprintf(w, "- **`%s` + `%s`**: %s\n", tok, partnerTok, note)
+			}
+		}
+	}
+	fmt.Fprintf(w, "\n")
+}
+
 // renderRoutingConceptSection renders a "Choosing X" routing guide section
 // dynamically from grammar.Axes.RoutingConcept for the given axis (ADR-0146 Phase 2).
 // Tokens sharing the same concept phrase are grouped into a single bullet.
@@ -1117,8 +1152,10 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 
 	// Choosing Topology — rendered dynamically from AXIS_KEY_TO_ROUTING_CONCEPT (ADR-0236)
 	// Heuristics rendered from grammar.Axes.Metadata (ADR-0155 SSOT).
+	// Cross-axis composition rules rendered from CROSS_AXIS_COMPOSITION (ADR-0085 C22).
 	renderRoutingConceptSection(w, "Choosing Topology", grammar.Axes.RoutingConcept["topology"])
 	renderAxisTokenHeuristics(w, grammar.Axes.Metadata["topology"])
+	renderTopologyCrossAxisComposition(w, grammar)
 
 	fmt.Fprintf(w, "### Choosing Completeness\n\n")
 	fmt.Fprintf(w, "- **Depth-oriented tasks** (`probe`, `sim`): prefer `deep` or `full` completeness. `minimal` and `gist` reduce analytical value — probe's purpose is surfacing structure and implications (needs depth); sim's narrative arc requires space to develop. Exception: explicit user brevity signals (\"quickly\", \"brief overview\", \"just a sketch\") override this default — honor the user's stated intent.\n")

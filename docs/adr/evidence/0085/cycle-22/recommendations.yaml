@@ -1,0 +1,82 @@
+cycle: 22
+date: "2026-05-14"
+seeds: "696-735"
+mean_score: 4.04
+topology_mean: 4.0
+trigger: "topology axis added (ADR-0236); first cycle with topology tokens in shuffle pool"
+
+recommendations:
+
+  - id: C22-R1
+    severity: medium
+    type: cross-axis-composition
+    tokens: [blind, code]
+    finding: >
+      blind + code channel is a structural incompatibility. blind requires explicit
+      prose assumption/context blocks before conclusions; code channel produces code-only
+      output with no natural location for those blocks. Seeds 716 (score 3) and 734 (score 2)
+      both exhibit this pattern consistently.
+    action: >
+      Add blind + code as a cautionary entry in CROSS_AXIS_COMPOSITION for the topology
+      axis (or the code channel entry). Guidance: "blind requires explicit prose assumption
+      blocks; code channel produces code-only output — the two structural requirements are
+      incompatible. Prefer blind with prose channels (sync, presenterm, plain) or use
+      witness instead when code output is required."
+    evidence: [seed_716, seed_734]
+    status: open
+
+  - id: C22-R2
+    severity: low
+    type: choosing-topology-guidance
+    tokens: [witness, skim, gist]
+    finding: >
+      witness + skim/gist produces compressed assumption traces that satisfy neither
+      the inspectable-reasoning requirement (witness) nor the brevity requirement
+      (skim/gist). Seeds 708 (score 4, witness+gist) and 733 (score 3, witness+skim)
+      confirm this pattern.
+    action: >
+      Add to "Choosing Topology" heuristics or "Choosing Completeness" cross-axis note:
+      "witness with gist/skim: produces compressed assumption traces — if brevity is
+      required, prefer solo (no externalized reasoning state) or ask the user if surfacing
+      only critical assumptions is acceptable."
+    evidence: [seed_708, seed_733]
+    status: open
+
+  - id: C22-R3
+    severity: low
+    type: cross-axis-composition-natural
+    tokens: [audit, probe]
+    finding: >
+      audit + probe is a consistently excellent pairing (seeds 703, 714, score 5 both).
+      audit's local-defensibility requirement reinforces probe's analytical rigour.
+    action: >
+      Document audit + probe as a natural combination in CROSS_AXIS_COMPOSITION or
+      "Choosing Topology" guidance.
+    evidence: [seed_703, seed_714]
+    status: open
+
+  - id: C22-R4
+    severity: low
+    type: cross-axis-composition-natural
+    tokens: [relay, notebook]
+    finding: >
+      relay + notebook channel is a natural structural alignment: Jupyter notebooks are
+      handoff artifacts by design (seed 704, score 4). relay externalizes state for
+      continuation; notebooks are the canonical format for that externalization.
+    action: >
+      Document relay + notebook as a natural combination in CROSS_AXIS_COMPOSITION.
+    evidence: [seed_704]
+    status: open
+
+  - id: C22-R5
+    severity: low
+    type: cross-axis-composition-natural
+    tokens: [witness, gate]
+    finding: >
+      witness + gate form is a natural pairing (seed 730, score 5). gate requires
+      visible preconditions; witness requires surfaced assumptions — structurally
+      complementary.
+    action: >
+      Document witness + gate as a natural combination.
+    evidence: [seed_730]
+    status: open

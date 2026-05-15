@@ -804,3 +804,29 @@ func TestChoosingTopologyHasTriggerHeuristics(t *testing.T) {
 		}
 	}
 }
+
+// TestBlindCodeCompositionRuleRendered specifies that bar help llm contains a
+// composition note for blind+code in the Choosing Topology section. ADR-0085 C22-R1.
+func TestBlindCodeCompositionRuleRendered(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	start := strings.Index(output, "### Choosing Topology")
+	if start == -1 {
+		t.Fatal("bar help llm output missing ### Choosing Topology section")
+	}
+	end := strings.Index(output[start:], "### Choosing Completeness")
+	if end == -1 {
+		end = len(output) - start
+	}
+	section := output[start : start+end]
+
+	if !strings.Contains(section, "blind") || !strings.Contains(section, "code") {
+		t.Errorf("### Choosing Topology section missing blind+code composition rule — blind and code must both appear in the section as a composition note")
+	}
+	if !strings.Contains(section, "comment") {
+		t.Errorf("### Choosing Topology blind+code composition rule must describe comment-based assumption reconstruction (expected 'comment' in section)")
+	}
+}

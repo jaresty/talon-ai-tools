@@ -1912,6 +1912,16 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             }
         }
     },
+    "topology": {
+        "blind": {
+            "channel": {
+                "cautionary": {
+                    "code": "blind+code composition: assumption reconstruction manifests as structured comments (`# ASSUMPTION:`, `# CONTEXT:`) placed before the code "
+                    "sections that depend on them — code-only output is preserved; the assumption blocks appear as inline comment headers rather than prose"
+                }
+            }
+        }
+    },
 }
 
 # Default completeness token for format-constrained form tokens (ADR-0153).

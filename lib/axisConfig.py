@@ -115,8 +115,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
         "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding "
         "prose or explanation.",
-        "zettel": "The response is structured as one or more Zettelkasten notes in nn format — each note has a title, type, and atomic body. When the response implies multiple distinct ideas, "
-        "emit one note per idea. Each note is self-contained and linkable. The output is formatted for direct use with `nn new` or `nn bulk-new`.",
+        "zettel": "Structure the response as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, or) "
+        "joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending in "
+        "a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative (begins "
+        "with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear as the "
+        "literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the "
+        "suggest-links output contains at least one candidate not already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: "
+        "skipped — zero qualifying suggestions` in the transcript.",
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",

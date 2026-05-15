@@ -40,6 +40,9 @@
 | T28 | Perform a pre-mortem or inversion exercise on a plan | "assume this project fails — what went wrong?" | analysis | 1% |
 | T29 | Create operational or deployment checklists | "create a deployment checklist for this service" | planning | 0.5% |
 | T30 | Real-time collaborative brainstorming (multi-turn, stateful) | "let's brainstorm the API design together iteratively" | design | 0.5% |
+| T31 | Produce reasoning that another party can continue mid-stream without re-reading the context | "write this analysis so another engineer can pick it up where you left off" | analysis | 1% |
+| T32 | Produce reasoning that can be replayed or reconstructed by a future reader with no prior context | "document this decision so it's fully reproducible six months from now" | writing | 1% |
+| T33 | Produce reasoning where each step names its assumptions and is inspectable by a live observer | "walk through this so each reasoning step is visible and auditable" | analysis | 1% |
 
 ---
 

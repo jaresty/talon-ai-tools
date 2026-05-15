@@ -768,3 +768,39 @@ func TestTopologyTokenInUsagePatterns(t *testing.T) {
 	}
 	t.Error("no usage pattern includes a topology token (solo/witness/audit/relay/blind) — add one to USAGE_PATTERNS in axisConfig.py")
 }
+
+// TestChoosingTopologyHasTriggerHeuristics specifies that the "Choosing Topology"
+// section in bar help llm contains trigger-phrase heuristics beyond routing-concept
+// bullets. ADR-0236: topology axis discoverability requires when-to-reach-for-topology
+// guidance, not just concept→token mappings.
+func TestChoosingTopologyHasTriggerHeuristics(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderTokenSelectionHeuristics(&buf, grammar, false)
+	output := buf.String()
+
+	start := strings.Index(output, "### Choosing Topology")
+	if start == -1 {
+		t.Fatal("bar help llm output missing ### Choosing Topology section")
+	}
+	end := strings.Index(output[start:], "### Choosing Completeness")
+	if end == -1 {
+		end = len(output) - start
+	}
+	section := output[start : start+end]
+
+	// Trigger heuristics must appear — phrases that describe when to reach for
+	// topology, not just routing-concept → token mappings.
+	triggers := []string{
+		"handoff",
+		"adversarial",
+		"reconstruct",
+		"assumption",
+		"synthesis",
+	}
+	for _, phrase := range triggers {
+		if !strings.Contains(section, phrase) {
+			t.Errorf("### Choosing Topology section missing trigger heuristic phrase %q — section only has routing-concept bullets, not when-to-reach-for guidance", phrase)
+		}
+	}
+}

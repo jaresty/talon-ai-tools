@@ -1040,6 +1040,31 @@ func renderStarterPacks(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "\n")
 }
 
+// renderAxisTokenHeuristics appends per-token heuristic trigger phrases for an axis
+// below an already-rendered heading. Source: grammar.Axes.Metadata[axis] (ADR-0155).
+func renderAxisTokenHeuristics(w io.Writer, axisMetadata map[string]TaskMetadata) {
+	if len(axisMetadata) == 0 {
+		return
+	}
+	tokens := make([]string, 0, len(axisMetadata))
+	for tok := range axisMetadata {
+		tokens = append(tokens, tok)
+	}
+	sort.Strings(tokens)
+	for _, tok := range tokens {
+		meta := axisMetadata[tok]
+		if len(meta.Heuristics) == 0 {
+			continue
+		}
+		phrases := make([]string, len(meta.Heuristics))
+		for i, h := range meta.Heuristics {
+			phrases[i] = h
+		}
+		fmt.Fprintf(w, "- **%s**: %s\n", tok, strings.Join(phrases, ", "))
+	}
+	fmt.Fprintf(w, "\n")
+}
+
 // renderRoutingConceptSection renders a "Choosing X" routing guide section
 // dynamically from grammar.Axes.RoutingConcept for the given axis (ADR-0146 Phase 2).
 // Tokens sharing the same concept phrase are grouped into a single bullet.
@@ -1091,7 +1116,9 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	fmt.Fprintf(w, "- **voice=** (speaker identity: output FROM a role), **tone=** (emotional register: HOW delivered), **audience=** (target reader: output TO a person), **intent=** (communication purpose: WHY addressing the audience) — consult the Persona System section for per-token trigger phrases\n\n")
 
 	// Choosing Topology — rendered dynamically from AXIS_KEY_TO_ROUTING_CONCEPT (ADR-0236)
+	// Heuristics rendered from grammar.Axes.Metadata (ADR-0155 SSOT).
 	renderRoutingConceptSection(w, "Choosing Topology", grammar.Axes.RoutingConcept["topology"])
+	renderAxisTokenHeuristics(w, grammar.Axes.Metadata["topology"])
 
 	fmt.Fprintf(w, "### Choosing Completeness\n\n")
 	fmt.Fprintf(w, "- **Depth-oriented tasks** (`probe`, `sim`): prefer `deep` or `full` completeness. `minimal` and `gist` reduce analytical value — probe's purpose is surfacing structure and implications (needs depth); sim's narrative arc requires space to develop. Exception: explicit user brevity signals (\"quickly\", \"brief overview\", \"just a sketch\") override this default — honor the user's stated intent.\n")

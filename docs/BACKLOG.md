@@ -60,7 +60,7 @@ make guardrails
 ## ADR pattern
 
 New features go through an ADR in `docs/adr/`. Numbered sequentially (currently at ~0163).
-Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-25 complete — 5.0/5, all loop-24 gaps closed).
+Active work: **ADR-0113** (task-gap-driven catalog refinement, loop-25 complete — 5.0/5, all loop-24 gaps closed). **Next trigger ready**: topology axis added (ADR-0236) — T31–T33 added to task-taxonomy.md targeting relay/blind/witness; ADR-0085 shuffle bug fixed (topology was missing from getStageTokens); Choosing Topology heuristics now rendered from SSOT. Run loop-27 with T31–T33 as primary topology discoverability tasks.
 
 ## How to help with this backlog
 

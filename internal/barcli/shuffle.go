@@ -115,7 +115,7 @@ func getStageTokens(g *Grammar, stage string) []string {
 		if intents, ok := g.Persona.Intent.AxisTokens["intent"]; ok {
 			tokens = append([]string(nil), intents...)
 		}
-	case "completeness", "scope", "method", "form", "channel", "directional":
+	case "completeness", "scope", "method", "form", "channel", "directional", "topology":
 		tokenSet := g.AxisTokenSet(stage)
 		tokens = make([]string, 0, len(tokenSet))
 		for token := range tokenSet {

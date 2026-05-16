@@ -1163,8 +1163,6 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	renderRoutingConceptSection(w, "Choosing Topology", grammar.Axes.RoutingConcept["topology"])
 	renderAxisTokenHeuristics(w, grammar.Axes.Metadata["topology"])
 	renderTopologyCrossAxisComposition(w, grammar)
-	fmt.Fprintf(w, "- **`witness` + `skim`/`gist`**: produces compressed assumption traces — if brevity is required, prefer `solo` (no externalized reasoning state) or surface only critical assumptions explicitly\n\n")
-
 	fmt.Fprintf(w, "### Choosing Completeness\n\n")
 	fmt.Fprintf(w, "- **Depth-oriented tasks** (`probe`, `sim`): prefer `deep` or `full` completeness. `minimal` and `gist` reduce analytical value — probe's purpose is surfacing structure and implications (needs depth); sim's narrative arc requires space to develop. Exception: explicit user brevity signals (\"quickly\", \"brief overview\", \"just a sketch\") override this default — honor the user's stated intent.\n")
 	fmt.Fprintf(w, "- **Extraction tasks** (`pull`, `sort`, `diff`): any completeness level works; match to how much of the source you want covered.\n")

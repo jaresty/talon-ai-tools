@@ -141,7 +141,7 @@ After evaluating against skills, assess whether `bar help llm` provides adequate
 | **Pattern examples** | Do the "Usage Patterns by Task Type" examples illustrate similar combinations? |
 | **Reference completeness** | Would someone consulting only `bar help llm` understand what this prompt will do? |
 | **Method category legibility** | Do the method category headings (Decision/Understanding/Exploration/Diagnostic) in the "Choosing Method" section clearly guide selection toward the methods in this combination? Score 1 if the category labels misdirected selection, 5 if they immediately surfaced the right methods. |
-| **Cross-axis composition coverage** | If this seed includes any token with a `CROSS_AXIS_COMPOSITION` entry (channel, form, completeness, or method — consult the dict): does the relevant section of `bar help llm` explain whether this pairing is natural, cautionary, or derivable via the universal rule? Score 1 if the section is absent or silent on this combination; 5 if it clearly explains the expected output. N/A if no token with an entry is selected. |
+| **Cross-axis composition coverage** | If this seed includes any token with a `CROSS_AXIS_COMPOSITION` entry (channel, form, completeness, method, or topology — consult the dict): does the relevant section of `bar help llm` explain whether this pairing is natural, cautionary, or derivable via the universal rule? Score 1 if the section is absent or silent on this combination; 5 if it clearly explains the expected output. N/A if no token with an entry is selected. |
 
 **Scoring rubric:**
 
@@ -476,7 +476,7 @@ distinction-check-subjects: ["why is this codebase hard to extend", "explain the
 #### Edit
 Token concept is valuable but description needs refinement.
 
-For **tokens with `CROSS_AXIS_COMPOSITION` entries** (channel, form, completeness, or method tokens — consult the dict), add `ssot_target` to route the edit to the correct SSOT:
+For **tokens with `CROSS_AXIS_COMPOSITION` entries** (channel, form, completeness, method, or topology tokens — consult the dict), add `ssot_target` to route the edit to the correct SSOT:
 - `description` — token's short description string (default for all non-channel tokens)
 - `guidance_prose` — `AXIS_KEY_TO_GUIDANCE` narrative (human-facing; TUI2/SPA meta panel)
 - `cautionary_entry` — `CROSS_AXIS_COMPOSITION` warning text (structured; rendered in `bar help llm` cross-axis composition sections)

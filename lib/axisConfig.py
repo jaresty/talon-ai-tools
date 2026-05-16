@@ -1946,7 +1946,17 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             }
         },
         "relay": {"channel": {"natural": ["notebook"]}},
-        "witness": {"form": {"natural": ["gate"]}},
+        "witness": {
+            "completeness": {
+                "cautionary": {
+                    "skim": "witness+skim tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires "
+                    "space; prefer solo if brevity is required",
+                    "gist": "witness+gist tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires "
+                    "space; prefer solo if brevity is required",
+                }
+            },
+            "form": {"natural": ["gate"]},
+        },
     },
 }
 

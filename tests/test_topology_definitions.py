@@ -11,6 +11,20 @@ def test_topology_definitions_exist():
     assert set(tokens.keys()) == {"witness", "audit", "blind", "relay", "solo", "live"}
 
 
+def test_solo_definition_is_epistemic_stance_only():
+    solo_def = AXIS_KEY_TO_VALUE["topology"]["solo"]
+    assert "compression" not in solo_def.lower(), (
+        f"solo definition contains 'compression' — solo must describe epistemic stance only, "
+        f"not output depth or compression: {solo_def!r}"
+    )
+    assert "synthesis efficiency" not in solo_def.lower(), (
+        f"solo definition contains 'synthesis efficiency' — solo must describe epistemic stance only: {solo_def!r}"
+    )
+    assert "reasoning state" in solo_def.lower() or "unobserved" in solo_def.lower(), (
+        f"solo definition must describe what reasoning state is externalized: {solo_def!r}"
+    )
+
+
 def test_topology_definitions_no_intent_qualifiers():
     intent_qualifiers = {"important", "major", "key", "sufficient", "essential", "structurally"}
     tokens = AXIS_KEY_TO_VALUE["topology"]

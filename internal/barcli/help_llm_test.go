@@ -796,7 +796,7 @@ func TestChoosingTopologyHasTriggerHeuristics(t *testing.T) {
 		"adversarial",
 		"reconstruct",
 		"assumption",
-		"synthesis",
+		"unobserved",
 	}
 	for _, phrase := range triggers {
 		if !strings.Contains(section, phrase) {

@@ -604,8 +604,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "response.",
         "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. "
         "A reader without prior context can reconstruct the reasoning state at any point.",
-        "solo": "The response optimizes for synthesis efficiency and conceptual compression. Intermediate assumptions appear in the output when the derivation requires them. The output "
-        "contains the final artifact and the reasoning directly required to reach it.",
+        "solo": "The response externalizes no reasoning state beyond what the derivation requires to reach the final artifact. Intermediate assumptions and derivation steps appear in the "
+        "output only when the derivation cannot proceed without making them explicit — not as a transparency or legibility measure. Output depth is governed by the completeness token "
+        "independently.",
         "witness": "The response surfaces assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named "
         "before it is collapsed into a conclusion.",
     },
@@ -1508,7 +1509,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "blind": "Reconstruct context for future replay",
         "live": "Live inner state, per-segment externalization",
         "relay": "Handoff-ready, continuation-safe reasoning",
-        "solo": "Unobserved, synthesis-optimized reasoning",
+        "solo": "Unobserved reasoning",
         "witness": "Surface assumptions for continuous observer",
     },
 }
@@ -6858,7 +6859,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "witness",
                 },
                 {
-                    "note": "audit = locally defensible; solo = synthesis-optimized",
+                    "note": "audit = locally defensible; solo = no observer assumed",
                     "token": "solo",
                 },
             ],
@@ -6954,7 +6955,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "witness",
                 },
                 {
-                    "note": "solo = optimize for synthesis; audit = each claim must stand independently",
+                    "note": "solo = no observer assumed; audit = each claim must stand independently",
                     "token": "audit",
                 },
             ],
@@ -6963,8 +6964,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "early-stage ideation",
                 "speculative architecture",
                 "no external scrutiny",
-                "synthesis efficiency",
-                "compress to final artifact",
+                "no observer",
+                "minimal externalization",
                 "naming and metaphor work",
                 "mathematical intuition",
             ],

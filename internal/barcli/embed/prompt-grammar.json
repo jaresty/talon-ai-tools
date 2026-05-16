@@ -10363,7 +10363,7 @@
         "ground",
         "falsify"
       ],
-      "prose": "ground + falsify: the intent of this combination is that every behavior is governed by a falsifiable artifact — meaning the behavior cannot regress without the artifact detecting it. Producing passing artifacts that happen to exist alongside the implementation does not satisfy this intent; each artifact must structurally enforce its governed behavior. Falsify's criteria are required constraints on whatever enforcement process ground derives. During ground's completion check, each assertion must have a correlated artifact-fire in the transcript — evidence that it would detect a regression. Does a correlated FAIL artifact already exist for this assertion? If yes — adversarial check satisfied; do not re-perturb. If no — produce it now. Self-assessed certainty does not substitute for a visible artifact fire — the artifact is the evidence; the assessment is not."
+      "prose": "ground + falsify: the intent of this combination is that every behavior is governed by a falsifiable artifact — meaning the behavior cannot regress without the artifact detecting it. Producing passing artifacts that happen to exist alongside the implementation does not satisfy this intent; each artifact must structurally enforce its governed behavior. Falsify's criteria are required constraints on whatever enforcement process ground derives. During ground's completion check, each assertion must have a correlated artifact-fire in the transcript — evidence that it would detect a regression. Does a correlated FAIL artifact already exist for this assertion? If yes — adversarial check satisfied; do not re-perturb. If no — produce it now. Self-assessed certainty does not substitute for a visible artifact fire — the artifact is the evidence; the assessment is not. Adversarial completion check: every assertion text appearing in the derivation block is governed. For each, the completion check must locate a tool-executed run result in the transcript whose output contains that assertion text as a FAIL string — if none exists, that assertion is a gap and the completion check must not close until such a result appears — the only source that satisfies the completion check for a governed assertion is a tool-executed run result in the transcript whose output contains that assertion text as a FAIL string."
     },
     {
       "name": "falsify+atomic",
@@ -10387,7 +10387,7 @@
         "atomic",
         "ground"
       ],
-      "prose": "atomic + ground: when the artifact's run result contains no remaining failures, that result is a necessary precondition for the completion check — the completion check is not permitted to open until a tool-executed run result showing zero failures appears in the transcript above it; the completion check block must end before any done declaration opens. Satisfying atomic's requirements does not exempt ground's requirements; satisfying ground's requirements does not exempt atomic's requirements — each applies independently."
+      "prose": "atomic + ground: when the artifact's run result contains no remaining failures, that result is a necessary precondition for the completion check — the completion check is not permitted to open until a tool-executed run result showing zero failures appears in the transcript above it; the completion check block must end before any done declaration opens. Satisfying atomic's requirements does not exempt ground's requirements; satisfying ground's requirements does not exempt atomic's requirements — each applies independently. Adversarial completion check: treat each distinct file-modifying tool call as one step. For each step, the completion check must locate a tool result (diff, run output, or file read) appearing in the transcript at that step's position that shows exactly one independently testable change — where independently testable means a separate named test or observable can detect one change while being blind to the other. If no such tool result exists, or if it shows more than one independently testable change, that step is a gap requiring re-execution as separate tool calls before the completion check may close — the only source that satisfies the step verification is a tool result appearing in the transcript at that step's position showing exactly one independently testable change."
     },
     {
       "name": "calc+chain",
@@ -10426,6 +10426,6 @@
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "4229dcc958b82a973630f30149355bfbd0a697d810708748efa6484e0997a6a5"
+    "compositions": "64c207783200f33d3c9625290babfbbcb664ee0795c88ace87e64e1dfc808683"
   }
 }

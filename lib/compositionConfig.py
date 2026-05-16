@@ -36,7 +36,14 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "in the transcript — evidence that it would detect a regression. Does a correlated "
             "FAIL artifact already exist for this assertion? If yes — adversarial check satisfied; "
             "do not re-perturb. If no — produce it now. Self-assessed certainty does not substitute "
-            "for a visible artifact fire — the artifact is the evidence; the assessment is not."
+            "for a visible artifact fire — the artifact is the evidence; the assessment is not. "
+            "Adversarial completion check: every assertion text appearing in the derivation block "
+            "is governed. For each, the completion check must locate a tool-executed run result "
+            "in the transcript whose output contains that assertion text as a FAIL string — if "
+            "none exists, that assertion is a gap and the completion check must not close until "
+            "such a result appears — the only source that satisfies the completion check for a "
+            "governed assertion is a tool-executed run result in the transcript whose output "
+            "contains that assertion text as a FAIL string."
         ),
     },
     {
@@ -86,7 +93,17 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "appears in the transcript above it; the completion check block must end before any "
             "done declaration opens. Satisfying atomic's requirements does not exempt ground's "
             "requirements; satisfying ground's requirements does not exempt atomic's requirements — "
-            "each applies independently."
+            "each applies independently. "
+            "Adversarial completion check: treat each distinct file-modifying tool call as one "
+            "step. For each step, the completion check must locate a tool result (diff, run "
+            "output, or file read) appearing in the transcript at that step's position that shows "
+            "exactly one independently testable change — where independently testable means a "
+            "separate named test or observable can detect one change while being blind to the "
+            "other. If no such tool result exists, or if it shows more than one independently "
+            "testable change, that step is a gap requiring re-execution as separate tool calls "
+            "before the completion check may close — the only source that satisfies the step "
+            "verification is a tool result appearing in the transcript at that step's position "
+            "showing exactly one independently testable change."
         ),
     },
     {

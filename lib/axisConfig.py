@@ -1936,7 +1936,16 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         }
     },
     "topology": {
-        "audit": {"task": {"natural": ["probe", "diff", "check"]}},
+        "audit": {
+            "task": {"natural": ["probe", "diff", "check"]},
+            "completeness": {"natural": ["zoom"]},
+            "persona_preset": {
+                "cautionary": {
+                    "fun_mode": "audit+fun_mode tends to produce incoherent output — audit's locally-defensible-claims discipline conflicts with fun_mode's tone "
+                    "register; the rigor requirement and the playful register pull in opposite directions"
+                }
+            },
+        },
         "blind": {
             "channel": {
                 "cautionary": {
@@ -1948,12 +1957,13 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         "relay": {"channel": {"natural": ["notebook"]}},
         "witness": {
             "completeness": {
+                "natural": ["zoom"],
                 "cautionary": {
                     "skim": "witness+skim tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires "
                     "space; prefer solo if brevity is required",
                     "gist": "witness+gist tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires "
                     "space; prefer solo if brevity is required",
-                }
+                },
             },
             "form": {"natural": ["gate"]},
         },

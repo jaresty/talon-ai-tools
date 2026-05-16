@@ -6498,6 +6498,16 @@
               "diff",
               "check"
             ]
+          },
+          "completeness": {
+            "natural": [
+              "zoom"
+            ]
+          },
+          "persona_preset": {
+            "cautionary": {
+              "fun_mode": "audit+fun_mode tends to produce incoherent output — audit's locally-defensible-claims discipline conflicts with fun_mode's tone register; the rigor requirement and the playful register pull in opposite directions"
+            }
           }
         },
         "blind": {
@@ -6516,6 +6526,9 @@
         },
         "witness": {
           "completeness": {
+            "natural": [
+              "zoom"
+            ],
             "cautionary": {
               "skim": "witness+skim tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires space; prefer solo if brevity is required",
               "gist": "witness+gist tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires space; prefer solo if brevity is required"
@@ -10424,7 +10437,7 @@
     }
   ],
   "checksums": {
-    "axes": "957b932e962145c3aca3b1079924f7c722f398dc9e06b3a1956b552a707bdddf",
+    "axes": "c1aa250627a9d2126a1691819d2b3065e737ce28881b41b657f20d2be8dc9387",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

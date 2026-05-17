@@ -241,8 +241,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "abduce": "The response enhances the task by generating explanatory hypotheses, each naming the specific piece of evidence it explains that the alternatives do not, explicitly comparing "
         "alternative explanations.",
         "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
-        "adversarial": "The response enhances the task by naming at least one input or state the system's specification does not explicitly handle, and naming at least one output the system "
-        "would produce in that state that contradicts a stated requirement.",
+        "adversarial": "The response enhances the task by naming at least one input, state, or condition not addressed by the subject's stated requirements or reasoning; at least one premise the "
+        "subject's argument treats as given without naming it; and at least one condition under which a stated claim does not hold.",
         "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, "
         "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
         "attributed solely to preferences or incentives without modeling how affordances influenced selection.",
@@ -292,8 +292,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "smallest intervention that closes it — smallest means removing this intervention would leave the gap open — and name at least one observable whose presence after the "
         "intervention marks the gap as closed.",
         "bias": "The response enhances the task by naming cognitive biases, heuristics, or systematic errors and naming the specific judgment or conclusion each would distort.",
-        "boom": "The response enhances the task by naming at least one behavior that is present below a named threshold and absent above it, or absent below a named threshold and present above "
-        "it, examining what breaks, dominates, or vanishes at that threshold.",
+        "boom": "The response enhances the task by naming at least one behavior whose presence, absence, or magnitude differs at a named high value of scale or intensity compared to a named low "
+        "value, and naming what breaks, becomes dominant, or vanishes at the transition.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
         "effects remain within the regions whose limits the response names.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
@@ -319,8 +319,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "factors. Use when the user presents options and asks which to choose or how they differ.",
         "control": "The response distinguishes between factors within agency and those outside it by naming each, and confines recommendations to the within-agency factors — no recommendation "
         "names a factor identified as outside agency as a required action.",
-        "converge": "The response enhances the task by narrowing from a set of named options to a smaller named set, explicitly excluding each option not carried forward and naming the criterion "
-        "for its exclusion.",
+        "converge": "The response enhances the task by enumerating a set of named options and narrowing to a smaller named set, explicitly excluding each option not carried forward and naming "
+        "the criterion for its exclusion — the options considered must outnumber the options carried forward.",
         "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined by explicit structural organization rather than by "
         "interpretive reasoning, implicit assumption, or uncontrolled coupling. A structural determination is valid only when the behavior cannot be produced by a different structural "
         "configuration — if an alternative arrangement would produce the same behavior without the claimed organization, the determination is incomplete.",
@@ -373,8 +373,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "the run result when the behavior is present — a check that produces no failure output when run against an empty stub exporting the correct symbol does not satisfy this "
         "requirement; (b) executes when the same triggering event causes evaluation of the artifact being changed — name the triggering event, then quote the specific string from a "
         "prior tool-executed result showing both the artifact and the changed file were invoked by that event; if no such quoted string exists above this line, the shared trigger is "
-        "not established and the artifact does not govern this change. A FAIL is valid only when a prior tool-executed result in the transcript contains at least one named passing "
-        "assertion alongside the named failing assertion — a run result whose output names only the failing assertion has not shown other behaviors passing; if no such prior result "
+        "not established and the artifact does not govern this change. A FAIL is valid only when the same tool-executed run result that names the governed behavior as failing also "
+        "names at least one other assertion as passing — a run result that shows no passing assertions has not established that other behaviors are unaffected; if no such prior result "
         "exists, the FAIL is not valid; a module-level or import-level error is not valid as a governing FAIL because it does not show any behavioral assertion present and passing. "
         "Before the tool call, produce a minimal-state declaration naming: the specific behavior being removed, and at least one other behavior that is present and unchanged in the "
         "test state — the minimal-state declaration is not complete until both items appear in the transcript above the tool call; if a tool-executed FAIL result shows the same "
@@ -456,8 +456,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "instruction's subject matter changes.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and naming an observation set that would disconfirm the "
         "generalization, and naming at least one observation in that set that is absent from the observations the generalization cites as support.",
-        "inversion": "The response enhances the task by beginning from outcomes named in the subject as failures or violations, asking what would produce or amplify them, then working backward "
-        "to avoid, mitigate, or design around those paths.",
+        "inversion": "The response enhances the task by beginning from at least one named outcome that constitutes a failure state — whether named in the subject or generated by the response — "
+        "asking what would produce or amplify it, then naming at least one path that leads to it and at least one intervention that blocks that path.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
         "consequences or implementations, ordered so that each rung names at least one term or concept that appears by name in the rung above it.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "
@@ -504,8 +504,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "initial conditions share all named values do not establish invariance.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on "
         "thecriteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
-        "origin": "The response enhances the task by naming at least one prior decision or event and naming the specific present-state property it produced that would be absent if that decision "
-        "or event had not occurred.",
+        "origin": "The response enhances the task by naming the prior decisions or events that produced the subject's current form, and for at least one named prior decision or event, naming a "
+        "specific present-state property it produced that would be absent if that decision or event had not occurred.",
         "own": "The response contains no path, command, instruction, or recommendation whose execution would write to a repository, shared tool, or multi-user environment. Output targeting only "
         "the operator's local filesystem, shell session, or personal tooling satisfies this constraint; output targeting any shared system does not.",
         "paradox": "The response holds the subject as an unresolved generative tension rather than converging toward explanation or conclusion. It names what resists analysis without "
@@ -538,8 +538,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "independent causal or justificatory elements without specifying their dependency relationship.",
         "seep": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond the boundaries named in the system's own interface "
         "contracts, documentation, or stated responsibilities, analyzing how this overreach increases coupling, ambiguity, or fragility.",
-        "sense": "The response names a directional assessment (toward or away from a named state) before naming the signals it integrates, without decomposing those signals into separate "
-        "analyses — multiple signals are held together in the assessment rather than unpacked one by one.",
+        "sense": "The response names a compressed assessment of the subject's directional tendency, degree of stability, or quality of fit — holding at least two named signals together in the "
+        "assessment rather than decomposing them into separate analyses, and stating the overall assessment before naming the signals.",
         "sever": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only "
         "through explicit, controlled interfaces.",
         "shear": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
@@ -564,15 +564,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "and the direction it pushes.",
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural "
         "changes.",
-        "unknowns": "The response enhances the task by naming at least one category of question that the response's framing excludes by name, and naming at least one action the analysis would "
-        "recommend if a question from that category were included.",
+        "unknowns": "The response enhances the task by naming at least one structural assumption the analysis makes without examining, and naming at least one question about the subject that "
+        "would arise if that assumption were denied.",
         "verify": "The response enhances the task by applying falsification pressure to claims: for each claim, the conditions under which it would be false must be made explicit — not as a "
         "rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a "
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
-        "visual": "The response enhances the task by placing concepts in named positions relative to each other using at least two named axes, such that each concept's position encodes its "
-        "relationship to the others.",
-        "yield": "The response advances the task by naming the specific intervention taken and at least one intervention that contains the specific intervention and additionally affects at least "
-        "one other named component, allowing structures or dynamics to resolve through that named intervention rather than imposed direction.",
+        "visual": "The response enhances the task by placing concepts in named positions relative to each other — in a spatial arrangement, diagram, or map — such that each concept's position "
+        "encodes at least one named relationship to the others.",
+        "yield": "The response advances the task by naming the specific minimal intervention taken, naming the specific dynamic or structure that resolves the remaining tension after that "
+        "intervention, and making no further intervention recommendations — resolution after the named intervention is attributed to named system dynamics, not to additional actions.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "

@@ -319,8 +319,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "factors. Use when the user presents options and asks which to choose or how they differ.",
         "control": "The response distinguishes between factors within agency and those outside it by naming each, and confines recommendations to the within-agency factors — no recommendation "
         "names a factor identified as outside agency as a required action.",
-        "converge": "The response enhances the task by enumerating a set of named options and narrowing to a smaller named set, explicitly excluding each option not carried forward and naming "
-        "the criterion for its exclusion — the options considered must outnumber the options carried forward.",
+        "converge": "The response enhances the task by narrowing from a broader set of possibilities to a smaller named set, naming each option not carried forward and the criterion that "
+        "excluded it — the number of options carried forward must be smaller than the number considered, whether the full set was enumerated upfront or emerged through exploration.",
         "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined by explicit structural organization rather than by "
         "interpretive reasoning, implicit assumption, or uncontrolled coupling. A structural determination is valid only when the behavior cannot be produced by a different structural "
         "configuration — if an alternative arrangement would produce the same behavior without the claimed organization, the determination is incomplete.",
@@ -564,15 +564,17 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "and the direction it pushes.",
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural "
         "changes.",
-        "unknowns": "The response enhances the task by naming at least one structural assumption the analysis makes without examining, and naming at least one question about the subject that "
-        "would arise if that assumption were denied.",
+        "unknowns": "The response enhances the task by naming the categories of unknowns it will examine — each category must be nameable as a type (e.g. unstated dependency, unexamined "
+        "assumption, external condition not accounted for, etc.) — then for each named category, naming at least one specific unknown found in the subject and at least one question "
+        "that would need to be answered to resolve it.",
         "verify": "The response enhances the task by applying falsification pressure to claims: for each claim, the conditions under which it would be false must be made explicit — not as a "
         "rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a "
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by placing concepts in named positions relative to each other — in a spatial arrangement, diagram, or map — such that each concept's position "
         "encodes at least one named relationship to the others.",
         "yield": "The response advances the task by naming the specific minimal intervention taken, naming the specific dynamic or structure that resolves the remaining tension after that "
-        "intervention, and making no further intervention recommendations — resolution after the named intervention is attributed to named system dynamics, not to additional actions.",
+        "intervention, and attributing resolution to those named system dynamics rather than to additional interventions — any content beyond this names conditions under which the named "
+        "dynamic operates, not further interventions.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "

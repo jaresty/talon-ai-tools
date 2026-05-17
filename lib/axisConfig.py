@@ -285,8 +285,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "transcript — any such new assertion text requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
-        "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and specifying "
-        "conditions under which it is maintained.",
+        "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "
+        "one state in which balance no longer holds.",
         "behave": "The response enhances the task by analyzing behavioral change by asking: what must be true for this behavior to occur, and what is currently preventing each of those things? "
         "For each precondition identified as absent, name the specific thing that is missing — not the category of gap, but the concrete absent condition. For each gap, name the "
         "smallest intervention that closes it — smallest means removing this intervention would leave the gap open — and specify how you would know it worked.",
@@ -368,19 +368,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "the run result when the behavior is present — a check that produces no failure output when run against an empty stub exporting the correct symbol does not satisfy this "
         "requirement; (b) executes when the same triggering event causes evaluation of the artifact being changed — name the triggering event, then quote the specific string from a "
         "prior tool-executed result showing both the artifact and the changed file were invoked by that event; if no such quoted string exists above this line, the shared trigger is "
-        "not established and the artifact does not govern this change. A FAIL is valid only when a prior tool-executed result in the transcript shows all behaviors other than the "
-        "named behavior passing — if no such prior result exists, the FAIL is not valid; a module-level or import-level error is not valid as a governing FAIL because it does not show "
-        "any behavioral assertion present and passing. Before the tool call, produce a minimal-state declaration naming: the specific behavior being removed, and at least one other "
-        "behavior that is present and unchanged in the test state — the minimal-state declaration is not complete until both items appear in the transcript above the tool call; if a "
-        "tool-executed FAIL result shows the same failure with less than the named behavior removed, the named behavior is not the sole governed cause and must be rederived. "
-        "Immediately before each implementation tool call, produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL exists above this line in the transcript, the tool "
-        "call is not permitted. Exception — unreachable dead code: this constraint does not apply when the code being modified is statically unreachable — defined as: (a) a static "
-        "analysis tool or compiler flags the specific code path as unreachable in a tool-executed result above this line, or (b) a tool-executed run of the full test suite with the "
-        "code removed produces an identical result to a run with it present; both conditions are verifiable by inspection of tool results; a code path is not unreachable merely "
-        "because no current test covers it — reachability is a structural property of the code, not a property of the test suite. Exception — governing artifact creation: this "
-        "constraint does not apply to writing a governing artifact (a test or spec file — a file whose content contains assertions about the behavior under test, separate from the "
-        "source of that behavior); governing artifact creation is not subject to the FAIL gate because a governing artifact cannot pre-exist its own creation; the FAIL gate applies "
-        "only to non-governing file edits (implementation).",
+        "not established and the artifact does not govern this change. A FAIL is valid only when a prior tool-executed result in the transcript contains at least one named passing "
+        "assertion alongside the named failing assertion — a run result whose output names only the failing assertion has not shown other behaviors passing; if no such prior result "
+        "exists, the FAIL is not valid; a module-level or import-level error is not valid as a governing FAIL because it does not show any behavioral assertion present and passing. "
+        "Before the tool call, produce a minimal-state declaration naming: the specific behavior being removed, and at least one other behavior that is present and unchanged in the "
+        "test state — the minimal-state declaration is not complete until both items appear in the transcript above the tool call; if a tool-executed FAIL result shows the same "
+        "failure with less than the named behavior removed, the named behavior is not the sole governed cause and must be rederived. Immediately before each implementation tool call, "
+        "produce: 'Governing artifact: <verbatim FAIL output>' — if no such FAIL exists above this line in the transcript, the tool call is not permitted. Exception — unreachable dead "
+        "code: this constraint does not apply when the code being modified is statically unreachable — defined as: (a) a static analysis tool or compiler flags the specific code path "
+        "as unreachable in a tool-executed result above this line, or (b) a tool-executed run of the full test suite with the code removed produces an identical result to a run with "
+        "it present; both conditions are verifiable by inspection of tool results; a code path is not unreachable merely because no current test covers it — reachability is a "
+        "structural property of the code, not a property of the test suite. Exception — governing artifact creation: this constraint does not apply to writing a governing artifact (a "
+        "test or spec file — a file whose content contains assertions about the behavior under test, separate from the source of that behavior); governing artifact creation is not "
+        "subject to the FAIL gate because a governing artifact cannot pre-exist its own creation; the FAIL gate applies only to non-governing file edits (implementation).",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -401,33 +401,33 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "transcript when tools are available, or a named observable artifact when they are not — not a prose description of the process? If you cannot identify what that result or "
         "artifact would look like for this task, the process is not yet derived. Derive an enforcement process whose steps produce that result or artifact. The gap between apparent "
         "completion and actual completion is the optimizer's attack surface. Every constraint in this protocol exists to make that gap visible and costly to maintain. Before acting, "
-        "state the boundary searched — the content at the role=user position of the most recent user turn in the transcript; any noun or noun phrase in that content that resolves to an "
-        "artifact not already present in the transcript must be fetched before deriving desired end states; if the referent cannot be resolved, derivation is blocked — then list every "
-        "statement within that boundary that describes a desired end state. For each, state whether it subsumes the others — a goal G1 subsumes G2 if achieving G2 is a necessary "
-        "condition for achieving G1. Produce the subsumption analysis as a completed block. Then, in a separate block below it, cite the goal no other goal subsumes as the anchoring "
-        "citation, quoting its text and location. If multiple unsubsumed goals exist, cite all of them. Derive the intent artifact from the cited goal statement(s) as an enumerated "
-        "list of behavioral dimensions — each dimension must cite the specific clause in the anchoring citation it derives from, and every clause in the anchoring citation must produce "
-        "at least one dimension; a dimension with no cited source clause has not been derived, and a clause with no corresponding dimension has been silently dropped. Each dimension "
-        "states the specific behavior it governs such that its presence or absence in any artifact is determinable without interpretation. Then derive a ladder: an ordered sequence of "
-        "artifacts where each rung names (a) the specific outcome the prior rung admits that this rung rejects, (b) the behavioral dimension that outcome leaves unconstrained in the "
-        "prior rung, and (c) the artifact type whose presence eliminates the judgment the prior rung required — two rungs belong to the same class when the same artifact type "
-        "eliminates both; a rung whose judgment class cannot be named by an artifact type has not been derived. A rung that cannot name all three has not been derived and must be "
-        "merged with the rung above — the merge is permitted only when a completed block above this line quotes the specific text from each candidate rung that was attempted and found "
-        "to require the same artifact type — the quoted-text block must end before the merge block opens. For each rung, produce a completed block above it naming two candidate "
-        "sub-rungs and the artifact type each would eliminate; if both name the same artifact type, the split is not required and that block constitutes the demonstration; if they name "
-        "different artifact types, the split is required and the block must end before the two new rungs open. The ladder must terminate at an artifact whose satisfaction condition "
-        "requires no judgment — checked by prior-executed results, not by inspection of prose. Every step requires a prior-executed result already in the transcript as its governing "
-        "artifact — a step whose governing artifact has not produced a result above it in the transcript has no authorization to proceed. When a governing artifact cycle is active, the "
-        "completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. No content naming a specific "
-        "artifact to be produced or edited may appear in the response before the completion check artifact. The response is not permitted to end until the completion check artifact "
-        "exists and at least one behavioral dimension cites a prior execution result that was observed to differ when that dimension was absent. For each item in the intent artifact, "
-        "the completion check cites the specific outcome in the execution result of the terminal ladder artifact for that dimension that was observed to differ when the behavioral "
-        "dimension was absent — a result from a different artifact is not valid even if it correlates; a prediction of what would differ does not satisfy this; where no such result "
-        "exists, the dimension is recorded as uncovered. A completion check with zero covered dimensions does not satisfy this gate. Scope reduction is permitted only when the intent "
-        "artifact or a prior completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any "
-        "stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), consider: would a brief visual summary communicate the "
-        "artifact's current state more efficiently than the prose already does? If yes, produce one in whatever format conveys the state most directly. This display has no effect on "
-        "artifact validity and does not substitute for it.",
+        "state the boundary searched — the content at the role=user position of the most recent user turn in the transcript; any noun or noun phrase in that content that names a file "
+        "path, URL, ticket number, or document title not already present in the transcript must be fetched before deriving desired end states; if the referent cannot be resolved, "
+        "derivation is blocked — then list every statement within that boundary that describes a desired end state. For each, state whether it subsumes the others — a goal G1 subsumes "
+        "G2 if achieving G2 is a necessary condition for achieving G1. Produce the subsumption analysis as a completed block. Then, in a separate block below it, cite the goal no other "
+        "goal subsumes as the anchoring citation, quoting its text and location. If multiple unsubsumed goals exist, cite all of them. Derive the intent artifact from the cited goal "
+        "statement(s) as an enumerated list of behavioral dimensions — each dimension must cite the specific clause in the anchoring citation it derives from, and every clause in the "
+        "anchoring citation must produce at least one dimension; a dimension with no cited source clause has not been derived, and a clause with no corresponding dimension has been "
+        "silently dropped. Each dimension states the specific behavior it governs such that its presence or absence in any artifact is determinable without interpretation. Then derive "
+        "a ladder: an ordered sequence of artifacts where each rung names (a) the specific outcome the prior rung admits that this rung rejects, (b) the behavioral dimension that "
+        "outcome leaves unconstrained in the prior rung, and (c) the artifact type whose presence eliminates the judgment the prior rung required — two rungs belong to the same class "
+        "when the same artifact type eliminates both; a rung whose judgment class cannot be named by an artifact type has not been derived. A rung that cannot name all three has not "
+        "been derived and must be merged with the rung above — the merge is permitted only when a completed block above this line quotes the specific text from each candidate rung that "
+        "was attempted and found to require the same artifact type — the quoted-text block must end before the merge block opens. For each rung, produce a completed block above it "
+        "naming two candidate sub-rungs and the artifact type each would eliminate; if both name the same artifact type, the split is not required and that block constitutes the "
+        "demonstration; if they name different artifact types, the split is required and the block must end before the two new rungs open. The ladder must terminate at an artifact "
+        "whose satisfaction condition requires no judgment — checked by prior-executed results, not by inspection of prose. Every step requires a prior-executed result already in the "
+        "transcript as its governing artifact — a step whose governing artifact has not produced a result above it in the transcript has no authorization to proceed. When a governing "
+        "artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. No "
+        "content naming a specific artifact to be produced or edited may appear in the response before the completion check artifact. The response is not permitted to end until the "
+        "completion check artifact exists and at least one behavioral dimension cites a prior execution result that was observed to differ when that dimension was absent. For each item "
+        "in the intent artifact, the completion check cites the specific outcome in the execution result of the terminal ladder artifact for that dimension that was observed to differ "
+        "when the behavioral dimension was absent — a result from a different artifact is not valid even if it correlates; a prediction of what would differ does not satisfy this; "
+        "where no such result exists, the dimension is recorded as uncovered. A completion check with zero covered dimensions does not satisfy this gate. Scope reduction is permitted "
+        "only when the intent artifact or a prior completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments "
+        "are not valid at any stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), if the artifact's current state can be "
+        "expressed as a table, diagram, or structured list in fewer lines than the prose representation, produce one in that format. This display has no effect on artifact validity and "
+        "does not substitute for it.",
         "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
         "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "
@@ -449,12 +449,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "rewrite is permitted only when it is no longer than the original, or when each added clause closes a named gap that the shorter form leaves open — the gap must be named before "
         "the clause is added. All output — findings, general principles, and rewrites — must use only structural terms; a term is structural if its meaning does not change when the "
         "instruction's subject matter changes.",
-        "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and naming the smallest observation set that would disconfirm "
-        "the generalization and the specific pattern in the observations that supports it.",
+        "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and naming an observation set that would disconfirm the "
+        "generalization, and naming at least one observation in that set that is absent from the observations the generalization cites as support.",
         "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
         "or design around those paths.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
-        "consequences or implementations, ordered by dependency: each rung cannot be understood without the rung above it.",
+        "consequences or implementations, ordered so that each rung names at least one term or concept that appears by name in the rung above it.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "
         "outcome — the most statistically likely continuation of the prompt. This token makes that default costly: before responding, identify the obvious framing and set it aside, "
         "then seek a non-obvious entry point, angle, or reframing that still addresses the task. Critically, the test applies to the alternative framing too — not just the original. "
@@ -462,7 +462,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "shift must change what is considered, not only how it is organized. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting "
         "information. Use when predictability is the failure mode: the expected answer exists and is correct, but the default framing produces the same content set a different framing "
         "would have produced.",
-        "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a spatial map rather than a linear narrative.",
+        "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a structure where each relationship between elements is shown as "
+        "a named connection between two named nodes, rather than as a position in a sequence.",
         "mark": "The response captures checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression. Each checkpoint is headed by "
         "'## Step N' (N incrementing from 1); when the checkpoint derives from a prior artifact, the header appends ' — Governing: <brief citation>'. The step marker is purely structural "
         "— it does not satisfy any protocol requirement, gate condition, or artifact precondition.",
@@ -484,17 +485,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "models": "The response enhances the task by explicitly identifying and naming the mental models applied, explaining why each applies (or fails), and comparing or combining them.",
         "mu": "The response enacts the subject's central irresolution rather than describing or resolving it. The tension must arise from the subject's own internal structure — not imported from "
         "general discourse about the domain. The irresolution is not a tone or atmosphere — it is structural: the reader cannot resolve it by thinking harder. Do not name the tension or "
-        "state that something cannot be resolved. The response succeeds if it presents at least two claims that are both derivable from the subject's own stated structure and cannot both "
-        "be satisfied by a single reading.",
+        "state that something cannot be resolved. The response succeeds if it presents at least two claims each of which names a proposition from the subject's stated text and names at "
+        "least one condition stated in the subject's own text under which the other claim's proposition does not hold.",
         "objectivity": "The response enhances the task by marking each claim as either grounded in cited evidence or in the responder's assessment, and supporting cited-evidence claims with "
         "named sources.",
         "operations": "The response enhances the task by naming the objective being optimized, the constraints that bound it, and the tradeoffs that must be navigated — making the structural "
         "tension in the situation explicit so that decisions can be evaluated against it.",
         "orbit": "The response enhances the task by varying initial conditions or assumptions across multiple trajectories and identifying the invariant structural form that behavior tends "
         "toward despite sensitive dependence on starting points. Use when a system appears complex or chaotic but may have underlying recurrent geometry — the goal is to surface the "
-        "attractor shape, not predict any specific path. Variation is sufficient only when it includes at least one trajectory that begins in a qualitatively different region — a "
-        "trajectory that, if the attractor were absent, would produce a structurally different outcome. A claimed attractor must be shown to hold across trajectories that begin in "
-        "qualitatively different regions; trajectories that begin in the same region do not establish invariance.",
+        "attractor shape, not predict any specific path. Variation is sufficient only when it includes at least one trajectory whose named initial conditions include at least one value "
+        "or parameter that does not appear in any other trajectory's named initial conditions — a trajectory that, if the attractor were absent, would produce a structurally different "
+        "outcome. A claimed attractor must be shown to hold across trajectories whose named initial conditions differ in at least one named value or parameter; trajectories whose named "
+        "initial conditions share all named values do not establish invariance.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on "
         "thecriteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
@@ -554,14 +556,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "and the direction it pushes.",
         "trace": "The response enhances the task by narrating the sequential control or data progression, making the path from input to outcome explicit through intermediate steps and structural "
         "changes.",
-        "unknowns": "The response enhances the task by identifying unknown unknowns whose absence from the analysis would change which actions are available, and exploring how they might impact "
-        "outcomes.",
+        "unknowns": "The response enhances the task by naming at least one category of question that the response's framing excludes by name, and naming at least one action the analysis would "
+        "recommend if a question from that category were included.",
         "verify": "The response enhances the task by applying falsification pressure to claims: for each claim, the conditions under which it would be false must be made explicit — not as a "
         "rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a "
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject.",
-        "yield": "The response advances the task by naming the specific intervention taken and at least one larger intervention that would achieve the same outcome, allowing structures or "
-        "dynamics to resolve through that named intervention rather than imposed direction.",
+        "yield": "The response advances the task by naming the specific intervention taken and at least one intervention whose scope includes the specific intervention as a proper subset and "
+        "would achieve the same outcome, allowing structures or dynamics to resolve through that named intervention rather than imposed direction.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "

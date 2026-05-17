@@ -27,9 +27,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'The gap between apparent completion and actual completion is the optimizer\'s attack surface. '
         'Every constraint in this protocol exists to make that gap visible and costly to maintain. '
         'Before acting, state the boundary searched — the content at the role=user position of the most '
-        'recent user turn in the transcript; any noun or noun phrase in that content that resolves to an '
-        'artifact not already present in the transcript must be fetched before deriving desired end states; '
-        'if the referent cannot be resolved, derivation is blocked — then list every statement within that '
+        'recent user turn in the transcript; any noun or noun phrase in that content that names a file path, '
+        'URL, ticket number, or document title not already present in the transcript must be fetched before '
+        'deriving desired end states; if the referent cannot be resolved, derivation is blocked — then list every statement within that '
         'boundary that describes a desired end state. For each, state whether it subsumes the others — a goal '
         'G1 subsumes G2 if achieving G2 is a necessary condition for achieving G1. Produce the '
         'subsumption analysis as a completed block. Then, in a separate block below it, cite the goal '
@@ -75,10 +75,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'artifact contains text that verbatim and explicitly excludes the element — cost, effort, '
         'or proportionality arguments are not valid at any stage. '
         'After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, '
-        'completion check), consider: would a brief visual summary communicate the artifact\'s current '
-        'state more efficiently than the prose already does? If yes, produce one in whatever format '
-        'conveys the state most directly. This display has no effect on artifact validity and does '
-        'not substitute for it.'
+        'completion check), if the artifact\'s current state can be expressed as a table, diagram, or '
+        'structured list in fewer lines than the prose representation, produce one in that format. '
+        'This display has no effect on artifact validity and does not substitute for it.'
     ),
 }
 

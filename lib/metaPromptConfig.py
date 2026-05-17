@@ -242,7 +242,7 @@ META_INTERPRETATION_GUIDANCE: str = (
     "the request and the key choices made in the response; list key assumptions "
     "and constraints as short bullets (exception: do not name any directional "
     "token by name — its effect should be evident from the response flow, not "
-    "stated); call out major gaps or caveats and up to three things the user "
+    "stated); call out gaps or caveats and up to three things the user "
     "should verify; propose one improved version of the subject or task framing "
     "in one or two sentences; and, when helpful, suggest at most one axis tweak "
     "in the form 'Suggestion: <axis>=<token>'. Only include a Suggestion line "

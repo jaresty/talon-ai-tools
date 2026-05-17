@@ -35,7 +35,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as storyteller": "The response speaks as a storyteller, inventing vivid metaphors and fantastical scenarios to make ideas engaging and memorable.",
     },
     "audience": {
-        "to managers": "The response addresses managers, highlighting outcomes, risk, and staffing.",
+        "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
         "to team": "The response addresses the team, keeping the guidance actionable and collaborative.",
         "to stakeholders": "The response addresses stakeholders, focusing on impact, decisions, and clarity.",
         "to product manager": "The response addresses a product manager, connecting user value, scope, and trade-offs.",

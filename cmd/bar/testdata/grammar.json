@@ -6991,7 +6991,7 @@
         "to analyst": "The response addresses an analyst, providing structure, data framing, and ways to visualise results.",
         "to designer": "The response addresses a designer, emphasising user experience, flows, and visual clarity.",
         "to junior engineer": "The response addresses a junior engineer, explaining clearly and offering gentle guidance.",
-        "to managers": "The response addresses managers, highlighting outcomes, risk, and staffing.",
+        "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
         "to platform team": "The response addresses a platform team, emphasising reliability, leverage, and paved-path fit.",
         "to principal engineer": "The response addresses a principal engineer, remaining concise, architectural, and assumption-light.",
         "to product manager": "The response addresses a product manager, connecting user value, scope, and trade-offs.",
@@ -10446,7 +10446,7 @@
   "checksums": {
     "axes": "84eca9195a6666ee62d14856f5a44d8fe036cdf9d1385a5408a0c75b4610e60e",
     "tasks": "1bcdee10ca1b6885cb57c5fbd5ea4e8fedf1f3d4bc8a3263b25677bf8e9b7db2",
-    "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
+    "persona": "c52bb15444318ebae4e6a5d36082bada3653e6121f5310e0d4815c246a3f51bf",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
     "slugs": "90d45bc02d777fc9ffb8fbb5d32e49dc9894d69a2e61cf19affa44cd9acbde9d",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",

@@ -91,8 +91,9 @@ def build_ground_prompt() -> str:
     """
     return (
         "The response applies this meta-process discipline — before acting, answer: what does this specific task "
-        "require as evidence of completion that cannot be faked by describing the process? If you cannot identify "
-        "what that evidence would look like for this task, the process is not yet derived. Derive an enforcement "
-        "process whose steps produce that evidence. "
+        "require as evidence of completion that is a tool-executed result in the transcript when tools are available, "
+        "or a named observable artifact when they are not — not a prose description of the process? If you cannot "
+        "identify what that result or artifact would look like for this task, the process is not yet derived. Derive "
+        "an enforcement process whose steps produce that result or artifact. "
         + GROUND_PARTS_MINIMAL["core"]
     )

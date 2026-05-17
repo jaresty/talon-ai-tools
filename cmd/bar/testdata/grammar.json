@@ -223,7 +223,7 @@
         "unknowns": "The response enhances the task by naming at least one category of question that the response's framing excludes by name, and naming at least one action the analysis would recommend if a question from that category were included.",
         "verify": "The response enhances the task by applying falsification pressure to claims: for each claim, the conditions under which it would be false must be made explicit — not as a rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject.",
-        "yield": "The response advances the task by naming the specific intervention taken and at least one intervention whose scope includes the specific intervention as a proper subset and would achieve the same outcome, allowing structures or dynamics to resolve through that named intervention rather than imposed direction."
+        "yield": "The response advances the task by naming the specific intervention taken and at least one intervention that contains the specific intervention and additionally affects at least one other named component, allowing structures or dynamics to resolve through that named intervention rather than imposed direction."
       },
       "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or perspective-shifting.",
@@ -5471,7 +5471,7 @@
             "step back and let it unfold",
             "guide without imposing"
           ],
-          "definition": "The response advances the task by naming the specific intervention taken and at least one intervention whose scope includes the specific intervention as a proper subset and would achieve the same outcome, allowing structures or dynamics to resolve through that named intervention rather than imposed direction."
+          "definition": "The response advances the task by naming the specific intervention taken and at least one intervention that contains the specific intervention and additionally affects at least one other named component, allowing structures or dynamics to resolve through that named intervention rather than imposed direction."
         }
       },
       "scope": {
@@ -10444,7 +10444,7 @@
     }
   ],
   "checksums": {
-    "axes": "ba5c696d3253ac955c08fea0a69a26903367ca18f6c0cec44fa4dcbef67a9b09",
+    "axes": "bb735e1421c8de61db4fbc6cbf49414bdb13e34726d8a53fab0b651202c2690e",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

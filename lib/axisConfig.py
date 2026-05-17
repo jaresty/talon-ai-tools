@@ -562,8 +562,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a "
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject.",
-        "yield": "The response advances the task by naming the specific intervention taken and at least one intervention whose scope includes the specific intervention as a proper subset and "
-        "would achieve the same outcome, allowing structures or dynamics to resolve through that named intervention rather than imposed direction.",
+        "yield": "The response advances the task by naming the specific intervention taken and at least one intervention that contains the specific intervention and additionally affects at least "
+        "one other named component, allowing structures or dynamics to resolve through that named intervention rather than imposed direction.",
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "

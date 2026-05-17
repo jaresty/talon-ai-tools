@@ -6450,7 +6450,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "draw",
                 },
                 {
-                    "note": "diagram (channel) = Mermaid code output; visual (method) = spatial framing that can be expressed in any output format",
+                    "note": "diagram (channel) = Mermaid/D2 code as output; visual (method) = spatial framing of ideas that can be expressed in any output format including prose "
+                    "— visual is about topology of thought, diagram is about rendering format",
                     "token": "diagram",
                 },
                 {
@@ -6471,6 +6472,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "frame this as a landscape",
                 "think spatially about this module's dependency structure",
                 "draw the mental map of how these components relate",
+                "show me the architecture",
+                "map the data flow",
+                "trace the sequence",
+                "show component relationships",
+                "diagram the dependencies",
+                "lay out the state machine",
+                "where does X sit relative to Y",
             ],
         },
         "yield": {

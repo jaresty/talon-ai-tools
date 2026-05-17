@@ -5425,7 +5425,7 @@
               "token": "draw"
             },
             {
-              "note": "diagram (channel) = Mermaid code output; visual (method) = spatial framing that can be expressed in any output format",
+              "note": "diagram (channel) = Mermaid/D2 code as output; visual (method) = spatial framing of ideas that can be expressed in any output format including prose — visual is about topology of thought, diagram is about rendering format",
               "token": "diagram"
             },
             {
@@ -5444,7 +5444,14 @@
             "visual mental model",
             "frame this as a landscape",
             "think spatially about this module's dependency structure",
-            "draw the mental map of how these components relate"
+            "draw the mental map of how these components relate",
+            "show me the architecture",
+            "map the data flow",
+            "trace the sequence",
+            "show component relationships",
+            "diagram the dependencies",
+            "lay out the state machine",
+            "where does X sit relative to Y"
           ],
           "definition": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject."
         },
@@ -10437,7 +10444,7 @@
     }
   ],
   "checksums": {
-    "axes": "4254c0218cc4c7e47bc177836d2e898301751e9fd584a6b99aad6268b61a5f4e",
+    "axes": "1201488de63c79b6668a8bbeb040c422d7c3ddf6b15ace767ec7ba339bb49c8d",
     "tasks": "3557f5a629b5b9bd1d8a4e847d1e6147184029acc0eceaecb9ea95974bb45e74",
     "persona": "02be553d83510ce858f941d1f3d7151bf70cb4c8b9472b14d62d6b1cb7b9ef41",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

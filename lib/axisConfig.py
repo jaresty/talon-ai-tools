@@ -241,13 +241,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "abduce": "The response enhances the task by generating explanatory hypotheses, each naming the specific piece of evidence it explains that the alternatives do not, explicitly comparing "
         "alternative explanations.",
         "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
-        "adversarial": "The response enhances the task by running a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated "
-        "assumptions.",
+        "adversarial": "The response enhances the task by naming at least one input or state the system's specification does not explicitly handle, and naming at least one output the system "
+        "would produce in that state that contradicts a stated requirement.",
         "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, "
         "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
         "attributed solely to preferences or incentives without modeling how affordances influenced selection.",
-        "align": "The response restructures relationships, assumptions, or responsibilities so that explicit elements reinforce rather than contradict one another, restoring global coherence "
-        "across the system.",
+        "align": "The response restructures relationships, assumptions, or responsibilities by naming each pair of elements that contradicted one another and naming the specific change that "
+        "makes them no longer contradict.",
         "amorph": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit "
         "organization, indicating lack of crystallized system form.",
         "analog": "The response enhances the task by reasoning through analogy, mapping relational structure from a known case onto the subject and examining where the analogy holds or breaks.",
@@ -289,9 +289,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "one state in which balance no longer holds.",
         "behave": "The response enhances the task by analyzing behavioral change by asking: what must be true for this behavior to occur, and what is currently preventing each of those things? "
         "For each precondition identified as absent, name the specific thing that is missing — not the category of gap, but the concrete absent condition. For each gap, name the "
-        "smallest intervention that closes it — smallest means removing this intervention would leave the gap open — and specify how you would know it worked.",
-        "bias": "The response enhances the task by identifying likely cognitive biases, heuristics, or systematic errors and examining how they might distort judgment or conclusions.",
-        "boom": "The response enhances the task by exploring behaviour toward extremes of scale or intensity, examining what breaks, dominates, or vanishes.",
+        "smallest intervention that closes it — smallest means removing this intervention would leave the gap open — and name at least one observable whose presence after the "
+        "intervention marks the gap as closed.",
+        "bias": "The response enhances the task by naming cognitive biases, heuristics, or systematic errors and naming the specific judgment or conclusion each would distort.",
+        "boom": "The response enhances the task by naming at least one behavior that is present below a named threshold and absent above it, or absent below a named threshold and present above "
+        "it, examining what breaks, dominates, or vanishes at that threshold.",
         "bound": "The response enhances the task by introducing or reinforcing structural limits that restrict the extent of influence, interaction, or propagation across the system, ensuring "
         "effects remain within the regions whose limits the response names.",
         "calc": "The response enhances the task by expressing reasoning as executable or quasi-executable procedures, calculations, or formal steps whose outputs constrain conclusions.",
@@ -300,12 +302,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reproduce the specific predecessor output this step builds on — this is the per-step gate. A step that begins without this reproduction has not satisfied chain. The "
         "reproduction must be the actual output as it appeared, not a summary, paraphrase, or description of it: in text domains, quote it; in other domains, reproduce the artifact "
         "content itself. A paraphrase substitutes the model's interpretation for the predecessor's output and breaks the structural link. Reproducing the predecessor output without "
-        "addressing what it specifically implies is also a violation — a step that quotes the prior output and then proceeds independently of its content has satisfied chain in form "
-        "only. When the governing artifact for a step was produced by a non-adjacent predecessor rather than the immediately prior step, name that predecessor explicitly before "
-        "reproducing its output — the immediately prior step is not automatically the relevant predecessor. When the required predecessor has not yet been produced because the tool call "
-        "that would produce it has not been made, the required action is to make that tool call now — not to produce text that resembles the expected output. Chain does not authorize "
-        "proceeding without a predecessor in context; it authorizes proceeding only after the predecessor exists as a real tool result. Auditability is a consequence of this structure, "
-        "not a separate standard to satisfy.",
+        "making at least one claim that cites a specific string from it is also a violation — a step that quotes the prior output and then proceeds without citing a specific string from "
+        "it has satisfied chain in form only. When the governing artifact for a step was produced by a non-adjacent predecessor rather than the immediately prior step, name that "
+        "predecessor explicitly before reproducing its output — the immediately prior step is not automatically the relevant predecessor. When the required predecessor has not yet been "
+        "produced because the tool call that would produce it has not been made, the required action is to make that tool call now — not to produce text that resembles the expected "
+        "output. Chain does not authorize proceeding without a predecessor in context; it authorizes proceeding only after the predecessor exists as a real tool result. Auditability is "
+        "a consequence of this structure, not a separate standard to satisfy.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
         "inconsistency or breakdown.",
@@ -315,25 +317,28 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unification fails after it, and the unified form contains fewer named representations than the original.",
         "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision "
         "factors. Use when the user presents options and asks which to choose or how they differ.",
-        "control": "The response distinguishes between factors within agency and those outside it, directing evaluation and effort exclusively toward the former.",
-        "converge": "The response enhances the task by systematically narrowing from broad exploration to focused recommendations, weighing trade-offs explicitly as options are filtered.",
+        "control": "The response distinguishes between factors within agency and those outside it by naming each, and confines recommendations to the within-agency factors — no recommendation "
+        "names a factor identified as outside agency as a required action.",
+        "converge": "The response enhances the task by narrowing from a set of named options to a smaller named set, explicitly excluding each option not carried forward and naming the criterion "
+        "for its exclusion.",
         "crystal": "The response enhances the task by shaping the system so that behavior, interaction, propagation, and meaning are determined by explicit structural organization rather than by "
         "interpretive reasoning, implicit assumption, or uncontrolled coupling. A structural determination is valid only when the behavior cannot be produced by a different structural "
         "configuration — if an alternative arrangement would produce the same behavior without the claimed organization, the determination is incomplete.",
         "deduce": "The response enhances the task by applying deductive reasoning, deriving conclusions that must follow from stated premises or assumptions and making logical entailment "
         "explicit.",
         "depends": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system.",
-        "diagnose": "The response enhances the task by seeking likely causes of problems first, narrowing hypotheses through evidence, falsification pressure, and targeted checks before "
-        "proposing fixes or changes.",
+        "diagnose": "The response enhances the task by seeking causes whose presence would produce the observed symptom and whose absence would not, narrowing hypotheses through evidence, "
+        "falsification pressure, and targeted checks before proposing fixes or changes.",
         "dimension": "The response enhances the task by exploring multiple dimensions or axes of analysis, making implicit factors explicit and examining how they interact.",
         "domains": "The response enhances the task by identifying bounded contexts, domain boundaries, and capabilities.",
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "
         "stated, the structural representation claimed to enforce it, and a reachable state of that representation where the conclusion does not hold.",
-        "effects": "The response enhances the task by tracing second- and third-order effects and summarizing their downstream consequences.",
-        "enforce": "The response identifies where requirements risk being satisfied by description alone and converts them to structural dependencies — making execution impossible to skip. When "
-        "a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates subsequent steps, requiring actual "
-        "output as a predecessor for the next step. Each step cannot proceed without the real artifact.",
+        "effects": "The response enhances the task by naming effects whose causes are themselves named as effects in the same response, tracing at least two causal steps from the initial named "
+        "cause.",
+        "enforce": "The response identifies requirements that name an action to perform without naming the artifact whose presence in the transcript marks the action complete, and converts them "
+        "to structural dependencies — when a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates "
+        "subsequent steps, requiring actual output as a predecessor for the next step. Each step cannot proceed without the real artifact.",
         "enter": "The response enhances the task by moving into the direction of an incoming force, argument, or structure — joining its momentum rather than opposing it — and redirecting the "
         "outcome from within. Contact precedes transformation: the response cites at least one premise from the incoming structure's own stated logic that, when followed, produces the "
         "redirected outcome — the redirection is derived from a named premise of the incoming structure, not introduced externally.",
@@ -394,9 +399,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "property has not been derived.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a representation naming the schema, invariants, and terminology an external actor needs to intervene, "
         "making implicit structure explicit, identifying the mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
-        "grain": "The response enhances the task by reading the inherent structure of the system — the patterns, seams, and directions already latent in it — and using that reading to guide "
-        "action, prediction, or design. Rather than imposing direction, the response identifies where the system's own grain runs and moves in alignment with it. Optionality mapping, "
-        "directional guidance, and structural prediction are all derivable from this reading.",
+        "grain": "The response enhances the task by naming the directions in which the system's existing structure already propagates — interfaces, dependencies, data flows — and naming "
+        "interventions that follow those directions rather than crossing them. Optionality mapping, directional guidance, and structural prediction derive from naming where existing "
+        "propagation paths run.",
         "ground": "The response applies this meta-process discipline — before acting, answer: what does this specific task require as evidence of completion that is a tool-executed result in the "
         "transcript when tools are available, or a named observable artifact when they are not — not a prose description of the process? If you cannot identify what that result or "
         "artifact would look like for this task, the process is not yet derived. Derive an enforcement process whose steps produce that result or artifact. The gap between apparent "
@@ -428,8 +433,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "are not valid at any stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), if the artifact's current state can be "
         "expressed as a table, diagram, or structured list in fewer lines than the prose representation, produce one in that format. This display has no effect on artifact validity and "
         "does not substitute for it.",
-        "grove": "The response enhances the task by examining how small effects compound into larger outcomes through feedback loops, network effects, or iterative growth—asking not just what "
-        "fails or succeeds, but how failures OR successes accumulate through systemic mechanisms.",
+        "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
+        "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "
         "valid only if it names, within its own text, the specific string or structural property that would be present in a compliant transcript and absent in a non-compliant one, "
         "without requiring the evaluator to assess the model's intent. The stronger form of this criterion is addressability: a clause is addressable only if the named string or "
@@ -451,8 +456,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "instruction's subject matter changes.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and naming an observation set that would disconfirm the "
         "generalization, and naming at least one observation in that set that is absent from the observations the generalization cites as support.",
-        "inversion": "The response enhances the task by beginning from undesirable or catastrophic outcomes, asking what would produce or amplify them, then working backward to avoid, mitigate, "
-        "or design around those paths.",
+        "inversion": "The response enhances the task by beginning from outcomes named in the subject as failures or violations, asking what would produce or amplify them, then working backward "
+        "to avoid, mitigate, or design around those paths.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
         "consequences or implementations, ordered so that each rung names at least one term or concept that appears by name in the rung above it.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "
@@ -499,7 +504,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "initial conditions share all named values do not establish invariance.",
         "order": "The response enhances the task by applying abstract structural reasoning such as hierarchy, dominance, or recurrence. When paired with `sort` task, `order` adds emphasis on "
         "thecriteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
-        "origin": "The response enhances the task by uncovering how the subject arose, why it looks this way now, and how past decisions shaped the present state.",
+        "origin": "The response enhances the task by naming at least one prior decision or event and naming the specific present-state property it produced that would be absent if that decision "
+        "or event had not occurred.",
         "own": "The response contains no path, command, instruction, or recommendation whose execution would write to a repository, shared tool, or multi-user environment. Output targeting only "
         "the operator's local filesystem, shell session, or personal tooling satisfies this constraint; output targeting any shared system does not.",
         "paradox": "The response holds the subject as an unresolved generative tension rather than converging toward explanation or conclusion. It names what resists analysis without "
@@ -508,9 +514,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "or detection mechanisms.",
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
         "from avoidance.",
-        "preserve": "The response modifies the task by maintaining compatibility with existing structures, interfaces, or assumptions, constraining changes so previously valid components "
-        "continue to function without modification.",
-        "prioritize": "The response enhances the task by assessing and ordering items by importance or impact, making the ranking and rationale explicit.",
+        "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
+        "post-change state.",
+        "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
         "specifying what mechanism — if any — detects and corrects that distortion.",
@@ -532,8 +538,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "independent causal or justificatory elements without specifying their dependency relationship.",
         "seep": "The response enhances the task by identifying where influence, responsibility, meaning, or constraint extends beyond the boundaries named in the system's own interface "
         "contracts, documentation, or stated responsibilities, analyzing how this overreach increases coupling, ambiguity, or fragility.",
-        "sense": "The response surfaces pre-reductive judgment—a compressed evaluative impression that expresses directional fit, tension, stability, or unease before explicit analytic "
-        "decomposition. Multiple weak signals are held together rather than unpacked one by one.",
+        "sense": "The response names a directional assessment (toward or away from a named state) before naming the signals it integrates, without decomposing those signals into separate "
+        "analyses — multiple signals are held together in the assessment rather than unpacked one by one.",
         "sever": "The response restructures the system by introducing or reinforcing separations between domains of influence, responsibility, or meaning, ensuring that interactions occur only "
         "through explicit, controlled interfaces.",
         "shear": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
@@ -543,13 +549,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, naming "
         "at least one cross-component interaction that the isolation brackets and marking it as deferred.",
-        "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on key assumptions or choices before evaluating and pruning alternatives.",
+        "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on assumptions or choices each of which, if changed, produces a named difference in "
+        "the response's conclusion, before evaluating and pruning alternatives.",
         "square": "The response enhances the task by mapping the full semantic field of a binary opposition: surfacing the original pair, their negations, and the four relational positions "
         "(contrariety, contradiction, complementarity) that arise between them. Concepts suppressed or invisible in the original framing appear as explicit positions in the field.",
         "survive": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, "
         "distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions "
         "determine what remains credible.",
-        "sweep": "The response enhances the task by enumerating the option space broadly, generating and listing plausible approaches without evaluating or committing to any of them.",
+        "sweep": "The response enhances the task by listing approaches without asserting any as preferred — each approach named must differ from the others in at least one named structural "
+        "property, and none is evaluated or committed to.",
         "systemic": "The response enhances the task by reasoning about the subject as an interacting whole, identifying components, boundaries, flows, feedback loops, and emergent behaviour that "
         "arise from their interactions rather than from parts in isolation.",
         "thrust": "The response enhances the task by identifying and cataloging competing structural forces or design pressures, making explicit for each force the specific constraint it imposes "
@@ -561,7 +569,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "verify": "The response enhances the task by applying falsification pressure to claims: for each claim, the conditions under which it would be false must be made explicit — not as a "
         "rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a "
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
-        "visual": "The response enhances the task by framing ideas spatially — placing concepts in positional relationship and building a coordinate model of the subject.",
+        "visual": "The response enhances the task by placing concepts in named positions relative to each other using at least two named axes, such that each concept's position encodes its "
+        "relationship to the others.",
         "yield": "The response advances the task by naming the specific intervention taken and at least one intervention that contains the specific intervention and additionally affects at least "
         "one other named component, allowing structures or dynamics to resolve through that named intervention rather than imposed direction.",
     },

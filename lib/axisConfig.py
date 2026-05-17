@@ -450,7 +450,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "then seek a non-obvious entry point, angle, or reframing that still addresses the task. Critically, the test applies to the alternative framing too — not just the original. "
         "If the chosen alternative still produces the same content set that the obvious framing would have produced, it is not lateral: it is merely delayed convergence. The angle "
         "shift must change what is considered, not only how it is organized. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting "
-        "information. Use when predictability is the failure mode: the expected answer exists and is correct, but a more interesting or generative angle would serve the user better.",
+        "information. Use when predictability is the failure mode: the expected answer exists and is correct, but the default framing produces the same content set a different framing "
+        "would have produced.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a coherent spatial map rather than a linear narrative.",
         "mark": "The response captures checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression. Each checkpoint is headed by "
         "'## Step N' (N incrementing from 1); when the checkpoint derives from a prior artifact, the header appends ' — Governing: <brief citation>'. The step marker is purely structural "

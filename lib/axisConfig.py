@@ -241,8 +241,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "abduce": "The response enhances the task by generating explanatory hypotheses, each naming the specific piece of evidence it explains that the alternatives do not, explicitly comparing "
         "alternative explanations.",
         "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
-        "adversarial": "The response enhances the task by naming at least one input, state, or condition not addressed by the subject's stated requirements or reasoning; at least one premise the "
-        "subject's argument treats as given without naming it; and at least one condition under which a stated claim does not hold.",
+        "adversarial": "The response enhances the task by first naming the categories of failure it will examine — each category must be nameable as a type (e.g. edge case, unstated assumption, "
+        "failure mode, counterexample, etc.) — then for each named category, naming at least one specific instance found in the subject.",
         "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, "
         "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
         "attributed solely to preferences or incentives without modeling how affordances influenced selection.",

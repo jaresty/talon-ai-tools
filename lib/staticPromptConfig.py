@@ -62,13 +62,13 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "The response arranges items into categories or an order using a specified or inferred scheme.",
     },
     "diff": {
-        "description": "The response compares two or more subjects, highlighting relationships such as similarities, differences, or tradeoffs.",
+        "description": "The response compares two or more subjects by naming similarities, differences, or tradeoffs between them.",
     },
     "show": {
         "description": "The response explains or describes the subject for the stated audience.",
     },
     "probe": {
-        "description": "The response analyzes the subject to surface structure, assumptions, or implications beyond restatement.",
+        "description": "The response analyzes the subject, naming structure, assumptions, or implications not present in a restatement of it.",
         "method": "analysis",
     },
     "pick": {

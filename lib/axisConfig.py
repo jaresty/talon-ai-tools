@@ -127,10 +127,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
-        "full": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+        "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
+        "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
         "grow": "The response begins at minimal depth and expands only where the analysis explicitly demands it, so every elaboration is justified rather than anticipated.",
-        "max": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
+        "max": "The response covers every element of the subject and every sub-element it can derive — any nameable element absent from the response is an omission requiring justification.",
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
@@ -215,8 +216,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "tracking and reporting progress to stakeholders over time.",
         "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from "
         "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
-        "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full "
-        "conclusions until enough answers exist or the user explicitly requests a summary.",
+        "socratic": "The response asks questions rather than stating conclusions — each question names an assumption, definition, or gap that the answer would resolve — withholding conclusions "
+        "until the questions have been posed or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
         "focused on questions and learning rather than implementation tasks.",
         "story": 'The response formats the backlog item as a user story using "As a <persona>, I want <capability>, so that <value>." It may include a short description and high-level acceptance '
@@ -588,8 +589,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "inside versus outside a defined scope.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure "
         "modes rather than overall quality or preferred outcomes.",
-        "good": "The response focuses on how quality, success, or goodness is judged—criteria, metrics, standards, values, or taste—assuming a framing rather than defining it or shifting "
-        "perspective.",
+        "good": "The response focuses on the criteria, metrics, standards, or values by which the subject is judged — assuming a framing for what counts as success rather than defining one or "
+        "shifting perspective.",
         "jobs": "The response focuses on the outcomes the subject is trying to achieve and the pressures that would persist even if every current solution were removed — the pressures that make "
         "the outcome non-negotiable rather than merely convenient. Any finding that depends on the features of a specific product or system is about the product, not the outcome, and does "
         "not satisfy this requirement.",
@@ -628,7 +629,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "solo": "The response externalizes no reasoning state beyond what the derivation requires to reach the final artifact. Intermediate assumptions and derivation steps appear in the "
         "output only when the derivation cannot proceed without making them explicit — not as a transparency or legibility measure. Output depth is governed by the completeness token "
         "independently.",
-        "witness": "The response surfaces assumptions before relying on them. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named "
+        "witness": "The response names each assumption before relying on it. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named "
         "before it is collapsed into a conclusion.",
     },
 }

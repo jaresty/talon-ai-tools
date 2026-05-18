@@ -59,6 +59,18 @@ describe('bm25RankTokens — ordering', () => {
 	});
 });
 
+// Assertion S: Porter stemming — inflected query form matches doc containing root form
+describe('bm25Score — stemming', () => {
+	it('S1: query with inflected form matches doc containing root form', () => {
+		const stemCorpus = [
+			makeMeta('routeplanner', 'Route Planner', 'optimizes route planning for navigation'),
+			makeMeta('other', 'Other', 'completely unrelated content about databases'),
+		];
+		const scores = bm25Score(stemCorpus, 'routing');
+		expect(scores.get('routeplanner')).toBeGreaterThan(0);
+	});
+});
+
 // Assertion C: multi-word query where no single token matches all words still returns results
 describe('bm25RankTokens — multi-word OR fallback', () => {
 	it('C1: query with terms spread across different tokens returns results for each', () => {

@@ -20,5 +20,8 @@
     "vite": "^6.0.0",
     "vitest": "^4.0.18"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "stemmer": "^2.0.1"
+  }
 }

@@ -1,6 +1,7 @@
 // BM25 ranking for token filter (ADR-0232).
 // Ported from internal/barcli/bm25.go.
 
+import { stemmer } from 'stemmer';
 import type { TokenMeta } from './grammar.js';
 
 const BM25_K1 = 1.5;
@@ -16,7 +17,8 @@ function tokenize(s: string): string[] {
 	return s
 		.toLowerCase()
 		.split(/[^a-z0-9_]+/)
-		.filter((w) => w.length > 1);
+		.filter((w) => w.length > 1)
+		.map(stemmer);
 }
 
 function docTitle(t: TokenMeta): string {

@@ -2,10 +2,10 @@
 name: bar-dictionary
 description: >
   Shared token-lookup skill for bar. Accepts an intent phrase and returns ranked matching
-  tokens from the live grammar using bar lookup and bar help tokens --plain. Use this
-  skill instead of hardcoding token descriptions — it always reflects the current grammar.
-  Call it when you need to find what token matches a user's intent, when you need the
-  full metadata for a specific token, or when you need all tokens on an axis.
+  tokens from the live grammar using bar lookup. Use this skill instead of hardcoding token
+  descriptions — it always reflects the current grammar. Call it when you need to find what
+  token matches a user's intent, when you need the full metadata for a specific token, or
+  when you need all tokens on an axis.
 ---
 
 # Bar Dictionary Skill
@@ -80,24 +80,25 @@ bar lookup "debug" --axis method  # debug-related method tokens only
 
 ## Operation 2: Token describe
 
-**Use when:** You know the `axis:token` and need its full metadata (definition, heuristics,
-distinctions).
+**Use when:** You know the `axis:token` and need to confirm it exists or see related tokens.
+
+When the input is a natural-language intent phrase or a token name being searched by meaning, use `bar lookup`; `bar help tokens --plain | grep` is not a permitted substitute for this case.
 
 ```bash
-bar help tokens --plain <axis> | grep "^<axis>:<token>"
+bar lookup "diagnose" --axis method
 ```
 
-**Example:**
+**Output:** ranked results with tier (3 = exact token match, 1 = mentioned in distinctions):
+```
+method:diagnose — Identify likely root causes  [matched token: "diagnose"]
+method:abduce — Generate explanatory hypotheses  [matched distinctions: "diagnose"]
+```
+
+When the raw four-field tab-separated record (heuristics or distinctions text verbatim) is required:
 ```bash
 bar help tokens --plain method | grep "^method:diagnose"
 ```
-
-**Output:** tab-separated line with four fields:
-```
-method:diagnose	Identify likely root causes	what is causing this,root cause,...,debug this	abduce:abduce = generate competing hypotheses; diagnose = narrow to single most likely cause
-```
-
-Fields: `axis:token` | `label` | `heuristics (comma-separated)` | `distinctions (pipe-separated token:note pairs)`
+Output: `axis:token<TAB>label<TAB>heuristics<TAB>distinctions`
 
 ---
 
@@ -153,7 +154,7 @@ Tokens matching "<intent>":
 - task:probe (tier 3) — Surface assumptions and implications
 - method:experimental (tier 2) — Propose concrete experiments
 
-To describe a specific token: bar help tokens --plain method | grep "^method:diagnose"
+To describe a specific token: bar lookup "diagnose" --axis method
 ```
 
 Include the tier so the calling skill can judge match strength. Stop at 5–7 results unless
@@ -173,9 +174,9 @@ bar lookup "debug this"
 bar lookup "debug" --axis method
 ```
 
-**Get full metadata for method:diagnose:**
+**Get metadata for method:diagnose:**
 ```bash
-bar help tokens --plain method | grep "^method:diagnose"
+bar lookup "diagnose" --axis method
 ```
 
 **List all task tokens:**

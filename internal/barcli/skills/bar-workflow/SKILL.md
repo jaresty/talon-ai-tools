@@ -76,11 +76,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 - **Decision Methods** → For evaluation/selection steps
 - **Diagnostic Methods** → For problem identification steps
 
-**Targeted lookup with `bar help tokens --plain`:** When planning a workflow step and you need to find a token matching a specific intent, use `--plain` with an axis filter rather than re-reading the full reference. Each line has four tab-separated fields: `category:slug`, label, comma-joined heuristics, pipe-joined `token:note` distinction pairs. Grep field 3 to match intent; read field 4 to find related tokens worth comparing across steps.
-```bash
-bar help tokens --plain method | grep 'root cause'  # find diagnostic method tokens
-bar help tokens --plain form                         # all form tokens with cross-references
-```
+**Targeted lookup:** When the input is a natural-language intent phrase, the only permitted discovery call is `bar lookup "<intent>" --axis <axis>`; `bar help tokens --plain | grep` is not a permitted substitute for this case. Use `--plain` only when the raw four-field tab-separated record (heuristics or distinctions text verbatim) is required.
 
 ### Fallback (legacy `bar help tokens`)
 
@@ -140,14 +136,12 @@ After discovering tokens from the reference, common patterns include:
 
 ### Legacy Workflow Construction (without bar help llm)
 
-If `bar help llm` is unavailable, use `bar lookup` to find tokens by intent:
+Use `bar lookup` to find tokens by intent:
 
 ```bash
 bar lookup "<your intent>"               # find matching tokens across all axes
 bar lookup "<your intent>" --axis method # restrict to method tokens only
 ```
-
-Or invoke `bar-dictionary` for a guided lookup session.
 
 Fall back to `bar help tokens scope method form` only if `bar lookup` is also unavailable.
 

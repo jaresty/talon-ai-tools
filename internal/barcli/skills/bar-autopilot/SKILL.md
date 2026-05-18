@@ -76,11 +76,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 - Token Selection Heuristics (categorized by thinking style)
 - Advanced Features (shuffle, skip sentinels, `--plain` format)
 
-**Targeted lookup with `bar help tokens --plain`:** When you need to find a token matching a specific intent phrase without re-reading the full reference, use `--plain` with an axis filter. Each line has four tab-separated fields: `category:slug`, label, comma-joined heuristics, pipe-joined `token:note` distinction pairs. Grep field 3 (heuristics) to match intent; read field 4 (distinctions) to find related tokens worth comparing.
-```bash
-bar help tokens --plain method | grep 'debug'   # find method tokens for a debugging intent
-bar help tokens --plain task                     # all task tokens with heuristics and cross-references
-```
+**Targeted lookup:** When the input is a natural-language intent phrase, the only permitted discovery call is `bar lookup "<intent>" --axis <axis>`; `bar help tokens --plain | grep` is not a permitted substitute for this case. Use `--plain` only when the raw four-field tab-separated record (heuristics or distinctions text verbatim) is required.
 
 ### Fallback (legacy `bar help tokens`)
 
@@ -131,15 +127,13 @@ bar help tokens --plain task                     # all task tokens with heuristi
 
 ### Legacy Token Selection (without bar help llm)
 
-If `bar help llm` is unavailable, use `bar lookup` to find tokens by intent:
+Use `bar lookup` to find tokens by intent:
 
 ```bash
 bar lookup "<your intent>"               # find matching tokens across all axes
 bar lookup "<your intent>" --axis method # restrict to method tokens only
 bar lookup "<your intent>" --axis scope  # restrict to scope tokens only
 ```
-
-Or invoke `bar-dictionary` for a guided lookup session.
 
 Fall back to `bar help tokens scope method form` only if `bar lookup` is also unavailable.
 

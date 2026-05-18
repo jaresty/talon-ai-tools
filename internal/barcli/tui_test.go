@@ -587,7 +587,7 @@ func TestHarnessCautionChannelAudience(t *testing.T) {
 		t.Fatalf("focus to-managers: %v", err)
 	}
 	view := h.ObserveView()
-	if !strings.Contains(view, "With code") {
+	if !strings.Contains(view, "inaccessible") {
 		t.Errorf("channel→audience: detail-panel caution must appear when code active + to-managers focused; got:\n%s", view)
 	}
 

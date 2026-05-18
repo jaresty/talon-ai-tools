@@ -157,6 +157,18 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "bug+announce",
+        "tokens": ["bug", "announce"],
+        "prose": (
+            "bug + announce: the announce intent governs the outer framing — the response is "
+            "delivered as a news or status update to the audience, with the bug report structure "
+            "appearing inside that framing. The bug report's Steps to Reproduce, Expected "
+            "Behavior, Actual Behavior, and Environment sections are present but introduced "
+            "as the content of the announcement rather than as a standalone diagnostic artifact. "
+            "The opening and closing register follows announce; the diagnostic structure follows bug."
+        ),
+    },
+    {
         "name": "calc+chain",
         "tokens": ["calc", "chain"],
         "prose": (

@@ -1066,3 +1066,37 @@ This replaces the C26 principle ("prefer composition rules or definition adjustm
 ### Open Items
 
 Post-apply validation (cycle 29) recommended.
+
+---
+
+## Cycle 29: Post-Apply Validation (Seeds S294–S301)
+
+**Date:** 2026-05-18
+**Focus:** Post-apply validation of C28 findings; one new finding applied inline
+**Seeds:** S294–S301 (8 prompts)
+
+### Results
+
+| Seed | Topology | Key tokens | Score |
+|------|----------|-----------|-------|
+| S294 | — | max+cross+systemic+recipe | 4 |
+| S295 | — | full+lever+scientist_to_analyst | 5 |
+| S296 | blind | full+time+wasinawa+scientist_to_analyst | 5 |
+| S297 | relay | full+act+boom+quiz+designer | 4 |
+| S298 | relay | triage+act+spike+stakeholder_facilitator | 4 |
+| S299 | blind | narrow+jobs+grain | 5 |
+| S300 | — | full+dam+log+executive_brief | 4 |
+| S301 | relay | minimal+lever+bug+managers+announce | 3 |
+| **Mean** | | | **4.25** |
+
+### C28 Validation
+
+No recurrence of skim+gate, blind+skim, test+executive_brief, seep+fun_mode, or ghost+svg patterns. C28 fixes validated.
+
+### Changes Applied
+
+- `bug+announce` compositionConfig entry: announce intent governs outer framing; bug report structure appears inside as the content of the announcement.
+
+### Open Items
+
+None. Cycle 30 recommended as next general shuffle.

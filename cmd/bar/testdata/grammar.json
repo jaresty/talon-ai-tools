@@ -10477,6 +10477,14 @@
       "prose": "seep + fun_mode: playful register and vivid examples govern framing, analogies, and surface presentation; boundary-overreach analysis proceeds rigorously beneath. The identification of where influence or responsibility extends beyond stated contracts must be precise and evidence-grounded — fun_mode does not license vague or approximate overreach claims. Use humor and lightness in how findings are introduced, not in what the findings assert."
     },
     {
+      "name": "bug+announce",
+      "tokens": [
+        "bug",
+        "announce"
+      ],
+      "prose": "bug + announce: the announce intent governs the outer framing — the response is delivered as a news or status update to the audience, with the bug report structure appearing inside that framing. The bug report's Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment sections are present but introduced as the content of the announcement rather than as a standalone diagnostic artifact. The opening and closing register follows announce; the diagnostic structure follows bug."
+    },
+    {
       "name": "calc+chain",
       "tokens": [
         "calc",
@@ -10513,6 +10521,6 @@
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "9b188e2d99dc73529f345f683053359d39e409f5e29faa781536bae3ca49449e"
+    "compositions": "a7592129ab7b63077283148d003ee72c2136ecf37577887320b77e7619920b33"
   }
 }

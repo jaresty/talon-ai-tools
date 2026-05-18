@@ -985,3 +985,37 @@ Post-apply validation (cycle 27) recommended to confirm cautionary entries are w
 ### Evidence
 
 nn note: `20260518212417-0956`
+
+---
+
+## Cycle 27: Post-Apply Validation (Seeds S278–S285)
+
+**Date:** 2026-05-18
+**Focus:** Post-apply validation of C26 cautionary entries + persona_preset rendering fix in help_llm.go
+**Seeds:** S278–S285 (8 prompts)
+
+### Results
+
+| Seed | Topology | Key tokens | Score |
+|------|----------|-----------|-------|
+| S278 | — | authority+tight+adr+stakeholder_facilitator | 4 |
+| S279 | live | full+rog+junior-engineer | 5 |
+| S280 | — | cross+remote+executive_brief | 4 |
+| S281 | — | atomic+wardley+notebook | 4 |
+| S282 | blind | view+clash+html+designer_to_pm | 4 |
+| S283 | — | zoom+lever+table+slack+dip-ong | 5 |
+| S284 | — | full+fly-rog+executive_brief | 5 |
+| S285 | — | taper+jobs+cite+vet+fly-bog | 4 |
+| **Mean** | | | **4.375** |
+
+### Fixes Applied During Validation
+
+- `persona_preset` added to `partnerAxes` in `help_llm.go` — `survive+fun_mode` was not rendering in `bar help llm` because `persona_preset` was absent from the partner axis list; also added `persona=token` formatter branch to match `audience=token` pattern
+
+### Changes Applied
+
+- `help_llm.go`: `partnerAxes` extended with `"persona_preset"`; two `axisB == "persona_preset"` formatter branches added (natural and cautionary)
+
+### Open Items
+
+None. C26 cautionaries validated — no recurrence.

@@ -1201,7 +1201,7 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 
 	fmt.Fprintf(w, "### Choosing Channel\n\n")
 
-	partnerAxes := []string{"task", "topology", "completeness", "audience", "channel", "form", "directional", "method", "tone"}
+	partnerAxes := []string{"task", "topology", "completeness", "audience", "channel", "form", "directional", "method", "tone", "persona_preset"}
 
 	for _, axisA := range []string{"channel", "form", "completeness", "method", "tone"} {
 		byToken, ok := cac[axisA]
@@ -1227,6 +1227,8 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 				for _, n := range pair.Natural {
 					if axisB == "audience" {
 						backticks = append(backticks, fmt.Sprintf("`audience=%s`", n))
+					} else if axisB == "persona_preset" {
+						backticks = append(backticks, fmt.Sprintf("`persona=%s`", n))
 					} else {
 						backticks = append(backticks, fmt.Sprintf("`%s`", n))
 					}
@@ -1249,6 +1251,8 @@ func renderCrossAxisComposition(w io.Writer, grammar *Grammar) {
 					warning := pair.Cautionary[tok]
 					if axisB == "audience" {
 						cautionaryLines = append(cautionaryLines, fmt.Sprintf("  - `audience=%s` — %s", tok, warning))
+					} else if axisB == "persona_preset" {
+						cautionaryLines = append(cautionaryLines, fmt.Sprintf("  - `persona=%s` — %s", tok, warning))
 					} else {
 						cautionaryLines = append(cautionaryLines, fmt.Sprintf("  - `%s` — %s", tok, warning))
 					}

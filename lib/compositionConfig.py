@@ -107,6 +107,56 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "skim+gate",
+        "tokens": ["skim", "gate"],
+        "prose": (
+            "skim + gate: gate's hard-blocking precision requirement takes precedence over skim's "
+            "brevity constraint at every gate condition. The gate condition itself must be stated "
+            "fully — naming the specific string or structural property whose presence constitutes "
+            "satisfaction — regardless of skim's light-pass instruction. Skim governs all content "
+            "outside the gate conditions; within a gate condition, skim does not apply. A gate "
+            "condition expressed as a vague summary rather than a named observable property does "
+            "not satisfy gate's requirement even when skim is present."
+        ),
+    },
+    {
+        "name": "blind+skim",
+        "tokens": ["blind", "skim"],
+        "prose": (
+            "blind + skim: assumption and constraint reconstruction — which blind requires before "
+            "any conclusion that depends on prior context — is compressed to one-line headers "
+            "rather than full blocks. Each header names the assumption or constraint explicitly "
+            "so the conclusion can be traced to it, but elaboration is suppressed. Conclusions "
+            "still name their dependency by reference to the header; a conclusion that omits this "
+            "reference does not satisfy blind's requirement regardless of skim's brevity instruction."
+        ),
+    },
+    {
+        "name": "test+executive_brief",
+        "tokens": ["test", "executive_brief"],
+        "prose": (
+            "test + executive_brief: test cases are framed as business-scenario pass/fail criteria "
+            "rather than technical assertion format. Each test case names a business condition "
+            "(the scenario), a decision or outcome (what is being verified), and a result "
+            "(pass or fail with one-line rationale). Technical setup, execution, and assertion "
+            "sections are compressed or omitted; the CEO-facing register governs the framing. "
+            "A test case expressed as a technical unit test does not satisfy executive_brief's "
+            "audience requirement."
+        ),
+    },
+    {
+        "name": "seep+fun_mode",
+        "tokens": ["seep", "fun_mode"],
+        "prose": (
+            "seep + fun_mode: playful register and vivid examples govern framing, analogies, and "
+            "surface presentation; boundary-overreach analysis proceeds rigorously beneath. The "
+            "identification of where influence or responsibility extends beyond stated contracts "
+            "must be precise and evidence-grounded — fun_mode does not license vague or approximate "
+            "overreach claims. Use humor and lightness in how findings are introduced, not in what "
+            "the findings assert."
+        ),
+    },
+    {
         "name": "calc+chain",
         "tokens": ["calc", "chain"],
         "prose": (

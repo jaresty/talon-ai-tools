@@ -1834,6 +1834,14 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             }
         },
+        "ghost": {
+            "channel": {
+                "cautionary": {
+                    "svg": "ghost form produces a step/result execution trace in prose — SVG markup has no slot for sequential prose workflow output; use plain or no "
+                    "channel"
+                }
+            }
+        },
         "questions": {
             "channel": {
                 "natural": ["plain", "slack", "diagram"],

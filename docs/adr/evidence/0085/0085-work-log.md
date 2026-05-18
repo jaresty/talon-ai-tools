@@ -1019,3 +1019,50 @@ nn note: `20260518212417-0956`
 ### Open Items
 
 None. C26 cautionaries validated — no recurrence.
+
+---
+
+## Cycle 28: General Cross-Axis Shuffle (Seeds S286–S293)
+
+**Date:** 2026-05-18
+**Focus:** General shuffle; introduced updated 3-level resolution hierarchy
+**Seeds:** S286–S293 (8 prompts)
+
+### Results
+
+| Seed | Topology | Key tokens | Score |
+|------|----------|-----------|-------|
+| S286 | — | skim+gate+appreciate | 3 |
+| S287 | blind | skim+skill+product_manager_to_team | 3 |
+| S288 | — | grow+cross+bias+persuade | 5 |
+| S289 | — | narrow+ghost+svg+stakeholder_facilitator | 3 |
+| S290 | — | narrow+motifs+models+skill | 4 |
+| S291 | — | deep+test+executive_brief | 3 |
+| S292 | — | full+migrate+zettel+fig | 4 |
+| S293 | blind | full+seep+fun_mode | 3 |
+| **Mean** | | | **3.5** |
+
+### Changes Applied
+
+**compositionConfig.py** (4 new entries — define HOW tokens combine):
+- `skim+gate`: gate precision takes precedence at gate conditions; skim governs all other content
+- `blind+skim`: assumption blocks compressed to one-line headers; conclusions still name dependency
+- `test+executive_brief`: test cases framed as business-scenario pass/fail, not technical assertion format
+- `seep+fun_mode`: playful register governs framing; boundary-overreach analysis remains rigorous
+
+**axisConfig.py** (1 new cautionary — truly incoherent):
+- `ghost+svg`: execution trace prose has no slot in SVG markup
+
+### Updated Review Hierarchy
+
+Three-level resolution preference established for all future cycles:
+
+1. **`compositionConfig.py`** — when tokens CAN combine, define HOW (injected as prompt guidance at build time). Preferred over cautionary whenever a resolution behavior can be stated.
+2. **`CROSS_AXIS_COMPOSITION` cautionary** — when the combination is structurally incoherent and no meaningful resolution exists.
+3. **Document as finding** — reserved for cases where neither composition nor cautionary applies (very rare).
+
+This replaces the C26 principle ("prefer composition rules or definition adjustments over finding documentation") with a more precise 3-level ordering that names `compositionConfig.py` explicitly as the primary resolution mechanism.
+
+### Open Items
+
+Post-apply validation (cycle 29) recommended.

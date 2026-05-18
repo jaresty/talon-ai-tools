@@ -6361,6 +6361,13 @@
             }
           }
         },
+        "ghost": {
+          "channel": {
+            "cautionary": {
+              "svg": "ghost form produces a step/result execution trace in prose — SVG markup has no slot for sequential prose workflow output; use plain or no channel"
+            }
+          }
+        },
         "questions": {
           "channel": {
             "natural": [
@@ -10438,6 +10445,38 @@
       "prose": "atomic + ground: when the artifact's run result contains no remaining failures, that result is a necessary precondition for the completion check — the completion check is not permitted to open until a tool-executed run result showing zero failures appears in the transcript above it; the completion check block must end before any done declaration opens. Satisfying atomic's requirements does not exempt ground's requirements; satisfying ground's requirements does not exempt atomic's requirements — each applies independently. Adversarial completion check: treat each distinct file-modifying tool call as one step. For each step, the completion check must locate a tool result (diff, run output, or file read) appearing in the transcript at that step's position that shows exactly one independently testable change — where independently testable means a separate named test or observable can detect one change while being blind to the other. If no such tool result exists, or if it shows more than one independently testable change, that step is a gap requiring re-execution as separate tool calls before the completion check may close — the only source that satisfies the step verification is a tool result appearing in the transcript at that step's position showing exactly one independently testable change."
     },
     {
+      "name": "skim+gate",
+      "tokens": [
+        "skim",
+        "gate"
+      ],
+      "prose": "skim + gate: gate's hard-blocking precision requirement takes precedence over skim's brevity constraint at every gate condition. The gate condition itself must be stated fully — naming the specific string or structural property whose presence constitutes satisfaction — regardless of skim's light-pass instruction. Skim governs all content outside the gate conditions; within a gate condition, skim does not apply. A gate condition expressed as a vague summary rather than a named observable property does not satisfy gate's requirement even when skim is present."
+    },
+    {
+      "name": "blind+skim",
+      "tokens": [
+        "blind",
+        "skim"
+      ],
+      "prose": "blind + skim: assumption and constraint reconstruction — which blind requires before any conclusion that depends on prior context — is compressed to one-line headers rather than full blocks. Each header names the assumption or constraint explicitly so the conclusion can be traced to it, but elaboration is suppressed. Conclusions still name their dependency by reference to the header; a conclusion that omits this reference does not satisfy blind's requirement regardless of skim's brevity instruction."
+    },
+    {
+      "name": "test+executive_brief",
+      "tokens": [
+        "test",
+        "executive_brief"
+      ],
+      "prose": "test + executive_brief: test cases are framed as business-scenario pass/fail criteria rather than technical assertion format. Each test case names a business condition (the scenario), a decision or outcome (what is being verified), and a result (pass or fail with one-line rationale). Technical setup, execution, and assertion sections are compressed or omitted; the CEO-facing register governs the framing. A test case expressed as a technical unit test does not satisfy executive_brief's audience requirement."
+    },
+    {
+      "name": "seep+fun_mode",
+      "tokens": [
+        "seep",
+        "fun_mode"
+      ],
+      "prose": "seep + fun_mode: playful register and vivid examples govern framing, analogies, and surface presentation; boundary-overreach analysis proceeds rigorously beneath. The identification of where influence or responsibility extends beyond stated contracts must be precise and evidence-grounded — fun_mode does not license vague or approximate overreach claims. Use humor and lightness in how findings are introduced, not in what the findings assert."
+    },
+    {
       "name": "calc+chain",
       "tokens": [
         "calc",
@@ -10466,7 +10505,7 @@
     }
   ],
   "checksums": {
-    "axes": "5ec16525bcc5454c58d403445371b63974ee2c79194132918f2b3ee223b20827",
+    "axes": "99d6232089934e54add248aa80d161c8abdbfde6b513a661cd30ca037b2594ec",
     "tasks": "1bcdee10ca1b6885cb57c5fbd5ea4e8fedf1f3d4bc8a3263b25677bf8e9b7db2",
     "persona": "c52bb15444318ebae4e6a5d36082bada3653e6121f5310e0d4815c246a3f51bf",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
@@ -10474,6 +10513,6 @@
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "64c207783200f33d3c9625290babfbbcb664ee0795c88ace87e64e1dfc808683"
+    "compositions": "9b188e2d99dc73529f345f683053359d39e409f5e29faa781536bae3ca49449e"
   }
 }

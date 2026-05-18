@@ -851,3 +851,41 @@ residual_constraints:
 next_work: No active gaps. Reopen on: new catalog additions, user routing failures, or
   next ADR-0113 cross-axis health check.
 ```
+
+---
+
+## loop-27 | 2026-05-18 | Topology token routing + general health
+
+```
+focus: First ADR-0113 loop since loop-26 (2026-03-13). Trigger: topology tokens added to
+  shuffle pool, solo definition fixed, new composition rules added since loop-26.
+  Sampled 8 tasks: T01, T02, T06, T14, T28 (general health); T31, T32, T33 (topology routing).
+
+binary: dev (post-commit 8f4bfa68)
+
+mean_score_pre: 4.875/5 (7 tasks score 5; T33 scores 4)
+mean_score_post: 5.0/5 (T33 confirmed 5 post-apply)
+
+gaps_found:
+  G-L27-01: witness (topology) — Type 2 (undiscoverable-token), score 4 → 5.
+    Task T33: "walk through so each reasoning step is visible and auditable"
+    Root cause: "auditable" not in witness heuristics — users may route to audit
+    (adversarial scrutiny) instead of witness (inspectable observer-checked transitions).
+    Fix: added "auditable steps", "each step visible and auditable", "make reasoning
+    auditable" to AXIS_TOKEN_METADATA["topology"]["witness"]["heuristics"].
+
+fixes_applied:
+  - lib/axisConfig.py: witness heuristics — added 3 auditable-trigger phrases
+
+validation:
+  - make bar-grammar-update → grammar regenerated
+  - go test ./... → all pass
+  - T31/T32/T33 topology routing verified via bar help llm Choosing Topology section:
+    relay ("handoff-ready"), blind ("reconstruct context for future replay"),
+    witness ("inspectable reasoning" + new "auditable steps") all directly discoverable
+
+residual_constraints: none
+
+next_work: No active gaps. Reopen on: new catalog additions, user routing failures,
+  or next ADR-0113 cross-axis health check.
+```

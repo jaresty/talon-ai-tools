@@ -6003,7 +6003,10 @@
             "hidden assumption failures",
             "why does this follow",
             "justify each transition",
-            "best default epistemic hygiene"
+            "best default epistemic hygiene",
+            "auditable steps",
+            "each step visible and auditable",
+            "make reasoning auditable"
           ],
           "definition": "The response names each assumption before relying on it. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named before it is collapsed into a conclusion."
         }
@@ -10513,7 +10516,7 @@
     }
   ],
   "checksums": {
-    "axes": "99d6232089934e54add248aa80d161c8abdbfde6b513a661cd30ca037b2594ec",
+    "axes": "05c51a63bbc313d1300a9bed176a0d3329bfc2c402c552dd94654449911b3cd7",
     "tasks": "1bcdee10ca1b6885cb57c5fbd5ea4e8fedf1f3d4bc8a3263b25677bf8e9b7db2",
     "persona": "c52bb15444318ebae4e6a5d36082bada3653e6121f5310e0d4815c246a3f51bf",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

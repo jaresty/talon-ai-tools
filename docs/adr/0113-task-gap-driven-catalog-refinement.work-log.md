@@ -889,3 +889,39 @@ residual_constraints: none
 next_work: No active gaps. Reopen on: new catalog additions, user routing failures,
   or next ADR-0113 cross-axis health check.
 ```
+
+---
+
+## loop-28 | 2026-05-18 | Planning/writing/analysis domain coverage
+
+```
+focus: High-weight tasks not covered in loop-27: T03, T05, T08, T10, T11, T13, T15, T17.
+  Planning, writing, analysis domains.
+
+binary: dev (post-commit ca52bb02)
+
+mean_score_pre: 4.875/5 (7 tasks score 5; T15 scores 4)
+mean_score_post: 5.0/5
+
+gaps_found:
+  G-L28-01: depends (method) — Type 2 (undiscoverable-token), score 4 → 5.
+    Task T15: "break down the payment integration into tickets"
+    Root cause: depends heuristics target existing dependency tracing ("what depends on X")
+    but not work-sequencing ("what order should we do these", "which must come first").
+    Users breaking epics into sequenced tickets won't find depends.
+    Fix: added 6 sequencing trigger phrases to depends heuristics.
+
+fixes_applied:
+  - lib/axisConfig.py: depends heuristics — added "sequence these tasks",
+    "what order should we do these", "break into tickets with ordering",
+    "what are the prerequisites", "which must come first", "task sequencing"
+
+validation:
+  - make bar-grammar-update → grammar regenerated
+  - go test ./... → all pass
+
+residual_constraints: none
+
+next_work: No active gaps. Reopen on: new catalog additions, user routing failures,
+  or next ADR-0113 cross-axis health check.
+```

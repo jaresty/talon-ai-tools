@@ -4881,6 +4881,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "dependency chain",
                 "what would be affected",
                 "what does Z need to work",
+                "sequence these tasks",
+                "what order should we do these",
+                "break into tickets with ordering",
+                "what are the prerequisites",
+                "which must come first",
+                "task sequencing",
             ],
         },
         "diagnose": {

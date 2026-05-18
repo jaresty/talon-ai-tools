@@ -3754,7 +3754,13 @@
             "upstream and downstream",
             "dependency chain",
             "what would be affected",
-            "what does Z need to work"
+            "what does Z need to work",
+            "sequence these tasks",
+            "what order should we do these",
+            "break into tickets with ordering",
+            "what are the prerequisites",
+            "which must come first",
+            "task sequencing"
           ],
           "definition": "The response enhances the task by tracing dependency relationships, identifying what depends on what and how changes propagate through the system."
         },
@@ -10516,7 +10522,7 @@
     }
   ],
   "checksums": {
-    "axes": "05c51a63bbc313d1300a9bed176a0d3329bfc2c402c552dd94654449911b3cd7",
+    "axes": "fbae728658bbd2ad6fe2fc7106c3e64d9a5820033b9e4b7b999a808367970d25",
     "tasks": "1bcdee10ca1b6885cb57c5fbd5ea4e8fedf1f3d4bc8a3263b25677bf8e9b7db2",
     "persona": "c52bb15444318ebae4e6a5d36082bada3653e6121f5310e0d4815c246a3f51bf",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

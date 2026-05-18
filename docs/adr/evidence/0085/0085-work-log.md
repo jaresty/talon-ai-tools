@@ -825,3 +825,163 @@ No changes — all score-2 seeds covered by existing documentation. fix-closure-
 ### Evidence
 
 `docs/adr/evidence/0085/cycle-21/evaluations.md`
+
+## Cycle 22: Topology Tokens — First Evaluation (Seeds S220–S229)
+
+**Date:** 2026-05-15
+**Focus:** First evaluation of topology tokens in shuffle combinations (topology was previously missing from shuffle pool due to a bug — fixed in this session)
+**Seeds:** S220–S229 (10 prompts)
+
+### Results
+
+| Seed | Topology | Score | Finding |
+|------|----------|-------|---------|
+| Various | blind, witness, relay, audit, live | 4.04 avg | Broadly coherent on first cycle |
+
+### Changes Applied
+
+- `blind+code` structural incompatibility cautionary added
+- `witness+skim`, `witness+gist` cautionary entries added (moved to axisConfig.py SSOT)
+- `audit+probe`, `relay+notebook`, `witness+gate` natural entries verified (already present)
+- Shuffle bug fixed: topology now included in `getStageTokens` case
+
+### Open Items
+
+None carried forward.
+
+### Evidence
+
+nn note: `20260515033028-1479`
+
+---
+
+## Cycle 23: Topology Tokens — Second Evaluation (Seeds S230–S237)
+
+**Date:** 2026-05-16
+**Focus:** Topology shuffle using fixed binary; confirming cycle-22 fixes held
+**Seeds:** S230–S237 (8 prompts)
+
+### Results
+
+| Seed | Topology | Key tokens | Score |
+|------|----------|-----------|-------|
+| S230 | relay | grow+meld | 4 |
+| S231 | witness | zoom+flow | 5 |
+| S232 | blind | triage+crystal | 4 |
+| S233 | live | narrow+robust | 4 |
+| S234 | audit | zoom+converge | 5 |
+| S235 | live | zoom+origin | 4 |
+| S236 | audit | deep+survive | 3 |
+| S237 | relay | deep+square | 4 |
+| **Mean** | | | **4.125** |
+
+### Changes Applied
+
+- `audit+fun_mode` cautionary added (persona_preset axis)
+- `witness+zoom`, `audit+zoom` natural entries added
+- Deferred: solo token underrepresented — targeted evaluation next cycle
+
+### Evidence
+
+nn note: `20260516232645-9024`
+
+---
+
+## Cycle 24: Solo Topology — Targeted Evaluation (Seeds S240–S266)
+
+**Date:** 2026-05-16
+**Focus:** solo token targeted evaluation (absent from cycles 22–23 corpus)
+**Seeds:** S240, S241, S243, S249, S250, S260, S262, S266 (8 prompts)
+
+### Results
+
+| Seed | Topology | Complete | Method | Score |
+|------|----------|----------|--------|-------|
+| S240 | solo | triage | converge | 4 |
+| S241 | solo | triage | migrate | 4 |
+| S243 | solo | gist | align | 2 |
+| S249 | solo | gist | field | 2 |
+| S250 | solo | minimal | mod | 3 |
+| S260 | solo | minimal | depends | 3 |
+| S262 | solo | taper | mesh | 4 |
+| S266 | solo | deep | fun_mode | 3 |
+| **Mean** | | | | **3.125** |
+
+### Root Cause
+
+solo definition error: "optimizes for synthesis efficiency and conceptual compression" conflated topology (epistemic stance) with completeness (output depth). solo should only describe what reasoning state is externalized.
+
+### Changes Applied
+
+- solo definition rewritten to pure epistemic stance (commit d23d718c)
+- solo+gist finding cancelled after root cause identified
+
+### Evidence
+
+nn note: `20260516233032-2634`
+
+---
+
+## Cycle 25: Post-Apply Solo Definition Fix (Seeds S243, S249, fun_mode check)
+
+**Date:** 2026-05-16
+**Focus:** Post-apply validation of solo definition rewrite
+**Seeds:** S243, S249, solo+fun_mode re-check (3 prompts)
+
+### Results
+
+| Seed | Topology | Key tokens | C24 Score | C25 Score |
+|------|----------|-----------|-----------|-----------|
+| S243 | solo | gist+align | 2 | 4 |
+| S249 | solo | gist+field | 2 | 5 |
+| fun_mode | solo | — | 3 | 5 |
+| **Mean** | | | 3.125 | **4.67** |
+
+### Changes Applied
+
+None — definition fix from cycle 24 fully resolved all findings.
+
+### Evidence
+
+nn note: `20260516234436-0588`
+
+---
+
+## Cycle 26: General Cross-Axis Shuffle (Seeds S270–S277)
+
+**Date:** 2026-05-18
+**Focus:** First general cross-axis shuffle (not topology-targeted); introduced review principle: prefer composition rules or definition adjustments over documenting incompatibility as findings
+**Seeds:** S270–S277 (8 prompts)
+
+### Results
+
+| Seed | Topology | Key tokens | Score |
+|------|----------|-----------|-------|
+| S270 | — | struct+variants+fip-rog | 4 |
+| S271 | solo | twin+stakeholder_facilitator | 3 |
+| S272 | — | authority+sweep+presenterm | 4 |
+| S273 | — | survive+fun_mode | 3 |
+| S274 | — | gist+lever+plain+dip-bog | 5 |
+| S275 | relay | storage+questions+shellscript | 3 |
+| S276 | audit | thing+store+future-historian | 4 |
+| S277 | solo | motifs+inversion+bog | 3 |
+| **Mean** | | | **3.625** |
+
+### Changes Applied (all via composition rules)
+
+- `solo+inversion` cautionary: solo suppresses externalization; inversion's failure-path chain requires visible derivation steps
+- `solo+stakeholder_facilitator` cautionary: solo suppresses reasoning continuity facilitators need
+- `survive+fun_mode` cautionary: adversarial provisional stance conflicts with playful register (same mechanism as audit+fun_mode)
+- `questions form+shellscript` cautionary: probing prose cannot render as executable shell code
+
+### Review Principle Established
+
+When a finding is a structural incompatibility, prefer (in order): (1) composition rule cautionary entry, (2) definition adjustment, (3) document as finding. All C26 findings resolved at level 1.
+
+### Open Items
+
+Post-apply validation (cycle 27) recommended to confirm cautionary entries are working.
+
+### Evidence
+
+nn note: `20260518212417-0956`

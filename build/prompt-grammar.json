@@ -6369,7 +6369,8 @@
               "diagram"
             ],
             "cautionary": {
-              "gherkin": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel"
+              "gherkin": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel",
+              "shellscript": "questions form produces reflective or probing prose — cannot be rendered as executable shell code; use plain or no channel"
             }
           }
         },
@@ -6531,6 +6532,18 @@
             ]
           }
         },
+        "solo": {
+          "method": {
+            "cautionary": {
+              "inversion": "solo suppresses reasoning externalization; inversion's failure-path chain requires visible derivation steps to be meaningful — use relay or witness instead so the failure-to-intervention path is externalized"
+            }
+          },
+          "persona_preset": {
+            "cautionary": {
+              "stakeholder_facilitator": "solo externalizes minimal reasoning state; stakeholder facilitation requires relay-level continuity so participants can follow the reasoning thread — use relay topology instead"
+            }
+          }
+        },
         "witness": {
           "completeness": {
             "natural": [
@@ -6545,6 +6558,15 @@
             "natural": [
               "gate"
             ]
+          }
+        }
+      },
+      "method": {
+        "survive": {
+          "persona_preset": {
+            "cautionary": {
+              "fun_mode": "survive+fun_mode tends to produce incoherent output — survive's adversarial provisional stance (claims treated as unvalidated until live exposure) conflicts with fun_mode's playful register; the discipline and the tone pull in opposite directions"
+            }
           }
         }
       }
@@ -10444,7 +10466,7 @@
     }
   ],
   "checksums": {
-    "axes": "84eca9195a6666ee62d14856f5a44d8fe036cdf9d1385a5408a0c75b4610e60e",
+    "axes": "5ec16525bcc5454c58d403445371b63974ee2c79194132918f2b3ee223b20827",
     "tasks": "1bcdee10ca1b6885cb57c5fbd5ea4e8fedf1f3d4bc8a3263b25677bf8e9b7db2",
     "persona": "c52bb15444318ebae4e6a5d36082bada3653e6121f5310e0d4815c246a3f51bf",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

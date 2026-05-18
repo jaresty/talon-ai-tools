@@ -1838,7 +1838,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {
                 "natural": ["plain", "slack", "diagram"],
                 "cautionary": {
-                    "gherkin": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel"
+                    "gherkin": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel",
+                    "shellscript": "questions form produces reflective or probing prose — cannot be rendered as executable shell code; use plain or no channel",
                 },
             }
         },
@@ -1978,6 +1979,20 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             }
         },
         "relay": {"channel": {"natural": ["notebook"]}},
+        "solo": {
+            "method": {
+                "cautionary": {
+                    "inversion": "solo suppresses reasoning externalization; inversion's failure-path chain requires visible derivation steps to be meaningful — use "
+                    "relay or witness instead so the failure-to-intervention path is externalized"
+                }
+            },
+            "persona_preset": {
+                "cautionary": {
+                    "stakeholder_facilitator": "solo externalizes minimal reasoning state; stakeholder facilitation requires relay-level continuity so "
+                    "participants can follow the reasoning thread — use relay topology instead"
+                }
+            },
+        },
         "witness": {
             "completeness": {
                 "natural": ["zoom"],
@@ -1990,6 +2005,16 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             },
             "form": {"natural": ["gate"]},
         },
+    },
+    "method": {
+        "survive": {
+            "persona_preset": {
+                "cautionary": {
+                    "fun_mode": "survive+fun_mode tends to produce incoherent output — survive's adversarial provisional stance (claims treated as unvalidated "
+                    "until live exposure) conflicts with fun_mode's playful register; the discipline and the tone pull in opposite directions"
+                }
+            }
+        }
     },
 }
 

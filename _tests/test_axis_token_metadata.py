@@ -634,7 +634,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "an insufficiency claim is not permitted until a tool-executed result showing the smaller change appears above it in the transcript",
+            "the only permitted evidence that the smaller change is insufficient is a tool-executed run result in which the governing failure signal text appears verbatim",
             definition,
             "atomic must require a tool-executed run of the smaller change before an insufficiency claim is permitted",
         )

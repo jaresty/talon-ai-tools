@@ -10430,6 +10430,14 @@
       "prose": "ground + falsify: the intent of this combination is that every behavior is governed by a falsifiable artifact — meaning the behavior cannot regress without the artifact detecting it. Producing passing artifacts that happen to exist alongside the implementation does not satisfy this intent; each artifact must structurally enforce its governed behavior. Falsify's criteria are required constraints on whatever enforcement process ground derives. During ground's completion check, each assertion must have a correlated artifact-fire in the transcript — evidence that it would detect a regression. Does a correlated FAIL artifact already exist for this assertion? If yes — adversarial check satisfied; do not re-perturb. If no — produce it now. Self-assessed certainty does not substitute for a visible artifact fire — the artifact is the evidence; the assessment is not. Adversarial completion check: every assertion text appearing in the derivation block is governed. For each, the completion check must locate a tool-executed run result in the transcript whose output contains that assertion text as a FAIL string — if none exists, that assertion is a gap and the completion check must not close until such a result appears — the only source that satisfies the completion check for a governed assertion is a tool-executed run result in the transcript whose output contains that assertion text as a FAIL string."
     },
     {
+      "name": "gate+atomic",
+      "tokens": [
+        "gate",
+        "atomic"
+      ],
+      "prose": "gate + atomic: gate's blocking condition applies to every file-modifying tool call, including stub additions. Each file-modifying tool call must be immediately preceded by a tool-executed FAIL result whose output contains the name of the function or symbol that tool call adds or modifies — a FAIL result whose output does not contain that name does not gate that tool call. A tool call whose diff contains more than one function definition does not satisfy this requirement — each function must appear in a separate tool call, each immediately preceded by its own qualifying FAIL result. Atomic's first-failure-signal constraint applies within each tool call's governing FAIL."
+    },
+    {
       "name": "falsify+atomic",
       "tokens": [
         "falsify",
@@ -10530,6 +10538,6 @@
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
-    "compositions": "a7592129ab7b63077283148d003ee72c2136ecf37577887320b77e7619920b33"
+    "compositions": "36f25196a6fc0c40403a827195f5847fc916c8288ea892c4c67fe474e7626e6b"
   }
 }

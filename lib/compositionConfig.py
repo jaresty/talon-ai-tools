@@ -47,6 +47,20 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "gate+atomic",
+        "tokens": ["gate", "atomic"],
+        "prose": (
+            "gate + atomic: gate's blocking condition applies to every file-modifying tool call, "
+            "including stub additions. Each file-modifying tool call must be immediately preceded "
+            "by a tool-executed FAIL result whose output contains the name of the function or "
+            "symbol that tool call adds or modifies — a FAIL result whose output does not contain "
+            "that name does not gate that tool call. A tool call whose diff contains more than one "
+            "function definition does not satisfy this requirement — each function must appear in "
+            "a separate tool call, each immediately preceded by its own qualifying FAIL result. "
+            "Atomic's first-failure-signal constraint applies within each tool call's governing FAIL."
+        ),
+    },
+    {
         "name": "falsify+atomic",
         "tokens": ["falsify", "atomic"],
         "prose": (

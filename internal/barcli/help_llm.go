@@ -1437,8 +1437,13 @@ func renderMetadata(w io.Writer, grammar *Grammar, compact bool) {
 
 func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "## Named Sequences\n\n")
-	fmt.Fprintf(w, "Named sequences are directed multi-step workflow patterns. Use `bar sequence list` to\n")
-	fmt.Fprintf(w, "discover them and `bar sequence show <name>` for steps, mode, and example.\n\n")
+	fmt.Fprintf(w, "Named sequences are directed multi-step workflow patterns. They are a scaffold to consult\n")
+	fmt.Fprintf(w, "after generating candidate step structures from token exploration — not the first thing to\n")
+	fmt.Fprintf(w, "reach for. Use `bar lookup` and § Token Catalog to find candidate tokens and draft a step\n")
+	fmt.Fprintf(w, "structure first; then run `bar sequence list` to see if a named sequence's step structure\n")
+	fmt.Fprintf(w, "aligns with what you already generated. A transcript that runs `bar sequence list` before\n")
+	fmt.Fprintf(w, "any candidate step structure appears in the text has not satisfied this ordering.\n")
+	fmt.Fprintf(w, "Use `bar sequence show <name>` for steps, mode, and example.\n\n")
 	fmt.Fprintf(w, "**A sequence defines step roles and order, not the complete token set.** For each step,\n")
 	fmt.Fprintf(w, "select at least one additional token (completeness, scope, method, or form) appropriate\n")
 	fmt.Fprintf(w, "to that step's role — a `bar build` command containing only the sequence's step token\n")

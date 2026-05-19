@@ -188,3 +188,82 @@ func TestGitHubAPIClientAssetNotFound(t *testing.T) {
 		t.Errorf("GetAssetDownloadURL() expected error for missing asset, got nil")
 	}
 }
+
+func TestGetAssetDownloadURLSendsTokenWhenEnvSet(t *testing.T) {
+	var gotAuth string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotAuth = r.Header.Get("Authorization")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"tag_name": "v1.0.0",
+			"assets": []map[string]interface{}{
+				{"name": "bar-darwin-arm64", "browser_download_url": "https://example.com/bar-darwin-arm64"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	t.Setenv("GITHUB_TOKEN", "test-token-xyz")
+	client := NewGitHubClient()
+	client.BaseURL = server.URL
+	client.HTTPClient = server.Client()
+
+	ctx := context.Background()
+	_, _ = client.GetAssetDownloadURL(ctx, "owner", "repo", "bar-darwin-arm64")
+
+	want := "Bearer test-token-xyz"
+	if gotAuth != want {
+		t.Errorf("Authorization header = %q, want %q", gotAuth, want)
+	}
+}
+
+func TestNewGitHubClientSendsTokenWhenEnvSet(t *testing.T) {
+	var gotAuth string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotAuth = r.Header.Get("Authorization")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"tag_name": "v1.0.0",
+			"assets":   []interface{}{},
+		})
+	}))
+	defer server.Close()
+
+	t.Setenv("GITHUB_TOKEN", "test-token-abc")
+	client := NewGitHubClient()
+	client.BaseURL = server.URL
+	client.HTTPClient = server.Client()
+
+	ctx := context.Background()
+	_, _ = client.GetLatestRelease(ctx, "owner", "repo")
+
+	want := "Bearer test-token-abc"
+	if gotAuth != want {
+		t.Errorf("Authorization header = %q, want %q", gotAuth, want)
+	}
+}
+
+func TestNewGitHubClientNoAuthWhenEnvAbsent(t *testing.T) {
+	var gotAuth string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotAuth = r.Header.Get("Authorization")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"tag_name": "v1.0.0",
+			"assets":   []interface{}{},
+		})
+	}))
+	defer server.Close()
+
+	t.Setenv("GITHUB_TOKEN", "")
+	client := NewGitHubClient()
+	client.BaseURL = server.URL
+	client.HTTPClient = server.Client()
+
+	ctx := context.Background()
+	_, _ = client.GetLatestRelease(ctx, "owner", "repo")
+
+	if gotAuth != "" {
+		t.Errorf("Authorization header = %q, want empty", gotAuth)
+	}
+}

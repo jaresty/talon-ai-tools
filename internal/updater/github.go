@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 // HTTPGitHubClient is a real GitHub API client using HTTP
 type HTTPGitHubClient struct {
 	BaseURL    string
 	HTTPClient *http.Client
+	Token      string
 }
 
 // NewGitHubClient creates a new GitHub API client
@@ -18,6 +20,7 @@ func NewGitHubClient() *HTTPGitHubClient {
 	return &HTTPGitHubClient{
 		BaseURL:    "https://api.github.com",
 		HTTPClient: &http.Client{},
+		Token:      os.Getenv("GITHUB_TOKEN"),
 	}
 }
 
@@ -33,6 +36,13 @@ type githubAsset struct {
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
+func (c *HTTPGitHubClient) setHeaders(req *http.Request) {
+	req.Header.Set("Accept", "application/vnd.github+json")
+	if c.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.Token)
+	}
+}
+
 // GetLatestRelease fetches the latest release from GitHub
 func (c *HTTPGitHubClient) GetLatestRelease(ctx context.Context, owner, repo string) (*Release, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", c.BaseURL, owner, repo)
@@ -42,7 +52,7 @@ func (c *HTTPGitHubClient) GetLatestRelease(ctx context.Context, owner, repo str
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Accept", "application/vnd.github+json")
+	c.setHeaders(req)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -85,7 +95,7 @@ func (c *HTTPGitHubClient) GetAssetDownloadURL(ctx context.Context, owner, repo,
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Accept", "application/vnd.github+json")
+	c.setHeaders(req)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

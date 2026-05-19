@@ -19,6 +19,7 @@ func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) 
 	// Always render header unless filtering or compact
 	if section == "" && !compact {
 		fmt.Fprintf(w, "# Bar CLI Reference for LLMs\n\n")
+		fmt.Fprintf(w, "**Loading constraint**: The only permitted invocation form for this reference is `bar help llm` with no arguments and not piped. A transcript where `bar help llm` appears with any argument or where its output is piped to another command has not satisfied the load step.\n\n")
 		fmt.Fprintf(w, "Generated: %s\n", time.Now().UTC().Format(time.RFC3339))
 		fmt.Fprintf(w, "Grammar Schema Version: %s\n\n", grammar.SchemaVersion)
 		fmt.Fprintf(w, "---\n\n")

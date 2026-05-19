@@ -35,7 +35,7 @@ Do NOT use bar-manual for:
 
 ### With `bar help llm` (preferred)
 
-1. **Show comprehensive reference**: Teach user to run `bar help llm` for complete documentation
+1. **Load comprehensive reference**: The only permitted invocation form is `bar help llm` with no arguments and not piped. A transcript where `bar help llm` appears with any argument or where its output is piped to another command has not satisfied the load step. Teach users the same constraint.
 2. **Guide to relevant sections**: Point to specific sections based on their needs
    - "Usage Patterns by Task Type" for examples
    - "Token Catalog" for available tokens
@@ -159,11 +159,8 @@ command is shown and copyable at any time, closing the loop back to the CLI.
 
 **Preferred (with bar help llm):**
 ```bash
-# Get comprehensive reference
+# Get comprehensive reference — no arguments, not piped
 bar help llm
-
-# Save for offline reference
-bar help llm > bar-reference.md
 
 # Also accessible as:
 bar help reference

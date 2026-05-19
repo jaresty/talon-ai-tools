@@ -75,7 +75,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 **For bar versions with `bar help llm` support:**
 
 1. **Check for cached reference** - If already loaded in conversation, reuse it
-2. **Load reference once** - Run `bar help llm` as a standalone Bash command and read its full output before any planning — never pipe it as `--subject` or `--addendum` to another command; piping truncates the output and silently drops token definitions, composition rules, and usage patterns
+2. **Load reference once** - The only permitted invocation form is `bar help llm` with no arguments and not piped. A transcript where `bar help llm` appears with any argument or where its output is piped to another command has not satisfied the load step.
 3. **Workflow planning strategy:**
    - Consult **"Choosing Method"** section to understand method categorization
    - Reference **"Usage Patterns by Task Type"** for multi-step examples

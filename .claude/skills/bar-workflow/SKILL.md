@@ -32,16 +32,30 @@ Each step is a required gate. Do not advance to the next step until the current 
 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load comprehensive reference** via `bar help llm` once per conversation
-3. **Check for a named sequence** — run `bar sequence list` to discover available sequences. If the request matches a named sequence (explicitly or by description), run `bar sequence show <name>` to get steps, mode, and prompt hints. Confirm with the user if the match was implicit. If no named sequence fits, proceed to ad hoc planning (step 4) and apply mode inference (see §Mode Inference below). **Follow the sequence guidance in `bar help llm` § Named Sequences** — it is the authoritative source for how to select tokens alongside a sequence and when to break out of one mid-run.
-4. **Declare execution mode** before running any commands — one of: `autonomous`, `interactive`, or `cycle`. Show the plan:
+3. **Explore tokens** — use `bar lookup` and `bar help llm` to find candidate tokens for
+   each planned step. A step plan must name at least one token candidate and the intent it
+   serves before proceeding. A transcript that reaches step 4 without naming token candidates
+   and their intents does not satisfy this requirement.
+4. **Generate candidate step structures** — from the token candidates, write out one or more
+   possible step orderings as text before running any `bar sequence` commands. Each candidate
+   must name the step count, the token(s) per step, and the role each step plays. A transcript
+   that runs `bar sequence list` before a candidate step structure appears in the text does
+   not satisfy this requirement.
+5. **Check sequences as a scaffold** — run `bar sequence list`. If a named sequence's step
+   structure aligns with a candidate from step 4, run `bar sequence show <name>` and adopt
+   its step count, step order, execution mode, prompt hints, and anchor tokens as additions
+   to the candidate token set for each step. A sequence is not worth adopting when its step
+   structure does not fit the candidates already generated. The sequence list is not
+   exhaustive — if no sequence fits, the candidates from step 4 are sufficient to proceed.
+6. **Declare execution mode** before running any commands — one of: `autonomous`, `interactive`, or `cycle`. Show the plan:
    ```
-   Sequence: <name> (<N> steps) — mode: <mode>
-     Step 1: <token> — <role>
-     Step 2: <token> — <role>
+   Sequence: <name or "ad hoc"> (<N> steps) — mode: <mode>
+     Step 1: <tokens> — <role>
+     Step 2: <tokens> — <role>
    Proceeding with step 1...
    ```
-5. **Execute bar commands** following the mode protocol (see §Execution Modes below)
-6. **Synthesize results** into a comprehensive response that reflects all steps
+7. **Execute bar commands** following the mode protocol (see §Execution Modes below)
+8. **Synthesize results** into a comprehensive response that reflects all steps
 
 ## Skill Behavior Rules
 

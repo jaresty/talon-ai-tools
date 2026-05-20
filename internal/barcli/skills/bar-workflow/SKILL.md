@@ -31,7 +31,7 @@ Assumes:
 Each step is a required gate. Do not advance to the next step until the current one is complete.
 
 1. **Analyze request** and decide on the number of steps and progression strategy
-2. **Load comprehensive reference** via `bar help llm` once per conversation
+2. **Load navigation guide** via `bar help llm` (no args), then load sections on demand
 3. **Explore tokens** — use `bar lookup` and `bar help llm` to find candidate tokens for
    each planned step. A step plan must name at least one token candidate and the intent it
    serves before proceeding. A transcript that reaches step 4 without naming token candidates
@@ -74,15 +74,20 @@ Each step is a required gate. Do not advance to the next step until the current 
 
 **For bar versions with `bar help llm` support:**
 
-1. **Check for cached reference** - If already loaded in conversation, reuse it
-2. **Load reference once** - The only permitted invocation form is `bar help llm` with no arguments and not piped. A transcript where `bar help llm` appears with any argument or where its output is piped to another command has not satisfied the load step.
-3. **Workflow planning strategy:**
-   - Consult **"Choosing Method"** section to understand method categorization
-   - Reference **"Usage Patterns by Task Type"** for multi-step examples
-   - Use **"Token Catalog"** to discover available tokens for each step
-   - Check **"Composition Rules"** for constraints
+1. **Check for cached navigation guide** - If `bar help llm` was already run in this conversation, reuse it
+2. **Load navigation guide** - Run `bar help llm` (no args) to get the navigation endpoint. It lists available `--section` names and the `bar help token <slug>` command.
+3. **Load only what you need:**
+   - `bar help llm --section heuristics` → Choosing Method/Scope/Form guidance
+   - `bar help llm --section tokens` → full token catalog with definitions
+   - `bar help llm --section rules` → composition rules and incompatibilities
+   - `bar help token <slug>` → definition, heuristics, distinctions for one token
+4. **Workflow planning strategy:**
+   - Consult **"Choosing Method"** section (`--section heuristics`) to understand method categorization
+   - Reference **"Usage Patterns by Task Type"** (`--section patterns`) for multi-step examples
+   - Use `bar lookup "<intent>"` or `bar help token <slug>` to discover tokens for each step
+   - Check **"Composition Rules"** (`--section rules`) for constraints
 
-**Performance benefit:** Single reference load enables planning multiple workflow steps
+**Performance benefit:** Navigation-first loading; load only the sections you need
 
 **Method categorization for workflows:**
 - **Exploration Methods** → For discovery/broadening steps
@@ -277,9 +282,9 @@ bar build <discovered-action-tokens> --subject "synthesize recommendations"
 ## Performance Notes
 
 **With `bar help llm`:**
-- **Tool calls:** 1 reference load per conversation
-- **Benefits:** Method categorization aids workflow sequencing
-- **Planning:** Integrated examples show multi-step patterns
+- **Tool calls:** 1 navigation guide load + on-demand section loads as needed
+- **Benefits:** Load only what is needed for the current workflow step
+- **Planning:** `bar help llm` → navigate; `--section heuristics` → method/scope guidance; `bar help token <slug>` → per-token detail
 
 **Legacy approach:**
 - **Tool calls:** 1-2 discovery queries per workflow
@@ -379,4 +384,7 @@ To check if `bar help llm` is available:
 bar help llm 2>/dev/null || bar help tokens
 ```
 
-If the first command succeeds (exit 0), use the reference approach for workflow planning.
+If the first command succeeds (exit 0), use the navigation-endpoint approach:
+- `bar help llm` → small navigation guide listing sections and sub-commands
+- `bar help llm --section <name>` → load a specific section on demand
+- `bar help token <slug>` → per-token detail (definition, heuristics, distinctions)

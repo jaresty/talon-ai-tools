@@ -98,7 +98,7 @@ func TestFormTokensHaveStructuredMetadataHeuristics(t *testing.T) {
 func TestHelpLLMIncludesHeuristicsColumn(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "llm", "--section", "tokens"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
 	}
@@ -201,7 +201,7 @@ func TestAuditTokenDescriptionsAreTrimmed(t *testing.T) {
 func TestHelpLLMTokenCatalogHasLabelColumn(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "llm", "--section", "tokens"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("expected bar help llm exit 0, got %d: %s", exit, stderr.String())
 	}
@@ -236,9 +236,9 @@ func TestHelpLLMTokenCatalogHasLabelColumn(t *testing.T) {
 func TestHelpLLMTokenCatalogHasKanjiColumn(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "llm", "tokens", "completeness"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "llm", "--section", "tokens"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
-		t.Fatalf("expected bar help llm tokens exit 0, got %d: %s", exit, stderr.String())
+		t.Fatalf("expected bar help llm --section tokens exit 0, got %d: %s", exit, stderr.String())
 	}
 	output := stdout.String()
 
@@ -259,9 +259,9 @@ func TestHelpLLMTokenCatalogHasKanjiColumn(t *testing.T) {
 func TestHelpLLMMethodCatalogGroupedByCategory(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "llm", "tokens", "method"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "llm", "--section", "tokens"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
-		t.Fatalf("expected bar help llm tokens method exit 0, got %d: %s", exit, stderr.String())
+		t.Fatalf("expected bar help llm --section tokens exit 0, got %d: %s", exit, stderr.String())
 	}
 	output := stdout.String()
 
@@ -446,7 +446,7 @@ func TestPlainOutputPersonaLabels(t *testing.T) {
 func TestHelpLLMStarterPacksSection(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "llm", "--section", "starter"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
 	}
@@ -458,7 +458,7 @@ func TestHelpLLMStarterPacksSection(t *testing.T) {
 	}
 
 	// All 10 pack names must appear
-	for _, name := range []string{"debug", "design", "review", "dissect", "pitch", "audit", "model", "charter", "explain", "versus"} {
+	for _, name := range []string{"debug", "design", "review", "dissect", "pitch", "compliance", "model", "charter", "explain", "versus"} {
 		if !strings.Contains(output, name) {
 			t.Errorf("Starter Packs section must include pack name %q", name)
 		}
@@ -485,7 +485,7 @@ func TestHelpLLMScopeFormDynamic(t *testing.T) {
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "llm", "--section", "heuristics"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
 	}

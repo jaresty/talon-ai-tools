@@ -35,12 +35,13 @@ Do NOT use bar-manual for:
 
 ### With `bar help llm` (preferred)
 
-1. **Load comprehensive reference**: The only permitted invocation form is `bar help llm` with no arguments and not piped. A transcript where `bar help llm` appears with any argument or where its output is piped to another command has not satisfied the load step. Teach users the same constraint.
-2. **Guide to relevant sections**: Point to specific sections based on their needs
-   - "Usage Patterns by Task Type" for examples
-   - "Token Catalog" for available tokens
-   - "Token Selection Heuristics" for guidance
-   - "Composition Rules" for constraints
+1. **Load navigation guide**: Run `bar help llm` (no args) — it is a small navigation endpoint listing available sections and sub-commands. Teach users the same pattern.
+2. **Guide to relevant sections on demand**:
+   - `bar help llm --section heuristics` → Token Selection Heuristics (Choosing Method/Scope/Form)
+   - `bar help llm --section tokens` → full Token Catalog
+   - `bar help llm --section patterns` → Usage Patterns by Task Type
+   - `bar help llm --section rules` → Composition Rules
+   - `bar help token <slug>` → deep detail for one token (definition, heuristics, distinctions)
 3. **Build recipe together**: Use discovered tokens to construct bar command
 4. **Optional exploration**: Teach `bar shuffle` for alternatives
 

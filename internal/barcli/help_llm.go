@@ -8,21 +8,130 @@ import (
 	"time"
 )
 
-// renderLLMHelp generates a comprehensive Markdown reference document optimized for LLM consumption
-// If section is non-empty, only renders that section
-// If compact is true, outputs tables only without descriptions or examples
+// renderHelpToken prints definition, heuristics, distinctions, and routing_concept for a single token slug.
+func renderHelpToken(w io.Writer, grammar *Grammar, slug string) error {
+	canonical := grammar.slugToCanonical[strings.ToLower(slug)]
+	if canonical == "" {
+		return fmt.Errorf("unknown token %q", slug)
+	}
+
+	// Try task tokens first
+	if meta := grammar.TaskMetadataFor(canonical); meta != nil {
+		fmt.Fprintf(w, "# Token: %s (task)\n\n", slug)
+		label := grammar.TaskLabel(canonical)
+		if label != "" {
+			fmt.Fprintf(w, "**Label**: %s\n\n", label)
+		}
+		fmt.Fprintf(w, "**Definition**: %s\n\n", meta.Definition)
+		if len(meta.Heuristics) > 0 {
+			fmt.Fprintf(w, "**Heuristics** (when to use):\n")
+			for _, h := range meta.Heuristics {
+				fmt.Fprintf(w, "- %s\n", h)
+			}
+			fmt.Fprintf(w, "\n")
+		}
+		if len(meta.Distinctions) > 0 {
+			fmt.Fprintf(w, "**Distinctions** (vs. similar tokens):\n")
+			for _, d := range meta.Distinctions {
+				fmt.Fprintf(w, "- **%s**: %s\n", d.Token, d.Note)
+			}
+			fmt.Fprintf(w, "\n")
+		}
+		if rc := grammar.TaskRoutingConcept(canonical); rc != "" {
+			fmt.Fprintf(w, "**Routing concept**: %s\n\n", rc)
+		}
+		return nil
+	}
+
+	// Try axis tokens
+	orderedAxes := []string{"completeness", "scope", "method", "form", "channel", "directional", "topology"}
+	for _, axis := range orderedAxes {
+		tokens, exists := grammar.Axes.Definitions[axis]
+		if !exists {
+			continue
+		}
+		desc, found := tokens[canonical]
+		if !found {
+			continue
+		}
+		fmt.Fprintf(w, "# Token: %s (%s)\n\n", slug, axis)
+		kanji := grammar.AxisKanji(axis, canonical)
+		if kanji != "" {
+			fmt.Fprintf(w, "**Kanji**: %s\n\n", kanji)
+		}
+		label := grammar.AxisLabel(axis, canonical)
+		if label != "" {
+			fmt.Fprintf(w, "**Label**: %s\n\n", label)
+		}
+		fmt.Fprintf(w, "**Description**: %s\n\n", strings.TrimSpace(desc))
+		if h := axisTokenHeuristics(grammar, axis, canonical); h != "" {
+			fmt.Fprintf(w, "**Heuristics** (when to use): %s\n\n", h)
+		}
+		if d := axisTokenDistinctions(grammar, axis, canonical); d != "" {
+			fmt.Fprintf(w, "**Distinctions** (vs. similar tokens): %s\n\n", d)
+		}
+		if rc := grammar.AxisRoutingConcept(axis, canonical); rc != "" {
+			fmt.Fprintf(w, "**Routing concept**: %s\n\n", rc)
+		}
+		return nil
+	}
+
+	return fmt.Errorf("token %q not found in any axis", slug)
+}
+
+// renderNavigationGuide emits a small (<10KB) navigation index for bar help llm with no section argument.
+// It lists available --section names and the bar help token subcommand so agents load only what they need.
+func renderNavigationGuide(w io.Writer, grammar *Grammar) {
+	fmt.Fprintf(w, "# Bar CLI Reference — Navigation Guide\n\n")
+	fmt.Fprintf(w, "Generated: %s | Grammar Schema Version: %s\n\n", time.Now().UTC().Format(time.RFC3339), grammar.SchemaVersion)
+	fmt.Fprintf(w, "**Loading constraint**: `bar help llm` is a navigation endpoint. Load deep content on demand:\n\n")
+	fmt.Fprintf(w, "```bash\n")
+	fmt.Fprintf(w, "bar help llm --section quickstart    # quick-start examples and grammar overview\n")
+	fmt.Fprintf(w, "bar help llm --section architecture  # token ordering, axis capacities, EBNF grammar\n")
+	fmt.Fprintf(w, "bar help llm --section cheatsheet    # one-line token summary table\n")
+	fmt.Fprintf(w, "bar help llm --section tokens        # full token catalog with definitions\n")
+	fmt.Fprintf(w, "bar help llm --section persona       # persona system (voice, audience, tone, intent)\n")
+	fmt.Fprintf(w, "bar help llm --section rules         # composition rules and incompatibilities\n")
+	fmt.Fprintf(w, "bar help llm --section patterns      # usage patterns by task type\n")
+	fmt.Fprintf(w, "bar help llm --section heuristics    # token selection heuristics (Choosing Method etc.)\n")
+	fmt.Fprintf(w, "bar help llm --section advanced      # advanced features (compare mode, topology)\n")
+	fmt.Fprintf(w, "bar help llm --section sequences     # named multi-step sequences\n")
+	fmt.Fprintf(w, "bar help llm --section metadata      # schema version and generation metadata\n")
+	fmt.Fprintf(w, "\n")
+	fmt.Fprintf(w, "# Per-token deep detail (definition, heuristics, distinctions, routing_concept):\n")
+	fmt.Fprintf(w, "bar help token <slug>                # e.g. bar help token show\n")
+	fmt.Fprintf(w, "\n")
+	fmt.Fprintf(w, "# Intent-to-token discovery (already available):\n")
+	fmt.Fprintf(w, "bar lookup \"<intent>\"               # e.g. bar lookup \"compare options\"\n")
+	fmt.Fprintf(w, "bar lookup \"<intent>\" --axis method  # restrict to one axis\n")
+	fmt.Fprintf(w, "```\n\n")
+	fmt.Fprintf(w, "## Recommended loading pattern for agents\n\n")
+	fmt.Fprintf(w, "1. **Discover tokens by intent**: `bar lookup \"<intent>\"` — no reference load needed\n")
+	fmt.Fprintf(w, "2. **Get token detail**: `bar help token <slug>` — loads one token's full metadata\n")
+	fmt.Fprintf(w, "3. **Check composition rules**: `bar help llm --section rules` — loads composition rules only\n")
+	fmt.Fprintf(w, "4. **Plan a workflow**: `bar help llm --section heuristics` — loads choosing-X guidance\n")
+	fmt.Fprintf(w, "5. **Full reference**: `bar help llm --section tokens` — loads complete token catalog\n\n")
+	fmt.Fprintf(w, "Use `bar help llm --section <name>` or `bar help token <slug>` rather than loading the full reference.\n")
+}
+
+// renderLLMHelp generates a comprehensive Markdown reference document optimized for LLM consumption.
+// If section is empty, renders the navigation guide. If section is non-empty, renders only that section.
+// If compact is true, outputs tables only without descriptions or examples.
 func renderLLMHelp(w io.Writer, grammar *Grammar, section string, compact bool) {
+	// When no section is requested, emit the navigation guide instead of the full reference.
+	if section == "" && !compact {
+		renderNavigationGuide(w, grammar)
+		return
+	}
+
 	shouldRender := func(sectionName string) bool {
 		return section == "" || section == sectionName
 	}
 
-	// Always render header unless filtering or compact
-	if section == "" && !compact {
-		fmt.Fprintf(w, "# Bar CLI Reference for LLMs\n\n")
-		fmt.Fprintf(w, "**Loading constraint**: The only permitted invocation form for this reference is `bar help llm` with no arguments and not piped. A transcript where `bar help llm` appears with any argument or where its output is piped to another command has not satisfied the load step.\n\n")
-		fmt.Fprintf(w, "Generated: %s\n", time.Now().UTC().Format(time.RFC3339))
-		fmt.Fprintf(w, "Grammar Schema Version: %s\n\n", grammar.SchemaVersion)
-		fmt.Fprintf(w, "---\n\n")
+	// Render section header when filtering to a specific section
+	if section != "" && !compact {
+		fmt.Fprintf(w, "# Bar CLI Reference — Section: %s\n\n", section)
+		fmt.Fprintf(w, "Generated: %s | Grammar Schema Version: %s\n\n---\n\n", time.Now().UTC().Format(time.RFC3339), grammar.SchemaVersion)
 	}
 
 	if shouldRender("quickstart") {

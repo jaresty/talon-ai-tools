@@ -377,9 +377,9 @@ func TestHelpSequencesIncludesMode(t *testing.T) {
 
 // Behavior 21: `bar help llm` includes a Named Sequences section.
 func TestHelpLLMIncludesSequencesSection(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"help", "llm"})
+	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
 	if code != 0 {
-		t.Fatalf("bar help llm exited %d: %s", code, stderr)
+		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "Named Sequences") {
 		t.Errorf("expected bar help llm to include \"Named Sequences\" section:\n%s", out[:min(len(out), 500)])

@@ -537,6 +537,22 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		}
 		renderSequencesHelp(stdout, grammar)
 		return 0
+	case "token":
+		if len(opts.Tokens) < 2 {
+			writeError(stderr, "usage: bar help token <slug>")
+			return 1
+		}
+		slug := opts.Tokens[1]
+		grammar, err := LoadGrammar(opts.GrammarPath)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		if err := renderHelpToken(stdout, grammar, slug); err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		return 0
 	case "llm", "reference":
 		// Validate section if provided
 		if opts.Section != "" {
@@ -550,6 +566,8 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 				"patterns":     true,
 				"heuristics":   true,
 				"advanced":     true,
+				"automation":   true,
+				"starter":      true,
 				"sequences":    true,
 				"metadata":     true,
 			}

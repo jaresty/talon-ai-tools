@@ -31,7 +31,7 @@ Assumes:
 Each step is a required gate. Do not advance to the next step until the current one is complete.
 
 1. **Analyze user request** for task type, scope, and desired output structure
-2. **Load comprehensive reference** via `bar help llm` once per conversation (cache for reuse)
+2. **Load navigation guide** via `bar help llm` (no args), then load sections on demand
 3. **Select tokens** by consulting reference sections (Usage Patterns, Token Selection Heuristics, Token Catalog)
 4. **Build and execute bar command** — run `bar build <tokens> [--subject ...] [--addendum ...]` via Bash tool
 5. **Read bar output** — the printed text is now your instruction for this response
@@ -56,22 +56,21 @@ Each step is a required gate. Do not advance to the next step until the current 
 
 **For bar versions with `bar help llm` support:**
 
-1. **Check for cached reference** - If `bar help llm` was already run in this conversation, reuse it
-2. **Load reference once** - The only permitted invocation form is `bar help llm` with no arguments and not piped. A transcript where `bar help llm` appears with any argument or where its output is piped to another command has not satisfied the load step.
-3. **Token selection strategy:**
-   - Consult **"Usage Patterns by Task Type"** section for similar use case examples
-   - Reference **"Token Selection Heuristics"** section for scope/method/form guidance
-   - Use **"Token Catalog"** section to discover available tokens across all 7 axes
-   - Check **"Composition Rules"** section for ordering, caps, and incompatibilities
+1. **Check for cached navigation guide** - If `bar help llm` was already run in this conversation, reuse it
+2. **Load navigation guide** - Run `bar help llm` (no args) to get the navigation endpoint listing available sections and sub-commands.
+3. **Load only what you need:**
+   - `bar help llm --section heuristics` → Token Selection Heuristics (Choosing Method/Scope/Form)
+   - `bar help llm --section tokens` → full Token Catalog (all axes)
+   - `bar help llm --section rules` → Composition Rules (ordering, caps, incompatibilities)
+   - `bar help llm --section patterns` → Usage Patterns by Task Type
+   - `bar help token <slug>` → definition, heuristics, distinctions for one token
+4. **Token selection strategy:**
+   - Use `bar lookup "<intent>"` for intent-to-token discovery (no section load needed)
+   - Consult **"Usage Patterns by Task Type"** (`--section patterns`) for similar use case examples
+   - Reference **"Token Selection Heuristics"** (`--section heuristics`) for scope/method/form guidance
+   - Check **"Composition Rules"** (`--section rules`) for ordering, caps, and incompatibilities
 
-**Performance benefit:** 1 reference load per conversation (vs 3-5 queries per request with legacy approach)
-
-**Reference structure includes:**
-- Quick Start with example commands
-- Grammar Architecture (ordering rules)
-- Token Catalog (all 7 axes: static, completeness, scope, method, form, channel, directional)
-- Persona System (presets + custom axes)
-- Composition Rules (constraints)
+**Performance benefit:** Navigation-first loading; `bar lookup` handles most discovery without any section load
 - Usage Patterns by Task Type (8 examples: decision-making, architecture, diagnosis, etc.)
 - Token Selection Heuristics (categorized by thinking style)
 - Advanced Features (shuffle, skip sentinels, `--plain` format)
@@ -155,9 +154,8 @@ After selecting tokens via discovery:
 ## Performance Notes
 
 **With `bar help llm`:**
-- **Tool calls:** 1 reference load per conversation
-- **Reduction:** ~70% fewer discovery queries vs legacy approach
-- **Benefits:** Integrated examples, categorized methods, complete constraints in single query
+- **Tool calls:** 1 navigation guide + targeted section loads as needed
+- **Benefits:** `bar lookup` handles most discovery with no load; sections load only what's needed
 
 **Legacy approach:**
 - **Tool calls:** 3-5 discovery queries per request

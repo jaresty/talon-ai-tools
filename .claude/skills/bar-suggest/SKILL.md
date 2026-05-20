@@ -51,7 +51,7 @@ Reply with a number (or describe what you want) and I'll proceed.
 ## High-level Workflow
 
 1. **Detect open-ended or ambiguous request**
-2. **Load comprehensive reference** via `bar help llm` once per conversation
+2. **Load navigation guide** via `bar help llm` (no args), then load sections on demand
 3. **Generate 2-4 distinct bar command options** using method categorization and patterns from reference
 4. **Present options** using Mode A (AskUserQuestion) if available, otherwise Mode B (inline numbered list)
 5. **Execute user's choice** and return structured response
@@ -239,9 +239,8 @@ bar build <discovered-tokens-for-choice> --subject "topic"
 ## Performance Notes
 
 **With `bar help llm`:**
-- **Tool calls:** 1 reference load per conversation
-- **Benefits:** Method categorization provides natural option diversity
-- **Planning:** Integrated patterns show proven option types
+- **Tool calls:** 1 navigation guide + on-demand section loads
+- **Benefits:** Method categorization provides natural option diversity; load only sections needed
 
 **Legacy approach:**
 - **Tool calls:** 1-2 discovery queries per suggestion request

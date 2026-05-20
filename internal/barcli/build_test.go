@@ -184,7 +184,7 @@ func TestHelpLLMTaskTableUsesStructuredMetadata(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 	var buf strings.Builder
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelp(&buf, grammar, "tokens", false)
 	out := buf.String()
 
 	if !strings.Contains(out, "### Tasks (required)") {

@@ -8,10 +8,19 @@ import (
 	"testing"
 )
 
+// renderLLMHelpAllSections renders every named section into one buffer.
+// Use this in tests that verify content exists somewhere in the reference,
+// not in tests that verify bar help llm (no args) is a navigation endpoint.
+func renderLLMHelpAllSections(buf *bytes.Buffer, grammar *Grammar) {
+	for _, section := range []string{"quickstart", "architecture", "cheatsheet", "tokens", "persona", "rules", "patterns", "starter", "heuristics", "advanced", "automation", "sequences", "metadata"} {
+		renderLLMHelp(buf, grammar, section, false)
+	}
+}
+
 func TestLLMHelpUsesTaskTerminology(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 
 	output := buf.String()
 
@@ -140,7 +149,7 @@ func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	// Extract the heuristics section only.
@@ -177,7 +186,7 @@ func TestLLMHelpHeuristicsTokensExist(t *testing.T) {
 func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	incompStart := strings.Index(output, "### Incompatibilities")
@@ -217,7 +226,7 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 func TestLLMHelpADR0112D1(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	// recipe+codetour and questions+gherkin conflicts migrated from AXIS_KEY_TO_GUIDANCE prose
@@ -257,7 +266,7 @@ func TestLLMHelpADR0112D1(t *testing.T) {
 func TestChoosingChannelFormEntriesRendered(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	choosingChannelStart := strings.Index(output, "### Choosing Channel")
@@ -289,7 +298,7 @@ func TestChoosingChannelFormEntriesRendered(t *testing.T) {
 func TestLLMHelpADR0112D3(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	// Persona Guidance section must still reference tone axis tokens (via structured metadata heuristics)
@@ -330,7 +339,7 @@ func TestLLMHelpADR0112D3(t *testing.T) {
 func TestLLMHelpPersonaUseWhen(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	// Locate the Persona System section
@@ -374,7 +383,7 @@ func TestLLMHelpPersonaUseWhen(t *testing.T) {
 func TestHelpLLMPersonaTablesUseStructuredMetadata(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	personaStart := strings.Index(output, "## Persona System")
@@ -405,7 +414,7 @@ func TestHelpLLMPersonaTablesUseStructuredMetadata(t *testing.T) {
 func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	incompStart := strings.Index(output, "### Incompatibilities")
@@ -465,7 +474,7 @@ func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 func TestLLMHelpADR0107TokenDescriptions(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	catalogStart := strings.Index(output, "## Token Catalog")
@@ -503,7 +512,7 @@ func TestLLMHelpADR0107TokenDescriptions(t *testing.T) {
 func TestLLMHelpADR0107Decisions(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	// D2: adr channel task-affinity restriction appears in Choosing Channel section
@@ -530,7 +539,7 @@ func TestLLMHelpADR0107Decisions(t *testing.T) {
 func TestLLMHelpADR0108Decisions(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	catalogStart := strings.Index(output, "## Token Catalog")
@@ -616,7 +625,7 @@ func TestAxisTokenCatalogHasHeuristicsAndDistinctions(t *testing.T) {
 func TestHelpLLMDocumentsCompareMode(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	if !strings.Contains(output, "Compare Mode") {
@@ -649,7 +658,7 @@ func TestHelpLLMCompactMentionsCompareMode(t *testing.T) {
 func TestHelpLLMBarOutputIsGoverningInstruction(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelpAllSections(&buf, grammar)
 	output := buf.String()
 
 	if !strings.Contains(output, "governing instruction") {
@@ -667,7 +676,7 @@ func TestHelpLLMBarOutputIsGoverningInstruction(t *testing.T) {
 func TestHelpLLMPreBarToolCallConstraint(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelp(&buf, grammar, "architecture", false)
 	output := buf.String()
 
 	usageStart := strings.Index(output, "### Usage Guidance for Automated/Agent Contexts")
@@ -695,7 +704,7 @@ func TestHelpLLMPreBarToolCallConstraint(t *testing.T) {
 func TestHelpLLMAutomationFlags(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelp(&buf, grammar, "automation", false)
 	output := buf.String()
 
 	if !strings.Contains(output, "--no-input") {
@@ -712,7 +721,7 @@ func TestHelpLLMAutomationFlags(t *testing.T) {
 func TestTopologyAxisInLLMHelp(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelp(&buf, grammar, "heuristics", false)
 	output := buf.String()
 
 	if !strings.Contains(output, "topology") {
@@ -810,7 +819,7 @@ func TestChoosingTopologyHasTriggerHeuristics(t *testing.T) {
 func TestBlindCodeCompositionRuleRendered(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelp(&buf, grammar, "heuristics", false)
 	output := buf.String()
 
 	start := strings.Index(output, "### Choosing Topology")
@@ -838,7 +847,7 @@ func TestBlindCodeCompositionRuleRendered(t *testing.T) {
 func TestChoosingTopologyC22Recommendations(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "", false)
+	renderLLMHelp(&buf, grammar, "heuristics", false)
 	output := buf.String()
 
 	start := strings.Index(output, "### Choosing Topology")
@@ -886,5 +895,57 @@ func TestChoosingTopologyC22Recommendations(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestHelpLLMNavigationEndpoint tests Option B: bar help llm becomes a small navigation guide
+// D1: output under 10KB; D2: lists --section; D3: lists bar help token; D6: constraint updated
+func TestHelpLLMNavigationEndpoint(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "", false)
+	output := buf.String()
+
+	// D1: navigation endpoint must be small
+	const maxBytes = 10 * 1024
+	if len(output) > maxBytes {
+		t.Errorf("D1: bar help llm output is %d bytes, want <= %d; it must be a navigation endpoint, not the full reference", len(output), maxBytes)
+	}
+
+	// D2: must list --section as a sub-command
+	if !strings.Contains(output, "--section") {
+		t.Error("D2: bar help llm navigation endpoint must mention --section <name> as a way to load deep content")
+	}
+
+	// D3: must list bar help token as a sub-command
+	if !strings.Contains(output, "bar help token") {
+		t.Error("D3: bar help llm navigation endpoint must mention 'bar help token <slug>' for per-token detail")
+	}
+
+	// D6: loading constraint must permit --section and bar help token
+	if strings.Contains(output, "with no arguments and not piped") {
+		t.Error("D6: loading constraint still forbids arguments; must be updated to permit --section and bar help token forms")
+	}
+}
+
+// TestHelpTokenSubcommand tests D4+D5: bar help token <slug> exists and returns per-token detail
+func TestHelpTokenSubcommand(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+
+	// D4: renderHelpToken must exist and succeed for a known token
+	err := renderHelpToken(&buf, grammar, "show")
+	if err != nil {
+		t.Fatalf("D4: renderHelpToken(\"show\") returned error: %v", err)
+	}
+
+	output := buf.String()
+
+	// D5: output must include definition/heuristics/distinctions content
+	if !strings.Contains(output, "show") {
+		t.Error("D5: bar help token output must include the token name")
+	}
+	if !strings.Contains(strings.ToLower(output), "heuristic") && !strings.Contains(strings.ToLower(output), "when to use") {
+		t.Error("D5: bar help token output must include heuristics or when-to-use guidance")
 	}
 }

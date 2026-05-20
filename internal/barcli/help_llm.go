@@ -67,8 +67,12 @@ func renderHelpToken(w io.Writer, grammar *Grammar, slug string) error {
 		if h := axisTokenHeuristics(grammar, axis, canonical); h != "" {
 			fmt.Fprintf(w, "**Heuristics** (when to use): %s\n\n", h)
 		}
-		if d := axisTokenDistinctions(grammar, axis, canonical); d != "" {
-			fmt.Fprintf(w, "**Distinctions** (vs. similar tokens): %s\n\n", d)
+		if meta := grammar.AxisMetadataFor(axis, canonical); meta != nil && len(meta.Distinctions) > 0 {
+			fmt.Fprintf(w, "**Distinctions** (vs. similar tokens):\n")
+			for _, d := range meta.Distinctions {
+				fmt.Fprintf(w, "- **%s**: %s\n", d.Token, d.Note)
+			}
+			fmt.Fprintf(w, "\n")
 		}
 		if rc := grammar.AxisRoutingConcept(axis, canonical); rc != "" {
 			fmt.Fprintf(w, "**Routing concept**: %s\n\n", rc)

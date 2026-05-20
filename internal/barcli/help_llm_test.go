@@ -949,3 +949,48 @@ func TestHelpTokenSubcommand(t *testing.T) {
 		t.Error("D5: bar help token output must include heuristics or when-to-use guidance")
 	}
 }
+
+// TestHelpTokenAxisDistinctionsIncludeNote specifies that bar help token for an axis token
+// renders distinction entries with both the token name AND the note text, not just "vs token".
+func TestHelpTokenAxisDistinctionsIncludeNote(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// Find an axis token that has distinctions with a non-empty note
+	var testSlug, wantNote string
+	outer:
+	for axis, tokens := range grammar.Axes.Definitions {
+		for token := range tokens {
+			meta := grammar.AxisMetadataFor(axis, token)
+			if meta == nil {
+				continue
+			}
+			for _, d := range meta.Distinctions {
+				if strings.TrimSpace(d.Note) != "" {
+					slug := grammar.slugForToken(token)
+					if slug == "" {
+						slug = token
+					}
+					testSlug = slug
+					wantNote = d.Note
+					break outer
+				}
+			}
+		}
+	}
+	if testSlug == "" {
+		t.Skip("no axis token with non-empty distinction note found in grammar")
+	}
+
+	var buf bytes.Buffer
+	if err := renderHelpToken(&buf, grammar, testSlug); err != nil {
+		t.Fatalf("renderHelpToken(%q) error: %v", testSlug, err)
+	}
+	output := buf.String()
+
+	// The note text must appear in output — not just the token name
+	if !strings.Contains(output, wantNote) {
+		t.Errorf("renderHelpToken(%q) distinctions missing note text %q\noutput:\n%s", testSlug, wantNote, output)
+	}
+}

@@ -146,43 +146,6 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
-        "name": "test+executive_brief",
-        "tokens": ["test", "executive_brief"],
-        "prose": (
-            "test + executive_brief: test cases are framed as business-scenario pass/fail criteria "
-            "rather than technical assertion format. Each test case names a business condition "
-            "(the scenario), a decision or outcome (what is being verified), and a result "
-            "(pass or fail with one-line rationale). Technical setup, execution, and assertion "
-            "sections are compressed or omitted; the CEO-facing register governs the framing. "
-            "A test case expressed as a technical unit test does not satisfy executive_brief's "
-            "audience requirement."
-        ),
-    },
-    {
-        "name": "seep+fun_mode",
-        "tokens": ["seep", "fun_mode"],
-        "prose": (
-            "seep + fun_mode: playful register and vivid examples govern framing, analogies, and "
-            "surface presentation; boundary-overreach analysis proceeds rigorously beneath. The "
-            "identification of where influence or responsibility extends beyond stated contracts "
-            "must be precise and evidence-grounded — fun_mode does not license vague or approximate "
-            "overreach claims. Use humor and lightness in how findings are introduced, not in what "
-            "the findings assert."
-        ),
-    },
-    {
-        "name": "bug+announce",
-        "tokens": ["bug", "announce"],
-        "prose": (
-            "bug + announce: the announce intent governs the outer framing — the response is "
-            "delivered as a news or status update to the audience, with the bug report structure "
-            "appearing inside that framing. The bug report's Steps to Reproduce, Expected "
-            "Behavior, Actual Behavior, and Environment sections are present but introduced "
-            "as the content of the announcement rather than as a standalone diagnostic artifact. "
-            "The opening and closing register follows announce; the diagnostic structure follows bug."
-        ),
-    },
-    {
         "name": "calc+chain",
         "tokens": ["calc", "chain"],
         "prose": (

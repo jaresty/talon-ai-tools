@@ -36,14 +36,16 @@ def test_four_named_compositions_exist():
     assert "atomic+ground" in names, "atomic+ground composition missing"
 
 
-def test_composition_tokens_are_valid_method_tokens():
+def test_composition_tokens_are_valid_axis_tokens():
     from lib.compositionConfig import COMPOSITIONS
     from lib.axisConfig import AXIS_KEY_TO_VALUE
-    method_tokens = set(AXIS_KEY_TO_VALUE.get("method", {}).keys())
+    all_tokens: set[str] = set()
+    for axis_tokens in AXIS_KEY_TO_VALUE.values():
+        all_tokens.update(axis_tokens.keys())
     for comp in COMPOSITIONS:
         for token in comp["tokens"]:
-            assert token in method_tokens, (
-                f"{comp['name']}: token {token!r} not found in method axis"
+            assert token in all_tokens, (
+                f"{comp['name']}: token {token!r} not found in any axis"
             )
 
 

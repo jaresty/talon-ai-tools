@@ -164,7 +164,7 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
     # Contract axes
     assert _contains_any(
         [
-            "Completeness: The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+            "Completeness: The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of each.",
         ]
     ), content
     assert _contains_any(

@@ -176,7 +176,7 @@ if bootstrap is not None:
                 "Intent: Express thanks, recognition, or positive regard.", hydrated
             )
             self.assertIn(
-                "Completeness: The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+                "Completeness: The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of each.",
                 hydrated,
             )
             self.assertIn(

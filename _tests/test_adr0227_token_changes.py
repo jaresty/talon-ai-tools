@@ -173,6 +173,109 @@ def test_atomic_minimal_stub_defined_by_zero_extra_statements():
     )
 
 
+def test_atomic_summary_line_defined_structurally():
+    """atomic summary-line exclusion must use a structural predicate, not semantic categories.
+
+    hollow audit finding: 'a line that reports a count of failures, a test-case name,
+    or a grouping header' requires domain knowledge of test runner output format.
+    Fix: define summary line as any line whose text does not name a specific condition
+    that was not met — derived from the existing positive definition of the governing line.
+    The structural predicate must appear in the summary-line clause itself (within 200 chars
+    of 'summary line and does not govern'), not appended elsewhere in the description.
+    """
+    text = _atomic()
+    summary_marker = "summary line and does not govern"
+    idx = text.find(summary_marker)
+    assert idx != -1, "atomic must contain 'summary line and does not govern'"
+    # The structural predicate must appear within the summary-line clause — defined as
+    # within 300 characters before the marker (where the definition lives).
+    clause_window = text[max(0, idx - 300):idx + len(summary_marker)]
+    assert "does not name a specific condition that was not met" in clause_window, (
+        "atomic summary-line clause must define summary line structurally as a line whose "
+        "text does not name a specific condition that was not met — the structural predicate "
+        "must appear in the summary-line clause, not elsewhere in the description "
+        "(hollow audit fix D1)"
+    )
+
+
+def test_atomic_multiple_scope_lines_quote_distinct_signals():
+    """atomic must require each Scope line to quote a distinct governing failure signal.
+
+    hollow audit finding: when multiple governing failures exist, the clause 'each must
+    appear as a separate Scope line' does not prevent two Scope lines from quoting the
+    same failure signal — leaving cardinality unverifiable by transcript inspection alone.
+    Fix: require each Scope line to quote a distinct verbatim string from the run result;
+    no two Scope lines may quote the same string from the same run result.
+    The constraint must appear in the multiple-failure clause (within 200 chars after
+    'multiple governing failures').
+    """
+    text = _atomic()
+    marker = "multiple governing failures"
+    idx = text.find(marker)
+    assert idx != -1, "atomic must contain 'multiple governing failures'"
+    clause_window = text[idx:idx + 400]
+    assert (
+        "no two Scope lines" in clause_window or
+        "each Scope line quotes a distinct" in clause_window or
+        "distinct" in clause_window and "Scope line" in clause_window
+    ), (
+        "atomic multiple-failure clause must require each Scope line to quote a distinct "
+        "governing failure signal — 'no two Scope lines may quote the same string from the "
+        "same run result' or equivalent must appear in the multiple-failure clause "
+        "(hollow audit fix D3)"
+    )
+
+
+def test_atomic_smaller_gate_requires_visible_application_tool_call():
+    """atomic Smaller gate must require the smaller-change application to be visible as a tool call.
+
+    hollow audit finding: 'produced by applying the smaller change' cannot be verified
+    from the transcript alone — provenance requires tracking causal history beyond what
+    is structurally observable. Fix: require that the file-modifying tool call that applied
+    the smaller change appears in the transcript above the run result.
+    The constraint must appear in the Smaller gate clause (within 300 chars after
+    'a Smaller line is valid only when').
+    """
+    text = _atomic()
+    marker = "a Smaller line is valid only when"
+    idx = text.lower().find(marker.lower())
+    assert idx != -1, "atomic must contain 'a Smaller line is valid only when'"
+    clause_window = text[idx:idx + 400]
+    assert (
+        "file-modifying tool call that applied the smaller change" in clause_window or
+        "tool call that applied the smaller change must appear" in clause_window
+    ), (
+        "atomic Smaller gate clause must require the file-modifying tool call that applied "
+        "the smaller change to appear in the transcript above the run result — 'produced by "
+        "applying' is not verifiable by transcript inspection alone (hollow audit fix D4)"
+    )
+
+
+def test_atomic_post_edit_verification_defines_assertion_text():
+    """atomic post-edit condition (b) must define 'assertion text' structurally.
+
+    hollow audit finding: condition (b) 'no assertion text appears in the new run result
+    that was absent from all prior run results' uses 'assertion text' without defining
+    its structural properties. Fix: define 'assertion text' as a string that names a
+    specific condition as not met — the same criterion used for the governing line.
+    The definition must appear in the post-edit verification clause (within 400 chars
+    after 'post-edit run result by tool call').
+    """
+    text = _atomic()
+    # Condition (b) starts after "(b) no assertion text"; check within 300 chars of it.
+    marker = "(b) no assertion text"
+    idx = text.find(marker)
+    assert idx != -1, "atomic must contain '(b) no assertion text'"
+    clause_window = text[idx:idx + 300]
+    assert (
+        "names a specific condition as not met" in clause_window or
+        "names a specific behavior as failing" in clause_window
+    ), (
+        "atomic post-edit verification clause (b) must define 'assertion text' as a string "
+        "that names a specific condition as not met — not left undefined (hollow audit fix D5)"
+    )
+
+
 # --- chain: governing output vocabulary (Decision 5) ---
 
 def test_chain_uses_governing_output_for_implementation_step_predecessor():

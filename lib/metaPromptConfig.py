@@ -205,7 +205,7 @@ PLANNING_DIRECTIVE: str = (
     "Your FIRST message is permitted only to contain the four sections defined below, written as text — any other content (tool calls, task work, file reads) appearing in the first message does not satisfy this requirement. "
     "Write all four sections as text now.\n\n"
     "SECTION 1 — TOKEN DERIVATIONS:\n"
-    "For each METHOD token, output a full block:\n"
+    "For each token on the method axis (tokens that appear under the METHOD 方法 heading in the rendered prompt), output a full block:\n"
     "  ## Derive: <token-name> <kanji>\n"
     "  What it means: <restate the token's definition in your own words>\n"
     "  What it requires for this task: <derive the concrete process this token demands here>\n"

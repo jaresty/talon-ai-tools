@@ -394,11 +394,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "code: this constraint does not apply when the code being modified is statically unreachable — defined as: (a) a static analysis tool or compiler flags the specific code path "
         "as unreachable in a tool-executed result above this line, or (b) a tool-executed run of the full test suite with the code removed produces an identical result to a run with "
         "it present; both conditions are verifiable by inspection of tool results; a code path is not unreachable merely because no current test covers it — reachability is a "
-        "structural property of the code, not a property of the test suite. Exception — governing artifact creation (allow-list): the only relief granted is that a tool-executed FAIL "
-        "result is not required before creating a governing artifact — an artifact that will remain as the permanent assertion of the governed behavior after implementation is "
-        "complete. All other pre-edit requirements remain in force: the scope declaration, derivation block, and line manifest must appear before the governing artifact edit. A "
-        "throwaway scaffold — one whose assertion will not persist as a re-executable record after implementation is complete — is not a governing artifact; no relief applies to it. "
-        "Produce the assertion in the form it will take permanently from the start. The FAIL gate applies only to non-governing artifact edits (implementation).",
+        "structural property of the code, not a property of the test suite. Exception — governing artifact creation is not gated (allow-list): the only relief granted is that a "
+        "tool-executed FAIL result is not required before creating a governing artifact — an artifact that will remain as the permanent assertion of the governed behavior after "
+        "implementation is complete. All other pre-edit requirements remain in force: the scope declaration, derivation block, and line manifest must appear before the governing "
+        "artifact edit. A throwaway scaffold — one whose assertion will not persist as a re-executable record after implementation is complete — is not a governing artifact; no relief "
+        "applies to it. Produce the assertion in the form it will take permanently from the start. The FAIL gate applies only to non-governing artifact edits (implementation).",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -426,26 +426,26 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "goal subsumes as the anchoring citation, quoting its text and location. If multiple unsubsumed goals exist, cite all of them. Derive the intent artifact from the cited goal "
         "statement(s) as an enumerated list of behavioral dimensions — each dimension must cite the specific clause in the anchoring citation it derives from, and every clause in the "
         "anchoring citation must produce at least one dimension; a dimension with no cited source clause has not been derived, and a clause with no corresponding dimension has been "
-        "silently dropped. Each dimension states the specific behavior it governs such that its presence or absence in any artifact is determinable without interpretation. Then derive "
-        "a ladder: an ordered sequence of artifacts where each rung names (a) the specific outcome the prior rung admits that this rung rejects, (b) the behavioral dimension that "
-        "outcome leaves unconstrained in the prior rung, and (c) the artifact type whose presence eliminates the judgment the prior rung required — two rungs belong to the same class "
-        "when the same artifact type eliminates both; a rung whose judgment class cannot be named by an artifact type has not been derived. A rung that cannot name all three has not "
-        "been derived and must be merged with the rung above — the merge is permitted only when a completed block above this line quotes the specific text from each candidate rung that "
-        "was attempted and found to require the same artifact type — the quoted-text block must end before the merge block opens. For each rung, produce a completed block above it "
-        "naming two candidate sub-rungs and the artifact type each would eliminate; if both name the same artifact type, the split is not required and that block constitutes the "
-        "demonstration; if they name different artifact types, the split is required and the block must end before the two new rungs open. The ladder must terminate at an artifact "
-        "whose satisfaction condition requires no judgment — checked by prior-executed results, not by inspection of prose. Every step requires a prior-executed result already in the "
-        "transcript as its governing artifact — a step whose governing artifact has not produced a result above it in the transcript has no authorization to proceed. When a governing "
-        "artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not sufficient for completion. No "
-        "content naming a specific artifact to be produced or edited may appear in the response before the completion check artifact. The response is not permitted to end until the "
-        "completion check artifact exists and at least one behavioral dimension cites a prior execution result that was observed to differ when that dimension was absent. For each item "
-        "in the intent artifact, the completion check cites the specific outcome in the execution result of the terminal ladder artifact for that dimension that was observed to differ "
-        "when the behavioral dimension was absent — a result from a different artifact is not valid even if it correlates; a prediction of what would differ does not satisfy this; "
-        "where no such result exists, the dimension is recorded as uncovered. A completion check with zero covered dimensions does not satisfy this gate. Scope reduction is permitted "
-        "only when the intent artifact or a prior completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments "
-        "are not valid at any stage. After each of the four artifacts (anchoring citation, intent artifact, ladder derivation, completion check), if the artifact's current state can be "
-        "expressed as a table, diagram, or structured list in fewer lines than the prose representation, produce one in that format. This display has no effect on artifact validity and "
-        "does not substitute for it.",
+        "silently dropped. Each dimension states the specific behavior it governs such that its presence or absence in any artifact is determinable without interpretation. Then produce "
+        'the literal heading "## Ladder" followed by the ladder derivation — an ordered sequence of artifacts where each rung opens with the literal label "Rung [N]:" (where N is its '
+        "position) and names (a) the specific outcome the prior rung admits that this rung rejects, (b) the behavioral dimension that outcome leaves unconstrained in the prior rung, "
+        "and (c) the artifact type whose presence eliminates the judgment the prior rung required — two rungs belong to the same class when the same artifact type eliminates both; a "
+        'rung whose judgment class cannot be named by an artifact type has not been derived. A block that does not open with "Rung [N]:" is not a rung. A rung whose text does not '
+        'contain labeled entries for (a), (b), and (c) must be merged with the rung above — the merge is permitted only when a completed block above this line quotes the literal "Rung '
+        '[N]:" label of each candidate rung attempted and found to require the same artifact type — the quoted-text block must end before the merge block opens. For each rung, produce '
+        "a completed block above it naming two candidate sub-rungs and the artifact type each would eliminate; if both name the same artifact type, the split is not required and that "
+        "block constitutes the demonstration; if they name different artifact types, the split is required and the block must end before the two new rungs open. The ladder must "
+        "terminate at a rung whose satisfaction condition requires no judgment — checked by prior-executed results, not by inspection of prose. Every step requires a prior-executed "
+        "result already in the transcript as its governing artifact — a step whose governing artifact has not produced a result above it in the transcript has no authorization to "
+        "proceed. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not "
+        'sufficient for completion. No file-modifying tool call may appear in the response before the literal heading "## Completion check". The response is not permitted to end until '
+        'the literal heading "## Completion check" appears in the transcript. Under that heading, for each item in the intent artifact, produce a line of the form "Dimension [N]: '
+        '[covered] — [quoted string from tool-executed result]" or "Dimension [N]: [uncovered]" — a line not matching one of these two forms does not satisfy this requirement; a '
+        '"covered" entry whose quoted string does not appear verbatim in a tool-executed result above the heading does not satisfy this requirement. A "## Completion check" block with '
+        "zero covered dimensions does not satisfy this gate. Scope reduction is permitted only when the intent artifact or a prior completion-check artifact contains text that verbatim "
+        "and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage. After each of the four artifacts (anchoring citation, intent "
+        "artifact, ladder derivation, completion check), if the artifact's current state can be expressed as a table, diagram, or structured list in fewer lines than the prose "
+        "representation, produce one in that format. This display has no effect on artifact validity and does not substitute for it.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "

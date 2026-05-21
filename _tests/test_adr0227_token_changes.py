@@ -252,27 +252,18 @@ def test_atomic_smaller_gate_requires_visible_application_tool_call():
 
 
 def test_atomic_post_edit_verification_defines_assertion_text():
-    """atomic post-edit condition (b) must define 'assertion text' structurally.
+    """atomic post-edit condition (b) must use a structural failure-line pattern, not a semantic class.
 
-    hollow audit finding: condition (b) 'no assertion text appears in the new run result
-    that was absent from all prior run results' uses 'assertion text' without defining
-    its structural properties. Fix: define 'assertion text' as a string that names a
-    specific condition as not met — the same criterion used for the governing line.
-    The definition must appear in the post-edit verification clause (within 400 chars
-    after 'post-edit run result by tool call').
+    hollow audit finding (updated): the prior 'assertion text' class was semantic. Fix: condition (b)
+    must anchor to the failure-line pattern observed in the pre-edit run result — a structural property
+    evaluable by string match, not by meaning.
     """
     text = _atomic()
-    # Condition (b) starts after "(b) no assertion text"; check within 300 chars of it.
-    marker = "(b) no assertion text"
-    idx = text.find(marker)
-    assert idx != -1, "atomic must contain '(b) no assertion text'"
-    clause_window = text[idx:idx + 300]
     assert (
-        "names a specific condition as not met" in clause_window or
-        "names a specific behavior as failing" in clause_window
+        "failure-line pattern" in text
     ), (
-        "atomic post-edit verification clause (b) must define 'assertion text' as a string "
-        "that names a specific condition as not met — not left undefined (hollow audit fix D5)"
+        "atomic post-edit verification clause (b) must define compliance via 'failure-line pattern' "
+        "anchored to the pre-edit run result — not a semantic 'assertion text' class (hollow audit fix)"
     )
 
 

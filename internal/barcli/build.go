@@ -234,7 +234,18 @@ func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
 	return state.toResult(), nil
 }
 
+var knownAxes = map[string]bool{
+	"task": true, "topology": true, "completeness": true, "scope": true,
+	"method": true, "form": true, "channel": true, "directional": true,
+}
+
 func (s *buildState) applyShorthandToken(token string) *CLIError {
+	if idx := strings.Index(token, ":"); idx > 0 {
+		prefix, suffix := token[:idx], token[idx+1:]
+		if knownAxes[prefix] {
+			token = suffix
+		}
+	}
 	if s.isTask(token) {
 		if s.staticExplicit {
 			return s.errorf(errorConflict, "multiple task tokens provided")

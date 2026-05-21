@@ -251,6 +251,50 @@ func TestTopologyOverrideAccepted(t *testing.T) {
 	}
 }
 
+// TestBuildAxisColonTokenFormat specifies that bar build accepts axis:token
+// format (e.g. "form:prep", "method:hollow") by stripping the axis prefix and
+// resolving the token name, producing identical output to the bare token form.
+func TestBuildAxisColonTokenFormat(t *testing.T) {
+	cases := []struct {
+		axisColon string
+		bare      string
+		extra     []string // additional tokens needed for a valid build
+	}{
+		{"form:prep", "prep", []string{"make"}},
+		{"method:hollow", "hollow", []string{"probe"}},
+		{"task:probe", "probe", nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.axisColon, func(t *testing.T) {
+			var out1, out2, errBuf strings.Builder
+			args1 := append([]string{"build", tc.axisColon}, tc.extra...)
+			args1 = append(args1, "--subject", "test")
+			code1 := Run(args1, nil, &out1, &errBuf)
+			if code1 != 0 {
+				t.Fatalf("bar build %s failed: %s", tc.axisColon, errBuf.String())
+			}
+			errBuf.Reset()
+			args2 := append([]string{"build", tc.bare}, tc.extra...)
+			args2 = append(args2, "--subject", "test")
+			code2 := Run(args2, nil, &out2, &errBuf)
+			if code2 != 0 {
+				t.Fatalf("bar build %s failed: %s", tc.bare, errBuf.String())
+			}
+			if out1.String() != out2.String() {
+				t.Errorf("bar build %s output differs from bar build %s", tc.axisColon, tc.bare)
+			}
+		})
+	}
+	// Unknown axis prefix must produce an error, not silent resolution.
+	t.Run("unknown_axis_prefix_errors", func(t *testing.T) {
+		var out, errBuf strings.Builder
+		code := Run([]string{"build", "notanaxis:prep", "--subject", "test"}, nil, &out, &errBuf)
+		if code == 0 {
+			t.Error("bar build notanaxis:prep should error but succeeded")
+		}
+	})
+}
+
 // TestTopologyInPromptOutput specifies that a topology token appears in the
 // CONSTRAINTS section of bar build output. ADR-0236.
 func TestTopologyInPromptOutput(t *testing.T) {

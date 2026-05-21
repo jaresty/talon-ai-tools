@@ -202,7 +202,8 @@ SUBJECT_FRAMING: str = (
 EXECUTION_REMINDER: str = """Execute the TASK specified above. All reasoning, planning, and response construction must satisfy the CONSTRAINTS before producing content. Apply the PERSONA as defined. A response satisfies the TASK only when each of its claims can be traced to a specific string in the TASK section, a specific string in the ADDENDUM section, a named token constraint in CONSTRAINTS, or a specific phrase in SUBJECT — a claim that cannot be traced to one of these four sources does not satisfy this requirement regardless of whether it resembles what a correct response would look like."""
 
 PLANNING_DIRECTIVE: str = (
-    "Your FIRST message is permitted only to contain the four sections defined below, written as text — any other content (tool calls, task work, file reads) appearing in the first message does not satisfy this requirement. "
+    "Your response to this prompt must contain exactly the four sections below and nothing else — no tool calls, no sentences outside the four sections, no preamble, no protocols block. "
+    "A response containing any text that does not belong to one of the four named sections does not satisfy this requirement. "
     "Write all four sections as text now.\n\n"
     "SECTION 1 — TOKEN DERIVATIONS:\n"
     "For each token on the method axis (tokens that appear under the METHOD 方法 heading in the rendered prompt), output a full block:\n"

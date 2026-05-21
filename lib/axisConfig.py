@@ -422,30 +422,32 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "state the boundary searched — the content at the role=user position of the most recent user turn in the transcript; any noun or noun phrase in that content that names a file "
         "path, URL, ticket number, or document title not already present in the transcript must be fetched before deriving desired end states; if the referent cannot be resolved, "
         "derivation is blocked — then list every statement within that boundary that describes a desired end state. For each, state whether it subsumes the others — a goal G1 subsumes "
-        "G2 if achieving G2 is a necessary condition for achieving G1. Produce the subsumption analysis as a completed block. Then, in a separate block below it, cite the goal no other "
-        "goal subsumes as the anchoring citation, quoting its text and location. If multiple unsubsumed goals exist, cite all of them. Derive the intent artifact from the cited goal "
-        "statement(s) as an enumerated list of behavioral dimensions — each dimension must cite the specific clause in the anchoring citation it derives from, and every clause in the "
-        "anchoring citation must produce at least one dimension; a dimension with no cited source clause has not been derived, and a clause with no corresponding dimension has been "
-        "silently dropped. Each dimension states the specific behavior it governs such that its presence or absence in any artifact is determinable without interpretation. Then produce "
-        'the literal heading "## Ladder" followed by the ladder derivation — an ordered sequence of artifacts where each rung opens with the literal label "Rung [N]:" (where N is its '
-        "position) and names (a) the specific outcome the prior rung admits that this rung rejects, (b) the behavioral dimension that outcome leaves unconstrained in the prior rung, "
-        "and (c) the artifact type whose presence eliminates the judgment the prior rung required — two rungs belong to the same class when the same artifact type eliminates both; a "
-        'rung whose judgment class cannot be named by an artifact type has not been derived. A block that does not open with "Rung [N]:" is not a rung. A rung whose text does not '
-        'contain labeled entries for (a), (b), and (c) must be merged with the rung above — the merge is permitted only when a completed block above this line quotes the literal "Rung '
-        '[N]:" label of each candidate rung attempted and found to require the same artifact type — the quoted-text block must end before the merge block opens. For each rung, produce '
-        "a completed block above it naming two candidate sub-rungs and the artifact type each would eliminate; if both name the same artifact type, the split is not required and that "
-        "block constitutes the demonstration; if they name different artifact types, the split is required and the block must end before the two new rungs open. The ladder must "
-        "terminate at a rung whose satisfaction condition requires no judgment — checked by prior-executed results, not by inspection of prose. Every step requires a prior-executed "
-        "result already in the transcript as its governing artifact — a step whose governing artifact has not produced a result above it in the transcript has no authorization to "
-        "proceed. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining failures — exhausting the artifact is necessary but not "
-        'sufficient for completion. No file-modifying tool call may appear in the response before the literal heading "## Completion check". The response is not permitted to end until '
-        'the literal heading "## Completion check" appears in the transcript. Under that heading, for each item in the intent artifact, produce a line of the form "Dimension [N]: '
-        '[covered] — [quoted string from tool-executed result]" or "Dimension [N]: [uncovered]" — a line not matching one of these two forms does not satisfy this requirement; a '
-        '"covered" entry whose quoted string does not appear verbatim in a tool-executed result above the heading does not satisfy this requirement. A "## Completion check" block with '
-        "zero covered dimensions does not satisfy this gate. Scope reduction is permitted only when the intent artifact or a prior completion-check artifact contains text that verbatim "
-        "and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage. After each of the four artifacts (anchoring citation, intent "
-        "artifact, ladder derivation, completion check), if the artifact's current state can be expressed as a table, diagram, or structured list in fewer lines than the prose "
-        "representation, produce one in that format. This display has no effect on artifact validity and does not substitute for it.",
+        'G2 if achieving G2 is a necessary condition for achieving G1. Produce the subsumption analysis as a completed block. Then produce the literal heading "## Anchoring citation" '
+        "followed by the goal no other goal subsumes, quoting its text and location — a block that does not open with this literal heading is not the anchoring citation. If multiple "
+        'unsubsumed goals exist, cite all of them under this heading. Then produce the literal heading "## Intent artifact" followed by an enumerated list of behavioral dimensions '
+        "derived from the cited goal statement(s) — a block that does not open with this literal heading is not the intent artifact; each dimension must cite the specific clause in the "
+        "anchoring citation it derives from, and every clause in the anchoring citation must produce at least one dimension; a dimension with no cited source clause has not been "
+        "derived, and a clause with no corresponding dimension has been silently dropped. Each dimension states the specific behavior it governs such that its presence or absence in "
+        'any artifact is determinable without interpretation. Then produce the literal heading "## Ladder" followed by the ladder derivation — an ordered sequence of artifacts where '
+        'each rung opens with the literal label "Rung [N]:" (where N is its position) and names (a) the specific outcome the prior rung admits that this rung rejects, (b) the '
+        "behavioral dimension that outcome leaves unconstrained in the prior rung, and (c) the artifact type whose presence eliminates the judgment the prior rung required — two rungs "
+        "belong to the same class when the same artifact type eliminates both; a rung whose judgment class cannot be named by an artifact type has not been derived. A block that does "
+        'not open with "Rung [N]:" is not a rung. A rung whose text does not contain labeled entries for (a), (b), and (c) must be merged with the rung above — the merge is permitted '
+        'only when a completed block above this line quotes the literal "Rung [N]:" label of each candidate rung attempted and found to require the same artifact type — the quoted-text '
+        "block must end before the merge block opens. For each rung, produce a completed block above it naming two candidate sub-rungs and the artifact type each would eliminate; if "
+        "both name the same artifact type, the split is not required and that block constitutes the demonstration; if they name different artifact types, the split is required and the "
+        "block must end before the two new rungs open. The ladder must terminate at a rung whose satisfaction condition requires no judgment — checked by prior-executed results, not by "
+        "inspection of prose. Every step requires a prior-executed result already in the transcript as its governing artifact — a step whose governing artifact has not produced a "
+        "result above it in the transcript has no authorization to proceed. When a governing artifact cycle is active, the completion check fires when the cycle reports no remaining "
+        'failures — exhausting the artifact is necessary but not sufficient for completion. No file-modifying tool call may appear in the response before the literal heading "## '
+        'Completion check". The response is not permitted to end until the literal heading "## Completion check" appears in the transcript. Under that heading, for each item in the '
+        'intent artifact, produce a line of the form "Dimension [N]: [covered] — [quoted string from tool-executed result]" or "Dimension [N]: [uncovered]" — a line not matching one of '
+        'these two forms does not satisfy this requirement; a "covered" entry whose quoted string does not appear verbatim in a tool-executed result above the heading does not satisfy '
+        'this requirement. A "## Completion check" block with zero covered dimensions does not satisfy this gate. Scope reduction is permitted only when the intent artifact or a prior '
+        "completion-check artifact contains text that verbatim and explicitly excludes the element — cost, effort, or proportionality arguments are not valid at any stage. After each "
+        'of the four artifact headings ("## Anchoring citation", "## Intent artifact", "## Ladder", "## Completion check"), if the artifact\'s current state can be expressed as a '
+        "table, diagram, or structured list in fewer lines than the prose representation, produce one in that format. This display has no effect on artifact validity and does not "
+        "substitute for it.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "

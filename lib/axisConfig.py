@@ -287,9 +287,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "permitted if any symbol appearing in the diff is absent from the Symbols list; a Symbols list containing more than one entry requires a separate Scope line and separate tool "
         "call for each entry; this line is not permitted unless a tool-executed result showing the smaller change applied appears above it in the transcript — a Scope line that appears "
         "without such a result above it does not satisfy this requirement. After the edit, produce a post-edit run result by tool call, then verify: (a) the assertion text from the "
-        "scope declaration is absent from the new run result; (b) no assertion text appears in the new run result that was absent from all tool-executed run results appearing above "
-        "this edit in the transcript — any such new assertion text — where assertion text means a string that names a specific condition as not met — requires revert. An edit that "
-        "introduces a failure absent from the pre-edit result must be reverted regardless of interpretation.",
+        "scope declaration is absent from the new run result; (b) identify the failure-line pattern from the immediately preceding pre-edit run result — a failure-line pattern is the "
+        "literal prefix or suffix the governing artifact uses to mark a failing assertion, as observed in that result (for example, 'FAILED', '... FAILED', 'not ok') — then confirm "
+        "that no line matching that pattern appears in the post-edit result that was absent from the immediately preceding pre-edit run result; a line matching the failure-line pattern "
+        "in the post-edit result that was absent from the immediately preceding pre-edit run result requires revert regardless of interpretation; (c) every line matching the "
+        "failure-line pattern that appeared in the immediately preceding pre-edit run result, other than the governed failure signal, must still appear in the post-edit run result — a "
+        "governed-failure-signal line is the line whose text matches the verbatim assertion text from the scope declaration; a line that was present in the pre-edit result and is "
+        "absent from the post-edit result and does not match the governed failure signal requires revert regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

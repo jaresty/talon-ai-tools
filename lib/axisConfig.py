@@ -281,13 +281,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "change that fixes it cannot be derived from the current governing artifact; (3) line manifest listing every line to be added; for each line, quote the specific assertion "
         "string from the governing failure signal that would be absent from the run result when the line is present and would appear in the run result when the line is absent — an "
         "entry whose quoted string would remain in the run result when the line is present does not satisfy this requirement. Immediately before each tool call that modifies a file, "
-        "produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Smaller: <named smaller change whose insufficiency is demonstrated above> | Lines: "
-        "<count of lines in manifest>' — if this line does not appear immediately above the tool call that modifies a file in the transcript, the edit is not permitted; this line is "
-        "not permitted unless a tool-executed result showing the smaller change applied appears above it in the transcript — a Scope line that appears without such a result above it "
-        "does not satisfy this requirement. After the edit, produce a post-edit run result by tool call, then verify: (a) the assertion text from the scope declaration is absent from "
-        "the new run result; (b) no assertion text appears in the new run result that was absent from all tool-executed run results appearing above this edit in the transcript — any "
-        "such new assertion text — where assertion text means a string that names a specific condition as not met — requires revert. An edit that introduces a failure absent from the "
-        "pre-edit result must be reverted regardless of interpretation.",
+        "produce: 'Scope: <verbatim quoted failure signal> | Candidate: <named candidate change> | Smaller: <named smaller change whose insufficiency is demonstrated above> | Symbols: "
+        "<every function or symbol name added or modified by this tool call, comma-separated> | Lines: <count of lines in manifest>' — if this line does not appear immediately above "
+        "the tool call that modifies a file in the transcript, the edit is not permitted; the tool call is not permitted if any symbol appearing in the diff is absent from the Symbols "
+        "list; a Symbols list containing more than one entry requires a separate Scope line and separate tool call for each entry; this line is not permitted unless a tool-executed "
+        "result showing the smaller change applied appears above it in the transcript — a Scope line that appears without such a result above it does not satisfy this requirement. "
+        "After the edit, produce a post-edit run result by tool call, then verify: (a) the assertion text from the scope declaration is absent from the new run result; (b) no assertion "
+        "text appears in the new run result that was absent from all tool-executed run results appearing above this edit in the transcript — any such new assertion text — where "
+        "assertion text means a string that names a specific condition as not met — requires revert. An edit that introduces a failure absent from the pre-edit result must be reverted "
+        "regardless of interpretation.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

@@ -35,6 +35,14 @@ func RenderPlainText(result *BuildResult) string {
 	// before constraints arrive — prevents it functioning as a late-position advisory.
 	writeSection(&b, sectionExecution, result.ExecutionReminder)
 
+	// Truncation warning: always visible in the first 2KB of output regardless of
+	// token count. The PLANNING DIRECTIVE appears at the end for injection resistance
+	// — this warning ensures a truncated preview does not cause it to be skipped.
+	if strings.TrimSpace(result.PlanningDirective) != "" {
+		b.WriteString("=== READ BEFORE RESPONDING ===\n")
+		b.WriteString("This output may be truncated. The PLANNING DIRECTIVE at the end specifies required output structure — if this output was saved to a file, read the full file before producing any response.\n\n")
+	}
+
 	if strings.TrimSpace(result.Addendum) != "" {
 		writeSectionWithContract(&b, sectionAddendum, rk.Addendum, strings.TrimSpace(result.Addendum))
 	}
@@ -101,9 +109,9 @@ func RenderPlainText(result *BuildResult) string {
 		writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
 	}
 
-	// Planning directive: replaces second EXECUTION REMINDER with explicit
-	// planning instruction - LLM must cite each prompt token by name and
-	// explain how it shapes the response, then include a divider.
+	// Planning directive: appears after SUBJECT for recency-based injection resistance.
+	// A truncation warning appears near the top (after EXECUTION REMINDER) so it
+	// survives output truncation and directs the reader to load the full output.
 	writeSection(&b, "=== PLANNING DIRECTIVE ===", result.PlanningDirective)
 
 	return strings.TrimRight(b.String(), "\n") + "\n"

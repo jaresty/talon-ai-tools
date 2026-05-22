@@ -110,7 +110,7 @@ export async function hybridRankTokens(
 	const ranked: RankedToken[] = [];
 	for (const t of tokens) {
 		const b = maxBM25 > 0 ? (bm25Scores.get(t.token) ?? 0) / maxBM25 : 0;
-		const emb = (t.metadata as { embedding?: number[] }).embedding;
+		const emb = t.metadata && (t.metadata as { embedding?: number[] }).embedding;
 		const c = queryVec && emb ? cosineSimilarity(queryVec, emb) : 0;
 		const score = HYBRID_BM25_WEIGHT * b + HYBRID_EMB_WEIGHT * Math.max(0, c);
 		if (score > 0) ranked.push({ token: t, score });
